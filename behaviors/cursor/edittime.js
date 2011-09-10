@@ -11,10 +11,20 @@
 	};
 };
 
+//////////////////////////////////////////////////////////////
+// Actions
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable the rotation behavior.",1);
+AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's rotation behavior.", "SetActivated");
+
+
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [];
+var property_list = [
+	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+	];
 	
 // Called by IDE when a new behavior type is to be created
 function CreateIDEBehaviorType()
