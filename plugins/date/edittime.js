@@ -18,21 +18,23 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-//AddAnyTypeParam("Name", "The naem of timer.", "a");
-//AddAction(0, 0, "Start timer", "Timer", "Start <i>{0}</i> timer", "Start a timer.", "StartTimer");
+AddAnyTypeParam("Name", "The naem of timer.", "0");
+AddAction(0, 0, "Start timer", "Timer", "Start timer <i>{0}</i> ", "Start a timer.", "StartTimer");
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current year", "Date", "Year", "Get current year from system.");
 AddExpression(1, ef_return_number, "Get current month", "Date", "Month", "Get current month from system.");
-AddExpression(2, ef_return_number, "Get current date", "Date", "Date", "Get current date from system.");
-AddExpression(3, ef_return_number, "Get current day", "Date", "Day", "Get current day from system.");
+AddExpression(2, ef_return_number, "Get current day number", "Date", "Date", "Get current day number from system.");
+AddExpression(3, ef_return_number, "Get current day name", "Date", "Day", "Get current day name from system.");
 AddExpression(4, ef_return_number, "Get current hours", "Time", "Hours", "Get current hours from system.");
 AddExpression(5, ef_return_number, "Get current minutes", "Time", "Minutes", "Get current minutes from system.");
 AddExpression(6, ef_return_number, "Get current seconds", "Time", "Seconds", "Get current seconds from system.");
 AddExpression(7, ef_return_number, "Get current milliseconds", "Time", "Milliseconds", "Get current milliseconds from system.");
-//AddAnyTypeParam("a", "The naem of timer to get.", "a");
-//AddExpression(8, ef_return_number | ef_variadic_parameters, "Get escaped ticks of timer in milliseconds", "Timer", "Ticks", "Get escaped ticks of timer in milliseconds.");
+AddAnyTypeParam("0", "The naem of timer to get.", "0");
+AddExpression(8, ef_return_number | ef_variadic_parameters, "Get escaped ticks", "Timer", "Timer", "Get escaped ticks of timer in milliseconds.");
+AddExpression(9, ef_return_number, "Get current ticks", "Timer", "CurTicks", "Get current ticks of timer in milliseconds. (Date.getTime())");
+
 
 ACESDone();
 

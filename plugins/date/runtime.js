@@ -41,7 +41,7 @@ cr.plugins_.MyDate = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-	    this.timers = {};
+	    this._timers = {};
 	};
 	
 	//////////////////////////////////////
@@ -56,8 +56,7 @@ cr.plugins_.MyDate = function(runtime)
 	acts.StartTimer = function (name)
 	{
 	    var timer = new Date();
-		var cur_time = timer.getTime();
-		this.timers[name] = cur_time;
+		this._timers[name] = timer.getTime();
 	};	
 
 	//////////////////////////////////////
@@ -113,15 +112,20 @@ cr.plugins_.MyDate = function(runtime)
 		ret.set_int(today.getMilliseconds());
 	};	
 	
-	exps.Ticks = function (ret, name)
+	exps.Timer = function (ret, name)
 	{
-	    debugger;
 	    var delta = 0;
-		var start_tick = this.timer[name] || 0;
-		if (start_tick) {
+		var start_tick = this._timers[name];
+		if (start_tick != null) {
 		    var timer = new Date();
 		    delta = timer.getTime() - start_tick;
 		}
 		ret.set_int(delta);
+	};	
+
+	exps.CurTicks = function (ret)
+	{
+	    var timer = new Date();	
+		ret.set_int(timer.getTime());
 	};		
 }());
