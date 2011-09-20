@@ -41,9 +41,12 @@ cr.plugins_.MyFunction = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this._function_name = "";
-        this._parameters = {};
-        this._returns = {};
+        this.is_debug_mode = this.properties[0];    
+        
+        this.function_name = "";
+        this.parameters = {};
+        this.returns = {};
+        this.is_echo = false;
 	};
 	
 	//////////////////////////////////////
@@ -53,7 +56,9 @@ cr.plugins_.MyFunction = function(runtime)
     
 	cnds.OnFunctionCalled = function (name)
 	{
-		return (this._function_name == name);
+        var is_my_call = (this.function_name == name);
+        this.is_echo |= is_my_call;
+		return is_my_call;
 	};	    
 
 	//////////////////////////////////////
@@ -63,28 +68,33 @@ cr.plugins_.MyFunction = function(runtime)
     
 	acts.CallFunction = function (name)
 	{
-        this._function_name = name; 
+        this.function_name = name; 
+        this.is_echo = false
 	    this.runtime.trigger(cr.plugins_.MyFunction.prototype.cnds.OnFunctionCalled, this);
+        if ((!this.is_echo) && this.is_debug_mode) 
+        {
+            alert ("Can not find function '" + name + "'");
+        }
 	}; 
     
 	acts.CleanParameters = function ()
 	{
-        this._parameters = {};
+        this.parameters = {};
 	};    
     
 	acts.SetParameter = function (index, value)
 	{
-        this._parameters[index] = value;
+        this.parameters[index] = value;
 	};  
 
 	acts.CleanRetruns = function ()
 	{
-        this._returns = {};
+        this.returns = {};
 	};    
     
 	acts.SetReturn = function (index, value)
 	{
-        this._returns[index] = value;
+        this.returns[index] = value;
 	};      
     
 	//////////////////////////////////////
@@ -94,11 +104,29 @@ cr.plugins_.MyFunction = function(runtime)
 
     exps.Param = function (ret, index)
 	{
-	    ret.set_any(this._parameters[index]);
+        var value = this.parameters[index];
+        if (value == null) 
+        {
+            value = 0;
+            if (this.is_debug_mode) 
+            {
+                alert ("Can not find parameter '" + index + "'");
+            }
+        }
+	    ret.set_any(value);
 	};
     
     exps.Ret = function (ret, index)
 	{
-	    ret.set_any(this._returns[index]);
+        var value = this.returns[index];
+        if (value == null) 
+        {
+            value = 0;
+            if (this.is_debug_mode) 
+            {
+                alert ("Can not find return value '" + index + "'");
+            }
+        }
+	    ret.set_any(value);
 	};    
 }());

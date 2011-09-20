@@ -43,6 +43,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Debug mode", "No", "Enable to show error message.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created
