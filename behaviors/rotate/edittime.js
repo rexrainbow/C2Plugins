@@ -27,10 +27,10 @@ AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable
 AddComboParamOption("Anti-clockwise");
 AddComboParamOption("Clockwise");
 AddComboParam("Direction", "Select clockwise or anticlockwise rotation.", 1);
-AddAction(1, 0, "Set rotation direction", "", "Set {my} rotation direction to <i>{0}</i>", "Set the object's rotation direction.", "SetAcceleration");
+AddAction(1, 0, "Set rotation direction", "", "Set {my} rotation direction to <i>{0}</i>", "Set the object's rotation direction.", "SetDirection");
 
 AddNumberParam("Rotation speed", "Rotation speed, in degrees per second.");
-AddAction(2, 0, "Set rotation speed", "", "Set {my} rotation speed to <i>{0}</i>", "Set the object's current rotation speed.", "SetDirection");
+AddAction(2, 0, "Set rotation speed", "", "Set {my} rotation speed to <i>{0}</i>", "Set the object's current rotation speed.", "SetSpeed");
 
 AddNumberParam("Rotation acceleration", "The acceleration setting, in pixels per second per second.");
 AddAction(3, 0, "Set rotation acceleration", "", "Set {my} rotation acceleration to <i>{0}</i>", "Set the object's rotation acceleration.", "SetAcceleration");
