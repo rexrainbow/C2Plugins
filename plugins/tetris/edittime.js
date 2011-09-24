@@ -23,7 +23,7 @@ AddCondition(0, 0, "Empty test", "Data",
              "EmptyTest");
 AddCondition(1, cf_trigger, "For each eliminated brick", "Callback", 
              "For each eliminated brick", 
-            "Repeat the event for each eliminated brick.\nGet UID of brick by 'CurBrickUID'.", 
+             "Repeat the event for each eliminated brick.\nGet UID of brick by 'CurBrickUID'.", 
              "OnBricksEliminated");
 AddCondition(2, cf_trigger, "For each falling brick", "Callback", 
              "For each falling brick", 
@@ -46,8 +46,8 @@ AddAction(1, 0, "Bricks elimination", "Process",
           "Process bricks elimination", 
           "Eliminating bricks in a full line.\nIt will trigger callback 'For each eliminated brick'.", 
           "BricksElimination");
-AddAction(2, 0, "Bricks fallen", "Process", 
-          "Process bricks fallen", 
+AddAction(2, 0, "Bricks falling", "Process", 
+          "Process bricks falling", 
           "Falling bricks above a eliminated line.\nIt will trigger callback 'For each falling brick'.", 
           "BricksFallen");
 
