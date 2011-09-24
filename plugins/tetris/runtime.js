@@ -60,24 +60,43 @@ cr.plugins_.Tetris = function(runtime)
 			}
 		}
 		
-		this.full_line_index = 0;
+		this.CurBrickUID = (-1);
+        this.CurBrickArrX = (-1);
+        this.CurBrickArrY = (-1);
+        this.FullLineCnt = 0;
+        this.full_line_indexs = [];
 	};
 	
-	instanceProto.is_in_array = function (x, y)
+	instanceProto._is_in_array = function (x, y)
 	{
         return ((x>=0) && (x< this.cx) &&
 		        (y>=0) && (y< this.cy));
 	};
 	
-	instanceProto.at = function (x, y)
+	instanceProto._at = function (x, y)
 	{
 	    var val = null;
-	    if ( this.is_in_array(x, y) ) 
+	    if ( this._is_in_array(x, y) ) 
 		{
 			val = this.board[x][y];
 	    }
         return val;
 	};
+    
+	instanceProto._clean_cell = function (x, y)
+	{
+        this.board[x][y].mask = 0;
+        this.board[x][y].uid = (-1);
+	};  
+    
+	instanceProto._fall_down_cell = function (x, y)
+	{
+        var upper_cell = this.board[x][y];
+        var lower_cell = this.board[x][y+1];
+        lower_cell.mask = upper_cell.mask;
+        lower_cell.uid = upper_cell.uid;
+	    this._clean_cell(x,y);   
+	};  
 	
 	//////////////////////////////////////
 	// Conditions
@@ -85,22 +104,41 @@ cr.plugins_.Tetris = function(runtime)
 	var cnds = pluginProto.cnds;
 	
 	cnds.EmptyTest = function (x, y)
-	{	  
-        var val = false;
-	    if ( this.is_in_array(x, y) ) 
-		{
-			val = (this.at(x, y).mask==0);
-	    }		
-		return val;
+	{	
+		return (this._is_in_array(x, y))? 
+                   (this.board[x][y].mask==0):
+                   false;	
 	};	
 	
-	cnds.FullLineForEach = function ()
+	cnds.OnBricksEliminated = function ()
+	{
+		return true;
+	};
+
+	cnds.OnBricksFalling = function ()
+	{
+		return true;
+	};	
+
+	//////////////////////////////////////
+	// Actions
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
+
+	acts.SetData = function (x, y, mask, uid)
+	{
+		var cell = this._at(x,y);
+		if (cell != null) {
+		    cell.mask = mask;
+			cell.uid = uid;
+		}
+	};
+	
+	acts.BricksElimination = function ()
 	{
 	    var x, y;
 		var is_full_line;
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
-		this.full_line_index = 0;
+        
 		for (y = (this.cy -1) ; y >= 0; y--)
 		{	
             is_full_line = true;		
@@ -113,30 +151,53 @@ cr.plugins_.Tetris = function(runtime)
 			}
 			if (is_full_line)
 			{
-			    this.full_line_index = y;
-			    this.runtime.pushCopySol(current_event.solModifiers);
-                current_event.retrigger();
-                this.runtime.popSol(current_event.solModifiers);
+                this.full_line_indexs.push(y);
+                for (x = 0; x < this.cx; x++)
+                {                    
+                    this.CurBrickUID = this.board[x][y].uid;
+                    this.CurBrickArrX = x;
+                    this.CurBrickArrY = y;
+                    // Trigger OnBricksEliminated
+		            this.runtime.trigger(cr.plugins_.Tetris.prototype.cnds.OnBricksEliminated, this); 
+                    this._clean_cell(x,y);
+                }
 			}
 		} 
-		this.full_line_index = 0;
-		return false;
-	};	
-
-	//////////////////////////////////////
-	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
-
-	acts.SetData = function (x, y, mask, uid)
+        this.FullLineCnt = this.full_line_indexs.length;
+		this.CurBrickUID = (-1);
+	};    
+    
+	acts.BricksFallen = function ()
 	{
-		var cell = this.at(x,y);
-		if (cell != null) {
-		    cell.mask = mask;
-			cell.uid = uid;
-		}
-	};
-	
+        var x, y, empty_line_index, i;   
+        var cell;
+        
+        for(i=0; i<this.FullLineCnt; i++)
+        {
+            empty_line_index = this.full_line_indexs[i];
+		    for (y = (empty_line_index -1) ; y >= 0; y--)
+		    {	
+                for (x = 0; x < this.cx; x++)
+                {    
+                    cell = this.board[x][y];
+                    if (cell.mask == 1) 
+                    {
+                        this.CurBrickUID = cell.uid;
+                        this.CurBrickArrX = x;
+                        this.CurBrickArrY = y;                        
+                        // Trigger OnBricksEliminated
+		                this.runtime.trigger(cr.plugins_.Tetris.prototype.cnds.OnBricksFalling, this); 
+                        this._fall_down_cell(x,y);                    
+                    }
+                }
+            }
+        }
+        
+        this.full_line_indexs = [];
+        this.FullLineCnt=0;
+        this.CurBrickUID = (-1);
+	};    
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -156,19 +217,58 @@ cr.plugins_.Tetris = function(runtime)
 		} 
 		ret.set_string(dump_out);
 	};
+    
+	exps.DumpUIDArray = function (ret)
+	{
+		var x, y;	
+        var dump_out = "";
+        var num;
+		for (y = 0; y < this.cy; y++)
+		{				
+			for (x = 0; x < this.cx; x++)
+			{	
+                num = this.board[x][y].uid;
+                num = (num==(-1))? "x":num.toString();
+                dump_out += "(" + num + ")";
+			}
+			dump_out += "\n";
+		} 
+		ret.set_string(dump_out);
+	}; 
 	
 	exps.Mask = function (ret, x, y)
 	{
-	    ret.set_int(this.at(x, y).mask);
+        var val = (this._is_in_array(x, y))? 
+                      this.board[x][y].mask:
+                      1;	      
+	    ret.set_int(val);
 	};
 	
 	exps.UID = function (ret, x, y)
 	{
-	    ret.set_int(this.at(x, y).mask);
+        var val = (this._is_in_array(x, y))? 
+                      this.board[x][y].uid:
+                      (-1);
+	    ret.set_int(val);
 	};	
 	
-	exps.CurFullLine = function (ret)
+	exps.CurBrickUID = function (ret)
 	{
-		ret.set_int(this.full_line_index);
+		ret.set_int(this.CurBrickUID);
+	};
+
+	exps.CurBrickArrX = function (ret)
+	{
+		ret.set_int(this.CurBrickArrX);
 	};	
+    
+	exps.CurBrickArrY = function (ret)
+	{
+		ret.set_int(this.CurBrickArrY);
+	}; 
+
+	exps.FullLineCnt = function (ret)
+	{
+		ret.set_int(this.FullLineCnt);
+	};    
 }());

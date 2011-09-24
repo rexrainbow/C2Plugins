@@ -18,7 +18,8 @@
 AddNumberParam("X", "The X index (0-based) of the mask array.");
 AddNumberParam("Y", "The Y index (0-based) of the mask array.");
 AddCondition(0, 0, "Empty test", "Data", "{my} [<i>{0}</i>, <i>{1}</i>].mask == 0", "Test if (mask == 0) at [X,Y] position.", "EmptyTest");
-//AddCondition(1, cf_looping | cf_not_invertible, "For each full line", "For Each", "For each full line", "Repeat the event for each full line in the mask array.", "FullLineForEach");
+AddCondition(1, cf_trigger, "For each eliminated brick", "Callback", "For each eliminated brick", "Repeat the event for each eliminated brick.", "OnBricksEliminated");
+AddCondition(2, cf_trigger, "For each falling brick", "Callback", "For each falling brick", "Repeat the event for each falling brick.", "OnBricksFalling");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -29,13 +30,24 @@ AddComboParamOption("1");
 AddComboParam("Mask", "Set mask to.", 1);
 AddNumberParam("UID", "The UID of the sprite.", "-1");
 AddAction(0, 0, "Set data at XY", "Array", "Set data at [<i>{0}</i>, <i>{1}</i>]: mask = <i>{2}</i>, UID = <i>{3}</i>", "Set the data at [X,Y] position.", "SetData");
+AddAction(1, 0, "Bricks elimination", "Process", "Process bricks elimination", "Eliminating bricks in a full line.", "BricksElimination");
+AddAction(2, 0, "Bricks fallen", "Process", "Process bricks fallen", "Falling bricks above a eliminated line.", "BricksFallen");
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Get mask array", "Debug", "DumpMaskArray", "The current data in mask array.");
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Get mask", "Data", "Mask", "The mask in array cell.");
-AddExpression(2, ef_return_number | ef_variadic_parameters, "Get uid", "Data", "UID", "The uid in array cell.");
-//AddExpression(3, ef_return_number, "Current full line index", "For Each", "CurFullLine", "Get the current full line index in a For Each loop.");
+AddExpression(0, ef_return_number, "Get mask array", "Debug", "DumpMaskArray", "The current mask in array.");
+AddExpression(1, ef_return_number, "Get uid array", "Debug", "DumpUIDArray", "The current uid in array.");
+AddNumberParam("X", "The X index (0-based) of the array value to get.", "0");
+AddNumberParam("Y", "The Y index (0-based) of the array value to get.", "0");
+AddExpression(2, ef_return_number | ef_variadic_parameters, "Get mask", "Data", "Mask", "The mask in array.");
+AddNumberParam("X", "The X index (0-based) of the array value to get.", "0");
+AddNumberParam("Y", "The Y index (0-based) of the array value to get.", "0");
+AddExpression(3, ef_return_number | ef_variadic_parameters, "Get uid", "Data", "UID", "The uid in array.");
+AddExpression(4, ef_return_number, "Current UID of brick", "Callback", "CurBrickUID", "Get the current activated sprite's UID in a callback.");
+AddExpression(5, ef_return_number, "Current X of brick in array", "Callback", "CurBrickArrX", "Get the current activated sprite's X in array in a callback.");
+AddExpression(6, ef_return_number, "Current Y of brick in array", "Callback", "CurBrickArrY", "Get the current activated sprite's Y in array in a callback.");
+AddExpression(7, ef_return_number, "Count of full lines", "Callback", "FullLineCnt", "Get the current count of full lines in a callback.");
+
 
 ACESDone();
 
