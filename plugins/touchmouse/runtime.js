@@ -279,10 +279,10 @@ cr.plugins_.MyTouchMouse = function(runtime)
         }
         else    // touch
         {
-		    if (!type)
+		    if (!obj)
 			    return false;
 			
-		    var sol = type.getCurrentSol();
+		    var sol = obj.getCurrentSol();
 		    var instances = sol.getObjects();
 		    var px, py;
 		
@@ -336,10 +336,10 @@ cr.plugins_.MyTouchMouse = function(runtime)
         }
         else    // touch
         {
-		    if (!type)
+		    if (!obj)
 			    return false;
 			
-		    var sol = type.getCurrentSol();
+		    var sol = obj.getCurrentSol();
 		    var instances = sol.getObjects();
 		    var px, py;
 		
