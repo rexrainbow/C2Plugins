@@ -64,6 +64,7 @@ cr.plugins_.Tetris = function(runtime)
         this.CurBrickArrX = (-1);
         this.CurBrickArrY = (-1);
         this.FullLineCnt = 0;
+        this.FallingLevel = 0;
         this.full_line_indexs = [];
 	};
 	
@@ -89,10 +90,10 @@ cr.plugins_.Tetris = function(runtime)
         this.board[x][y].uid = (-1);
 	};  
     
-	instanceProto._fall_down_cell = function (x, y)
+	instanceProto._fall_down_cell = function (x, y, level)
 	{
         var upper_cell = this.board[x][y];
-        var lower_cell = this.board[x][y+1];
+        var lower_cell = this.board[x][y+level];
         lower_cell.mask = upper_cell.mask;
         lower_cell.uid = upper_cell.uid;
 	    this._clean_cell(x,y);   
@@ -157,45 +158,49 @@ cr.plugins_.Tetris = function(runtime)
                     this.CurBrickUID = this.board[x][y].uid;
                     this.CurBrickArrX = x;
                     this.CurBrickArrY = y;
-                    // Trigger OnBricksEliminated
+                    // Trigger 'OnBricksEliminated'
 		            this.runtime.trigger(cr.plugins_.Tetris.prototype.cnds.OnBricksEliminated, this); 
                     this._clean_cell(x,y);
                 }
 			}
 		} 
         this.FullLineCnt = this.full_line_indexs.length;
-		this.CurBrickUID = (-1);
 	};    
     
 	acts.BricksFallen = function ()
 	{
-        var x, y, empty_line_index, i;   
+        var x, y, i;  
+        var empty_line_index,  upper_line_index;
         var cell;
         
         for(i=0; i<this.FullLineCnt; i++)
         {
             empty_line_index = this.full_line_indexs[i];
-		    for (y = (empty_line_index -1) ; y >= 0; y--)
-		    {	
-                for (x = 0; x < this.cx; x++)
-                {    
-                    cell = this.board[x][y];
-                    if (cell.mask == 1) 
-                    {
-                        this.CurBrickUID = cell.uid;
-                        this.CurBrickArrX = x;
-                        this.CurBrickArrY = y;                        
-                        // Trigger OnBricksEliminated
-		                this.runtime.trigger(cr.plugins_.Tetris.prototype.cnds.OnBricksFalling, this); 
-                        this._fall_down_cell(x,y);                    
-                    }
+            upper_line_index = empty_line_index-1;
+            if ( (empty_line_index==0) || // topmost line
+                 (upper_line_index == this.full_line_indexs[i+1]) ) // upper line is also empty
+            {
+                continue;
+            }
+            
+		    for (x = 0; x < this.cx; x++)
+            {    
+                cell = this.board[x][upper_line_index];
+                if (cell.mask == 1) 
+                {
+                    this.CurBrickUID = cell.uid;
+                    this.CurBrickArrX = x;
+                    this.CurBrickArrY = upper_line_index;   
+                    this.FallingLevel = i+1;
+                    // Trigger 'OnBricksEliminated'
+		            this.runtime.trigger(cr.plugins_.Tetris.prototype.cnds.OnBricksFalling, this); 
+                    this._fall_down_cell(x,upper_line_index, this.FallingLevel);                    
                 }
             }
         }
         
         this.full_line_indexs = [];
         this.FullLineCnt=0;
-        this.CurBrickUID = (-1);
 	};    
     
 	//////////////////////////////////////
@@ -270,5 +275,10 @@ cr.plugins_.Tetris = function(runtime)
 	exps.FullLineCnt = function (ret)
 	{
 		ret.set_int(this.FullLineCnt);
-	};    
+	}; 
+
+	exps.FallingLevel = function (ret)
+	{
+		ret.set_int(this.FallingLevel);
+	};     
 }());
