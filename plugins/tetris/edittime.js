@@ -69,7 +69,7 @@ AddExpression(6, ef_return_number, "Current Y of brick in array", "Callback", "C
               "Get the current activated sprite's Y in array in a callback.");
 AddExpression(7, ef_return_number, "Count of full lines", "Callback", "FullLineCnt", 
               "Get the current count of full lines in a callback.");
-AddExpression(8, ef_return_number, "Level of falling lines", "Callback", "FallingLevel", 
+AddExpression(8, ef_return_number, "Level of falling lines", "Callback", "CurFallingLevel", 
               "Get the current level of falling lines in a callback.");              
 
 

@@ -277,7 +277,7 @@ cr.plugins_.Tetris = function(runtime)
 		ret.set_int(this.FullLineCnt);
 	}; 
 
-	exps.FallingLevel = function (ret)
+	exps.CurFallingLevel = function (ret)
 	{
 		ret.set_int(this.FallingLevel);
 	};     
