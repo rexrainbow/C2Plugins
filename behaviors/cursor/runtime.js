@@ -38,8 +38,7 @@ cr.behaviors.Cursor = function(runtime)
 		this.behavior = type.behavior;
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
-        
-        this.is_mouse_moved = 0;        
+              
 		this.mouseXcanvas = 0;				// mouse position relative to canvas
 		this.mouseYcanvas = 0; 
         
@@ -51,6 +50,8 @@ cr.behaviors.Cursor = function(runtime)
 				};
 			})(this)
 		);   
+        
+        this.is_mouse_moved = false;          
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -62,26 +63,33 @@ cr.behaviors.Cursor = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if ( (this.activated== 1) && 
-             (this.is_mouse_moved == 1)) {
+        if ( (this.activated== 1) && this.is_mouse_moved ) {
            this.inst.x = this.mouseXcanvas;
            this.inst.y = this.mouseYcanvas;
            this.inst.set_bbox_changed();
-           this.is_mouse_moved = 0;       // close update
+           this.is_mouse_moved = false;       // close update
+           
+           this.runtime.trigger(cr.behaviors.Cursor.prototype.cnds.IsMoving, this.inst);
         }
 	};
     
 	behinstProto.onMouseMove = function(info)
 	{
 		var offset = jQuery(this.runtime.canvas).offset();
-        this.is_mouse_moved = 1;                       // open update
 		this.mouseXcanvas = info.pageX - offset.left;
-		this.mouseYcanvas = info.pageY - offset.top;             
+		this.mouseYcanvas = info.pageY - offset.top;      
+        this.is_mouse_moved = true;                       // open update        
 	};    
 
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
+	var cnds = behaviorProto.cnds;   
+    
+	cnds.IsMoving = function ()
+	{
+		return true;
+	};
     
 	//////////////////////////////////////
 	// Actions
@@ -96,5 +104,71 @@ cr.behaviors.Cursor = function(runtime)
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
+	var exps = behaviorProto.exps;
 
+	exps.X = function (ret, layerparam)
+	{
+		var layer, oldScale;
+		
+		if (typeof layerparam === "undefined")
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			layer.scale = 1.0;
+			ret.set_float(layer.canvasToLayerX(this.mouseXcanvas));
+			layer.scale = oldScale;
+		}
+		else
+		{
+			// use given layer param
+			if (typeof layerparam === "number")
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (!layer)
+				ret.set_float(0);
+				
+			ret.set_float(layer.canvasToLayerX(this.mouseXcanvas));
+		}
+	};
+	
+	exps.Y = function (ret, layerparam)
+	{
+		var layer, oldScale;
+		
+		if (typeof layerparam === "undefined")
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			layer.scale = 1.0;
+			ret.set_float(layer.canvasToLayerY(this.mouseYcanvas));
+			layer.scale = oldScale;
+		}
+		else
+		{
+			// use given layer param
+			if (typeof layerparam === "number")
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (!layer)
+				ret.set_float(0);
+				
+			ret.set_float(layer.canvasToLayerY(this.mouseYcanvas));
+		}
+	};
+	
+	exps.AbsoluteX = function (ret)
+	{
+		ret.set_float(this.mouseXcanvas);
+	};
+	
+	exps.AbsoluteY = function (ret)
+	{
+		ret.set_float(this.mouseYcanvas);
+	};
 }());
