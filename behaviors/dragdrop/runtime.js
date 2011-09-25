@@ -87,7 +87,7 @@ cr.behaviors.MyDragDrop = function(runtime)
             cnt = behavior_insts.length;
             for (i=0; i<cnt; i++ )
             {
-                if (behavior_insts[i].type.name == "DragDrop")
+                if (behavior_insts[i].type === this)
                 {
                     this.behavior_index = i;
                     break;
@@ -157,7 +157,8 @@ cr.behaviors.MyDragDrop = function(runtime)
 	behinstProto.onCreate = function()
 	{   
         this.activated = this.properties[0]; 
-        this.dragButton = this.properties[1];       
+        this.dragButton = this.properties[1]; 
+        this.move_axis = this.properties[2];  
 	};
 
 	behinstProto.tick = function ()
@@ -173,8 +174,19 @@ cr.behaviors.MyDragDrop = function(runtime)
                              (this.pre_mouseYcanvas != this.type.mouseYcanvas);      
         if ( is_mouse_moved )
         {
-            this.inst.x = this.type.mouseXcanvas;
-            this.inst.y = this.type.mouseYcanvas;
+            switch (this.move_axis)
+            {
+                case 1:
+                    this.inst.x = this.type.mouseXcanvas;
+                    break;
+                case 2:
+                    this.inst.y = this.type.mouseYcanvas;
+                    break;
+                default:
+                    this.inst.x = this.type.mouseXcanvas;
+                    this.inst.y = this.type.mouseYcanvas;
+                    break;
+            }
             this.inst.set_bbox_changed();
             this.pre_mouseXcanvas = this.type.mouseXcanvas;
             this.pre_mouseYcanvas = this.type.mouseYcanvas;                    
