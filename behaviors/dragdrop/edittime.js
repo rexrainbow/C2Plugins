@@ -2,7 +2,7 @@
 {
 	return {
 		"name":			"Drag & Drop",
-		"id":			"DragDrop",
+		"id":			"MyDragDrop",
 		"description":	"Use the mouse to drag and drop an object",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -10,6 +10,28 @@
 		"flags":		0
 	};
 };
+
+//////////////////////////////////////////////////////////////
+// Actions
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable the rotation behavior.",1);
+AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's rotation behavior.", "SetActivated");
+
+
+//////////////////////////////////////////////////////////////
+// Conditions
+AddCondition(0,	cf_trigger, "On drag start", "", "On drag start", "Triggered when drag start.", "OnDragStart");
+AddCondition(1,	cf_trigger, "Is dragging", "", "Is dragging", "Triggered when dragging.", "IsDragging");             
+AddCondition(2,	cf_trigger, "On drop", "", "On drop", "Triggered when drop.", "OnDrop"); 
+
+//////////////////////////////////////////////////////////////
+// Expressions
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Mouse X position", "", "X", "Get the mouse cursor X co-ordinate in the layout.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", "", "Y", "Get the mouse cursor Y co-ordinate in the layout.");
+
+AddExpression(2, ef_return_number, "Absolute mouse X", "", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
+AddExpression(3, ef_return_number, "Absolute mouse Y", "", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
 
 ACESDone();
 
