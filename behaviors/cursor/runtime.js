@@ -38,10 +38,18 @@ cr.behaviors.Cursor = function(runtime)
 		this.behavior = type.behavior;
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
-              
-		this.mouseXcanvas = 0;				// mouse position relative to canvas
-		this.mouseYcanvas = 0; 
         
+		this.mouseXcanvas = 0;				// mouse position relative to canvas
+		this.mouseYcanvas = 0;   
+        this.is_mouse_moved = false;      
+	};
+
+	var behinstProto = behaviorProto.Instance.prototype;
+
+	behinstProto.onCreate = function()
+	{
+        this.activated = this.properties[0];
+
 		// Bind mouse events via jQuery
 		jQuery(document).mousemove(
 			(function (self) {
@@ -50,15 +58,6 @@ cr.behaviors.Cursor = function(runtime)
 				};
 			})(this)
 		);   
-        
-        this.is_mouse_moved = false;          
-	};
-
-	var behinstProto = behaviorProto.Instance.prototype;
-
-	behinstProto.onCreate = function()
-	{
-        this.activated = this.properties[0];
 	};
 
 	behinstProto.tick = function ()
