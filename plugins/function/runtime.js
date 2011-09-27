@@ -44,9 +44,10 @@ cr.plugins_.MyFunction = function(runtime)
         this.is_debug_mode = this.properties[0];    
         
         this.function_name = "";
-        this.parameters = {};
-        this.returns = {};
+        this.param = {};
+        this.ret = {};
         this.is_echo = false;
+		this.fn_obj_list = {};
 	};
 	
 	//////////////////////////////////////
@@ -79,24 +80,45 @@ cr.plugins_.MyFunction = function(runtime)
     
 	acts.CleanParameters = function ()
 	{
-        this.parameters = {};
+        this.param = {};
 	};    
     
 	acts.SetParameter = function (index, value)
 	{
-        this.parameters[index] = value;
+        this.param[index] = value;
 	};  
 
 	acts.CleanRetruns = function ()
 	{
-        this.returns = {};
+        this.ret = {};
 	};    
     
 	acts.SetReturn = function (index, value)
 	{
-        this.returns[index] = value;
-	};      
-    
+        this.ret[index] = value;
+	};
+
+	acts.CreateJSFunctionObject = function (name, code_string)
+	{
+        this.fn_obj_list[name] = eval(code_string);
+	};
+	
+	acts.CallJSFunctionObject = function (name)
+	{
+	    var fn_obj = this.fn_obj_list[name];
+        if (fn_obj == null) 
+        {            
+            if (this.is_debug_mode) 
+            {
+                alert ("Can not find JS function object '" + name + "'");
+            }
+        }
+		else
+		{
+            fn_obj(this);
+	    }
+	};    
+	
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -104,7 +126,7 @@ cr.plugins_.MyFunction = function(runtime)
 
     exps.Param = function (ret, index)
 	{
-        var value = this.parameters[index];
+        var value = this.param[index];
         if (value == null) 
         {
             value = 0;
@@ -118,7 +140,7 @@ cr.plugins_.MyFunction = function(runtime)
     
     exps.Ret = function (ret, index)
 	{
-        var value = this.returns[index];
+        var value = this.ret[index];
         if (value == null) 
         {
             value = 0;
@@ -128,5 +150,10 @@ cr.plugins_.MyFunction = function(runtime)
             }
         }
 	    ret.set_any(value);
-	};    
+	};  
+
+    exps.Eval = function (ret, code_string)
+	{
+	    ret.set_any( eval(code_string) );
+	};	
 }());

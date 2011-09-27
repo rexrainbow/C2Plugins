@@ -30,6 +30,11 @@ AddAction(3, 0, "Clean all return values", "Return", "Clean all return values", 
 AddAnyTypeParam("Index", "Index of return value, can be number of string", "0");
 AddAnyTypeParam("Value", "Value of return value", "0");
 AddAction(4, 0, "Add a return value", "Return", "Set return[<i>{0}</i>] = <i>{1}</i>", "Set a return value.", "SetReturn");
+AddStringParam("Name", "JS function object name", '""');
+AddStringParam("Code", "JS function code", '""');
+AddAction(5, 0, "Create JS function object", "JS Function", "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
+AddStringParam("Name", "JS function object name", '""');
+AddAction(6, 0, "Call JS function object", "JS Function", "Call JS <i>{0}</i>", "Call JS function.", "CallJSFunctionObject");
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -37,13 +42,15 @@ AddAnyTypeParam("0", "The index of the parameter to get, can be number of string
 AddExpression(0, ef_return_any | ef_variadic_parameters, "Get parameter", "Parameter", "Param", "Get a parameter by index.");
 AddAnyTypeParam("0", "The index of the return value to get, can be number of string.", "0");
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Get return", "Return", "Ret", "Get a return value by index.");
+AddAnyTypeParam('""', "Code string.", '""');
+AddExpression(2, ef_return_any | ef_variadic_parameters, "Eval js code", "JS Function", "Eval", "Eval js code string");
 
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Debug mode", "No", "Enable to show error message.", "No|Yes"),
+    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),
 	];
 	
 // Called by IDE when a new object type is to be created
