@@ -49,7 +49,39 @@ cr.plugins_.MyFunction = function(runtime)
         this.is_echo = false;
 		this.fn_obj_list = {};
 	};
-	
+    
+	instanceProto.CallFn = function(name)
+	{
+        this.function_name = name; 
+        this.is_echo = false
+	    this.runtime.trigger(cr.plugins_.MyFunction.prototype.cnds.OnFunctionCalled, this);
+        if ((!this.is_echo) && this.is_debug_mode) 
+        {
+            alert ("Can not find function '" + name + "'");
+        }
+	}; 
+
+	instanceProto.CreateJS = function(name, code_string)
+	{
+        this.fn_obj_list[name] = eval(code_string);
+	};  
+
+ 	instanceProto.CallJS = function(name)
+	{
+	    var fn_obj = this.fn_obj_list[name];
+        if (fn_obj == null) 
+        {            
+            if (this.is_debug_mode) 
+            {
+                alert ("Can not find JS function object '" + name + "'");
+            }
+        }
+		else
+		{
+            fn_obj(this);
+	    }
+	};     
+
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -69,13 +101,7 @@ cr.plugins_.MyFunction = function(runtime)
     
 	acts.CallFunction = function (name)
 	{
-        this.function_name = name; 
-        this.is_echo = false
-	    this.runtime.trigger(cr.plugins_.MyFunction.prototype.cnds.OnFunctionCalled, this);
-        if ((!this.is_echo) && this.is_debug_mode) 
-        {
-            alert ("Can not find function '" + name + "'");
-        }
+        this.CallFn(name);
 	}; 
     
 	acts.CleanParameters = function ()
@@ -100,23 +126,12 @@ cr.plugins_.MyFunction = function(runtime)
 
 	acts.CreateJSFunctionObject = function (name, code_string)
 	{
-        this.fn_obj_list[name] = eval(code_string);
+        this.CreateJS(name, code_string);
 	};
 	
 	acts.CallJSFunctionObject = function (name)
 	{
-	    var fn_obj = this.fn_obj_list[name];
-        if (fn_obj == null) 
-        {            
-            if (this.is_debug_mode) 
-            {
-                alert ("Can not find JS function object '" + name + "'");
-            }
-        }
-		else
-		{
-            fn_obj(this);
-	    }
+	    this.CallJS(name);
 	};    
 	
 	//////////////////////////////////////
