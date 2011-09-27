@@ -23,21 +23,33 @@ AddComboParamOption("Clicked");
 AddComboParamOption("Double-clicked");
 //AddComboParamOption("Either single or double clicked");
 AddComboParam("Click type", "Select which kind of click to check for.");
-AddCondition(0,	cf_trigger, "On click", "Mouse", "On <b>{0}</b> button <b>{1}</b>", "Triggered when a mouse button clicked or double-clicked.", "OnClick");
+AddCondition(0,	cf_trigger, "On click", "Mouse", 
+             "On <b>{0}</b> button <b>{1}</b>", 
+             "Triggered when a mouse button clicked or double-clicked, or a touch input begins.", 
+             "OnClick");
 
-AddCondition(1,	cf_trigger, "On any click", "Mouse", "On any click", "Triggered when any mouse button clicked or double-clicked.", "OnAnyClick");
+AddCondition(1,	cf_trigger, "On any click", "Mouse", 
+             "On any click", 
+             "Triggered when any mouse button clicked or double-clicked, or a touch input begins.", 
+             "OnAnyClick");
 
 AddComboParamOption("Left");
 AddComboParamOption("Middle");
 AddComboParamOption("Right");
 AddComboParam("Mouse button", "Select the mouse button to check.");
-AddCondition(2, 0, "Mouse button is down", "Mouse", "<b>{0}</b> button is down", "Test if a mouse button is currently held down.", "IsButtonDown");
+AddCondition(2, 0, "Mouse button is down", "Mouse", 
+             "<b>{0}</b> button is down", 
+             "Test if a mouse button is currently held down, or between a touch start and touch end.", 
+             "IsButtonDown");
 
 AddComboParamOption("Left");
 AddComboParamOption("Middle");
 AddComboParamOption("Right");
 AddComboParam("Mouse button", "Select the mouse button to check.");
-AddCondition(3, cf_trigger, "On button released", "Mouse", "On <b>{0}</b> button released", "Triggered when a mouse button released.", "OnRelease");
+AddCondition(3, cf_trigger, "On button released", "Mouse", 
+             "On <b>{0}</b> button released", 
+             "Triggered when a mouse button released, or a touch input ends.", 
+             "OnRelease");
 
 //AddCondition(4,	cf_trigger, "On wheel up", "Mouse", "On wheel up", "Triggered when the mouse wheel rolled up.", "OnWheelUp");
 //AddCondition(5,	cf_trigger, "On wheel down", "Mouse", "On wheel down", "Triggered when the mouse wheel rolled down.", "OnWheelDown");
@@ -51,10 +63,16 @@ AddComboParamOption("Double-clicked");
 //AddComboParamOption("Either single or double clicked");
 AddComboParam("Click type", "Select which kind of click to check for.");
 AddObjectParam("Object clicked", "Choose the object to check for a click on.");
-AddCondition(6,	cf_trigger, "On object clicked", "Mouse", "On <b>{0}</b> button <b>{1}</b> on {2}", "Triggered when a mouse button clicked or double-clicked on an object.", "OnObjectClicked");
+AddCondition(6,	cf_trigger, "On object clicked", "Mouse", 
+             "On <b>{0}</b> button <b>{1}</b> on {2}", 
+             "Triggered when a mouse button clicked or double-clicked on an object, or an object is touched.", 
+             "OnObjectClicked");
 
 AddObjectParam("Object", "Choose the object to check for mouse over.");
-AddCondition(7,	0, "Cursor is over object", "Mouse", "Cursor is over {0}", "Check if the mouse cursor is over an object.", "IsOverObject");
+AddCondition(7,	0, "Cursor is over object", "Mouse", 
+             "Cursor is over {0}", 
+             "Check if the mouse cursor is over an object, or in a touch and the touch point is over an object.", 
+             "IsOverObject");
 
 //////////////////////////////////////////////////////////////
 // Expressions
