@@ -53,7 +53,7 @@ cr.plugins_.MyFunction = function(runtime)
 	instanceProto.CallFn = function(name)
 	{
         this.function_name = name; 
-        this.is_echo = false
+        this.is_echo = false;
 	    this.runtime.trigger(cr.plugins_.MyFunction.prototype.cnds.OnFunctionCalled, this);
         if ((!this.is_echo) && this.is_debug_mode) 
         {

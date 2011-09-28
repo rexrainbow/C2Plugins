@@ -42,7 +42,7 @@ AddAnyTypeParam("0", "The index of the parameter to get, can be number of string
 AddExpression(0, ef_return_any | ef_variadic_parameters, "Get parameter", "Parameter", "Param", "Get a parameter by index.");
 AddAnyTypeParam("0", "The index of the return value to get, can be number of string.", "0");
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Get return", "Return", "Ret", "Get a return value by index.");
-AddAnyTypeParam('""', "Code string.", '""');
+AddStringParam('""', "Code string.", '""');
 AddExpression(2, ef_return_any | ef_variadic_parameters, "Eval js code", "JS Function", "Eval", "Eval js code string");
 
 
