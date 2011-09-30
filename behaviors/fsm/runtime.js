@@ -44,24 +44,28 @@ cr.behaviors.MyFSM = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.activated = this.properties[0];
-        this.start_state = this.properties[1];
+	    this.is_debug_mode = this.properties[0];   
+        this.activated = this.properties[1];
 		this.previous_state = "Off";	
-        this.current_state = "Off";	
-        this.args = {};
+		
+		// initial state		
+		var start_state = this.properties[2];		
+        this.current_state = (start_state!="")? start_state:"Off";	
+				
+		// initial varaibles
+		var init_vars = this.properties[3];
+        this.vars = (init_vars!="")? 
+		            jQuery.parseJSON(init_vars):
+		            {};	
+					
+        // default state
+		var default_transitions = this.properties[4];
+		this.default_transitions = (default_transitions!="")? 
+		                           jQuery.parseJSON(default_transitions):
+		                           null;
+							 
         this.is_echo = false;	
-        
-        this._state_reset();        
-	};
-    
-	behinstProto._state_reset = function ()
-	{
-        this._state_transition("Off");
-        if (this.start_state != "Off")
-        {
-            this._state_transition(this.start_state);
-        }
-	};    
+	};  
     
 	behinstProto.tick = function ()
 	{
@@ -72,20 +76,20 @@ cr.behaviors.MyFSM = function(runtime)
 	    this.previous_state = this.current_state;
 		this.current_state = new_state;
 		this.is_echo = false;
-		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnTransfer, this);
+		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnTransfer, this.inst);
 		if (!this.is_echo)
 		{
             this.is_echo = false;
-		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnExit, this);
+		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnExit, this.inst);
             if (!this.is_echo)
             {
-                this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultExit, this);
+                this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultExit, this.inst);
             }
             this.is_echo = false;
-			this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnEnter, this);
+			this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnEnter, this.inst);
             if (!this.is_echo)
             {
-                this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultEntert, this);
+                this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultEnter, this.inst);
             }            
 		}
 	};
@@ -133,43 +137,89 @@ cr.behaviors.MyFSM = function(runtime)
 		                  (this.current_state == name_to));
         this.is_echo |= is_my_call;
 		return is_my_call;
-	};		
+	};	
+    
+	cnds.CompareVariable = function (index, cmp, s)
+	{
+		return cr.do_cmp(this.vars[index], cmp, s);
+	};
     
 	//////////////////////////////////////
 	// Actions
 	behaviorProto.acts = {};
 	var acts = behaviorProto.acts;
  
- 	acts.CleanArguments = function ()
+ 	acts.CleanVariables = function ()
 	{
-        this.args = {};
+        this.vars = {};
 	};   
     
-	acts.SetArgument = function (index, value)
+	acts.SetVariable = function (index, value)
 	{
-        this.args[index] = value;
+        this.vars[index] = value;
 	};  
 
     acts.Request = function ()
 	{
+	    if (this.activated==0)
+		{
+		    return;
+		}
+		
 		this.is_echo = false;
-		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnRequest, this);
+		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnRequest, this.inst);
         if (!this.is_echo)
         {
-		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultRequest, this);        
+		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultRequest, this.inst);        
         }
 	};  
     
  	acts.Transit = function (new_state)
 	{
+	    if (this.activated==0)
+		{
+		    return;
+		}
+		
         if (this.default_transitions != null)
         {
+		    // check if new_state is a valid target transition state
+		    var valid_transition_states = this.default_transitions[this.current_state];
+			if (valid_transition_states != null)
+			{
+                var is_find = false;	
+				var len=valid_transition_states.length
+                var i;				
+			    for (i=0; i<len; i++)
+				{
+				    if (valid_transition_states[i] == new_state)
+					{
+					    is_find = true;
+						break;
+					}
+				}
+				// new_state is not a valid target transition state, leave
+				if (!is_find)
+				{
+                    if (this.is_debug_mode) 
+                    {
+                        alert ("Can not transit from '" + this.current_state + 
+						       "' to '" + new_state + "'");
+                    }
+				    return;
+				}
+			}
         }
         this._state_transition(new_state);
 	};
     
   	acts.ForceTransit = function (new_state)
 	{
+	    if (this.activated==0)
+		{
+		    return;
+		}
+		
         this._state_transition(new_state);
 	};   
 	//////////////////////////////////////
@@ -179,11 +229,25 @@ cr.behaviors.MyFSM = function(runtime)
 
 	exps.CurState = function (ret)
 	{
-	    ret.set_string( this.current_state );
+	    ret.set_string(this.current_state);
 	};	
 	
 	exps.PreState = function (ret)
 	{
-	    ret.set_string( this.previous_state );
+	    ret.set_string(this.previous_state);
 	};
+	
+    exps.Var = function (ret, index)
+	{
+        var value = this.vars[index];
+        if (value == null) 
+        {
+            value = 0;
+            if (this.is_debug_mode) 
+            {
+                alert ("Can not find variable '" + index + "'");
+            }
+        }
+	    ret.set_any(value);
+	};	
 }());
