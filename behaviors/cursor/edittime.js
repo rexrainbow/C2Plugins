@@ -28,9 +28,9 @@ AddCondition(0,	cf_trigger, "Is moving", "", "Is moving", "Triggered when moving
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Mouse X position", "Position", "X", "Get the mouse cursor X co-ordinate in the layout.");
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", "Position", "Y", "Get the mouse cursor Y co-ordinate in the layout.");
-
 AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
 AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
+AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
 
 ACESDone();
 

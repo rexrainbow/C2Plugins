@@ -39,6 +39,7 @@ AddAction(3, 0, "Set rotation acceleration", "", "Set {my} rotation acceleration
 // Expressions
 AddExpression(0, ef_return_number, "Get speed", "", "Speed", "The current object rotation speed, in degrees per second.");
 AddExpression(1, ef_return_number, "Get acceleration", "", "Acceleration", "The rotation acceleration setting, in degrees per second per second.");
+AddExpression(2, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
 
 
 ACESDone();

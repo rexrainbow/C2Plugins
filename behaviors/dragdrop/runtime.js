@@ -302,4 +302,9 @@ cr.behaviors.MyDragDrop = function(runtime)
 	{
 		ret.set_float(this.type.mouseYcanvas);
 	};
+    
+	exps.Activated = function (ret)
+	{
+		ret.set_int(this.activated);
+	};    
 }());

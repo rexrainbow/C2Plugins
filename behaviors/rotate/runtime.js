@@ -123,4 +123,9 @@ cr.behaviors.Rotate = function(runtime)
 	{
 		ret.set_float(this.acc);
 	};
+    
+	exps.Activated = function (ret)
+	{
+		ret.set_int(this.activated);
+	};    
 }());
