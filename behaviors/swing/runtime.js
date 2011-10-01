@@ -78,8 +78,6 @@ cr.behaviors.Swing = function(runtime)
         // assign speed
         if (this.is_setup)
         {   
-            this.is_setup = false;
-            
             // at start/stop point
             // trigger callback
             this.runtime.trigger(cr.behaviors.Swing.prototype.cnds.OnHitStartEnd, this.inst); 
@@ -93,6 +91,13 @@ cr.behaviors.Swing = function(runtime)
             {
                 this.runtime.trigger(cr.behaviors.Swing.prototype.cnds.OnHitEnd, this.inst);    
             }
+            
+            // workaround for setting activated=0 in trigger at event sheet
+            if (this.activated == 0) {
+                return;
+            }   
+
+            this.is_setup = false;
             
             // assign new target
             this.current_target = (is_start)? this.swing.end:this.swing.start;
@@ -231,8 +236,6 @@ cr.behaviors.Swing = function(runtime)
         this.is_setup = true;
         this.current_dir = dir;
         this.current_angle = this.swing.start;
-        
-        
 	};    
     
 	//////////////////////////////////////
