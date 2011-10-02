@@ -126,12 +126,8 @@ cr.behaviors.Swing = function(runtime)
         var angle = this.current_speed * dt;
         this.ramain_angle -= angle;
         
-        // no change, leave (maybe an error!)
-        if ((angle==0) && (this.ramain_angle>0))
-            return;
-            
         // is hit to target at next tick?
-        if (this.ramain_angle <= 0)
+        if ((this.ramain_angle <= 0) || (angle==0))
         {
             this.is_setup = true;  // next tick will restart
             this.current_angle = this.current_target;
