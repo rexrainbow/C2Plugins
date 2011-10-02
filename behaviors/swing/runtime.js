@@ -175,7 +175,7 @@ cr.behaviors.Swing = function(runtime)
     
 	cnds.CompareSpeed = function (cmp, s)
 	{
-		return cr.do_cmp(this.speed, cmp, s);
+		return cr.do_cmp(this.current_speed, cmp, s);
 	};  
     
 	cnds.IsClockwise = function ()
