@@ -76,10 +76,10 @@ AddAction(4, 0, "Set start angle", "Angle",
           "Set the start angle.", 
           "SetStartAngle");
 
-AddNumberParam("Rotation angle", "Rotation angle from start, in degree.");
-AddAction(5, 0, "Set rotation angle", "Angle", 
-          "Set {my} rotation angle to <i>{0}</i>", 
-          "Set rotation angle from start, in degree. Negative is anti-clockwise.", 
+AddNumberParam("Rotation degree", "Amount to rotate clockwise from start, in degrees.");
+AddAction(5, 0, "Set rotation degree", "Angle", 
+          "Set {my} rotation degree to <i>{0}</i>", 
+          "Set amount to rotate clockwise from start, in degrees. Negative is anti-clockwise.", 
           "SetRotateTO");
 
 
@@ -99,8 +99,8 @@ AddExpression(5, ef_return_number, "Get deceleration", "Setting", "Dec",
               "The deceleration setting, in degrees per second per second.");
 AddExpression(6, ef_return_number, "Get start angle", "Setting", "Start", 
               "The start angle setting, in degrees.");
-AddExpression(7, ef_return_number, "Get rotation angle from start", "Setting", "RotateTO", 
-              "The rotation angle from start, in degree. Negative is anti-clockwise.");
+AddExpression(7, ef_return_number, "Get amount to rotate clockwise", "Setting", "Angle", 
+              "The amount to rotate clockwise from start, in degree. Negative is anti-clockwise.");
               
 ACESDone();
 

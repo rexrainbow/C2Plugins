@@ -278,7 +278,7 @@ cr.behaviors.Swing = function(runtime)
 		ret.set_float(this.swing.start);
 	};  
 
- 	exps.RotateTO = function (ret)
+ 	exps.Angle = function (ret)
 	{
         var angle = this.swing.angle;
         if (!this.swing.dir)
