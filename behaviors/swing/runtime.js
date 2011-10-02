@@ -113,10 +113,10 @@ cr.behaviors.Swing = function(runtime)
             {
                 // is time to deceleration?                
                 var _speed = this.current_speed;
-                var _angle = (_speed*_speed)/(2*this.rotate.decc); // (v*v)/(2*a)
+                var _angle = (_speed*_speed)/(2*this.rotate.dec); // (v*v)/(2*a)
                 is_slow_down = (_angle >= this.ramain_angle);
             }
-            var acc = (is_slow_down)? (-this.rotate.decc):this.rotate.acc
+            var acc = (is_slow_down)? (-this.rotate.dec):this.rotate.acc
             this.current_speed += (acc * dt);
         }
         if (this.current_speed > this.rotate.max)
