@@ -110,9 +110,9 @@ var property_list = [
     new cr.Property(ept_float, "Start angle", 0, "Start angle of swing, in degree."),
     new cr.Property(ept_float, "Rotation angle", 180, "Rotation angle from start angle, in degree. Negative is anti-clockwise."),                    
 	new cr.Property(ept_float, "Max speed", 180, "Maximum rotation speed, in degrees per second."),
-	new cr.Property(ept_float, "Acceleration", 180, 
+	new cr.Property(ept_float, "Acceleration", 0, 
                     "Rotation acceleration, in degrees per second per second. 0 is using max speed directly."),
-	new cr.Property(ept_float, "Deceleration", 180, 
+	new cr.Property(ept_float, "Deceleration", 0, 
                     "Rotation deceleration, in degrees per second per second. 0 is ignored deceleration"),                    
 	];
 	
