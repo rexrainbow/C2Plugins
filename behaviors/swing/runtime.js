@@ -64,7 +64,7 @@ cr.behaviors.Swing = function(runtime)
         this.current_dir = dir;
         this.current_speed = 0;
         this.current_angle = start;
-        this.ramain_angle = 0;        
+        this.remain_angle = 0;        
 	};
 
 	behinstProto.tick = function ()
@@ -101,7 +101,7 @@ cr.behaviors.Swing = function(runtime)
             
             // assign new target
             this.current_target = (is_start)? this.swing.end:this.swing.start;
-            this.ramain_angle = this.swing.angle;
+            this.remain_angle = this.swing.angle;
             this.current_speed = (this.rotate.acc == 0)?
                                  this.rotate.max:
                                  (this.rotate.acc * dt);                 
@@ -114,20 +114,21 @@ cr.behaviors.Swing = function(runtime)
                 // is time to deceleration?                
                 var _speed = this.current_speed;
                 var _angle = (_speed*_speed)/(2*this.rotate.dec); // (v*v)/(2*a)
-                is_slow_down = (_angle >= this.ramain_angle);
+                is_slow_down = (_angle >= this.remain_angle);
             }
-            var acc = (is_slow_down)? (-this.rotate.dec):this.rotate.acc
-            this.current_speed += (acc * dt);
+            var acc = (is_slow_down)? (-this.rotate.dec):this.rotate.acc;
+            if (acc !=0)
+                this.current_speed += (acc * dt);
         }
         if (this.current_speed > this.rotate.max)
             this.current_speed = this.rotate.max;        
 		
 		// Apply movement to the object     
         var angle = this.current_speed * dt;
-        this.ramain_angle -= angle;
+        this.remain_angle -= angle;
         
         // is hit to target at next tick?
-        if ((this.ramain_angle <= 0) || (angle==0))
+        if ((this.remain_angle <= 0) || (this.current_speed <= 0))
         {
             this.is_setup = true;  // next tick will restart
             this.current_angle = this.current_target;
@@ -241,7 +242,7 @@ cr.behaviors.Swing = function(runtime)
     
 	exps.Activated = function (ret)
 	{
-		ret.set_float(this.activated);
+		ret.set_int(this.activated);
 	};    
     
 	exps.Speed = function (ret)
