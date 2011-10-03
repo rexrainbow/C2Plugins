@@ -25,11 +25,11 @@ AddAction(0, 0, "Call function", "Function", "Call <i>{0}</i>", "Call function."
 AddAction(1, 0, "Clean all parameters", "Parameter", "Clean all parameters", "Clean all parameters.", "CleanParameters");
 AddAnyTypeParam("Index", "Index of parameter, can be number of string", "0");
 AddAnyTypeParam("Value", "Value of paramete", "0");
-AddAction(2, 0, "Add a parameter", "Parameter", "Set parameter[<i>{0}</i>] = <i>{1}</i>", "Set a parameter pass into function.", "SetParameter");
+AddAction(2, 0, "Add a parameter", "Parameter", "Set parameter[<i>{0}</i>] to <i>{1}</i>", "Set a parameter pass into function.", "SetParameter");
 AddAction(3, 0, "Clean all return values", "Return", "Clean all return values", "Clean all return values.", "CleanRetruns");
 AddAnyTypeParam("Index", "Index of return value, can be number of string", "0");
 AddAnyTypeParam("Value", "Value of return value", "0");
-AddAction(4, 0, "Add a return value", "Return", "Set return[<i>{0}</i>] = <i>{1}</i>", "Set a return value.", "SetReturn");
+AddAction(4, 0, "Add a return value", "Return", "Set return[<i>{0}</i>] to <i>{1}</i>", "Set a return value.", "SetReturn");
 AddStringParam("Name", "JS function object name", '""');
 AddStringParam("Code", "JS function code", '""');
 AddAction(5, 0, "Create JS function object", "JS Function", "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");

@@ -63,7 +63,7 @@ cr.plugins_.MyFunction = function(runtime)
 
 	instanceProto.CreateJS = function(name, code_string)
 	{
-        this.fn_obj_list[name] = eval(code_string);
+        this.fn_obj_list[name] = eval("("+code_string+")");
 	};  
 
  	instanceProto.CallJS = function(name)
@@ -169,6 +169,6 @@ cr.plugins_.MyFunction = function(runtime)
 
     exps.Eval = function (ret, code_string)
 	{
-	    ret.set_any( eval(code_string) );
+	    ret.set_any( eval( "("+code_string+")" ) );
 	};	
 }());
