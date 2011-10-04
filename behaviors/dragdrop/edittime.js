@@ -22,8 +22,9 @@ AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0,	cf_trigger, "On drag start", "", "On drag start", "Triggered when drag start.", "OnDragStart");
-AddCondition(1,	cf_trigger, "Is dragging", "", "Is dragging", "Triggered when dragging.", "IsDragging");             
+AddCondition(1,	cf_trigger, "On dragging", "", "On dragging", "Triggered when dragging.", "OnDragging");             
 AddCondition(2,	cf_trigger, "On drop", "", "On drop", "Triggered when drop.", "OnDrop"); 
+AddCondition(3,	0, "Is dragging", "", "Is dragging", "Is object dragging.", "IsDragging");
 
 //////////////////////////////////////////////////////////////
 // Expressions

@@ -177,21 +177,21 @@ cr.behaviors.MyDragDrop = function(runtime)
             switch (this.move_axis)
             {
                 case 1:
-                    this.inst.x = this.type.mouseXcanvas;
+                    this.inst.x = this.GetLayerX();
                     break;
                 case 2:
-                    this.inst.y = this.type.mouseYcanvas;
+                    this.inst.y = this.GetLayerY();
                     break;
                 default:
-                    this.inst.x = this.type.mouseXcanvas;
-                    this.inst.y = this.type.mouseYcanvas;
+                    this.inst.x = this.GetLayerX();
+                    this.inst.y = this.GetLayerY();
                     break;
             }
             this.inst.set_bbox_changed();
             this.pre_mouseXcanvas = this.type.mouseXcanvas;
             this.pre_mouseYcanvas = this.type.mouseYcanvas;                    
         }
-        this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.IsDragging, this.inst);
+        this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDragging, this.inst);
                                 
         if ( (!this.type.triggerButton.press) && 
              (this.type.triggerButton.btn == this.dragButton) )
@@ -200,6 +200,16 @@ cr.behaviors.MyDragDrop = function(runtime)
             this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDrop, this.inst); 
         }
 	};
+        
+	behinstProto.GetLayerX = function()
+	{
+        return this.inst.layer.canvasToLayerX(this.type.mouseXcanvas);
+	};
+    
+	behinstProto.GetLayerY = function()
+	{
+        return this.inst.layer.canvasToLayerY(this.type.mouseYcanvas);       
+    }    
     
 
 	//////////////////////////////////////
@@ -217,10 +227,15 @@ cr.behaviors.MyDragDrop = function(runtime)
 		return true;
 	}; 
 
- 	cnds.IsDragging = function ()
+ 	cnds.OnDragging = function ()
 	{   
         return true;
     }
+    
+ 	cnds.IsDragging = function ()
+	{   
+        return (this.is_on_drag);
+    }    
     
 	//////////////////////////////////////
 	// Actions
@@ -237,60 +252,14 @@ cr.behaviors.MyDragDrop = function(runtime)
 	behaviorProto.exps = {};
 	var exps = behaviorProto.exps;
 
-	exps.X = function (ret, layerparam)
+	exps.X = function (ret)
 	{
-		var layer, oldScale;
-		
-		if (typeof layerparam === "undefined")
-		{
-			// calculate X position on bottom layer as if its scale were 1.0
-			layer = this.runtime.getLayerByNumber(0);
-			oldScale = layer.scale;
-			layer.scale = 1.0;
-			ret.set_float(layer.canvasToLayerX(this.type.mouseXcanvas));
-			layer.scale = oldScale;
-		}
-		else
-		{
-			// use given layer param
-			if (typeof layerparam === "number")
-				layer = this.runtime.getLayerByNumber(layerparam);
-			else
-				layer = this.runtime.getLayerByName(layerparam);
-				
-			if (!layer)
-				ret.set_float(0);
-				
-			ret.set_float(layer.canvasToLayerX(this.type.mouseXcanvas));
-		}
+        ret.set_float( this.GetLayerX() );
 	};
 	
-	exps.Y = function (ret, layerparam)
+	exps.Y = function (ret)
 	{
-		var layer, oldScale;
-		
-		if (typeof layerparam === "undefined")
-		{
-			// calculate X position on bottom layer as if its scale were 1.0
-			layer = this.runtime.getLayerByNumber(0);
-			oldScale = layer.scale;
-			layer.scale = 1.0;
-			ret.set_float(layer.canvasToLayerY(this.type.mouseYcanvas));
-			layer.scale = oldScale;
-		}
-		else
-		{
-			// use given layer param
-			if (typeof layerparam === "number")
-				layer = this.runtime.getLayerByNumber(layerparam);
-			else
-				layer = this.runtime.getLayerByName(layerparam);
-				
-			if (!layer)
-				ret.set_float(0);
-				
-			ret.set_float(layer.canvasToLayerY(this.type.mouseYcanvas));
-		}
+	    ret.set_float( this.GetLayerY() );
 	};
 	
 	exps.AbsoluteX = function (ret)

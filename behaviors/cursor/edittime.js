@@ -21,7 +21,8 @@ AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "Is moving", "", "Is moving", "Triggered when moving.", "IsMoving");             
+AddCondition(0,	cf_trigger, "On moving", "", "On moving", "Triggered when moving.", "OnMoving");             
+AddCondition(1,	0, "Is moving", "", "Is moving", "Is cursor moved.", "IsMoving");             
 
 
 //////////////////////////////////////////////////////////////
