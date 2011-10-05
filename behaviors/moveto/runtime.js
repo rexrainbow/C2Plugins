@@ -50,7 +50,7 @@ cr.behaviors.MoveTo = function(runtime)
                        acc:this.properties[2],
                        dec:this.properties[3]};
         this.target = {x:0 , y:0, angle:0};
-        this.is_run = false;  
+        this.is_moving = false;  
         this.current_speed = 0;       
         this.remain_distance = 0;
         this.is_hit_target = false;
@@ -64,7 +64,7 @@ cr.behaviors.MoveTo = function(runtime)
             this.is_hit_target = false;
         }
         
-        if ( (this.activated == 0) || (!this.is_run) ) 
+        if ( (this.activated == 0) || (!this.is_moving) ) 
         {
             return;
         }
@@ -94,7 +94,7 @@ cr.behaviors.MoveTo = function(runtime)
         // is hit to target at next tick?
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {
-            this.is_run = false;
+            this.is_moving = false;
             this.inst.x = this.target.x;
             this.inst.y = this.target.y;
             this.is_hit_target = true;
@@ -107,6 +107,7 @@ cr.behaviors.MoveTo = function(runtime)
         } 
 
 		this.inst.set_bbox_changed();
+        this.runtime.trigger(cr.behaviors.MoveTo.prototype.cnds.OnMoving, this.inst);
 	}; 
 
 	//////////////////////////////////////
@@ -122,7 +123,17 @@ cr.behaviors.MoveTo = function(runtime)
 	cnds.CompareSpeed = function (cmp, s)
 	{
 		return cr.do_cmp(this.current_speed, cmp, s);
-	};      
+	};   
+
+    cnds.OnMoving = function ()
+	{
+		return true;
+	};
+    
+	cnds.IsMoving = function ()
+	{
+		return (this.is_moving);
+	};
     
 	//////////////////////////////////////
 	// Actions
@@ -137,14 +148,14 @@ cr.behaviors.MoveTo = function(runtime)
 	acts.SetMaxSpeed = function (s)
 	{
 		this.move.max = s;
-        if (this.is_run && (this.move.acc==0))
+        if (this.is_moving && (this.move.acc==0))
             this.current_speed = this.move.max;
 	};      
     
 	acts.SetAcceleration = function (a)
 	{
 		this.move.acc = a;
-        if (this.is_run && (a==0))
+        if (this.is_moving && (a==0))
             this.current_speed = this.move.max;
 	};
 	
@@ -158,7 +169,7 @@ cr.behaviors.MoveTo = function(runtime)
         var dx = _x - this.inst.x;
         var dy = _y - this.inst.y;
         
-        this.is_run = true;         
+        this.is_moving = true;         
 		this.target.x = _x;
         this.target.y = _y; 
         this.target.angle = Math.atan2(dy, dx);
@@ -198,13 +209,13 @@ cr.behaviors.MoveTo = function(runtime)
 
 	exps.TargetX = function (ret)
 	{
-        var x = (this.is_run)? this.target.x:0;
+        var x = (this.is_moving)? this.target.x:0;
 		ret.set_float(x);
 	};  
 
  	exps.TargetY = function (ret)
 	{
-        var y = (this.is_run)? this.target.y:0;
+        var y = (this.is_moving)? this.target.y:0;
 		ret.set_float(y);
 	};     
     

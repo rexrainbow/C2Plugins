@@ -15,16 +15,17 @@
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the rotation behavior.",1);
-AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's rotation behavior.", "SetActivated");
+AddComboParam("Activated", "Enable the behavior.",1);
+AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
+          "Enable the object's drag&drop behavior.", "SetActivated");
 
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On drag start", "", "On drag start", "Triggered when drag start.", "OnDragStart");
-AddCondition(1,	cf_trigger, "On dragging", "", "On dragging", "Triggered when dragging.", "OnDragging");             
-AddCondition(2,	cf_trigger, "On drop", "", "On drop", "Triggered when drop.", "OnDrop"); 
-AddCondition(3,	0, "Is dragging", "", "Is dragging", "Is object dragging.", "IsDragging");
+AddCondition(0,	cf_trigger, "On drag start", "", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
+AddCondition(1,	cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
+AddCondition(2,	cf_trigger, "On drop", "", "On {my} drop", "Triggered when object drop.", "OnDrop"); 
+AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.", "IsDragging");
 
 //////////////////////////////////////////////////////////////
 // Expressions

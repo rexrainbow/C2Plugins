@@ -15,14 +15,14 @@
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the rotation behavior.",1);
-AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's rotation behavior.", "SetActivated");
+AddComboParam("Activated", "Enable the behavior.",1);
+AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's cursor behavior.", "SetActivated");
 
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On moving", "", "On moving", "Triggered when moving.", "OnMoving");             
-AddCondition(1,	0, "Is moving", "", "Is moving", "Is cursor moved.", "IsMoving");             
+AddCondition(0,	cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");             
+AddCondition(1,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");             
 
 
 //////////////////////////////////////////////////////////////

@@ -50,10 +50,10 @@ AddCondition(5, 0, "Is anti-clockwise rotation", "Direction",
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the rotation behavior.",1);
+AddComboParam("Activated", "Enable the behavior.",1);
 AddAction(0, 0, "Set activated", "", 
           "Set {my} activated to <i>{0}</i>", 
-          "Enable the object's rotation behavior.", "SetActivated");
+          "Enable the object's swing behavior.", "SetActivated");
 
 AddNumberParam("Max speed", "Maximum speed, in degrees per second.");
 AddAction(1, 0, "Set maximum speed", "Speed", 

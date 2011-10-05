@@ -16,21 +16,22 @@
 AddCondition(0, cf_trigger, "On hit target position", "", 
              "On {my} hit target", 
 			 "Triggered when hit target position.", 
-			 "OnHitTarget");
-             
+			 "OnHitTarget");             
 AddCmpParam("Comparison", "Choose the way to compare the current speed.");
 AddNumberParam("Speed", "The speed, in pixel per second, to compare the current speed to.");
 AddCondition(1, 0, "Compare speed", "Speed", 
              "{my} speed {0} {1}", 
              "Compare the current speed of the object.", 
              "CompareSpeed");
+AddCondition(2,	cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");                          
+AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");                
 
 
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the MoveTo behavior.",1);
+AddComboParam("Activated", "Enable the behavior.",1);
 AddAction(0, 0, "Set activated", "", 
           "Set {my} activated to <i>{0}</i>", 
           "Enable the object's MoveTo behavior.", "SetActivated");
