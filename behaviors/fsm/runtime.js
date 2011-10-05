@@ -63,15 +63,113 @@ cr.behaviors.MyFSM = function(runtime)
 		this.default_transitions = (default_transitions!="")? 
 		                           jQuery.parseJSON(default_transitions):
 		                           null;
-							 
+
+        this.function_name = ""; 
+        this.fn_obj_list = {};           
         this.is_echo = false;	
 	};  
     
 	behinstProto.tick = function ()
 	{
 	};
+
+	behinstProto.Request = function ()
+	{
+	    if (this.activated==0)
+		{
+		    return;
+		}
+		
+		this.is_echo = false;
+		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnRequest, this.inst);
+        if (!this.is_echo)
+        {
+		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultRequest, this.inst);        
+        }    
+	};
+    
+	behinstProto.Transit = function (new_state)
+	{
+	    if (this.activated==0)
+		{
+		    return;
+		}
+		
+        if (this.default_transitions != null)
+        {
+		    // check if new_state is a valid target transition state
+		    var valid_transition_states = this.default_transitions[this.current_state];
+			if (valid_transition_states != null)
+			{
+                var is_find = false;	
+				var len=valid_transition_states.length
+                var i;				
+			    for (i=0; i<len; i++)
+				{
+				    if (valid_transition_states[i] == new_state)
+					{
+					    is_find = true;
+						break;
+					}
+				}
+				// new_state is not a valid target transition state, leave
+				if (!is_find)
+				{
+                    if (this.is_debug_mode) 
+                    {
+                        alert ("Can not transit from '" + this.current_state + 
+						       "' to '" + new_state + "'");
+                    }
+				    return;
+				}
+			}
+        }
+        this._state_transition(new_state);    
+	};  
+
+    behinstProto.ForceTransit = function (new_state)
+	{
+	    if (this.activated==0)
+		{
+		    return;
+		}
+		
+        this._state_transition(new_state);    
+	};
 	
-	behinstProto._state_transition = function (new_state)
+	behinstProto.CallFn = function(name)
+	{
+        this.function_name = name; 
+        this.is_echo = false;
+	    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnFunctionCalled, this);
+        if ((!this.is_echo) && this.is_debug_mode) 
+        {
+            alert ("Can not find function '" + name + "'");
+        }
+	};
+    
+	behinstProto.CreateJS = function(name, code_string)
+	{
+        this.fn_obj_list[name] = eval("("+code_string+")");
+	};  
+
+ 	behinstProto.CallJS = function(name)
+	{
+	    var fn_obj = this.fn_obj_list[name];
+        if (fn_obj == null) 
+        {            
+            if (this.is_debug_mode) 
+            {
+                alert ("Can not find JS function object '" + name + "'");
+            }
+        }
+		else
+		{
+            fn_obj(this);
+	    }
+	};      
+
+    behinstProto._state_transition = function (new_state)
 	{
 	    this.previous_state = this.current_state;
 		this.current_state = new_state;
@@ -93,7 +191,7 @@ cr.behaviors.MyFSM = function(runtime)
             }            
 		}
 	};
-
+    
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
@@ -139,6 +237,13 @@ cr.behaviors.MyFSM = function(runtime)
 		return is_my_call;
 	};	
     
+	cnds.OnFunctionCalled = function (name)
+	{
+        var is_my_call = (this.function_name == name);
+        this.is_echo |= is_my_call;
+		return is_my_call;
+	};	    
+    
 	cnds.CompareVariable = function (index, cmp, s)
 	{
 		return cr.do_cmp(this.vars[index], cmp, s);
@@ -161,67 +266,34 @@ cr.behaviors.MyFSM = function(runtime)
 
     acts.Request = function ()
 	{
-	    if (this.activated==0)
-		{
-		    return;
-		}
-		
-		this.is_echo = false;
-		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnRequest, this.inst);
-        if (!this.is_echo)
-        {
-		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultRequest, this.inst);        
-        }
+	    this.Request();
 	};  
     
  	acts.Transit = function (new_state)
 	{
-	    if (this.activated==0)
-		{
-		    return;
-		}
-		
-        if (this.default_transitions != null)
-        {
-		    // check if new_state is a valid target transition state
-		    var valid_transition_states = this.default_transitions[this.current_state];
-			if (valid_transition_states != null)
-			{
-                var is_find = false;	
-				var len=valid_transition_states.length
-                var i;				
-			    for (i=0; i<len; i++)
-				{
-				    if (valid_transition_states[i] == new_state)
-					{
-					    is_find = true;
-						break;
-					}
-				}
-				// new_state is not a valid target transition state, leave
-				if (!is_find)
-				{
-                    if (this.is_debug_mode) 
-                    {
-                        alert ("Can not transit from '" + this.current_state + 
-						       "' to '" + new_state + "'");
-                    }
-				    return;
-				}
-			}
-        }
-        this._state_transition(new_state);
+	    this.Transit(new_state);
 	};
     
   	acts.ForceTransit = function (new_state)
 	{
-	    if (this.activated==0)
-		{
-		    return;
-		}
-		
-        this._state_transition(new_state);
-	};   
+	    this.ForceTransit(new_state);
+	};
+
+    acts.CallFunction = function (name)
+	{
+        this.CallFn(name);
+	}; 
+    
+	acts.CreateJSFunctionObject = function (name, code_string)
+	{
+        this.CreateJS(name, code_string);
+	};
+	
+	acts.CallJSFunctionObject = function (name)
+	{
+	    this.CallJS(name);
+	};    
+    
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};

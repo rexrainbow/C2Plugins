@@ -20,7 +20,7 @@ AddAction(0, 0, "Clean all variables", "Variable",
 AddAnyTypeParam("Index", "Index of variable, can be number of string", "0");
 AddAnyTypeParam("Value", "Value of variable", "0");
 AddAction(1, 0, "Set a variable", "Variable", 
-          "Set {my} variable[<i>{0}</i>] = <i>{1}</i>", 
+          "Set {my} variable[<i>{0}</i>] to <i>{1}</i>", 
           "Set a variable stored in fsm.", 
           "SetVariable");
 AddAction(2, 0, "Request", "Request", 
@@ -37,6 +37,16 @@ AddAction(4, 0, "Force transit to state", "Request",
           "Force transit {my} to <i>{0}</i>", 
           "Force transit to state.", 
           "ForceTransit");
+AddStringParam("Name", "Function name", '""');
+AddAction(5, 0, "Call function", "Function", "Call <i>{0}</i>", "Call function.", "CallFunction");
+AddStringParam("Name", "JS function object name", '""');
+AddStringParam("Code", "JS function code", '""');
+AddAction(6, 0, "Create JS function object", "JS Function", 
+          "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
+AddStringParam("Name", "JS function object name", '""');
+AddAction(7, 0, "Call JS function object", "JS Function", 
+          "Call JS <i>{0}</i>", "Call JS function.", "CallJSFunctionObject");
+
 
 //////////////////////////////////////////////////////////////
 // Conditions
@@ -73,10 +83,12 @@ AddCondition(6, cf_trigger, "On default exit", "State changed",
              "On {my} exit from any state", 
 			 "Triggered when no exit callback.", 
 			 "OnDefaultExit"); 
+AddStringParam("Name", "Function name", '""');
+AddCondition(7, cf_trigger, "On function", "Function", "On function <i>{0}</i>", "", "OnFunctionCalled");             
 AddAnyTypeParam("Index", "The index of variable to get, can be number of string.", "0");			 
 AddCmpParam("Comparison", "Choose the way to compare the varaible.");
 AddAnyTypeParam("Value", "Value to be compared.", "0");
-AddCondition(7, 0, "Compare variable", "Compare", 
+AddCondition(8, 0, "Compare variable", "Compare", 
              "{my} Var[{0}] {1} {2}", 
 			 "Compare the value of variable.", 
 			 "CompareVariable");
