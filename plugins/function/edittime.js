@@ -33,8 +33,6 @@ AddAction(4, 0, "Add a return value", "Return", "Set return[<i>{0}</i>] to <i>{1
 AddStringParam("Name", "JS function object name", '""');
 AddStringParam("Code", "JS function code", '""');
 AddAction(5, 0, "Create JS function object", "JS Function", "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
-AddStringParam("Name", "JS function object name", '""');
-AddAction(6, 0, "Call JS function object", "JS Function", "Call JS <i>{0}</i>", "Call JS function.", "CallJSFunctionObject");
 
 //////////////////////////////////////////////////////////////
 // Expressions

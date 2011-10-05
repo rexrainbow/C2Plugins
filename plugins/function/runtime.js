@@ -47,39 +47,39 @@ cr.plugins_.MyFunction = function(runtime)
         this.param = {};
         this.ret = {};
         this.is_echo = false;
-		this.fn_obj_list = {};
+		this.JSFnObjs = {};
 	};
     
 	instanceProto.CallFn = function(name)
 	{
-        this.function_name = name; 
         this.is_echo = false;
-	    this.runtime.trigger(cr.plugins_.MyFunction.prototype.cnds.OnFunctionCalled, this);
+        this._CallFn(name);
+        this._CallJS(name);
         if ((!this.is_echo) && this.is_debug_mode) 
         {
             alert ("Can not find function '" + name + "'");
         }
 	}; 
-
+    
 	instanceProto.CreateJS = function(name, code_string)
 	{
-        this.fn_obj_list[name] = eval("("+code_string+")");
-	};  
-
- 	instanceProto.CallJS = function(name)
+        this.JSFnObjs[name] = eval("("+code_string+")");
+	};
+    
+	instanceProto._CallFn = function(name)
 	{
-	    var fn_obj = this.fn_obj_list[name];
-        if (fn_obj == null) 
-        {            
-            if (this.is_debug_mode) 
-            {
-                alert ("Can not find JS function object '" + name + "'");
-            }
-        }
-		else
-		{
+        this.function_name = name; 
+	    this.runtime.trigger(cr.plugins_.MyFunction.prototype.cnds.OnFunctionCalled, this);
+	}; 
+
+ 	instanceProto._CallJS = function(name)
+	{
+	    var fn_obj = this.JSFnObjs[name];
+        if (fn_obj != null) 
+        {
             fn_obj(this);
-	    }
+            this.is_echo = true;
+        }
 	};     
 
 	//////////////////////////////////////
@@ -128,12 +128,7 @@ cr.plugins_.MyFunction = function(runtime)
 	{
         this.CreateJS(name, code_string);
 	};
-	
-	acts.CallJSFunctionObject = function (name)
-	{
-	    this.CallJS(name);
-	};    
-	
+
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
