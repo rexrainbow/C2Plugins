@@ -52,9 +52,17 @@ cr.plugins_.MyFunction = function(runtime)
     
 	instanceProto.CallFn = function(name)
 	{
+        var is_break;
         this.is_echo = false;
-        this._CallFn(name);
-        this._CallJS(name);
+        
+        // call JS function first
+        is_break = this._CallJS(name);
+        if (!is_break)
+        {
+            // then call trigger function
+            this._CallFn(name);
+        }
+        
         if ((!this.is_echo) && this.is_debug_mode) 
         {
             alert ("Can not find function '" + name + "'");
@@ -74,12 +82,14 @@ cr.plugins_.MyFunction = function(runtime)
 
  	instanceProto._CallJS = function(name)
 	{
+        var is_break = false;
 	    var fn_obj = this.JSFnObjs[name];
         if (fn_obj != null) 
         {
-            fn_obj(this);
             this.is_echo = true;
+            is_break = fn_obj(this);
         }
+        return is_break;
 	};     
 
 	//////////////////////////////////////
