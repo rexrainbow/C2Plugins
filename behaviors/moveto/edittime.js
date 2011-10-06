@@ -58,7 +58,12 @@ AddAction(4, 0, "Set target position", "Position",
           "Set target position to move toward.", 
           "SetTargetPos");
 
-
+AddNumberParam("Current speed", "Current speed, in pixel per second.");
+AddAction(5, 0, "Set Current speed", "Speed", 
+          "Set {my} current speed to <i>{0}</i>", 
+          "Set the object's Current speed.", "SetCurrentSpeed");
+  
+  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 

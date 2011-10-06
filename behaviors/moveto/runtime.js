@@ -82,10 +82,9 @@ cr.behaviors.MoveTo = function(runtime)
         }
         var acc = (is_slow_down)? (-this.move.dec):this.move.acc;
         if (acc != 0)
-            this.current_speed += (acc * dt);
-        
-        if (this.current_speed > this.move.max)
-            this.current_speed = this.move.max;    
+        {
+            this.SetCurrentSpeed( this.current_speed + (acc * dt) );    
+        }
 
 		// Apply movement to the object     
         var distance = this.current_speed * dt;
@@ -97,6 +96,7 @@ cr.behaviors.MoveTo = function(runtime)
             this.is_moving = false;
             this.inst.x = this.target.x;
             this.inst.y = this.target.y;
+            this.SetCurrentSpeed(0);
             this.is_hit_target = true;
         }
         else
@@ -109,6 +109,19 @@ cr.behaviors.MoveTo = function(runtime)
 		this.inst.set_bbox_changed();
         this.runtime.trigger(cr.behaviors.MoveTo.prototype.cnds.OnMoving, this.inst);
 	}; 
+    
+	behinstProto.SetCurrentSpeed = function(speed)
+	{
+        if (speed != null)
+        {
+            this.current_speed = (speed > this.move.max)? 
+                                 this.move.max: speed;
+        }        
+        else if (this.move.acc==0)
+        {
+            this.current_speed = this.move.max;
+        }
+	};    
 
 	//////////////////////////////////////
 	// Conditions
@@ -148,15 +161,13 @@ cr.behaviors.MoveTo = function(runtime)
 	acts.SetMaxSpeed = function (s)
 	{
 		this.move.max = s;
-        if (this.is_moving && (this.move.acc==0))
-            this.current_speed = this.move.max;
+        this.SetCurrentSpeed(null);
 	};      
     
 	acts.SetAcceleration = function (a)
 	{
 		this.move.acc = a;
-        if (this.is_moving && (a==0))
-            this.current_speed = this.move.max;
+        this.SetCurrentSpeed(null);
 	};
 	
 	acts.SetDeceleration = function (a)
@@ -174,8 +185,13 @@ cr.behaviors.MoveTo = function(runtime)
         this.target.y = _y; 
         this.target.angle = Math.atan2(dy, dx);
         this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
-        this.current_speed = (this.move.acc==0)? this.move.max:0;
+        this.SetCurrentSpeed(null);
 	};
+    
+	acts.SetCurrentSpeed = function (s)
+	{
+        this.SetCurrentSpeed(s);
+	}; 
     
 	//////////////////////////////////////
 	// Expressions
