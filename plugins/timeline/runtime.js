@@ -42,7 +42,7 @@ cr.plugins_.MyTimeLine = function(runtime)
 	instanceProto.onCreate = function()
 	{     
         // timeline  
-        this.CleanAll();
+        this.timeline = new cr.plugins_.MyTimeLine.TimeLine();
         this.runtime.tickMe(this);
         
         // timers
@@ -53,158 +53,13 @@ cr.plugins_.MyTimeLine = function(runtime)
     
     instanceProto.tick = function()
     {
-        this.Dispatch(this.runtime.kahanTime.sum);
+        this.timeline.Dispatch(this.runtime.kahanTime.sum);
     };
-    
-    var _TIMERQUEUE_SORT = function(timerA, timerB)
-    {
-        return (timerA._abs_time > timerB._abs_time);
-    }
-    
-	instanceProto.CleanAll = function()
-	{
-        this._abs_time = 0;
-        this._timer_abs_time = 0;
-        this._waiting_timer_queue = [];
-        this._process_timer_queue = [];
-        this._suspend_timer_queue = [];  
-	}; 
-    
-	instanceProto.CurrentTimeGet = function()
-	{
-        return this._timer_abs_time;
-	};    
-    
-	instanceProto.RegistTimer = function(timer)
-	{
-        this._add_timer_to_activate_lists(timer);
-	};
-    
-    instanceProto.RemoveTimer = function(timer)
-    {
-        this._remove_timer_from_lists(timer, false);  //activate_only=False
-        timer._remove();
-    };
-
-    instanceProto.Dispatch = function(current_time)
-    {
-        this._abs_time = current_time;
-        this._timer_abs_time = current_time;
-
-        // sort _waiting_timer_queue
-        this._waiting_timer_queue.sort(_TIMERQUEUE_SORT);
-
-        // get time-out timer
-        this._process_timer_queue = [];
-        var i;
-        var quene_length = this._waiting_timer_queue.length;
-        var timer;
-        for (i=0; i<quene_length; i++)
-        {
-            timer = this._waiting_timer_queue[i];
-            if (this._is_timer_time_out(timer))
-            {
-                this._process_timer_queue.push(timer);
-            }
-        }
-        
-        // remainder timers
-        quene_length = this._process_timer_queue.length;
-        if (quene_length)
-        {
-            if (quene_length==1)
-                this._waiting_timer_queue.shift();
-            else
-                this._waiting_timer_queue.splice(0,quene_length);
-        }
-
-        // do call back function with arg list
-        while (this._process_timer_queue.length > 0)
-        {
-            this._process_timer_queue.sort(_TIMERQUEUE_SORT);
-            this.triggered_timer = this._process_timer_queue.shift();
-            this._timer_abs_time = timer._abs_time;
-            //print "[TimeLine] Current Time=",this._timer_abs_time
-            this.triggered_timer.DoHandle();
-        }        
-    };    
- 
-    instanceProto.SuspendTimer = function(timer)
-    {
-        var is_success = this._remove_timer_from_lists(timer, true); //activate_only=True
-        if (is_success)
-        {
-            this._suspend_timer_queue.push(timer);
-            timer._suspend();
-        }
-        return is_success;
-    };
-    
-    instanceProto.ResumeTimer = function(timer)
-    {
-        var is_success = false;
-        var item_index = this._suspend_timer_queue.indexOf(timer);
-        if (item_index != (-1))
-        {
-            cr.arrayRemove(this._suspend_timer_queue, item_index);
-            timer._resume();
-            this.RegistTimer(timer);
-            is_success = true;
-        }
-        return is_success;
-    };   
-
-    instanceProto.ChangeTimerRate = function(timer, rate)
-    {
-        timer._change_rate(rate);
-        var is_success = this._remove_timer_from_lists(timer, true);  //activate_only=True
-        if (is_success)
-        {
-            this.RegistTimer(timer);
-        }
-        return is_success;
-    };
-
-    // internal function        
-    instanceProto._is_timer_time_out = function(timer)
-    {
-        return (timer._abs_time < this._abs_time);
-    };
-
-    instanceProto._add_timer_to_activate_lists = function(timer)
-    {
-        var queue = ( this._is_timer_time_out(timer) )? 
-                    this._process_timer_queue : this._waiting_timer_queue;
-        queue.push(timer);
-    };
-
-    instanceProto._remove_timer_from_lists = function(timer, activate_only)
-    {
-        var is_success = false;
-        var timer_lists = (activate_only)?
-                          [this._waiting_timer_queue,this._process_timer_queue]:
-                          [this._waiting_timer_queue,this._process_timer_queue,this._suspend_timer_queue];
-        var i;
-        var lists_length = timer_lists.length;
-        var timer_queue, item_index;
-        for(i=0;i<lists_length;i++)
-        {
-            timer_queue = timer_lists[i];
-            item_index = timer_queue.indexOf(timer);
-            if (item_index!= (-1))
-            {
-                cr.arrayRemove(timer_queue, item_index);
-                is_success = true;
-                break;
-            }
-        } 
-        return is_success;
-    };    
     
     // timer
     instanceProto.CreateTimer = function(thisArg, call_back_fn, args)
     {
-        return (new cr.plugins_.MyTimeLine.Timer(this, thisArg, call_back_fn, args));
+        return (new cr.plugins_.MyTimeLine.Timer(this.timeline, thisArg, call_back_fn, args));
     };
     
 	//////////////////////////////////////
@@ -290,8 +145,161 @@ cr.plugins_.MyTimeLine = function(runtime)
 }());
 
 
+// class - TimeLine,Timer,_TimerHandler
 (function ()
 {
+    cr.plugins_.MyTimeLine.TimeLine = function()
+    {
+        this.CleanAll();    
+    };
+    var TimeLineProto = cr.plugins_.MyTimeLine.TimeLine.prototype;
+    
+    var _TIMERQUEUE_SORT = function(timerA, timerB)
+    {
+        return (timerA._abs_time > timerB._abs_time);
+    }
+    
+    TimeLineProto.CleanAll = function()
+	{
+        this._abs_time = 0;
+        this._timer_abs_time = 0;
+        this._waiting_timer_queue = [];
+        this._process_timer_queue = [];
+        this._suspend_timer_queue = [];  
+	}; 
+    
+	TimeLineProto.CurrentTimeGet = function()
+	{
+        return this._timer_abs_time;
+	};    
+    
+	TimeLineProto.RegistTimer = function(timer)
+	{
+        this._add_timer_to_activate_lists(timer);
+	};
+    
+    TimeLineProto.RemoveTimer = function(timer)
+    {
+        this._remove_timer_from_lists(timer, false);  //activate_only=False
+        timer._remove();
+    };
+
+    TimeLineProto.Dispatch = function(current_time)
+    {
+        this._abs_time = current_time;
+        this._timer_abs_time = current_time;
+
+        // sort _waiting_timer_queue
+        this._waiting_timer_queue.sort(_TIMERQUEUE_SORT);
+
+        // get time-out timer
+        this._process_timer_queue = [];
+        var i;
+        var quene_length = this._waiting_timer_queue.length;
+        var timer;
+        for (i=0; i<quene_length; i++)
+        {
+            timer = this._waiting_timer_queue[i];
+            if (this._is_timer_time_out(timer))
+            {
+                this._process_timer_queue.push(timer);
+            }
+        }
+        
+        // remainder timers
+        quene_length = this._process_timer_queue.length;
+        if (quene_length)
+        {
+            if (quene_length==1)
+                this._waiting_timer_queue.shift();
+            else
+                this._waiting_timer_queue.splice(0,quene_length);
+        }
+
+        // do call back function with arg list
+        while (this._process_timer_queue.length > 0)
+        {
+            this._process_timer_queue.sort(_TIMERQUEUE_SORT);
+            this.triggered_timer = this._process_timer_queue.shift();
+            this._timer_abs_time = timer._abs_time;
+            //print "[TimeLine] Current Time=",this._timer_abs_time
+            this.triggered_timer.DoHandle();
+        }        
+    };    
+ 
+    TimeLineProto.SuspendTimer = function(timer)
+    {
+        var is_success = this._remove_timer_from_lists(timer, true); //activate_only=True
+        if (is_success)
+        {
+            this._suspend_timer_queue.push(timer);
+            timer._suspend();
+        }
+        return is_success;
+    };
+    
+    TimeLineProto.ResumeTimer = function(timer)
+    {
+        var is_success = false;
+        var item_index = this._suspend_timer_queue.indexOf(timer);
+        if (item_index != (-1))
+        {
+            cr.arrayRemove(this._suspend_timer_queue, item_index);
+            timer._resume();
+            this.RegistTimer(timer);
+            is_success = true;
+        }
+        return is_success;
+    };   
+
+    TimeLineProto.ChangeTimerRate = function(timer, rate)
+    {
+        timer._change_rate(rate);
+        var is_success = this._remove_timer_from_lists(timer, true);  //activate_only=True
+        if (is_success)
+        {
+            this.RegistTimer(timer);
+        }
+        return is_success;
+    };
+
+    // internal function        
+    TimeLineProto._is_timer_time_out = function(timer)
+    {
+        return (timer._abs_time < this._abs_time);
+    };
+
+    TimeLineProto._add_timer_to_activate_lists = function(timer)
+    {
+        var queue = ( this._is_timer_time_out(timer) )? 
+                    this._process_timer_queue : this._waiting_timer_queue;
+        queue.push(timer);
+    };
+
+    TimeLineProto._remove_timer_from_lists = function(timer, activate_only)
+    {
+        var is_success = false;
+        var timer_lists = (activate_only)?
+                          [this._waiting_timer_queue,this._process_timer_queue]:
+                          [this._waiting_timer_queue,this._process_timer_queue,this._suspend_timer_queue];
+        var i;
+        var lists_length = timer_lists.length;
+        var timer_queue, item_index;
+        for(i=0;i<lists_length;i++)
+        {
+            timer_queue = timer_lists[i];
+            item_index = timer_queue.indexOf(timer);
+            if (item_index!= (-1))
+            {
+                cr.arrayRemove(timer_queue, item_index);
+                is_success = true;
+                break;
+            }
+        } 
+        return is_success;
+    };    
+
+
     // Timer
     cr.plugins_.MyTimeLine.Timer = function(timeline, thisArgs, call_back_fn, args)
     {
