@@ -65,6 +65,11 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
         this._start_cmd();
 	};   
     
+    var _INSTRUCTION_SORT = function(instA, instB)
+    {
+        return (instA.time > instB.time);
+    }
+    
     instanceProto._parsing = function(instructions_string)
 	{
         var lines = instructions_string.split(/\r\n|\r|\n/);
@@ -106,6 +111,8 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
                                fn_name:slices[1], 
                                fn_args:fn_args});                               
         }
+        
+        instructions.sort(_INSTRUCTION_SORT);
         
         return instructions;
 	};
