@@ -47,6 +47,7 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
         this.instructions = [];
         this.offset = 0;
         this.current_cmd = {};
+        this.pre_abs_time = 0;
 	};
     
 	instanceProto.Start = function(instructions, offset)
@@ -118,7 +119,10 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
             {
                 this.timer = this.timeline.CreateTimer(this, this.Run);
             }
-            this.timer.Start(this.current_cmd.time + this.offset);
+            
+            var next_abs_time = this.current_cmd.time + this.offset;
+            this.timer.Start(next_abs_time - this.pre_abs_time);
+            this.pre_abs_time = next_abs_time
         }
         else
         {
