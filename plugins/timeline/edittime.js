@@ -15,6 +15,8 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
+AddAnyTypeParam("Name", "Timer's name", '""');
+AddCondition(0, 0, "Is timmer running", "Timer", "Is running", "", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -22,8 +24,9 @@ AddObjectParam("Function", "Function object for timer's callback");
 AddAction(0, 0, "Setup timer", "Setup", 
           "Set timer's callback to <i>{0}</i>", 
           "Setup timer.", "Setup");
-AddStringParam("Name", "Timer's name", '""');
-AddStringParam("Name", "Function name of timer's callback", '""');
+AddStringParam("Timer", "Timer's name", '""');
+AddStringParam("CB", "Function name of timer's callback", '""');
+//AddStringParam("Param", "Function parameters, in JSON format", '""');
 AddAction(1, 0, "Create timer", "Timer", 
           "Create timer <i>{0}</i> with callback <i>{1}</i>", 
           "Create timer.", "CreateTimer");

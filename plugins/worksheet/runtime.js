@@ -41,15 +41,110 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
 
 	instanceProto.onCreate = function()
 	{        
-        this.timer_klass = null;
-        this.fn_obj = null;        
+        this.timer = null;
+        this.timeline = null;
+        this.callback = null;  
+        this.instructions = [];
         this.offset = 0;
+        this.current_cmd = {};
 	};
-
+    
+	instanceProto.Start = function(instructions, offset)
+	{
+        this.instructions = this._parsing(instructions);
+        this.offset = offset;        
+        this._start_cmd();
+	}; 
+    
+	instanceProto.Run = function()
+	{
+        this.callback.CallFn(this.current_cmd.fn_name, 
+                             this.current_cmd.fn_args);
+        
+        this._start_cmd();
+	};   
+    
+    instanceProto._parsing = function(instructions_string)
+	{
+        var lines = instructions_string.split(/\r\n|\r|\n/);
+        var instructions = [];
+        var i,line,slices,slice;
+        var fn_args,j,slices_length,arg_slices,sn;
+        var line_length = lines.length;
+        for (i=0; i<line_length; i++)
+        {
+            line = lines[i];
+            if ((line.length==0) ||
+                (line[0]==" ")   ||
+                (line[0]=="/")     ) // "/" is a comment line
+                continue;
+                
+            slices = line.split(",");
+            
+            // get args
+            slices_length = slices.length;
+            fn_args = {};
+            sn = 0;
+            for (j=2; j<slices_length; j++)
+            {
+                slice = slices[j];
+                if (slice.indexOf("=")!=(-1))
+                {
+                    arg_slices = slice.split("=");
+                    fn_args[arg_slices[0]] = arg_slices[1];
+                }
+                else
+                {
+                    fn_args[sn] = slice;
+                    sn += 1;
+                }
+            }
+            
+            // output
+            instructions.push({time:parseFloat(slices[0]),
+                               fn_name:slices[1], 
+                               fn_args:fn_args});                               
+        }
+        
+        return instructions;
+	};
+    
+	instanceProto._start_cmd = function()
+	{
+        if (this.instructions.length>0)
+        {
+            this.current_cmd = this.instructions.shift();
+            if (this.timer== null)
+            {
+                this.timer = this.timeline.CreateTimer(this, this.Run);
+            }
+            this.timer.Start(this.current_cmd.time + this.offset);
+        }
+        else
+        {
+            this.runtime.trigger(cr.plugins_.MySimpleWorkSheet.prototype.cnds.OnComplete, this);
+        }
+	};
+    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
+    
+	cnds.OnComplete = function ()
+	{
+		return true;
+	};  
+
+	cnds.IsRunning = function ()
+	{
+        var is_running = false;
+        if (this.timer)
+        {
+            is_running = this.timer.IsActive();
+        }       
+		return is_running;
+	};      
 
 	//////////////////////////////////////
 	// Actions
@@ -58,22 +153,39 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
 
     acts.Setup = function (timeline_objs, fn_objs)
 	{
-        this.fn_obj = fn_objs.instances[0];
+        this.timeline = timeline_objs.instances[0];
+        this.callback = fn_objs.instances[0];
 	};    
     
     acts.Start = function (instructions, offset)
 	{
-        this.offset = offset;
-	};    
-
-    acts.Stop = function ()
-	{
-	};  
+        this.Start(instructions, offset);
+	};   
     
     acts.Pause = function ()
 	{
-	};      
+        if (this.timer)
+        {
+            this.timer.Suspend();
+        }    
+	};
 
+    acts.Resume = function (timer_name)
+	{
+        if (this.timer)
+        {
+            this.timer.Resume();
+        }
+	};
+    
+    acts.Stop = function ()
+	{
+        if (this.timer)
+        {
+            this.timer.Remove();
+        }
+	};  
+    
     acts.SetOffset = function (offset)
 	{
         this.offset = offset;
@@ -84,4 +196,8 @@ cr.plugins_.MySimpleWorkSheet = function(runtime)
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
 
+    exps.Offset = function (ret)
+	{
+	    ret.set_float( this.offset );
+	};	
 }());

@@ -50,8 +50,11 @@ cr.plugins_.MyFunction = function(runtime)
 		this.JSFnObjs = {};
 	};
     
-	instanceProto.CallFn = function(name)
+	instanceProto.CallFn = function(name, args)
 	{
+        if (args)
+            jQuery.extend(this.param, args);
+        
         var is_break;
         this.is_echo = false;
         

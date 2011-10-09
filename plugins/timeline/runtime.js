@@ -42,11 +42,11 @@ cr.plugins_.MyTimeLine = function(runtime)
 	instanceProto.onCreate = function()
 	{     
         // timeline  
-        this.fn_obj = null;
         this.CleanAll();
         this.runtime.tickMe(this);
         
         // timers
+        this.fn_obj = null;        
         this.timers = {}; 
         this.triggered_timer = null;
 	};
@@ -202,16 +202,27 @@ cr.plugins_.MyTimeLine = function(runtime)
     };    
     
     // timer
-    instanceProto.CreateTimer = function(callback_name)
+    instanceProto.CreateTimer = function(thisArg, call_back_fn, args)
     {
-        return (new cr.plugins_.MyTimeLine.Timer(this, callback_name));
+        return (new cr.plugins_.MyTimeLine.Timer(this, thisArg, call_back_fn, args));
     };
     
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
-	
+
+	cnds.IsRunning = function ()
+	{
+        var is_running = false;
+        var timer = this.timers[timer_name];
+        if (timer)
+        {
+            is_running = timer.IsActive();
+        }       
+		return is_running;
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -223,8 +234,8 @@ cr.plugins_.MyTimeLine = function(runtime)
 	};      
     
     acts.CreateTimer = function (timer_name, callback_name)
-	{
-        this.timers[timer_name] = this.CreateTimer(callback_name);        
+	{        
+        this.timers[timer_name] = this.CreateTimer(this.fn_obj, this.fn_obj.CallFn, [callback_name]);        
 	}; 
     
     acts.StartTimer = function (timer_name, delay_time)
@@ -282,14 +293,14 @@ cr.plugins_.MyTimeLine = function(runtime)
 (function ()
 {
     // Timer
-    cr.plugins_.MyTimeLine.Timer = function(timeline, fn_name)
+    cr.plugins_.MyTimeLine.Timer = function(timeline, thisArgs, call_back_fn, args)
     {
         this.timeline = timeline;
         this.delay_time_save = 0; //delay_time
         this.delay_time = 0; //delay_time
         this._remainder_time = 0;
         this._abs_time = 0;      
-        this._handler = new this._TimerHandler(timeline.fn_obj, fn_name);
+        this._handler = new this._TimerHandler(thisArgs, call_back_fn, args);
         this._idle();
         this._abs_time_set(0); // delay_time
     };
@@ -412,18 +423,17 @@ cr.plugins_.MyTimeLine = function(runtime)
     };
     
     // _TimerHandler
-    cr.plugins_.MyTimeLine._TimerHandler = function(fn_obj, fn_name, args)
-    {
-        this.fn_obj = fn_obj;
-        this.fn_name = fn_name;
-        this.args = args || {};
+    cr.plugins_.MyTimeLine._TimerHandler = function(thisArg, call_back_fn, args)
+    {   
+        this.thisArg = thisArg;
+        this.call_back_fn = call_back_fn;
+        this.args = args;
     };
     var _TimerHandlerProto = cr.plugins_.MyTimeLine._TimerHandler.prototype;
     TimerProto._TimerHandler = cr.plugins_.MyTimeLine._TimerHandler;    
     
     _TimerHandlerProto.DoHandle = function()
-    {
-        jQuery.extend(this.fn_obj.param, this.args);
-        this.fn_obj.CallFn(this.fn_name);
+    {   
+        this.call_back_fn.apply(this.thisArg, this.args);
     };        
 }());

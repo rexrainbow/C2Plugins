@@ -15,32 +15,39 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
+AddCondition(0, cf_trigger, "On execution complete", "Control", "On complete", "", "OnComplete");
+AddCondition(1, 0, "Is worksheet running", "Control", "Is running", "", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
 AddAction(0, 0, "Setup work sheet", "Setup", 
-          "Get timer from <i>{0}</i>, and callback to <i>{1}</i>", 
+          "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup work sheet.", "Setup");
 AddStringParam("Instructions", "Instructions in work sheet", '""');
 AddNumberParam("Offset", "Time offset at start", 0);
 AddAction(1, 0, "Start work sheet", "Control", 
           "Start work sheet with <i>{1}</i> offset", 
           "Start work sheet.", "Start");          
-AddNumberParam("Offset", "Time offset at start", 0);
-AddAction(2, 0, "Stop work sheet", "Control", 
-          "Stop work sheet", 
-          "Stop work sheet.", "Stop");   
-AddAction(3, 0, "Pause work sheet", "Control", 
+AddAction(2, 0, "Pause work sheet", "Control", 
           "Pause work sheet", 
-          "Pause work sheet.", "Pause");            
-AddAction(4, 0, "Set time offset", "Setting", 
+          "Pause work sheet.", "Pause");
+AddAction(3, 0, "Resume work sheet", "Control", 
+          "Resume work sheet", 
+          "Resume work sheet.", "Resume"); 
+AddAction(4, 0, "Stop work sheet", "Control", 
+          "Stop work sheet", 
+          "Stop work sheet.", "Stop"); 
+AddNumberParam("Offset", "Time offset at start", 0);     
+AddAction(5, 0, "Set time offset", "Setting", 
           "Set offset to <i>{1}</i>", 
           "Set time offset.", "SetOffset");           
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(0, ef_return_number, "Get offset", "Setting", "Offset", "Get offset time.");
+
 
 ACESDone();
 
