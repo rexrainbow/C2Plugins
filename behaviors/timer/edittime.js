@@ -25,20 +25,20 @@ AddAction(0, 0, "Setup timer", "Setup",
           "Setup timer.", "Setup");
 AddStringParam("CB", "Function name of timer's callback", '""');
 //AddStringParam("Param", "Function parameters, in JSON format", '""');
-AddAction(1, 0, "Create timer", "Timer", 
+AddAction(1, 0, "Create timer", "Create", 
           "Create timer {my} with callback <i>{0}</i>", 
           "Create timer.", "Create");    
 AddNumberParam("Time", "Time-out in seconds", 0);
-AddAction(2, 0, "Start timer", "Timer", 
+AddAction(2, 0, "Start timer", "Control", 
           "Start timer {my}, time-out is <i>{0}</i> seconds", 
           "Start timer.", "Start");   
-AddAction(3, 0, "Pause timer", "Timer", 
+AddAction(3, 0, "Pause timer", "Control", 
           "Pause timer {my}", 
           "Pause timer.", "Pause"); 
-AddAction(4, 0, "Resume timer", "Timer", 
+AddAction(4, 0, "Resume timer", "Control", 
           "Resume timer {my}", 
           "Resume timer.", "Resume");               
-AddAction(5, 0, "Stop timer", "Timer", 
+AddAction(5, 0, "Stop timer", "Control", 
           "Stop timer {my}", 
           "Stop timer.", "Stop");          
 
