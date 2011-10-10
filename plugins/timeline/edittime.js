@@ -20,35 +20,39 @@ AddCondition(0, 0, "Is timmer running", "Timer", "Is running", "", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
+AddNumberParam("Time", "Delta-time in seconds", 0);
+AddAction(0, 0, "Push timeline forward", "TimeLine", 
+          "Push timeline forward with delta-time to <i>{0}</i>", 
+          "Push timeline forward with delta-time.", "PushTimeLine");
 AddObjectParam("Function", "Function object for timer's callback");
-AddAction(0, 0, "Setup timer", "Setup", 
+AddAction(1, 0, "Setup timer", "Setup", 
           "Set timer's callback to <i>{0}</i>", 
           "Setup timer.", "Setup");
 AddStringParam("Timer", "Timer's name", '""');
 AddStringParam("CB", "Function name of timer's callback", '""');
 //AddStringParam("Param", "Function parameters, in JSON format", '""');
-AddAction(1, 0, "Create timer", "Timer", 
+AddAction(2, 0, "Create timer", "Timer", 
           "Create timer <i>{0}</i> with callback <i>{1}</i>", 
           "Create timer.", "CreateTimer");
 AddStringParam("Name", "Timer's name.", '""');      
 AddNumberParam("Time", "Time-out in seconds", 0);
-AddAction(2, 0, "Start timer", "Timer", 
+AddAction(3, 0, "Start timer", "Timer", 
           "Start timer <i>{0}</i>, time-out is <i>{1}</i> seconds", 
           "Start timer.", "StartTimer");
 AddNumberParam("Time", "Time-out in seconds", 0);
-AddAction(3, 0, "Start triggered timer", "Timer", 
+AddAction(4, 0, "Start triggered timer", "Timer", 
           "Start triggered timer, time-out is <i>{0}</i> seconds", 
           "Start triggered timer.", "StartTrgTimer");
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(4, 0, "Pause timer", "Timer", 
+AddAction(5, 0, "Pause timer", "Timer", 
           "Pause timer <i>{0}</i>", 
           "Pause timer.", "PauseTimer");
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(5, 0, "Resume timer", "Timer", 
+AddAction(6, 0, "Resume timer", "Timer", 
           "Resume timer <i>{0}</i>", 
           "Resume timer.", "ResumeTimer");          
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(6, 0, "Stop timer", "Timer", 
+AddAction(7, 0, "Stop timer", "Timer", 
           "Stop timer <i>{0}</i>", 
           "Stop timer.", "StopTimer");          
 
@@ -60,6 +64,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Game time", "Yes", "Enable to update timeline with game time.", "No|Yes")
 	];
 	
 // Called by IDE when a new object type is to be created

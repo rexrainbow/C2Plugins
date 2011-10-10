@@ -41,9 +41,14 @@ cr.plugins_.MyTimeLine = function(runtime)
 
 	instanceProto.onCreate = function()
 	{     
+        this.update_with_game_time = this.properties[0];
+        
         // timeline  
         this.timeline = new cr.plugins_.MyTimeLine.TimeLine();
         this.runtime.tickMe(this);
+        // push manual
+        this.manual_push = false;
+        this.manual_current_time = 0;
         
         // timers
         this.fn_obj = null;        
@@ -53,7 +58,14 @@ cr.plugins_.MyTimeLine = function(runtime)
     
     instanceProto.tick = function()
     {
-        this.timeline.Dispatch(this.runtime.kahanTime.sum);
+        if (this.update_with_game_time==1)
+        {
+            this.timeline.Dispatch(this.runtime.kahanTime.sum);
+        }
+        else if (this.manual_push)  // this.update_with_game_time==0
+        {
+            this.timeline.Dispatch(this.manual_current_time);
+        }
     };
     
     // timer
@@ -83,6 +95,13 @@ cr.plugins_.MyTimeLine = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 
+    acts.PushTimeLine = function (delta_time)
+	{
+        // push manually
+        this.manual_push = true;
+        this.manual_current_time += delta_time;
+	};   
+    
     acts.Setup = function (fn_objs)
 	{
         this.fn_obj = fn_objs.instances[0];
