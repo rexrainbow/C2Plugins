@@ -480,7 +480,7 @@ cr.plugins_.MyTouchMouse = function(runtime)
 				    layer = this.runtime.getLayerByNumber(0);
 				    oldScale = layer.scale;
 				    layer.scale = 1.0;
-				    ret.set_float(layer.canvasToLayerY(this.touches[0]));
+				    ret.set_float(layer.canvasToLayerY(this.touches[0].y));
 				    layer.scale = oldScale;
 			    }
 			    else
