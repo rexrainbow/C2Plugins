@@ -51,9 +51,9 @@ cr.plugins_.MyTimeLine = function(runtime)
         this.manual_current_time = 0;
         
         // timers
-        this.fn_obj = null;        
+        this.callback = null;        
         this.timers = {}; 
-        this.triggered_timer = null;
+        
 	};
     
     instanceProto.tick = function()
@@ -68,7 +68,12 @@ cr.plugins_.MyTimeLine = function(runtime)
         }
     };
     
-    // timer
+    instanceProto._timer_handle = function(name, args)
+    {
+        this.callback.CallFn(name, args);    
+    };
+    
+    // export: get new timer instance
     instanceProto.CreateTimer = function(thisArg, call_back_fn, args)
     {
         return (new cr.plugins_.MyTimeLine.Timer(this.timeline, thisArg, call_back_fn, args));
@@ -82,7 +87,7 @@ cr.plugins_.MyTimeLine = function(runtime)
 	cnds.IsRunning = function ()
 	{
         var is_running = false;
-        var timer = this.timers[timer_name];
+        var timer = this.timers[timer_name].timer;
         if (timer)
         {
             is_running = timer.IsActive();
@@ -104,12 +109,22 @@ cr.plugins_.MyTimeLine = function(runtime)
     
     acts.Setup = function (fn_objs)
 	{
-        this.fn_obj = fn_objs.instances[0];
+        this.callback = fn_objs.instances[0];
 	};      
     
-    acts.CreateTimer = function (timer_name, callback_name)
-	{        
-        this.timers[timer_name] = this.CreateTimer(this.fn_obj, this.fn_obj.CallFn, [callback_name]);        
+    acts.CreateTimer = function (timer_name, fn_name, fn_args)
+	{
+        var timer = this.timers[timer_name];
+        var cb_args = [fn_name, fn_args];
+        if (timer)  // timer exist
+        {
+            timer.Remove();
+            timer.SetCallbackArgs(cb_args);
+        }
+        else      // create new timer instance
+        {
+            this.timers[timer_name] = this.CreateTimer(this, this._timer_handle, cb_args);
+        }      
 	}; 
     
     acts.StartTimer = function (timer_name, delay_time)
@@ -123,7 +138,7 @@ cr.plugins_.MyTimeLine = function(runtime)
 
     acts.StartTrgTimer = function (delay_time)
 	{
-        var timer = this.triggered_timer;
+        var timer = this.timeline.triggered_timer;
         if (timer)
         {
             timer.Start(delay_time);
@@ -159,8 +174,25 @@ cr.plugins_.MyTimeLine = function(runtime)
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
-	var exps = pluginProto.exps;    
-
+	var exps = pluginProto.exps;   
+    
+	exps.TimerRemainder = function (ret, timer_name)
+	{
+        var timer = (timer_name==null)? 
+                    this.timeline.triggered_timer:
+                    this.timers[timer_name];
+        var val = (timer)? timer.RemainderTimeGet():0;     
+	    ret.set_float(val);
+	};
+    
+	exps.TimerElapsed = function (ret, timer_name)
+	{
+        var timer = (timer_name==null)? 
+                    this.timeline.triggered_timer:
+                    this.timers[timer_name];
+        var val = (timer)? timer.ElapsedTimeGet():0;     
+	    ret.set_float(val);
+	};    
 }());
 
 
@@ -180,11 +212,12 @@ cr.plugins_.MyTimeLine = function(runtime)
     
     TimeLineProto.CleanAll = function()
 	{
+        this.triggered_timer = null;     
         this._abs_time = 0;
         this._timer_abs_time = 0;
         this._waiting_timer_queue = [];
         this._process_timer_queue = [];
-        this._suspend_timer_queue = [];  
+        this._suspend_timer_queue = [];       
 	}; 
     
 	TimeLineProto.CurrentTimeGet = function()
@@ -389,16 +422,41 @@ cr.plugins_.MyTimeLine = function(runtime)
         return (this._is_alive && this._is_active);    
     };
     
-    TimerProto.DoHandle = function()
+    TimerProto.RemainderTimeGet = function()
     {
-        this._idle();
-        this._handler.DoHandle();
-    };
+        var remainder_time = 0;
+        if (this.IsActive())       // -> run     
+        {
+            remainder_time = this._abs_time - this.timeline.CurrentTimeGet();
+        }
+        else if (this.IsAlive())   // (!this.IsActive() && this.IsAlive()) -> suspend
+        {
+            remainder_time = this._remainder_time;
+        }
+        return remainder_time;  
+    };   
+
+    TimerProto.ElapsedTimeGet = function()
+    {
+        return (this.delay_time_save - this.RemainderTimeGet());
+    };     
             
     TimerProto.DeltaErrorTickGet = function()
     {    
         return (this.timeline._abs_time - this._abs_time);   
     };
+    
+    TimerProto.SetCallbackArgs = function(args)
+    {    
+        this._handler.args = args;   
+    };    
+    
+    // export to timeline
+    TimerProto.DoHandle = function()
+    {
+        this._idle();
+        this._handler.DoHandle();
+    };    
     
     // internal functions
     TimerProto._idle = function()
@@ -462,5 +520,5 @@ cr.plugins_.MyTimeLine = function(runtime)
     _TimerHandlerProto.DoHandle = function()
     {   
         this.call_back_fn.apply(this.thisArg, this.args);
-    };        
+    };
 }());

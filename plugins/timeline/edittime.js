@@ -58,6 +58,13 @@ AddAction(7, 0, "Stop timer", "Timer",
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Get remainder time of timer", 
+              "Timer", "TimerRemainder", 
+              "Get remainder time of timer.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Get elapsed time of timer", 
+              "Timer", "TimerElapsed", 
+              "Get elapsed time of timer.");
+              
 
 
 ACESDone();
