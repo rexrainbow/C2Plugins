@@ -65,6 +65,7 @@ cr.plugins_.MyTimeLine = function(runtime)
         else if (this.manual_push)  // this.update_with_game_time==0
         {
             this.timeline.Dispatch(this.manual_current_time);
+            this.manual_push = false;
         }
     };
     
@@ -103,8 +104,8 @@ cr.plugins_.MyTimeLine = function(runtime)
     acts.PushTimeLine = function (delta_time)
 	{
         // push manually
-        this.manual_push = true;
         this.manual_current_time += delta_time;
+        this.manual_push = true;        
 	};   
     
     acts.Setup = function (fn_objs)
