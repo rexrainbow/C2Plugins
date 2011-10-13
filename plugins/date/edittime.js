@@ -18,7 +18,7 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAnyTypeParam("Name", "The naem of timer.", "0");
+AddAnyTypeParam("Name", "The name of timer.", "0");
 AddAction(0, 0, "Start timer", "Timer", "Start timer <i>{0}</i> ", "Start a timer.", "StartTimer");
 
 //////////////////////////////////////////////////////////////
