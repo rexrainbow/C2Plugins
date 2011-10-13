@@ -6,7 +6,7 @@
 		"description":	"Function",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Core utility",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
