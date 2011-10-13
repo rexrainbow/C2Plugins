@@ -3,7 +3,7 @@
 	return {
 		"name":			"Cursor",
 		"id":			"Cursor",
-		"description":	"Move Sprite to cursor of mouse",
+		"description":	"Move sprite to cursor of mouse",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Movements",

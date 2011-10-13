@@ -74,13 +74,13 @@ cr.behaviors.Cursor = function(runtime)
         this.is_moving = (this.pre_mouseXcanvas != this.type.mouseXcanvas) ||
                         (this.pre_mouseYcanvas != this.type.mouseYcanvas);
         if ( (this.activated== 1) && this.is_moving) {
-           this.inst.x = this.GetLayerX();
-           this.inst.y = this.GetLayerY();
-           this.inst.set_bbox_changed();
-           // Trigger OnMoving
-           this.runtime.trigger(cr.behaviors.Cursor.prototype.cnds.OnMoving, this.inst);
-           this.pre_mouseXcanvas = this.type.mouseXcanvas;
-           this.pre_mouseYcanvas = this.type.mouseYcanvas;
+            this.inst.x = this.GetLayerX();
+            this.inst.y = this.GetLayerY();
+            this.inst.set_bbox_changed();
+            // Trigger OnMoving
+            this.runtime.trigger(cr.behaviors.Cursor.prototype.cnds.OnMoving, this.inst);
+            this.pre_mouseXcanvas = this.type.mouseXcanvas;
+            this.pre_mouseYcanvas = this.type.mouseYcanvas;
         }
 	};
     
