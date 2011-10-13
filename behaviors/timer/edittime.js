@@ -6,7 +6,7 @@
 		"description":	"Timer",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Varaible",
+		"category":		"Timer",
 		"flags":		0
 	};
 };
@@ -48,9 +48,14 @@ AddExpression(0, ef_return_number, "Get remainder time",
               "Timer", "Remainder", 
               "Get remainder time.");
 AddExpression(1, ef_return_number, "Get elapsed time of timer", 
-              "Timer", "TimerElapsed", 
+              "Timer", "Elapsed", 
               "Get elapsed time of timer.");              
-
+AddExpression(2, ef_return_number, "Get remainder time percentage of timer", 
+              "Timer", "RemainderPercent", 
+              "Get remainder time percentage of timer.");
+AddExpression(3, ef_return_number, "Get elapsed time percentage of timer", 
+              "Timer", "ElapsedPercent", 
+              "Get elapsed time percentage of timer.");  
 
 
 ACESDone();

@@ -150,9 +150,21 @@ cr.behaviors.MyTimer = function(runtime)
 	    ret.set_float(val);
 	};
     
-	exps.TimerElapsed = function (ret, timer_name)
+	exps.Elapsed = function (ret, timer_name)
 	{
         var val = (this.timer)? this.timer.ElapsedTimeGet():0;     
 	    ret.set_float(val);
-	};    
+	};  
+
+    exps.RemainderPercent = function (ret)
+	{
+        var val = (this.timer)? this.timer.RemainderTimePercentGet():0;     
+	    ret.set_float(val);
+	};
+    
+	exps.ElapsedPercent = function (ret, timer_name)
+	{
+        var val = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
+	    ret.set_float(val);
+	};     
 }());
