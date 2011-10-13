@@ -193,7 +193,25 @@ cr.plugins_.MyTimeLine = function(runtime)
                     this.timers[timer_name];
         var val = (timer)? timer.ElapsedTimeGet():0;     
 	    ret.set_float(val);
-	};    
+	}; 
+
+	exps.TimerRemainderPercent = function (ret, timer_name)
+	{
+        var timer = (timer_name==null)? 
+                    this.timeline.triggered_timer:
+                    this.timers[timer_name];
+        var val = (timer)? timer.RemainderTimePercentGet():0;     
+	    ret.set_float(val);
+	};
+    
+	exps.TimerElapsedPercent = function (ret, timer_name)
+	{
+        var timer = (timer_name==null)? 
+                    this.timeline.triggered_timer:
+                    this.timers[timer_name];
+        var val = (timer)? timer.ElapsedTimePercentGet():0;     
+	    ret.set_float(val);
+	};     
 }());
 
 
@@ -440,7 +458,19 @@ cr.plugins_.MyTimeLine = function(runtime)
     TimerProto.ElapsedTimeGet = function()
     {
         return (this.delay_time_save - this.RemainderTimeGet());
+    };  
+
+    TimerProto.RemainderTimePercentGet = function()
+    {
+        return (this.delay_time_save==0)? 0:
+               (this.RemainderTimeGet() / this.delay_time_save);
     };     
+
+    TimerProto.ElapsedTimePercentGet = function()
+    {
+        return (this.delay_time_save==0)? 0:
+               (this.ElapsedTimeGet() / this.delay_time_save);
+    };       
             
     TimerProto.DeltaErrorTickGet = function()
     {    

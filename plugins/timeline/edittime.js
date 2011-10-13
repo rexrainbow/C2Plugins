@@ -6,7 +6,7 @@
 		"description":	"TimeLine",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Core utility",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -64,6 +64,12 @@ AddExpression(0, ef_return_number | ef_variadic_parameters, "Get remainder time 
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Get elapsed time of timer", 
               "Timer", "TimerElapsed", 
               "Get elapsed time of timer.");
+AddExpression(2, ef_return_number | ef_variadic_parameters, "Get remainder time percentage of timer", 
+              "Timer", "TimerRemainderPercent", 
+              "Get remainder time percentage of timer.");
+AddExpression(3, ef_return_number | ef_variadic_parameters, "Get elapsed time percentage of timer", 
+              "Timer", "TimerElapsedPercent", 
+              "Get elapsed time percentage of timer.");              
               
 
 
