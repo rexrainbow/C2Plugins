@@ -55,11 +55,10 @@ cr.plugins_.MyFunction = function(runtime)
         if (args)
             jQuery.extend(this.param, args);
         
-        var is_break;
         this.is_echo = false;
         
         // call JS function first
-        is_break = this._CallJS(name);
+        var is_break = this._CallJS(name);
         if (!is_break)
         {
             // then call trigger function
@@ -74,6 +73,9 @@ cr.plugins_.MyFunction = function(runtime)
     
 	instanceProto.CreateJS = function(name, code_string)
 	{
+        if (this.is_debug_mode && this.JSFnObjs[name] != null) 
+            alert ("JS function '" + name + "' has existed.");  
+            
         this.JSFnObjs[name] = eval("("+code_string+")");
 	};
     
