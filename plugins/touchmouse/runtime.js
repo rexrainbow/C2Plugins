@@ -221,7 +221,42 @@ cr.plugins_.MyTouchMouse = function(runtime)
 		// Trigger OnTouchEnd=OnRelease
         this.runtime.trigger(cr.plugins_.MyTouchMouse.prototype.cnds.OnRelease, this);
 		//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchEnd, this);
-	};    
+	};  
+
+    // export
+	instanceProto.GetABSX = function ()
+	{
+        var ret_x;
+        if (this.trigger_source == 1)  // mouse
+        {
+            ret_x = this.mouseXcanvas;
+        }
+        else    // touch
+        {
+		    if (this.touches.length)
+                ret_x = this.touches[0].x;
+		    else
+                ret_x = 0;        
+        }
+        return ret_x;
+	};  
+
+	instanceProto.GetABSY = function ()
+	{
+        var ret_y;
+        if (this.trigger_source == 1)  // mouse
+        {
+            ret_y = this.mouseYcanvas;
+        }
+        else    // touch
+        {
+		    if (this.touches.length)
+                ret_y = this.touches[0].y;
+		    else
+                ret_x = 0;        
+        }
+        return ret_y;
+	};      
 
 	//////////////////////////////////////
 	// Conditions
@@ -377,159 +412,68 @@ cr.plugins_.MyTouchMouse = function(runtime)
 
 	exps.X = function (ret, layerparam)
 	{
-        if (this.trigger_source == 1)  // mouse
-        {
-		    var layer, oldScale;
+        var layer, oldScale;
 		
-		    if (typeof layerparam === "undefined")
-		    {
-			    // calculate X position on bottom layer as if its scale were 1.0
-			    layer = this.runtime.getLayerByNumber(0);
-			    oldScale = layer.scale;
-			    layer.scale = 1.0;
-			    ret.set_float(layer.canvasToLayerX(this.mouseXcanvas));
-			    layer.scale = oldScale;
-		    }
-		    else
-		    {
-			    // use given layer param
-			    if (typeof layerparam === "number")
-				    layer = this.runtime.getLayerByNumber(layerparam);
-			    else
-				    layer = this.runtime.getLayerByName(layerparam);
-				
-			    if (!layer)
-				    ret.set_float(0);
-				
-			    ret.set_float(layer.canvasToLayerX(this.mouseXcanvas));
-		    }
+		if (typeof layerparam === "undefined")
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			layer.scale = 1.0;
+			ret.set_float(layer.canvasToLayerX(this.GetABSX()));
+			layer.scale = oldScale;
         }
-        else    // touch
-        {
-		    if (this.touches.length)
-		    {
-			    var layer, oldScale;
-		
-			    if (typeof layerparam === "undefined")
-			    {
-				    // calculate X position on bottom layer as if its scale were 1.0
-				    layer = this.runtime.getLayerByNumber(0);
-				    oldScale = layer.scale;
-				    layer.scale = 1.0;
-				    ret.set_float(layer.canvasToLayerX(this.touches[0].x));
-				    layer.scale = oldScale;
-			    }
-			    else
-			    {
-				    // use given layer param
-				    if (typeof layerparam === "number")
-					    layer = this.runtime.getLayerByNumber(layerparam);
-				    else
-					    layer = this.runtime.getLayerByName(layerparam);
-					
-				    if (!layer)
-					    ret.set_float(0);
-					
-				    ret.set_float(layer.canvasToLayerX(this.touches[0].x));
-			    }
-		    }
-		    else
-			    ret.set_float(0);        
-        }        
+		else
+		{
+			// use given layer param
+			if (typeof layerparam === "number")
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (!layer)
+				ret.set_float(0);
+				
+			ret.set_float(layer.canvasToLayerX(this.GetABSX()));
+		}
 	};
 	
 	exps.Y = function (ret, layerparam)
 	{
-        if (this.trigger_source == 1)  // mouse
-        {
-            var layer, oldScale;
-            
-		    if (typeof layerparam === "undefined")
-		    {
-			    // calculate X position on bottom layer as if its scale were 1.0
-			    layer = this.runtime.getLayerByNumber(0);
-			    oldScale = layer.scale;
-			    layer.scale = 1.0;
-			    ret.set_float(layer.canvasToLayerY(this.mouseYcanvas));
-			    layer.scale = oldScale;
-		    }
-		    else
-		    {
-			    // use given layer param
-			    if (typeof layerparam === "number")
-				    layer = this.runtime.getLayerByNumber(layerparam);
-			    else
-				    layer = this.runtime.getLayerByName(layerparam);
-				
-			    if (!layer)
-				    ret.set_float(0);
-				
-			    ret.set_float(layer.canvasToLayerY(this.mouseYcanvas));
-		    }
-        
-        }
-        else    // touch
-        {
-		    if (this.touches.length)
-		    {
-			    var layer, oldScale;
+        var layer, oldScale;
 		
-			    if (typeof layerparam === "undefined")
-			    {
-				    // calculate X position on bottom layer as if its scale were 1.0
-				    layer = this.runtime.getLayerByNumber(0);
-				    oldScale = layer.scale;
-				    layer.scale = 1.0;
-				    ret.set_float(layer.canvasToLayerY(this.touches[0].y));
-				    layer.scale = oldScale;
-			    }
-			    else
-			    {
-				    // use given layer param
-				    if (typeof layerparam === "number")
-					    layer = this.runtime.getLayerByNumber(layerparam);
-				    else
-					    layer = this.runtime.getLayerByName(layerparam);
-					
-				    if (!layer)
-					    ret.set_float(0);
-					
-				    ret.set_float(layer.canvasToLayerY(this.touches[0].y));
-			    }
-		    }
-		    else
-			    ret.set_float(0);        
-        }        
+		if (typeof layerparam === "undefined")
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			layer.scale = 1.0;
+			ret.set_float(layer.canvasToLayerY(this.GetABSY()));
+			layer.scale = oldScale;
+        }
+		else
+		{
+			// use given layer param
+			if (typeof layerparam === "number")
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (!layer)
+				ret.set_float(0);
+				
+			ret.set_float(layer.canvasToLayerY(this.GetABSY()));
+		}      
 	};
 	
 	exps.AbsoluteX = function (ret)
 	{
-        if (this.trigger_source == 1)  // mouse
-        {
-		    ret.set_float(this.mouseXcanvas);
-        }
-        else    // touch
-        {
-		    if (this.touches.length)
-			    ret.set_float(this.touches[0].x);
-		    else
-			    ret.set_float(0);        
-        }
+        ret.set_float(this.GetABSX());
 	};
 	
 	exps.AbsoluteY = function (ret)
 	{
-        if (this.trigger_source == 1)  // mouse
-        {
-		    ret.set_float(this.mouseYcanvas);
-        }
-        else    // touch
-        {
-		    if (this.touches.length)
-			    ret.set_float(this.touches[0].y);
-		    else
-			    ret.set_float(0);        
-        }
+        ret.set_float(this.GetABSY());
 	};
 	
 }());
