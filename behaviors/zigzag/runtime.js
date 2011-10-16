@@ -207,35 +207,10 @@ cr.behaviors.Zigzag = function(runtime)
         }
 		return ret;    
     }
-    
-	cnds.IsMovingForward = function ()
+
+	cnds.IsCmd = function (_cmd)
 	{
-        return _is_in_cmd(this.cur_cmd, 0);
-	};
-    
-	cnds.IsMovingBackward = function ()
-	{
-        return _is_in_cmd(this.cur_cmd, 1);
-	}; 
-    
-	cnds.IsTurningRight = function ()
-	{
-        return _is_in_cmd(this.cur_cmd, 2);
-	};
-    
-	cnds.IsTurningLeft = function ()
-	{
-        return _is_in_cmd(this.cur_cmd, 3);
-	};   
-    
-	cnds.IsWaiting = function ()
-	{
-        return _is_in_cmd(this.cur_cmd, 4);
-	};     
-    
-	cnds.IsAnyCmd = function ()
-	{
-        return _is_in_cmd(this.cur_cmd, 5);
+        return _is_in_cmd(this.cur_cmd, _cmd);
 	};     
     
 	cnds.OnCmdQueueFinish = function ()
@@ -324,7 +299,15 @@ cr.behaviors.Zigzag = function(runtime)
 	acts.AddCmd = function (_cmd, param)
 	{
         this.CmdQueue.Push( _cmd_transfer( _cmd_Index2NameMap[_cmd], param ) );
-	};      
+	}; 
+
+	acts.AddCmdString = function (cmd_string)
+	{
+        if ( cmd_string != "" )
+        {
+            this.CmdQueue.PushList(_cmd_parsing(cmd_string));
+        }
+	};     
     
 	acts.SetRotatable = function (s)
 	{

@@ -25,31 +25,18 @@ AddCondition(1, 0, "Compare rotation speed", "Rotation",
              "{my} rotation speed {0} {1}", 
              "Compare the current rotation speed of the object.", 
              "CompareRotSpeed");
-AddCondition(2, 0, "Is moving forward", "Moving", 
-             "{my} is moving forward", 
-             "Executing moving forward command.", 
-             "IsMovingForward"); 
-AddCondition(3, 0, "Is moving backward", "Moving", 
-             "{my} is moving backward", 
-             "Executing moving backward command.", 
-             "IsMovingBackward"); 
-AddCondition(4, 0, "Is turning right", "Rotation", 
-             "{my} is turning right", 
-             "Executing turning right command.", 
-             "IsTurningRight"); 
-AddCondition(5, 0, "Is turning left", "Rotation", 
-             "{my} is turning left", 
-             "Executing turning left command.", 
-             "IsTurningLeft");  
-AddCondition(6, 0, "Is waiting", "Wait", 
-             "{my} is waiting", 
-             "Executing waiting command.", 
-             "IsWaiting");
-AddCondition(7, 0, "Is executing any command", "Command", 
-             "{my} is executing any command", 
-             "Executing any command.", 
-             "IsAnyCmd");             
-AddCondition(8, cf_trigger, "On command queue finish", "Command", 
+AddComboParamOption("Move (F)orward");
+AddComboParamOption("Move (B)ackward");
+AddComboParamOption("Turn (R)ight");
+AddComboParamOption("Turn (L)eft");
+AddComboParamOption("(W)ait");
+AddComboParamOption("Any");
+AddComboParam("Command Type", "Command Types.",5);
+AddCondition(2, 0, "Is executing command", "Command", 
+             "Is {my} executing <i>{0}</i>", 
+			 "Is executing command.", 
+			 "IsCmd");
+AddCondition(3, cf_trigger, "On command queue finish", "Command", 
              "On {my} command queue finish", 
 			 "Triggered when command queue finish.", 
 			 "OnCmdQueueFinish");             
@@ -60,7 +47,7 @@ AddComboParamOption("Turn (L)eft");
 AddComboParamOption("(W)ait");
 AddComboParamOption("Any");
 AddComboParam("Command Type", "Command Types.",5);
-AddCondition(9, cf_trigger, "On command start", "Command", 
+AddCondition(4, cf_trigger, "On command start", "Command", 
              "On {my} <i>{0}</i> command start", 
 			 "Triggered when command start.", 
 			 "OnCmdStart");  
@@ -71,7 +58,7 @@ AddComboParamOption("Turn (L)eft");
 AddComboParamOption("(W)ait");
 AddComboParamOption("Any");
 AddComboParam("Command Type", "Command Types.",5);
-AddCondition(10, cf_trigger, "On command finish", "Command", 
+AddCondition(5, cf_trigger, "On command finish", "Command", 
              "On {my} <i>{0}</i> command finish", 
 			 "Triggered when command finish.", 
 			 "OnCmdFinish");              
@@ -133,10 +120,14 @@ AddNumberParam("Parameter", "The parameter of command.");
 AddAction(11, 0, "Add command", "Command queue", 
           "Add <i>{0}</i> <i>{1}</i> into {my} command queue", 
           "Add a command into command queue.", "AddCmd"); 
+AddStringParam("Commansd", "Commands string", '""');
+AddAction(12, 0, "Add commands", "Command queue", 
+          "Add '<i>{0}</i>' into {my} command queue", 
+          "Add commands string into command queue.", "AddCmdString");           
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Rotatable", "Set rotatable.",1);
-AddAction(12, 0, "Set rotatable", "Rotation", 
+AddAction(13, 0, "Set rotatable", "Rotation", 
           "Set {my} rotatable to <i>{0}</i>", 
           "Set rotatable.", "SetRotatable");                
   
