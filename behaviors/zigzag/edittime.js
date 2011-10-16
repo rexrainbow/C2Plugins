@@ -165,7 +165,7 @@ var property_list = [
     new cr.Property(ept_combo, "Rotatable", "Yes", "Enable to rotate sprite with command.", "No|Yes"),    
     // command queue
     new cr.Property(ept_combo, "Fetch mode", "Repeat", "The way of fetching commands.", "One-shot|Repeat"),                
-    new cr.Property(ept_text, "Command queue", "", "Set command queue."),    
+    new cr.Property(ept_text, "Commands", "", "F=Move Forward, B=Move Backward, R=Turn Right, L=Turn Left, W=Wait. ex:'F 100;L 60'"),    
     // Moving setup
 	new cr.Property(ept_float, "Max moving speed", 400, 
                     "Maximum moving speed, in pixel per second."),
