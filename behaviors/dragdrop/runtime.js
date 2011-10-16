@@ -52,26 +52,143 @@ cr.behaviors.MyDragDrop = function(runtime)
 				};
 			})(this)
 		);   
+        
+        // touch
+		this.runtime.canvas.addEventListener("touchstart",
+			(function (self) {
+				return function(info) {
+					self.onTouchStart(info);
+				};
+			})(this),
+			true
+		);
+		
+		this.runtime.canvas.addEventListener("touchmove",
+			(function (self) {
+				return function(info) {
+					self.onTouchMove(info);
+				};
+			})(this),
+			true
+		);
+		
+		this.runtime.canvas.addEventListener("touchend",
+			(function (self) {
+				return function(info) {
+					self.onTouchEnd(info);
+				};
+			})(this),
+			true
+		);               
 
         this.behavior_index = null;
-		this.mouseXcanvas = 0;				// mouse position relative to canvas
-		this.mouseYcanvas = 0;
 		this.triggerButton = { btn:0, press:false };
+        
+		this.mouseXcanvas = 0;				// mouse position relative to canvas
+		this.mouseYcanvas = 0;    
+        
+        // touch
+		this.touches = [];
+        this.is_on_touch = false;
+        
+        // control
+        this.trigger_source = 1;  // 0=touch, 1=mouse            
 	};
     
 	behtypeProto.onMouseDown = function(info)
 	{
+        this.trigger_source = 1;    
         this.triggerButton.btn = info.which - 1;	// 1-based 
         this.triggerButton.press = true;
 
-		var mx = this.mouseXcanvas;
-		var my = this.mouseYcanvas;
+        this.DragDetecting(this.mouseXcanvas, this.mouseYcanvas);
+	};  
+
+	behtypeProto.onMouseUp = function(info)
+	{
+        this.trigger_source = 1;    
+        this.triggerButton.btn = info.which - 1;	// 1-based 
+        this.triggerButton.press = false;
+	};
+    
+	behtypeProto.onMouseMove = function(info)
+	{
+        this.trigger_source = 1;    
+		var offset = jQuery(this.runtime.canvas).offset();
+		this.mouseXcanvas = info.pageX - offset.left;
+		this.mouseYcanvas = info.pageY - offset.top;
+	};    
+        
+        
+    // touch
+    behtypeProto.saveTouches = function (t)
+	{
+		this.touches.length = 0;
+		var offset = jQuery(this.runtime.canvas).offset();
+		
+		var i, len, touch;
+		for (i = 0, len = t.length; i < len; i++)
+		{
+			touch = t[i];
+			this.touches.push({ x: touch.pageX - offset.left, y: touch.pageY - offset.top });
+		}
+	};
+    
+	behtypeProto.onTouchMove = function (info)
+	{
+        this.trigger_source = 0;
+		info.preventDefault();
+		this.saveTouches(info.touches);
+	};
+
+	behtypeProto.onTouchStart = function (info)
+	{
+        this.trigger_source = 0;
+		info.preventDefault();
+		this.saveTouches(info.touches);
+		
+		var offset = jQuery(this.runtime.canvas).offset();
+		var is_get_drag_inst;
+        
+		if (info.changedTouches)
+		{
+			var i, len;
+			for (i = 0, len = info.changedTouches.length; i < len; i++)
+			{
+				var touch = info.changedTouches[i];
+				
+				this.curTouchX = touch.pageX - offset.left;
+				this.curTouchY = touch.pageY - offset.top;
+                
+                is_get_drag_inst = this.DragDetecting(this.curTouchX, this.curTouchY);
+                if (is_get_drag_inst)
+                    break;
+			}
+            
+		}
+        
+        this.is_on_touch = true;
+	};
+
+
+	behtypeProto.onTouchEnd = function (info)
+	{
+        this.trigger_source = 0;
+		info.preventDefault();
+		//this.saveTouches(info.touches);  // do not update this.touches
+        
+        this.is_on_touch = false;
+	};    
+    
+    // drag detecting
+	behtypeProto.DragDetecting = function(x, y)
+	{
         var sol = this.objtype.getCurrentSol();        
         sol.select_all = true;
-        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, mx, my, false);
+        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, x, y, false);
         if (overlap_cnt == 0)
         {
-            return;
+            return false;
         }
         
         // overlap_cnt > 0
@@ -121,23 +238,73 @@ cr.behaviors.MyDragDrop = function(runtime)
         }
         target_inst.is_on_drag = true;
         this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDragStart, target_inst.inst);     
-        
-	};
 
-	behtypeProto.onMouseUp = function(info)
+        // recover to select_all
+        sol.select_all = true;
+        
+        return true;  // get drag inst
+	}; 
+        
+    // export
+	behtypeProto.GetABSX = function ()
 	{
-        this.triggerButton.btn = info.which - 1;	// 1-based 
-        this.triggerButton.press = false;
+        var ret_x;
+        if (this.trigger_source == 1)  // mouse
+        {
+            ret_x = this.mouseXcanvas;
+        }
+        else    // touch
+        {
+		    if (this.touches.length)
+                ret_x = this.touches[0].x;
+		    else
+                ret_x = 0;        
+        }
+        return ret_x;
+	};  
+
+	behtypeProto.GetABSY = function ()
+	{
+        var ret_y;
+        if (this.trigger_source == 1)  // mouse
+        {
+            ret_y = this.mouseYcanvas;
+        }
+        else    // touch
+        {
+		    if (this.touches.length)
+                ret_y = this.touches[0].y;
+		    else
+                ret_x = 0;        
+        }
+        return ret_y;
+	};     
+    
+	behtypeProto.GetLayerX = function(inst)
+	{
+        return inst.layer.canvasToLayerX(this.GetABSX());
 	};
     
-	behtypeProto.onMouseMove = function(info)
+	behtypeProto.GetLayerY = function(inst)
 	{
-		var offset = jQuery(this.runtime.canvas).offset();
-		this.mouseXcanvas = info.pageX - offset.left;
-		this.mouseYcanvas = info.pageY - offset.top;
+        return inst.layer.canvasToLayerY(this.GetABSY());
+	};
+    
+	behtypeProto._is_release = function(dragButton)
+	{
+        var is_drop;
+        if (this.trigger_source == 1)  // mouse
+        {    
+             is_drop = (!this.triggerButton.press) && 
+                       (this.triggerButton.btn == dragButton) ;          
+        }
+        else
+        {
+             //is_drop = (this.touches.length==0);        
+             is_drop = (!this.is_on_touch);
+        }
+        return is_drop;
 	};    
-        
-
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -147,8 +314,8 @@ cr.behaviors.MyDragDrop = function(runtime)
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
         
-		this.pre_mouseXcanvas = type.mouseXcanvas;
-		this.pre_mouseYcanvas = type.mouseYcanvas;           
+		this.pre_x = this.type.GetLayerX(inst);
+		this.pre_y = this.type.GetLayerY(inst);           
         this.is_on_drag = false;
 	};
 
@@ -169,48 +336,39 @@ cr.behaviors.MyDragDrop = function(runtime)
             return;        
         }
         
+        var inst = this.inst;
+        var cur_x = this.type.GetLayerX(inst);
+        var cur_y = this.type.GetLayerY(inst);
         // this.activated == 1 && this.is_on_drag
-        var is_mouse_moved = (this.pre_mouseXcanvas != this.type.mouseXcanvas) ||
-                             (this.pre_mouseYcanvas != this.type.mouseYcanvas);      
+        var is_mouse_moved = (this.pre_x != cur_x) ||
+                             (this.pre_y != cur_y);      
         if ( is_mouse_moved )
         {
             switch (this.move_axis)
             {
                 case 1:
-                    this.inst.x = this.GetLayerX();
+                    inst.x = cur_x;
                     break;
                 case 2:
-                    this.inst.y = this.GetLayerY();
+                    inst.y = cur_y;
                     break;
                 default:
-                    this.inst.x = this.GetLayerX();
-                    this.inst.y = this.GetLayerY();
+                    inst.x = cur_x;
+                    inst.y = cur_y;
                     break;
             }
-            this.inst.set_bbox_changed();
-            this.pre_mouseXcanvas = this.type.mouseXcanvas;
-            this.pre_mouseYcanvas = this.type.mouseYcanvas;                    
+            inst.set_bbox_changed();
+            this.pre_x = cur_x;
+            this.pre_y = cur_y;                    
         }
-        this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDragging, this.inst);
+        this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDragging, inst);
                                 
-        if ( (!this.type.triggerButton.press) && 
-             (this.type.triggerButton.btn == this.dragButton) )
+        if ( this.type._is_release(this.dragButton) )
         {
             this.is_on_drag = false;
-            this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDrop, this.inst); 
+            this.runtime.trigger(cr.behaviors.MyDragDrop.prototype.cnds.OnDrop, inst); 
         }
-	};
-        
-	behinstProto.GetLayerX = function()
-	{
-        return this.inst.layer.canvasToLayerX(this.type.mouseXcanvas);
-	};
-    
-	behinstProto.GetLayerY = function()
-	{
-        return this.inst.layer.canvasToLayerY(this.type.mouseYcanvas);       
-    }    
-    
+	};    
 
 	//////////////////////////////////////
 	// Conditions
@@ -254,22 +412,22 @@ cr.behaviors.MyDragDrop = function(runtime)
 
 	exps.X = function (ret)
 	{
-        ret.set_float( this.GetLayerX() );
+        ret.set_float( this.type.GetLayerX(this.inst) );
 	};
 	
 	exps.Y = function (ret)
 	{
-	    ret.set_float( this.GetLayerY() );
+	    ret.set_float( this.type.GetLayerY(this.inst) );
 	};
 	
 	exps.AbsoluteX = function (ret)
 	{
-		ret.set_float(this.type.mouseXcanvas);
+        ret.set_float( this.type.GetABSX(this.inst) );
 	};
 	
 	exps.AbsoluteY = function (ret)
 	{
-		ret.set_float(this.type.mouseYcanvas);
+        ret.set_float( this.type.GetABSY(this.inst) );
 	};
     
 	exps.Activated = function (ret)
