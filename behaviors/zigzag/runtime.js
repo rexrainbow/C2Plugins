@@ -243,9 +243,10 @@ cr.behaviors.Zigzag = function(runtime)
         this.cur_cmd = null;
         this.is_run = 1;
 		this.CmdQueue.ResetIndex();
-        this.pos_state = {x:this.inst.x, 
-                          y:this.inst.y, 
-                          angle:this.inst.angle};
+        // update pos_state
+        this.pos_state.x = this.inst.x;
+        this.pos_state.y = this.inst.y;
+        this.pos_state.angle = cr.to_clamped_radians(this.CmdRotate.current_angle);
 	};     
     
 	acts.Stop = function ()
@@ -479,6 +480,7 @@ cr.behaviors.Zigzag = function(runtime)
         this.is_done = true;
         this.is_zeroDt_mode = ( (max_speed >= 36000) && (acc==0) && (dec==0) );
         this.continued_mode = continued_mode;
+        this.current_angle = cr.to_clamped_degrees(inst.angle);
         this.current_speed = 0;
     };
     var CmdRotateProto = cr.behaviors.Zigzag.CmdRotate.prototype;
@@ -487,8 +489,9 @@ cr.behaviors.Zigzag = function(runtime)
     {
         this.target = zigzag_state;
         this.current_angle = cr.to_clamped_degrees(zigzag_state.angle);
+        this._target_angle = this.current_angle + distance;
         this.dir = (distance >= 0);
-        var angle = cr.to_clamped_radians(this.current_angle + distance);
+        var angle = cr.to_clamped_radians(this._target_angle);
         this.remain_distance = Math.abs(distance);
         _set_current_speed.call(this, null); 
         this.is_done = false;
@@ -505,7 +508,8 @@ cr.behaviors.Zigzag = function(runtime)
         {
             remain_dt = dt;
             this.is_done = true;
-            target_angle = this.target.angle;        
+            target_angle = this.target.angle;
+            this.current_angle = this._target_angle;            
         }
         else
         {
@@ -517,6 +521,7 @@ cr.behaviors.Zigzag = function(runtime)
             {
                 this.is_done = true;
                 target_angle = this.target.angle;  
+                this.current_angle = this._target_angle;
                 remain_dt = (this.continued_mode==1)? _remaind_dt_get.call(this):0;                
             }
             else
