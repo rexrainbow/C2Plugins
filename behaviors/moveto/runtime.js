@@ -47,8 +47,8 @@ cr.behaviors.MoveTo = function(runtime)
 	{
         this.activated = this.properties[0];
         this.move = {max:this.properties[1],
-                       acc:this.properties[2],
-                       dec:this.properties[3]};
+                     acc:this.properties[2],
+                     dec:this.properties[3]};
         this.target = {x:0 , y:0, angle:0};
         this.is_moving = false;  
         this.current_speed = 0;       
@@ -70,6 +70,8 @@ cr.behaviors.MoveTo = function(runtime)
         }
         
 		var dt = this.runtime.getDt(this.inst);
+        if (dt==0)   // can not move if dt == 0
+            return;
 		
         // assign speed
         var is_slow_down = false;

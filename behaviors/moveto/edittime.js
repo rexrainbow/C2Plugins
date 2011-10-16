@@ -59,7 +59,7 @@ AddAction(4, 0, "Set target position", "Position",
           "SetTargetPos");
 
 AddNumberParam("Current speed", "Current speed, in pixel per second.");
-AddAction(5, 0, "Set Current speed", "Speed", 
+AddAction(5, 0, "Set current speed", "Speed", 
           "Set {my} current speed to <i>{0}</i>", 
           "Set the object's Current speed.", "SetCurrentSpeed");
   
