@@ -65,8 +65,9 @@ cr.behaviors.MyFSM = function(runtime)
 		                           null;
 
         this.function_name = ""; 
-        this.fn_obj_list = {};           
-        this.is_echo = false;	
+        this.JSFnObjs = {};       
+        this.is_echo = false;
+        this.JSRequestObjs = {};        
 	};  
     
 	behinstProto.tick = function ()
@@ -76,12 +77,17 @@ cr.behaviors.MyFSM = function(runtime)
 	behinstProto.Request = function ()
 	{
 	    if (this.activated==0)
-		{
 		    return;
-		}
-		
+		       
 		this.is_echo = false;
-		this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnRequest, this.inst);
+        
+        // call JS request first
+        var is_break = this._CallJSRequest(); 
+        if (!is_break)
+        {
+            // then call trigger function
+            this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnRequest, this.inst);
+        }
         if (!this.is_echo)
         {
 		    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnDefaultRequest, this.inst);        
@@ -91,9 +97,7 @@ cr.behaviors.MyFSM = function(runtime)
 	behinstProto.Transit = function (new_state)
 	{
 	    if (this.activated==0)
-		{
 		    return;
-		}
 		
         if (this.default_transitions != null)
         {
@@ -130,45 +134,80 @@ cr.behaviors.MyFSM = function(runtime)
     behinstProto.ForceTransit = function (new_state)
 	{
 	    if (this.activated==0)
-		{
 		    return;
-		}
 		
         this._state_transition(new_state);    
 	};
 	
-	behinstProto.CallFn = function(name)
+    behinstProto.CallFn = function(name, args)
 	{
-        this.function_name = name; 
+        if (args)
+            jQuery.extend(this.vars, args);
+        
         this.is_echo = false;
-	    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnFunctionCalled, this);
+        
+        // call JS function first
+        var is_break = this._CallJS(name);
+        if (!is_break)
+        {
+            // then call trigger function
+            this._CallFn(name);
+        }
+        
         if ((!this.is_echo) && this.is_debug_mode) 
         {
             alert ("Can not find function '" + name + "'");
         }
-	};
+	}; 
     
 	behinstProto.CreateJS = function(name, code_string)
 	{
-        this.fn_obj_list[name] = eval("("+code_string+")");
-	};  
-
- 	behinstProto.CallJS = function(name)
+        if (this.is_debug_mode && this.JSFnObjs[name] != null) 
+            alert ("JS function '" + name + "' has existed.");  
+            
+        this.JSFnObjs[name] = eval("("+code_string+")");
+	}; 
+    
+	behinstProto.CreateJSRequest = function(name, code_string)
 	{
-	    var fn_obj = this.fn_obj_list[name];
-        if (fn_obj == null) 
-        {            
-            if (this.is_debug_mode) 
-            {
-                alert ("Can not find JS function object '" + name + "'");
-            }
-        }
-		else
-		{
-            fn_obj(this);
-	    }
-	};      
+        if (this.is_debug_mode && this.JSRequestObjs[name] != null) 
+            alert ("JS request '" + name + "' has existed."); 
+            
+        this.JSRequestObjs[name] = eval("("+code_string+")");
+	}; 
+    
+    
+	behinstProto._CallFn = function(name)
+	{
+        this.function_name = name; 
+	    this.runtime.trigger(cr.behaviors.MyFSM.prototype.cnds.OnFunctionCalled, this);
+	}; 
 
+ 	behinstProto._CallJS = function(name)
+	{
+        var is_break = false;
+	    var fn_obj = this.JSFnObjs[name];
+        if (fn_obj != null) 
+        {
+            this.is_echo = true;
+            is_break = fn_obj(this);
+        }
+        return is_break;
+	};    
+
+ 	behinstProto._CallJSRequest = function()
+	{
+        var is_break = false;
+	    var fn_obj = this.JSRequestObjs[this.current_state];
+        if (fn_obj != null) 
+        {
+            this.is_echo = true;
+            is_break = fn_obj(this);
+        }
+        return is_break;
+	};    
+    
+    
     behinstProto._state_transition = function (new_state)
 	{
 	    this.previous_state = this.current_state;
@@ -287,12 +326,13 @@ cr.behaviors.MyFSM = function(runtime)
 	acts.CreateJSFunctionObject = function (name, code_string)
 	{
         this.CreateJS(name, code_string);
-	};
-	
-	acts.CallJSFunctionObject = function (name)
+	}; 
+    
+	acts.CreateJSRequestObject = function (name, code_string)
 	{
-	    this.CallJS(name);
-	};    
+        this.CreateJSRequest(name, code_string);
+	};     
+    
     
 	//////////////////////////////////////
 	// Expressions
@@ -316,9 +356,8 @@ cr.behaviors.MyFSM = function(runtime)
         {
             value = 0;
             if (this.is_debug_mode) 
-            {
                 alert ("Can not find variable '" + index + "'");
-            }
+                
         }
 	    ret.set_any(value);
 	};	

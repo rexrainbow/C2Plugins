@@ -43,10 +43,10 @@ AddStringParam("Name", "JS function object name", '""');
 AddStringParam("Code", "JS function code", '""');
 AddAction(6, 0, "Create JS function object", "JS Function", 
           "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
-AddStringParam("Name", "JS function object name", '""');
-AddAction(7, 0, "Call JS function object", "JS Function", 
-          "Call JS <i>{0}</i>", "Call JS function.", "CallJSFunctionObject");
-
+AddStringParam("Name", "JS request function object name", '""');
+AddStringParam("Code", "JS function code", '""');
+AddAction(7, 0, "Create JS request object", "JS Function", 
+          "Create JS request <i>{0}</i>", "Create JS request function object.", "CreateJSRequestObject"); 
 
 //////////////////////////////////////////////////////////////
 // Conditions
