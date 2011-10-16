@@ -74,6 +74,8 @@ cr.behaviors.Swing = function(runtime)
         }
            
 		var dt = this.runtime.getDt(this.inst);
+        if (dt==0)   // can not move if dt == 0
+            return;        
 		
         // assign speed
         if (this.is_setup)
