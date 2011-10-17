@@ -101,12 +101,10 @@ AddNumberParam("Rotation deceleration", "The rotation deceleration setting, in p
 AddAction(8, 0, "Set rotation deceleration", "Rotation", 
           "Set {my} rotation deceleration to <i>{0}</i>", 
           "Set the object's rotation deceleration.", "SetRotDeceleration");
-AddComboParamOption("One-shot");
-AddComboParamOption("Repeat");
-AddComboParam("Mode", "Fetch mode of command queue.",1);
-AddAction(9, 0, "Set fetch mode", "Command queue", 
-          "Set {my} repeat mode to <i>{0}</i>", 
-          "Set fetch mode of command queue accessed.", "SetFetch");          
+AddNumberParam("Repeat count", "The times to execute commands repeatly. 0 is infinity.", 0);
+AddAction(9, 0, "Set repeat count", "Command queue", 
+          "Set {my} repeat count to <i>{0}</i>", 
+          "Set times to execute commands repeatly.", "SetRepeatCount");          
 AddAction(10, 0, "Clean command queue", "Command queue", 
           "Clean {my} command queue", 
           "Clean command queue.", "CleanCmdQueue");
@@ -153,9 +151,12 @@ AddExpression(7, ef_return_number, "Get rotation acceleration", "Setting", "RotA
 AddExpression(8, ef_return_number, "Get rotation deceleration", "Setting", "RotDec", 
               "The rotation deceleration setting, in degrees per second per second.");
 AddExpression(9, ef_return_number, "Get rotatable", "Setting", "Rotatable", 
-              "Rotatable.");            
+              "1 to rotate sprite with command."); 
+AddExpression(10, ef_return_number, "Get repeat count", "Setting", "RepCnt", 
+              "The times to execute commands repeatly. 0 is infinity."); 
 
-         
+              
+              
 ACESDone();
 
 // Property grid properties for this plugin
@@ -164,7 +165,7 @@ var property_list = [
     new cr.Property(ept_combo, "Start", "Yes", "Enable if you wish this to start at the start of the layout.", "No|Yes"),
     new cr.Property(ept_combo, "Rotatable", "Yes", "Enable to rotate sprite with command.", "No|Yes"),    
     // command queue
-    new cr.Property(ept_combo, "Fetch mode", "Repeat", "The way of fetching commands.", "One-shot|Repeat"),                
+    new cr.Property(ept_integer, "Repeat count", "0", "The times to execute commands repeatly. 0 is infinity."),                
     new cr.Property(ept_text, "Commands", "", "F=Move Forward, B=Move Backward, R=Turn Right, L=Turn Left, W=Wait. ex:'F 100;L 60'"),    
     // Moving setup
 	new cr.Property(ept_float, "Max moving speed", 400, 

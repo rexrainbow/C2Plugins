@@ -242,7 +242,7 @@ cr.behaviors.Zigzag = function(runtime)
 	{
         this.cur_cmd = null;
         this.is_run = 1;
-		this.CmdQueue.ResetIndex();
+		this.CmdQueue.Reset();
         // update pos_state
         this.pos_state.x = this.inst.x;
         this.pos_state.y = this.inst.y;
@@ -253,7 +253,6 @@ cr.behaviors.Zigzag = function(runtime)
 	{
         this.cur_cmd = null;
         this.is_run = 0;
-		this.CmdQueue.ResetIndex();
 	}; 
     
 	acts.SetMaxMovSpeed = function (s)
@@ -286,9 +285,10 @@ cr.behaviors.Zigzag = function(runtime)
         this.CmdRotate.move.dec = s;
 	};  
     
-	acts.SetFetch = function (s)
+	acts.SetRepeatCount = function (s)
 	{
-        this.CmdQueue.fetch_mode = s;
+        this.CmdQueue.repeat_count = s;
+        this.CmdQueue.repeat_count_save = s;
 	};  
     
 	acts.CleanCmdQueue = function ()
@@ -369,15 +369,22 @@ cr.behaviors.Zigzag = function(runtime)
 	{
 		ret.set_int(this.CmdRotate.rotatable);
 	};    
+        
+	exps.RepCnt = function (ret)
+	{
+		ret.set_int(this.CmdQueue.repeat_count_save);
+	};    
+        
 }());
 
 (function ()
 {
     // command queue
-    cr.behaviors.Zigzag.CmdQueue = function(fetch_mode)
+    cr.behaviors.Zigzag.CmdQueue = function(repeat_count)
     {
         this.CleanAll();
-        this.fetch_mode = fetch_mode;
+        this.repeat_count = repeat_count;
+        this.repeat_count_save = repeat_count;
     };
     var CmdQueueProto = cr.behaviors.Zigzag.CmdQueue.prototype;
     
@@ -387,8 +394,9 @@ cr.behaviors.Zigzag = function(runtime)
         this._queue = [];
 	};
     
-    CmdQueueProto.ResetIndex = function()
-	{
+    CmdQueueProto.Reset = function()
+	{        
+        this.repeat_count = this.repeat_count_save;    
         this.queue_index = 0;
 	};
     
@@ -412,9 +420,13 @@ cr.behaviors.Zigzag = function(runtime)
         var cmd;
         cmd = this._queue[this.queue_index];
         var index = this.queue_index+1;
-        if (index >= this._queue.length)         
-            this.queue_index = (this.fetch_mode==1)? 0:  // repeat
-                               (-1);                     // one-shot
+        if (index >= this._queue.length)
+        {
+            this.queue_index = (this.repeat_count != 1)? 0:  // repeat
+                               (-1);                         // finish
+            if (this.repeat_count != 1)
+                this.repeat_count -= 1;
+        }
         else
             this.queue_index = index;
         return cmd;
