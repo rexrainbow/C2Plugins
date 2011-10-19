@@ -183,38 +183,26 @@ cr.behaviors.MyDragDrop = function(runtime)
     // drag detecting
 	behtypeProto.DragDetecting = function(x, y)
 	{
+        this.objtype.getBehaviorIndexByName(this.name);	
         var sol = this.objtype.getCurrentSol();        
         sol.select_all = true;
         var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, x, y, false);
         if (overlap_cnt == 0)
-        {
             return false;
-        }
         
         // overlap_cnt > 0
+        // 0. find out index of behavior instance
+        if (this.behavior_index == null )
+            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
+            
+            
+        // 1. get all valid behavior instances            
         var ovl_insts = sol.getObjects();
         var behavior_insts;
         var i, cnt;
-        var inst;
-
-        // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-        {
-            behavior_insts = ovl_insts[0].behavior_insts;
-            cnt = behavior_insts.length;
-            for (i=0; i<cnt; i++ )
-            {
-                if (behavior_insts[i].type === this)
-                {
-                    this.behavior_index = i;
-                    break;
-                }
-            }
-        }
-            
+        var inst;            
         cnt = ovl_insts.length;             
         behavior_insts = [];            
-        // 1. get all valid behavior instances
         for (i=0; i<cnt; i++ )
         {
             inst = ovl_insts[i].behavior_insts[this.behavior_index];
