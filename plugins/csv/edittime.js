@@ -15,12 +15,11 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-//AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For Each", "For each col", "Repeat the event for each col in the table.", "ForEachCol");
-//AddStringParam("Col", "The col index.", '""');
-//AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For Each", "For each row in a col", "Repeat the event for each row in a col.", "ForEachRowInCol");
-//AddStringParam("Row", "The row index.", '""');
-//AddCondition(3, cf_looping | cf_not_invertible, "For each col in row", "For Each", "For each col in a row", "Repeat the event for each col in a row.", "ForEachColInRow");
-
+AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For Each", "For each col", 
+             "Repeat the event for each col in the table.", "ForEachCol");
+AddStringParam("Col", "The col index.", '""');
+AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For Each", 
+             "For each row in a col <i>{0}</i>", "Repeat the event for each row in a col.", "ForEachRowInCol");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -46,15 +45,16 @@ AddAction(4, 0, "Convert type", "Table", "Convert entries type to <i>{1}</i> on 
 AddStringParam("Col", "The col index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", "Get value from the table.");
-//AddExpression(1, ef_return_number, "Current Col", "For Each", "CurCol", "Get the current col index in a For Each loop.");
-//AddExpression(2, ef_return_number, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
-//AddExpression(3, ef_return_number, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
+AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current col index in a For Each loop.");
+AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
+AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
 
 
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [	     
+var property_list = [	
+    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),     
 	];
 	
 // Called by IDE when a new object type is to be created
