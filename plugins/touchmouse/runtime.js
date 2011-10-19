@@ -216,11 +216,13 @@ cr.plugins_.MyTouchMouse = function(runtime)
 	{
         this.trigger_source = 0;
 		info.preventDefault();
-		this.saveTouches(info.touches);
 		
 		// Trigger OnTouchEnd=OnRelease
         this.runtime.trigger(cr.plugins_.MyTouchMouse.prototype.cnds.OnRelease, this);
 		//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchEnd, this);
+        
+		// Save touches after, so OnTouchEnd can access the x and y of the touch
+		this.saveTouches(info.touches);        
 	};  
 
     // export
