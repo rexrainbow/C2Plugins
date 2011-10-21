@@ -16,23 +16,23 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddObjectParam("Object", "Object for picking");
-AddCondition(0, 0, "Pick all objects", "SOL", "Pick all <i>{0}</i> objects", "Pick all objects.", "PickAll");
+AddCondition(0, 0, "Pick all instances", "SOL", "Pick all <i>{0}</i> instances", "Pick all instances.", "PickAll");
 
 //////////////////////////////////////////////////////////////
 // Actions
 // SOL
 AddObjectParam("Object", "Object for picking");
-AddAction(0, 0, "Pick all objects", "SOL", 
-          "Pick all <i>{0}</i> objects", 
-          "Pick all objects.", "PickAll");
+AddAction(0, 0, "Pick all instances", "SOL", 
+          "Pick all <i>{0}</i> instances", 
+          "Pick all instances.", "PickAll");
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
-AddComboParamOption("Current picked objects");
-AddComboParamOption("All objects");
-AddComboParam("All objects", "Pick from current picked objects or all objects", 1);
-AddAction(1, 0, "Pick object by UID", "SOL", 
-          "Pick <i>{0}</i> objects by UID is <i>{1}</i>, form <i>{2}</i>", 
-          "Pick object by UID.", "PickByUID");          
+AddComboParamOption("Current picked instances");
+AddComboParamOption("All instances");
+AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
+AddAction(1, 0, "Pick instance by UID", "SOL", 
+          "Pick <i>{0}</i> instance by UID = <i>{1}</i>, form <i>{2}</i>", 
+          "Pick instance by UID.", "PickByUID");          
 //AddObjectParam("Object", "Object for picking");
 //AddComboParamOption("uid");
 //AddComboParamOption("x");
@@ -44,11 +44,11 @@ AddAction(1, 0, "Pick object by UID", "SOL",
 //AddComboParam("Properties", "Properties of instance", 0);
 //AddCmpParam("Comparison", "Choose the way to compare the variable.");
 //AddAnyTypeParam("Value", "The target compare value", 0);
-//AddComboParamOption("Current picked objects");
-//AddComboParamOption("All objects");
-//AddComboParam("All objects", "Pick from current picked objects or all objects", 1);
+//AddComboParamOption("Current picked instances");
+//AddComboParamOption("All instances");
+//AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 //AddAction(2, 0, "Pick object by property compare", "SOL", 
-//          "Pick <i>{0}</i> objects by property compare <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
+//          "Pick <i>{0}</i> instances by property compare <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
 //          "Pick object by property name.", "PickByPropCmp");          
 
 //////////////////////////////////////////////////////////////
