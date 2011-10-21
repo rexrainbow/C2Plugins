@@ -48,6 +48,13 @@ cr.plugins_.MySysExt = function(runtime)
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;    
 
+	cnds.PickAll = function (objtype)
+	{
+        var sol = objtype.getCurrentSol();        
+        sol.select_all = true;
+		return true;
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -87,40 +94,40 @@ cr.plugins_.MySysExt = function(runtime)
         sol.select_all = false;
 	}; 
     
-    acts.PickByPropCmp = function (objtype, var_name, cmp, y, is_pick_all)
-	{
-        var sol = objtype.getCurrentSol();  
-        if (is_pick_all==1)
-            sol.select_all = true;  
-            
-        var insts = sol.getObjects();
-        var insts_length = insts.length;
-        var i, inst;
-        var is_find = false;
-        var find_insts = [];
-
-        var_name = var_name.toLowerCase();
-        for (i=0; i < insts_length; i++)
-        {
-            inst = insts[i];
-            if (cr.do_cmp(inst[var_name], cmp, y))
-            {
-                find_insts.push(inst);
-            }
-        }
-        
-        sol.instances.length = 0;   // clear contents
-        if (find_insts.length > 0)
-        {
-            insts_length = find_insts.length;
-            for (i=0; i < insts_length; i++)
-            {            
-                sol.instances.push(find_insts[i]);
-            }
-        }
-            
-        sol.select_all = false;
-	};  
+//    acts.PickByPropCmp = function (objtype, prop_index, cmp, y, is_pick_all)
+//	{
+//        var sol = objtype.getCurrentSol();  
+//        if (is_pick_all==1)
+//            sol.select_all = true;  
+//            
+//        var insts = sol.getObjects();
+//        var insts_length = insts.length;
+//        var i, inst;
+//        var is_find = false;
+//        var find_insts = [];
+//
+//        var_name = var_name.toLowerCase();
+//        for (i=0; i < insts_length; i++)
+//        {
+//            inst = insts[i];
+//            if (cr.do_cmp(inst[var_name], cmp, y))
+//            {
+//                find_insts.push(inst);
+//            }
+//        }
+//        
+//        sol.instances.length = 0;   // clear contents
+//        if (find_insts.length > 0)
+//        {
+//            insts_length = find_insts.length;
+//            for (i=0; i < insts_length; i++)
+//            {            
+//                sol.instances.push(find_insts[i]);
+//            }
+//        }
+//            
+//        sol.select_all = false;
+//	};  
     
     
 
