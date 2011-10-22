@@ -113,6 +113,20 @@ cr.behaviors.MyFlash = function(runtime)
             }
         } 
 	};
+    
+	behinstProto.Start = function ()
+	{
+        this.cur_cmd = null;
+        this.is_run = 1;
+		this.CmdQueue.Reset();
+	};  
+    
+	behinstProto.Stop = function ()
+	{
+        this.cur_cmd = null;
+        this.is_run = 0;
+	};     
+    
 
 	//////////////////////////////////////
 	// Conditions
@@ -137,17 +151,13 @@ cr.behaviors.MyFlash = function(runtime)
 
 	acts.Start = function ()
 	{
-        this.cur_cmd = null;
-        this.is_run = 1;
-		this.CmdQueue.Reset();
+        this.Start();
 	};     
     
 	acts.Stop = function ()
 	{
-        this.cur_cmd = null;
-        this.is_run = 0;
+        this.Stop();
 	};  
-
 
 	acts.SetParameters = function (s)
 	{
@@ -164,7 +174,108 @@ cr.behaviors.MyFlash = function(runtime)
         this.CmdStop2Start.SetDuration(parseFloat(params[4]));
         this.CmdStartHold.SetDuration(parseFloat(params[5]));  
         this.CmdQueue.SetRepeatCnt(parseFloat(params[6]));       
+	};  
+    
+	acts.SetStartStopValue = function (start, stop)
+	{
+        this.CmdStart2Stop.SetStartStop(start, stop);
+        this.CmdStopHold.SetHold(stop);
+        this.CmdStop2Start.SetStartStop(stop, start);
+        this.CmdStartHold.SetHold(start);    
+	};  
+        
+	acts.SetDuration = function (start2stop, stopHold, stop2start, startHold)
+	{
+        this.CmdStart2Stop.SetDuration(start2stop);
+        this.CmdStopHold.SetDuration(stopHold);
+        this.CmdStop2Start.SetDuration(stop2start);
+        this.CmdStartHold.SetDuration(startHold);  
+	}; 
+    
+	acts.SetRepeatCount = function (repeat_count)
+	{
+        this.CmdQueue.SetRepeatCnt(repeat_count);    
+	}; 
+    
+	acts.SetDestroy = function (s)
+	{
+        this.destroy_at_finish = s;    
+	}; 
+    
+	acts.Flash = function (period, repeat_count)
+	{
+
+        var start = 1;
+        var stop = 0;
+        var duration = period/4
+        this.CmdStart2Stop.SetStartStop(start, stop);
+        this.CmdStopHold.SetHold(stop);
+        this.CmdStop2Start.SetStartStop(stop, start);
+        this.CmdStartHold.SetHold(start);
+        this.CmdStart2Stop.SetDuration(duration);
+        this.CmdStopHold.SetDuration(duration);
+        this.CmdStop2Start.SetDuration(duration);
+        this.CmdStartHold.SetDuration(duration);  
+        this.CmdQueue.SetRepeatCnt(repeat_count);    
+        
+        this.destroy_at_finish = 0; 
+        this.activated = 1;
+        this.Start();        
 	};     
+    
+
+	//////////////////////////////////////
+	// Expressions
+	behaviorProto.exps = {};
+	var exps = behaviorProto.exps;
+    
+	exps.Activated = function (ret)
+	{
+		ret.set_int(this.activated);
+	};    
+    
+	exps.StartValue = function (ret)
+	{
+		ret.set_float(this.CmdStartHold.hold);
+	};  
+    
+	exps.StopValue = function (ret)
+	{
+		ret.set_float(this.CmdStopHold.hold);
+	};  
+    
+	exps.Start2Stop = function (ret)
+	{
+		ret.set_float(this.CmdStart2Stop.duration_save);
+	};  
+    
+	exps.StopHold = function (ret)
+	{
+		ret.set_float(this.CmdStopHold.duration_save);
+	};
+    
+	exps.Stop2Start = function (ret)
+	{
+		ret.set_float(this.CmdStop2Start.duration_save);
+	};  
+    
+	exps.StartHold = function (ret)
+	{
+		ret.set_float(this.CmdStartHold.duration_save);
+	};    
+    
+	exps.Repeat = function (ret)
+	{
+		ret.set_int(this.CmdQueue.repeat_count_save);
+	};   
+    
+	exps.IsDestroy = function (ret)
+	{
+		ret.set_int(this.destroy_at_finish);
+	};   
+    
+
+       
 }());
 
 
