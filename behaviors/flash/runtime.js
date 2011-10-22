@@ -56,12 +56,16 @@ cr.behaviors.MyFlash = function(runtime)
                                                                     start, 
                                                                     stop, 
                                                                     this.properties[4]);
-        this.CmdStopHold = new cr.behaviors.MyFlash.CmdWait(this.properties[5]);
+        this.CmdStopHold = new cr.behaviors.MyFlash.CmdWait(this.inst, 
+                                                            stop, 
+                                                            this.properties[5]);
         this.CmdStop2Start = new cr.behaviors.MyFlash.CmdGradChange(this.inst, 
                                                                     stop, 
                                                                     start, 
                                                                     this.properties[6]);
-        this.CmdStartHold = new cr.behaviors.MyFlash.CmdWait(this.properties[7]);    
+        this.CmdStartHold = new cr.behaviors.MyFlash.CmdWait(this.inst, 
+                                                             start, 
+                                                             this.properties[7]);    
         
         this.CmdQueue.Push(this.CmdStart2Stop);
         this.CmdQueue.Push(this.CmdStopHold);
@@ -76,7 +80,7 @@ cr.behaviors.MyFlash = function(runtime)
 	{
         if ( (this.activated==0) || (this.is_run==0) )
             return;
-                        
+         
         var dt = this.runtime.getDt(this.inst);
         while(dt)
         {
@@ -86,7 +90,7 @@ cr.behaviors.MyFlash = function(runtime)
                 if (this.cur_cmd != null)
                 {
                     // new command start                    
-                    this.cur_cmd.Init();        
+                    this.cur_cmd.Init();
                 }
                 else            
                 {
@@ -152,7 +156,9 @@ cr.behaviors.MyFlash = function(runtime)
         var start = parseFloat(params[0]);
         var stop = parseFloat(params[1]);
         this.CmdStart2Stop.SetStartStop(start, stop);
+        this.CmdStopHold.SetHold(stop);
         this.CmdStop2Start.SetStartStop(stop, start);
+        this.CmdStartHold.SetHold(start);
         this.CmdStart2Stop.SetDuration(parseFloat(params[2]));
         this.CmdStopHold.SetDuration(parseFloat(params[3]));
         this.CmdStop2Start.SetDuration(parseFloat(params[4]));
@@ -168,8 +174,7 @@ cr.behaviors.MyFlash = function(runtime)
     cr.behaviors.MyFlash.CmdQueue = function(repeat_count)
     {
         this.CleanAll();
-        this.repeat_count_save = repeat_count;
-        this.repeat_count = repeat_count; 
+        this.SetRepeatCnt(repeat_count);
     };
     var CmdQueueProto = cr.behaviors.MyFlash.CmdQueue.prototype;
     
@@ -219,9 +224,10 @@ cr.behaviors.MyFlash = function(runtime)
         return cmd;
 	};
     
-    CmdQueueProto.SetRepeatCnt = function(repeat_cnt)
+    CmdQueueProto.SetRepeatCnt = function(repeat_count)
     {
-        this.repeat_count_save = repeat_cnt;
+        this.repeat_count_save = repeat_count;
+        this.repeat_count = repeat_count; 
     };
 
     
@@ -291,8 +297,10 @@ cr.behaviors.MyFlash = function(runtime)
     
     
     // wait
-    cr.behaviors.MyFlash.CmdWait = function(duration)
+    cr.behaviors.MyFlash.CmdWait = function(inst, hold, duration)
     {
+        this.inst = inst;    
+        this.hold = hold;
         this.duration_save = duration;
         this.is_done = true;
         this.redraw = false;        
@@ -314,6 +322,16 @@ cr.behaviors.MyFlash = function(runtime)
             return dt;
         }
         
+        if (this.inst.opacity != this.hold)
+        {
+            this.inst.opacity = this.hold;
+            this.redraw = true;        
+        }
+        else
+        {
+            this.redraw = false;
+        }
+        
         this.remain_duration -= dt;
         if (this.remain_duration <= 0)
         {
@@ -322,6 +340,11 @@ cr.behaviors.MyFlash = function(runtime)
         
         return 0;
     };  
+    
+    CmdWaitProto.SetHold = function(hold)
+    {
+        this.hold = hold;    
+    };    
     
     CmdWaitProto.SetDuration = function(duration)
     {
