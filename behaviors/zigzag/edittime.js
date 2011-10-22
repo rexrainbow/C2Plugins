@@ -165,7 +165,7 @@ var property_list = [
     new cr.Property(ept_combo, "Start", "Yes", "Enable if you wish this to start at the start of the layout.", "No|Yes"),
     new cr.Property(ept_combo, "Rotatable", "Yes", "Enable to rotate sprite with command.", "No|Yes"),    
     // command queue
-    new cr.Property(ept_integer, "Repeat count", "0", "The times to execute commands repeatly. 0 is infinity."),                
+    new cr.Property(ept_integer, "Repeat count", 0, "The times to execute commands repeatly. 0 is infinity."),                
     new cr.Property(ept_text, "Commands", "", "F=Move Forward, B=Move Backward, R=Turn Right, L=Turn Left, W=Wait. ex:'F 100;L 60'"),    
     // Moving setup
 	new cr.Property(ept_float, "Max moving speed", 400, 

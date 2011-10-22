@@ -91,6 +91,7 @@ cr.behaviors.Zigzag = function(runtime)
         this.activated = this.properties[0];
         this.is_run = this.properties[1];
         this.cur_cmd = null;
+        this.is_my_call = false;
               
         this.pos_state = {x:this.inst.x, 
                           y:this.inst.y, 
@@ -136,13 +137,17 @@ cr.behaviors.Zigzag = function(runtime)
                     // new command start
                     cmd = this.cmd_map[this.cur_cmd.cmd]; 
                     cmd.Init(this.pos_state, this.cur_cmd.param);
+                    this.is_my_call = true;
                     this.runtime.trigger(cr.behaviors.Zigzag.prototype.cnds.OnCmdStart, this.inst);                     
+                    this.is_my_call = false;
                 }
                 else            
                 {
                     // command queue finish
                     this.is_run = false;
+                    this.is_my_call = true;
                     this.runtime.trigger(cr.behaviors.Zigzag.prototype.cnds.OnCmdQueueFinish, this.inst); 
+                    this.is_my_call = false;
                     break;
                 }
             }
@@ -155,7 +160,9 @@ cr.behaviors.Zigzag = function(runtime)
             if (cmd.is_done)
             {
                 // command finish
-                this.runtime.trigger(cr.behaviors.Zigzag.prototype.cnds.OnCmdFinish, this.inst);           
+                this.is_my_call = true;
+                this.runtime.trigger(cr.behaviors.Zigzag.prototype.cnds.OnCmdFinish, this.inst); 
+                this.is_my_call = false;                
                 this.cur_cmd = null;
             }
             
@@ -215,17 +222,17 @@ cr.behaviors.Zigzag = function(runtime)
     
 	cnds.OnCmdQueueFinish = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};
       
 	cnds.OnCmdStart = function (_cmd)
 	{
-		return _is_in_cmd(this.cur_cmd, _cmd);
+		return (_is_in_cmd(this.cur_cmd, _cmd) && this.is_my_call);
 	};
     
 	cnds.OnCmdFinish = function (_cmd)
 	{
-        return _is_in_cmd(this.cur_cmd, _cmd);
+        return (_is_in_cmd(this.cur_cmd, _cmd) && this.is_my_call);
 	};    
     
 	//////////////////////////////////////
@@ -246,7 +253,9 @@ cr.behaviors.Zigzag = function(runtime)
         // update pos_state
         this.pos_state.x = this.inst.x;
         this.pos_state.y = this.inst.y;
-        this.pos_state.angle = cr.to_clamped_radians(this.CmdRotate.current_angle);
+        this.pos_state.angle = (this.CmdRotate.rotatable == 1)?
+                               this.inst.angle:
+                               cr.to_clamped_radians(this.CmdRotate.current_angle);
 	};     
     
 	acts.Stop = function ()
@@ -598,7 +607,7 @@ cr.behaviors.Zigzag = function(runtime)
         var remain_dt;
         if ( (this.move.acc>0) || (this.move.dec>0) )
         {
-            this.SetCurrentSpeed(0);  // stop in point
+            _set_current_speed.call(this, 0 );   // stop in point
             remain_dt = 0;
         }
         else
