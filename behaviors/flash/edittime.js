@@ -152,6 +152,16 @@ IDEInstance.prototype.OnCreate = function()
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
 	// Clamp values
+	if (this.properties["Start value"] < 0)
+		this.properties["Start value"] = 0;  
+    else if (this.properties["Start value"] > 1)
+		this.properties["Start value"] = 1;  
+        
+	if (this.properties["Stop value"] < 0)
+		this.properties["Stop value"] = 0;  
+    else if (this.properties["Stop value"] > 1)
+		this.properties["Stop value"] = 1;            
+    
 	if (this.properties["Duration from start to stop"] < 0)
 		this.properties["Duration from start to stop"] = 0;
 		
@@ -162,5 +172,9 @@ IDEInstance.prototype.OnPropertyChanged = function(property_name)
 		this.properties["Duration from stop to start"] = 0;
         		
 	if (this.properties["Duration of holding on start"] < 0)
-		this.properties["Duration of holding on start"] = 0;        
+		this.properties["Duration of holding on start"] = 0; 
+        		
+	if (this.properties["Repeat count"] < 0)
+		this.properties["Repeat count"] = 0; 
+        
 }
