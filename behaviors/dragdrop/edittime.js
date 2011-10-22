@@ -7,7 +7,7 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Movements",
-		"flags":		0
+		"flags":		bf_onlyone
 	};
 };
 

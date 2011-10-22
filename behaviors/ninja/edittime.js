@@ -7,7 +7,7 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"General",
-		"flags":		0
+		"flags":		bf_onlyone
 	};
 };
 

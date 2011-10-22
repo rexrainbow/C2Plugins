@@ -3,11 +3,11 @@
 	return {
 		"name":			"Cursor",
 		"id":			"Cursor",
-		"description":	"Move sprite to cursor of mouse",
+		"description":	"Move Sprite to cursor of mouse",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Movements",
-		"flags":		0
+		"flags":		bf_onlyone
 	};
 };
 
