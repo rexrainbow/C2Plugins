@@ -49,6 +49,7 @@ cr.behaviors.TimerCooldown = function(runtime)
         this.activated = this.properties[0];
         this.cd_interval = 0;
         this.is_accept = false;
+        this.is_my_call = false;
 	};
     
 	behinstProto.onDestroy = function()
@@ -67,13 +68,17 @@ cr.behaviors.TimerCooldown = function(runtime)
 
         if (is_running)
         {
+            this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.TimerCooldown.prototype.cnds.OnCD, this.inst); 
+            this.is_my_call = false;
         }
 	};
     
     behinstProto._on_cooldown_finished = function()
     {    
+        this.is_my_call = true;
         this.runtime.trigger(cr.behaviors.TimerCooldown.prototype.cnds.OnCDFinished, this.inst); 
+        this.is_my_call = false;
     };
 
 	//////////////////////////////////////
@@ -83,32 +88,32 @@ cr.behaviors.TimerCooldown = function(runtime)
     
 	cnds.OnCallAccepted = function ()
 	{  
-		return true;  
+		return (this.is_my_call);  
 	};
     
 	cnds.OnCallRejected = function ()
 	{  
-		return true;  
+		return (this.is_my_call);  
 	}; 
     
 	cnds.OnCD = function ()
 	{  
-		return true;  
+		return (this.is_my_call);  
 	};    
 
 	cnds.OnCDFinished = function ()
 	{  
-		return true;  
+		return (this.is_my_call);  
 	};
     
 	cnds.IsCallAccepted = function ()
 	{  
-		return this.is_accept;  
+		return (this.is_accept && (this.is_my_call));  
 	};
     
 	cnds.IsCallRejected = function ()
 	{  
-		return (!this.is_accept); 
+		return ((!this.is_accept) & (this.is_my_call)); 
 	}; 
     
 	cnds.IsAtCD = function ()
@@ -149,12 +154,16 @@ cr.behaviors.TimerCooldown = function(runtime)
         
         if ( this.is_accept )
         {
+            this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.TimerCooldown.prototype.cnds.OnCallAccepted, this.inst); 
+            this.is_my_call = false;
             this.timer.Start(this.cd_interval);
         }
         else
         {
+            this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.TimerCooldown.prototype.cnds.OnCallRejected, this.inst); 
+            this.is_my_call = false;
         }
 	}; 
     

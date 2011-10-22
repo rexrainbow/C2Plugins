@@ -54,13 +54,17 @@ cr.behaviors.MoveTo = function(runtime)
         this.current_speed = 0;       
         this.remain_distance = 0;
         this.is_hit_target = false;
+        
+        this.is_my_call = false;
 	};
 
 	behinstProto.tick = function ()
 	{
         if (this.is_hit_target)
         {
+            this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.MoveTo.prototype.cnds.OnHitTarget, this.inst); 
+            this.is_my_call = false;
             this.is_hit_target = false;
         }
         
@@ -109,7 +113,9 @@ cr.behaviors.MoveTo = function(runtime)
         } 
 
 		this.inst.set_bbox_changed();
+        this.is_my_call = true;
         this.runtime.trigger(cr.behaviors.MoveTo.prototype.cnds.OnMoving, this.inst);
+        this.is_my_call = false;
 	}; 
     
 	behinstProto.SetCurrentSpeed = function(speed)
@@ -132,7 +138,7 @@ cr.behaviors.MoveTo = function(runtime)
 
 	cnds.OnHitTarget = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};
 
 	cnds.CompareSpeed = function (cmp, s)
@@ -142,7 +148,7 @@ cr.behaviors.MoveTo = function(runtime)
 
     cnds.OnMoving = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};
     
 	cnds.IsMoving = function ()

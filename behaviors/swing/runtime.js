@@ -64,7 +64,9 @@ cr.behaviors.Swing = function(runtime)
         this.current_dir = dir;
         this.current_speed = 0;
         this.current_angle = start;
-        this.remain_angle = 0;        
+        this.remain_angle = 0;  
+
+        this.is_my_call = false;        
 	};
 
 	behinstProto.tick = function ()
@@ -82,17 +84,14 @@ cr.behaviors.Swing = function(runtime)
         {   
             // at start/stop point
             // trigger callback
+            this.is_my_call = true; 
             this.runtime.trigger(cr.behaviors.Swing.prototype.cnds.OnHitStartEnd, this.inst); 
 
             var is_start = (this.current_angle == this.swing.start);
-            if (is_start)
-            {
-                this.runtime.trigger(cr.behaviors.Swing.prototype.cnds.OnHitStart, this.inst);
-            }
-            else
-            {
-                this.runtime.trigger(cr.behaviors.Swing.prototype.cnds.OnHitEnd, this.inst);    
-            }
+            var tirg = (is_start)? cr.behaviors.Swing.prototype.cnds.OnHitStart:
+                                   cr.behaviors.Swing.prototype.cnds.OnHitEnd;
+            this.runtime.trigger(tirg, this.inst);                       
+            this.is_my_call = false;
             
             // workaround for setting activated=0 in trigger at event sheet
             if (this.activated == 0) {
@@ -159,17 +158,17 @@ cr.behaviors.Swing = function(runtime)
 
 	cnds.OnHitStart = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};
     
 	cnds.OnHitEnd = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};  
 
  	cnds.OnHitStartEnd = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};     
     
 	cnds.CompareSpeed = function (cmp, s)
