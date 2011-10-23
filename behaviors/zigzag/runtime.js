@@ -68,7 +68,7 @@ cr.behaviors.Zigzag = function(runtime)
             break;
         }
         return ({cmd:name,param:param});
-    }
+    };
     
     
     var _cmd_parsing = function(cmd_string)
@@ -631,7 +631,7 @@ cr.behaviors.Zigzag = function(runtime)
             remain_dt = (-this.remain_distance)/this.current_speed;
         }    
         return remain_dt;
-    }
+    };
     
     // wait
     cr.behaviors.Zigzag.CmdWait = function(continued_mode)
