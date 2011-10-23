@@ -79,9 +79,16 @@ cr.behaviors.Zigzag = function(runtime)
             cmd = cmd.replace(/(^\s*)|(\s*$)/g,"");
             cmd = cmd.replace(/(\s+)/g," ");
             cmd_slices = cmd.split(" ");
-            cmd_name = cmd_slices[0].toUpperCase();
-            cmd_param = parseFloat(cmd_slices[1]);
-            ret_cmds.push(_cmd_transfer(cmd_name, cmd_param));
+            if (cmd_slices.length == 2)
+            {
+                cmd_name = cmd_slices[0].toUpperCase();
+                cmd_param = parseFloat(cmd_slices[1]);
+                ret_cmds.push(_cmd_transfer(cmd_name, cmd_param));
+            }
+            else
+            {
+               alert ("Can not parse command "+ i +": '" + cmd + "'");  
+            }
         }
         return ret_cmds;
     };
