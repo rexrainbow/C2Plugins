@@ -48,6 +48,7 @@ cr.behaviors.MyFlash = function(runtime)
         this.is_run = this.properties[1];
         this.destroy_at_finish = this.properties[9];
         this.cur_cmd = null;
+        this.is_my_call = false;
         
         var start = this.properties[2];
         var end = this.properties[3];       
@@ -96,7 +97,9 @@ cr.behaviors.MyFlash = function(runtime)
                 {
                     // flash finish                    
                     this.is_run = false;
+                    this.is_my_call = true;
                     this.runtime.trigger(cr.behaviors.MyFlash.prototype.cnds.OnFlashFinish, this.inst); 
+                    this.is_my_call = false;
                     if (this.destroy_at_finish==1)
                     {
                         this.runtime.DestroyInstance(this.inst);
@@ -135,7 +138,7 @@ cr.behaviors.MyFlash = function(runtime)
 
 	cnds.OnFlashFinish = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};
     
     
