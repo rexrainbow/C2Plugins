@@ -61,6 +61,11 @@ cr.behaviors.Zigzag = function(runtime)
             name = "R";  // rotate
             param = -param;
             break;
+        case "W":
+            break;
+        default:
+            return null;  // no matched command
+            break;
         }
         return ({cmd:name,param:param});
     }
@@ -72,7 +77,7 @@ cr.behaviors.Zigzag = function(runtime)
         var cmds = cmd_string.split(";");
         var i;
         var cmd_length = cmds.length;
-        var cmd, cmd_slices, cmd_name, cmd_param;
+        var cmd, cmd_slices, cmd_name, cmd_param, cmd_parsed;
         for (i=0; i<cmd_length; i++)
         {
             cmd = cmds[i];
@@ -83,7 +88,11 @@ cr.behaviors.Zigzag = function(runtime)
             {
                 cmd_name = cmd_slices[0].toUpperCase();
                 cmd_param = parseFloat(cmd_slices[1]);
-                ret_cmds.push(_cmd_transfer(cmd_name, cmd_param));
+                cmd_parsed = _cmd_transfer(cmd_name, cmd_param);
+                if (cmd_parsed)
+                    ret_cmds.push(_cmd_transfer(cmd_name, cmd_param));
+                else
+                    alert ("Can not parse command "+ i +": '" + cmd + "'"); 
             }
             else
             {
