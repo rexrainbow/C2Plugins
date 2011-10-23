@@ -50,26 +50,26 @@ cr.behaviors.MyFlash = function(runtime)
         this.cur_cmd = null;
         
         var start = this.properties[2];
-        var stop = this.properties[3];       
+        var end = this.properties[3];       
         this.CmdQueue = new cr.behaviors.MyFlash.CmdQueue(this.properties[8]);
-        this.CmdStart2Stop = new cr.behaviors.MyFlash.CmdGradChange(this.inst, 
+        this.CmdStart2End = new cr.behaviors.MyFlash.CmdGradChange(this.inst, 
                                                                     start, 
-                                                                    stop, 
+                                                                    end, 
                                                                     this.properties[4]);
-        this.CmdStopHold = new cr.behaviors.MyFlash.CmdWait(this.inst, 
-                                                            stop, 
+        this.CmdEndHold = new cr.behaviors.MyFlash.CmdWait(this.inst, 
+                                                            end, 
                                                             this.properties[5]);
-        this.CmdStop2Start = new cr.behaviors.MyFlash.CmdGradChange(this.inst, 
-                                                                    stop, 
+        this.CmdEnd2Start = new cr.behaviors.MyFlash.CmdGradChange(this.inst, 
+                                                                    end, 
                                                                     start, 
                                                                     this.properties[6]);
         this.CmdStartHold = new cr.behaviors.MyFlash.CmdWait(this.inst, 
                                                              start, 
                                                              this.properties[7]);    
         
-        this.CmdQueue.Push(this.CmdStart2Stop);
-        this.CmdQueue.Push(this.CmdStopHold);
-        this.CmdQueue.Push(this.CmdStop2Start);
+        this.CmdQueue.Push(this.CmdStart2End);
+        this.CmdQueue.Push(this.CmdEndHold);
+        this.CmdQueue.Push(this.CmdEnd2Start);
         this.CmdQueue.Push(this.CmdStartHold);     
 
         this.inst.opacity = start;
@@ -121,7 +121,7 @@ cr.behaviors.MyFlash = function(runtime)
 		this.CmdQueue.Reset();
 	};  
     
-	behinstProto.Stop = function ()
+	behinstProto.End = function ()
 	{
         this.cur_cmd = null;
         this.is_run = 0;
@@ -154,9 +154,9 @@ cr.behaviors.MyFlash = function(runtime)
         this.Start();
 	};     
     
-	acts.Stop = function ()
+	acts.End = function ()
 	{
-        this.Stop();
+        this.End();
 	};  
 
 	acts.SetParameters = function (s)
@@ -164,31 +164,31 @@ cr.behaviors.MyFlash = function(runtime)
 		var params = s.split(",");
         
         var start = parseFloat(params[0]);
-        var stop = parseFloat(params[1]);
-        this.CmdStart2Stop.SetStartStop(start, stop);
-        this.CmdStopHold.SetHold(stop);
-        this.CmdStop2Start.SetStartStop(stop, start);
+        var end = parseFloat(params[1]);
+        this.CmdStart2End.SetStartEnd(start, end);
+        this.CmdEndHold.SetHold(end);
+        this.CmdEnd2Start.SetStartEnd(end, start);
         this.CmdStartHold.SetHold(start);
-        this.CmdStart2Stop.SetDuration(parseFloat(params[2]));
-        this.CmdStopHold.SetDuration(parseFloat(params[3]));
-        this.CmdStop2Start.SetDuration(parseFloat(params[4]));
+        this.CmdStart2End.SetDuration(parseFloat(params[2]));
+        this.CmdEndHold.SetDuration(parseFloat(params[3]));
+        this.CmdEnd2Start.SetDuration(parseFloat(params[4]));
         this.CmdStartHold.SetDuration(parseFloat(params[5]));  
         this.CmdQueue.SetRepeatCnt(parseFloat(params[6]));       
 	};  
     
-	acts.SetStartStopValue = function (start, stop)
+	acts.SetStartEndValue = function (start, end)
 	{
-        this.CmdStart2Stop.SetStartStop(start, stop);
-        this.CmdStopHold.SetHold(stop);
-        this.CmdStop2Start.SetStartStop(stop, start);
+        this.CmdStart2End.SetStartEnd(start, end);
+        this.CmdEndHold.SetHold(end);
+        this.CmdEnd2Start.SetStartEnd(end, start);
         this.CmdStartHold.SetHold(start);    
 	};  
         
-	acts.SetDuration = function (start2stop, stopHold, stop2start, startHold)
+	acts.SetDuration = function (start2end, endHold, end2start, startHold)
 	{
-        this.CmdStart2Stop.SetDuration(start2stop);
-        this.CmdStopHold.SetDuration(stopHold);
-        this.CmdStop2Start.SetDuration(stop2start);
+        this.CmdStart2End.SetDuration(start2end);
+        this.CmdEndHold.SetDuration(endHold);
+        this.CmdEnd2Start.SetDuration(end2start);
         this.CmdStartHold.SetDuration(startHold);  
 	}; 
     
@@ -206,15 +206,15 @@ cr.behaviors.MyFlash = function(runtime)
 	{
 
         var start = 1;
-        var stop = 0;
+        var end = 0;
         var duration = period/4
-        this.CmdStart2Stop.SetStartStop(start, stop);
-        this.CmdStopHold.SetHold(stop);
-        this.CmdStop2Start.SetStartStop(stop, start);
+        this.CmdStart2End.SetStartEnd(start, end);
+        this.CmdEndHold.SetHold(end);
+        this.CmdEnd2Start.SetStartEnd(end, start);
         this.CmdStartHold.SetHold(start);
-        this.CmdStart2Stop.SetDuration(duration);
-        this.CmdStopHold.SetDuration(duration);
-        this.CmdStop2Start.SetDuration(duration);
+        this.CmdStart2End.SetDuration(duration);
+        this.CmdEndHold.SetDuration(duration);
+        this.CmdEnd2Start.SetDuration(duration);
         this.CmdStartHold.SetDuration(duration);  
         this.CmdQueue.SetRepeatCnt(repeat_count);    
         
@@ -239,24 +239,24 @@ cr.behaviors.MyFlash = function(runtime)
 		ret.set_float(this.CmdStartHold.hold);
 	};  
     
-	exps.StopValue = function (ret)
+	exps.EndValue = function (ret)
 	{
-		ret.set_float(this.CmdStopHold.hold);
+		ret.set_float(this.CmdEndHold.hold);
 	};  
     
-	exps.Start2Stop = function (ret)
+	exps.Start2End = function (ret)
 	{
-		ret.set_float(this.CmdStart2Stop.duration_save);
+		ret.set_float(this.CmdStart2End.duration_save);
 	};  
     
-	exps.StopHold = function (ret)
+	exps.EndHold = function (ret)
 	{
-		ret.set_float(this.CmdStopHold.duration_save);
+		ret.set_float(this.CmdEndHold.duration_save);
 	};
     
-	exps.Stop2Start = function (ret)
+	exps.End2Start = function (ret)
 	{
-		ret.set_float(this.CmdStop2Start.duration_save);
+		ret.set_float(this.CmdEnd2Start.duration_save);
 	};  
     
 	exps.StartHold = function (ret)
@@ -400,7 +400,7 @@ cr.behaviors.MyFlash = function(runtime)
         SetDuration.call(this, duration);        
     };  
 
-    CmdGradChangeProto.SetStartStop = function(start, target)
+    CmdGradChangeProto.SetStartEnd = function(start, target)
     {
         this.start = start;
         this.target = target;     

@@ -30,26 +30,26 @@ AddAction(0, 0, "Set activated", "",
 AddAction(1, 0, "Flash start", "Control", 
           "Start {my} to flash", 
           "Start to flash.", "Start"); 
-AddAction(2, 0, "Flash stop", "Control", 
-          "Stop {my} to flash", 
-          "Stop to flash.", "Stop");  
+AddAction(2, 0, "Flash end", "Control", 
+          "End {my} to flash", 
+          "End to flash.", "End");  
 AddStringParam("Parameters", 
-               '"start, stop, start2stop, stopHold, stop2start, startHold, repeat"', 
+               '"start, end, start2end, endHold, end2start, startHold, repeat"', 
                '"0, 1.0, 0.1, 0.1, 0.1, 0.1, 2"');
 AddAction(3, 0, "Set parameters", "Setting", 
           "Set {my} parameters to <i>{0}</i>", 
           'Set parameters from string.', "SetParameters");            
 AddNumberParam("Start", "Opacity start value.", 0);
-AddNumberParam("Stop", "Opacity stop value.", 1.0);
-AddAction(4, 0, "Set start-stop value", "Setting", 
+AddNumberParam("End", "Opacity end value.", 1.0);
+AddAction(4, 0, "Set start-end value", "Setting", 
           "Set {my} opacity changing from <i>{0}</i> to <i>{1}</i>", 
-          "Set opacity changing value.", "SetStartStopValue");             
-AddNumberParam("Start-stop", "Duration from start to stop.", 0.1);
-AddNumberParam("Stop hold", "Duration of stop holding.", 0.1);
-AddNumberParam("Stop-start", "Duration from stop to start.", 0.1);
+          "Set opacity changing value.", "SetStartEndValue");             
+AddNumberParam("Start-end", "Duration from start to end.", 0.1);
+AddNumberParam("End hold", "Duration of end holding.", 0.1);
+AddNumberParam("End-start", "Duration from end to start.", 0.1);
 AddNumberParam("Start hold", "Duration of start holding.", 0.1);
 AddAction(5, 0, "Set duration", "Setting", 
-          "Set {my} duration start-stop to <i>{0}</i>, stop holding to <i>{1}</i>, stop-start to <i>{2}</i>, Start holding to <i>{3}</i>", 
+          "Set {my} duration start-end to <i>{0}</i>, end holding to <i>{1}</i>, end-start to <i>{2}</i>, Start holding to <i>{3}</i>", 
           "Duration in seconds. 0 to skip.", "SetDuration"); 
 AddNumberParam("Count", "Repeat count.", 1);
 AddAction(6, 0, "Set repeat count", "Setting", 
@@ -73,14 +73,14 @@ AddExpression(0, ef_return_number, "Get current activated state", "Current", "Ac
               "The current activated state of behavior.");
 AddExpression(1, ef_return_number, "Get start value", "Setting", "StartValue", 
               "Opacity start value.");    
-AddExpression(2, ef_return_number, "Get stop value", "Setting", "StopValue", 
-              "Opacity stop value."); 
-AddExpression(3, ef_return_number, "Get duration from start to stop", "Setting", "Start2Stop", 
-              "Duration from start to stop.");    
-AddExpression(4, ef_return_number, "Get duration of holding on stop", "Setting", "StopHold", 
-              "Duration of holding on stop.");
-AddExpression(5, ef_return_number, "Get duration from stop to start", "Setting", "Stop2Start", 
-              "Duration from stop to start.");    
+AddExpression(2, ef_return_number, "Get end value", "Setting", "EndValue", 
+              "Opacity end value."); 
+AddExpression(3, ef_return_number, "Get duration from start to end", "Setting", "Start2End", 
+              "Duration from start to end.");    
+AddExpression(4, ef_return_number, "Get duration of holding on end", "Setting", "EndHold", 
+              "Duration of holding on end.");
+AddExpression(5, ef_return_number, "Get duration from end to start", "Setting", "End2Start", 
+              "Duration from end to start.");    
 AddExpression(6, ef_return_number, "Get duration of holding on start", "Setting", "StartHold", 
               "Duration of holding on start.");   
 AddExpression(7, ef_return_number, "Get repeat count", "Setting", "Repeat", 
@@ -96,13 +96,13 @@ var property_list = [
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),                
     new cr.Property(ept_combo, "Start", "Yes", "Enable if you wish this to start at the start of the layout.", "No|Yes"),
     new cr.Property(ept_float, "Start value", 0, "Opacity start value."),    
-    new cr.Property(ept_float, "Stop value", 1.0, "Opacity stop value."),    
-	new cr.Property(ept_float, "Duration from start to stop", 0.1, 
-                    "Duration in seconds from start value to stop value. 0 to skip."),
-    new cr.Property(ept_float, "Duration of holding on stop", 0.1, 
-                    "Duration in seconds of holding on stop. 0 to skip."),
-	new cr.Property(ept_float, "Duration from stop to start", 0.1, 
-                    "Duration in seconds from stop value to start value. 0 to skip."),
+    new cr.Property(ept_float, "End value", 1.0, "Opacity end value."),    
+	new cr.Property(ept_float, "Duration from start to end", 0.1, 
+                    "Duration in seconds from start value to end value. 0 to skip."),
+    new cr.Property(ept_float, "Duration of holding on end", 0.1, 
+                    "Duration in seconds of holding on end. 0 to skip."),
+	new cr.Property(ept_float, "Duration from end to start", 0.1, 
+                    "Duration in seconds from end value to start value. 0 to skip."),
     new cr.Property(ept_float, "Duration of holding on start", 0.1, 
                     "Duration in seconds of holding on start. 0 to skip."),          
     new cr.Property(ept_integer, "Repeat count", 1, "The times to flash repeatly. 0 is infinity."),                                    
@@ -157,19 +157,19 @@ IDEInstance.prototype.OnPropertyChanged = function(property_name)
     else if (this.properties["Start value"] > 1)
 		this.properties["Start value"] = 1;  
         
-	if (this.properties["Stop value"] < 0)
-		this.properties["Stop value"] = 0;  
-    else if (this.properties["Stop value"] > 1)
-		this.properties["Stop value"] = 1;            
+	if (this.properties["End value"] < 0)
+		this.properties["End value"] = 0;  
+    else if (this.properties["End value"] > 1)
+		this.properties["End value"] = 1;            
     
-	if (this.properties["Duration from start to stop"] < 0)
-		this.properties["Duration from start to stop"] = 0;
+	if (this.properties["Duration from start to end"] < 0)
+		this.properties["Duration from start to end"] = 0;
 		
-	if (this.properties["Duration of holding on stop"] < 0)
-		this.properties["Duration of holding on stop"] = 0;
+	if (this.properties["Duration of holding on end"] < 0)
+		this.properties["Duration of holding on end"] = 0;
 		
-	if (this.properties["Duration from stop to start"] < 0)
-		this.properties["Duration from stop to start"] = 0;
+	if (this.properties["Duration from end to start"] < 0)
+		this.properties["Duration from end to start"] = 0;
         		
 	if (this.properties["Duration of holding on start"] < 0)
 		this.properties["Duration of holding on start"] = 0; 
