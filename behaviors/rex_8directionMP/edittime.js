@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"8 Direction Multi-player",
+		"name":			"8 Direction MP",
 		"id":			"Rex_EightDirMP",
 		"description":	"Moves an object up, down, left, right and on diagonals.",
 		"author":		"Rex.Rainbow",
@@ -27,6 +27,10 @@ AddStringParam("Name", "Control name.", '""');
 AddCondition(3, cf_trigger, "On extra control released", "Extra control", 
              "On <b>{0}</b> released", "Triggered when an extra control is released.", "OnExtraCtlReleased");             
 
+AddStringParam("Name", "Control name.", '""');
+AddCondition(4,	0,	"Control is down",	"Extra control", 
+             "<b>{0}</b> is down", "Test if an extra control is currently held down.", "IsExtraCtlDown");
+             
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -94,6 +98,13 @@ AddExpression(3, ef_return_number, "Get deceleration", "", "Deceleration", "The 
 AddExpression(4, ef_return_number, "Get angle of motion", "", "MovingAngle", "The current angle of motion, in degrees.");
 AddExpression(5, ef_return_number, "Get vector X", "", "VectorX", "The current X component of motion, in pixels.");
 AddExpression(6, ef_return_number, "Get vector Y", "", "VectorY", "The current Y component of motion, in pixels.");
+AddExpression(7, ef_return_number, "Get keycode of LEFT", "", "LEFT", "The current keycode to trigger control LEFT.");
+AddExpression(8, ef_return_number, "Get keycode of RIGHT", "", "RIGHT", "The current keycode to trigger control RIGHT.");
+AddExpression(9, ef_return_number, "Get keycode of UP", "", "UP", "The current keycode to trigger control UP.");
+AddExpression(10, ef_return_number, "Get keycode of DOWN", "", "DOWN", "The current keycode to trigger control DOWN.");
+AddStringParam('""', "Extra control name", '""');
+AddExpression(11, ef_return_number | ef_variadic_parameters, "Get keycode of extra control", "", "EXTRA", "The keycode to trigger extra control.");
+
 
 ACESDone();
 

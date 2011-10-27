@@ -122,7 +122,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		}
         
         var extra_ctl = this.KEY_EXTRA[keycode];
-        if (extra_ctl)
+        if (extra_ctl && !extra_ctl.state)
         {
             extra_ctl.state = true;
             this.current_extra_ctlName = extra_ctl.name;
@@ -157,7 +157,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
         
         var extra_ctl = this.KEY_EXTRA[keycode];
         if (extra_ctl)
-        {
+        {            
             extra_ctl.state = false;
             this.current_extra_ctlName = extra_ctl.name;
             this.is_echo = false;
@@ -385,7 +385,25 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
         var is_my_call = (this.current_extra_ctlName == name);
         this.is_echo |= is_my_call;
 		return is_my_call;
-	}; 
+	};
+    
+	cnds.IsExtraCtlDown = function (name)
+	{
+        var ret = false;
+        var keycode, key_info;
+        var key_extra_dict = this.KEY_EXTRA;
+        for (keycode in key_extra_dict)
+        {
+            key_info = key_extra_dict[keycode];
+            if ((key_info.name == name) ||
+                (key_info.state = true))
+            {
+               ret = true;
+               break;
+            }
+        }
+		return ret;
+	};
     
 
 	//////////////////////////////////////
@@ -524,4 +542,43 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 	{
 		ret.set_float(this.dy);
 	};
+	
+	exps.LEFT = function (ret)
+	{
+		ret.set_int(this.KEY_LEFT);
+	};
+	
+	exps.RIGHT = function (ret)
+	{
+		ret.set_int(this.KEY_RIGHT);
+	};   
+	
+	exps.UP = function (ret)
+	{
+		ret.set_int(this.KEY_UP);
+	};
+	
+	exps.DOWN = function (ret)
+	{
+		ret.set_int(this.KEY_DOWN);
+	};   
+	
+	exps.EXTRA = function (ret, name)
+	{
+        var val = 0;
+        var keycode, key_info;
+        var key_extra_dict = this.KEY_EXTRA;
+        for (keycode in key_extra_dict)
+        {
+            key_info = key_extra_dict[keycode];
+            if (key_info.name == name)
+            {
+               val = keycode;
+               break;
+            }
+        }
+		ret.set_int(parseInt(val));
+	};
+    
+    
 }());
