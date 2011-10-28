@@ -1,9 +1,9 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Flash",
-		"id":			"MyFlash",
-		"description":	"Change an object's opacity over time.",
+		"name":			"Gleam",
+		"id":			"Rex_Flash",
+		"description":	"Change an object's opacity over time periodly.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"General",

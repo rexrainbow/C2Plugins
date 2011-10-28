@@ -95,7 +95,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
         this.KEY_RIGHT = 39;
         this.KEY_DOWN = 40;  
         this.KEY_EXTRA = {};
-        this.current_extra_ctlName = "";
+        this.current_extra_ctlName = null;
         this.is_echo = false;
 	};
 
@@ -128,6 +128,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
             this.current_extra_ctlName = extra_ctl.name;
             this.is_echo = false;
             this.runtime.trigger(cr.behaviors.Rex_EightDirMP.prototype.cnds.OnExtraCtlPressed, this.inst);
+            this.current_extra_ctlName = null;            
             if (this.is_echo)
                 info.preventDefault();
         }
@@ -162,6 +163,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
             this.current_extra_ctlName = extra_ctl.name;
             this.is_echo = false;
             this.runtime.trigger(cr.behaviors.Rex_EightDirMP.prototype.cnds.OnExtraCtlReleased, this.inst);
+            this.current_extra_ctlName = null;            
             if (this.is_echo)
                 info.preventDefault();
         }        
