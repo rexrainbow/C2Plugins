@@ -41,9 +41,9 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 
 	instanceProto.onCreate = function()
 	{        
-        this.timer = null;
         this.timeline = null;
-        this.callback = null;  
+        this.callback = null;        
+        this.timer = null; 
         this.instructions = [];
         this.offset = 0;
         this.current_cmd = {};
@@ -164,8 +164,17 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 
     acts.Setup = function (timeline_objs, fn_objs)
 	{
-        this.timeline = timeline_objs.instances[0];
-        this.callback = fn_objs.instances[0];
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.timeline = timeline;        
+        else
+            alert ("Worksheet should connect to a timeline object");          
+        
+        var callback = fn_objs.instances[0];
+        if (callback.check_name == "FUNCTION")
+            this.callback = callback;        
+        else
+            alert ("Worksheet should connect to a function object");
 	};    
     
     acts.Start = function (instructions, offset)

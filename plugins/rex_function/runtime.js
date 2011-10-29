@@ -41,61 +41,19 @@ cr.plugins_.Rex_Function = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.is_debug_mode = this.properties[0];    
-        
-        this.function_name = "";
-        this.param = {};
-        this.ret = {};
-        this.is_echo = false;
-		this.JSFnObjs = {};
+        this.fnObj = new cr.plugins_.Rex_Function.FunctionKlass(this, this.properties[0]);
+        this.check_name = "FUNCTION";
 	};
     
-	instanceProto.CallFn = function(name, args)
+	instanceProto.CallFn = function(name)
 	{
-        if (args)
-            jQuery.extend(this.param, args);
-        
-        this.is_echo = false;
-        
-        // call JS function first
-        var is_break = this._CallJS(name);
-        if (!is_break)
-        {
-            // then call trigger function
-            this._CallFn(name);
-        }
-        
-        if ((!this.is_echo) && this.is_debug_mode) 
-        {
-            alert ("Can not find function '" + name + "'");
-        }
-	}; 
-    
+        this.fnObj["CallFn"](name);
+	};  
+
 	instanceProto.CreateJS = function(name, code_string)
 	{
-        if (this.is_debug_mode && this.JSFnObjs[name] != null) 
-            alert ("JS function '" + name + "' has existed.");  
-            
-        this.JSFnObjs[name] = eval("("+code_string+")");
-	};
-    
-	instanceProto._CallFn = function(name)
-	{
-        this.function_name = name; 
-	    this.runtime.trigger(cr.plugins_.Rex_Function.prototype.cnds.OnFunctionCalled, this);
-	}; 
-
- 	instanceProto._CallJS = function(name)
-	{
-        var is_break = false;
-	    var fn_obj = this.JSFnObjs[name];
-        if (fn_obj != null) 
-        {
-            this.is_echo = true;
-            is_break = fn_obj(this);
-        }
-        return is_break;
-	};     
+        this.fnObj["CreateJS"](name, code_string);
+	};    
 
 	//////////////////////////////////////
 	// Conditions
@@ -104,8 +62,8 @@ cr.plugins_.Rex_Function = function(runtime)
     
 	cnds.OnFunctionCalled = function (name)
 	{
-        var is_my_call = (this.function_name == name);
-        this.is_echo |= is_my_call;
+        var is_my_call = (this.fnObj["fn_name"] == name);
+        this.fnObj["is_echo"] |= is_my_call;
 		return is_my_call;
 	};	    
 
@@ -115,28 +73,28 @@ cr.plugins_.Rex_Function = function(runtime)
 	var acts = pluginProto.acts;
     
 	acts.CallFunction = function (name)
-	{
+	{  
         this.CallFn(name);
 	}; 
     
 	acts.CleanParameters = function ()
 	{
-        this.param = {};
+        this.fnObj["param"] = {};
 	};    
     
 	acts.SetParameter = function (index, value)
 	{
-        this.param[index] = value;
+        this.fnObj["param"][index] = value;
 	};  
 
 	acts.CleanRetruns = function ()
 	{
-        this.ret = {};
+        this.fnObj["ret"] = {};
 	};    
     
 	acts.SetReturn = function (index, value)
 	{
-        this.ret[index] = value;
+        this.fnObj["ret"][index] = value;
 	};
 
 	acts.CreateJSFunctionObject = function (name, code_string)
@@ -151,11 +109,11 @@ cr.plugins_.Rex_Function = function(runtime)
 
     exps.Param = function (ret, index)
 	{
-        var value = this.param[index];
+        var value = this.fnObj["param"][index];
         if (value == null) 
         {
             value = 0;
-            if (this.is_debug_mode) 
+            if (this.fnObj["is_debug_mode"]) 
             {
                 alert ("Can not find parameter '" + index + "'");
             }
@@ -165,11 +123,11 @@ cr.plugins_.Rex_Function = function(runtime)
     
     exps.Ret = function (ret, index)
 	{
-        var value = this.ret[index];
+        var value = this.fnObj["ret"][index];
         if (value == null) 
         {
             value = 0;
-            if (this.is_debug_mode) 
+            if (this.fnObj["is_debug_mode"]) 
             {
                 alert ("Can not find return value '" + index + "'");
             }
@@ -181,4 +139,67 @@ cr.plugins_.Rex_Function = function(runtime)
 	{
 	    ret.set_any( eval( "("+code_string+")" ) );
 	};	
+}());
+
+(function ()
+{
+    cr.plugins_.Rex_Function.FunctionKlass = function(plugin, is_debug_mode)
+    {
+        this["plugin"] = plugin;
+        this["is_debug_mode"] = is_debug_mode;    
+        this["fn_name"] = "";
+        this["param"] = {};
+        this["ret"] = {};
+        this["is_echo"] = false;
+		this["JSFnObjs"] = {};
+    };
+    var FunctionKlassProto = cr.plugins_.Rex_Function.FunctionKlass.prototype;
+    
+	FunctionKlassProto["CallFn"] = function(name, args)
+	{    
+        if (args)
+            jQuery.extend(this["param"], args);
+        
+        this["is_echo"] = false;
+        
+        // call JS function first
+        var is_break = this["_CallJS"](name);
+        if (!is_break)
+        {
+            // then call trigger function
+            this["_CallFn"](name);
+        }
+        
+        if ((!this["is_echo"]) && this["is_debug_mode"]) 
+        {
+            alert ("Can not find function '" + name + "'");
+        }
+	};   
+
+	FunctionKlassProto["CreateJS"] = function(name, code_string)
+	{
+        if (this["is_debug_mode"] && this["JSFnObjs"][name] != null) 
+            alert ("JS function '" + name + "' has existed.");  
+            
+        this["JSFnObjs"][name] = eval("("+code_string+")");
+	};
+    
+	FunctionKlassProto["_CallFn"] = function(name)
+	{
+        this["fn_name"] = name; 
+	    this["plugin"].runtime.trigger(cr.plugins_.Rex_Function.prototype.cnds.OnFunctionCalled, this["plugin"]);
+	}; 
+
+ 	FunctionKlassProto["_CallJS"] = function(name)
+	{
+        var is_break = false;
+	    var fn_obj = this["JSFnObjs"][name];
+        if (fn_obj != null) 
+        {
+            this["is_echo"] = true;
+            is_break = fn_obj(this);
+        }
+        return is_break;
+	};     
+    
 }());

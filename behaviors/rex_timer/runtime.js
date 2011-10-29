@@ -45,8 +45,8 @@ cr.behaviors.Rex_Timer = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
 	behinstProto.onCreate = function()
-	{      
-        this.timer = null;
+	{        
+        this.timer = null;        
 	};
     
 	behinstProto.onDestroy = function()
@@ -89,9 +89,18 @@ cr.behaviors.Rex_Timer = function(runtime)
 
     acts.Setup = function (timeline_objs, fn_objs)
 	{
-        this.type.timeline = timeline_objs.instances[0];
-        this.type.callback = fn_objs.instances[0];
-	};    
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.type.timeline = timeline;        
+        else
+            alert ("Timer behavior should connect to a timeline object");          
+        
+        var callback = fn_objs.instances[0];
+        if (callback.check_name == "FUNCTION")
+            this.type.callback = callback;        
+        else
+            alert ("Timer behavior should connect to a function object");
+	};      
     
     acts.Create = function (fn_name, fn_args)
 	{

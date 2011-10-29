@@ -46,6 +46,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
         this.runtime.tickMe(this);
+        this.check_name = "TIMELINE";
         // push manual
         this.manual_push = false;
         this.manual_current_time = 0;
@@ -110,7 +111,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     acts.Setup = function (fn_objs)
 	{
-        this.callback = fn_objs.instances[0];
+        var callback = fn_objs.instances[0];
+        if (callback.check_name == "FUNCTION")
+            this.callback = callback;        
+        else
+            alert ("Timeline should connect to a function object");
 	};      
     
     acts.CreateTimer = function (timer_name, fn_name, fn_args)

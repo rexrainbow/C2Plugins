@@ -6,7 +6,7 @@
 		"description":	"TimeLine",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Core utility",
+		"category":		"Utility: Core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
