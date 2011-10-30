@@ -102,6 +102,12 @@ cr.plugins_.Rex_Function = function(runtime)
         this.CreateJS(name, code_string);
 	};
 
+	acts.SetResult = function (value)
+	{
+        this.fnObj["result"] = value;
+	};    
+    
+
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -139,6 +145,18 @@ cr.plugins_.Rex_Function = function(runtime)
 	{
 	    ret.set_any( eval( "("+code_string+")" ) );
 	};	
+
+    exps.Result = function (ret)
+	{
+        var arg_len = arguments.length;
+        var i;
+        for (i=2; i<arg_len; i++)
+        {
+            this.fnObj["param"][i-2] = arguments[i];
+        }
+        this.CallFn(arguments[1] || "");
+	    ret.set_any( this.fnObj["result"] );
+	};
 }());
 
 (function ()
@@ -150,6 +168,7 @@ cr.plugins_.Rex_Function = function(runtime)
         this["fn_name"] = "";
         this["param"] = {};
         this["ret"] = {};
+        this["result"] = 0;
         this["is_echo"] = false;
 		this["JSFnObjs"] = {};
     };

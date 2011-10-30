@@ -33,6 +33,8 @@ AddAction(4, 0, "Add a return value", "Return", "Set return[<i>{0}</i>] to <i>{1
 AddStringParam("Name", "JS function object name", '""');
 AddStringParam("Code", "JS function code", '""');
 AddAction(5, 0, "Create JS function object", "JS Function", "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
+AddAnyTypeParam("Value", "Value of result", "0");
+AddAction(6, 0, "Set result", "Result", "Set result to <i>{0}</i>", "Set result.", "SetResult");
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -42,6 +44,8 @@ AddAnyTypeParam("0", "The index of return value to get, can be number of string.
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Get return", "Return", "Ret", "Get a return value by index.");
 AddStringParam('""', "Code string.", '""');
 AddExpression(2, ef_return_any | ef_variadic_parameters, "Eval js code", "JS Function", "Eval", "Eval js code string.");
+AddStringParam("Name", "Function name", '""');
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Get result", "Return", "Result", "Get the result from a function called.");
 
 
 ACESDone();
