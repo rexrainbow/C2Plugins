@@ -128,9 +128,9 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
             this.current_extra_ctlName = extra_ctl.name;
             this.is_echo = false;
             this.runtime.trigger(cr.behaviors.Rex_EightDirMP.prototype.cnds.OnExtraCtlPressed, this.inst);
-            this.current_extra_ctlName = null;            
             if (this.is_echo)
                 info.preventDefault();
+            this.current_extra_ctlName = null;
         }
 	};
 
@@ -163,7 +163,6 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
             this.current_extra_ctlName = extra_ctl.name;
             this.is_echo = false;
             this.runtime.trigger(cr.behaviors.Rex_EightDirMP.prototype.cnds.OnExtraCtlReleased, this.inst);
-            this.current_extra_ctlName = null;            
             if (this.is_echo)
                 info.preventDefault();
         }        
@@ -397,8 +396,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
         for (keycode in key_extra_dict)
         {
             key_info = key_extra_dict[keycode];
-            if ((key_info.name == name) ||
-                (key_info.state = true))
+            if ((key_info.name == name) && key_info.state)
             {
                ret = true;
                break;
