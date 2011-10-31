@@ -35,6 +35,9 @@ AddStringParam("Code", "JS function code", '""');
 AddAction(5, 0, "Create JS function object", "JS Function", "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
 AddAnyTypeParam("Value", "Value of result", "0");
 AddAction(6, 0, "Set result", "Result", "Set result to <i>{0}</i>", "Set result.", "SetResult");
+AddStringParam("Commands", "Commands", '""');
+AddAction(7, 0, "Execute commands", "Function", "Execute commands <i>{0}</i>", "Execute commands.", "ExecuteCommands");
+
 
 //////////////////////////////////////////////////////////////
 // Expressions
