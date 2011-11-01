@@ -45,6 +45,8 @@ cr.plugins_.Rex_CSV = function(runtime)
 		this.Clear();
         this.forCol = "";
         this.forRow = "";
+        this.atCol = "";
+        this.atRow = "";        
 	};
     
 	instanceProto.Clear = function()
@@ -197,6 +199,8 @@ cr.plugins_.Rex_CSV = function(runtime)
 
     instanceProto.at = function(col, row)
 	{
+        this.atCol = col;
+        this.atRow = row;
         if (this._table[col]==null)
         {
             if (this.is_debug_mode)
@@ -333,6 +337,16 @@ cr.plugins_.Rex_CSV = function(runtime)
 	exps.CurValue = function (ret)
 	{
 		ret.set_any(this.at(this.forCol,this.forRow));
+	}; 
+
+	exps.AtCol = function (ret)
+	{
+		ret.set_string(this.atCol);
+	};
+	
+	exps.AtRow = function (ret)
+	{
+		ret.set_string(this.atRow);
 	};    
     
 }());

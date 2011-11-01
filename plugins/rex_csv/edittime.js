@@ -48,6 +48,8 @@ AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table"
 AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current col index in a For Each loop.");
 AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
 AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
+AddExpression(4, ef_return_string, "At Col", "Get value at", "AtCol", "Get the col index in the last At expression.");
+AddExpression(5, ef_return_string, "At Row", "Get value at", "AtRow", "Get the row index in the last At expression.");
 
 
 ACESDone();
