@@ -3,7 +3,7 @@
 	return {
 		"name":			"CSV",
 		"id":			"Rex_CSV",
-		"description":	"Read a 2d table from cvs string.",
+		"description":	"Read 2d table from cvs string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Data & Storage",
@@ -20,6 +20,9 @@ AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For Each", "For
 AddStringParam("Col", "The col index.", '""');
 AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For Each", 
              "For each row in a col <i>{0}</i>", "Repeat the event for each row in a col.", "ForEachRowInCol");
+AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For Each", "For each page", 
+             "Repeat the event for each page.", "ForEachPage");
+             
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -38,18 +41,23 @@ AddComboParamOption("Float");
 AddComboParam("Type", "Conver type to numver.",0);
 AddAction(4, 0, "Convert type", "Table", "Convert entries type to <i>{1}</i> on row <i>{0}</i>",
          "Convert entries type in a row.", "ConvertType");
+AddStringParam("Page", "The index of page.", '""');
+AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
+         "Turn the page.", "TurnPage");         
 
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Col", "The col index.", '""');
 AddStringParam("Row", "The row index.", '""');
-AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", "Get value from the table.");
+AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", "Get value from current table. Add page index to turn the page.");
 AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current col index in a For Each loop.");
 AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
 AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
-AddExpression(4, ef_return_string, "At Col", "Get value at", "AtCol", "Get the col index in the last At expression.");
-AddExpression(5, ef_return_string, "At Row", "Get value at", "AtRow", "Get the row index in the last At expression.");
+AddExpression(4, ef_return_string, "At Col", "Table", "AtCol", "Get the col index in the last At expression.");
+AddExpression(5, ef_return_string, "At Row", "Table", "AtRow", "Get the row index in the last At expression.");
+AddExpression(6, ef_return_string, "At Page", "Page", "AtPage", "Get the page index in the last At expression.");
+AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get the current page index in a For Each loop.");
 
 
 ACESDone();
