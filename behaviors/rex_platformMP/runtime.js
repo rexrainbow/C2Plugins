@@ -672,6 +672,21 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 
 	acts.CfgExtraCtl = function (ctl_name, keycode)
 	{
+        // remove the existed keycode of ctl_name    
+        var key;
+        var key_hash = this.KEY_EXTRA;
+        var find_key = null;
+        for (key in key_hash)
+        {
+            if (key_hash[key].name == ctl_name)
+            {
+                find_key = key;
+                break;
+            }
+        }
+        if (find_key != null)
+            this.KEY_EXTRA[find_key] = null;  
+            
 		this.KEY_EXTRA[keycode] = {name:ctl_name, state:false};        
 	};     
 
