@@ -106,6 +106,8 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	{
         this.activated = this.properties[0];
         this.is_run = this.properties[1];
+        var precise_mode = this.properties[11];
+        var continued_mode = this.properties[12];
         this.cur_cmd = null;
         this.is_my_call = false;
               
@@ -117,13 +119,15 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                                                        this.properties[5],
                                                        this.properties[6],
                                                        this.properties[7],
-                                                       this.properties[11]);  
+                                                       precise_mode,
+                                                       continued_mode);  
         this.CmdRotate = new cr.behaviors.Rex_Zigzag.CmdRotate(this.inst, 
                                                            this.properties[2],
                                                            this.properties[8],
                                                            this.properties[9],
                                                            this.properties[10],
-                                                           this.properties[11]);
+                                                           precise_mode,
+                                                           continued_mode);
         this.CmdWait = new cr.behaviors.Rex_Zigzag.CmdWait(this.properties[11]); 
         this.cmd_map = {"M":this.CmdMove,
                         "R":this.CmdRotate,
@@ -458,11 +462,14 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	};
      
     // move
-    cr.behaviors.Rex_Zigzag.CmdMove = function(inst, max_speed, acc, dec, continued_mode)
+    cr.behaviors.Rex_Zigzag.CmdMove = function(inst, 
+                                               max_speed, acc, dec, 
+                                               precise_mode, continued_mode)
     {
         this.inst = inst;
         this.move = {max:max_speed, acc:acc, dec:dec};
         this.is_done = true;
+        this.precise_mode = precise_mode;        
         this.continued_mode = continued_mode;
         this.current_speed = 0;
     };
@@ -491,8 +498,20 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {
             this.is_done = true;
-            this.inst.x = this.target.x;
-            this.inst.y = this.target.y;
+            if (this.precise_mode)  // precise mode
+            {
+                this.inst.x = this.target.x;
+                this.inst.y = this.target.y;
+            }
+            else  // non-precise mode
+            {
+                var angle = this.target.angle;
+                distance += this.remain_distance;
+                this.inst.x += (distance * Math.cos(angle));
+                this.inst.y += (distance * Math.sin(angle));            
+                this.target.x = this.inst.x;
+                this.target.y = this.inst.y;
+            }
             remain_dt = (this.continued_mode==1)? _remaind_dt_get.call(this):0;    
         }
         else
@@ -509,14 +528,18 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     };  
     
     // rotate
-    cr.behaviors.Rex_Zigzag.CmdRotate = function(inst, rotatable, max_speed, acc, dec, continued_mode)
+    cr.behaviors.Rex_Zigzag.CmdRotate = function(inst, 
+                                                 rotatable, 
+                                                 max_speed, acc, dec, 
+                                                 precise_mode, continued_mode)
     {
         this.inst = inst;
         this.rotatable = rotatable;
         this.move = {max:max_speed, acc:acc, dec:dec};
         this.is_done = true;
         this.is_zeroDt_mode = ( (max_speed >= 36000) && (acc==0) && (dec==0) );
-        this.continued_mode = continued_mode;
+        this.precise_mode = precise_mode;   
+        this.continued_mode = continued_mode;     
         this.current_angle = cr.to_clamped_degrees(inst.angle);
         this.current_speed = 0;
     };
@@ -557,7 +580,17 @@ cr.behaviors.Rex_Zigzag = function(runtime)
             if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
             {
                 this.is_done = true;
-                target_angle = this.target.angle;  
+                if (this.precise_mode)  // precise mode
+                {
+                    target_angle = this.target.angle;                                      
+                }
+                else  // non-precise mode
+                {
+                    distance += this.remain_distance;
+                    this.current_angle += ((this.dir)? distance:(-distance));
+                    target_angle = cr.to_clamped_radians(this.current_angle);                
+                    this.target.angle = target_angle;
+                }
                 this.current_angle = this._target_angle;
                 remain_dt = (this.continued_mode==1)? _remaind_dt_get.call(this):0;                
             }
