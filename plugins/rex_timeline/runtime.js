@@ -46,10 +46,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
         this.runtime.tickMe(this);
+        this.pre_kahanTime = 0;
         this.check_name = "TIMELINE";
         // push manual
         this.manual_push = false;
-        this.manual_current_time = 0;
+        this.manual_delta_time = 0;
         
         // timers
         this.callback = null;        
@@ -61,11 +62,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         if (this.update_with_game_time==1)
         {
-            this.timeline.Dispatch(this.runtime.kahanTime.sum);
+            this.timeline.Dispatch(this.runtime.kahanTime.sum - this.pre_kahanTime);
+            this.pre_kahanTime = this.runtime.kahanTime.sum;
         }
         else if (this.manual_push)  // this.update_with_game_time==0
         {
-            this.timeline.Dispatch(this.manual_current_time);
+            this.timeline.Dispatch(this.manual_delta_time);
             this.manual_push = false;
         }
     };
@@ -105,7 +107,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     acts.PushTimeLine = function (delta_time)
 	{
         // push manually
-        this.manual_current_time += delta_time;
+        this.manual_delta_time = delta_time;
         this.manual_push = true;        
 	};   
     
@@ -176,7 +178,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             timer.Remove();
         }
-	};    
+	};
+    
+    acts.CleanTimeLine = function ()
+	{
+        this.timeline.CleanAll();
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -216,7 +224,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                     this.timers[timer_name];
         var val = (timer)? timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(val);
-	};     
+	};
+    
+	exps.TimeLineTime = function (ret)
+	{ 
+	    ret.set_float(this.timeline.ABS_Time);
+	};
+    
 }());
 
 
@@ -237,7 +251,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     TimeLineProto.CleanAll = function()
 	{
         this.triggered_timer = null;     
-        this._abs_time = 0;
+        this.ABS_Time = 0;
         this._timer_abs_time = 0;
         this._waiting_timer_queue = [];
         this._process_timer_queue = [];
@@ -260,10 +274,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         timer._remove();
     };
 
-    TimeLineProto.Dispatch = function(current_time)
+    TimeLineProto.Dispatch = function(delta_time)
     {
-        this._abs_time = current_time;
-        this._timer_abs_time = current_time;
+        this.ABS_Time += delta_time;
+        this._timer_abs_time = this.ABS_Time;
 
         // sort _waiting_timer_queue
         this._waiting_timer_queue.sort(_TIMERQUEUE_SORT);
@@ -342,7 +356,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // internal function        
     TimeLineProto._is_timer_time_out = function(timer)
     {
-        return (timer._abs_time < this._abs_time);
+        return (timer._abs_time < this.ABS_Time);
     };
 
     TimeLineProto._add_timer_to_activate_lists = function(timer)

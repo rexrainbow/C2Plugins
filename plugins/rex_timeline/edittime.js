@@ -54,7 +54,10 @@ AddAction(6, 0, "Resume timer", "Timer",
 AddStringParam("Name", "Timer's name.", '""');      
 AddAction(7, 0, "Stop timer", "Timer", 
           "Stop timer <i>{0}</i>", 
-          "Stop timer.", "StopTimer");          
+          "Stop timer.", "StopTimer");
+AddAction(8, 0, "Clean timeline", "TimeLine", 
+          "Clean timeline", 
+          "Clean timeline.", "CleanTimeLine");          
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -69,7 +72,10 @@ AddExpression(2, ef_return_number | ef_variadic_parameters, "Get remainder time 
               "Get remainder time percentage of timer.");
 AddExpression(3, ef_return_number | ef_variadic_parameters, "Get elapsed time percentage of timer", 
               "Timer", "TimerElapsedPercent", 
-              "Get elapsed time percentage of timer.");              
+              "Get elapsed time percentage of timer.");
+AddExpression(4, ef_return_number, "Get current time of timeline", 
+              "TimeLine", "TimeLineTime", 
+              "Get current time of timeline.");              
               
 
 
