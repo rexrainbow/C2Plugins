@@ -6,7 +6,7 @@
 		"description":	"Insert x,y position.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Movements",
+		"category":		"General",
 		"flags":		0
 	};
 };
