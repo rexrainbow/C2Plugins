@@ -50,6 +50,7 @@ cr.behaviors.Rex_Step = function(runtime)
         this.activated = this.properties[0]; 
 		this.step_mode = this.properties[1];	// 0=None, 1=Linear, 2=Horizontal then vertical, 3=Vertical then horizontal
 		this.pixel_per_step = this.properties[2];
+        this.noise_shiftt = this.properties[3];
         
 		this.pre_x = this.inst.x;
 		this.pre_y = this.inst.y;        
@@ -57,7 +58,8 @@ cr.behaviors.Rex_Step = function(runtime)
 	
 	behinstProto.step = function (dx, dy, trigmethod)
 	{
-		var steps = Math.round(Math.sqrt(dx * dx + dy * dy) / this.pixel_per_step);
+        var move_dist = Math.sqrt(dx * dx + dy * dy);
+		var steps = Math.round(move_dist / this.pixel_per_step);
         
 		if (steps === 0)
 			steps = 1;
@@ -65,12 +67,28 @@ cr.behaviors.Rex_Step = function(runtime)
 		var i, prog;
         var inst = this.inst;
 		var startx = this.pre_x;
-		var starty = this.pre_y;        
+		var starty = this.pre_y;  
+        
+        // unit vector of noise
+        if (this.noise_shiftt != 0)
+        {
+            var norm_noise_x = dy/move_dist;
+            var norm_noise_y = dx/move_dist;
+        }
+        
 		for (i = 1; i <= steps; i++)
 		{
 			prog = i / steps;
 			inst.x = startx + (dx * prog);
 			inst.y = starty + (dy * prog);
+            
+            if (this.noise_shiftt != 0)
+            {
+                var noise = Math.random()*this.noise_shiftt;
+                inst.x += (noise*norm_noise_x);
+                inst.y += (noise*norm_noise_y);
+            }
+            
 			inst.set_bbox_changed();
 			
 			this.runtime.trigger(trigmethod, inst);

@@ -45,8 +45,10 @@ var property_list = [
 	new cr.Property(ept_combo, "Stepping mode", "Linear", 
                     "Move in increments while firing the step triggers.", 
                     "Linear|Horizontal then vertical|Vertical then horizontal"),
-	new cr.Property(ept_integer, "Pixels per step",	5, 
-                    "When stepping enabled, the number of pixels to move each step.")
+	new cr.Property(ept_integer, "Pixels per step", 5, 
+                    "When stepping enabled, the number of pixels to move each step."),
+	new cr.Property(ept_integer, "Noise shift", 0, 
+                    "Noise shift in pixel per step."),                    
 	];
 	
 // Called by IDE when a new behavior type is to be created
