@@ -207,7 +207,9 @@ cr.behaviors.Rex_DragDrop = function(runtime)
         {
             inst = ovl_insts[i].behavior_insts[this.behavior_index];
             if ( inst.activated &&
-                 (inst.dragButton == this.triggerButton.btn) )
+                 ( (this.trigger_source == 0) ||
+                   (inst.dragButton == this.triggerButton.btn) ) 
+               )
             {
                 behavior_insts.push(inst);
             }
@@ -324,10 +326,10 @@ cr.behaviors.Rex_DragDrop = function(runtime)
             return;        
         }
         
+        // this.activated == 1 && this.is_on_drag        
         var inst = this.inst;
         var cur_x = this.type.GetLayerX(inst);
         var cur_y = this.type.GetLayerY(inst);
-        // this.activated == 1 && this.is_on_drag
         var is_mouse_moved = (this.pre_x != cur_x) ||
                              (this.pre_y != cur_y);      
         if ( is_mouse_moved )
