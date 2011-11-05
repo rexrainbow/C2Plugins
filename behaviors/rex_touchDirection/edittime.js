@@ -3,7 +3,7 @@
 	return {
 		"name":			"Touch direction",
 		"id":			"Rex_TouchDirection",
-		"description":	"Move sprite with mouse/touch moving",
+		"description":	"Move sprite with mouse or touch moving",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Movements",
