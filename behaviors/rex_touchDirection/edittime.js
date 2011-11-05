@@ -18,7 +18,7 @@ AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
 AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
           "Enable the object's touch moving behavior.", "SetActivated");
-AddNumberParam("Proportion", "The proportion of sprite moving followed mouse.", 10);
+AddNumberParam("Proportion", "The proportion of sprite moving followed mouse.", 1);
 AddAction(1, 0, "Set proportion", "", "Set {my} proportion to <i>{0}</i>", 
           "Set proportionof sprite moving followed mouse.", "SetProportion");          
 

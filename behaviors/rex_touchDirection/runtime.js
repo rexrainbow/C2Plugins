@@ -188,7 +188,7 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         {
             inst = insts[i].behavior_insts[this.behavior_index];
             if ( (this.trigger_source == 0) ||
-                 (inst.mouseButon == this.triggerButton.btn) ) 
+                 (inst.mouse_buton == this.triggerButton.btn) ) 
                )
             {
                 inst.is_on_moving = true;
@@ -244,13 +244,13 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         return inst.layer.canvasToLayerY(this.GetABSY());
 	};
     
-	behtypeProto._is_release = function(mouseButon)
+	behtypeProto._is_release = function(mouse_buton)
 	{
         var is_drop;
         if (this.trigger_source == 1)  // mouse
         {    
              is_drop = (!this.triggerButton.press) && 
-                       (this.triggerButton.btn == mouseButon) ;          
+                       (this.triggerButton.btn == mouse_buton) ;          
         }
         else
         {
@@ -278,7 +278,7 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
 	behinstProto.onCreate = function()
 	{   
         this.activated = this.properties[0]; 
-        this.mouseButon = this.properties[1]; 
+        this.mouse_buton = this.properties[1]; 
         this.move_axis = this.properties[2]; 
         this.move_proportion = this.properties[3];
 	};
@@ -318,7 +318,7 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         }
         this.runtime.trigger(cr.behaviors.Rex_TouchDirection.prototype.cnds.OnMoving, inst);
                                 
-        if ( this.type._is_release(this.mouseButon) )
+        if ( this.type._is_release(this.mouse_buton) )
         {
             this.is_on_moving = false;
             this.runtime.trigger(cr.behaviors.Rex_TouchDirection.prototype.cnds.OnMoveStop, inst); 
