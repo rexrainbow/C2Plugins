@@ -84,7 +84,7 @@ cr.behaviors.Rex_Step = function(runtime)
             
             if (this.noise_shiftt != 0)
             {
-                var noise = Math.random()*this.noise_shiftt;
+                var noise = (Math.random()*this.noise_shiftt*2) - this.noise_shiftt;
                 inst.x += (noise*norm_noise_x);
                 inst.y += (noise*norm_noise_y);
             }
