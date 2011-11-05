@@ -106,14 +106,18 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	{
         this.activated = this.properties[0];
         this.is_run = this.properties[1];
-        var precise_mode = this.properties[11];
-        var continued_mode = this.properties[12];
+        var is_rotatable = this.properties[2];
+        var precise_mode = this.properties[12];
+        var continued_mode = this.properties[13];        
         this.cur_cmd = null;
         this.is_my_call = false;
-              
+
+        var init_angle = (is_rotatable==1)?  
+                         this.inst.angle: 
+                         cr.to_clamped_radians(this.properties[11]);        
         this.pos_state = {x:this.inst.x, 
                           y:this.inst.y, 
-                          angle:this.inst.angle};
+                          angle:init_angle};
         this.CmdQueue = new cr.behaviors.Rex_Zigzag.CmdQueue(this.properties[3]);
         this.CmdMove = new cr.behaviors.Rex_Zigzag.CmdMove(this.inst, 
                                                        this.properties[5],
@@ -122,7 +126,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                                                        precise_mode,
                                                        continued_mode);  
         this.CmdRotate = new cr.behaviors.Rex_Zigzag.CmdRotate(this.inst, 
-                                                           this.properties[2],
+                                                           is_rotatable,
                                                            this.properties[8],
                                                            this.properties[9],
                                                            this.properties[10],

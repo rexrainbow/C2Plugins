@@ -181,6 +181,10 @@ var property_list = [
                     "Rotation acceleration, in degrees per second per second. 0 is using max speed directly."),
 	new cr.Property(ept_float, "Rotation deceleration", 0, 
                     "Rotation deceleration, in degrees per second per second. 0 is ignored deceleration"),
+    // initial zigzag angle for non-rotatable mode
+    new cr.Property(ept_float, "Initial angle", 0, 
+                    "Initial zigzag angle for non-rotatable mode, in degrees."),
+    // mode                    
     new cr.Property(ept_combo, "Precise mode", "No", "Force sprite move to target.", "No|Yes"),                    
     new cr.Property(ept_combo, "Continued mode", "No", "Running zigzag as in continued-time.", "No|Yes"),        
 	];
