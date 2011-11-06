@@ -245,7 +245,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     var _TIMERQUEUE_SORT = function(timerA, timerB)
     {
-        return (timerA._abs_time > timerB._abs_time);
+        var ta = timerA._abs_time;
+        var tb = timerB._abs_time;
+        return (ta < tb) ? -1 : (ta > tb) ? 1 : 0;
     }
     
     TimeLineProto.CleanAll = function()
