@@ -197,6 +197,12 @@ cr.behaviors.Rex_Step = function(runtime)
 	{
 		this.pixel_per_step = s;
 	};
+ 
+	acts.ForceStepping = function ()
+	{
+		this.tick();
+	};    
+    
 
 	//////////////////////////////////////
 	// Expressions

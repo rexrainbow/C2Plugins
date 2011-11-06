@@ -31,7 +31,9 @@ AddAction(1, 0, "Stop stepping", "Velocity", "Stop {my} stepping ({0})",
           "Stop the current stepping, preventing any more step triggers firing this tick.", "StopStepping");
 AddNumberParam("Pixels per step", "The pixels per step.", 5);
 AddAction(2, 0, "Set pixels per step", "", "Set {my} pixels per step to <i>{0}</i>", 
-          "Set pixels per step.", "SetPixelPerStep");             
+          "Set pixels per step.", "SetPixelPerStep");     
+AddAction(3, 0, "Force stepping", "", "Force {my} stepping", 
+          "Force stepping.", "ForceStepping");              
 
 //////////////////////////////////////////////////////////////
 // Expressions
