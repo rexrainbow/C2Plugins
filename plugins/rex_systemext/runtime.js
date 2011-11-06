@@ -159,4 +159,9 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
 
+    exps.Eval = function (ret, code_string)
+	{
+	    ret.set_any( eval( "("+code_string+")" ) );
+	};
+    
 }());

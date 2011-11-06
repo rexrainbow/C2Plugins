@@ -1,7 +1,7 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"System extension",
+		"name":			"SysExt",
 		"id":			"Rex_SysExt",
 		"description":	"System extension",
 		"author":		"Rex.Rainbow",
@@ -53,6 +53,9 @@ AddAction(2, 0, "Pick instances by property comparing", "SOL",
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddStringParam('""', "Code string.", '""');
+AddExpression(0, ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
+
 
 
 ACESDone();
