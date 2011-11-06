@@ -45,9 +45,9 @@ cr.plugins_.Rex_Function = function(runtime)
         this.check_name = "FUNCTION";
 	};
     
-	instanceProto.CallFn = function(name)
+	instanceProto.CallFn = function(name, args)
 	{
-        this.fnObj["CallFn"](name);
+        this.fnObj["CallFn"](name, args);
 	};  
     
 	instanceProto.Run = function(args)
