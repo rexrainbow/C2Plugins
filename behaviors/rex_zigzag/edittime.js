@@ -127,7 +127,11 @@ AddComboParamOption("Yes");
 AddComboParam("Rotatable", "Set rotatable.",1);
 AddAction(13, 0, "Set rotatable", "Rotation", 
           "Set {my} rotatable to <i>{0}</i>", 
-          "Set rotatable.", "SetRotatable");                
+          "Set rotatable.", "SetRotatable");  
+AddNumberParam("Angle", "The angle of moving direction.");  
+AddAction(14, 0, "Set moving angle", "Rotation", 
+          "Set {my} moving angle to <i>{0}</i>", 
+          "Set moving angle in degree. Also rotate sprite at rotatable mode", "SetMovingAngle");           
   
 
 //////////////////////////////////////////////////////////////

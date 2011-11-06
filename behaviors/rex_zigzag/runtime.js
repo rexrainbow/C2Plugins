@@ -277,9 +277,8 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         // update pos_state
         this.pos_state.x = this.inst.x;
         this.pos_state.y = this.inst.y;
-        this.pos_state.angle = (this.CmdRotate.rotatable == 1)?
-                               this.inst.angle:
-                               cr.to_clamped_radians(this.CmdRotate.current_angle);
+        if (this.CmdRotate.rotatable == 1)
+            this.pos_state.angle = this.inst.angle;
 	};     
     
 	acts.Stop = function ()
@@ -346,7 +345,19 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	acts.SetRotatable = function (s)
 	{
         this.CmdRotate.rotatable = s;
-	};         
+	};    
+    
+	acts.SetMovingAngle = function (s)
+	{
+        var _angle = cr.to_clamped_radians(s);
+        this.pos_state.angle = _angle;
+        if (this.CmdRotate.rotatable == 1)
+        {
+            this.inst.angle = _angle;
+            this.inst.set_bbox_changed();
+        }
+	};    
+    
     
 	//////////////////////////////////////
 	// Expressions
