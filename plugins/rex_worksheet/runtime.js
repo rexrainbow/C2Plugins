@@ -67,7 +67,9 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
     
     var _INSTRUCTION_SORT = function(instA, instB)
     {
-        return (instA.time > instB.time);
+        var ta = instA.time;
+        var tb = instB.time;
+        return (ta < tb) ? -1 : (ta > tb) ? 1 : 0;
     }
     
     instanceProto._parsing = function(instructions_string)
