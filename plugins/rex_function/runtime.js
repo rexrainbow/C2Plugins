@@ -49,6 +49,14 @@ cr.plugins_.Rex_Function = function(runtime)
 	{
         this.fnObj["CallFn"](name);
 	};  
+    
+	instanceProto.Run = function(args)
+	{
+        var result = (typeof args === "string")?
+                     this.fnObj["Run"](arguments):
+                     this.fnObj["Run"](args);
+        return result;
+	};
 
 	instanceProto.CreateJS = function(name, code_string)
 	{
@@ -202,16 +210,10 @@ cr.plugins_.Rex_Function = function(runtime)
             
         var cmds = CSVToArray(command_string);
         var cmd_cnt = cmds.length;
-        var i, cmd, j, arg_len;     
+        var i, j, arg_len;     
         for(i=0; i<cmd_cnt; i++)
         {
-           cmd = cmds[i];
-           arg_len = cmd.length;
-           for (j=1; j<arg_len; j++)
-           {
-              this.fnObj["param"][j-1] = cmd[j]
-           }
-           this.CallFn(cmd[0]);
+           this.Run(cmds[i]);           
         }
 	}; 
     
@@ -257,15 +259,14 @@ cr.plugins_.Rex_Function = function(runtime)
 
     exps.Result = function (ret)
 	{
-        var arg_len = arguments.length;
-        var i;
-        for (i=2; i<arg_len; i++)
-        {
-            this.fnObj["param"][i-2] = arguments[i];
-        }
-        this.CallFn(arguments[1] || "");
 	    ret.set_any( this.fnObj["result"] );
 	};
+    
+    exps.Call = function (ret)
+	{        
+        var args = Array.prototype.slice.call(arguments,1);
+	    ret.set_any( this.Run(args) );
+	};    
 }());
 
 (function ()
@@ -302,7 +303,19 @@ cr.plugins_.Rex_Function = function(runtime)
         {
             alert ("Can not find function '" + name + "'");
         }
-	};   
+	}; 
+
+	FunctionKlassProto["Run"] = function(args)
+	{    
+        var arg_len = args.length;
+        var i;
+        for (i=1; i<arg_len; i++)
+        {
+            this["param"][i-1] = args[i];
+        }
+        this["CallFn"](args[0] || "");
+        return this["result"];
+	};     
 
 	FunctionKlassProto["CreateJS"] = function(name, code_string)
 	{

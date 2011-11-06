@@ -47,8 +47,9 @@ AddAnyTypeParam("0", "The index of return value to get, can be number of string.
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Get return", "Return", "Ret", "Get a return value by index.");
 AddStringParam('""', "Code string.", '""');
 AddExpression(2, ef_return_any | ef_variadic_parameters, "Eval js code", "JS Function", "Eval", "Eval js code string.");
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Get result", "Return", "Result", "Get the result after a function called.");
 AddStringParam("Name", "Function name", '""');
-AddExpression(3, ef_return_any | ef_variadic_parameters, "Get result", "Return", "Result", "Get the result from a function called.");
+AddExpression(4, ef_return_any | ef_variadic_parameters, "Call function", "Return", "Call", "Get the result from a function called.");
 
 
 ACESDone();
