@@ -46,7 +46,6 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
         this.runtime.tickMe(this);
-        this.pre_kahanTime = 0;
         this.check_name = "TIMELINE";
         // push manual
         this.manual_push = false;
@@ -62,8 +61,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         if (this.update_with_game_time==1)
         {
-            this.timeline.Dispatch(this.runtime.kahanTime.sum - this.pre_kahanTime);
-            this.pre_kahanTime = this.runtime.kahanTime.sum;
+            this.timeline.Dispatch(this.runtime.dt);
         }
         else if (this.manual_push)  // this.update_with_game_time==0
         {
