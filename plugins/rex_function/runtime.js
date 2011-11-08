@@ -57,11 +57,27 @@ cr.plugins_.Rex_Function = function(runtime)
                      this.fnObj["Run"](args);
         return result;
 	};
-
+    
+	instanceProto.ExecuteCommands = function (command_string)
+	{
+        if (command_string == "")
+            return;
+            
+        var cmds = CSVToArray(command_string);
+        var cmd_cnt = cmds.length;
+        var i, j, arg_len;     
+        for(i=0; i<cmd_cnt; i++)
+        {
+           this.Run(cmds[i]);
+        }
+	};
+    
 	instanceProto.CreateJS = function(name, code_string)
 	{
         this.fnObj["CreateJS"](name, code_string);
 	};  
+ 
+        
 
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
@@ -205,16 +221,7 @@ cr.plugins_.Rex_Function = function(runtime)
 
 	acts.ExecuteCommands = function (command_string)
 	{
-        if (command_string == "")
-            return;
-            
-        var cmds = CSVToArray(command_string);
-        var cmd_cnt = cmds.length;
-        var i, j, arg_len;     
-        for(i=0; i<cmd_cnt; i++)
-        {
-           this.Run(cmds[i]);           
-        }
+        this.ExecuteCommands(command_string);
 	}; 
     
     

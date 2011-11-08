@@ -59,9 +59,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
     
 	instanceProto.Run = function()
 	{
-        this.callback.CallFn(this.current_cmd.fn_name, 
-                             this.current_cmd.fn_args);
-        
+        this.callback.ExecuteCommands(this.current_cmd.fn_args);        
         this._start_cmd();
 	};   
     
@@ -76,8 +74,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	{
         var lines = instructions_string.split(/\r\n|\r|\n/);
         var instructions = [];
-        var i,line,slices,slice;
-        var fn_args,j,slices_length,arg_slices,sn;
+        var i,line,slices,comma_index;
         var line_length = lines.length;
         for (i=0; i<line_length; i++)
         {
@@ -87,31 +84,13 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
                 (line[0]=="/")     ) // "/" is a comment line
                 continue;
                 
-            slices = line.split(",");
-            
-            // get args
-            slices_length = slices.length;
-            fn_args = {};
-            sn = 0;
-            for (j=2; j<slices_length; j++)
-            {
-                slice = slices[j];
-                if (slice.indexOf("=")!=(-1))
-                {
-                    arg_slices = slice.split("=");
-                    fn_args[arg_slices[0]] = arg_slices[1];
-                }
-                else
-                {
-                    fn_args[sn] = slice;
-                    sn += 1;
-                }
-            }
-            
+            comma_index = line.indexOf(",");
+            if (comma_index == -1)
+                continue;
+                
             // output
-            instructions.push({time:parseFloat(slices[0]),
-                               fn_name:slices[1], 
-                               fn_args:fn_args});                               
+            instructions.push({time:parseFloat(line.slice(0,comma_index)),
+                               fn_args:line.slice(comma_index+1)});                               
         }
         
         instructions.sort(_INSTRUCTION_SORT);
