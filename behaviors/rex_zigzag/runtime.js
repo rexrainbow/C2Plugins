@@ -194,7 +194,19 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 break;
         }               
 	};   
-
+    
+    behinstProto.AddCommand = function (cmd, param)
+    {
+        this.CmdQueue.Push( _cmd_transfer( cmd, param ) );
+    };
+    
+    behinstProto.AddCommandString = function (cmd_string)
+    {
+        if ( cmd_string != "" )
+        {
+            this.CmdQueue.PushList(_cmd_parsing(cmd_string));
+        }
+    };
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
@@ -331,15 +343,12 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     var _cmd_Index2NameMap = ["F","B","R","L","W"];  
 	acts.AddCmd = function (_cmd, param)
 	{
-        this.CmdQueue.Push( _cmd_transfer( _cmd_Index2NameMap[_cmd], param ) );
+        this.AddCommand(_cmd_Index2NameMap[_cmd], param);
 	}; 
 
 	acts.AddCmdString = function (cmd_string)
 	{
-        if ( cmd_string != "" )
-        {
-            this.CmdQueue.PushList(_cmd_parsing(cmd_string));
-        }
+        this.AddCommandString(cmd_string);
 	};     
     
 	acts.SetRotatable = function (s)
