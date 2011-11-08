@@ -36,6 +36,13 @@ AddCondition(6, cf_trigger, "On extra control released", "Extra control",
 AddStringParam("Name", "Control name.", '""');
 AddCondition(7,	0,	"Control is down",	"Extra control", 
              "<b>{0}</b> is down", "Test if an extra control is currently held down.", "IsExtraCtlDown");
+             
+AddCondition(8, cf_trigger, "On jump", "Animation triggers", "{my} On jump", "Triggered when jumping.", "OnJump");
+AddCondition(9, cf_trigger, "On fall", "Animation triggers", "{my} On fall", "Triggered when falling.", "OnFall");
+AddCondition(10, cf_trigger, "On stopped", "Animation triggers", "{my} On stopped", "Triggered when stopped moving.", "OnStop");
+AddCondition(11, cf_trigger, "On moved", "Animation triggers", "{my} On moved", "Triggered when starting to move.", "OnMove");
+AddCondition(12, cf_trigger, "On landed", "Animation triggers", "{my} On landed", "Triggered when first hitting the floor.", "OnLand");
+             
     
     
 //////////////////////////////////////////////////////////////
@@ -99,7 +106,11 @@ AddAction(12, 0, "Set extra control", "Extra control", "Set {my} control <i>{0}<
 AddStringParam("Name", "Control name.", '""');
 AddNumberParam("Key code", "Control Key code.");
 AddAction(13, 0, "Set extra control by keycode", "Extra control", "Set {my} control <i>{0}</i> to keycode <i>{1}</i>", 
-          "Set extra control by keycode.", "CfgExtraCtl");        
+          "Set extra control by keycode.", "CfgExtraCtl");    
+
+AddNumberParam("Angle", "The angle of gravity in degrees.");
+AddAction(14, 0, "Set angle of gravity", "", "Set {my} angle of gravity to <i>{0}</i> degrees", "Change the angle the player falls at.", "SetGravityAngle");
+          
 
 
 //////////////////////////////////////////////////////////////
