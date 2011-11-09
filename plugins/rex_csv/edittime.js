@@ -43,7 +43,10 @@ AddAction(4, 0, "Convert type", "Table", "Convert entries type to <i>{1}</i> on 
          "Convert entries type in a row.", "ConvertType");
 AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
-         "Turn the page.", "TurnPage");         
+         "Turn the page.", "TurnPage");     
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(6, 0, "Load table from JSON string", "JSON", "Load table form JSON string",
+         "Load table from JSON string.", "StringToPage");    
 
 
 //////////////////////////////////////////////////////////////
@@ -58,6 +61,7 @@ AddExpression(4, ef_return_string, "At Col", "Table", "AtCol", "Get the col inde
 AddExpression(5, ef_return_string, "At Row", "Table", "AtRow", "Get the row index in the last At expression.");
 AddExpression(6, ef_return_string, "At Page", "Page", "AtPage", "Get the page index in the last At expression.");
 AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get the current page index in a For Each loop.");
+AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "PageToString", "Transfer current page to string.");
 
 
 ACESDone();

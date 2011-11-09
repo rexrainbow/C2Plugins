@@ -62,8 +62,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         }    
         this.current_page_name = page;
         this.current_table = this._tables[page];       
-	};    
-    
+	};
     
 	//////////////////////////////////////
 	// Conditions
@@ -130,6 +129,12 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.TurnPage(page);
 	};
     
+	acts.StringToPage = function (JSON_string)
+	{
+       this.current_table.JSONString2Page(JSON_string);
+	};    
+    
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -181,7 +186,11 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 		ret.set_string(this.forPage);
 	};
-    
+	
+	exps.PageToString = function (ret)
+	{ 
+		ret.set_string(this.current_table.ToString());
+	};    
     
 }());
 
@@ -206,7 +215,17 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.key_cnt = 0;
         this.items = [];
         this.item_cnt = 0;   
-	};   
+	};  
+    
+	CSVKlassProto.ToString = function()
+	{
+		return JSON.stringify(this._table);   
+	};
+    
+	CSVKlassProto.JSONString2Page = function(JSON_string)
+	{
+		this._table = JSON.parse(JSON_string);
+	};        
 
     CSVKlassProto._create_keys = function()
 	{
