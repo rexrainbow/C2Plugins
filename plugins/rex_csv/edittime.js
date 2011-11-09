@@ -45,7 +45,7 @@ AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(6, 0, "Load table from JSON string", "JSON", "Load table form JSON string",
+AddAction(6, 0, "Load table from JSON string", "JSON", "Load table form JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");    
 
 
