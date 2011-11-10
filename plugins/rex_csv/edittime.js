@@ -27,7 +27,7 @@ AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For Each", "Fo
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("CSV string", "The csv string for loading.", '""');
-AddAction(1, 0, "Load table", "Table", "Load table from csv string",
+AddAction(1, 0, "Load table", "Table", "Load table from csv string <i>{0}</i>",
          "Load table from csv string.", "LoadCSV");
 AddStringParam("Col", "The col index.", '""');
 AddStringParam("Row", "The row index.", '""');
