@@ -85,13 +85,13 @@ cr.behaviors.Rex_Cursor = function(runtime)
 	};
     
 	behinstProto.GetLayerX = function()
-	{
-        return this.inst.layer.canvasToLayerX(this.type.mouseXcanvas);
+	{        
+        return this.inst.layer.canvasToLayer(this.type.mouseXcanvas, this.type.mouseYcanvas, true);
 	};
     
 	behinstProto.GetLayerY = function()
 	{
-        return this.inst.layer.canvasToLayerY(this.type.mouseYcanvas);       
+        return this.inst.layer.canvasToLayer(this.type.mouseXcanvas, this.type.mouseYcanvas, false);      
     }
 
 	//////////////////////////////////////

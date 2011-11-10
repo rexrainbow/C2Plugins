@@ -272,12 +272,12 @@ cr.behaviors.Rex_DragDrop = function(runtime)
     
 	behtypeProto.GetLayerX = function(inst)
 	{
-        return inst.layer.canvasToLayerX(this.GetABSX());
+        return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), true);
 	};
     
 	behtypeProto.GetLayerY = function(inst)
 	{
-        return inst.layer.canvasToLayerY(this.GetABSY());
+        return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false);
 	};
     
 	behtypeProto._is_release = function(dragButton)
