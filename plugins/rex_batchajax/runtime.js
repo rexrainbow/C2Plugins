@@ -59,6 +59,9 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
 			dataType: "text",
 			url: url_,
 			success: function(data) {
+                if (this.inst._error_tag != "")
+                    return;
+                    
                 var tag = this.tag;
                 this.inst._data[tag] = data;
                 
@@ -135,8 +138,9 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
 	};
     
 	acts.Clean = function ()
-	{
+	{     
 		this._data = {};
+        this._jobs = {};
 	};
 
 	//////////////////////////////////////

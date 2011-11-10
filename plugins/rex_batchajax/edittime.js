@@ -9,7 +9,7 @@
 		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		pf_singleglobal
+		"flags":		0
 	};
 };
 
