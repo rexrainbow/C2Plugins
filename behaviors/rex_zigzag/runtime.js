@@ -426,7 +426,13 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	exps.RepCnt = function (ret)
 	{
 		ret.set_int(this.CmdQueue.repeat_count_save);
-	};    
+	};
+        
+	exps.CmdIndex = function (ret)
+	{
+		ret.set_int(this.CmdQueue.export_queue_index);
+	};
+    
         
 }());
 
@@ -443,14 +449,18 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
     CmdQueueProto.CleanAll = function()
 	{
-        this.queue_index = 0;    
+        this._queue_index = 0;    
         this._queue = [];
+        
+        this.export_queue_index = 0;
 	};
     
     CmdQueueProto.Reset = function()
 	{        
         this.repeat_count = this.repeat_count_save;    
-        this.queue_index = 0;
+        this._queue_index = 0;
+        
+        this.export_queue_index = 0;        
 	};
     
     CmdQueueProto.Push = function(item)
@@ -471,17 +481,18 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     CmdQueueProto.GetCmd = function()
 	{
         var cmd;
-        cmd = this._queue[this.queue_index];
-        var index = this.queue_index+1;
+        cmd = this._queue[this._queue_index];
+        this.export_queue_index = this._queue_index;
+        var index = this._queue_index+1;
         if (index >= this._queue.length)
         {
-            this.queue_index = (this.repeat_count != 1)? 0:  // repeat
+            this._queue_index = (this.repeat_count != 1)? 0:  // repeat
                                (-1);                         // finish
             if (this.repeat_count != 1)
                 this.repeat_count -= 1;
         }
         else
-            this.queue_index = index;
+            this._queue_index = index;
         return cmd;
 	};
      

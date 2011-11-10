@@ -157,7 +157,9 @@ AddExpression(8, ef_return_number, "Get rotation deceleration", "Setting", "RotD
 AddExpression(9, ef_return_number, "Get rotatable", "Setting", "Rotatable", 
               "1 to rotate sprite with command."); 
 AddExpression(10, ef_return_number, "Get repeat count", "Setting", "RepCnt", 
-              "The times to execute commands repeatly. 0 is infinity."); 
+              "The times to execute commands repeatly. 0 is infinity.");
+AddExpression(11, ef_return_number, "Get current command index", "Current", "CmdIndex", 
+              "Get current command index in command queue. 0 is the first command.");               
 
               
               
