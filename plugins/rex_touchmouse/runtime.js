@@ -416,19 +416,30 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 	{
         var layer, oldScale;
 		
-		if (typeof layerparam === "undefined")
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+		
+		if (cr.is_undefined(layerparam))
 		{
 			// calculate X position on bottom layer as if its scale were 1.0
 			layer = this.runtime.getLayerByNumber(0);
 			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
 			layer.scale = 1.0;
-			ret.set_float(layer.canvasToLayerX(this.GetABSX()));
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(this.GetABSX(), this.GetABSY(), true));
 			layer.scale = oldScale;
-        }
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
 		else
 		{
 			// use given layer param
-			if (typeof layerparam === "number")
+			if (cr.is_number(layerparam))
 				layer = this.runtime.getLayerByNumber(layerparam);
 			else
 				layer = this.runtime.getLayerByName(layerparam);
@@ -436,7 +447,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 			if (!layer)
 				ret.set_float(0);
 				
-			ret.set_float(layer.canvasToLayerX(this.GetABSX()));
+			ret.set_float(layer.canvasToLayer(this.GetABSX(), this.GetABSY(), true));
 		}
 	};
 	
@@ -444,19 +455,30 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 	{
         var layer, oldScale;
 		
-		if (typeof layerparam === "undefined")
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+		
+		if (cr.is_undefined(layerparam))
 		{
 			// calculate X position on bottom layer as if its scale were 1.0
 			layer = this.runtime.getLayerByNumber(0);
 			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
 			layer.scale = 1.0;
-			ret.set_float(layer.canvasToLayerY(this.GetABSY()));
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			ret.set_float(layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false));
 			layer.scale = oldScale;
-        }
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
 		else
 		{
 			// use given layer param
-			if (typeof layerparam === "number")
+			if (cr.is_number(layerparam))
 				layer = this.runtime.getLayerByNumber(layerparam);
 			else
 				layer = this.runtime.getLayerByName(layerparam);
@@ -464,8 +486,8 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 			if (!layer)
 				ret.set_float(0);
 				
-			ret.set_float(layer.canvasToLayerY(this.GetABSY()));
-		}      
+			ret.set_float(layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false));
+		}          
 	};
 	
 	exps.AbsoluteX = function (ret)
