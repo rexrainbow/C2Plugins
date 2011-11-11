@@ -277,7 +277,6 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     TimeLineProto.Dispatch = function(delta_time)
     {
         this.ABS_Time += delta_time;
-        this._timer_abs_time = this.ABS_Time;
 
         // sort _waiting_timer_queue
         this._waiting_timer_queue.sort(_TIMERQUEUE_SORT);
@@ -311,10 +310,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             this._process_timer_queue.sort(_TIMERQUEUE_SORT);
             this.triggered_timer = this._process_timer_queue.shift();
-            this._timer_abs_time = timer._abs_time;
+            this._timer_abs_time = this.triggered_timer._abs_time;
             //print "[TimeLine] Current Time=",this._timer_abs_time
             this.triggered_timer.DoHandle();
-        }        
+        }    
+        this._timer_abs_time = this.ABS_Time;   
+        
     };    
  
     TimeLineProto.SuspendTimer = function(timer)
