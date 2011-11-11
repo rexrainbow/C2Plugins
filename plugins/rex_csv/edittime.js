@@ -16,10 +16,10 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For Each", "For each col", 
-             "Repeat the event for each col in the table.", "ForEachCol");
-AddStringParam("Col", "The col index.", '""');
+             "Repeat the event for each column in the table.", "ForEachCol");
+AddStringParam("Col", "The column index.", '""');
 AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For Each", 
-             "For each row in a col <i>{0}</i>", "Repeat the event for each row in a col.", "ForEachRowInCol");
+             "For each row in a column <i>{0}</i>", "Repeat the event for each row in a column.", "ForEachRowInCol");
 AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For Each", "For each page", 
              "Repeat the event for each page.", "ForEachPage");
              
@@ -29,7 +29,7 @@ AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For Each", "Fo
 AddStringParam("CSV string", "The csv string for loading.", '""');
 AddAction(1, 0, "Load table", "Table", "Load table from csv string <i>{0}</i>",
          "Load table from csv string.", "LoadCSV");
-AddStringParam("Col", "The col index.", '""');
+AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
 AddAction(2, 0, "Set entry", "Table", "Set value at (<i>{0}</i>, <i>{1}</i>) to <i>{2}</i>", 
@@ -46,18 +46,31 @@ AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(6, 0, "Load table from JSON string", "JSON", "Load table form JSON string <i>{0}</i>",
-         "Load table from JSON string.", "StringToPage");    
+         "Load table from JSON string.", "StringToPage");  
+AddStringParam("Col index", "Column index.", '""');
+AddAction(7, 0, "Append a column", "Append/Remove", "Append column <i>{0}</i>",
+         "Append a column.", "AppendCol");
+AddStringParam("Row index", "Row index.", '""');
+AddAnyTypeParam("Value", "The initial value.", '""');
+AddAction(8, 0, "Append a row", "Append/Remove", "Append row <i>{0}</i> with initial value to <i>{1}</i>",
+         "Append a row.", "AppendRow");  
+AddStringParam("Col index", "Column index.", '""');
+AddAction(9, 0, "Remove a column", "Append/Remove", "Remove column <i>{0}</i>",
+         "Remove a column.", "RemoveCol");
+AddStringParam("Row index", "Row index.", '""');
+AddAction(10, 0, "Remove a row", "Append/Remove", "Remove row <i>{0}</i>",
+         "Remove a row.", "RemoveRow");           
 
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddStringParam("Col", "The col index.", '""');
+AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", "Get value from current table. Add page index to turn the page.");
-AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current col index in a For Each loop.");
+AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current column index in a For Each loop.");
 AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
 AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
-AddExpression(4, ef_return_string, "At Col", "Table", "AtCol", "Get the col index in the last At expression.");
+AddExpression(4, ef_return_string, "At Col", "Table", "AtCol", "Get the column index in the last At expression.");
 AddExpression(5, ef_return_string, "At Row", "Table", "AtRow", "Get the row index in the last At expression.");
 AddExpression(6, ef_return_string, "At Page", "Page", "AtPage", "Get the page index in the last At expression.");
 AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get the current page index in a For Each loop.");

@@ -134,6 +134,31 @@ cr.plugins_.Rex_CSV = function(runtime)
        this.current_table.JSONString2Page(JSON_string);
 	};    
     
+	acts.StringToPage = function (JSON_string)
+	{
+       this.current_table.JSONString2Page(JSON_string);
+	};   
+    
+	acts.AppendCol = function (col)
+	{
+       this.current_table.AppendCol(col);
+	}; 
+    
+	acts.AppendRow = function (row, init_value)
+	{
+       this.current_table.AppendRow(row, init_value);
+	}; 
+    
+	acts.RemoveCol = function (col)
+	{
+       this.current_table.RemoveCol(col);
+	}; 
+    
+	acts.RemoveRow = function (row)
+	{
+       this.current_table.RemoveRow(row);
+	};     
+    
     
 	//////////////////////////////////////
 	// Expressions
@@ -212,9 +237,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		this._table = {};
         this._current_entry = {};
         this.keys = [];
-        this.key_cnt = 0;
         this.items = [];
-        this.item_cnt = 0;   
 	};  
     
 	CSVKlassProto.ToString = function()
@@ -244,7 +267,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
         var item_name = values.shift();
         var keys = this.keys;
-        var key_cnt = this.key_cnt;
+        var key_cnt = this.keys.length;   
         var table = this._table;
         var i;
         for (i=0; i<key_cnt; i++)
@@ -265,16 +288,14 @@ cr.plugins_.Rex_CSV = function(runtime)
                        
         var read_array = CSVToArray(csv_string); 
         
-        this.keys = read_array.shift();
-        this.key_cnt = this.keys.length;        
+        this.keys = read_array.shift();      
         this._create_keys();
         var item_cnt = read_array.length;
         var i;
         for (i=0; i<item_cnt; i++)
         {
             this._create_items(read_array[i]);
-        }
-        this.item_cnt = item_cnt;        
+        }      
 	}; 
 
     CSVKlassProto.At = function(col, row)
@@ -299,10 +320,10 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	CSVKlassProto.SetEntry = function (col, row, val)
 	{
-        if (this._table[col] == null)
-        {
-            this._table[col] = {};
-        }
+        if ( (this._table[col] == null) ||
+             (this._table[col][row] == null) )
+            return;
+            
         this._table[col][row] = val;        
 	};    
     
@@ -311,7 +332,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         var handler = (to_type==0)? parseInt:
                                     parseFloat;
         var keys = this.keys;
-        var key_cnt = this.key_cnt;
+        var key_cnt = keys.length;
         var table = this._table;
         var i, val;
         for (i=0; i<key_cnt; i++)
@@ -321,6 +342,80 @@ cr.plugins_.Rex_CSV = function(runtime)
         }                    
 	};      
     
+	CSVKlassProto.AppendCol = function (col)
+	{
+        if (this._table[col] != null)
+            return;
+            
+        var has_ref = false;
+        if (this.keys.length > 0)
+        {
+            var ref_col = this._table[this.keys[0]];
+            has_ref = true;
+        }
+        var col_data = {};
+        var items = this.items;
+        var item_cnt = items.length;        
+        var i;
+        for (i=0; i<item_cnt; i++)
+        {
+            if (has_ref)
+            {
+                if (typeof ref_col[items[i]] == "number")
+                    col_data[items[i]] = 0;
+                else
+                     col_data[items[i]] = "";
+            }
+            else
+                col_data[items[i]] = "";
+        }        
+        this._table[col] = col_data;
+        this.keys.push(col);
+	};   
+    
+	CSVKlassProto.AppendRow = function (row, init_value)
+	{
+        if (this.items.indexOf(row) != (-1))
+            return;
+            
+        var keys = this.keys;
+        var key_cnt = keys.length;
+        var table = this._table;
+        var i;
+        for (i=0; i<key_cnt; i++)
+        {
+            table[keys[i]][row] = init_value;        
+        }   
+        this.items.push(row);
+	};     
+    
+	CSVKlassProto.RemoveCol = function (col)
+	{
+        var col_index = this.keys.indexOf(col);
+        if (col_index == (-1))
+            return;
+
+        delete this._table[col]; 
+        this.keys.splice(col_index, 1);
+	};   
+    
+	CSVKlassProto.RemoveRow = function (row)
+	{
+        var row_index = this.items.indexOf(row);
+        if (row_index == (-1))
+            return;
+            
+        var keys = this.keys;
+        var key_cnt = keys.length;
+        var table = this._table;
+        var i;
+        for (i=0; i<key_cnt; i++)
+        {
+            delete table[keys[i]][row];        
+        }   
+        this.items.splice(row_index, 1);
+	};     
+    
 	CSVKlassProto.ForEachCol = function ()
 	{   
         var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
@@ -328,7 +423,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		this.forCol = "";
         
         var keys = this.keys;
-        var key_cnt = this.key_cnt;
+        var key_cnt = keys.length;
         var i;
 		for (i=0; i<key_cnt; i++ )
 	    {
@@ -357,7 +452,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		this.forRow = "";
         
         var items = this.items;
-        var item_cnt = this.item_cnt;
+        var item_cnt = items.length;
         var i;
 		for (i=0; i<item_cnt; i++ )
 	    {
