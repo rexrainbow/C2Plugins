@@ -212,7 +212,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		ret.set_string(this.forPage);
 	};
 	
-	exps.PageToString = function (ret)
+	exps.TableToString = function (ret)
 	{ 
 		ret.set_string(this.current_table.ToString());
 	};    

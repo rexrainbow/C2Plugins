@@ -74,7 +74,7 @@ AddExpression(4, ef_return_string, "At Col", "Table", "AtCol", "Get the column i
 AddExpression(5, ef_return_string, "At Row", "Table", "AtRow", "Get the row index in the last At expression.");
 AddExpression(6, ef_return_string, "At Page", "Page", "AtPage", "Get the page index in the last At expression.");
 AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get the current page index in a For Each loop.");
-AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "PageToString", "Transfer current page to string.");
+AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "TableToString", "Transfer current table to JSON string.");
 
 
 ACESDone();
