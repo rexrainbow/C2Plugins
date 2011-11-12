@@ -62,13 +62,20 @@ cr.plugins_.Rex_Function = function(runtime)
 	{
         if (command_string == "")
             return;
-            
+        
         var cmds = CSVToArray(command_string);
         var cmd_cnt = cmds.length;
-        var i, j, arg_len;     
+        var i;
+        var cmd, j, arg_len;
         for(i=0; i<cmd_cnt; i++)
         {
-           this.Run(cmds[i]);
+           cmd = cmds[i];
+           arg_len = cmd.length;
+           for(j=1; j<arg_len; j++)
+           {
+               cmd[j] = eval("("+cmd[j]+")");
+           }
+           this.Run(cmd);
         }
 	};
     
