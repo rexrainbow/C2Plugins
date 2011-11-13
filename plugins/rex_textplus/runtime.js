@@ -81,6 +81,11 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		}
 		
 		assert2(this.pxHeight, "Could not determine font text height");
+        
+        
+        this.timeline = null;
+        this.typing_timer = null; 
+        this.typing_speed = null;        
 	};
 
 	instanceProto.draw = function(ctx)
@@ -293,26 +298,8 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		// truncate lines to the number that were used
 		lines.length = lineIndex;
 	};
-
-	//////////////////////////////////////
-	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
-
-	cnds.CompareText = function(text_to_compare, case_sensitive)
-	{
-		if (case_sensitive)
-			return this.text == text_to_compare;
-		else
-			return this.text.toLowerCase() == text_to_compare.toLowerCase();
-	};
-
-	//////////////////////////////////////
-	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
-
-	acts.SetText = function(param)
+    
+	instanceProto.SetText = function(param)
 	{
 		if (typeof param === "number")
 			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
@@ -325,9 +312,11 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			this.text_changed = true;
 			this.runtime.redraw = true;
 		}
+        
+        this.typing_timer.Remove();
 	};
-	
-	acts.AppendText = function(param)
+    	
+	instanceProto.AppendText = function(param)
 	{
 		if (typeof param === "number")
 			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
@@ -340,8 +329,111 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			this.text_changed = true;
 			this.runtime.redraw = true;
 		}
+        
+        this.typing_timer.Remove();
+	};    
+    
+	instanceProto.text_typing_handler = function(text_buffer, text_index)
+	{  
+        this.SetText(text_buffer.slice(0, text_index));
+        this.runtime.trigger(cr.plugins_.Rex_TextPlus.prototype.cnds.OnTextTyping, this);       
+        text_index += 1;        
+        if (text_index <= text_buffer.length)
+        {
+            this.typing_timer.SetCallbackArgs([text_buffer, text_index]);
+            this.typing_timer.Restart(this.typing_speed);
+        }
+        else
+        {
+            this.runtime.trigger(cr.plugins_.Rex_TextPlus.prototype.cnds.OnTypingCompleted, this);
+        }
+	};   
+    
+	instanceProto._start_typing = function (text, speed)
+	{
+        this.typing_speed = speed;
+        this.typing_timer.SetCallbackArgs([text, 1]);
+        this.typing_timer.Start(0);
+    };
+	//////////////////////////////////////
+	// Conditions
+	pluginProto.cnds = {};
+	var cnds = pluginProto.cnds;
+
+	cnds.CompareText = function(text_to_compare, case_sensitive)
+	{
+		if (case_sensitive)
+			return this.text == text_to_compare;
+		else
+			return this.text.toLowerCase() == text_to_compare.toLowerCase();
+	};
+ 
+    cnds.OnTextTyping = function ()
+	{
+		return true;
+	};  
+ 
+    cnds.OnTypingCompleted = function ()
+	{
+		return true;
+	}; 
+    
+	cnds.IsTextTyping = function ()
+	{ 
+        return this.typing_timer.IsActive();
+	};      
+
+	//////////////////////////////////////
+	// Actions
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
+
+	acts.SetText = function(param)
+	{
+		this.SetText(param);
+	};
+	
+	acts.AppendText = function(param)
+	{
+		this.AppendText(param);
+	};
+    
+    acts.SetupTimer = function (timeline_objs)
+	{
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+        {
+            this.timeline = timeline;        
+            this.typing_timer = this.timeline.CreateTimer(this, this.text_typing_handler);
+        }
+        else
+            alert ("Text-typing should connect to a timeline object");
+	};     
+
+	acts.TypeText = function(param, speed)
+	{
+        if (typeof param === "number")
+            param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
+		        
+        this._start_typing(param.toString(), speed);
 	};
 
+	acts.SetTypingSpeed = function(speed)
+	{
+        this.typing_speed = speed;
+        var timer = this.typing_timer;
+        if (timer.IsActive())
+        {
+            timer.Restart(speed);
+        }
+	};  
+	
+	acts.SetTextColor = function(color)
+	{
+		this.color = color;
+	};    
+    
+	
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -351,5 +443,10 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	{
 		ret.set_string(this.text);
 	};
+    
+    exps.TypingSpeed = function (ret)
+	{
+	    ret.set_float( this.this.typing_speed );
+	}; 
 		
 }());

@@ -13,20 +13,48 @@
 	};
 };
 
-// Conditions, actions and expressions
+//////////////////////////////////////////////////////////////
+// Conditions
 AddStringParam("Text to compare", "Enter the text to compare with the object's content.", "\"\"");
 AddComboParamOption("Ignore case");
 AddComboParamOption("Case sensitive");
 AddComboParam("Case sensitivity", "Choose whether capital letters count as different to lowercase.  If ignoring case, \"ABC\" matches \"abc\".", 0);
 AddCondition(0, 0, "Compare text", "Text", "Text is <b>{0}</b> <i>({1})</i>", "Compare the text in this object.", "CompareText");
+AddCondition(1, cf_trigger, "On text typing", "Typing", "On typing", 
+             "Triggered when text typing.", "OnTextTyping");
+AddCondition(2, cf_trigger, "On typing completed", "Typing", "On typing completed", 
+             "Triggered when typing completed.", "OnTypingCompleted");            
+AddCondition(3, 0, "Is text typing", "Typing", "Is typing", 
+             "Is text typing.", "IsTextTyping");
 
+//////////////////////////////////////////////////////////////
+// Actions
 AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
 AddAction(0, 0, "Set text", "Text", "Set text to <i>{0}</i>", "Set the text of this object.", "SetText");
-
 AddAnyTypeParam("Text", "Enter the text to append to the object's content.", "\"\"");
 AddAction(1, 0, "Append text", "Text", "Append <i>{0}</i>", "Add text to the end of the existing text.", "AppendText");
+AddObjectParam("Timeline", "Timeline object for getting timer");
+AddAction(2, 0, "Setup text-typing", "Setup", 
+          "Get timer from <i>{0}</i> for text-typing", 
+          "Setup text-typing.", "SetupTimer");
+AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
+AddNumberParam("Speed", "1 letter per seconds", 0.1);
+AddAction(3, 0, "Type text", "Type", 
+          "Type <i>{0}</i> at 1 letter per <i>{1}</i> seconds", 
+          "Type text letter by letter.", "TypeText");
+AddNumberParam("Speed", "1 letter per seconds", 0.1);
+AddAction(4, 0, "Set typing speed", "Type", 
+          "Set typing speed to <i>{0}</i> seconds", 
+          "Set typing speed.", "SetTypingSpeed");      
+AddStringParam("color", "Use color name, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" ", "\"black\"");
+AddAction(5, 0, "Set text color", "Text", 
+          "Set text color to <i>{0}</i>", 
+          "Set text color.", "SetTextColor"); 
 
-AddExpression(0,	ef_return_string,	"Get text",	"Text", "Text", "Get the object's text.");
+//////////////////////////////////////////////////////////////
+// Expressions
+AddExpression(0, ef_return_string,	"Get text",	"Text", "Text", "Get the object's text.");
+AddExpression(1, ef_return_number,	"Get typing speed",	"Type", "TypingSpeed", "Get typing speed.");
 
 ACESDone();
 
