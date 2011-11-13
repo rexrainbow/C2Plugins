@@ -167,7 +167,8 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 				++i;
 			}
 			// Whitespace or hyphen: swallow rest of whitespace and include in word
-			else
+			else if ( (ch === " ") || (ch === "\t") || (ch === "-") ||
+                      (ch.charCodeAt(0) >= 128) )
 			{
 				do {
 					cur_word += text.charAt(i);
@@ -177,6 +178,11 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 				
 				wordsCache.push(cur_word);
 				cur_word = "";
+			}
+			else if (i < text.length)
+			{
+				cur_word += ch;
+				i++;
 			}
 		}
 		
