@@ -114,7 +114,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         }
         else
         {
-            this.runtime.trigger(cr.plugins_.Rex_WorkSheet.prototype.cnds.OnComplete, this);
+            this.runtime.trigger(cr.plugins_.Rex_WorkSheet.prototype.cnds.OnCompleted, this);
         }
 	};
     
@@ -123,7 +123,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
     
-	cnds.OnComplete = function ()
+	cnds.OnCompleted = function ()
 	{
 		return true;
 	};  

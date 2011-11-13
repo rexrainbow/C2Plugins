@@ -15,8 +15,10 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On execution complete", "Control", "On complete", "", "OnComplete");
-AddCondition(1, 0, "Is worksheet running", "Control", "Is running", "", "IsRunning");
+AddCondition(0, cf_trigger, "On execution completed", "Control", "On completed", 
+             "Triggered when worksheet execution completed.", "OnCompleted");
+AddCondition(1, 0, "Is worksheet running", "Control", "Is running", 
+             "Is worksheet running.", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -28,7 +30,7 @@ AddAction(0, 0, "Setup work sheet", "Setup",
 AddStringParam("Instructions", "Instructions in work sheet", '""');
 AddNumberParam("Offset", "Time offset at start", 0);
 AddAction(1, 0, "Start work sheet", "Control", 
-          "Start work sheet with <i>{1}</i> offset", 
+          "Start work sheet <i>{0}</i> with <i>{1}</i> offset", 
           "Start work sheet.", "Start");          
 AddAction(2, 0, "Pause work sheet", "Control", 
           "Pause work sheet", 
