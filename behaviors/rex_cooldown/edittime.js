@@ -1,9 +1,9 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Cool down",
+		"name":			"Cooldown",
 		"id":			"Rex_Cooldown",
-		"description":	"Accept request when cool down",
+		"description":	"Accept request when cooldown",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Timer",
@@ -25,10 +25,10 @@ AddCondition(2,	cf_trigger, "On cooldown", "Callback",
 AddCondition(3,	cf_trigger, "On cooldown finished", "Callback", 
              "On {my} cooldown finished", "Triggered when cooldown finished.", 
              "OnCDFinished");             
-AddCondition(4,	cf_trigger, "Is call accepted", "If", 
+AddCondition(4,	0, "Is call accepted", "If", 
              "Is {my} call accepted", "Requested call is accepted.", 
              "IsCallAccepted");
-AddCondition(5,	cf_trigger, "Is call rejected", "If", 
+AddCondition(5,	0, "Is call rejected", "If", 
              "Is {my} call rejected", "Requested call is rejected.", 
              "IsCallRejected");
 AddCondition(6, 0, "Is at cool down", "State", 
@@ -53,7 +53,12 @@ AddAction(3, 0, "Pause cooldown", "Control",
           "Pause cooldown.", "Pause"); 
 AddAction(4, 0, "Resume cooldown", "Control", 
           "Resume cooldown {my}", 
-          "Resume cooldown.", "Resume"); 
+          "Resume cooldown.", "Resume");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable the cooldown behavior.",1);
+AddAction(5, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's cooldown behavior.", "SetActivated");
+          
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -68,8 +73,8 @@ AddExpression(2, ef_return_number, "Get remainder time percentage of timer",
               "Get remainder time percentage of timer.");
 AddExpression(3, ef_return_number, "Get elapsed time percentage of timer", 
               "Timer", "ElapsedPercent", 
-              "Get elapsed time percentage of timer.");            
-
+              "Get elapsed time percentage of timer."); 
+AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");              
 
 
 ACESDone();

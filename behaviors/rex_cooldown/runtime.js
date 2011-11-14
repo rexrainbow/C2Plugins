@@ -117,13 +117,9 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 	}; 
     
 	cnds.IsAtCD = function ()
-	{  
-        var is_running = false;
-        if (this.timer)
-        {
-            is_running = this.timer.IsActive();
-        }
-		return is_running; 
+	{         
+        var is_running = (this.timer)? this.timer.IsActive():false; 
+		return ((this.is_my_call) & is_running);
 	};  
     
 	//////////////////////////////////////
@@ -175,18 +171,19 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     acts.Pause = function ()
 	{
         if (this.timer)
-        {
             this.timer.Suspend();
-        }
 	};   
 
     acts.Resume = function ()
 	{
         if (this.timer)
-        {
             this.timer.Resume();
-        }
-	};    
+	};   
+
+	acts.SetActivated = function (s)
+	{
+		this.activated = s;
+	};      
 
 	//////////////////////////////////////
 	// Expressions
@@ -215,5 +212,10 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 	{
         var val = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(val);
-	};        
+	}; 
+    
+	exps.Activated = function (ret)
+	{
+		ret.set_int(this.activated);
+	};    
 }());
