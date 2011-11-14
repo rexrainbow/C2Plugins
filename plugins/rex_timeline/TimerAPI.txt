@@ -1,0 +1,25 @@
+1. get a new timer
+- timeline_obj.CreateTimer(thisArg, call_back_fn, args);
+(In timer, use "call_back_fn.apply(thisArg, args)" to do callback)
+
+
+2. timer api
+A. action
+- timer.Start(delay_time)
+- timer.Restart(delay_time)
+- timer.SetCallbackArgs(args)        // args is an array
+- timer.Suspend()                    // paused, still in timeline
+- timer.Resume()
+- timer.Remove()                     // remove from timeline
+- timer.ChangeRate(rate)
+
+B. status
+- timer.IsAlive()                    // count-down or suspend
+- timer.IsActive()                   // count-down
+
+C. time
+- timer.RemainderTimeGet()
+- timer.ElapsedTimeGet()
+- timer.RemainderTimePercentGet()
+- timer.ElapsedTimePercentGet()
+- timer.DeltaErrorTickGet()

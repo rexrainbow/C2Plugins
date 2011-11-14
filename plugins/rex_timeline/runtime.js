@@ -70,9 +70,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
     };
     
-    instanceProto._timer_handle = function(name, args)
+    instanceProto._timer_handle = function(timer_struct)
     {
-        this.callback.CallFn(name, args);    
+        this.callback.AddParams(timer_struct.param);
+        this.callback.ExecuteCommands(timer_struct.command);
     };
     
     // export: get new timer instance
@@ -81,20 +82,39 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         return (new cr.plugins_.Rex_TimeLine.Timer(this.timeline, thisArg, call_back_fn, args));
     };
     
+    instanceProto._GetTimerStruct = function(timer_name)
+    {
+        if (this.timers[timer_name] == null)
+        {
+            this.timers[timer_name] = {timer:null, 
+                                       command:"", 
+                                       param:{}     };
+        }
+        return this.timers[timer_name];
+    };    
+    
+    instanceProto._GetTimer = function(timer_name)
+    {
+        var timer; 
+        if (timer_name==null)
+            timer = this.timeline.triggered_timer;
+        else
+        {
+            var timer_struct = this.timers[timer_name];
+            timer = (timer_struct)? timer_struct.timer : null;
+        }
+        return timer;
+    };    
+    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
 
-	cnds.IsRunning = function ()
+	cnds.IsRunning = function (timer_name)
 	{
-        var is_running = false;
-        var timer = this.timers[timer_name].timer;
-        if (timer)
-        {
-            is_running = timer.IsActive();
-        }       
-		return is_running;
+        var timer = this._GetTimer(timer_name);
+		return (timer)? timer.IsActive(): false;
 	};
     
 	//////////////////////////////////////
@@ -118,70 +138,76 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             alert ("Timeline should connect to a function object");
 	};      
     
-    acts.CreateTimer = function (timer_name, fn_name, fn_args)
+    acts.CreateTimer = function (timer_name, command)
 	{
-        var timer = this.timers[timer_name];
-        var cb_args = [fn_name, fn_args];
+        var timer = this._GetTimer(timer_name);
+        var timer_struct = this._GetTimerStruct(timer_name);
+        timer_struct.command = command;
         if (timer)  // timer exist
         {
             timer.Remove();
-            timer.SetCallbackArgs(cb_args);
         }
         else      // create new timer instance
         {
-            this.timers[timer_name] = this.CreateTimer(this, this._timer_handle, cb_args);
+            timer_struct.timer = this.CreateTimer(this, this._timer_handle, 
+                                                  [timer_struct]);   
         }      
 	}; 
     
     acts.StartTimer = function (timer_name, delay_time)
 	{
-        var timer = this.timers[timer_name];
+        var timer = this._GetTimer(timer_name);
         if (timer)
-        {
             timer.Start(delay_time);
-        }
 	};
 
     acts.StartTrgTimer = function (delay_time)
 	{
         var timer = this.timeline.triggered_timer;
         if (timer)
-        {
             timer.Start(delay_time);
-        }
 	}; 
     
     acts.PauseTimer = function (timer_name)
 	{
-        var timer = this.timers[timer_name];
+        var timer = this._GetTimer(timer_name);
         if (timer)
-        {
             timer.Suspend();
-        }
 	};   
 
     acts.ResumeTimer = function (timer_name)
 	{
-        var timer = this.timers[timer_name];
+        var timer = this._GetTimer(timer_name);
         if (timer)
-        {
             timer.Resume();
-        }
 	};       
     
     acts.StopTimer = function (timer_name)
 	{
-        var timer = this.timers[timer_name];
+        var timer = this._GetTimer(timer_name);
         if (timer)
-        {
             timer.Remove();
-        }
 	};
     
     acts.CleanTimeLine = function ()
 	{
         this.timeline.CleanAll();
 	};
+    
+    acts.DeleteTimer = function (timer_name)
+	{
+        var timer = this._GetTimer(timer_name);
+        if (timer)
+        {
+            timer.Remove();
+            delete this.timers[timer_name];
+        }
+	};  
+    
+    acts.SetTimerParameter = function (timer_name, index, value)
+	{
+        this._GetTimerStruct(timer_name).param[index] = value;
+	};    
     
 	//////////////////////////////////////
 	// Expressions
@@ -190,38 +216,30 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
 	exps.TimerRemainder = function (ret, timer_name)
 	{
-        var timer = (timer_name==null)? 
-                    this.timeline.triggered_timer:
-                    this.timers[timer_name];
-        var val = (timer)? timer.RemainderTimeGet():0;     
-	    ret.set_float(val);
+        var timer = this._GetTimer(timer_name);
+        var t = (timer)? timer.RemainderTimeGet():0;     
+	    ret.set_float(t);
 	};
     
 	exps.TimerElapsed = function (ret, timer_name)
 	{
-        var timer = (timer_name==null)? 
-                    this.timeline.triggered_timer:
-                    this.timers[timer_name];
-        var val = (timer)? timer.ElapsedTimeGet():0;     
-	    ret.set_float(val);
+        var timer = this._GetTimer(timer_name);
+        var t = (timer)? timer.ElapsedTimeGet():0;     
+	    ret.set_float(t);
 	}; 
 
 	exps.TimerRemainderPercent = function (ret, timer_name)
 	{
-        var timer = (timer_name==null)? 
-                    this.timeline.triggered_timer:
-                    this.timers[timer_name];
-        var val = (timer)? timer.RemainderTimePercentGet():0;     
-	    ret.set_float(val);
+        var timer = this._GetTimer(timer_name);
+        var t = (timer)? timer.RemainderTimePercentGet():0;     
+	    ret.set_float(t);
 	};
     
 	exps.TimerElapsedPercent = function (ret, timer_name)
 	{
-        var timer = (timer_name==null)? 
-                    this.timeline.triggered_timer:
-                    this.timers[timer_name];
-        var val = (timer)? timer.ElapsedTimePercentGet():0;     
-	    ret.set_float(val);
+        var timer = this._GetTimer(timer_name);
+        var t = (timer)? timer.ElapsedTimePercentGet():0;     
+	    ret.set_float(t);
 	};
     
 	exps.TimeLineTime = function (ret)

@@ -47,16 +47,8 @@ cr.plugins_.Rex_Function = function(runtime)
     
 	instanceProto.CallFn = function(name, args)
 	{
-        this.fnObj["CallFn"](name, args);
+        this.fnObj["_CallFn"](name, args);
 	};  
-    
-	instanceProto.Run = function(args)
-	{
-        var result = (typeof args === "string")?
-                     this.fnObj["Run"](arguments):
-                     this.fnObj["Run"](args);
-        return result;
-	};
     
 	instanceProto.ExecuteCommands = function (command_string)
 	{
@@ -75,15 +67,26 @@ cr.plugins_.Rex_Function = function(runtime)
            {
                cmd[j] = eval("("+cmd[j]+")");
            }
-           this.Run(cmd);
+           this._ExeCmd(cmd);
         }
-	};
+	};    
     
 	instanceProto.CreateJS = function(name, code_string)
 	{
         this.fnObj["CreateJS"](name, code_string);
 	};  
- 
+    
+	instanceProto.AddParams = function(param)
+	{
+        if (param)
+            jQuery.extend(this.fnObj["param"], param);
+	};  
+    
+	instanceProto._ExeCmd = function(_args)
+	{
+        var args = (typeof _args === "string")? arguments:_args;
+        return this.fnObj["_ExeCmd"](args);
+	};    
         
 
     // copy from    
@@ -279,7 +282,7 @@ cr.plugins_.Rex_Function = function(runtime)
     exps.Call = function (ret)
 	{        
         var args = Array.prototype.slice.call(arguments,1);
-	    ret.set_any( this.Run(args) );
+	    ret.set_any( this._ExeCmd(args) );
 	};    
 }());
 
@@ -298,7 +301,32 @@ cr.plugins_.Rex_Function = function(runtime)
     };
     var FunctionKlassProto = cr.plugins_.Rex_Function.FunctionKlass.prototype;
     
-	FunctionKlassProto["CallFn"] = function(name, args)
+	FunctionKlassProto["CallFn"] = function()   // (name, param0, param1...)
+	{
+        return this["_ExeCmd"](arguments);
+	};    
+
+	FunctionKlassProto["CreateJS"] = function(name, code_string)
+	{
+        if (this["is_debug_mode"] && this["JSFnObjs"][name] != null) 
+            alert ("JS function '" + name + "' has existed.");  
+            
+        this["JSFnObjs"][name] = eval("("+code_string+")");
+	};
+    
+	FunctionKlassProto["_ExeCmd"] = function(args)
+	{    
+        var arg_len = args.length;
+        var i;
+        for (i=1; i<arg_len; i++)
+        {
+            this["param"][i-1] = args[i];
+        }
+        this["_CallFn"](args[0] || "");
+        return this["result"];
+	}; 
+    
+	FunctionKlassProto["_CallFn"] = function(name, args)
 	{    
         if (args)
             jQuery.extend(this["param"], args);
@@ -309,8 +337,8 @@ cr.plugins_.Rex_Function = function(runtime)
         var is_break = this["_CallJS"](name);
         if (!is_break)
         {
-            // then call trigger function
-            this["_CallFn"](name);
+            // then call trigger function in C2 event
+            this["_CallC2Event"](name);
         }
         
         if ((!this["is_echo"]) && this["is_debug_mode"]) 
@@ -318,28 +346,8 @@ cr.plugins_.Rex_Function = function(runtime)
             alert ("Can not find function '" + name + "'");
         }
 	}; 
-
-	FunctionKlassProto["Run"] = function(args)
-	{    
-        var arg_len = args.length;
-        var i;
-        for (i=1; i<arg_len; i++)
-        {
-            this["param"][i-1] = args[i];
-        }
-        this["CallFn"](args[0] || "");
-        return this["result"];
-	};     
-
-	FunctionKlassProto["CreateJS"] = function(name, code_string)
-	{
-        if (this["is_debug_mode"] && this["JSFnObjs"][name] != null) 
-            alert ("JS function '" + name + "' has existed.");  
-            
-        this["JSFnObjs"][name] = eval("("+code_string+")");
-	};
     
-	FunctionKlassProto["_CallFn"] = function(name)
+	FunctionKlassProto["_CallC2Event"] = function(name)
 	{
         this["fn_name"] = name; 
 	    this["plugin"].runtime.trigger(cr.plugins_.Rex_Function.prototype.cnds.OnFunctionCalled, this["plugin"]);
