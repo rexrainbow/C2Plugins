@@ -62,11 +62,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
 	behinstProto.tick = function ()
 	{        
-        var is_running = (this.timer)?
+        var is_at_cooldown = (this.timer)?
                          this.timer.IsActive():
                          false;
 
-        if (is_running)
+        if (is_at_cooldown)
         {
             this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCD, this.inst); 
@@ -118,8 +118,8 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
 	cnds.IsAtCD = function ()
 	{         
-        var is_running = (this.timer)? this.timer.IsActive():false; 
-		return ((this.is_my_call) & is_running);
+        var is_at_cooldown = (this.timer)? this.timer.IsActive():false; 
+		return ((this.is_my_call) & is_at_cooldown);
 	};  
     
 	//////////////////////////////////////
@@ -129,7 +129,12 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 
     acts.Setup = function (timeline_objs, cd_interval)
 	{
-        this.type.timeline = timeline_objs.instances[0];
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.type.timeline = timeline;        
+        else
+            alert ("Cooldown should connect to a timeline object");  
+            
         this.cd_interval = cd_interval;       
 	};    
     
@@ -192,26 +197,26 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 
     exps.Remainder = function (ret)
 	{
-        var val = (this.timer)? this.timer.RemainderTimeGet():0;     
-	    ret.set_float(val);
+        var t = (this.timer)? this.timer.RemainderTimeGet():0;     
+	    ret.set_float(t);
 	};
     
 	exps.Elapsed = function (ret, timer_name)
 	{
-        var val = (this.timer)? this.timer.ElapsedTimeGet():0;     
-	    ret.set_float(val);
+        var t = (this.timer)? this.timer.ElapsedTimeGet():0;     
+	    ret.set_float(t);
 	};  
 
     exps.RemainderPercent = function (ret)
 	{
-        var val = (this.timer)? this.timer.RemainderTimePercentGet():0;     
-	    ret.set_float(val);
+        var t = (this.timer)? this.timer.RemainderTimePercentGet():0;     
+	    ret.set_float(t);
 	};
     
 	exps.ElapsedPercent = function (ret, timer_name)
 	{
-        var val = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
-	    ret.set_float(val);
+        var t = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
+	    ret.set_float(t);
 	}; 
     
 	exps.Activated = function (ret)

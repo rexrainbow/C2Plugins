@@ -43,11 +43,11 @@ AddAction(0, 0, "Setup cooldown", "Setup",
           "Setup cooldown.", "Setup");
 AddAction(1, 0, "Request a call", "Call", 
           "Request {my} a call", 
-          "Request a caln.", "Request");
+          "Request a call.", "Request");
 AddNumberParam("Time", "Cooldown interval, in seconds", 0.1);
 AddAction(2, 0, "Set Cooldown interval", "Setup", 
           "Set cooldown interval to <i>{0}</i>", 
-          "Setup cooldown interval.", "SetCDInterval");
+          "Set cooldown interval.", "SetCDInterval");
 AddAction(3, 0, "Pause cooldown", "Control", 
           "Pause cooldown {my}", 
           "Pause cooldown.", "Pause"); 
