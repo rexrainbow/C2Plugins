@@ -54,6 +54,7 @@ cr.behaviors.Rex_Timer = function(runtime)
         if (this.timer)
         {
             this.timer.Remove();
+            this.timer = null;    
         }
 	};    
     

@@ -57,6 +57,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         if (this.timer)
         {
             this.timer.Remove();
+            this.timer = null;
         }
 	};    
     
