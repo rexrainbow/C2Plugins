@@ -58,14 +58,17 @@ cr.plugins_.Rex_Function = function(runtime)
         var cmds = CSVToArray(command_string);
         var cmd_cnt = cmds.length;
         var i;
-        var cmd, j, arg_len;
+        var cmd, j, arg_len, mcmd;
         for(i=0; i<cmd_cnt; i++)
         {
            cmd = cmds[i];
            arg_len = cmd.length;
            for(j=1; j<arg_len; j++)
            {
-               cmd[j] = eval("("+cmd[j]+")");
+               mcmd = cmd[j];
+               cmd[j] = (mcmd != "")? 
+                        eval("("+mcmd+")"):
+                        null;
            }
            this._ExeCmd(cmd);
         }
@@ -317,10 +320,12 @@ cr.plugins_.Rex_Function = function(runtime)
 	FunctionKlassProto["_ExeCmd"] = function(args)
 	{    
         var arg_len = args.length;
-        var i;
+        var i, arg;
         for (i=1; i<arg_len; i++)
         {
-            this["param"][i-1] = args[i];
+            arg = args[i];
+            if (arg != null)
+                this["param"][i-1] = arg;
         }
         this["_CallFn"](args[0] || "");
         return this["result"];
