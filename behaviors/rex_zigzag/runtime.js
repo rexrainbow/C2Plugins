@@ -90,14 +90,12 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 cmd_param = parseFloat(cmd_slices[1]);
                 cmd_parsed = _cmd_transfer(cmd_name, cmd_param);
                 if (cmd_parsed)
-                    ret_cmds.push(_cmd_transfer(cmd_name, cmd_param));
+                    ret_cmds.push(cmd_parsed);
                 else
                     alert ("Can not parse command "+ i +": '" + cmd + "'"); 
             }
             else
-            {
                alert ("Can not parse command "+ i +": '" + cmd + "'");  
-            }
         }
         return ret_cmds;
     };
@@ -105,14 +103,14 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.activated = this.properties[0];
-        this.is_run = this.properties[1];
-        var is_rotatable = this.properties[2];
+        this.is_run = (this.properties[1] == 1);
+        var is_rotatable = (this.properties[2] == 1);
         var precise_mode = this.properties[12];
-        var continued_mode = this.properties[13];        
+        var continued_mode = (this.properties[13]==1);        
         this.cur_cmd = null;
         this.is_my_call = false;
 
-        var init_angle = (is_rotatable==1)?  
+        var init_angle = (is_rotatable)?  
                          this.inst.angle: 
                          cr.to_clamped_radians(this.properties[11]);        
         this.pos_state = {x:this.inst.x, 
@@ -120,33 +118,29 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                           angle:init_angle};
         this.CmdQueue = new cr.behaviors.Rex_Zigzag.CmdQueue(this.properties[3]);
         this.CmdMove = new cr.behaviors.Rex_Zigzag.CmdMove(this.inst, 
-                                                       this.properties[5],
-                                                       this.properties[6],
-                                                       this.properties[7],
-                                                       precise_mode,
-                                                       continued_mode);  
-        this.CmdRotate = new cr.behaviors.Rex_Zigzag.CmdRotate(this.inst, 
-                                                           is_rotatable,
-                                                           this.properties[8],
-                                                           this.properties[9],
-                                                           this.properties[10],
+                                                           this.properties[5],
+                                                           this.properties[6],
+                                                           this.properties[7],
                                                            precise_mode,
-                                                           continued_mode);
-        this.CmdWait = new cr.behaviors.Rex_Zigzag.CmdWait(this.properties[11]); 
+                                                           continued_mode);  
+        this.CmdRotate = new cr.behaviors.Rex_Zigzag.CmdRotate(this.inst, 
+                                                               is_rotatable,
+                                                               this.properties[8],
+                                                               this.properties[9],
+                                                               this.properties[10],
+                                                               precise_mode,
+                                                               continued_mode);
+        this.CmdWait = new cr.behaviors.Rex_Zigzag.CmdWait(continued_mode); 
         this.cmd_map = {"M":this.CmdMove,
                         "R":this.CmdRotate,
                         "W":this.CmdWait};
                         
-        var init_cmd_string = this.properties[4];
-        if ( init_cmd_string != "" )
-        {
-            this.CmdQueue.PushList(_cmd_parsing(init_cmd_string));
-        }
+        this.AddCommandString(this.properties[4]);
 	};
 
 	behinstProto.tick = function ()
 	{
-        if ( (this.activated==0) || (this.is_run==0) )
+        if ( (this.activated==0) || (!this.is_run) )
             return;
                         
         var dt = this.runtime.getDt(this.inst);
@@ -189,9 +183,6 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 this.is_my_call = false;                
                 this.cur_cmd = null;
             }
-            
-            if (this.is_continued_mode==0)
-                break;
         }               
 	};   
     
@@ -203,10 +194,9 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     behinstProto.AddCommandString = function (cmd_string)
     {
         if ( cmd_string != "" )
-        {
             this.CmdQueue.PushList(_cmd_parsing(cmd_string));
-        }
     };
+
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
@@ -284,19 +274,19 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	acts.Start = function ()
 	{
         this.cur_cmd = null;
-        this.is_run = 1;
+        this.is_run = true;
 		this.CmdQueue.Reset();
         // update pos_state
         this.pos_state.x = this.inst.x;
         this.pos_state.y = this.inst.y;
-        if (this.CmdRotate.rotatable == 1)
+        if (this.CmdRotate.rotatable)
             this.pos_state.angle = this.inst.angle;
 	};     
     
 	acts.Stop = function ()
 	{
         this.cur_cmd = null;
-        this.is_run = 0;
+        this.is_run = false;
 	}; 
     
 	acts.SetMaxMovSpeed = function (s)
@@ -353,14 +343,14 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	acts.SetRotatable = function (s)
 	{
-        this.CmdRotate.rotatable = s;
+        this.CmdRotate.rotatable = (s==1);
 	};    
     
 	acts.SetMovingAngle = function (s)
 	{
         var _angle = cr.to_clamped_radians(s);
         this.pos_state.angle = _angle;
-        if (this.CmdRotate.rotatable == 1)
+        if (this.CmdRotate.rotatable)
         {
             this.inst.angle = _angle;
             this.inst.set_bbox_changed();
@@ -486,10 +476,15 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         var index = this._queue_index+1;
         if (index >= this._queue.length)
         {
-            this._queue_index = (this.repeat_count != 1)? 0:  // repeat
-                               (-1);                         // finish
-            if (this.repeat_count != 1)
+            if (this.repeat_count != 1)      // repeat
+            {
+                this._queue_index = 0;
                 this.repeat_count -= 1;
+            }
+            else
+            {
+                this._queue_index = (-1);    // finish
+            }                       
         }
         else
             this._queue_index = index;
@@ -525,7 +520,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
     CmdMoveProto.Tick = function(dt)
     {
-        var remain_dt = 0;
+        var remain_dt;
         var distance = _move_distance_get.call(this, dt);
         this.remain_distance -= distance;   
 
@@ -547,7 +542,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 this.target.x = this.inst.x;
                 this.target.y = this.inst.y;
             }
-            remain_dt = (this.continued_mode==1)? _remaind_dt_get.call(this):0;    
+            remain_dt = (this.continued_mode)? _remaind_dt_get.call(this):0;    
         }
         else
         {
@@ -556,6 +551,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 distance = -distance;
             this.inst.x += (distance * Math.cos(angle));
             this.inst.y += (distance * Math.sin(angle));
+            remain_dt = 0;            
         } 
 
 		this.inst.set_bbox_changed();
@@ -575,7 +571,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         this.is_zeroDt_mode = ( (max_speed >= 36000) && (acc==0) && (dec==0) );
         this.precise_mode = precise_mode;   
         this.continued_mode = continued_mode;     
-        this.current_angle = cr.to_clamped_degrees(inst.angle);
+        this.current_angle_deg = (rotatable)? cr.to_clamped_degrees(inst.angle):0;
         this.current_speed = 0;
     };
     var CmdRotateProto = cr.behaviors.Rex_Zigzag.CmdRotate.prototype;
@@ -583,10 +579,10 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     CmdRotateProto.Init = function(zigzag_state, distance)
     {
         this.target = zigzag_state;
-        this.current_angle = cr.to_clamped_degrees(zigzag_state.angle);
-        this._target_angle = this.current_angle + distance;
+        this.current_angle_deg = cr.to_clamped_degrees(zigzag_state.angle);
+        this._target_angle_deg = this.current_angle_deg + distance;
         this.dir = (distance >= 0);
-        var angle = cr.to_clamped_radians(this._target_angle);
+        var angle = cr.to_clamped_radians(this._target_angle_deg);
         this.remain_distance = Math.abs(distance);
         _set_current_speed.call(this, null); 
         this.is_done = false;
@@ -598,13 +594,13 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     CmdRotateProto.Tick = function(dt)
     {
         var remain_dt;    
-        var target_angle;       
+        var target_angle_rad;       
         if (this.is_zeroDt_mode)
         {
             remain_dt = dt;
             this.is_done = true;
-            target_angle = this.target.angle;
-            this.current_angle = this._target_angle;            
+            target_angle_rad = this.target.angle;
+            this.current_angle_deg = this._target_angle_deg;            
         }
         else
         {
@@ -617,29 +613,29 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 this.is_done = true;
                 if (this.precise_mode)  // precise mode
                 {
-                    target_angle = this.target.angle;                                      
+                    target_angle_rad = this.target.angle;                                      
+                    this.current_angle_deg = this._target_angle_deg;                    
                 }
                 else  // non-precise mode
                 {
                     distance += this.remain_distance;
-                    this.current_angle += ((this.dir)? distance:(-distance));
-                    target_angle = cr.to_clamped_radians(this.current_angle);                
-                    this.target.angle = target_angle;
+                    this.current_angle_deg += ((this.dir)? distance:(-distance));
+                    target_angle_rad = cr.to_clamped_radians(this.current_angle_deg);                
+                    this.target.angle = target_angle_rad;
                 }
-                this.current_angle = this._target_angle;
                 remain_dt = (this.continued_mode==1)? _remaind_dt_get.call(this):0;                
             }
             else
             {
-                this.current_angle += ((this.dir)? distance:(-distance));
-                target_angle = cr.to_clamped_radians(this.current_angle);
+                this.current_angle_deg += ((this.dir)? distance:(-distance));
+                target_angle_rad = cr.to_clamped_radians(this.current_angle_deg);
                 remain_dt = 0;
             } 
         }
             
-        if (this.rotatable == 1)
+        if (this.rotatable)
         {
-            this.inst.angle = target_angle;
+            this.inst.angle = target_angle_rad;
 		    this.inst.set_bbox_changed();
         }
         return remain_dt;    
@@ -718,10 +714,10 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     CmdWaitProto.Tick = function(dt)
     {
         this.remain_distance -= dt;
-        var remain_dt = 0;
+        var remain_dt;
         if (this.remain_distance <= 0)
         {
-            remain_dt = (this.continued_mode==1)? (-this.remain_distance):0;
+            remain_dt = (this.continued_mode)? (-this.remain_distance):0;
             this.is_done = true;
         }
         else

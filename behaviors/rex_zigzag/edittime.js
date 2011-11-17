@@ -3,7 +3,7 @@
 	return {
 		"name":			"Zigzag",
 		"id":			"Rex_Zigzag",
-		"description":	"Move sprite to specific position",
+		"description":	"Using LOGO-like script to move/rotate sprite.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Movements",
@@ -104,7 +104,7 @@ AddAction(8, 0, "Set rotation deceleration", "Rotation",
 AddNumberParam("Repeat count", "The times to execute commands repeatly. 0 is infinity.", 0);
 AddAction(9, 0, "Set repeat count", "Command queue", 
           "Set {my} repeat count to <i>{0}</i>", 
-          "Set times to execute commands repeatly.", "SetRepeatCount");          
+          "Set times to execute commands repeatly. 0 is infinity.", "SetRepeatCount");          
 AddAction(10, 0, "Clean command queue", "Command queue", 
           "Clean {my} command queue", 
           "Clean command queue.", "CleanCmdQueue");
@@ -118,7 +118,7 @@ AddNumberParam("Parameter", "The parameter of command.");
 AddAction(11, 0, "Add command", "Command queue", 
           "Add <i>{0}</i> <i>{1}</i> into {my} command queue", 
           "Add a command into command queue.", "AddCmd"); 
-AddStringParam("Commansd", "Commands string", '""');
+AddStringParam("Commansd", 'Commands string. F=Move Forward, B=Move Backward, R=Turn Right, L=Turn Left, W=Wait. ex:"F 100;L 60"', '""');
 AddAction(12, 0, "Add commands", "Command queue", 
           "Add '<i>{0}</i>' into {my} command queue", 
           "Add commands string into command queue.", "AddCmdString");           
@@ -162,7 +162,6 @@ AddExpression(11, ef_return_number, "Get current command index", "Current", "Cmd
               "Get current command index in command queue. 0 is the first command.");               
 
               
-              
 ACESDone();
 
 // Property grid properties for this plugin
@@ -172,7 +171,7 @@ var property_list = [
     new cr.Property(ept_combo, "Rotatable", "Yes", "Enable to rotate sprite with command.", "No|Yes"),    
     // command queue
     new cr.Property(ept_integer, "Repeat count", 0, "The times to execute commands repeatly. 0 is infinity."),                
-    new cr.Property(ept_text, "Commands", "", "F=Move Forward, B=Move Backward, R=Turn Right, L=Turn Left, W=Wait. ex:'F 100;L 60'"),    
+    new cr.Property(ept_text, "Commands", "", 'F=Move Forward, B=Move Backward, R=Turn Right, L=Turn Left, W=Wait. ex:"F 100;L 60"'),    
     // Moving setup
 	new cr.Property(ept_float, "Max moving speed", 400, 
                     "Maximum moving speed, in pixel per second."),
