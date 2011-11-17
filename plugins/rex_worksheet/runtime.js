@@ -40,18 +40,24 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{        
+	{ 
         this.timeline = null;
         this.callback = null;        
         this.timer = null; 
         this.instructions = [];
         this.offset = 0;
         this.current_cmd = {};
-        this.pre_abs_time = 0;
+        this.pre_abs_time = 0;        
 	};
+    
+	//instanceProto.onDestroy = function()
+	//{
+    //    debugger;
+	//};
     
 	instanceProto.Start = function(instructions, offset)
 	{
+        this.pre_abs_time = 0;
         this.instructions = this._parsing(instructions);
         this.offset = offset;        
         this._start_cmd();
@@ -130,12 +136,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 
 	cnds.IsRunning = function ()
 	{
-        var is_running = false;
-        if (this.timer)
-        {
-            is_running = this.timer.IsActive();
-        }       
-		return is_running;
+		return ((this.timer)? this.timer.IsActive():false);
 	};      
 
 	//////////////////////////////////////
@@ -144,7 +145,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	var acts = pluginProto.acts;
 
     acts.Setup = function (timeline_objs, fn_objs)
-	{
+	{  
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
             this.timeline = timeline;        
@@ -159,32 +160,26 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	};    
     
     acts.Start = function (instructions, offset)
-	{
+	{   
         this.Start(instructions, offset);
 	};   
     
     acts.Pause = function ()
 	{
         if (this.timer)
-        {
-            this.timer.Suspend();
-        }    
+            this.timer.Suspend();  
 	};
 
     acts.Resume = function (timer_name)
 	{
         if (this.timer)
-        {
             this.timer.Resume();
-        }
 	};
     
     acts.Stop = function ()
 	{
         if (this.timer)
-        {
             this.timer.Remove();
-        }
 	};  
     
     acts.SetOffset = function (offset)
