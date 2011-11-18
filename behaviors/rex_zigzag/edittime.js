@@ -68,7 +68,7 @@ AddCondition(5, cf_trigger, "On command finish", "Command",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", 
+AddAction(0, 0, "Set activated", "Setting", 
           "Set {my} activated to <i>{0}</i>", 
           "Enable the object's Zigzag behavior.", "SetActivated");
 AddAction(1, 0, "Execution start", "Control", 
@@ -131,7 +131,13 @@ AddAction(13, 0, "Set rotatable", "Rotation",
 AddNumberParam("Angle", "The angle of moving direction.");  
 AddAction(14, 0, "Set moving angle", "Rotation", 
           "Set {my} moving angle to <i>{0}</i>", 
-          "Set moving angle in degree. Also rotate sprite at rotatable mode", "SetMovingAngle");           
+          "Set moving angle in degree. Also rotate sprite at rotatable mode", "SetMovingAngle");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Precise", "Set precise.",0);
+AddAction(15, 0, "Set precise", "Setting", 
+          "Set {my} precise to <i>{0}</i>", 
+          "Set precise.", "SetPrecise");           
   
 
 //////////////////////////////////////////////////////////////
