@@ -84,7 +84,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         var speed_string;
         if (start_index != (-1))
         {
-            speed_string = cmd.slice(start_index, cmd.indexOf("]")+1);
+            speed_string = cmd.slice(start_index);
             ret_cmd = cmd.slice(0,start_index);
         }
         else
