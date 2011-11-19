@@ -3,7 +3,7 @@
 	return {
 		"name":			"Video",
 		"id":			"Rex_Video",
-		"description":	"Video.",
+		"description":	"Play video.",
 		"author":		"",
 		"help url":		"",
 		"category":		"Html5",
@@ -26,7 +26,19 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Source", "", "Source of video."),    
+    new cr.Property(ept_text, "Source", "", "The location (URL) of the video file."),    
+    new cr.Property(ept_text, "Poster", "", 
+                    "An image to be shown while the video is downloading."),        
+    new cr.Property(ept_combo,"Autoplay", "No", 
+                    "The video will start playing as soon as it is ready.", "No|Yes"),
+    new cr.Property(ept_combo,"Controls", "No", 
+                    "Add controls on video.", "No|Yes"),
+    new cr.Property(ept_combo,"Preload", "None", 
+                    "Specifies if and how the author thinks the video should be loaded when the page loads.", "Auto|Metadata|None"),  
+    new cr.Property(ept_combo,"Loop", "No", 
+                    "The video will start over again, every time it is finished.", "No|Yes"),      
+    new cr.Property(ept_combo,"Muted", "No", 
+                    "The audio output of the video should be muted.", "No|Yes"),        
 ];
 	
 // Called by IDE when a new object type is to be created

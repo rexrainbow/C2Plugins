@@ -44,11 +44,15 @@ cr.plugins_.Rex_Video = function(runtime)
 	// called whenever an instance is created
 	instanceProto.onCreate = function()
 	{
-		this.elem = document.createElement("video");
-        this.elem.autoplay = true;
-        this.elem.src = this.properties[0];     
-		jQuery(this.elem).appendTo("body");        
-        
+        this.elem = document.createElement("video");
+        this.elem.src = this.properties[0];      
+        this.elem.poster = this.properties[1];            
+        this.elem.autoplay = (this.properties[2]==1); 
+        this.elem.controls = (this.properties[3]==1);   
+        this.elem.preload = ["auto","metadata","none"][this.properties[4]];
+        this.elem.loop = (this.properties[5]==1);  
+        this.elem.muted = (this.properties[6]==1);          
+        jQuery(this.elem).appendTo("body");
 
 		this.updatePosition();
 		
