@@ -6,7 +6,7 @@
 		"description":	"Play video.",
 		"author":		"",
 		"help url":		"",
-		"category":		"Html5",
+		"category":		"Media",
 		"type":			"world",			// appears in layout
 		"rotatable":	false,
 		"flags":		pf_position_aces | pf_size_aces
