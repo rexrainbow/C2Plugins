@@ -15,12 +15,46 @@
 
 ////////////////////////////////////////
 // Conditions
+AddCondition(0, cf_trigger, "On play ended", "Control", "On ended", 
+             "Triggered when video play ended.", "OnEnded");
+AddCondition(1, 0, "Is play ended", "Control", "Is ended", 
+             "Is video play ended.", "IsEnded");            
 
 ////////////////////////////////////////
 // Actions
+AddStringParam("Source", "The location (URL) of the video file", '""');
+AddAction(0, 0, "Set source", "Setting", "Set video source to <i>{0}</i>", "Set video source.", "SetSource");
+AddAction(1, 0, "Play", "Control", "Play video", "Play video.", "Play");
+AddAction(2, 0, "Pause", "Control", "Pause video", "Pause video.", "Pause");
+AddComboParamOption("Disable");
+AddComboParamOption("Enable");
+AddComboParam("Controls", "Enable controls.",1);
+AddAction(3, 0, "Enable controls", "Setting", "Set controls to <i>{0}</i>", "Enable controls of video.", "SetControls");
+AddNumberParam("Volume", "Volume value, is between 0 to 1.", 1);
+AddAction(4, 0, "Set volume", "Setting", "Set volume to <i>{0}</i>", "Set volume.", "SetVolume");   
+AddStringParam("Poster", "An image to be shown while the video is downloading.", '""');
+AddAction(5, 0, "Set poster", "Setting", "Set poster to <i>{0}</i>", "Set poster.", "SetPoster");   
+AddComboParamOption("Disable");
+AddComboParamOption("Enable");
+AddComboParam("Loop", "Enable loop.",1);
+AddAction(6, 0, "Enable Loop", "Setting", "Set loop to <i>{0}</i>", "Enable loop of video.", "SetLoop");  
+AddComboParamOption("Disable");
+AddComboParamOption("Enable");
+AddComboParam("Muted", "Enable muted.",1);
+AddAction(7, 0, "Enable muted", "Setting", "Set muted to <i>{0}</i>", "Enable muted of video.", "SetMuted"); 
+AddComboParamOption("Disable");
+AddComboParamOption("Enable");
+AddComboParam("Autoplay", "Enable autoplay.",1);
+AddAction(8, 0, "Enable autoplay", "Setting", "Set autoplay to <i>{0}</i>", "Enable autoplay of video.", "SetAutoplay"); 
 
 ////////////////////////////////////////
 // Expressions
+AddExpression(0, ef_return_number, "Get current time", "State", "CurrentTime", "Get current video time.");
+AddExpression(1, ef_return_number, "Is paused", "State", "IsPaused", "Is video paused? 1 is paused.");
+AddExpression(2, ef_return_number, "Is muted", "State", "IsMuted", "Is video muted? 1 is muted.");
+AddExpression(3, ef_return_number, "Get volume", "State", "Volume", "Get video volume.");
+AddExpression(4, ef_return_number, "Get ready state", "State", "ReadyState", 
+              "Get ready state. 0=uninitialized, 1=loading, 2=loaded, 3=interactive, 4=complete.");
 
 ACESDone();
 

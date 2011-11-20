@@ -68,6 +68,7 @@ cr.plugins_.Rex_Video = function(runtime)
 	instanceProto.tick = function ()
 	{
 		this.updatePosition();
+        this.check_ended();
 	};
 	
 	instanceProto.updatePosition = function ()
@@ -103,6 +104,12 @@ cr.plugins_.Rex_Video = function(runtime)
 		jQuery(this.elem).height(bottom - top);
 	};
 	
+	instanceProto.check_ended = function ()
+	{
+        if (this.elem.ended)
+            this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnEnded, this);
+	};	
+    
 	// only called if a layout object
 	instanceProto.draw = function(ctx)
 	{
@@ -112,15 +119,94 @@ cr.plugins_.Rex_Video = function(runtime)
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
+    
+	cnds.OnEnded = function ()
+	{
+		return true;
+	};
 	
+	cnds.IsEnded = function ()
+	{
+		return this.elem.ended;
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 
+	acts.SetSource = function (src)
+	{
+		this.elem.src = src;
+	};      
+    
+	acts.Play = function ()
+	{
+		this.elem.play();
+	};  
+
+	acts.Pause = function ()
+	{
+		this.elem.pause();
+	}; 
+
+	acts.SetControls = function (is_enable)
+	{
+		this.elem.controls = (is_enable==1);
+	};   
+
+	acts.SetVolume = function (volume)
+	{
+		this.elem.volume = cr.clamp(volume, 0, 1);
+	};   
+    
+	acts.SetPoster = function (poster)
+	{
+		this.elem.poster = poster;
+	};      
+
+	acts.SetLoop = function (is_enable)
+	{
+		this.elem.loop = (is_enable==1);
+	};
+
+	acts.SetMuted = function (is_enable)
+	{
+		this.elem.muted = (is_enable==1);
+	};
+
+	acts.SetAutoplay = function (is_enable)
+	{
+		this.elem.autoplay = (is_enable==1);
+	};    
+   
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
-
+	
+	exps.CurrentTime = function (ret)
+	{
+		ret.set_float(this.elem.currentTime);
+	};
+	
+	exps.IsPaused = function (ret)
+	{
+		ret.set_int(this.elem.paused);
+	};  
+	
+	exps.IsMuted = function (ret)
+	{
+		ret.set_int(this.elem.muted);
+	};  
+	
+	exps.Volume = function (ret)
+	{
+		ret.set_float(this.elem.volume);
+	};     
+	
+	exps.ReadyState = function (ret)
+	{
+		ret.set_int(this.elem.readyState);
+	};       
 }());
