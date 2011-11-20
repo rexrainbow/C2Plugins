@@ -53,6 +53,8 @@ cr.plugins_.Rex_Video = function(runtime)
         this.elem.loop = (this.properties[5]==1);  
         this.elem.muted = (this.properties[6]==1);          
         jQuery(this.elem).appendTo("body");
+        
+        this._pre_ended = false;
 
 		this.updatePosition();
 		
@@ -106,8 +108,10 @@ cr.plugins_.Rex_Video = function(runtime)
 	
 	instanceProto.check_ended = function ()
 	{
-        if (this.elem.ended)
+        if (!this._pre_ended && this.elem.ended)
             this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnEnded, this);
+            
+        this._pre_ended = this.elem.ended;
 	};	
     
 	// only called if a layout object
