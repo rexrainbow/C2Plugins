@@ -138,6 +138,22 @@ IDEInstance.prototype.OnRendererInit = function(renderer)
 // Called to draw self in the editor
 IDEInstance.prototype.Draw = function(renderer)
 {
+	if (!this.font)
+		this.font = renderer.CreateFont("Arial", 14, false, false);
+		
+	renderer.SetTexture(null);
+	var quad = this.instance.GetBoundingQuad();
+	renderer.Fill(quad, cr.RGB(224, 224, 224));
+	renderer.Outline(quad, cr.RGB(0, 0, 0));
+	
+	cr.quad.prototype.offset.call(quad, 0, 2);
+	var rc = new cr.rect();
+	cr.quad.prototype.bounding_box.call(quad, rc);
+
+	this.font.DrawText("Video",
+						rc,
+						cr.RGB(0, 0, 0),
+						ha_center);
 }
 
 IDEInstance.prototype.OnRendererReleased = function(renderer)
