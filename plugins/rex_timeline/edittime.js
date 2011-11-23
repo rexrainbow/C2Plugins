@@ -3,7 +3,7 @@
 	return {
 		"name":			"TimeLine",
 		"id":			"Rex_TimeLine",
-		"description":	"TimeLine",
+		"description":	"TimeLine & Timer, to execute function at time-out.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Utility: Core",
@@ -62,8 +62,8 @@ AddAction(9, 0, "Delete timer", "Timer",
           "Delete timer <i>{0}</i>", 
           "Delete timer.", "DeleteTimer"); 
 AddStringParam("Name", "Timer's name.", '""');          
-AddAnyTypeParam("Index", "Index of parameter, can be number of string", "0");
-AddAnyTypeParam("Value", "Value of paramete", "0");
+AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of paramete", 0);
 AddAction(10, 0, "Set a parameter", "Timer", 
           "Set timer <i>{0}</i> 's parameter[<i>{1}</i>] to <i>{2}</i>",
           "Set a parameter pass into timer.", "SetTimerParameter");

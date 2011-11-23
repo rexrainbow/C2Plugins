@@ -3,7 +3,7 @@
 	return {
 		"name":			"Timer",
 		"id":			"Rex_Timer",
-		"description":	"Timer",
+		"description":	"Timer, to execute function at time-out",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Timer",
@@ -13,7 +13,6 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddAnyTypeParam("Name", "Timer's name", '""');
 AddCondition(0, 0, "Is timmer running", "Timer", "Is running", "", "IsRunning");
 
 //////////////////////////////////////////////////////////////
@@ -23,11 +22,10 @@ AddObjectParam("Function", "Function object for callback");
 AddAction(0, 0, "Setup timer", "Setup", 
           "Get timer {my} from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup timer.", "Setup");
-AddStringParam("CB", "Function name of timer's callback", '""');
-//AddStringParam("Param", "Function parameters, in JSON format", '""');
+AddStringParam("Commands", "Execute commands when timer's time-out", '""');
 AddAction(1, 0, "Create timer", "Create", 
           "Create timer {my} with callback <i>{0}</i>", 
-          "Create timer.", "Create");    
+          "Create timer.", "Create");            
 AddNumberParam("Time", "Time-out in seconds", 0);
 AddAction(2, 0, "Start timer", "Control", 
           "Start timer {my}, time-out is <i>{0}</i> seconds", 
@@ -40,7 +38,12 @@ AddAction(4, 0, "Resume timer", "Control",
           "Resume timer.", "Resume");               
 AddAction(5, 0, "Stop timer", "Control", 
           "Stop timer {my}", 
-          "Stop timer.", "Stop");          
+          "Stop timer.", "Stop"); 
+AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of paramete", 0);
+AddAction(6, 0, "Set a parameter", "Timer", 
+          "Set timer {my}'s parameter[<i>{0}</i>] to <i>{1}</i>",
+          "Set a parameter pass into timer.", "SetParameter");          
 
 //////////////////////////////////////////////////////////////
 // Expressions

@@ -46,7 +46,9 @@ cr.behaviors.Rex_Timer = function(runtime)
 
 	behinstProto.onCreate = function()
 	{        
-        this.timer = null;        
+        this.timer = null;    
+        this.command = ""; 
+        this.param = {};     
 	};
     
 	behinstProto.onDestroy = function()
@@ -62,7 +64,7 @@ cr.behaviors.Rex_Timer = function(runtime)
 	{
 	};
     
-    behinstProto._timer_handle = function(name, args)
+    behinstProto._timer_handle = function()
     {
         // setup sol
         var sol = this.type.objtype.getCurrentSol();
@@ -70,7 +72,8 @@ cr.behaviors.Rex_Timer = function(runtime)
 	    sol.instances.length = 1;        
         sol.instances[0] = this.inst;
         // call function object
-        this.type.callback.CallFn(name, args);    
+        this.type.callback.AddParams(this.param);
+        this.type.callback.ExecuteCommands(this.command);        
     };
 
 	//////////////////////////////////////
@@ -103,50 +106,42 @@ cr.behaviors.Rex_Timer = function(runtime)
             alert ("Timer behavior should connect to a function object");
 	};      
     
-    acts.Create = function (fn_name, fn_args)
+    acts.Create = function (command)
 	{
-        var cb_args = [fn_name, fn_args];
+        this.command = command;
         if (this.timer)  // timer exist
-        {
             this.timer.Remove();
-            this.timer.SetCallbackArgs(cb_args);
-        }
-        else      // create new timer instance
-        {
-            this.timer = this.type.timeline.CreateTimer(this, this._timer_handle, cb_args);
-        }      
+        else            // create new timer instance
+            this.timer = this.type.timeline.CreateTimer(this, this._timer_handle);   
 	}; 
     
     acts.Start = function (delay_time)
 	{
         if (this.timer)
-        {
             this.timer.Start(delay_time);
-        }
 	};
 
     acts.Pause = function ()
 	{
         if (this.timer)
-        {
             this.timer.Suspend();
-        }
 	};   
 
     acts.Resume = function ()
 	{
         if (this.timer)
-        {
             this.timer.Resume();
-        }
 	};       
     
     acts.Stop = function ()
 	{
         if (this.timer)
-        {
             this.timer.Remove();
-        }
+	};   
+    
+    acts.SetParameter = function (index, value)
+	{
+        this.param[index] = value;
 	};    
 
 	//////////////////////////////////////
