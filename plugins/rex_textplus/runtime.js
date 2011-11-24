@@ -142,6 +142,13 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			ctx.globalAlpha = 1.0;
 	};
 	
+	instanceProto.drawGL = function(glw)
+	{
+		// Draw to overlay canvas instead
+		if (this.runtime.overlay_ctx)
+			this.draw(this.runtime.overlay_ctx);
+	};
+	
 	var wordsCache = [];
 
 	pluginProto.TokeniseWords = function (text)
