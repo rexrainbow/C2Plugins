@@ -723,12 +723,12 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.acc = 0;
 	};
 	
-	acts.SetDeceleration = function (acc)
+	acts.SetDeceleration = function (dec)
 	{
-		this.acc = acc;
+		this.dec = dec;
 		
-		if (this.acc < 0)
-			this.acc = 0;
+		if (this.dec < 0)
+			this.dec = 0;
 	};
 	
 	acts.SetJumpStrength = function (js)
