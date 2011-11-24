@@ -15,8 +15,10 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On completed", "AJAX", "On all completed", "Triggered when all AJAX requests completes successfully.", "OnComplete");
-AddCondition(1,	cf_trigger, "On error", "AJAX", "On any error", "Triggered when any AJAX request fails.", "OnError");
+AddCondition(0,	cf_trigger, "On completed", "AJAX", "On all completed", 
+             "Triggered when all AJAX requests completes successfully.", "OnComplete");
+AddCondition(1,	cf_trigger, "On error", "AJAX", "On any error", 
+             "Triggered when any AJAX request fails.", "OnError");
 
 //////////////////////////////////////////////////////////////
 // Actions

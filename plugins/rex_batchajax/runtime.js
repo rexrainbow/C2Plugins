@@ -84,7 +84,7 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
 			},
 			error: function() {          
 				this.inst._error_tag = this.tag;
-                delete this.inst._jobs[tag];
+                delete this.inst._jobs[this.tag];
 				this.inst.runtime.trigger(cr.plugins_.Rex_BatchAJAX.prototype.cnds.OnError, this.inst);
 			}
 		});
@@ -110,7 +110,7 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
 	var acts = pluginProto.acts;
     
 	acts.AddRequest = function (tag, url)
-	{
+	{   
         if (this._is_process_request)
         {
             alert("Error: process other batch request");
