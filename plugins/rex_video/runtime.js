@@ -105,19 +105,23 @@ cr.plugins_.Rex_Video = function(runtime)
 		jQuery(this.elem).width(right - left);
 		jQuery(this.elem).height(bottom - top);
 	};
+	    
+	// only called if a layout object
+	instanceProto.draw = function(ctx)
+	{
+	};
 	
+	instanceProto.drawGL = function(glw)
+	{
+	};
+    	
 	instanceProto.check_ended = function ()
 	{
         if (!this._pre_ended && this.elem.ended)
             this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnEnded, this);
             
         this._pre_ended = this.elem.ended;
-	};	
-    
-	// only called if a layout object
-	instanceProto.draw = function(ctx)
-	{
-	};
+	};    
 
 	//////////////////////////////////////
 	// Conditions
