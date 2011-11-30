@@ -28,6 +28,9 @@ cr.behaviors.Rex_Cursor = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
+		this.curTouchX = 0;
+		this.curTouchY = 0;    
+        
 		// Bind mouse events via jQuery
 		jQuery(document).mousemove(
 			(function (self) {
@@ -188,7 +191,12 @@ cr.behaviors.Rex_Cursor = function(runtime)
 	behtypeProto.GetLayerY = function(inst)
 	{
         return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false);
-	};    
+	};  
+
+	behtypeProto.IsCursorExisted = function()
+	{
+        return (this.trigger_source == 1)?  true : this.is_on_touch;
+	};     
 
 	/////////////////////////////////////
 	// Behavior instance class
@@ -226,6 +234,12 @@ cr.behaviors.Rex_Cursor = function(runtime)
             this.runtime.trigger(cr.behaviors.Rex_Cursor.prototype.cnds.OnMoving, inst);
             this.pre_x = curr_x;
             this.pre_y = curr_y;
+        }
+        var visible = this.type.IsCursorExisted();
+        if (this.inst.visible != visible)
+        {
+            this.inst.visible = visible;
+            this.runtime.redraw = true;
         }
 	};
 	//////////////////////////////////////
