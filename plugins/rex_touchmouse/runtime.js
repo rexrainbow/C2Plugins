@@ -68,6 +68,9 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
     
 	instanceProto.onCreate = function()
 	{
+		this.curTouchX = 0;
+		this.curTouchY = 0;    
+    
 		// Bind mouse events via jQuery
 		jQuery(document).mousemove(
 			(function (self) {
@@ -129,6 +132,10 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 			true
 		);        
 	};
+    
+	instanceProto.draw = function (ctx)
+	{
+	};   
 
 	instanceProto.onMouseMove = function(info)
 	{
@@ -194,7 +201,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
         this.runtime.trigger(cr.plugins_.Rex_TouchMouse.prototype.cnds.OnClick, this);
 		//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchStart, this);
 		
-		// Trigger OnTouchObject=OnObjectClicked for each touch started event
+		// Trigger OnTouchObject for each touch started event
 		var offset = jQuery(this.runtime.canvas).offset();
 		
 		if (info.changedTouches)
@@ -206,7 +213,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 				
 				this.curTouchX = touch.pageX - offset.left;
 				this.curTouchY = touch.pageY - offset.top;
-                this.runtime.trigger(cr.plugins_.Rex_TouchMouse.prototype.cnds.OnObjectClicked, this);
+				this.runtime.trigger(cr.plugins_.Rex_TouchMouse.prototype.cnds.OnObjectClicked, this);
 				//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchObject, this);
 			}
 		}
@@ -336,10 +343,10 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 			    {
 				    var touch = this.touches[j];
 				
-				    px = inst.layer.canvasToLayerX(touch.x);
-				    py = inst.layer.canvasToLayerY(touch.y);
+				    px = inst.layer.canvasToLayer(touch.x, touch.y, true);
+				    py = inst.layer.canvasToLayer(touch.x, touch.y, false);
 				
-				    if (inst.bquad.contains_pt(px, py))
+				    if (inst.contains_pt(px, py))
 				    {
 					    touching.push(inst);
 					    break;
@@ -354,56 +361,25 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 			    return true;
 		    }
 		    else
-			    return false;        
+			    return false;
         }        
 	};
-	
+
 	cnds.OnObjectClicked = function (button, type, obj)
 	{
         if (this.trigger_source == 1)  // mouse
         {
-		    if (button !== this.triggerButton || type !== this.triggerType)
+            if (button !== this.triggerButton || type !== this.triggerType)
 			    return false;	// wrong click type
 		
-    		var mx = this.mouseXcanvas;
-	    	var my = this.mouseYcanvas;
-		
-		    // Can't be inverted
-		    return this.runtime.testAndSelectCanvasPointOverlap(obj, mx, my, false);
+		    return this.runtime.testAndSelectCanvasPointOverlap(obj, this.mouseXcanvas, this.mouseYcanvas, false);
         }
         else    // touch
         {
 		    if (!obj)
 			    return false;
 			
-		    var sol = obj.getCurrentSol();
-		    var instances = sol.getObjects();
-		    var px, py;
-		
-		    var touching = [];
-		
-		    // Check curTouchX/Y overlaps any instance
-		    var i, len;
-		    for (i = 0, len = instances.length; i < len; i++)
-		    {
-			    var inst = instances[i];
-			    inst.update_bbox();
-			
-			    px = inst.layer.canvasToLayerX(this.curTouchX);
-			    py = inst.layer.canvasToLayerY(this.curTouchY);
-			
-			    if (inst.bquad.contains_pt(px, py))
-				    touching.push(inst);
-		    }
-		
-		    if (touching.length)
-		    {
-			    sol.select_all = false;
-			    sol.instances = touching;
-			    return true;
-		    }
-		    else
-			    return false;        
+		    return this.runtime.testAndSelectCanvasPointOverlap(obj, this.curTouchX, this.curTouchY, false);        
         }        
 	};
 
@@ -455,24 +431,24 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 	{
         var layer, oldScale;
 		
-		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
-		
+		var layer, oldScale, oldZoomRate, parallaxY, oldAngle;
+
 		if (cr.is_undefined(layerparam))
 		{
-			// calculate X position on bottom layer as if its scale were 1.0
+		    // calculate X position on bottom layer as if its scale were 1.0
 			layer = this.runtime.getLayerByNumber(0);
 			oldScale = layer.scale;
 			oldZoomRate = layer.zoomRate;
-			oldParallaxX = layer.parallaxX;
+			oldParallaxY = layer.parallaxY;
 			oldAngle = layer.angle;
 			layer.scale = 1.0;
 			layer.zoomRate = 1.0;
-			layer.parallaxX = 1.0;
+			layer.parallaxY = 1.0;
 			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
-			layer.parallaxX = oldParallaxX;
+			layer.parallaxY = oldParallaxY;
 			layer.angle = oldAngle;
 		}
 		else
