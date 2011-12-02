@@ -28,6 +28,9 @@ cr.behaviors.Rex_DragDrop = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
+		this.curTouchX = 0;
+		this.curTouchY = 0;      
+    
 		// Bind mouse events via jQuery
 		jQuery(document).mousedown(
 			(function (self) {
