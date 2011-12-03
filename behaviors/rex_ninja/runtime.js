@@ -88,47 +88,49 @@ cr.behaviors.Rex_Ninja = function(runtime)
 	};   
 
     // export
-	behtypeProto.GetLayerX = function(inst)
+	behtypeProto.GetABSX = function ()
 	{
         var ret_x;
         if (this.trigger_source == 1)  // mouse
-        {    
-            ret_x = inst.layer.canvasToLayerX(this.mouseXcanvas);
-        }
-        else
         {
-		    if (this.touches.length)
-		    {
-                ret_x = inst.layer.canvasToLayerX(this.touches[0].x);
-		    }
+            ret_x = this.mouseXcanvas;
+        }
+        else    // touch
+        {
+		    if (this.is_on_touch)
+                ret_x = this.touches[0].x;
 		    else
-            {
-			    ret_x = null;        
-            }
+                ret_x = this.last_touch_x;        
         }
         return ret_x;
+	};  
+
+	behtypeProto.GetABSY = function ()
+	{
+        var ret_y;
+        if (this.trigger_source == 1)  // mouse
+        {
+            ret_y = this.mouseYcanvas;
+        }
+        else    // touch
+        {
+		    if (this.is_on_touch)
+                ret_y = this.touches[0].y;
+		    else
+                ret_x = this.last_touch_y;      
+        }
+        return ret_y;
+	};     
+    
+	behtypeProto.GetLayerX = function(inst)
+	{
+        return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), true);
 	};
     
 	behtypeProto.GetLayerY = function(inst)
 	{
-        var ret_y;
-        if (this.trigger_source == 1)  // mouse
-        {    
-            ret_y = inst.layer.canvasToLayerY(this.mouseYcanvas);
-        }
-        else
-        {
-		    if (this.touches.length)
-		    {
-                ret_y = inst.layer.canvasToLayerY(this.touches[0].y);
-		    }
-		    else
-            {
-			    ret_y = null;        
-            }
-        }
-        return ret_y;
-	};    
+        return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false);
+	};     
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)

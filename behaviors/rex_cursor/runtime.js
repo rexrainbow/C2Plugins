@@ -28,9 +28,6 @@ cr.behaviors.Rex_Cursor = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-		this.curTouchX = 0;
-		this.curTouchY = 0;    
-        
 		// Bind mouse events via jQuery
 		jQuery(document).mousemove(
 			(function (self) {
@@ -74,6 +71,8 @@ cr.behaviors.Rex_Cursor = function(runtime)
 		this.mouseYcanvas = 0;    
         
         // touch
+		this.curTouchX = 0;
+		this.curTouchY = 0;          
 		this.touches = [];
         this.is_on_touch = false;
         this.last_touch_x = 0;
