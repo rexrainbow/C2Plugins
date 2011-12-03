@@ -88,6 +88,8 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
 		this.mouseYcanvas = 0;    
         
         // touch
+		this.curTouchX = 0;
+		this.curTouchY = 0;          
 		this.touches = [];
         this.is_on_touch = false;
         
@@ -172,10 +174,9 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         this.is_on_touch = false;
 	};    
     
-    // drag detecting
+    // moving
 	behtypeProto.MovingStart = function(x, y)
 	{    
-        // 0. find out index of behavior instance
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
             
@@ -188,7 +189,7 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         {
             inst = insts[i].behavior_insts[this.behavior_index];
             if ( (this.trigger_source == 0) ||
-                 (inst.mouse_buton == this.triggerButton.btn) ) 
+                 (inst.mouse_buton == this.triggerButton.btn)
                )
             {
                 inst.is_on_moving = true;
@@ -209,10 +210,10 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         }
         else    // touch
         {
-		    if (this.touches.length)
+		    if (this.is_on_touch)
                 ret_x = this.touches[0].x;
 		    else
-                ret_x = 0;        
+                ret_x = this.last_touch_x;        
         }
         return ret_x;
 	};  
@@ -226,23 +227,23 @@ cr.behaviors.Rex_TouchDirection = function(runtime)
         }
         else    // touch
         {
-		    if (this.touches.length)
+		    if (this.is_on_touch)
                 ret_y = this.touches[0].y;
 		    else
-                ret_x = 0;        
+                ret_x = this.last_touch_y;      
         }
         return ret_y;
 	};     
     
 	behtypeProto.GetLayerX = function(inst)
 	{
-        return inst.layer.canvasToLayerX(this.GetABSX());
+        return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), true);
 	};
     
 	behtypeProto.GetLayerY = function(inst)
 	{
-        return inst.layer.canvasToLayerY(this.GetABSY());
-	};
+        return inst.layer.canvasToLayer(this.GetABSX(), this.GetABSY(), false);
+	};  
     
 	behtypeProto._is_release = function(mouse_buton)
 	{
