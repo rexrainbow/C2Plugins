@@ -39,62 +39,26 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.socket = null; 
+        this.socket = new cr.plugins_.Rex_SocketIO.SocketIOKlass(this);
+        this._branch = this.CreateBranch(this, this.on_message);
         this.data_stack = []; 
-        this.is_pkg_stack_empty = true;
-        this.current_pkg = {};         
-	};
-	instanceProto.send = function(data)
-	{
-		var socket = this.socket;
-		
-		if(socket)
-			socket.send(data);
-	};
-	instanceProto.disconnect = function()
-	{
-		var socket = this.socket;
-		
-		if(socket)
-			socket.disconnect();
+        this.current_pkg = null;     
+
+        this.check_name = "NETWORK";        
 	};
     
-    var pkg_parse = function(msg)
+    instanceProto.on_message = function(usr_id, msg)
+	{
+        this.data_stack.push({"id":usr_id,"data":msg});
+        this.runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnData, this);
+	};    
+
+    // export: get new socketIO branch instance
+    instanceProto.CreateBranch = function(cb_this, cb_fn)
     {
-        var comma_index = msg.indexOf(',');
-        var usr_id = parseInt(msg.slice(0,comma_index));
-        var data = msg.slice(comma_index+1);
-        var pkg = {"id":usr_id, 
-                   "data":data};
-        return pkg;
-    };   
+        return (new cr.plugins_.Rex_SocketIO.BranchKlass(this.socket, cb_this, cb_fn));
+    };
     
-	instanceProto.connect = function(host,port)
-	{    
-        if(this.socket)
-			this.socket.disconnect();
-            
-        var addr = host.toString() + ":" + port.toString(); //"http://localhost:8001"		                  
-        var socket = io.connect(addr); 
-        
-		var instance = this;
-		var runtime = instance.runtime;
-        socket.on('connect', function () {
-            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnConnect, instance);
-        });
-        socket.on('disconnect', function () {
-            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnDisconnect, instance);
-        });          
-        socket.on('error', function () {
-            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnError, instance);
-        });  
-        socket.on('message', function (msg) {
-            instance.data_stack.push(pkg_parse(msg));
-            this.is_pkg_stack_empty = false;
-            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnData, instance);
-        });          
-        this.socket = socket;        
-	};
 
 	//////////////////////////////////////
 	// Conditions    
@@ -119,8 +83,9 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 	};
 	cnds.IsPkgStackEmpty = function()
 	{
-		return this.is_pkg_stack_empty;
+		return (this.data_stack.length > 0);
 	};
+    
 	//////////////////////////////////////
 	// Actions    
 	pluginProto.acts = {};
@@ -128,26 +93,21 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 
 	acts.Connect = function(host,port)
 	{
-        this.connect(host,port);
+        this.socket.connect(host,port);
 	};
-    
-	acts.Send = function(data)
-	{
-        this.send(data);
-	};
-    
 	acts.Disconnect = function()
 	{
-        this.disconnect();
+        this.socket.disconnect();
 	};
-    
+	acts.Send = function(data)
+	{
+        this._branch.send(data);
+	};
 	acts.PopPkg = function()
 	{
         var data_stack = this.data_stack;
         if (data_stack.length > 0)
-            this.current_pkg = data_stack.shift();          
-        else
-            this.is_pkg_stack_empty = true;
+            this.current_pkg = data_stack.shift();
 	};
     
 
@@ -158,12 +118,121 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 
 	exps.Data = function(ret)
 	{        
-		ret.set_string(this.current_pkg.data);
+        var pkg = this.current_pkg;
+        data = (pkg)? pkg.data:"";
+		ret.set_string(data);
 	};
 	exps.UsrID = function(ret)
 	{
-		ret.set_int(this.current_pkg.id);
+        var pkg = this.current_pkg;
+        id = (pkg)? pkg.id:"";
+		ret.set_int(id);        
 	};    
     
 
+}());
+
+(function ()
+{
+    cr.plugins_.Rex_SocketIO.SocketIOKlass = function(plugin)
+    {
+        this.plugin = plugin;
+        this.socket = null;
+        this.host = "";
+        this.port = "";
+        this.is_connection = false;    
+
+        this.branch_sn = 0;
+        this.branchs = {};
+    };
+    var SocketIOKlassProto = cr.plugins_.Rex_SocketIO.SocketIOKlass.prototype; 
+    
+    SocketIOKlassProto.branch_append = function(branch)
+    {
+        var branch_id = this.branch_sn;
+        this.branchs[branch_id] = branch;
+        this.branch_sn += 1;
+        return branch_id;
+    };
+
+    var comma_split = function(msg)
+    {
+        var comma_index = msg.indexOf(',');
+        return [parseInt(msg.slice(0,comma_index)),
+                msg.slice(comma_index+1)];    
+    };    
+    SocketIOKlassProto.connect = function(host, port)
+    {
+        this.is_connection = false;
+        if(this.socket)
+			this.socket.disconnect();
+        
+        this.host = host.toString();
+        this.port = port.toString();
+        var addr = this.host + ":" + this.port;   //"http://localhost:8001"		                  
+        var socket = io.connect(addr); 
+        
+		var instance = this;
+		var plugin = this.plugin;
+		var runtime = plugin.runtime;
+        socket.on('connect', function () {
+            instance.is_connection = true;
+            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnConnect, plugin);
+        });
+        socket.on('disconnect', function () {
+            instance.is_connection = false; 
+            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnDisconnect, plugin);
+        });          
+        socket.on('error', function () {
+            instance.is_connection = true;
+            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnError, plugin);
+        });  
+        socket.on('message', function (msg) {
+            // pkg format: "usr_id,branch_id,data"
+            var slices = comma_split(msg);
+            var usr_id = slices[0];
+            slices = comma_split(slices[1]);
+            var branch_id = slices[0];
+            var data = slices[1];
+            var cb = instance.branchs[branch_id];
+            if (cb)
+                cb.on_message(usr_id,data)
+        });          
+        this.socket = socket;      
+    };
+	SocketIOKlassProto.send = function(branch_id, data)
+	{
+		var socket = this.socket;
+		if(socket)
+        {
+            data = branch_id + "," + data;
+			socket.send(data);
+        }
+	};
+	SocketIOKlassProto.disconnect = function()
+	{
+		var socket = this.socket;
+		if(socket)
+			socket.disconnect();
+	};
+    
+    
+    // socketIO branch
+    cr.plugins_.Rex_SocketIO.BranchKlass = function(socketIO, cb_this, cb_fn)
+    {
+        this._branch_id = socketIO.branch_append(this).toString();
+        this.socketIO = socketIO;
+        this.cb_on_message = {"this":cb_this, "fn":cb_fn};
+    };
+    var BranchKlassProto = cr.plugins_.Rex_SocketIO.BranchKlass.prototype; 
+    
+    BranchKlassProto.send = function(data)
+	{
+		this.socketIO.send(branch_id, data);
+	};
+    BranchKlassProto.on_message = function(usr_id, msg)
+	{
+        cb = this.cb_on_message;
+		cb["fn"].call(cb["this"], usr_id, msg);
+	};
 }());

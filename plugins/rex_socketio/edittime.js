@@ -1,15 +1,15 @@
 function GetPluginSettings()
 {
 	return {
-		"name": "Socket IO",
-		"id": "Rex_SocketIO",
-		"description": "Allows you to communicate over the Internet via streaming sockets.",
-		"author": "Rex.Rainbow",
-		"help url": "",
-		"category": "Web",
-		"type":	"object",
-		"rotatable": false,
-		"flags": pf_singleglobal
+		"name":			"SocketIO",
+		"id":			"Rex_SocketIO",
+		"description":	"Allows you to communicate over the Internet via streaming sockets.",
+		"author":		"Rex.Rainbow",
+		"help url":		"",
+		"category":		"Web",
+		"type":			"object",			// not in layout
+		"rotatable":	false,
+		"flags":		0
 	};
 };
 
@@ -23,7 +23,7 @@ AddCondition(4,0,"Is package stack empty","Received","Is package stack empty","I
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Address","The address (eg. URL or IP) to connect to. Supports cross-domain requests.","http://localhost");
+AddStringParam("Address","The address (eg. URL or IP) to connect to. Supports cross-domain requests.",'"http://localhost"');
 AddNumberParam("Port","The port to try and connect to the address through. This should be specific to your server.",8001);
 AddAction(0,0,"Connect","Socket","Connect to <b>{0}</b>, port: <b>{1}</b>","Connect to an address (eg. URL or IP).","Connect");
 AddAction(1,0,"Disconnect","Socket","Disconnect","Disconnect from the current connection.","Disconnect");
