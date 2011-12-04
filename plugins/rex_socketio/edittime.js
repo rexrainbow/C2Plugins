@@ -19,6 +19,7 @@ AddCondition(0,cf_trigger,"On data received","Socket","On data received","Trigge
 AddCondition(1,cf_trigger,"On connect","Socket","On connect","Triggered when the socket successfully connects to an address.","OnConnect");
 AddCondition(2,cf_trigger,"On error","Socket","On error","Triggered when there is an error connecting to an address.","OnError");
 AddCondition(3,cf_trigger,"On disconnect","Socket","On disconnect","Triggered when the socket disconnects from an address.","OnDisconnect");
+AddCondition(4,0,"Is package stack empty","Received","Is package stack empty","Is package stack empty.","IsPkgStackEmpty");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -28,10 +29,12 @@ AddAction(0,0,"Connect","Socket","Connect to <b>{0}</b>, port: <b>{1}</b>","Conn
 AddAction(1,0,"Disconnect","Socket","Disconnect","Disconnect from the current connection.","Disconnect");
 AddAnyTypeParam("Data","The data to send through the socket.","\"\"");
 AddAction(2,0,"Send","Socket","Send <b>{0}</b>","Send data through the connection.","Send");
+AddAction(3,0,"Pop a package","Received","Pop a package","Pop a received package.","PopPkg");
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0,ef_return_string,"Get received data","Socket","Data","Get the last chunk of data that was received via the socket.");
+AddExpression(0,ef_return_string,"Get received data","Received","Data","Get the last chunk of data that was received via the socket.");
+AddExpression(1,ef_return_number,"Get user-id of received data","Received","UsrID","Get the user-id of received data.");
 //AddExpression(0,ef_return_string,"Get last address","Socket","LastAddress","Get the last address that the socket connected to.");
 //AddExpression(1,ef_return_string,"Get last port","Socket","LastPort","Get the last port that the socket connected through.");
 

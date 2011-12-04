@@ -40,7 +40,9 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.socket = null; 
-        this.data_stack = [];        
+        this.data_stack = []; 
+        this.is_pkg_stack_empty = true;
+        this.current_pkg = {};         
 	};
 	instanceProto.send = function(data)
 	{
@@ -57,9 +59,22 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 			socket.disconnect();
 	};
     
+    var pkg_parse = function(msg)
+    {
+        var comma_index = msg.indexOf(',');
+        var usr_id = parseInt(msg.slice(0,comma_index));
+        var data = msg.slice(comma_index+1);
+        var pkg = {"id":usr_id, 
+                   "data":data};
+        return pkg;
+    };   
+    
 	instanceProto.connect = function(host,port)
-	{
-        var addr = host.toString() + ":" + port.toString(); //"http://localhost:8001"
+	{    
+        if(this.socket)
+			this.socket.disconnect();
+            
+        var addr = host.toString() + ":" + port.toString(); //"http://localhost:8001"		                  
         var socket = io.connect(addr); 
         
 		var instance = this;
@@ -74,12 +89,15 @@ cr.plugins_.Rex_SocketIO = function(runtime)
             runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnError, instance);
         });  
         socket.on('message', function (msg) {
-            instance.data_stack.push(msg);
+            instance.data_stack.push(pkg_parse(msg));
+            this.is_pkg_stack_empty = false;
             runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnData, instance);
         });          
         this.socket = socket;        
 	};
 
+	//////////////////////////////////////
+	// Conditions    
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
 
@@ -99,7 +117,12 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 	{
 		return true;
 	};
-
+	cnds.IsPkgStackEmpty = function()
+	{
+		return this.is_pkg_stack_empty;
+	};
+	//////////////////////////////////////
+	// Actions    
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 
@@ -117,20 +140,30 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 	{
         this.disconnect();
 	};
+    
+	acts.PopPkg = function()
+	{
+        var data_stack = this.data_stack;
+        if (data_stack.length > 0)
+            this.current_pkg = data_stack.shift();          
+        else
+            this.is_pkg_stack_empty = true;
+	};
+    
 
+	//////////////////////////////////////
+	// Expressions    
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
 
 	exps.Data = function(ret)
-	{
-		var data_stack = this.data_stack;
-		var dataLength = data_stack.length;
-		
-		var data = "";
-		if(dataLength > 0)
-			data = data_stack.splice(0,1)[0].toString();
-		
-		ret.set_string(data);
+	{        
+		ret.set_string(this.current_pkg.data);
 	};
+	exps.UsrID = function(ret)
+	{
+		ret.set_int(this.current_pkg.id);
+	};    
+    
 
 }());
