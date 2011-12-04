@@ -45,7 +45,7 @@ app = web.Application(
     )
     
 def GetMyIPAddr():
-    return socket.gethostbyname_ex(socket.gethostname())[2][0]
+    return socket.gethostbyname_ex(socket.gethostname())[2]
 
 # Start server
 def main():
