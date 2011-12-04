@@ -48,6 +48,9 @@ def GetMyIPAddr():
     return socket.gethostbyname_ex(socket.gethostname())[2][0]
 
 # Start server
-if __name__ == '__main__':
+def main():
     print "IP Address:",GetMyIPAddr()
     SocketServer(app)
+    
+main()
+    
