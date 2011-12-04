@@ -1,7 +1,6 @@
 from tornado import web
 from tornadio2 import SocketConnection, TornadioRouter, SocketServer
 import socket
-import json
 
 def GetMyIPAddr():
     return socket.gethostbyname_ex(socket.gethostname())[2]
