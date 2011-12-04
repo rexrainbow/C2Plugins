@@ -2,6 +2,9 @@ from tornado import web
 from tornadio2 import SocketConnection, TornadioRouter, SocketServer
 import socket
 
+def GetMyIPAddr():
+    return socket.gethostbyname_ex(socket.gethostname())[2]
+
 # Declare connection class
 class MyConnection(SocketConnection):
     participants = set()
@@ -32,24 +35,21 @@ class MyConnection(SocketConnection):
     def broadcast(self, msg):
         for p in self.participants:
             p.send(msg)
-
-
-# Create TornadIO2 router
-router = TornadioRouter(MyConnection)
-
-# Create Tornado application with urls from router
-app = web.Application(
-    router.urls, 
-    socket_io_port=8001,
-    flash_policy_file = 'flashpolicy.xml'
-    )
-    
-def GetMyIPAddr():
-    return socket.gethostbyname_ex(socket.gethostname())[2]
-
-# Start server
+            
+            
 def main():
-    print "IP Address:",GetMyIPAddr()
+    print "Server IP Address:",GetMyIPAddr()
+    
+    # Create TornadIO2 router
+    router = TornadioRouter(MyConnection)
+
+    # Create Tornado application with urls from router
+    app = web.Application(
+        router.urls, 
+        socket_io_port=8001,
+        flash_policy_file = 'flashpolicy.xml'
+        )
+        
     SocketServer(app)
     
 main()
