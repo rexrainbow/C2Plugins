@@ -50,11 +50,14 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.pre_abs_time = 0;        
 	};
     
-	//instanceProto.onDestroy = function()
-	//{
-    //    debugger;
-	//};
-    
+	
+	instanceProto.onDestroy = function ()
+	{
+        debugger;
+        if (this.timer)
+            this.timer.Remove();
+	};    
+
 	instanceProto.Start = function(instructions, offset)
 	{
         this.pre_abs_time = 0;
