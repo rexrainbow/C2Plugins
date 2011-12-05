@@ -23,8 +23,20 @@ AddObjectParam("Function", "Function object for callback");
 AddAction(0, 0, "Setup Sync Function", "Setup", 
           "Get connection from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup Sync Function.", "Setup");
+AddComboParamOption("Network");
+AddComboParamOption("Stand alone");
+AddComboParam("Sync-mode", "Set sync-mode.",0);
+AddAction(1, 0, "Set sync-mode", "Setup", 
+          "Set sync-mode to <i>{0}</i>", 
+          "Set sync-mode.", "SetSyncMode");         
+AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of paramete", 0);
+AddAction(2, 0, "Set a parameter", "Function", 
+          "Set parameter[<i>{0}</i>] to <i>{1}</i>",
+          "Set a parameter pass into function.", "SetParameter");          
 AddStringParam("Commands", "Commands", '""');
-AddAction(1, 0, "Execute commands", "Function", "Execute commands <i>{0}</i>", "Execute commands.", "ExecuteCommands");
+AddAction(3, 0, "Execute commands", "Function", "Execute commands <i>{0}</i>", "Execute commands.", "ExecuteCommands");
+
 
           
 //////////////////////////////////////////////////////////////
@@ -35,6 +47,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Sync-mode", "Network", "Sync-mode.", "Network|Stand alone"),   
 	];
 	
 // Called by IDE when a new object type is to be created

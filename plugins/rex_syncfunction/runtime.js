@@ -41,17 +41,34 @@ cr.plugins_.Rex_SyncFn = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        this.sync_mode = (this.properties[0]==0);
         this.branch = null;
-        this.callback = null;   
-        this.usr_id = "";        
+        this.callback = null;         
+        this.usr_id = "";
+        this.param = {};        
 	};
+    
+    instanceProto.run_callback = function(cmd, params)
+	{
+        if (params != null)
+            this.callback.AddParams(params);
+        this.callback.ExecuteCommands(cmd);
+	};  
+    
+    var dump_commands = function(cmd, params)
+	{
+        return JSON.stringify([cmd, params]);
+	};      
     
     instanceProto.on_message = function(usr_id, msg)
 	{
-        this.usr_id = usr_id;  
-        this.callback.ExecuteCommands(msg);
-	};      
-	
+        debugger;
+        this.usr_id = usr_id; 
+        var cmd = JSON.parse(msg);
+        // format: [cmd, params]
+        this.run_callback(cmd[0],cmd[1]);
+	};
+
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -77,10 +94,22 @@ cr.plugins_.Rex_SyncFn = function(runtime)
             alert ("Sync-Function should connect to a function object");
 	};  
     
-	acts.ExecuteCommands = function (command_string)
+	acts.SetSyncMode = function (sync_mode)
 	{
-        debugger;
-        this.branch.send(command_string);
+        this.sync_mode = (sync_mode==0);
+	}; 
+    
+    acts.SetParameter = function (index, value)
+	{
+        this.param[index] = value;
+	};     
+    
+	acts.ExecuteCommands = function (cmd_string)
+	{
+        if (this.sync_mode)
+            this.branch.send(dump_commands(cmd_string, this.param));
+        else
+            this.run_callback(cmd_string, this.param);
 	};     
 
 	//////////////////////////////////////
