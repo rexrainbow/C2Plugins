@@ -44,7 +44,7 @@ cr.plugins_.Rex_SyncFn = function(runtime)
         this.sync_mode = (this.properties[0]==0);
         this.branch = null;
         this.callback = null;         
-        this.usr_id = "";
+        this.usr_id = -1;
         this.param = {};        
 	};
     
@@ -54,19 +54,12 @@ cr.plugins_.Rex_SyncFn = function(runtime)
             this.callback.AddParams(params);
         this.callback.ExecuteCommands(cmd);
 	};  
-    
-    var dump_commands = function(cmd, params)
+     
+    instanceProto.on_message = function(usr_id, data)
 	{
-        return JSON.stringify([cmd, params]);
-	};      
-    
-    instanceProto.on_message = function(usr_id, msg)
-	{
-        debugger;
-        this.usr_id = usr_id; 
-        var cmd = JSON.parse(msg);
+        this.usr_id = usr_id;
         // format: [cmd, params]
-        this.run_callback(cmd[0],cmd[1]);
+        this.run_callback(data[0],data[1]);
 	};
 
 	//////////////////////////////////////
@@ -107,7 +100,10 @@ cr.plugins_.Rex_SyncFn = function(runtime)
 	acts.ExecuteCommands = function (cmd_string)
 	{
         if (this.sync_mode)
-            this.branch.send(dump_commands(cmd_string, this.param));
+        {
+            // format: [cmd, params]
+            this.branch.send([cmd_string, this.param]);
+        }
         else
             this.run_callback(cmd_string, this.param);
 	};     

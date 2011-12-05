@@ -91,9 +91,9 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 
-	acts.Connect = function(host,port)
+	acts.Connect = function(host, port, nickname)
 	{
-        this.socket.connect(host,port);
+        this.socket.connect(host, port, nickname);
 	};
 	acts.Disconnect = function()
 	{
@@ -140,6 +140,7 @@ cr.plugins_.Rex_SocketIO = function(runtime)
         this.socket = null;
         this.host = "";
         this.port = "";
+        this.user_id = -1;
         this.is_connection = false;    
 
         this.branch_sn = 0;
@@ -161,12 +162,13 @@ cr.plugins_.Rex_SocketIO = function(runtime)
         return [parseInt(msg.slice(0,comma_index)),
                 msg.slice(comma_index+1)];    
     };    
-    SocketIOKlassProto.connect = function(host, port)
+    SocketIOKlassProto.connect = function(host, port, nickname)
     {
         this.is_connection = false;
         if(this.socket)
 			this.socket.disconnect();
         
+        this.nickname = nickname;
         this.host = host.toString();
         this.port = port.toString();
         var addr = this.host + ":" + this.port;   //"http://localhost:8001"		                  
@@ -176,8 +178,13 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 		var plugin = this.plugin;
 		var runtime = plugin.runtime;
         socket.on('connect', function () {
-            instance.is_connection = true;
-            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnConnect, plugin);
+            socket.emit('My name is', nickname,
+                function (value) {
+                    instance.user_id = value;
+                    instance.is_connection = true;                    
+                    // connect completed
+                    runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnConnect, plugin);
+            });
         });
         socket.on('disconnect', function () {
             instance.is_connection = false; 
@@ -187,17 +194,23 @@ cr.plugins_.Rex_SocketIO = function(runtime)
             instance.is_connection = true;
             runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnError, plugin);
         });  
-        socket.on('message', function (msg) {
-            // pkg format: "usr_id,branch_id,data"
-            var slices = comma_split(msg);
-            var usr_id = slices[0];
-            slices = comma_split(slices[1]);
-            var branch_id = slices[0];
-            var data = slices[1];
-            var cb = instance.branchs[branch_id];
+        socket.on('message', function (msg) {    
+            // json.send -> object
+            // format: [user_id, branch_id, data]
+            var cb = instance.branchs[ msg[1] ];
             if (cb)
-                cb.on_message(usr_id,data)
+                cb.on_message(msg[0], msg[2])
+        }); 
+        // custom event
+        socket.on('user joined', function (user_info) {
+            debugger;
+            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnUserJoined, plugin);
         });          
+        socket.on('user left', function (user_info) {
+            debugger;
+            runtime.trigger(cr.plugins_.Rex_SocketIO.prototype.cnds.OnUserLeft, plugin);
+        });
+        
         this.socket = socket;      
     };
 	SocketIOKlassProto.send = function(branch_id, data)
@@ -205,8 +218,8 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 		var socket = this.socket;
 		if(socket)
         {
-            data = branch_id + "," + data;
-			socket.send(data);
+            // format: [user_id, branch_id, data]
+            socket.json.send([this.user_id, branch_id, data]);
         }
 	};
 	SocketIOKlassProto.disconnect = function()
@@ -216,11 +229,12 @@ cr.plugins_.Rex_SocketIO = function(runtime)
 			socket.disconnect();
 	};
     
+    // additional   
     
     // socketIO branch
     cr.plugins_.Rex_SocketIO.BranchKlass = function(socketIO, cb_this, cb_fn)
     {
-        this._branch_id = socketIO.branch_append(this).toString();
+        this._branch_id = socketIO.branch_append(this);
         this.socketIO = socketIO;
         this.cb_on_message = {"this":cb_this, "fn":cb_fn};
     };
