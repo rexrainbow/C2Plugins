@@ -44,7 +44,12 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 		this.triggerType = 0;
         
         // touch
-		this.touches = [];        
+		this.touches = [];
+		this.curTouchX = 0;
+		this.curTouchY = 0;        
+        this.is_on_touch = false;
+        this.last_touch_x = 0;
+        this.last_touch_y = 0;       
         
         // control
         this.trigger_source = 1;  // 0=touch, 1=mouse
@@ -68,9 +73,6 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
     
 	instanceProto.onCreate = function()
 	{
-		this.curTouchX = 0;
-		this.curTouchY = 0;    
-    
 		// Bind mouse events via jQuery
 		jQuery(document).mousemove(
 			(function (self) {
@@ -130,7 +132,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 				};
 			})(this),
 			true
-		);        
+		);     
 	};
     
 	instanceProto.draw = function (ctx)
@@ -217,19 +219,23 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 				//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchObject, this);
 			}
 		}
+        
+        this.is_on_touch = true;        
 	};
 
 	instanceProto.onTouchEnd = function (info)
 	{
         this.trigger_source = 0;
 		info.preventDefault();
-		
+		//this.saveTouches(info.touches);  // do not update this.touches
+        
+        this.is_on_touch = false;
+        this.last_touch_x = this.touches[0].x;
+        this.last_touch_y = this.touches[0].y;   
+
 		// Trigger OnTouchEnd=OnRelease
         this.runtime.trigger(cr.plugins_.Rex_TouchMouse.prototype.cnds.OnRelease, this);
-		//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchEnd, this);
-        
-		// Save touches after, so OnTouchEnd can access the x and y of the touch
-		this.saveTouches(info.touches);        
+		//this.runtime.trigger(cr.plugins_.Touch.prototype.cnds.OnTouchEnd, this);        
 	};  
 
     // export
@@ -242,10 +248,10 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
         }
         else    // touch
         {
-		    if (this.touches.length)
+		    if (this.is_on_touch)
                 ret_x = this.touches[0].x;
 		    else
-                ret_x = 0;        
+                ret_x = this.last_touch_x;         
         }
         return ret_x;
 	};  
@@ -259,10 +265,10 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
         }
         else    // touch
         {
-		    if (this.touches.length)
+		    if (this.is_on_touch)
                 ret_y = this.touches[0].y;
 		    else
-                ret_x = 0;        
+                ret_y = this.last_touch_y;          
         }
         return ret_y;
 	};      
@@ -431,7 +437,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 	{
         var layer, oldScale;
 		
-		var layer, oldScale, oldZoomRate, parallaxY, oldAngle;
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
 
 		if (cr.is_undefined(layerparam))
 		{
