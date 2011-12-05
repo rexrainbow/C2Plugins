@@ -38,6 +38,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+    new cr.Property(ept_combo, "Invisible", "Yes", "Enable if you wish to set sprite invisible at touch end.", "No|Yes"),
 	];
 	
 // Called by IDE when a new behavior type is to be created

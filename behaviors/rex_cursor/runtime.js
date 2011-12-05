@@ -215,6 +215,7 @@ cr.behaviors.Rex_Cursor = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.activated = this.properties[0];
+        this.invisible = (this.properties[1]==1);        
 	};
 
 	behinstProto.tick = function ()
@@ -233,11 +234,15 @@ cr.behaviors.Rex_Cursor = function(runtime)
             this.pre_x = curr_x;
             this.pre_y = curr_y;
         }
-        var visible = this.type.IsCursorExisted();
-        if (this.inst.visible != visible)
+        
+        if (this.invisible)
         {
-            this.inst.visible = visible;
-            this.runtime.redraw = true;
+            var visible = this.type.IsCursorExisted();
+            if (this.inst.visible != visible)
+            {
+                this.inst.visible = visible;
+                this.runtime.redraw = true;
+            }
         }
 	};
 	//////////////////////////////////////
