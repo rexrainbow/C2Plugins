@@ -228,7 +228,7 @@ cr.plugins_.Rex_SocketIO = function(runtime)
     
     BranchKlassProto.send = function(data)
 	{
-		this.socketIO.send(branch_id, data);
+		this.socketIO.send(this._branch_id, data);
 	};
     BranchKlassProto.on_message = function(usr_id, msg)
 	{
