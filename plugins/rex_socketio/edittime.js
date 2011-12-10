@@ -1,12 +1,12 @@
 function GetPluginSettings()
 {
 	return {
-		"name":			"SocketIO",
-		"id":			"Rex_SocketIO",
+		"name":			"Chat",
+		"id":			"Rex_SocketIO_Chat",
 		"description":	"Allows you to communicate over the Internet via streaming sockets.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Web",
+		"category":		"Server",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -19,10 +19,11 @@ AddCondition(0,cf_trigger,"On data received","Socket","On data received","Trigge
 AddCondition(1,cf_trigger,"On connect","Socket","On connect","Triggered when the socket successfully connects to an address.","OnConnect");
 AddCondition(2,cf_trigger,"On error","Socket","On error","Triggered when there is an error connecting to an address.","OnError");
 AddCondition(3,cf_trigger,"On disconnect","Socket","On disconnect","Triggered when the socket disconnects from an address.","OnDisconnect");
-AddCondition(4,0,"Is package stack empty","Received","Is package stack empty","Is package stack empty.","IsPkgStackEmpty");
+// 4
 AddCondition(5,cf_trigger,"On user joined","Users","On user joined","Triggered when user joined.","OnUserJoined");
 AddCondition(6,cf_trigger,"On user left","Users","On user left","Triggered when user left.","OnUserLeft");
-
+AddCondition(7, cf_looping | cf_not_invertible, "For each user id", "For Each", 
+             "For each user id", "Repeat the event for each user id.", "ForEachUsrID");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -35,14 +36,18 @@ AddAction(0,0,"Connect","Socket",
 AddAction(1,0,"Disconnect","Socket","Disconnect","Disconnect from the current connection.","Disconnect");
 AddAnyTypeParam("Data","The data to send through the socket.","\"\"");
 AddAction(2,0,"Send","Socket","Send <b>{0}</b>","Send data through the connection.","Send");
-AddAction(3,0,"Pop a package","Received","Pop a package","Pop a received package.","PopPkg");
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0,ef_return_string,"Get received data","Received","Data","Get the last chunk of data that was received via the socket.");
-AddExpression(1,ef_return_number,"Get user-id of received data","Received","UsrID","Get the user-id of received data.");
-//AddExpression(0,ef_return_string,"Get last address","Socket","LastAddress","Get the last address that the socket connected to.");
-//AddExpression(1,ef_return_string,"Get last port","Socket","LastPort","Get the last port that the socket connected through.");
+AddExpression(1,ef_return_number,"Get triggered user id","Received","UsrID","Get triggered user id.");
+AddNumberParam("UsrID","The user id.",0);
+AddExpression(2,ef_return_string | ef_variadic_parameters, 
+              "Get user name from user id","Users","UsrName","Get user name from user id.");
+AddExpression(3,ef_return_string,"Get server address","Socket","IPAddr",
+              "Get the server address that the socket connected to.");
+AddExpression(4,ef_return_string,"Get server port","Socket","Port",
+              "Get the server port that the socket connected through.");
 
 ACESDone();
 
