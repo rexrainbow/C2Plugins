@@ -53,6 +53,8 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	
 	instanceProto.onDestroy = function ()
 	{
+        if (this.timer)
+            this.timer.Remove();
 	};    
 
 	instanceProto.Start = function(instructions, offset)
