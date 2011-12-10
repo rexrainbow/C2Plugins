@@ -44,29 +44,37 @@ cr.plugins_.Rex_SyncFn = function(runtime)
         this.sync_mode = (this.properties[0]==0);
         this.branch = null;
         this.callback = null;         
-        this.usr_id = -1;
+        this.user_id = (-1);
+        this.user_name = this.properties[1];
         this.param = {};        
 	};
     
-    instanceProto.run_callback = function(cmd, params)
+    instanceProto.run_callback = function(exe_mode, cmd, params)
 	{
         if (params != null)
             this.callback.AddParams(params);
-        this.callback.ExecuteCommands(cmd);
+        if (exe_mode == 0)
+            this.callback.ExecuteCommands(cmd);
+        else
+            this.callback.CallFn(cmd);
 	};  
      
-    instanceProto.on_message = function(usr_id, data)
+    instanceProto.on_message = function(user_id, data)
 	{
-        this.usr_id = usr_id;
+        this.user_id = user_id;
         // format: [cmd, params]
-        this.run_callback(data[0],data[1]);
+        this.run_callback(data[0],data[1], data[2]);
 	};
 
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;    
-    
+	
+    cnds.IsNetworkMode = function()
+	{
+		return this.sync_mode;
+	};    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -101,16 +109,51 @@ cr.plugins_.Rex_SyncFn = function(runtime)
 	{
         if (this.sync_mode)
         {
-            // format: [cmd, params]
-            this.branch.send([cmd_string, this.param]);
+            // format: [exe_mode, cmd, params]
+            this.branch.send([0, cmd_string, this.param]);
         }
         else
-            this.run_callback(cmd_string, this.param);
-	};     
+            this.run_callback(0, cmd_string, this.param);
+	};  
 
+	acts.CallFunction = function (cmd_string)
+	{  
+        if (this.sync_mode)
+        {
+            // format: [exe_mode, cmd, params]
+            this.branch.send([1, cmd_string, this.param]);
+        }
+        else
+            this.run_callback(1, cmd_string, this.param);
+	};    
+    
+	acts.CleanParameters = function ()
+	{
+        this.param = {};
+	};      
+    
+    acts.SetUserName = function (name)
+	{
+        this.user_name = name;
+	}; 
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
-
+    
+	exps.UsrID = function(ret)
+	{
+        var user_id = (this.sync_mode)?
+                      this.user_id:
+                      1;    
+		ret.set_int(user_id);        
+	};    
+	exps.UsrName = function(ret, user_id)
+	{   
+        var user_name = (this.sync_mode)?
+                        this.branch.get_user_name(user_id):
+                        this.user_name;
+		ret.set_string(user_name);        
+	};   
 }());

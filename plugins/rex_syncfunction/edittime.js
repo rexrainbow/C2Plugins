@@ -6,7 +6,7 @@
 		"description":	"Sync function for network",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Utility: Network",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -15,6 +15,7 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
+AddCondition(0,0,"Is network mode","If","Is network mode","True if sync-mode is network mode.","IsNetworkMode");
 
 //////////////////////////////////////////////////////////////
 // Actions     
@@ -31,23 +32,34 @@ AddAction(1, 0, "Set sync-mode", "Setup",
           "Set sync-mode.", "SetSyncMode");         
 AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0);
-AddAction(2, 0, "Set a parameter", "Function", 
+AddAction(2, 0, "Set a parameter", "Parameter", 
           "Set parameter[<i>{0}</i>] to <i>{1}</i>",
           "Set a parameter pass into function.", "SetParameter");          
 AddStringParam("Commands", "Commands", '""');
 AddAction(3, 0, "Execute commands", "Function", "Execute commands <i>{0}</i>", "Execute commands.", "ExecuteCommands");
+AddStringParam("Name", "Function name", '""');
+AddAction(4, 0, "Call function", "Function", "Call <i>{0}</i>", "Call function.", "CallFunction");
+AddAction(5, 0, "Clean all parameters", "Parameter", 
+          "Clean all parameters", "Clean all parameters.", "CleanParameters");         
+AddStringParam("Name", "User name", '""');
+AddAction(6, 0, "Set user name", "Users", 
+         "Set user name to <i>{0}</i>", 
+         "Set user name for stand alone mode.", "SetUserName");
 
-
-          
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(0,ef_return_number,"Get user id","Received","UsrID","Get user id.");
+AddNumberParam("UsrID","The user id.",0);
+AddExpression(1,ef_return_string | ef_variadic_parameters, 
+              "Get user name from user id","Users","UsrName","Get user name from user id.");
 
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Sync-mode", "Network", "Sync-mode.", "Network|Stand alone"),   
+    new cr.Property(ept_combo, "Sync-mode", "Network", "Sync-mode.", "Network|Stand alone"),  
+    new cr.Property(ept_text, "User name", "Guest", "Default user name for stand alone mode."),     
 	];
 	
 // Called by IDE when a new object type is to be created
