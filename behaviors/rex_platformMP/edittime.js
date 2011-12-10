@@ -112,6 +112,10 @@ AddNumberParam("Angle", "The angle of gravity in degrees.");
 AddAction(14, 0, "Set angle of gravity", "", "Set {my} angle of gravity to <i>{0}</i> degrees", "Change the angle the player falls at.", "SetGravityAngle");
           
 
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Set whether to enable or disable the behavior.");
+AddAction(15, 0, "Set enabled", "", "Set {my} <b>{0}</b>", "Set whether this behavior is enabled.", "SetEnabled");
 
 //////////////////////////////////////////////////////////////
 // Expressions

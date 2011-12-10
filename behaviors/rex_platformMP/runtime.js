@@ -65,6 +65,8 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		
 		this.animMode = ANIMMODE_STOPPED;
 		
+		this.enabled = true;
+		
 		// Movement
 		this.dx = 0;
 		this.dy = 0;
@@ -259,7 +261,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		}
 		else
 		{
-			ret = this.runtime.testOverlapSolid(this.inst);
+			ret = this.runtime.testOverlapSolid(this.inst) || this.runtime.testOverlapJumpThru(this.inst);
 			
 			// Put the object back
 			this.inst.x = oldx;
@@ -280,8 +282,9 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		var dt = this.runtime.getDt(this.inst);
 		var mx, my, obstacle, mag;
 		
-		// With default controls off, the "jumped" flag needs resetting whenever the jump key is "up" (not simulated)
-		if (!this.defaultControls && !this.simjump)
+		// The "jumped" flag needs resetting whenever the jump key is not simulated for custom controls
+		// This musn't conflict with default controls so make sure neither the jump key nor simulate jump is on
+		if (!this.jumpkey && !this.simjump)
 			this.jumped = false;
 			
 		var left = this.leftkey || this.simleft;
@@ -290,6 +293,9 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		this.simleft = false;
 		this.simright = false;
 		this.simjump = false;
+		
+		if (!this.enabled)
+			return;
 		
 		// Work around 1px float
 		this.inst.x -= this.downx;
@@ -449,7 +455,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.inst.y += this.righty * (this.dx > 1 ? 1 : -1) - this.downy;
 			this.inst.set_bbox_changed();
 			
-			var slope_too_steep = this.runtime.testOverlapSolid(this.inst);
+			var slope_too_steep = this.runtime.testOverlapSolid(this.inst) || this.runtime.testOverlapJumpThru(this.inst);
 
 			// Move back and move the real amount
 			this.inst.x = oldx + mx;
@@ -457,7 +463,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.inst.set_bbox_changed();
 			
 			// Test for overlap to side.
-			obstacle = this.runtime.testOverlapSolid(this.inst);
+			obstacle = this.runtime.testOverlapSolid(this.inst) || this.runtime.testOverlapJumpThru(this.inst);
 			
 			if (obstacle)
 			{
@@ -465,7 +471,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 				// If this works it's an acceptable slope.
 				var push_dist = Math.abs(this.dx * dt) + 2;
 				
-				if (slope_too_steep || !this.runtime.pushOutSolid(this.inst, -this.downx, -this.downy, push_dist))
+				if (slope_too_steep || !this.runtime.pushOutSolid(this.inst, -this.downx, -this.downy, push_dist, true))
 				{
 					// Failed to push up out of slope.  Must be a wall - push back horizontally.
 					// Push either 2.5x the horizontal distance moved this tick, or at least 30px.
@@ -473,7 +479,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 					push_dist = Math.max(Math.abs(this.dx * dt * 2.5), 30);
 					
 					// Push out of solid: push left if moving right, or push right if moving left
-					if (!this.runtime.pushOutSolid(this.inst, this.rightx * (this.dx < 0 ? 1 : -1), this.righty * (this.dx < 0 ? 1 : -1), push_dist))
+					if (!this.runtime.pushOutSolid(this.inst, this.rightx * (this.dx < 0 ? 1 : -1), this.righty * (this.dx < 0 ? 1 : -1), push_dist, true))
 					{
 						// Failed to push out of solid.  Restore old position.
 						this.inst.x = oldx;
@@ -505,8 +511,8 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 				this.inst.y += this.downy * mag;
 				this.inst.set_bbox_changed();
 				
-				if (this.runtime.testOverlapSolid(this.inst))
-					this.runtime.pushOutSolid(this.inst, -this.downx, -this.downy, mag + 2);
+				if (this.runtime.testOverlapSolid(this.inst) || this.runtime.testOverlapJumpThru(this.inst))
+					this.runtime.pushOutSolid(this.inst, -this.downx, -this.downy, mag + 2, true);
 				else
 				{
 					this.inst.x = oldx;
@@ -523,18 +529,46 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			var oldy = this.inst.y;
 			this.inst.x += this.dy * dt * this.downx;
 			this.inst.y += this.dy * dt * this.downy;
+			var newx = this.inst.x;
+			var newy = this.inst.y;
 			this.inst.set_bbox_changed();
 			
 			collobj = this.runtime.testOverlapSolid(this.inst);
+			
+			var fell_on_jumpthru = false;
+			
+			if (!collobj && (this.dy > 0) && !floor_)
+			{
+				collobj = this.runtime.testOverlapJumpThru(this.inst);
+				
+				// Must not have been overlapping in old position to be able to fall on to it
+				if (collobj)
+				{
+					this.inst.x = oldx;
+					this.inst.y = oldy;
+					this.inst.set_bbox_changed();
+					
+					if (this.runtime.testOverlap(this.inst, collobj))
+						collobj = null;
+						
+					this.inst.x = newx;
+					this.inst.y = newy;
+					this.inst.set_bbox_changed();
+				}
+				
+				fell_on_jumpthru = !!collobj;
+			}
+			
 			if (collobj)
 			{
 				this.runtime.registerCollision(this.inst, collobj);
 				
 				// Push either 2.5x the vertical distance moved this tick, or at least 30px.
-				var push_dist = Math.max(Math.abs(this.dy * dt * 2.5), 30);
+				// If fell on a jumpthru don't push any further up than we fell
+				var push_dist = fell_on_jumpthru ? (this.dy * dt + 1) : Math.max(Math.abs(this.dy * dt * 2.5), 30);
 				
 				// Push out of solid: push down if moving up, or push up if moving down
-				if (!this.runtime.pushOutSolid(this.inst, this.downx * (this.dy < 0 ? 1 : -1), this.downy * (this.dy < 0 ? 1 : -1), push_dist))
+				if (!this.runtime.pushOutSolid(this.inst, this.downx * (this.dy < 0 ? 1 : -1), this.downy * (this.dy < 0 ? 1 : -1), push_dist, fell_on_jumpthru))
 				{
 					// Failed to push out of solid.  Restore old position.
 					this.inst.x = oldx;
@@ -610,8 +644,8 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 	
 	cnds.IsOnFloor = function ()
 	{
-		// Must be overlapping solid in current position
-		if (!this.runtime.testOverlapSolid(this.inst))
+		// Must be overlapping solid/jumpthru in current position
+		if (!this.runtime.testOverlapSolid(this.inst) && !this.runtime.testOverlapJumpThru(this.inst))
 			return false;
 			
 		// Move 1px up and make sure not overlapping anything
@@ -622,7 +656,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		this.inst.y -= this.downy;
 		this.inst.set_bbox_changed();
 		
-		ret = !this.runtime.testOverlapSolid(this.inst)
+		ret = !this.runtime.testOverlapSolid(this.inst) && !this.runtime.testOverlapJumpThru(this.inst);
 		
 		this.inst.x = oldx;
 		this.inst.y = oldy;
@@ -792,6 +826,11 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		
 		// Allow to fall off current floor in case direction of gravity changed
 		this.lastFloorObject = null;
+	};
+	
+	acts.SetEnabled = function (en)
+	{
+		this.enabled = (en === 1);
 	};
     
 	acts.CfgCtl = function (ctrl, keycode)
