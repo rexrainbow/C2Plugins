@@ -47,7 +47,15 @@ cr.plugins_.Rex_Function = function(runtime)
     
 	instanceProto.CallFn = function(name, args)
 	{
-        this.fnObj["_CallFn"](name, args);
+        if ((typeof(args) == "object") || (typeof(args) == "undefined"))
+        {
+            this.fnObj["_CallFn"](name, args);
+        }
+        else
+        {
+            this.fnObj["_ExeCmd"](arguments);
+        }
+        return this.fnObj["result"];
 	};  
     
 	instanceProto.ExecuteCommands = function (command_string)
@@ -72,6 +80,7 @@ cr.plugins_.Rex_Function = function(runtime)
            }
            this._ExeCmd(cmd);
         }
+        return this.fnObj["result"];
 	};    
     
 	instanceProto.CreateJS = function(name, code_string)

@@ -3,8 +3,8 @@ A. set parameters
 - fn_obj.AddParams(param)              // param is a hash
 
 B. call function
+- fn_obj.CallFn(name, args)            // args can be a hash, or some strings/numbers
 - fn_obj.ExecuteCommands(cmd)          // cmd is a string
-- fn_obj.CallFn(name, args)            // args is a hash
 - fn_obj.CreateJS(name, code_string)
 
 
