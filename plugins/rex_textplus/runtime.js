@@ -320,7 +320,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			this.runtime.redraw = true;
 		}
         
-        this.typing_timer.Remove();
+        this.typing_timer_remove();
 	};
     	
 	instanceProto.AppendText = function(param)
@@ -337,7 +337,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			this.runtime.redraw = true;
 		}
         
-        this.typing_timer.Remove();
+        this.typing_timer_remove();
 	};    
     
 	instanceProto.text_typing_handler = function(text_buffer, text_index)
@@ -362,6 +362,13 @@ cr.plugins_.Rex_TextPlus = function(runtime)
         this.typing_timer.SetCallbackArgs([text, 1]);
         this.typing_timer.Start(0);
     };
+    
+	instanceProto.typing_timer_remove = function ()
+	{
+        if (this.typing_timer != null)
+            this.typing_timer.Remove();
+    };    
+    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
