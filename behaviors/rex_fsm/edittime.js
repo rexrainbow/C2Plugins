@@ -13,93 +13,40 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(0, 0, "Clean all variables", "Variable", 
-          "Clean {my} all variables", 
-          "Clean all variables.", 
-          "CleanVariables");
-AddAnyTypeParam("Index", "Index of variable, can be number of string", "0");
-AddAnyTypeParam("Value", "Value of variable", "0");
-AddAction(1, 0, "Set a variable", "Variable", 
-          "Set {my} variable[<i>{0}</i>] to <i>{1}</i>", 
-          "Set a variable stored in fsm.", 
-          "SetVariable");
+AddAction(0, 0, "Clean all memory", "Memory", 
+          "Clean {my} all memory", 
+          "Clean all memory.", 
+          "CleanMemory");
+AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of memory", 0);
+AddAction(1, 0, "Set a memory value", "Memory", 
+          "Set {my} memory[<i>{0}</i>] to <i>{1}</i>", 
+          "Set the value stored in memory in fsm.", 
+          "SetMemory");
 AddAction(2, 0, "Request", "Request", 
           "Request {my}", 
-          "input a request.", 
-          "Request");        
-AddStringParam("Name", "State name", '""');
-AddAction(3, 0, "Transit to state", "Request", 
-          "Transit {my} to <i>{0}</i>", 
-          "Transit to state.", 
-          "Transit");
-AddStringParam("Name", "State name", '""');
-AddAction(4, 0, "Force transit to state", "Request", 
-          "Force transit {my} to <i>{0}</i>", 
-          "Force transit to state.", 
-          "ForceTransit");
-AddStringParam("Name", "Function name", '""');
-AddAction(5, 0, "Call function", "Function", "Call <i>{0}</i>", "Call function.", "CallFunction");
-AddStringParam("Name", "JS function object name", '""');
-AddStringParam("Code", "JS function code", '""');
-AddAction(6, 0, "Create JS function object", "JS Function", 
-          "Create JS <i>{0}</i>", "Create JS function object.", "CreateJSFunctionObject");
-AddStringParam("Name", "JS request function object name", '""');
-AddStringParam("Code", "JS function code", '""');
-AddAction(7, 0, "Create JS request object", "JS Function", 
-          "Create JS request <i>{0}</i>", "Create JS request function object.", "CreateJSRequestObject"); 
+          "Request a state transfer.", 
+          "Request");
+AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
+AddComboParamOption("Javascript");
+AddComboParamOption("Simple notation");
+AddComboParam("Code format", "The code format of state transfer logic", 0);
+AddAction(3, 0, "Load state transfer logic from csv table", "Logic", 
+          "Load state transfer logic from csv table <i>{0}</i> in <i>{1}</i> format",
+          "Load state transfer logic from csv table.", "CSV2Logic");
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Name", "State name", '""');
-AddCondition(0, cf_trigger, "On request", "Request", 
-             "On {my} request at <i>{0}</i>", 
-			 "Triggered when request.", 
-			 "OnRequest");
-AddStringParam("Name", "State name", '""');
-AddCondition(1, cf_trigger, "On enter state", "State changed", 
-             "On {my} enter to <i>{0}</i>", 
-			 "Triggered when enter state.", 
-			 "OnEnter");
-AddStringParam("Name", "State name", '""');
-AddCondition(2, cf_trigger, "On exit state", "State changed", 
-             "On {my} exit from <i>{0}</i>", 
-			 "Triggered when exit state.", 
-			 "OnExit");
-AddStringParam("Name", "Exit from state", '""');
-AddStringParam("Name", "Enter to state", '""');
-AddCondition(3, cf_trigger, "On state transfer", "State changed", 
-             "On {my} exit from <i>{0}</i> and enter to <i>{1}</i>", 
-			 "Triggered when state transfer.", 
-			 "OnTransfer");
-AddCondition(4, cf_trigger, "On default request", "Request", 
-             "On {my} request at any state", 
-			 "Triggered when no request callback.", 
-			 "OnDefaultRequest");
-AddCondition(5, cf_trigger, "On default enter", "State changed", 
-             "On {my} enter to any state", 
-			 "Triggered when no enter callback.", 
-			 "OnDefaultEnter");             
-AddCondition(6, cf_trigger, "On default exit", "State changed", 
-             "On {my} exit from any state", 
-			 "Triggered when no exit callback.", 
-			 "OnDefaultExit"); 
-AddStringParam("Name", "Function name", '""');
-AddCondition(7, cf_trigger, "On function", "Function", "On function <i>{0}</i>", "", "OnFunctionCalled");             
-AddAnyTypeParam("Index", "The index of variable to get, can be number of string.", "0");			 
-AddCmpParam("Comparison", "Choose the way to compare the varaible.");
-AddAnyTypeParam("Value", "Value to be compared.", "0");
-AddCondition(8, 0, "Compare variable", "Compare", 
-             "{my} Var[{0}] {1} {2}", 
-			 "Compare the value of variable.", 
-			 "CompareVariable");
-			 
+
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");
 AddExpression(1, ef_return_string, "Previous state", "State", "PreState", "Get previous state.");
-AddAnyTypeParam("0", "The index of variable to get, can be number of string.", "0");
-AddExpression(2, ef_return_any | ef_variadic_parameters, "Get variable", "Varaiable", "Var", "Get a variable by index.");
+AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
+AddExpression(2, ef_return_any | ef_variadic_parameters, 
+              "Get memory", "Memory", "Mem", 
+              "Get the value from memory by index.");
 
 
 ACESDone();
@@ -109,8 +56,7 @@ var property_list = [
     new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
     new cr.Property(ept_text, "Initial state", "Off", "Set initial state."),
-	new cr.Property(ept_text, "Default variables", "", 'Set initial value of variables, ex:"{"x":10, "y":20}".'),
-    new cr.Property(ept_text, "Default transition", "", 'Set default transition, ex:"{"IDLE":["RUN","EAT"],"EAT":["IDLE"]}".'),	     
+	new cr.Property(ept_text, "Default memory", "", 'Set initial value of memory, ex:"{"x":10, "y":20}".'),     
 	];
 	
 // Called by IDE when a new behavior type is to be created

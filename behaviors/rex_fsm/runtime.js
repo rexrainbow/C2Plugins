@@ -43,296 +43,157 @@ cr.behaviors.Rex_FSM = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
 	behinstProto.onCreate = function()
-	{
-	    this.is_debug_mode = this.properties[0];   
+	{      
+	    this.is_debug_mode = this.properties[0];  
         this.activated = this.properties[1];
-		this.previous_state = "Off";	
-		
-		// initial state		
-		var start_state = this.properties[2];		
-        this.current_state = (start_state!="")? start_state:"Off";	
-				
-		// initial varaibles
-		var init_vars = this.properties[3];
-        this.vars = (init_vars!="")? 
-		            jQuery.parseJSON(init_vars):
-		            {};	
-					
-        // default state
-		var default_transitions = this.properties[4];
-		this.default_transitions = (default_transitions!="")? 
-		                           jQuery.parseJSON(default_transitions):
-		                           null;
-
-        this.function_name = ""; 
-        this.JSFnObjs = {};       
-        this.is_echo = false;
-        this.JSRequestObjs = {};        
+		var previous_state = "Off";		
+		var current_state = this.properties[2];		
+        current_state = (current_state!="")? current_state:"Off";	           
+		// initial memory
+		var mem = this.properties[3];
+        mem = (mem!="")? jQuery.parseJSON(mem):{};      
+        this.fsm = new cr.behaviors.Rex_FSM.FSMKlass(this, 
+                                                     previous_state, current_state,
+                                                     mem);         
 	};  
     
 	behinstProto.tick = function ()
 	{
-	};
+	};   
+    
+	behinstProto.LoadLogic = function (csv_string, code_format)
+	{
+        var code_array = CSVToArray(csv_string);   
+        var i, state_name, code_string;
+        var state_len = code_array.length;
+        for (i=1;i<state_len;i++)
+        {
+            state_name = code_array[i][0];        
+            code_string = code_array[i][1];  
+            //if (code_format == 1)
+            this.fsm["logic"][state_name] = eval("("+code_string+")");
+        }
+	};       
+    
+    // copy from    
+    // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
+    
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+    var CSVToArray = function ( strData, strDelimiter ){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
 
-	behinstProto.Request = function ()
-	{
-	    if (this.activated==0)
-		    return;
-		       
-		this.is_echo = false;
-        
-        // call JS request first
-        var is_break = this._CallJSRequest(); 
-        if (!is_break)
-        {
-            // then call trigger function
-            this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnRequest, this.inst);
-        }
-        if (!this.is_echo)
-        {
-		    this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultRequest, this.inst);        
-        }    
-	};
-    
-	behinstProto.Transit = function (new_state)
-	{
-	    if (this.activated==0)
-		    return;
-		
-        if (this.default_transitions != null)
-        {
-		    // check if new_state is a valid target transition state
-		    var valid_transition_states = this.default_transitions[this.current_state];
-			if (valid_transition_states != null)
-			{
-                var is_find = false;	
-				var len=valid_transition_states.length
-                var i;				
-			    for (i=0; i<len; i++)
-				{
-				    if (valid_transition_states[i] == new_state)
-					{
-					    is_find = true;
-						break;
-					}
-				}
-				// new_state is not a valid target transition state, leave
-				if (!is_find)
-				{
-                    if (this.is_debug_mode) 
-                    {
-                        alert ("Can not transit from '" + this.current_state + 
-						       "' to '" + new_state + "'");
-                    }
-				    return;
-				}
-			}
-        }
-        this._state_transition(new_state);    
-	};  
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+                (
+                        // Delimiters.
+                        "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
 
-    behinstProto.ForceTransit = function (new_state)
-	{
-	    if (this.activated==0)
-		    return;
-		
-        this._state_transition(new_state);    
-	};
-	
-    behinstProto.CallFn = function(name, args)
-	{
-        if (args)
-            jQuery.extend(this.vars, args);
-        
-        this.is_echo = false;
-        
-        // call JS function first
-        var is_break = this._CallJS(name);
-        if (!is_break)
-        {
-            // then call trigger function
-            this._CallFn(name);
-        }
-        
-        if ((!this.is_echo) && this.is_debug_mode) 
-        {
-            alert ("Can not find function '" + name + "'");
-        }
-	}; 
-    
-	behinstProto.CreateJS = function(name, code_string)
-	{
-        if (this.is_debug_mode && this.JSFnObjs[name] != null) 
-            alert ("JS function '" + name + "' has existed.");  
-            
-        this.JSFnObjs[name] = eval("("+code_string+")");
-	}; 
-    
-	behinstProto.CreateJSRequest = function(name, code_string)
-	{
-        if (this.is_debug_mode && this.JSRequestObjs[name] != null) 
-            alert ("JS request '" + name + "' has existed."); 
-            
-        this.JSRequestObjs[name] = eval("("+code_string+")");
-	}; 
-    
-    
-	behinstProto._CallFn = function(name)
-	{
-        this.function_name = name; 
-	    this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnFunctionCalled, this);
-	}; 
+                        // Quoted fields.
+                        "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
 
- 	behinstProto._CallJS = function(name)
-	{
-        var is_break = false;
-	    var fn_obj = this.JSFnObjs[name];
-        if (fn_obj != null) 
-        {
-            this.is_echo = true;
-            is_break = fn_obj(this);
-        }
-        return is_break;
-	};    
+                        // Standard fields.
+                        "([^\"\\" + strDelimiter + "\\r\\n]*))"
+                ),
+                "gi"
+                );
 
- 	behinstProto._CallJSRequest = function()
-	{
-        var is_break = false;
-	    var fn_obj = this.JSRequestObjs[this.current_state];
-        if (fn_obj != null) 
-        {
-            this.is_echo = true;
-            is_break = fn_obj(this);
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+                // Get the delimiter that was found.
+                var strMatchedDelimiter = arrMatches[ 1 ];
+
+                // Check to see if the given delimiter has a length
+                // (is not the start of string) and if it matches
+                // field delimiter. If id does not, then we know
+                // that this delimiter is a row delimiter.
+                if (
+                        strMatchedDelimiter.length &&
+                        (strMatchedDelimiter != strDelimiter)
+                        ){
+
+                        // Since we have reached a new row of data,
+                        // add an empty row to our data array.
+                        arrData.push( [] );
+
+                }
+
+
+                // Now that we have our delimiter out of the way,
+                // let's check to see which kind of value we
+                // captured (quoted or unquoted).
+                if (arrMatches[ 2 ]){
+
+                        // We found a quoted value. When we capture
+                        // this value, unescape any double quotes.
+                        var strMatchedValue = arrMatches[ 2 ].replace(
+                                new RegExp( "\"\"", "g" ),
+                                "\""
+                                );
+
+                } else {
+
+                        // We found a non-quoted value.
+                        var strMatchedValue = arrMatches[ 3 ];
+
+                }
+
+
+                // Now that we have our value string, let's add
+                // it to the data array.
+                arrData[ arrData.length - 1 ].push( strMatchedValue );
         }
-        return is_break;
-	};    
-    
-    
-    behinstProto._state_transition = function (new_state)
-	{
-	    this.previous_state = this.current_state;
-		this.current_state = new_state;
-		this.is_echo = false;
-		this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnTransfer, this.inst);
-		if (!this.is_echo)
-		{
-            this.is_echo = false;
-		    this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnExit, this.inst);
-            if (!this.is_echo)
-            {
-                this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultExit, this.inst);
-            }
-            this.is_echo = false;
-			this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnEnter, this.inst);
-            if (!this.is_echo)
-            {
-                this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultEnter, this.inst);
-            }            
-		}
-	};
-    
+
+        // Return the parsed data.
+        return( arrData );
+    };        
+
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
 	var cnds = behaviorProto.cnds;
-    
-	cnds.OnRequest = function (name)
-	{
-	    var is_my_call = (this.current_state == name);
-        this.is_echo |= is_my_call;
-		return is_my_call;
-	};   
-    
-	cnds.OnDefaultRequest = function ()
-	{
-		return true;
-	};   	
-    
-	cnds.OnEnter = function (name)
-	{
-		return (this.current_state == name);
-	};
 
-	cnds.OnDefaultEnter = function ()
-	{
-		return true;
-	}; 	
-	
-	cnds.OnExit = function (name)
-	{
-		return (this.previous_state == name);
-	};	
-    
-	cnds.OnDefaultExit = function ()
-	{
-		return true;
-	}; 	    
-
-	cnds.OnTransfer = function (name_from, name_to)
-	{
-	    var is_my_call = ((this.previous_state == name_from) && 
-		                  (this.current_state == name_to));
-        this.is_echo |= is_my_call;
-		return is_my_call;
-	};	
-    
-	cnds.OnFunctionCalled = function (name)
-	{
-        var is_my_call = (this.function_name == name);
-        this.is_echo |= is_my_call;
-		return is_my_call;
-	};	    
-    
-	cnds.CompareVariable = function (index, cmp, s)
-	{
-		return cr.do_cmp(this.vars[index], cmp, s);
-	};
-    
 	//////////////////////////////////////
 	// Actions
 	behaviorProto.acts = {};
 	var acts = behaviorProto.acts;
- 
- 	acts.CleanVariables = function ()
-	{
-        this.vars = {};
-	};   
     
-	acts.SetVariable = function (index, value)
+	acts.CleanMemory = function ()
 	{
-        this.vars[index] = value;
+        this.fsm["Mem"] = {};
 	};  
+        
+	acts.SetMemory = function (index, value)
+	{
+        this.fsm["Mem"][index] = value;
+	};
 
     acts.Request = function ()
 	{
-	    this.Request();
+	    this.fsm.Request();
 	};  
-    
- 	acts.Transit = function (new_state)
-	{
-	    this.Transit(new_state);
-	};
-    
-  	acts.ForceTransit = function (new_state)
-	{
-	    this.ForceTransit(new_state);
-	};
 
-    acts.CallFunction = function (name)
+    acts.CSV2Logic = function (csv_string, code_format)
 	{
-        this.CallFn(name);
-	}; 
-    
-	acts.CreateJSFunctionObject = function (name, code_string)
-	{
-        this.CreateJS(name, code_string);
-	}; 
-    
-	acts.CreateJSRequestObject = function (name, code_string)
-	{
-        this.CreateJSRequest(name, code_string);
-	};     
-    
+        if (csv_string == "")
+            return;
+        this.LoadLogic(csv_string, code_format);    
+	};
     
 	//////////////////////////////////////
 	// Expressions
@@ -341,24 +202,50 @@ cr.behaviors.Rex_FSM = function(runtime)
 
 	exps.CurState = function (ret)
 	{
-	    ret.set_string(this.current_state);
+	    ret.set_string(this.fsm["CurState"]);
 	};	
 	
 	exps.PreState = function (ret)
 	{
-	    ret.set_string(this.previous_state);
+	    ret.set_string(this.fsm["PreState"]);
 	};
 	
-    exps.Var = function (ret, index)
+    exps.Mem = function (ret, index)
 	{
-        var value = this.vars[index];
+        var value = this.fsm["Mem"][index];
         if (value == null) 
         {
             value = 0;
             if (this.is_debug_mode) 
-                alert ("Can not find variable '" + index + "'");
+                alert ("Can not find index in memory '" + index + "'");
                 
         }
 	    ret.set_any(value);
 	};	
+}());
+
+(function ()
+{
+    cr.behaviors.Rex_FSM.FSMKlass = function(plugin, 
+                                             previous_state, current_state,
+                                             mem)
+    {
+        this["plugin"] = plugin; 
+        this["logic"] = {};
+        
+        this["PreState"] = previous_state;
+        this["CurState"] = current_state;
+        this["Mem"] = mem;
+
+    };
+    var FSMKlassProto = cr.behaviors.Rex_FSM.FSMKlass.prototype;
+    
+    FSMKlassProto.Request = function()
+    {
+        this["PreState"] = this["CurState"];
+        var transfer_fn = this["logic"][this["CurState"]];
+        var new_state = transfer_fn(this);
+        if (new_state != null)
+            this["CurState"] = new_state;
+    };
 }());
