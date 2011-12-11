@@ -28,13 +28,30 @@ AddAction(2, 0, "Request", "Request",
           "Request a state transfer.", 
           "Request");
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddComboParamOption("Javascript");
 AddComboParamOption("Simple notation");
+AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
 AddAction(3, 0, "Load state transfer logic from csv table", "Logic", 
           "Load state transfer logic from csv table <i>{0}</i> in <i>{1}</i> format",
           "Load state transfer logic from csv table.", "CSV2Logic");
+AddStringParam("State", "Transfer from state.", '""');        
+AddStringParam("Logic code", "The logic code of state transfer.", '""');
+AddComboParamOption("Simple notation");
+AddComboParamOption("Javascript");
+AddComboParam("Code format", "The code format of state transfer logic", 0);
+AddAction(4, 0, "Load state transfer logic", "Logic", 
+          "Load <i>{0}</i> state transfer logic <i>{1}</i> in <i>{2}</i> format",
+          "Load state transfer logic from code string.", "String2Logic");          
+AddObjectParam("Function", "Function object for controlling the game world");
+AddAction(5, 0, "Connect to function object", "Advance: Setup", 
+          "Connect to function object <i>{0}</i>", 
+          "Connect to function object.", "ConnectFn");
+AddObjectParam("CSV", "CSV object for accessing global variables");
+AddAction(6, 0, "Connect to CSV object", "Advance: Setup", 
+          "Connect to CSV object <i>{0}</i>", 
+          "Connect to CSV object.", "ConnectCSV");             
 
+          
 //////////////////////////////////////////////////////////////
 // Conditions
 

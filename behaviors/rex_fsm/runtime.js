@@ -28,6 +28,9 @@ cr.behaviors.Rex_FSM = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
+        this.logic = {};
+        this.fn_obj = null;
+        this.csv_obj = null;
 	};
 
 	/////////////////////////////////////
@@ -61,18 +64,9 @@ cr.behaviors.Rex_FSM = function(runtime)
 	{
 	};   
     
-	behinstProto.LoadLogic = function (csv_string, code_format)
+	behinstProto._load_logic = function (state_name, code_string)
 	{
-        var code_array = CSVToArray(csv_string);   
-        var i, state_name, code_string;
-        var state_len = code_array.length;
-        for (i=1;i<state_len;i++)
-        {
-            state_name = code_array[i][0];        
-            code_string = code_array[i][1];  
-            //if (code_format == 1)
-            this.fsm["logic"][state_name] = eval("("+code_string+")");
-        }
+        this.type.logic[state_name] = eval("("+code_string+")");
 	};       
     
     // copy from    
@@ -192,8 +186,44 @@ cr.behaviors.Rex_FSM = function(runtime)
 	{
         if (csv_string == "")
             return;
-        this.LoadLogic(csv_string, code_format);    
+            
+        var code_array = CSVToArray(csv_string);   
+        var i, state_name, code_string;
+        var state_len = code_array.length;
+        for (i=1;i<state_len;i++)
+        {
+            state_name = code_array[i][0];        
+            code_string = code_array[i][1];  
+            //if (code_format == 1)
+            this._load_logic(state_name, code_string);
+        }  
 	};
+
+    acts.String2Logic = function (state_name, code_string, code_format)
+	{
+        if (code_string == "")
+            return;
+        this._load_logic(state_name, code_string);
+	};
+    
+    acts.ConnectFn = function (fn_objs)
+	{  
+        var fn_obj = fn_objs.instances[0];
+        if (fn_obj.check_name == "FUNCTION")
+            this.type.fn_obj = fn_obj;        
+        else
+            alert ("Can not connect to a function object");
+	};    
+    
+    acts.ConnectCSV = function (csv_objs)
+	{  
+        var csv_objs = csv_objs.instances[0];
+        if (csv_objs.check_name == "FUNCTION")
+            this.type.csv_objs = csv_objs;        
+        else
+            alert ("Can not connect to a csv object");
+	};     
+    
     
 	//////////////////////////////////////
 	// Expressions
@@ -230,8 +260,7 @@ cr.behaviors.Rex_FSM = function(runtime)
                                              previous_state, current_state,
                                              mem)
     {
-        this["plugin"] = plugin; 
-        this["logic"] = {};
+        this["_type"] = plugin.type; 
         
         this["PreState"] = previous_state;
         this["CurState"] = current_state;
@@ -243,8 +272,8 @@ cr.behaviors.Rex_FSM = function(runtime)
     FSMKlassProto.Request = function()
     {
         this["PreState"] = this["CurState"];
-        var transfer_fn = this["logic"][this["CurState"]];
-        var new_state = transfer_fn(this);
+        var transfer_fn = this["_type"].logic[this["CurState"]];
+        var new_state = transfer_fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
         if (new_state != null)
             this["CurState"] = new_state;
     };
