@@ -29,6 +29,9 @@ cr.behaviors.Rex_FSM = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.logic = {};
+        this.transfer_action = {};
+        this.enter_action = {};        
+        this.existed_action = {};
         this.fn_obj = null;
         this.csv_obj = null;
 	};
@@ -62,13 +65,55 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	behinstProto.tick = function ()
 	{
-	};   
+	};
     
-	behinstProto._load_logic = function (state_name, code_string)
-	{
-        this.type.logic[state_name] = eval("("+code_string+")");
-	};       
+    var _sn2js = function(code_line)
+    {
+        var index_end_mark = code_line.lastIndexOf("->");          
+        var index_left_brace = code_line.indexOf("(");
+        var index_right_brace = code_line.substring(0,index_end_mark).lastIndexOf(")");
+        var condition_code = code_line.substring(index_left_brace,index_right_brace+1);
+        if (condition_code != "")
+            condition_code = "if"+condition_code;
+        var return_code;
+        if (index_end_mark == -1)
+            return_code = code_line;
+        else
+            return_code = code_line.substring(index_end_mark+2);
+        if (return_code!= "")
+            return_code = "return "+return_code+";";
+        return condition_code+return_code;
+    };
     
+    var SN2JS = function (code_string)
+    {
+        var sn_lines = code_string.split("\n");
+        var i;
+        var line_cnt = sn_lines.length;
+        var js_lines = [];
+        for (i=0; i<line_cnt; i++)
+        {
+            js_lines.push(_sn2js(sn_lines[i]));
+        }
+        return js_lines.join("\n");
+    };
+    
+	behinstProto._load_code = function (dict, name, code_string, code_format)
+	{  
+        if (code_format == 0)  //Simple notation        
+            code_string = SN2JS(code_string);
+            
+        code_string = "function(fsm, fn, csv){\n"+code_string +"\n}";
+        try
+        {
+            dict[name] = eval("("+code_string+")");
+        }
+        catch(err)
+        {
+            alert(err);
+        }
+	};
+
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
     
@@ -194,8 +239,17 @@ cr.behaviors.Rex_FSM = function(runtime)
         {
             state_name = code_array[i][0];        
             code_string = code_array[i][1];  
-            //if (code_format == 1)
-            this._load_logic(state_name, code_string);
+            if (code_string != null)
+                this._load_code(this.type.logic, state_name, code_string, code_format);
+            
+            // enter
+            code_string = code_array[i][2];
+            if (code_string != null)
+                this._load_code(this.type.enter_action, state_name, code_string, code_format);     
+            // existed
+            code_string = code_array[i][3];
+            if (code_string != null)
+                this._load_code(this.type.enter_action, state_name, code_string, code_format);          
         }  
 	};
 
@@ -203,7 +257,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 	{
         if (code_string == "")
             return;
-        this._load_logic(state_name, code_string);
+        this._load_code(this.type.logic, state_name, code_string, code_format);
 	};
     
     acts.ConnectFn = function (fn_objs)
@@ -222,9 +276,78 @@ cr.behaviors.Rex_FSM = function(runtime)
             this.type.csv_objs = csv_objs;        
         else
             alert ("Can not connect to a csv object");
-	};     
+	};   
+
+    var _get_state_transfer_name = function(pre_state,cur_state)
+    {
+        return (pre_state+"->"+cur_state);
+    }
+
+    acts.CSV2Action = function (csv_string, code_format)
+	{
+        if (csv_string == "")
+            return;
+            
+        var code_array = CSVToArray(csv_string);   
+        var i, j, pre_state, cur_state, code_string;
+        var state_len = code_array.length;
+        for (i=1; i<state_len; i++)
+        {
+            cur_state = code_array[i][0];
+            for (j=1; j<state_len; j++)
+            {
+                pre_state = code_array[0][j];
+                code_string = code_array[i][j];
+                
+                this._load_code(this.type.transfer_action, 
+                                (pre_state+"->"+cur_state), 
+                                code_string, code_format);
+            }
+        }  
+	};    
     
+    acts.String2Action = function (pre_state, cur_state, code_string, code_format)
+	{
+        if (code_string == "")
+            return;
+        this._load_code(this.type.transfer_action, 
+                        (pre_state+"->"+cur_state), 
+                        code_string, code_format);
+	};    
+
+    acts.CSV2EnterExisted = function (csv_string, code_format)
+	{
+        if (csv_string == "")
+            return;
+            
+        var code_array = CSVToArray(csv_string);   
+        var i, j, state_name, enter_code_string, existed_code_string;
+        var state_len = code_array.length;
+        for (i=1; i<state_len; i++)
+        {
+            state_name = code_array[i][0];
+            enter_code_string = code_array[i][1];
+            existed_code_string = code_array[i][2];
+            if (enter_code_string != "")
+                this._load_code(this.type.enter_action, 
+                                state_name, enter_code_string, code_format);
+            if (existed_code_string != "")
+                this._load_code(this.type.existed_action, 
+                                state_name, enter_code_string, code_format);              
+        }  
+	};    
     
+    acts.String2EnterExisted = function (state, 
+                                         enter_code_string, existed_code_string,
+                                         code_format)
+	{
+        if (enter_code_string != "")
+            this._load_code(this.type.enter_action, 
+                            state_name, enter_code_string, code_format);
+        if (existed_code_string != "")
+            this._load_code(this.type.existed_action, 
+                            state_name, enter_code_string, code_format);       
+	};  
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
@@ -271,10 +394,33 @@ cr.behaviors.Rex_FSM = function(runtime)
     
     FSMKlassProto.Request = function()
     {
-        this["PreState"] = this["CurState"];
-        var transfer_fn = this["_type"].logic[this["CurState"]];
-        var new_state = transfer_fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
-        if (new_state != null)
-            this["CurState"] = new_state;
+        var fn = this["_type"].logic[this["CurState"]];
+        if (fn != null)
+        {
+            var new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            if (new_state != null)
+            {
+                this["PreState"] = this["CurState"];
+                this["CurState"] = new_state;
+                
+                var pre_state = this["PreState"];
+                var cur_state = this["CurState"];
+                var name = pre_state+"->"+cur_state;
+                fn = this["_type"].transfer_action[name];
+                if (fn != null)
+                {
+                    fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+                }
+                else
+                {
+                    fn = this["_type"].existed_action[pre_state];
+                    if (fn != null)
+                        fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+                    fn = this["_type"].enter_action[cur_state];
+                    if (fn != null)
+                        fn(this, this["_type"].fn_obj, this["_type"].csv_obj);                
+                }
+            }
+        }        
     };
 }());

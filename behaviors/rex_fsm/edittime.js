@@ -49,9 +49,40 @@ AddAction(5, 0, "Connect to function object", "Advance: Setup",
 AddObjectParam("CSV", "CSV object for accessing global variables");
 AddAction(6, 0, "Connect to CSV object", "Advance: Setup", 
           "Connect to CSV object <i>{0}</i>", 
-          "Connect to CSV object.", "ConnectCSV");             
+          "Connect to CSV object.", "ConnectCSV");     
+AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
+AddComboParamOption("Simple notation");
+AddComboParamOption("Javascript");
+AddComboParam("Code format", "The code format of state transfer logic", 0);
+AddAction(7, 0, "Load state transfer action from csv table", "Advance: Action", 
+          "Load state transfer action from csv table <i>{0}</i> in <i>{1}</i> format",
+          "Load state transfer action from csv table.", "CSV2Action");          
+AddStringParam("State", "Transfer from state.", '""');   
+AddStringParam("State", "Transfer to state.", '""');       
+AddStringParam("Action code", "The action code of state transfer.", '""');
+AddComboParamOption("Simple notation");
+AddComboParamOption("Javascript");
+AddComboParam("Code format", "The code format of state transfer action", 0);
+AddAction(8, 0, "Load state transfer action", "Advance: Action", 
+          "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i> in <i>{2}</i> format",
+          "Load state transfer action from code string.", "String2Action");   
+AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
+AddComboParamOption("Simple notation");
+AddComboParamOption("Javascript");
+AddComboParam("Code format", "The code format of state transfer logic", 0);
+AddAction(9, 0, "Load state enter-existed action from csv table", "Advance: Action", 
+          "Load state enter-existed action from csv table <i>{0}</i> in <i>{1}</i> format",
+          "Load state enter-existed action from csv table.", "CSV2EnterExisted");          
+AddStringParam("State", "State name.", '""');   
+AddStringParam("Enter code", "The code of state enter.", '""');     
+AddStringParam("Existed code", "The code of state existed.", '""');
+AddComboParamOption("Simple notation");
+AddComboParamOption("Javascript");
+AddComboParam("Code format", "The code format of state enter-existed action", 0);
+AddAction(10, 0, "Load state enter-existed action", "Advance: Action", 
+          "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i> in <i>{2}</i> format",
+          "Load state enter-existed action from code string.", "String2EnterExisted"); 
 
-          
 //////////////////////////////////////////////////////////////
 // Conditions
 
