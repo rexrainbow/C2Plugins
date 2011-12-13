@@ -31,7 +31,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         this.logic = {};
         this.transfer_action = {};
         this.enter_action = {};        
-        this.existed_action = {};
+        this.exit_action = {};
         this.fn_obj = null;
         this.csv_obj = null;
 	};
@@ -57,10 +57,20 @@ cr.behaviors.Rex_FSM = function(runtime)
         current_state = (current_state!="")? current_state:"Off";	           
 		// initial memory
 		var mem = this.properties[3];
-        mem = (mem!="")? jQuery.parseJSON(mem):{};      
+        try
+        {
+            mem = (mem!="")? jQuery.parseJSON(mem):{};      
+        }
+        catch(err)
+        {
+            alert(err);
+            mem = {};            
+        }   
         this.fsm = new cr.behaviors.Rex_FSM.FSMKlass(this, 
                                                      previous_state, current_state,
-                                                     mem);         
+                                                     mem); 
+        this.is_echo = false;
+        this.is_my_call = false;                                                     
 	};  
     
 	behinstProto.tick = function ()
@@ -207,6 +217,37 @@ cr.behaviors.Rex_FSM = function(runtime)
 	behaviorProto.cnds = {};
 	var cnds = behaviorProto.cnds;
 
+	cnds.OnEnter = function (name)
+	{
+        this.is_echo = true;
+		return (this.is_my_call & (this.fsm["CurState"] == name));
+	};
+
+	cnds.OnDefaultEnter = function ()
+	{
+		return (this.is_my_call);
+	}; 	
+	
+	cnds.OnExit = function (name)
+	{
+        this.is_echo = true;
+		return (this.is_my_call && (this.fsm["PreState"] == name));
+	};	
+    
+	cnds.OnDefaultExit = function ()
+	{
+		return (this.is_my_call);
+	}; 	    
+
+	cnds.OnTransfer = function (name_from, name_to)
+	{
+	    var is_my_call = this.is_my_call &&
+                         ((this.fsm["PreState"] == name_from) && 
+		                  (this.fsm["CurState"] == name_to));
+        this.is_echo |= is_my_call;
+		return is_my_call;
+	};	
+    
 	//////////////////////////////////////
 	// Actions
 	behaviorProto.acts = {};
@@ -226,6 +267,11 @@ cr.behaviors.Rex_FSM = function(runtime)
 	{
 	    this.fsm.Request();
 	};  
+    
+    acts.Transit = function (new_state)
+	{
+	    this.fsm.Request(new_state);
+	};     
 
     acts.CSV2Logic = function (csv_string, code_format)
 	{
@@ -240,16 +286,7 @@ cr.behaviors.Rex_FSM = function(runtime)
             state_name = code_array[i][0];        
             code_string = code_array[i][1];  
             if (code_string != null)
-                this._load_code(this.type.logic, state_name, code_string, code_format);
-            
-            // enter
-            code_string = code_array[i][2];
-            if (code_string != null)
-                this._load_code(this.type.enter_action, state_name, code_string, code_format);     
-            // existed
-            code_string = code_array[i][3];
-            if (code_string != null)
-                this._load_code(this.type.enter_action, state_name, code_string, code_format);          
+                this._load_code(this.type.logic, state_name, code_string, code_format);    
         }  
 	};
 
@@ -277,13 +314,8 @@ cr.behaviors.Rex_FSM = function(runtime)
         else
             alert ("Can not connect to a csv object");
 	};   
-
-    var _get_state_transfer_name = function(pre_state,cur_state)
-    {
-        return (pre_state+"->"+cur_state);
-    }
-
-    acts.CSV2Action = function (csv_string, code_format)
+    
+    acts.CSV2Action = function (csv_string)
 	{
         if (csv_string == "")
             return;
@@ -301,52 +333,51 @@ cr.behaviors.Rex_FSM = function(runtime)
                 
                 this._load_code(this.type.transfer_action, 
                                 (pre_state+"->"+cur_state), 
-                                code_string, code_format);
+                                code_string, 1);
             }
         }  
 	};    
     
-    acts.String2Action = function (pre_state, cur_state, code_string, code_format)
+    acts.String2Action = function (pre_state, cur_state, code_string)
 	{
         if (code_string == "")
             return;
         this._load_code(this.type.transfer_action, 
                         (pre_state+"->"+cur_state), 
-                        code_string, code_format);
+                        code_string, 1);
 	};    
 
-    acts.CSV2EnterExisted = function (csv_string, code_format)
+    acts.CSV2EnterExit = function (csv_string)
 	{
         if (csv_string == "")
             return;
             
         var code_array = CSVToArray(csv_string);   
-        var i, j, state_name, enter_code_string, existed_code_string;
+        var i, j, state_name, enter_code_string, exit_code_string;
         var state_len = code_array.length;
         for (i=1; i<state_len; i++)
         {
             state_name = code_array[i][0];
             enter_code_string = code_array[i][1];
-            existed_code_string = code_array[i][2];
+            exit_code_string = code_array[i][2];
             if (enter_code_string != "")
                 this._load_code(this.type.enter_action, 
-                                state_name, enter_code_string, code_format);
-            if (existed_code_string != "")
-                this._load_code(this.type.existed_action, 
-                                state_name, enter_code_string, code_format);              
+                                state_name, enter_code_string, 1);
+            if (exit_code_string != "")
+                this._load_code(this.type.exit_action, 
+                                state_name, enter_code_string, 1);              
         }  
 	};    
     
-    acts.String2EnterExisted = function (state, 
-                                         enter_code_string, existed_code_string,
-                                         code_format)
+    acts.String2EnterExit = function (state, 
+                                         enter_code_string, exit_code_string)
 	{
         if (enter_code_string != "")
             this._load_code(this.type.enter_action, 
-                            state_name, enter_code_string, code_format);
-        if (existed_code_string != "")
-            this._load_code(this.type.existed_action, 
-                            state_name, enter_code_string, code_format);       
+                            state_name, enter_code_string, 1);
+        if (exit_code_string != "")
+            this._load_code(this.type.exit_action, 
+                            state_name, enter_code_string, 1);       
 	};  
 	//////////////////////////////////////
 	// Expressions
@@ -383,44 +414,103 @@ cr.behaviors.Rex_FSM = function(runtime)
                                              previous_state, current_state,
                                              mem)
     {
+        this["_plugin"] = plugin;
         this["_type"] = plugin.type; 
+        this["inst"] = plugin.inst;
         
         this["PreState"] = previous_state;
         this["CurState"] = current_state;
         this["Mem"] = mem;
-
     };
     var FSMKlassProto = cr.behaviors.Rex_FSM.FSMKlass.prototype;
     
-    FSMKlassProto.Request = function()
+    FSMKlassProto.Request = function(new_state)
     {
-        var fn = this["_type"].logic[this["CurState"]];
+        if (new_state == null)
+        {
+            var fn = this["_type"].logic[this["CurState"]];
+            if (fn == null)
+                return;
+        
+            // fn != null        
+            new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            if (new_state == null)
+                return;
+        }
+            
+        // new_state != null
+        this["PreState"] = this["CurState"];
+        this["CurState"] = new_state;
+                
+        var pre_state = this["PreState"];
+        var cur_state = this["CurState"];
+        
+        // try to run transfer_action
+        var is_echo = this._run_transfer_action(pre_state, cur_state);
+        if (is_echo)
+            return;
+         
+        // (fn == null) && (this["_plugin"].is_echo==false)
+        this._run_exit_action(pre_state);
+        this._run_enter_action(cur_state);
+    };
+    
+    FSMKlassProto._run_transfer_action = function(pre_state, cur_state)
+    {
+        var name = pre_state+"->"+cur_state;
+        var fn = this["_type"].transfer_action[name];
         if (fn != null)
         {
-            var new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
-            if (new_state != null)
-            {
-                this["PreState"] = this["CurState"];
-                this["CurState"] = new_state;
-                
-                var pre_state = this["PreState"];
-                var cur_state = this["CurState"];
-                var name = pre_state+"->"+cur_state;
-                fn = this["_type"].transfer_action[name];
-                if (fn != null)
-                {
-                    fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
-                }
-                else
-                {
-                    fn = this["_type"].existed_action[pre_state];
-                    if (fn != null)
-                        fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
-                    fn = this["_type"].enter_action[cur_state];
-                    if (fn != null)
-                        fn(this, this["_type"].fn_obj, this["_type"].csv_obj);                
-                }
-            }
+            fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
         }        
+        this["_plugin"].is_echo = false;
+        this["_plugin"].is_my_call = true;
+        this["_plugin"].runtime.trigger(
+            cr.behaviors.Rex_FSM.prototype.cnds.OnTransfer,this["inst"]);
+        this["_plugin"].is_my_call = false;  
+
+        return ( (fn != null) || this["_plugin"].is_echo);        
     };
+    
+    FSMKlassProto._run_exit_action = function(pre_state)
+    {
+        var fn = this["_type"].exit_action[pre_state];
+        if (fn != null)
+             fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+        
+        this["_plugin"].is_echo = false;
+        this["_plugin"].is_my_call = true;
+        this["_plugin"].runtime.trigger(
+            cr.behaviors.Rex_FSM.prototype.cnds.OnExit, this["inst"]); 
+        this["_plugin"].is_my_call = false; 
+        // no exit handle event, try to trigger default exit event
+        if (!this["_plugin"].is_echo)
+        {
+            this["_plugin"].is_my_call = true;
+            this["_plugin"].runtime.trigger(
+                cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultExit, this["inst"]); 
+            this["_plugin"].is_my_call = false;            
+        }      
+    };
+    
+    FSMKlassProto._run_enter_action = function(cur_state)
+    {
+        var fn = this["_type"].enter_action[cur_state];
+        if (fn != null)
+            fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+
+        this["_plugin"].is_echo = false;
+        this["_plugin"].is_my_call = true;
+        this["_plugin"].runtime.trigger(
+            cr.behaviors.Rex_FSM.prototype.cnds.OnEnter, this["inst"]); 
+        this["_plugin"].is_my_call = false; 
+        // no enter handle event, try to trigger default enter event
+        if (!this["_plugin"].is_echo)
+        {
+            this["_plugin"].is_my_call = true;
+            this["_plugin"].runtime.trigger(
+                cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultEnter, this["inst"]);             
+            this["_plugin"].is_my_call = false; 
+        }      
+    };    
 }());

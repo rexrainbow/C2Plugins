@@ -20,7 +20,7 @@ AddAction(0, 0, "Clean all memory", "Memory",
 AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of memory", 0);
 AddAction(1, 0, "Set a memory value", "Memory", 
-          "Set {my} memory[<i>{0}</i>] to <i>{1}</i>", 
+          "Set {my} Mem[<i>{0}</i>] to <i>{1}</i>", 
           "Set the value stored in memory in fsm.", 
           "SetMemory");
 AddAction(2, 0, "Request", "Request", 
@@ -51,42 +51,58 @@ AddAction(6, 0, "Connect to CSV object", "Advance: Setup",
           "Connect to CSV object <i>{0}</i>", 
           "Connect to CSV object.", "ConnectCSV");     
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddComboParamOption("Simple notation");
-AddComboParamOption("Javascript");
-AddComboParam("Code format", "The code format of state transfer logic", 0);
 AddAction(7, 0, "Load state transfer action from csv table", "Advance: Action", 
-          "Load state transfer action from csv table <i>{0}</i> in <i>{1}</i> format",
+          "Load state transfer action from csv table <i>{0}</i>",
           "Load state transfer action from csv table.", "CSV2Action");          
 AddStringParam("State", "Transfer from state.", '""');   
 AddStringParam("State", "Transfer to state.", '""');       
 AddStringParam("Action code", "The action code of state transfer.", '""');
-AddComboParamOption("Simple notation");
-AddComboParamOption("Javascript");
-AddComboParam("Code format", "The code format of state transfer action", 0);
 AddAction(8, 0, "Load state transfer action", "Advance: Action", 
-          "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i> in <i>{2}</i> format",
+          "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i>",
           "Load state transfer action from code string.", "String2Action");   
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddComboParamOption("Simple notation");
-AddComboParamOption("Javascript");
-AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(9, 0, "Load state enter-existed action from csv table", "Advance: Action", 
-          "Load state enter-existed action from csv table <i>{0}</i> in <i>{1}</i> format",
-          "Load state enter-existed action from csv table.", "CSV2EnterExisted");          
+AddAction(9, 0, "Load state enter-exit action from csv table", "Advance: Action", 
+          "Load state enter-exit action from csv table <i>{0}</i>",
+          "Load state enter-exit action from csv table.", "CSV2EnterExit");          
 AddStringParam("State", "State name.", '""');   
 AddStringParam("Enter code", "The code of state enter.", '""');     
-AddStringParam("Existed code", "The code of state existed.", '""');
-AddComboParamOption("Simple notation");
-AddComboParamOption("Javascript");
-AddComboParam("Code format", "The code format of state enter-existed action", 0);
-AddAction(10, 0, "Load state enter-existed action", "Advance: Action", 
-          "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i> in <i>{2}</i> format",
-          "Load state enter-existed action from code string.", "String2EnterExisted"); 
+AddStringParam("Exit code", "The code of state exit.", '""');
+AddAction(10, 0, "Load state enter-exit action", "Advance: Action", 
+          "Load <i>{0}</i>'s enter action to <i>{1}</i>, exist action to <i>{2}</i>",
+          "Load state enter-exit action from code string.", "String2EnterExit"); 
+AddStringParam("Name", "State name", '""');
+AddAction(11, 0, "Transit to state", "Request", 
+          "Transit {my} to <i>{0}</i>", 
+          "Transit to state.", 
+          "Transit");          
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
-
+AddStringParam("Name", "State name", '""');
+AddCondition(0, cf_trigger, "On enter state", "Action", 
+             "On {my} enter to <i>{0}</i>", 
+			 "Triggered when enter state.", 
+			 "OnEnter");
+AddStringParam("Name", "State name", '""');
+AddCondition(1, cf_trigger, "On exit state", "Action", 
+             "On {my} exit from <i>{0}</i>", 
+			 "Triggered when exit state.", 
+			 "OnExit");
+AddStringParam("Name", "Exit from state", '""');
+AddStringParam("Name", "Enter to state", '""');
+AddCondition(2, cf_trigger, "On state transfer", "Action", 
+             "On {my} exit from <i>{0}</i> and enter to <i>{1}</i>", 
+			 "Triggered when state transfer.", 
+			 "OnTransfer");             
+AddCondition(3, cf_trigger, "On default enter", "Action", 
+             "On {my} enter to any state", 
+			 "Triggered when no enter callback.", 
+			 "OnDefaultEnter");             
+AddCondition(4, cf_trigger, "On default exit", "Action", 
+             "On {my} exit from any state", 
+			 "Triggered when no exit callback.", 
+			 "OnDefaultExit"); 
+             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");
