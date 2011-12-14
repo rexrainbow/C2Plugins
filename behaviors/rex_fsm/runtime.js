@@ -301,16 +301,16 @@ cr.behaviors.Rex_FSM = function(runtime)
 	{  
         var fn_obj = fn_objs.instances[0];
         if (fn_obj.check_name == "FUNCTION")
-            this.type.fn_obj = fn_obj;        
+            this.type.fn_obj = fn_obj.adapter;        
         else
             alert ("Can not connect to a function object");
 	};    
     
     acts.ConnectCSV = function (csv_objs)
 	{  
-        var csv_objs = csv_objs.instances[0];
-        if (csv_objs.check_name == "FUNCTION")
-            this.type.csv_objs = csv_objs;        
+        var csv_obj = csv_objs.instances[0];
+        if (csv_obj.check_name == "CSV")
+            this.type.csv_obj = csv_obj.adapter;        
         else
             alert ("Can not connect to a csv object");
 	};   
