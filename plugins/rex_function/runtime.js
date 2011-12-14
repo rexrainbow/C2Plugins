@@ -42,6 +42,7 @@ cr.plugins_.Rex_Function = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.fnObj = new cr.plugins_.Rex_Function.FunctionKlass(this, this.properties[0]);
+        this.adapter = new cr.plugins_.Rex_Function.FunctionAdapterKlass(this);
         this.check_name = "FUNCTION";
 	};
     
@@ -83,9 +84,9 @@ cr.plugins_.Rex_Function = function(runtime)
         return this.fnObj["result"];
 	};    
     
-	instanceProto.CreateJS = function(name, code_string)
+	instanceProto.InjectJS = function(name, fn)
 	{
-        this.fnObj["CreateJS"](name, code_string);
+        this.fnObj["InjectJS"](name, fn);
 	};  
     
 	instanceProto.AddParams = function(param)
@@ -233,7 +234,8 @@ cr.plugins_.Rex_Function = function(runtime)
 
 	acts.CreateJSFunctionObject = function (name, code_string)
 	{
-        this.CreateJS(name, code_string);
+        var fn = eval("("+code_string+")");
+        this.InjectJS(name, fn);
 	};
 
 	acts.SetResult = function (value)
@@ -245,7 +247,12 @@ cr.plugins_.Rex_Function = function(runtime)
 	{
         this.ExecuteCommands(command_string);
 	}; 
-    
+
+	acts.InjectJSFunctionObjects = function (code_string)
+	{
+        var fn = eval("("+code_string+")");
+        var fns = fn(this.fnObj);
+	};    
     
 
 	//////////////////////////////////////
@@ -300,6 +307,7 @@ cr.plugins_.Rex_Function = function(runtime)
 
 (function ()
 {
+    // for injecting javascript
     cr.plugins_.Rex_Function.FunctionKlass = function(plugin, is_debug_mode)
     {
         this["plugin"] = plugin;
@@ -309,7 +317,7 @@ cr.plugins_.Rex_Function = function(runtime)
         this["ret"] = {};
         this["result"] = 0;
         this["is_echo"] = false;
-		this["JSFnObjs"] = {};
+		this["JSFns"] = {};
     };
     var FunctionKlassProto = cr.plugins_.Rex_Function.FunctionKlass.prototype;
     
@@ -318,12 +326,12 @@ cr.plugins_.Rex_Function = function(runtime)
         return this["_ExeCmd"](arguments);
 	};    
 
-	FunctionKlassProto["CreateJS"] = function(name, code_string)
+	FunctionKlassProto["InjectJS"] = function(name, fn)
 	{
-        if (this["is_debug_mode"] && this["JSFnObjs"][name] != null) 
+        if (this["is_debug_mode"] && this["JSFns"][name] != null) 
             alert ("JS function '" + name + "' has existed.");  
             
-        this["JSFnObjs"][name] = eval("("+code_string+")");
+        this["JSFns"][name] = fn;
 	};
     
 	FunctionKlassProto["_ExeCmd"] = function(args)
@@ -370,7 +378,7 @@ cr.plugins_.Rex_Function = function(runtime)
  	FunctionKlassProto["_CallJS"] = function(name)
 	{
         var is_break = false;
-	    var fn_obj = this["JSFnObjs"][name];
+	    var fn_obj = this["JSFns"][name];
         if (fn_obj != null) 
         {
             this["is_echo"] = true;
@@ -379,4 +387,15 @@ cr.plugins_.Rex_Function = function(runtime)
         return is_break;
 	};     
     
+    // adapter for exporting to javascript
+    cr.plugins_.Rex_Function.FunctionAdapterKlass = function(plugin)
+    {
+        this["_plugin"] = plugin;
+    };
+    var FunctionAdapterKlassProto = cr.plugins_.Rex_Function.FunctionAdapterKlass.prototype;
+    
+	FunctionAdapterKlassProto["CallFn"] = function(name, args)
+	{
+	    return this["_plugin"].CallFn(name, args);
+	};     
 }());

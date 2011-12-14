@@ -32,13 +32,15 @@ AddAnyTypeParam("Value", "Value of return value", "0");
 AddAction(4, 0, "Set a return value", "Return", "Set return[<i>{0}</i>] to <i>{1}</i>", "Set a return value.", "SetReturn");
 AddStringParam("Name", "JS function object name", '""');
 AddStringParam("Code", "JS function code", '""');
-AddAction(5, 0, "Create JS function object", "JS Function", 
-          "Create JS <i>{0}</i> to <i>{1}</i>", "Create JS function object.", "CreateJSFunctionObject");
+AddAction(5, 0, "Inject a JS function object", "JS Function", 
+          "Inject JS <i>{0}</i> to <i>{1}</i>", "Inject a JS function object.", "CreateJSFunctionObject");
 AddAnyTypeParam("Value", "Value of result", "0");
 AddAction(6, 0, "Set result", "Result", "Set result to <i>{0}</i>", "Set result.", "SetResult");
 AddStringParam("Commands", "Commands", '""');
 AddAction(7, 0, "Execute commands", "Function", "Execute commands <i>{0}</i>", "Execute commands.", "ExecuteCommands");
-
+AddStringParam("Code", "JS function code", '""');
+AddAction(8, 0, "Inject JS function objects", "JS Function", 
+          "Inject JS <i>{0}</i>", "Inject JS function objects.", "InjectJSFunctionObjects");
 
 //////////////////////////////////////////////////////////////
 // Expressions

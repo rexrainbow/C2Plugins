@@ -51,7 +51,10 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.atPage = "";        
         
         // turn to default page "_"
-        this.TurnPage("_");        
+        this.TurnPage("_");  
+        
+        this.adapter = new cr.plugins_.Rex_CSV.CSVAdapterKlass(this);
+        this.check_name = "CSV";   
 	};
 
 	instanceProto.TurnPage = function(page)
@@ -63,6 +66,31 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.current_page_name = page;
         this.current_table = this._tables[page];       
 	};
+
+	instanceProto.Get = function (col, row, page)
+	{
+        this.atCol = col;
+        this.atRow = row;
+        if (page != null)
+        {
+            this.TurnPage(page);
+        }
+        this.atPage = this.current_page_name;  
+        return this.current_table.At(col,row);
+	};
+
+	instanceProto.Set = function (value, col, row, page)
+	{
+        this.atCol = col;
+        this.atRow = row;
+        if (page != null)
+        {
+            this.TurnPage(page);
+        }
+        this.atPage = this.current_page_name;  
+        this.current_table.SetEntry(col, row, value);       
+	};
+    
     
 	//////////////////////////////////////
 	// Conditions
@@ -166,15 +194,8 @@ cr.plugins_.Rex_CSV = function(runtime)
 	var exps = pluginProto.exps;
     
 	exps.At = function (ret, col, row, page)
-	{
-        this.atCol = col;
-        this.atRow = row;
-        if (page != null)
-        {
-            this.TurnPage(page);
-        }
-        this.atPage = this.current_page_name;        
-        ret.set_any(this.current_table.At(col,row));
+	{  
+        ret.set_any(this.Get(col, row, page));
 	}; 
     
 	exps.CurCol = function (ret)
@@ -553,5 +574,20 @@ cr.plugins_.Rex_CSV = function(runtime)
         // Return the parsed data.
         return( arrData );
     };    
-        
+    
+    // adapter for exporting to javascript
+    cr.plugins_.Rex_CSV.CSVAdapterKlass = function(plugin)
+    {
+        this["_plugin"] = plugin;      
+    };
+    var CSVAdapterKlassProto = cr.plugins_.Rex_CSV.CSVAdapterKlass.prototype; 
+    
+    CSVAdapterKlassProto["Get"] = function(col, row, page)
+    {
+        return this["_plugin"].Get(col, row, page);
+    };
+    CSVAdapterKlassProto["Set"] = function(value, col, row, page)
+    {
+        this["_plugin"].Set(value, col, row, page);
+    };
 }());    

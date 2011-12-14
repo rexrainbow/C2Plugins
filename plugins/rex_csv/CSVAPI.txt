@@ -1,0 +1,6 @@
+1. API of CSV plugin 
+   for exporting to other javascript function
+- csv.Get(col, row, page)  
+  :: page can be ignored            
+- csv.Set(value, col, row, page)
+  :: page can be ignored
