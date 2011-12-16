@@ -76,6 +76,11 @@ AddAction(11, 0, "Transit to state", "Request",
 AddStringParam("Code", "JS function code", '""');
 AddAction(12, 0, "Inject JS function objects", "JS Function", 
           "Inject JS <i>{0}</i>", "Inject JS function objects.", "InjectJSFunctionObjects");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable the behavior.",1);
+AddAction(13, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's cursor behavior.", "SetActivated");
+          
           
 //////////////////////////////////////////////////////////////
 // Conditions

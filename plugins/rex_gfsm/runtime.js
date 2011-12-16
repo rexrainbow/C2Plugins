@@ -247,6 +247,11 @@ cr.plugins_.Rex_FSM = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
     
+	acts.SetActivated = function (s)
+	{
+		this.activated = (s==1);
+	};     
+    
 	acts.CleanMemory = function ()
 	{
         this.fsm["Mem"] = {};

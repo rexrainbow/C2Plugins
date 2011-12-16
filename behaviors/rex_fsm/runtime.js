@@ -52,7 +52,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 	behinstProto.onCreate = function()
 	{      
 	    this.is_debug_mode = this.properties[0];  
-        this.activated = this.properties[1];
+        this.activated = (this.properties[1]==1);
 		var previous_state = "Off";		
 		var current_state = this.properties[2];		
         current_state = (current_state!="")? current_state:"Off";	           
@@ -254,6 +254,11 @@ cr.behaviors.Rex_FSM = function(runtime)
 	behaviorProto.acts = {};
 	var acts = behaviorProto.acts;
     
+	acts.SetActivated = function (s)
+	{
+		this.activated = (s==1);
+	};      
+    
 	acts.CleanMemory = function ()
 	{
         this.fsm["Mem"] = {};
@@ -266,12 +271,14 @@ cr.behaviors.Rex_FSM = function(runtime)
 
     acts.Request = function ()
 	{
-	    this.fsm.Request();
+        if (this.activated)
+	        this.fsm.Request();
 	};  
     
     acts.Transit = function (new_state)
 	{
-	    this.fsm.Request(new_state);
+        if (this.activated)    
+	        this.fsm.Request(new_state);
 	};     
 
     acts.CSV2Logic = function (csv_string, code_format)
