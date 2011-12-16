@@ -2,29 +2,28 @@
 "use strict";
 
 assert2(cr, "cr namespace not created");
-assert2(cr.behaviors, "cr.behaviors not created");
+assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Behavior class
-cr.behaviors.Rex_FSM = function(runtime)
+cr.plugins_.Rex_FSM = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var behaviorProto = cr.behaviors.Rex_FSM.prototype;
+	var pluginProto = cr.plugins_.Rex_FSM.prototype;
 		
 	/////////////////////////////////////
 	// Behavior type class
-	behaviorProto.Type = function(behavior, objtype)
+	pluginProto.Type = function(plugin)
 	{
-		this.behavior = behavior;
-		this.objtype = objtype;
-		this.runtime = behavior.runtime;
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
 	};
 
-	var behtypeProto = behaviorProto.Type.prototype;
+	var behtypeProto = pluginProto.Type.prototype;
 
 	behtypeProto.onCreate = function()
 	{
@@ -34,22 +33,20 @@ cr.behaviors.Rex_FSM = function(runtime)
         this.enter_action = {};        
         this.fn_obj = null;
         this.csv_obj = null;
-        this.adapter = new cr.behaviors.Rex_FSM.FSMAdapterKlass(this);
+        this.adapter = new cr.plugins_.Rex_FSM.FSMAdapterKlass(this);
 	};
 
 	/////////////////////////////////////
 	// Behavior instance class
-	behaviorProto.Instance = function(type, inst)
+	pluginProto.Instance = function(type)
 	{
 		this.type = type;
-		this.behavior = type.behavior;
-		this.inst = inst;				// associated object instance to modify
-		this.runtime = type.runtime;        
+		this.runtime = type.runtime;      
 	};
 
-	var behinstProto = behaviorProto.Instance.prototype;
+	var instanceProto = pluginProto.Instance.prototype;
 
-	behinstProto.onCreate = function()
+	instanceProto.onCreate = function()
 	{      
 	    this.is_debug_mode = this.properties[0];  
         this.activated = this.properties[1];
@@ -67,16 +64,12 @@ cr.behaviors.Rex_FSM = function(runtime)
             alert(err);
             mem = {};            
         }   
-        this.fsm = new cr.behaviors.Rex_FSM.FSMKlass(this, 
+        this.fsm = new cr.plugins_.Rex_FSM.FSMKlass(this, 
                                                      previous_state, current_state,
                                                      mem); 
         this.is_echo = false;
         this.is_my_call = false;                                                     
 	};  
-    
-	behinstProto.tick = function ()
-	{
-	};
     
     var _sn2js = function(code_line)
     {
@@ -109,7 +102,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         return js_lines.join("\n");
     };
     
-	behinstProto._load_code = function (dict, name, code_string, code_format)
+	instanceProto._load_code = function (dict, name, code_string, code_format)
 	{  
         if (code_format == 0)  //Simple notation        
             code_string = SN2JS(code_string);
@@ -215,8 +208,8 @@ cr.behaviors.Rex_FSM = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	pluginProto.cnds = {};
+	var cnds = pluginProto.cnds;
 
 	cnds.OnEnter = function (name)
 	{
@@ -251,8 +244,8 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
     
 	acts.CleanMemory = function ()
 	{
@@ -389,8 +382,8 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	pluginProto.exps = {};
+	var exps = pluginProto.exps;
 
 	exps.CurState = function (ret)
 	{
@@ -418,19 +411,18 @@ cr.behaviors.Rex_FSM = function(runtime)
 
 (function ()
 {
-    cr.behaviors.Rex_FSM.FSMKlass = function(plugin, 
-                                             previous_state, current_state,
-                                             mem)
+    cr.plugins_.Rex_FSM.FSMKlass = function(plugin, 
+                                            previous_state, current_state,
+                                            mem)
     {
         this["_plugin"] = plugin;
-        this["_type"] = plugin.type; 
-        this["inst"] = plugin.inst;
+        this["_type"] = plugin.type;
         
         this["PreState"] = previous_state;
         this["CurState"] = current_state;
         this["Mem"] = mem;
     };
-    var FSMKlassProto = cr.behaviors.Rex_FSM.FSMKlass.prototype;
+    var FSMKlassProto = cr.plugins_.Rex_FSM.FSMKlass.prototype;
     
     FSMKlassProto.Request = function(new_state)
     {
@@ -474,7 +466,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
         this["_plugin"].runtime.trigger(
-            cr.behaviors.Rex_FSM.prototype.cnds.OnTransfer,this["inst"]);
+            cr.plugins_.Rex_FSM.prototype.cnds.OnTransfer,this["_plugin"]);
         this["_plugin"].is_my_call = false;  
 
         return ( (fn != null) || this["_plugin"].is_echo);        
@@ -489,14 +481,14 @@ cr.behaviors.Rex_FSM = function(runtime)
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
         this["_plugin"].runtime.trigger(
-            cr.behaviors.Rex_FSM.prototype.cnds.OnExit, this["inst"]); 
+            cr.plugins_.Rex_FSM.prototype.cnds.OnExit, this["_plugin"]); 
         this["_plugin"].is_my_call = false; 
         // no exit handle event, try to trigger default exit event
         if (!this["_plugin"].is_echo)
         {
             this["_plugin"].is_my_call = true;
             this["_plugin"].runtime.trigger(
-                cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultExit, this["inst"]); 
+                cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultExit, this["_plugin"]); 
             this["_plugin"].is_my_call = false;            
         }      
     };
@@ -510,26 +502,26 @@ cr.behaviors.Rex_FSM = function(runtime)
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
         this["_plugin"].runtime.trigger(
-            cr.behaviors.Rex_FSM.prototype.cnds.OnEnter, this["inst"]); 
+            cr.plugins_.Rex_FSM.prototype.cnds.OnEnter, this["_plugin"]); 
         this["_plugin"].is_my_call = false; 
         // no enter handle event, try to trigger default enter event
         if (!this["_plugin"].is_echo)
         {
             this["_plugin"].is_my_call = true;
             this["_plugin"].runtime.trigger(
-                cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultEnter, this["inst"]);             
+                cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultEnter, this["_plugin"]);             
             this["_plugin"].is_my_call = false; 
         }      
     };    
     
     // adapter for exporting to javascript
-    cr.behaviors.Rex_FSM.FSMAdapterKlass = function(type)
+    cr.plugins_.Rex_FSM.FSMAdapterKlass = function(type)
     {
         this["_type"] = type; 
         this["fn"] = type.fn_obj;
         this["csv"] = type.csv_obj;
     };
-    var FSMAdapterKlassProto = cr.behaviors.Rex_FSM.FSMAdapterKlass.prototype;
+    var FSMAdapterKlassProto = cr.plugins_.Rex_FSM.FSMAdapterKlass.prototype;
     
 	FSMAdapterKlassProto["InjectLogic"] = function(state_name, fn)
 	{

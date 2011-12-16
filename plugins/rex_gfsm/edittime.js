@@ -1,4 +1,4 @@
-﻿function GetBehaviorSettings()
+﻿function GetPluginSettings()
 {
 	return {
 		"name":			"state",
@@ -6,7 +6,9 @@
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Varaible",
+		"category":		"Utility",
+		"type":			"object",			// not in layout
+		"rotatable":	false,
 		"flags":		0
 	};
 };
@@ -124,20 +126,20 @@ var property_list = [
 	new cr.Property(ept_text, "Default memory", "", 'Set initial value of memory, ex:"{"x":10, "y":20}".'),     
 	];
 	
-// Called by IDE when a new behavior type is to be created
-function CreateIDEBehaviorType()
+// Called by IDE when a new object type is to be created
+function CreateIDEObjectType()
 {
-	return new IDEBehaviorType();
+	return new IDEObjectType();
 }
 
-// Class representing a behavior type in the IDE
-function IDEBehaviorType()
+// Class representing an object type in the IDE
+function IDEObjectType()
 {
 	assert2(this instanceof arguments.callee, "Constructor called as a function");
 }
 
-// Called by IDE when a new behavior instance of this type is to be created
-IDEBehaviorType.prototype.CreateInstance = function(instance)
+// Called by IDE when a new object instance of this type is to be created
+IDEObjectType.prototype.CreateInstance = function(instance)
 {
 	return new IDEInstance(instance, this);
 }
@@ -165,5 +167,17 @@ IDEInstance.prototype.OnCreate = function()
 
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
+{
+}
+	
+// Called by the IDE to draw this instance in the editor
+IDEInstance.prototype.Draw = function(renderer)
+{
+}
+
+// Called by the IDE when the renderer has been released (ie. editor closed)
+// All handles to renderer-created resources (fonts, textures etc) must be dropped.
+// Don't worry about releasing them - the renderer will free them - just null out references.
+IDEInstance.prototype.OnRendererReleased = function()
 {
 }
