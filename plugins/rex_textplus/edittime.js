@@ -8,8 +8,8 @@
 		"help url":		"http://www.scirra.com",
 		"category":		"General",
 		"type":			"world",			// appears in layout
-		"rotatable":	false,				// cannot be rotated in layout
-		"flags":		pf_position_aces | pf_size_aces | pf_appearance_aces | pf_zorder_aces
+		"rotatable":	true,				// can be rotated in layout
+		"flags":		pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces
 	};
 };
 
@@ -64,7 +64,8 @@ var property_list = [
 	new cr.Property(ept_combo, "Initial visibility",	"Visible",	"Choose whether the object is visible when the layout starts.", "Visible|Invisible"),
 	new cr.Property(ept_font, 		"Font",		"Arial,-16",	"Choose the font to display.  This applies to all instances of this type."),
 	new cr.Property(ept_color,		"Color",	cr.RGB(0, 0, 0),	"Color of the text."),
-	new cr.Property(ept_combo,		"Horizontal alignment", "Left", "Horizontal alignment of the text.", "Left|Center|Right")
+	new cr.Property(ept_combo,		"Horizontal alignment", "Left", "Horizontal alignment of the text.", "Left|Center|Right"),
+	new cr.Property(ept_combo,	"Hotspot",				"Top-left",	"Choose the location of the hot spot in the object.", "Top-left|Center")
 	];
 	
 // Called by IDE when a new object type is to be created
@@ -166,8 +167,10 @@ IDEInstance.prototype.RecreateFont = function(renderer)
 
 IDEInstance.prototype.OnCreate = function()
 {
-	// Use upper-left hotspot
-	this.instance.SetHotspot(new cr.vector2(0, 0));
+	if (this.properties["Hotspot"] === "Top-left")
+		this.instance.SetHotspot(new cr.vector2(0, 0));
+	else
+		this.instance.SetHotspot(new cr.vector2(0.5, 0.5));
 }
 
 // Called by the IDE after all initialization on this instance has been completed
@@ -182,10 +185,17 @@ IDEInstance.prototype.OnInserted = function()
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
 	// Recreate font if font property changed
-	if (property_name == "Font")
+	if (property_name === "Font")
 	{
 		this.font_str = this.properties["Font"];
 		this.recreate_font = true;
+	}
+	else if (property_name === "Hotspot")
+	{
+		if (this.properties["Hotspot"] === "Top-left")
+			this.instance.SetHotspot(new cr.vector2(0, 0));
+		else
+			this.instance.SetHotspot(new cr.vector2(0.5, 0.5));
 	}
 }
 
@@ -211,14 +221,16 @@ IDEInstance.prototype.Draw = function(renderer)
 			halign = ha_right;
 		
 		this.font.DrawText(this.properties["Text"],
-								this.instance.GetBoundingRect(),
+								this.instance.GetBoundingQuad(),
 								this.properties["Color"],
 								halign,
-								this.instance.GetOpacity());
+								this.instance.GetOpacity(),
+								this.instance.GetAngle());
 	}
 }
 
 IDEInstance.prototype.OnRendererReleased = function(renderer)
 {
 	this.font = null;		// drop reference to created font
+	this.old_font_str = "";
 }

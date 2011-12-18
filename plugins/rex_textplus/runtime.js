@@ -106,13 +106,23 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		}
 		
 		// Draw each line after word wrap
-		var penX = this.x - (this.hotspotX * this.width);
-		var penY = this.y - (this.hotspotY * this.height);
+		this.update_bbox();
+		var penX = this.bquad.tlx;
+		var penY = this.bquad.tly;
 		
 		if (this.runtime.pixel_rounding)
 		{
 			penX = Math.round(penX);
 			penY = Math.round(penY);
+		}
+		
+		if (this.angle !== 0)
+		{
+			ctx.save();
+			ctx.translate(penX, penY);
+			ctx.rotate(this.angle);
+			penX = 0;
+			penY = 0;
 		}
 		
 		var endY = penY + this.height;
@@ -136,6 +146,9 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			if (penY >= endY - line_height)
 				break;
 		}
+		
+		if (this.angle !== 0)
+			ctx.restore();
 		
 		// Restore global alpha if opacity was not 100%
 		if (this.opacity !== 1.0)
