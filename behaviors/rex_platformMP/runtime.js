@@ -733,6 +733,50 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		return ret;
 	};
 	
+	cnds.IsByWall = function (side)
+	{
+		// Move 1px up to side and make sure not overlapping anything
+		var ret = false;
+		var oldx = this.inst.x;
+		var oldy = this.inst.y;
+		
+		this.inst.x -= this.downx * 3;
+		this.inst.y -= this.downy * 3;
+		
+		// Is overlapping solid above: must be hitting head on ceiling, don't count as wall
+		this.inst.set_bbox_changed();
+		if (this.runtime.testOverlapSolid(this.inst))
+		{
+			this.inst.x = oldx;
+			this.inst.y = oldy;
+			this.inst.set_bbox_changed();
+			return false;
+		}
+		
+		// otherwise move to side
+		if (side === 0)		// left
+		{
+			this.inst.x -= this.rightx;
+			this.inst.y -= this.righty;
+		}
+		else
+		{
+			this.inst.x += this.rightx;
+			this.inst.y += this.righty;
+		}
+		
+		this.inst.set_bbox_changed();
+		
+		// Is touching solid to side
+		ret = this.runtime.testOverlapSolid(this.inst);
+		
+		this.inst.x = oldx;
+		this.inst.y = oldy;
+		this.inst.set_bbox_changed();
+		
+		return ret;
+	};
+	
 	cnds.IsJumping = function ()
 	{
 		return this.dy < 0;

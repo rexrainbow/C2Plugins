@@ -42,7 +42,11 @@ AddCondition(9, cf_trigger, "On fall", "Animation triggers", "{my} On fall", "Tr
 AddCondition(10, cf_trigger, "On stopped", "Animation triggers", "{my} On stopped", "Triggered when stopped moving.", "OnStop");
 AddCondition(11, cf_trigger, "On moved", "Animation triggers", "{my} On moved", "Triggered when starting to move.", "OnMove");
 AddCondition(12, cf_trigger, "On landed", "Animation triggers", "{my} On landed", "Triggered when first hitting the floor.", "OnLand");
-             
+AddComboParamOption("left");
+AddComboParamOption("right");
+AddComboParam("Side", "Select the side to test for a wall.");
+AddCondition(13, 0, "Is by wall", "", "{my} has wall to {0}", "Test if the object has a wall to the left or right.", "IsByWall");
+      
     
     
 //////////////////////////////////////////////////////////////
