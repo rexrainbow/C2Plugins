@@ -53,11 +53,23 @@ cr.plugins_.Rex_Layout = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
     
+    var _INST_SORT = function(instA, instB)
+    {
+        if ( (instA.y > instB.y) ||
+             ((instA.y == instB.y) && (instA.x > instB.x)) )
+            return 1;
+        else if ( (instA.y == instB.y) && (instA.x == instB.x) )
+            return 0;
+        else
+            return -1;
+    };   
+    
     acts.DistributeInsts = function (objtype, start_x, start_y, end_x, end_y)
 	{
         var sol = objtype.getCurrentSol();  
             
         var insts = sol.getObjects();
+        insts.sort(_INST_SORT);
         var insts_length = insts.length;
         var seg_len = insts_length -1;
         var i, prop, inst;
