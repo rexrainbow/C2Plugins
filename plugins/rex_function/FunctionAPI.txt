@@ -17,7 +17,7 @@ C. inject javascript function
 
 2. API of Function plugin 
    for exporting to other javascript function
-- fn.CallFn(name, args)               
+- fn.CallFn(name, args)
   :: args can be a hash, or some strings/numbers
 
 

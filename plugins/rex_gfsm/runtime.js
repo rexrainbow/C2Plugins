@@ -522,9 +522,7 @@ cr.plugins_.Rex_FSM = function(runtime)
     // adapter for exporting to javascript
     cr.plugins_.Rex_FSM.FSMAdapterKlass = function(type)
     {
-        this["_type"] = type; 
-        this["fn"] = type.fn_obj;
-        this["csv"] = type.csv_obj;
+        this["_type"] = type;
     };
     var FSMAdapterKlassProto = cr.plugins_.Rex_FSM.FSMAdapterKlass.prototype;
     

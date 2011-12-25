@@ -1,0 +1,31 @@
+1. Interface of "Action:Inject JS function objects"
+- function(fsm, fn, csv) { ... }
+  
+2. API of FSM plugin 
+   for injecting state transfer logic or state transfer action 
+   in part 1.
+- fsm.InjectLogic(state_name, fn)   
+  :: state transfer logic       
+- fsm.InjectExitAction(state_name, fn)
+  :: state transfer action: on exit state
+- fsm.InjectEnterAction(state_name, fn)
+  :: state transfer action: on enter state  
+- fsm.InjectTransferAction(pre_state, cur_state, fn)
+  :: state transfer action: on state transfer from .. to ..
+  
+
+3. API in state transfer logic and state transfer action 
+A. function prototype
+- function(fsm, fn, csv){ ... }
+  :: fn is adapter of function plugin
+  :: csv is adapter of csv plugin
+
+B. API of adapter of function plugin
+- fn.CallFn(name, args)
+  :: args can be a hash, or some strings/numbers
+  
+C. API of adapter of csv plugin
+- csv.Get(col, row, page)  
+  :: page can be ignored            
+- csv.Set(value, col, row, page)
+  :: page can be ignored

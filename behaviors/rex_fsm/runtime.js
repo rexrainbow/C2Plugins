@@ -533,8 +533,6 @@ cr.behaviors.Rex_FSM = function(runtime)
     cr.behaviors.Rex_FSM.FSMAdapterKlass = function(type)
     {
         this["_type"] = type; 
-        this["fn"] = type.fn_obj;
-        this["csv"] = type.csv_obj;
     };
     var FSMAdapterKlassProto = cr.behaviors.Rex_FSM.FSMAdapterKlass.prototype;
     
