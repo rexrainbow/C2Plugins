@@ -18,20 +18,44 @@
 
 
 //////////////////////////////////////////////////////////////
-// Actions  
+// Actions
+AddAction(0, 0, "Clean bank", "Bank", 
+          "Clean bank to empty", 
+          "Clean bank to empty.", "CleanBank");  
 AddObjectParam("Object", "Object for saving");
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(1, 0, "Save instances", "Baisc: Save/Load", 
+AddAction(1, 0, "Save instances", "Sprite", 
           "Save <i>{0}</i> instances form <i>{1}</i>", 
           "Save instances of sprite.", "SaveInstances");
-AddAction(2, 0, "Load all instances", "Baisc: Save/Load", 
+AddAction(2, 0, "Load all instances", "Sprite", 
           "Load all saved instances", 
-          "Load all saved instances.", "LoadInstances");               
+          "Load all saved instances.", "LoadInstances");
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(3, 0, "Load bank from JSON string", "Bank", "Load bank form JSON string <i>{0}</i>",
+         "Load bank from JSON string.", "StringToBank");
+AddObjectParam("Function", "Function object for callback");
+AddAction(4, 0, "Connect to function object", "Advance: Setup", 
+          "Connect to function object <i>{0}</i>", 
+          "Connect to function object.", "ConnectFn");  
+AddObjectParam("Object", "Object for saving");
+AddComboParamOption("Current picked instances");
+AddComboParamOption("All instances");
+AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
+AddStringParam("Callback", "Callback for instance saving.", '""');   
+AddAction(5, 0, "Save instances", "Advance: Sprite", 
+          "Save <i>{0}</i> instances form <i>{1}</i>, callback to <i>{2}</i>", 
+          "Save instances of sprite.", "AdvSaveInstances");
+AddObjectParam("Object", "Object for saving");
+AddStringParam("Callback", "Callback for instance saving.", '""');           
+AddAction(6, 0, "Load instances", "Advance: Sprite", 
+          "Load <i>{0}</i> instances, callback to <i>{1}</i>", 
+          "Load instances.", "AdvLoadInstances");          
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(0, ef_return_string, "Transfer bank to string", "Bank", "BankToString", "Transfer current bank to JSON string.");
 
 
 ACESDone();

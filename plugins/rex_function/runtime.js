@@ -95,6 +95,11 @@ cr.plugins_.Rex_Function = function(runtime)
             jQuery.extend(this.fnObj["param"], param);
 	};  
     
+	instanceProto.GetReturns = function()
+	{
+        return this.fnObj["ret"];
+	}; 
+    
 	instanceProto._ExeCmd = function(_args)
 	{
         var args = (typeof _args === "string")? arguments:_args;

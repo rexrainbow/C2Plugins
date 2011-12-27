@@ -10,7 +10,11 @@ B. call function
 - fn_obj.ExecuteCommands(cmd)          
   :: cmd is a string
   
-C. inject javascript function
+C. get returns
+- fn_obj.GetReturns()
+  :: return a hash  
+  
+D. inject javascript function
 - fn_obj.InjectJS(name, fn)
 
 
