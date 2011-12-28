@@ -41,12 +41,10 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-		this._my_hash = null;
-        this._current_entry = null;
-        this.CleanAll();  
+        this._clean_all();  
 	};
     
-	instanceProto.CleanAll = function()
+	instanceProto._clean_all = function()
 	{
 		this._my_hash = {};
         this._current_entry = this._my_hash;
@@ -69,6 +67,13 @@ cr.plugins_.Rex_Hash = function(runtime)
         
         this._current_entry = _entry;
 	};
+    
+	instanceProto._get_data = function(keys)
+	{           
+        var last_key = keys.splice(keys.length-1, 1);      
+        this._set_entry_byKeys(keys);
+        return this._current_entry[last_key];
+	}; 
 	
 	//////////////////////////////////////
 	// Conditions
@@ -110,8 +115,13 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	acts.CleanAll = function ()
 	{        
-        this.CleanAll();      
-	};        
+        this._clean_all();      
+	};  
+
+    acts.StringToHashTable = function (JSON_string)
+	{  
+        this._my_hash = JSON.parse(JSON_string);
+	};     
 
 	//////////////////////////////////////
 	// Expressions
@@ -119,12 +129,20 @@ cr.plugins_.Rex_Hash = function(runtime)
 	var exps = pluginProto.exps;
     
 	exps.Hash = function (ret, key_string)
+	{   
+        var keys = (arguments.length > 2)?
+                   Array.prototype.slice.call(arguments,1):
+                   key_string.split(".");
+        var val = this._get_data(keys);
+		ret.set_any(val);
+	};
+    
+	exps.At = function (ret, key_string)
 	{     
-        var val;    
-        var keys = key_string.split(".");             
-        var last_key = keys.splice(keys.length-1, 1);      
-        this._set_entry_byKeys(keys);
-        val = this._current_entry[last_key];
+        var keys = (arguments.length > 2)?
+                   Array.prototype.slice.call(arguments,1):
+                   key_string.split(".");
+        var val = this._get_data(keys);
 		ret.set_any(val);
 	};
     
@@ -132,4 +150,10 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{       
 		ret.set_any(this._current_entry[key_name]);
 	};
+
+	exps.HashTableToString = function (ret)
+	{
+        var json_string = JSON.stringify(this._my_hash);
+		ret.set_string(json_string);
+	};    
 }());

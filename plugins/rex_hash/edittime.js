@@ -18,29 +18,39 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Key string", "The key string of the hash value to set.", '""');
-AddAnyTypeParam("Value", "The value to store in the array.", "0");
-AddAction(1, 0, "Set value by key string", "Hash", "Set value at <i>{0}</i> to <i>{1}</i>",
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
+AddAction(1, 0, "Set value by key string", "Value", 
+          "Set value at <i>{0}</i> to <i>{1}</i>",
          "Set value by a key string.", "SetByKeyString");
 AddStringParam("Key string", "The key string of the hash entry to get.", '""');
-AddAction(2, 0, "Set current entry", "Entry", "Get hash entry from <i>{0}</i>",
+AddAction(2, 0, "Set current entry", "Entry", "Get hash table entry from <i>{0}</i>",
          "Set current entry by key string.", "SetCurHashEntey");
 AddStringParam("Key name", "The key of the hash value to set.", '""');
-AddAnyTypeParam("Value", "The value to store in the array.", "0");
+AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
 AddAction(3, 0, "Set value at current entry", "Entry", "Set value at <i>{0}</i> to <i>{1}</i> in current entry",
          "Set value at current entry.", "SetValueInCurHashEntey");
-AddAction(4, 0, "Clean all", "Entry", "Clean all entries",
-         "Clean all entries.", "CleanAll");         
+AddAction(4, 0, "Clean all", "Hash table", "Clean all entries",
+         "Clean all entries.", "CleanAll"); 
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(5, 0, "Load hash table from JSON string", "JSON", 
+          "Load hash table form JSON string <i>{0}</i>",
+          "Load hash table from JSON string.", "StringToHashTable");         
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key string", "The key string of the hash to get.", '""');
-AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Hash", "Hash", 
-              "Get value from the hash by key string.");
+AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get value at", 
+              "Value", "Hash", "Get value from the hash by key string.");
 AddStringParam("Key name", "The key string of the hash value to get.", '""');
-AddExpression(1, ef_return_any | ef_variadic_parameters, "Get value from current entry", "Entry", "Entry", 
+AddExpression(1, ef_return_any | ef_variadic_parameters, 
+              "Get value from current entry", "Entry", "Entry", 
               "Get value from current entry.");              
-
+AddExpression(2, ef_return_string, "Transfer hash to string", 
+              "JSON", "HashTableToString", "Transfer hash table to JSON string.");
+AddStringParam("Key string", "The key string of the hash to get.", '""');
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
+              "Value", "At", "Get value from the hash by key string.");
 
 ACESDone();
 
