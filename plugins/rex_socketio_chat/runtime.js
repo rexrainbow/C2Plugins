@@ -61,7 +61,8 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
         this.current_usrID = usr_id;
         this.current_data = msg;
         this.runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnData, this);
-	};    
+	};
+    
 
     // export: get new socket branch instance
     instanceProto.CreateBranch = function(cb_this, cb_fn)
@@ -121,7 +122,17 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 
 		this.current_usrID = usr_id_save;
 		return false;        
-	};    
+	};  
+    
+	cnds.AmIRoomModerator = function()
+	{
+		return this._branch.am_I_room_moderator();
+	}; 
+    
+	cnds.OnRoomStorageData = function()
+	{
+		return true;
+	}; 
     
 	//////////////////////////////////////
 	// Actions    
@@ -140,7 +151,22 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	{
         this._branch.send(data);
 	};
-
+	acts.SetMaxMemberCount = function(count)
+	{
+        this.socket.set_room_user_max_cnt(count);
+	};
+	acts.KickMember = function(user_id)
+	{
+        this.socket.kick_user(user_id);
+	};   
+	acts.SetRoomStorage = function(key, data)
+	{
+        this._branch.set_room_storage_data(key, data);
+	};   
+	acts.GetRoomStorage = function(key)
+	{
+        this._branch.get_room_storage_data(key, this, this.on_room_storage);
+	};      
 	//////////////////////////////////////
 	// Expressions    
 	pluginProto.exps = {};
@@ -166,6 +192,13 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	{   
 		ret.set_string(this.socket.port);     
 	}; 
+	exps.RoomData = function(ret, key, default_data)
+	{   
+        var data = this._branch.get_room_storage_data(key);
+        if (data == null)
+            data = default_data;
+		ret.set_any(data);   
+	};
 }());
 
 (function ()
@@ -178,6 +211,7 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
         this.port = "";
         this.user_id = -1;    
         this.users_list = new cr.plugins_.Rex_SocketIO_Chat.UsersList();
+        this.room_storage_data = {};
         this.send_queue = [];
         this.received_quue = new cr.plugins_.Rex_SocketIO_Chat.PKGQueue(this);
         this.trigger_user_info = [0,""];
@@ -218,17 +252,15 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 		var plugin = this.plugin;
 		var runtime = plugin.runtime;
         socket.on('connect', function () {
-            debugger;
-            socket.emit('user.initialize', user_name,                 
-                function (pkg_id, user_id, users_info) {
+            socket.emit('user.initialize', user_name,
+                function (pkg_id, user_id, users_info, room_storage_data) {
                     instance.received_quue.set_sn(pkg_id);
                     instance.user_id = user_id;
-                    instance.users_list.set_users_list(users_info)
+                    instance.users_list.set_users_list(users_info);
+                    instance.room_storage_data = room_storage_data;
                     instance.is_connection = true;                    
                     // connect completed
                     runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnConnect, plugin);
-                    
-                   
             });
         });
         socket.on('disconnect', function () {
@@ -319,9 +351,20 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	{
 		var socket = this.socket;
 		if(socket)
+        {
+            if (typeof user_id == "string")
+                user_id = this.users_list.get_id(user_id);
 			socket.emit('room.kick_user', user_id);
+        }
 	};     
-    
+	SocketIOKlassProto.set_room_storage_data = function(key, data)
+	{
+		var socket = this.socket;
+		if(socket)
+        {
+			socket.emit('room.storage.set', key, data);
+        }
+	};     
     
     // socket branch
     cr.plugins_.Rex_SocketIO_Chat.BranchKlass = function(socket, cb_this, cb_fn)
@@ -348,6 +391,22 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
     BranchKlassProto.get_userID_list = function()
 	{
         return this.socket.users_list.id_list;
+	}; 
+    BranchKlassProto.get_my_user_id = function()
+	{
+        return this.socket.user_id;
+	}; 
+    BranchKlassProto.am_I_room_moderator = function()
+	{
+        return (this.get_my_user_id() == (this.get_userID_list()[0]));
+	}; 
+    BranchKlassProto.set_room_storage_data = function(key, data)
+	{
+        this.socket.set_room_storage_data(key, data);
+	};
+    BranchKlassProto.get_room_storage_data = function(key)
+	{
+        return this.socket.room_storage_data[key];
 	};    
     
     // package queue for sync
@@ -467,5 +526,15 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
             delete this.id2name[id];
         }
     };    
-    
+    UsersListProto.get_id = function(name)
+    {
+        var id;
+        var id2name = this.id2name;
+        for (id in id2name)
+        {
+            if (name == id2name[id])
+                return parseInt(id);                
+        }
+        return -1;
+    };
 }());

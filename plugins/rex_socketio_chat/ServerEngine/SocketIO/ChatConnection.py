@@ -11,7 +11,8 @@ class ChatConnection(SocketConnection):
         print 'User connect'
         is_success = self.room.user_joined(self)
         if not is_success:
-            self.close()  # say goodbye to user
+            print 'Room is full, sorry'
+            return False   # say goodbye to user
 
     def on_message(self, message):
         self.broadcast_message(message)
@@ -41,14 +42,20 @@ class ChatConnection(SocketConnection):
         user = self.room.get_user(self)
         user.name = name
         self.broadcast_event('user.joined', user.get_info())
-        return self.pkg_sn.value, user.id, self.room.get_users_info()
-                
+        return self.pkg_sn.value, \
+               user.id, \
+               self.room.get_users_info(), \
+               self.room.storage
+
     @event('room.set_MAXUSERCNT')
     def _room_set_MAXUSERCNT(self, max_user_cnt):
         self.room.set_MAXUSERCNT(self, max_user_cnt)
         
     @event('room.kick_user')
-    def _room_set_MAXUSERCNT(self, user_id):
-        self.room.kick_user(self, user_id)        
+    def _room_kick_user(self, user_id):
+        self.room.kick_user(self, user_id)
         
+    @event('room.storage.set')
+    def _room_storage_set(self, key, data):
+        self.room.storage[key] = data
         

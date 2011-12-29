@@ -15,15 +15,23 @@ function GetPluginSettings()
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,cf_trigger,"On data received","Socket","On data received","Triggered when the socket receives a chunk of data.","OnData");
-AddCondition(1,cf_trigger,"On connect","Socket","On connect","Triggered when the socket successfully connects to an address.","OnConnect");
-AddCondition(2,cf_trigger,"On error","Socket","On error","Triggered when there is an error connecting to an address.","OnError");
-AddCondition(3,cf_trigger,"On disconnect","Socket","On disconnect","Triggered when the socket disconnects from an address.","OnDisconnect");
+AddCondition(0,cf_trigger,"On data received","Socket","On data received",
+             "Triggered when the socket receives a chunk of data.","OnData");
+AddCondition(1,cf_trigger,"On connect","Socket","On connect",
+             "Triggered when the socket successfully connects to an address.","OnConnect");
+AddCondition(2,cf_trigger,"On error","Socket","On error",
+             "Triggered when there is an error connecting to an address.","OnError");
+AddCondition(3,cf_trigger,"On disconnect","Socket","On disconnect",
+             "Triggered when the socket disconnects from an address.","OnDisconnect");
 // 4
-AddCondition(5,cf_trigger,"On user joined","Users","On user joined","Triggered when user joined.","OnUserJoined");
-AddCondition(6,cf_trigger,"On user left","Users","On user left","Triggered when user left.","OnUserLeft");
+AddCondition(5,cf_trigger,"On user joined","Users","On user joined",
+             "Triggered when user joined.","OnUserJoined");
+AddCondition(6,cf_trigger,"On user left","Users","On user left",
+             "Triggered when user left.","OnUserLeft");
 AddCondition(7, cf_looping | cf_not_invertible, "For each user id", "For Each", 
              "For each user id", "Repeat the event for each user id.", "ForEachUsrID");
+AddCondition(8, 0, "Am I room moderator", "Room", 
+             "Am I room moderator?", "If I am room moderator", "AmIRoomModerator");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -36,6 +44,19 @@ AddAction(0,0,"Connect","Socket",
 AddAction(1,0,"Disconnect","Socket","Disconnect","Disconnect from the current connection.","Disconnect");
 AddAnyTypeParam("Data","The data to send through the socket.","\"\"");
 AddAction(2,0,"Send","Socket","Send <b>{0}</b>","Send data through the connection.","Send");
+AddNumberParam("Count","The maximum member count of room. 0 is infinty.",0);
+AddAction(3,0,"Set max member count","Room",
+          "Set max member count to <b>{0}</b>",
+          "Set the maximum member count of room. 0 is infinty.","SetMaxMemberCount");
+AddAnyTypeParam("User","User name(string) or user id(number).","\"\"");
+AddAction(4,0,"Kick member","Room",
+          "Kick member <b>{0}</b>",
+          "Kick member.","KickMember");  
+AddAnyTypeParam("Key","The key of data stored in room storage.","\"\"");
+AddAnyTypeParam("Data","The data stored in room storage.","\"\""); 
+AddAction(5,0,"Save data to room storage","Room",
+          "Save data <b>{1}</b> with key <b>{0}</b> to room storage",
+          "Save data to room storage.","SetRoomStorage");          
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -48,6 +69,9 @@ AddExpression(3,ef_return_string,"Get server address","Socket","IPAddr",
               "Get the server address that the socket connected to.");
 AddExpression(4,ef_return_string,"Get server port","Socket","Port",
               "Get the server port that the socket connected through.");
+AddAnyTypeParam("Key","The key of data stored in room storage.","\"\"");
+AddExpression(5,ef_return_any | ef_variadic_parameters, 
+              "Get room storage data","Room","RoomData","Get room storage data from key.");              
 
 ACESDone();
 
