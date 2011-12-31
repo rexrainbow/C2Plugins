@@ -58,7 +58,8 @@ cr.plugins_.Rex_Hash = function(runtime)
         for (i=0; i< key_len; i++)
         {
             key = keys[i];
-            if (_entry[key] == null)
+            if ( (_entry[key] == null) ||
+                 (typeof _entry[key] != "object") )
             {
                 _entry[key] = {};
             }
