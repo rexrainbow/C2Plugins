@@ -232,34 +232,26 @@ cr.behaviors.Rex_Shell = function(runtime)
     var ShellKlassProto = cr.behaviors.Rex_Shell.ShellKlass.prototype;
     
     ShellKlassProto["GetDt"] = function()
-    {
-        return this["_runtime"].getDt(this["inst"]);
-    };
+    {return this["_runtime"].getDt(this["inst"]);};
     
-    ShellKlassProto["GetX"] = function(inst)
-    {
-        return this["inst"].x;
-    }; 
-
-    ShellKlassProto["GetY"] = function(inst)
-    {
-        return this["inst"].y;
-    };
+    ShellKlassProto["GetX"] = function(inst){return this["inst"].x;}; 
+    ShellKlassProto["GetY"] = function(inst){return this["inst"].y;};
+    ShellKlassProto["GetWidth"] = function(inst){return this["inst"].width;}; 
+    ShellKlassProto["GetHeight"] = function(inst){return this["inst"].height;};    
+    ShellKlassProto["GetAngle"] = function(inst){return this["inst"].angle;};
+    ShellKlassProto["GetOpacity"] = function(inst){return this["inst"].opacity;}; 
+    ShellKlassProto["GetVisible"] = function(inst){return this["inst"].visible;};
     
-    ShellKlassProto["SetX"] = function(inst, value)
-    {
-        this["inst"].x = value;
-    }; 
+    ShellKlassProto["SetX"] = function(inst, value){this["inst"].x = value;}; 
+    ShellKlassProto["SetY"] = function(inst, value){this["inst"].y = value;};
+    ShellKlassProto["SetWidth"] = function(inst, value){this["inst"].width = value;}; 
+    ShellKlassProto["SetHeight"] = function(inst, value){this["inst"].height = value;};
+    ShellKlassProto["SetAngle"] = function(inst, value){this["inst"].angle = value;};      
+    ShellKlassProto["SetOpacity"] = function(inst, value){this["inst"].opacity = value;};    
+    ShellKlassProto["SetVisible"] = function(inst, value){this["inst"].visible = value;};    
 
-    ShellKlassProto["SetY"] = function(inst, value)
-    {
-        this["inst"].y = value;
-    };   
-
-    ShellKlassProto["set_bbox_changed"] = function(inst)
-    {
-        inst.set_bbox_changed();
-    };     
+    ShellKlassProto["set_bbox_changed"] = function(inst){inst.set_bbox_changed();};     
+    
     
     ShellKlassProto["InjectCreateCB"] = function(fn)
     {

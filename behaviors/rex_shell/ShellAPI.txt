@@ -21,10 +21,32 @@ C. for accessing instance
   :: return inst.x
 - shell.GetY(inst)
   :: return inst.y
+- shell.GetWidth(inst)
+  :: return inst.width
+- shell.GetHeight(inst)
+  :: return inst.height
+- shell.GetAngle(inst)
+  :: return inst.angle
+- shell.GetOpacity(inst)
+  :: return inst.opacity
+- shell.GetVisible(inst)
+  :: return inst.visible  
+  
 - shell.SetX(inst, value)
   :: inst.x = value
 - shell.SetY(inst, value)
   :: inst.y = value
+- shell.SetWidth(inst, value)
+  :: inst.width = value
+- shell.SetHeight(inst, value)
+  :: inst.height = value 
+- shell.SetAngle(inst, value)
+  :: inst.angle = value 
+- shell.SetOpacity(inst, value)
+  :: inst.opacity = value
+- shell.SetVisible(inst, value)
+  :: inst.visible = value  
+  
 - shell.set_bbox_changed(inst)
   :: inst.set_bbox_changed()  
   
