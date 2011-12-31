@@ -164,6 +164,56 @@ cr.behaviors.Rex_Shell = function(runtime)
         }
 	    ret.set_any(value);
 	};	
+
+    exps.X = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.x:default_value;
+	    ret.set_float(val);
+	};	    
+
+    exps.Y = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.y:default_value;
+	    ret.set_float(val);
+	};
+
+    exps.Width = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.width:default_value;
+	    ret.set_float(val);
+	};	    
+
+    exps.Height = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.height:default_value;
+	    ret.set_float(val);
+	};    
+
+    exps.Angle = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? cr.to_clamped_degrees(inst.inst.angle):default_value;
+	    ret.set_float(val);
+	};	    
+
+    exps.Opacity = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.opacity:default_value;
+	    ret.set_float(val);
+	};     
+
+    exps.Visible = function (ret, uid, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.visible:default_value;
+	    ret.set_float(val);
+	};	    
+    
 }());
 
 (function ()

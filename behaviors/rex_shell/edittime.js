@@ -51,8 +51,35 @@ AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
 AddExpression(0, ef_return_any | ef_variadic_parameters, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");
-
-
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(1, ef_return_number | ef_variadic_parameters, 
+              "Get position x", "Instance expression", "X", 
+              "Get instance's position x form uid.");              
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(2, ef_return_number | ef_variadic_parameters, 
+              "Get position y", "Instance expression", "Y", 
+              "Get instance's y form uid.");  
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(3, ef_return_number | ef_variadic_parameters, 
+              "Get width", "Instance expression", "Width", 
+              "Get instance's width form uid.");              
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(4, ef_return_number | ef_variadic_parameters, 
+              "Get height", "Instance expression", "Height", 
+              "Get instance's height form uid.");
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(5, ef_return_number | ef_variadic_parameters, 
+              "Get angle", "Instance expression", "Angle", 
+              "Get instance's angle form uid.");
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(6, ef_return_number | ef_variadic_parameters, 
+              "Get opacity", "Instance expression", "Opacity", 
+              "Get instance's opacity form uid.");              
+AddNumberParam(0, "The UID of instance.", 0);
+AddExpression(7, ef_return_number | ef_variadic_parameters, 
+              "Get visible", "Instance expression", "Visible", 
+              "Get instance's visible form uid.");
+              
 ACESDone();
 
 // Property grid properties for this plugin
