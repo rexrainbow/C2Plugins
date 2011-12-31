@@ -1,0 +1,46 @@
+1. Interface of "Action:Inject JS function objects"
+- function(shell, fn, csv) { ... }
+  
+  
+2. API of Shell plugin 
+A. for injecting create callback, destroy callback, tick callback 
+   in part 1.
+- shell.InjectCreateCB(shell, fn, csv)
+  :: create callback
+- shell.InjectDestroyCB(shell, fn, csv)
+  :: destroy callback  
+- shell.InjectTickCB(shell, fn, csv)
+  :: tick callback
+ 
+B. dt
+- shell.GetDt() 
+  :: return dt
+  
+C. for accessing instance
+- shell.GetX(inst)
+  :: return inst.x
+- shell.GetY(inst)
+  :: return inst.y
+- shell.SetX(inst, value)
+  :: inst.x = value
+- shell.SetY(inst, value)
+  :: inst.y = value
+- shell.set_bbox_changed(inst)
+  :: inst.set_bbox_changed()  
+  
+
+3. API in callback 
+A. function prototype
+- function(shell, fn, csv){ ... }
+  :: fn is adapter of function plugin
+  :: csv is adapter of csv plugin
+
+B. API of adapter of function plugin
+- fn.CallFn(name, args)
+  :: args can be a hash, or some strings/numbers
+  
+C. API of adapter of csv plugin
+- csv.Get(col, row, page)  
+  :: page can be ignored            
+- csv.Set(value, col, row, page)
+  :: page can be ignored
