@@ -5,12 +5,14 @@
 2. API of Shell plugin 
 A. for injecting create callback, destroy callback, tick callback 
    in part 1.
-- shell.InjectCreateCB(shell, fn, csv)
-  :: create callback
-- shell.InjectDestroyCB(shell, fn, csv)
-  :: destroy callback  
-- shell.InjectTickCB(shell, fn, csv)
-  :: tick callback
+- shell.InjectCreateCB(fn)
+  :: fn is create callback
+- shell.InjectDestroyCB(fn)
+  :: fn is destroy callback  
+- shell.InjectTickCB(fn)
+  :: fn is tick callback
+- shell.InjectFunction(fn)
+  :: fn is function
  
 B. dt
 - shell.GetDt() 

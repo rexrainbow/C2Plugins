@@ -32,14 +32,16 @@ AddStringParam("Code", "JS function code", '""');
 AddAction(3, 0, "Inject JS function objects", "JS Function", 
           "Inject JS <i>{0}</i> into {my}", "Inject JS function objects.", "InjectJSFunctionObjects");
 AddObjectParam("Function", "Function object for controlling the game world");
-AddAction(4, 0, "Connect to function object", "Advance: Setup", 
+AddAction(4, 0, "Connect to function object", "Setup", 
           "Connect to function object <i>{0}</i>", 
           "Connect to function object.", "ConnectFn");
 AddObjectParam("CSV", "CSV object for accessing global variables");
-AddAction(5, 0, "Connect to CSV object", "Advance: Setup", 
+AddAction(5, 0, "Connect to CSV object", "Setup", 
           "Connect to CSV object <i>{0}</i>", 
           "Connect to CSV object.", "ConnectCSV");     
-
+AddStringParam("Function name", "Function of shell", '""');
+AddAction(6, 0, "Call shell's function", "JS Function", 
+          "Call {my}'s function <i>{0}</i>", "Call shell's function.", "CallFunction");
           
           
 //////////////////////////////////////////////////////////////
@@ -86,7 +88,10 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
-	new cr.Property(ept_text, "Default memory", "", 'Set initial value of memory, ex:"{"x":10, "y":20}".'),     
+	new cr.Property(ept_text, "Default memory", "", 'Set initial value of memory, ex:"{"x":10, "y":20}".'),
+    new cr.Property(ept_text, "Create callback", "", 'function(shell){...}'),
+    new cr.Property(ept_text, "Tick callback", "", 'function(shell){...}'),   
+    new cr.Property(ept_text, "Destroy callback", "", 'function(shell){...}'),   
 	];
 	
 // Called by IDE when a new behavior type is to be created

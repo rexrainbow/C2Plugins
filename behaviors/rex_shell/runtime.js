@@ -30,8 +30,9 @@ cr.behaviors.Rex_Shell = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.create_cb = null;
+        this.tick_cb = null;        
         this.destroy_cb = null;
-        this.tick_cb = null;
+        this.fn_obj = {};
         this.fn_obj = null;
         this.csv_obj = null;
 
@@ -51,8 +52,43 @@ cr.behaviors.Rex_Shell = function(runtime)
 
 	var behinstProto = behaviorProto.Instance.prototype;
 
+    behinstProto.init_callback = function(code_string, fn_obj)
+    {
+        if ( (code_string == "") || (fn_obj != null) )
+            return fn_obj;
+            
+        if (this.is_debug_mode)
+        {
+            try
+            { fn_obj = eval("("+code_string+")"); }
+            catch(err)
+            { alert(err); }        
+        }
+        else
+            fn_obj = eval("("+code_string+")");
+        return fn_obj;
+    };
+    
+    behinstProto.execute_callback = function(fn)
+    {
+        if (fn == null) 
+            return;
+        
+        var args = [this.shell_obj, this.type.fn_obj, this.type.csv_obj];
+        if (this.is_debug_mode)
+        {
+            try
+            { fn.apply(null,args); }
+            catch(err)
+            { alert(err); }           
+        }
+        else
+            fn.apply(null,args);
+    };
+    
 	behinstProto.onCreate = function()
 	{
+        this.is_debug_mode = (this.properties[0]==1);
         this.activated = (this.properties[1]==1);
                                                                        
         this.uid2inst[this.inst.uid] = this;
@@ -60,41 +96,34 @@ cr.behaviors.Rex_Shell = function(runtime)
 		// initial memory
 		var mem = this.properties[2];
         try
-        {
-            mem = (mem!="")? jQuery.parseJSON(mem):{};      
-        }
+        { mem = (mem!="")? jQuery.parseJSON(mem):{}; }
         catch(err)
-        {
-            alert(err);
-            mem = {};            
-        }
+        { alert(err); mem = {}; }
         this.shell_obj = new cr.behaviors.Rex_Shell.ShellKlass(this,
                                                                mem);   
         
-        var create_cb = this.type.create_cb;
-        if (create_cb != null)
-        {
-            create_cb(this.shell_obj, this.type.fn_obj, this.type.csv_obj);
-        }
+
+        this.type.create_cb = this.init_callback(this.properties[3], 
+                                                this.type.create_cb); 
+        this.type.tick_cb = this.init_callback(this.properties[4], 
+                                               this.type.tick_cb); 
+        this.type.destroy_cb = this.init_callback(this.properties[5], 
+                                                  this.type.destroy_cb);
+                                             
+        this.execute_callback(this.type.create_cb);                        
 	};  
 	behinstProto.onDestroy = function()
 	{
-        var destroy_cb = this.type.destroy_cb;
-        if (destroy_cb != null)
-        {
-            destroy_cb(this.shell_obj, this.type.fn_obj, this.type.csv_obj);
-        }    
+        this.execute_callback(this.type.destroy_cb);   
 		delete this.uid2inst[this.inst.uid];
 	};    
     
 	behinstProto.tick = function ()
 	{
-        var tick_cb = this.type.tick_cb;
-        if (this.activated && 
-            (tick_cb!= null))
-        {
-            tick_cb(this.shell_obj, this.type.fn_obj, this.type.csv_obj);
-        }
+        if (!this.activated)
+            return;
+            
+        this.execute_callback(this.type.tick_cb);
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -121,7 +150,6 @@ cr.behaviors.Rex_Shell = function(runtime)
         this.shell_obj["Mem"][index] = value;
 	};
     
-
 	acts.InjectJSFunctionObjects = function (code_string)
 	{
         var fn = eval("("+code_string+")");
@@ -144,9 +172,12 @@ cr.behaviors.Rex_Shell = function(runtime)
             this.type.csv_obj = csv_obj.adapter;        
         else
             alert ("Can not connect to a csv object");
-	};   
-  
+	};  
     
+    acts.CallFunction = function (fn_name)
+	{  
+        this.execute_callback(this.type.fn_obj[name]);
+	};     
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
@@ -257,14 +288,17 @@ cr.behaviors.Rex_Shell = function(runtime)
     {
         this["_type"].create_cb = fn;
     };  
-    
+    ShellKlassProto["InjectTickCB"] = function(fn)
+    {
+        this["_type"].tick_cb = fn;
+    }; 
     ShellKlassProto["InjectDestroyCB"] = function(fn)
     {
         this["_type"].destroy_cb = fn;
     };      
-    
-    ShellKlassProto["InjectTickCB"] = function(fn)
+    ShellKlassProto["InjectFunction"] = function(name, fn)
     {
-        this["_type"].tick_cb = fn;
-    };  
+        this["_type"].fn_obj[name] = fn;
+    };    
+ 
 }());
