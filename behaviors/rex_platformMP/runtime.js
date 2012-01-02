@@ -141,13 +141,13 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		}
 		
 		// Need to know if floor object gets destroyed
-		this.runtime.addDestroyCallback((function (self) {
+		this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
-										})(this)
-									);
-                                    
+										})(this);
+										
+		this.runtime.addDestroyCallback(this.myDestroyCallback);
         // control key code
         this.KEY_SHIFT = 16;          
         this.KEY_LEFT = 37;  
@@ -167,6 +167,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 	behinstProto.onDestroy = function ()
 	{
 		this.lastFloorObject = null;
+		this.runtime.removeDestroyCallback(this.myDestroyCallback);
 	};
 
 	behinstProto.onKeyDown = function (info)
