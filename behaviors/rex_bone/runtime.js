@@ -153,7 +153,14 @@ cr.behaviors.rex_Bone = function(runtime)
 	{
 		this.is_lock_angle = (e==1);
 	};    
-    
+	
+	acts.ForcePin = function ()
+	{
+        var activated_save = this.activated;
+        this.activated = true;
+		this.tick2();
+        this.activated = activated_save;
+	};      
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};

@@ -30,7 +30,9 @@ AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Lock angle", "Lock angle.",1);
 AddAction(3, 0, "Lock angle", "", "Lock {my} angle to <i>{0}</i>", 
-          "Enable to lock the angle.", "SetEnableLockAngle");    
+          "Enable to lock the angle.", "SetEnableLockAngle");  
+AddAction(4, 0, "Force pin", "", "Force {my} pin", 
+          "Force to do pin action.", "ForcePin");          
 
 ////////////////////////////////////////
 // Expressions
