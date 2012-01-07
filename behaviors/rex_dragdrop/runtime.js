@@ -186,7 +186,6 @@ cr.behaviors.Rex_DragDrop = function(runtime)
     // drag detecting
 	behtypeProto.DragDetecting = function(x, y)
 	{
-        this.objtype.getBehaviorIndexByName(this.name);	
         var sol = this.objtype.getCurrentSol();        
         sol.select_all = true;
         var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, x, y, false);
@@ -229,7 +228,11 @@ cr.behaviors.Rex_DragDrop = function(runtime)
                 target_inst = inst;
             }
         }
-        target_inst.is_on_drag = true;
+        target_inst.drag_info.is_on_drag = true;
+        var inst_x = target_inst.inst.x;
+        var inst_y = target_inst.inst.y;
+        target_inst.drag_info.drag_distance = cr.distanceTo(inst_x, inst_y, x, y);
+        target_inst.drag_info.drag_angle = cr.angleTo(inst_x, inst_y, x, y);
         this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDragStart, target_inst.inst);     
 
         // recover to select_all
@@ -307,9 +310,11 @@ cr.behaviors.Rex_DragDrop = function(runtime)
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
         
-		this.pre_x = this.type.GetLayerX(inst);
-		this.pre_y = this.type.GetLayerY(inst);           
-        this.is_on_drag = false;
+        this.drag_info = {pre_x:this.type.GetLayerX(inst),
+                          pre_y:this.type.GetLayerY(inst),
+                          drag_distance:0,
+                          drag_angle:0,
+                          is_on_drag:false};
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -324,7 +329,7 @@ cr.behaviors.Rex_DragDrop = function(runtime)
 	behinstProto.tick = function ()
 	{        
         if ( (this.activated == 0) ||
-             (!this.is_on_drag)      )
+             (!this.drag_info.is_on_drag)      )
         {
             return;        
         }
@@ -333,32 +338,36 @@ cr.behaviors.Rex_DragDrop = function(runtime)
         var inst = this.inst;
         var cur_x = this.type.GetLayerX(inst);
         var cur_y = this.type.GetLayerY(inst);
-        var is_mouse_moved = (this.pre_x != cur_x) ||
-                             (this.pre_y != cur_y);      
+        var is_mouse_moved = (this.drag_info.pre_x != cur_x) ||
+                             (this.drag_info.pre_y != cur_y);      
         if ( is_mouse_moved )
         {
+            var _dist = this.drag_info.drag_distance;
+            var _angle = this.drag_info.drag_angle;
+            var drag_x = cur_x - _dist* Math.cos(_angle);
+            var drag_y = cur_y - _dist* Math.sin(_angle);
             switch (this.move_axis)
             {
                 case 1:
-                    inst.x = cur_x;
+                    inst.x = drag_x;
                     break;
                 case 2:
-                    inst.y = cur_y;
+                    inst.y = drag_y;
                     break;
                 default:
-                    inst.x = cur_x;
-                    inst.y = cur_y;
+                    inst.x = drag_x;
+                    inst.y = drag_y;
                     break;
             }
             inst.set_bbox_changed();
-            this.pre_x = cur_x;
-            this.pre_y = cur_y;                    
+            this.drag_info.pre_x = cur_x;
+            this.drag_info.pre_y = cur_y;                    
         }
         this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDragging, inst);
                                 
         if ( this.type._is_release(this.dragButton) )
         {
-            this.is_on_drag = false;
+            this.drag_info.is_on_drag = false;
             this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDrop, inst); 
         }
 	};    
