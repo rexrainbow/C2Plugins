@@ -55,18 +55,27 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+	var requestedWebFonts = {};		// already requested web fonts have an entry here
+	
 	instanceProto.onCreate = function()
 	{
 		this.text = this.properties[0];
 		this.visible = (this.properties[1] === 0);	// 0=visible, 1=invisible
+		
+		// "[bold|italic] 12pt Arial"
 		this.font = this.properties[2];
+		
 		this.color = this.properties[3];
 		this.halign = this.properties[4];			// 0=left, 1=center, 2=right
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
+		this.facename = "";
+		this.fontstyle = "";
 		var arr = this.font.split(" ");
-		var ptSize = 0;
+		this.ptSize = 0;
+		this.textWidth = 0;
+		this.textHeight = 0;
 		
 		var i;
 		for (i = 0; i < arr.length; i++)
@@ -74,18 +83,26 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			// Ends with 'pt'
 			if (arr[i].substr(arr[i].length - 2, 2) === "pt")
 			{
-				ptSize = parseInt(arr[i].substr(0, arr[i].length - 2));
-				this.pxHeight = Math.ceil((ptSize / 72.0) * 96.0) + 4;	// assume 96dpi...
+				this.ptSize = parseInt(arr[i].substr(0, arr[i].length - 2));
+				this.pxHeight = Math.ceil((this.ptSize / 72.0) * 96.0) + 4;	// assume 96dpi...
+				
+				this.facename = arr[i + 1];
+				
+				if (i > 0)
+					this.fontstyle = arr[i - 1];
+					
 				break;
 			}
 		}
 		
 		assert2(this.pxHeight, "Could not determine font text height");
-        
-        
-        this.timeline = null;
-        this.typing_timer = null; 
-        this.typing_speed = null;        
+	};
+	
+	instanceProto.updateFont = function ()
+	{
+		this.font = this.fontstyle + " " + this.ptSize.toString() + "pt " + this.facename;
+		this.text_changed = true;
+		this.runtime.redraw = true;
 	};
 
 	instanceProto.draw = function(ctx)
@@ -457,10 +474,95 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	
 	acts.SetTextColor = function(color)
 	{
+		if (color === this.color)
+			return;    
 		this.color = color;
+        this.runtime.redraw = true;
 	};    
-    
 	
+	acts.SetFontFace = function (face_, style_)
+	{
+		var newstyle = "";
+		
+		switch (style_) {
+		case 1: newstyle = "bold"; break;
+		case 2: newstyle = "italic"; break;
+		case 3: newstyle = "bold italic"; break;
+		}
+		
+		if (face_ === this.facename && newstyle === this.fontstyle)
+			return;		// no change
+			
+		this.facename = face_;
+		this.fontstyle = newstyle;
+		this.updateFont();
+	};
+	
+	acts.SetFontSize = function (size_)
+	{
+		if (this.ptSize === size_)
+			return;
+
+		this.ptSize = size_;
+		this.pxHeight = Math.ceil((this.ptSize / 72.0) * 96.0) + 4;	// assume 96dpi...
+		this.updateFont();
+	};
+	
+	acts.SetFontColor = function (rgb)
+	{
+		var newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";
+		
+		if (newcolor === this.color)
+			return;
+
+		this.color = newcolor;
+		this.runtime.redraw = true;
+	};
+	
+	acts.SetWebFont = function (familyname_, cssurl_)
+	{
+		// Already requested this web font?
+		if (requestedWebFonts.hasOwnProperty(cssurl_))
+		{
+			// Use it immediately without requesting again.  Whichever object
+			// made the original request will refresh the canvas when it finishes
+			// loading.
+			this.facename = "'" + familyname_ + "'";
+			this.updateFont();
+			return;
+		}
+		
+		// Otherwise start loading the web font now
+		var wf = document.createElement("link");
+		wf.href = cssurl_;
+		wf.rel = "stylesheet";
+		wf.type = "text/css";
+		var refreshFunc = (function (self) {
+						return function () {
+							self.runtime.redraw = true;
+							self.text_changed = true;
+						}
+					})(this);
+		wf.onload = refreshFunc;
+		
+		// There doesn't seem to be a good way to test if the font has loaded,
+		// so just fire a refresh every 100ms for the first 1 second, then
+		// every 1 second after that up to 10 sec - hopefully will have loaded by then!
+		for (var i = 1; i < 10; i++)
+		{
+			setTimeout(refreshFunc, i * 100);
+			setTimeout(refreshFunc, i * 1000);
+		}
+					
+		document.getElementsByTagName('head')[0].appendChild(wf);
+		requestedWebFonts[cssurl_] = true;
+		
+		this.facename = "'" + familyname_ + "'";
+		this.updateFont();
+		
+		log("Requesting web font '" + cssurl_ + "'... (tick " + this.runtime.tickcount.toString() + ")");
+	};
+
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -475,5 +577,34 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	{
 	    ret.set_float( this.this.typing_speed );
 	}; 
+	exps.FaceName = function (ret)
+	{
+		ret.set_string(this.facename);
+	};
+	
+	exps.FaceSize = function (ret)
+	{
+		ret.set_int(this.ptSize);
+	};
+	
+	exps.TextWidth = function (ret)
+	{
+		var w = 0;
+		var i, len, x;
+		for (i = 0, len = this.lines.length; i < len; i++)
+		{
+			x = this.lines[i].width;
+			
+			if (w < x)
+				w = x;
+		}
+		
+		ret.set_int(w);
+	};
+	
+	exps.TextHeight = function (ret)
+	{
+		ret.set_int(this.lines.length * this.pxHeight);
+	};
 		
 }());

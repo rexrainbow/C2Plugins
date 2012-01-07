@@ -50,11 +50,32 @@ AddStringParam("color", "Use color name, hex \"#FFA500\", \"rgb(0-255,0-255,0-25
 AddAction(5, 0, "Set text color", "Text", 
           "Set text color to <i>{0}</i>", 
           "Set text color.", "SetTextColor"); 
+          
+AddStringParam("Font face", "The new font face name to set.", "\"Arial\"");
+AddComboParamOption("normal");
+AddComboParamOption("bold");
+AddComboParamOption("italic");
+AddComboParamOption("bold and italic");
+AddComboParam("Style", "Choose the style for the given font face.");
+AddAction(6, 0, "Set font face", "Appearance", "Set font face to <i>{0}</i> (<i>{1}</i>)", "Set the font face used to display text.", "SetFontFace");
+
+AddNumberParam("Size (pt)", "The new font size.", "12");
+AddAction(7, 0, "Set font size", "Appearance", "Set font size to <i>{0}</i> pt", "Set the font size.", "SetFontSize");
+
+AddNumberParam("Color", "The new font color, in the form rgb(r, g, b).", "rgb(0, 0, 0)");
+AddAction(8, 0, "Set font color", "Appearance", "Set font color to <i>{0}</i>", "Set the font color.", "SetFontColor");
+
+AddStringParam("Family name", "Enter the font family name.");
+AddStringParam("CSS URL", "Enter the web URL to the CSS file referencing the web font.", "\"http://\"");
+AddAction(9, 0, "Set web font", "Appearance", "Set web font <i>{0}</i> from <i>{1}</i>", "Set the font face from an online web font.", "SetWebFont");
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string,	"Get text",	"Text", "Text", "Get the object's text.");
 AddExpression(1, ef_return_number,	"Get typing speed",	"Type", "TypingSpeed", "Get typing speed.");
+AddExpression(2,	ef_return_number,	"Get face size",	"Appearance",	"FaceSize",	"Get the current font face size (pt).");
+AddExpression(3,	ef_return_number,	"Get text width",	"Text",			"TextWidth", "Get the width extent of the text in the object in pixels.");
+AddExpression(4,	ef_return_number,	"Get text height",	"Text",			"TextHeight", "Get the height extent of the text in the object in pixels.");
 
 ACESDone();
 
