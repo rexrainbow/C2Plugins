@@ -90,9 +90,19 @@ cr.behaviors.rex_Bone = function(runtime)
 		// Instance angle has changed by events/something else
 		if (this.lastKnownAngle !== this.inst.angle)
 			this.myStartAngle = cr.clamp_angle(this.myStartAngle + (this.inst.angle - this.lastKnownAngle));
-			
-		var newx = this.pinObject.x + Math.cos(this.pinObject.angle + this.pinAngle) * this.pinDist;
-		var newy = this.pinObject.y + Math.sin(this.pinObject.angle + this.pinAngle) * this.pinDist;
+
+        var mirror = (this.pinObject.width < 0);
+        var flip = (this.pinObject.height < 0);
+        var pin_obj_angle_x = (!mirror)? 
+                              this.pinObject.angle : (Math.PI - this.pinObject.angle);
+        var pin_obj_angle_y = (!flip)? 
+                              this.pinObject.angle : (2*Math.PI - this.pinObject.angle);
+        //var pinAngle_x = (!mirror)?  
+        //                 this.pinAngle : (Math.PI - this.pinAngle); 
+        //var pinAngle_y = (!flip)? 
+        //                this.pinAngle : (2*Math.PI - this.pinAngle);
+		var newx = this.pinObject.x + Math.cos(pin_obj_angle_x + this.pinAngle) * this.pinDist;
+		var newy = this.pinObject.y + Math.sin(pin_obj_angle_y + this.pinAngle) * this.pinDist;
 		var newangle = cr.clamp_angle(this.myStartAngle + (this.pinObject.angle - this.theirStartAngle));
 		this.lastKnownAngle = newangle;
 		
