@@ -45,6 +45,32 @@ cr.plugins_.Rex_Pause = function(runtime)
         this.previous_timescale = 0;
 	};
     
+	instanceProto.onDestroy = function ()
+	{
+        this._toogle_pause(false);
+	};   
+    
+	instanceProto._toogle_pause = function (state)
+	{
+        if (state == this.is_pause)
+            return;
+    
+        var trig_method;
+        if (!this.is_pause)  // run -> pause
+        {
+            this.previous_timescale = this.runtime.timescale;
+            this.runtime.timescale = 0;
+            trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnPause;
+        }
+        else  // pause -> run
+        {
+            this.runtime.timescale = this.previous_timescale;
+            trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnResume;
+        }
+        this.is_pause = (!this.is_pause);
+        this.runtime.trigger(trig_method, this);   
+	};       
+    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -72,21 +98,14 @@ cr.plugins_.Rex_Pause = function(runtime)
 
     acts.TooglePause = function ()
 	{
-        var trig_method;
-        if (!this.is_pause)  // run -> pause
-        {
-            this.previous_timescale = this.runtime.timescale;
-            this.runtime.timescale = 0;
-            trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnPause;
-        }
-        else  // pause -> run
-        {
-            this.runtime.timescale = this.previous_timescale;
-            trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnResume;
-        }
-        this.is_pause = (!this.is_pause);
-        this.runtime.trigger(trig_method, this);        
+        this._toogle_pause();       
 	}; 
+
+    acts.SetState = function (state)
+	{
+        var is_pause = (state == 0);
+        this._toogle_pause(is_pause);       
+	};     
     
 	//////////////////////////////////////
 	// Expressions

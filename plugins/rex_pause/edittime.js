@@ -22,8 +22,13 @@ AddCondition(2, 0, "Is pause", "If", "Is pause", "", "IsPause");
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(0, 0, "Toggle pause", "Pause/Resume", 
-          "Toggle pause", 
-          "Toggle pause.", "TooglePause");     
+          "Toggle pause","Toggle pause.", "TooglePause");  
+AddComboParamOption("Pause");
+AddComboParamOption("Run");
+AddComboParam("State", "Set puase state to.",0);
+AddAction(1, 0, "Set pause state", "Pause/Resume", 
+          "Set pause state to <i>{0}</i>", "Set the puase state.", "SetState");
+           
 
 //////////////////////////////////////////////////////////////
 // Expressions
