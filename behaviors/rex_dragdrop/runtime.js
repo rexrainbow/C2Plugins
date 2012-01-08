@@ -231,8 +231,8 @@ cr.behaviors.Rex_DragDrop = function(runtime)
         target_inst.drag_info.is_on_drag = true;
         var inst_x = target_inst.inst.x;
         var inst_y = target_inst.inst.y;
-        target_inst.drag_info.drag_distance = cr.distanceTo(inst_x, inst_y, x, y);
-        target_inst.drag_info.drag_angle = cr.angleTo(inst_x, inst_y, x, y);
+        target_inst.drag_info.drag_dx = inst_x - x;
+        target_inst.drag_info.drag_dy = inst_y - y;
         this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDragStart, target_inst.inst);     
 
         // recover to select_all
@@ -312,8 +312,8 @@ cr.behaviors.Rex_DragDrop = function(runtime)
         
         this.drag_info = {pre_x:this.type.GetLayerX(inst),
                           pre_y:this.type.GetLayerY(inst),
-                          drag_distance:0,
-                          drag_angle:0,
+                          drag_dx:0,
+                          drag_dy:0,
                           is_on_drag:false};
 	};
 
@@ -342,10 +342,8 @@ cr.behaviors.Rex_DragDrop = function(runtime)
                              (this.drag_info.pre_y != cur_y);      
         if ( is_mouse_moved )
         {
-            var _dist = this.drag_info.drag_distance;
-            var _angle = this.drag_info.drag_angle;
-            var drag_x = cur_x - _dist* Math.cos(_angle);
-            var drag_y = cur_y - _dist* Math.sin(_angle);
+            var drag_x = cur_x + this.drag_info.drag_dx;
+            var drag_y = cur_y + this.drag_info.drag_dy;
             switch (this.move_axis)
             {
                 case 1:
