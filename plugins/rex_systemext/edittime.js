@@ -49,7 +49,17 @@ AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(2, 0, "Pick instances by property comparing", "SOL", 
           "Pick <i>{0}</i> instances by comparing <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
-          "Pick instances by property comparing.", "PickByPropCmp");          
+          "Pick instances by property comparing.", "PickByPropCmp");
+AddStringParam("Group", "Group name", '""');          
+AddNumberParam("Group actived", "0 = disable, 1 = enable, 2 = toggle", 0);          
+AddAction(3, 0, "Set group active", "General", 
+          "Set group <i>{0}</i> to <i>{1}</i>", 
+          "Active or deactive an event group.", "SetGroupActive");       
+AddAnyTypeParam("Layer", "Name or number of the layer to set visible", 0);          
+AddNumberParam("Visibled", "0 = invisible, 1 = visible", 0);          
+AddAction(4, 0, "Set visible", "Layers & transforms", 
+          "Set layer <i>{0}</i>'s visible to <i>{1}</i>", 
+          "Set the visible of a layer.", "SetLayerVisible");             
 
 //////////////////////////////////////////////////////////////
 // Expressions

@@ -151,7 +151,56 @@ cr.plugins_.Rex_SysExt = function(runtime)
             
         sol.select_all = false;
 	};  
-    
+
+    acts.SetGroupActive = function (group, active)
+    {
+		var activeGroups = this.runtime.activeGroups;
+        
+        if (activeGroups[group] == null)
+        {
+            alert("Group '" + group + "' does not exist");
+            return;
+        }
+        
+		group = group.toLowerCase();
+		
+		switch (active) {
+		// Disable
+		case 0:
+			delete activeGroups[group];
+			break;
+		// Enable
+		case 1:
+			activeGroups[group] = true;
+			break;
+		// Toggle
+		case 2:
+			if (activeGroups[group])
+				delete activeGroups[group];
+			else
+				activeGroups[group] = true;
+			break;
+		}
+    };
+
+    acts.SetLayerVisible = function (layerparam, visible_)
+    {
+        var layer;
+		if (cr.is_number(layerparam))
+			layer = this.runtime.getLayerByNumber(layerparam);
+		else
+			layer = this.runtime.getLayerByName(layerparam);
+                
+        if (!layer)
+            return;
+
+        var is_visible = (visible_ == 1);
+		if (layer.visible !== is_visible)
+		{
+			layer.visible = is_visible;
+			this.runtime.redraw = true;
+		}
+    };    
     
 
 	//////////////////////////////////////
