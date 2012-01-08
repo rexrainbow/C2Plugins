@@ -7,16 +7,24 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"General",
-		"flags":		0
+		"flags":		bf_onlyone
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddNumberParam("Visible", "1 = visible, 0 = invisible", 0);          
-AddAction(1, 0, "Set visible", "Setting", 
+AddNumberParam("Visible", "1 = visible, 0 = invisible, 2 = toggle", 0);
+AddAction(1, 0, "Set visible", "Appearance", 
           "Set {my} visible to <i>{0}</i>", 
-          "Set visible.", "SetVisible"); 
+          "Set the sprite is hidden or shown .", "SetVisible"); 
+AddNumberParam("Mirrored", "1 = mirrored, 0 = not mirrored, 2 = toggle", 0);          
+AddAction(2, 0, "Set mirrored", "Animations", 
+          "Set {my} mirrored to <i>{0}</i>", 
+          "Set the sprite is horizontally mirrored or back to normal.", "SetMirrored");       
+AddNumberParam("Flipped", "1 = flipped, 0 = not flipped, 2 = toggle", 0);          
+AddAction(3, 0, "Set flipped", "Animations", 
+          "Set {my} flipped to <i>{0}</i>", 
+          "Set the sprite is vertically flipped or back to normal.", "SetFlipped");           
           
 //////////////////////////////////////////////////////////////
 // Conditions

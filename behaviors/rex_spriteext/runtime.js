@@ -62,13 +62,37 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	behaviorProto.acts = {};
 	var acts = behaviorProto.acts;
 
-	acts.SetVisible = function (val)
+	acts.SetVisible = function (s)
 	{
-        if (val == this.inst.visible)
+        var visible = this.inst.visible
+        if ( (visible && (s==1)) ||
+             (!visible && (s==0))   )
             return;
-		this.inst.visible = val;
+		this.inst.visible = !visible;
         this.runtime.redraw = true;
 	};    
+
+	acts.SetMirrored = function (s)
+	{
+        var width = this.inst.width;
+        if ( ((width >= 0) && (s==0)) ||
+             ((width <  0) && (s==1))    )
+            return;
+            
+		this.inst.width = -width;
+        this.runtime.redraw = true;
+	};
+
+	acts.SetFlipped = function (s)
+	{
+        var height = this.inst.height;
+        if ( ((height >= 0) && (s==0)) ||
+             ((height <  0) && (s==1))    )
+            return;
+            
+		this.inst.height = -height;
+        this.runtime.redraw = true;
+	};
     
 	//////////////////////////////////////
 	// Expressions
