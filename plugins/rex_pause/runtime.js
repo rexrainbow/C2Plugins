@@ -52,22 +52,23 @@ cr.plugins_.Rex_Pause = function(runtime)
     
 	instanceProto._toogle_pause = function (state)
 	{
-        if (state == this.is_pause)
+        var cur_state = this.is_pause;
+        if (state == cur_state)
             return;
     
+        this.is_pause = (!cur_state);
         var trig_method;
-        if (!this.is_pause)  // run -> pause
+        if (this.is_pause)
         {
             this.previous_timescale = this.runtime.timescale;
             this.runtime.timescale = 0;
             trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnPause;
         }
-        else  // pause -> run
+        else
         {
             this.runtime.timescale = this.previous_timescale;
             trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnResume;
         }
-        this.is_pause = (!this.is_pause);
         this.runtime.trigger(trig_method, this);   
 	};       
     
