@@ -18,6 +18,8 @@ AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
 AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
           "Enable the object's drag&drop behavior.", "SetActivated");
+AddAction(1, 0, "Force to drop", "", "Force {my} to drop", 
+          "Force the dragged object to drop.", "ForceDropp");          
 
 
 //////////////////////////////////////////////////////////////

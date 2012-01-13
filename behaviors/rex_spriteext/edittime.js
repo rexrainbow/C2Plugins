@@ -28,10 +28,12 @@ AddAction(3, 0, "Set flipped", "Animations",
           
 //////////////////////////////////////////////////////////////
 // Conditions
+AddCondition(0, 0, "Is shown", "Appearance", 
+             "Is {my} shown", "True if the object's layer is visible and object is visible.", "IsShown");
              
 //////////////////////////////////////////////////////////////
 // Expressions
-   
+
 ACESDone();
 
 // Property grid properties for this plugin

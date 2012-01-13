@@ -98,7 +98,7 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 
 	acts.SetValue = function (s)
 	{
-		this._toogle_value(s);
+		this._toogle_value((s==1));
 	};
     
 	//////////////////////////////////////

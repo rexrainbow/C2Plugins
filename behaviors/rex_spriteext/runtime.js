@@ -56,6 +56,12 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	// Conditions
 	behaviorProto.cnds = {};
 	var cnds = behaviorProto.cnds;
+
+	cnds.IsShown = function ()
+	{
+        var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
+		return (layer.visible && this.inst.visible);  
+	};
     
 	//////////////////////////////////////
 	// Actions
@@ -98,5 +104,5 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	// Expressions
 	behaviorProto.exps = {};
 	var exps = behaviorProto.exps;
-
+    
 }());

@@ -13,9 +13,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On {my} turn on", "Event", "On turn on", "", "OnTurnOn");
-AddCondition(1, cf_trigger, "On {my} turn off", "Event", "On turn off", "", "OnTurnOff");
-AddCondition(2, 0, "Is {my} turn on", "If", "Is turn on", "", "IsTurnOn");
+AddCondition(0, cf_trigger, "On turn on", "Event", "On {my} turn on", "", "OnTurnOn");
+AddCondition(1, cf_trigger, "On turn off", "Event", "On {my} turn off", "", "OnTurnOff");
+AddCondition(2, 0, "Is turn on", "If", "Is turn on", "", "IsTurnOn");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -26,6 +26,9 @@ AddComboParamOption("On");
 AddComboParam("Value", "Set value to.",0);
 AddAction(1, 0, "Set value", "Set", 
           "Set {my} value to <i>{0}</i>", "Set value of switch.", "SetValue");
+AddNumberParam("Value", "Set value. 0 = Off, 1 = On",0);
+AddAction(2, 0, "Set value by number", "Set", 
+          "Set {my} value to <i>{0}</i>", "Set value of switch.", "SetValue");          
           
 //////////////////////////////////////////////////////////////
 // Expressions

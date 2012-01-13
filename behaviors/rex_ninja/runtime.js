@@ -170,7 +170,7 @@ cr.behaviors.Rex_Ninja = function(runtime)
             // Trigger OnOver
             if (this.is_over)
             {
-                this.runtime.trigger(cr.behaviors.Rex_Ninja.prototype.cnds.OnOver, this.inst);            
+                this.runtime.trigger(cr.behaviors.Rex_Ninja.prototype.cnds.OnOver, inst);            
             }
         }
 	};

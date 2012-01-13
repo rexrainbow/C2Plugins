@@ -314,7 +314,7 @@ cr.behaviors.Rex_DragDrop = function(runtime)
                           pre_y:this.type.GetLayerY(inst),
                           drag_dx:0,
                           drag_dy:0,
-                          is_on_drag:false};
+                          is_on_drag:false};                       
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -404,7 +404,15 @@ cr.behaviors.Rex_DragDrop = function(runtime)
 	{
 		this.activated = s;
 	};  
-    
+
+	acts.ForceDropp = function ()
+	{
+        if (this.drag_info.is_on_drag)
+        {
+		    this.drag_info.is_on_drag = false;            
+            this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDrop, this.inst); 
+        }
+	};      
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
