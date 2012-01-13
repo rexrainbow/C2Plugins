@@ -18,17 +18,38 @@
 
 ////////////////////////////////////////
 // Actions
-//AddAction(1, 0, "Clean all messages", "Message", "Clean all message", "Clean all messages.", "CleanMessages");
-AddStringParam("Message", "Debug message", '""');
-AddAction(2, 0, "Append a message", "Message", "Append message <i>{0}</i>", "Append a message.", "AppendMessage");
-
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable the behavior.",1);
+AddAction(0, 0, "Set activated", "Setting", "Set activated to <i>{0}</i>", 
+          "Enable the object's cursor behavior.", "SetActivated");
+AddAction(1, 0, "Clean all messages", "Log", "Clean all message", "Clean all messages.", "CleanMessages");
+AddAnyTypeParam("Message", "Log message", '""');
+AddAction(2, 0, "Append a log message", "Log", 
+          "Append log message <i>{0}</i>", "Append a log message.", "AppendLogMessage");
+AddAnyTypeParam("Name", "Variable name", '""');
+AddAnyTypeParam("Value", "Value", 0);
+AddAction(3, 0, "Update watch variable", "Watch", 
+          "Update watch variable <i>{0}</i> to <i>{1}</i>", "Update watch variable.", "UpdateWatchVariable");
+AddAnyTypeParam("Message", "Error message", '""');
+AddAction(4, 0, "Append an error message", "Log", 
+          "Append error message <i>{0}</i>", "Append an error message.", "AppendErrorMessage");
+AddKeybParam("Key code", "Pop-up Key code.");
+AddAction(5, 0, "Set pop-up key", "Setting", 
+          "Set pop-up key to <i>{0}</i>", 
+          "Set pop-up key for showing debug panel.", "SetPopupKey");   
+          
 ////////////////////////////////////////
 // Expressions
 
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [   
+var property_list = [  
+    new cr.Property(ept_combo, "Enable", "Yes", "Enable to allow dump message.", "No|Yes"),             
+    new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),     
+    new cr.Property(ept_combo, "Stay on top", "No", "Enable if you wish debug pannel always stay on top.", "No|Yes"),     
+    new cr.Property(ept_integer, "Log buffer length", 100, "The length of maximun log message. 0 is infinity."),             
 ];
 	
 // Called by IDE when a new object type is to be created
