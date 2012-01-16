@@ -186,11 +186,16 @@ cr.behaviors.Rex_DragDrop = function(runtime)
     // drag detecting
 	behtypeProto.DragDetecting = function(x, y)
 	{
-        var sol = this.objtype.getCurrentSol();        
+        var sol = this.objtype.getCurrentSol(); 
+        var select_all_save = sol.select_all;
         sol.select_all = true;
         var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, x, y, false);
         if (overlap_cnt == 0)
+        {
+            // recover to select_all_save
+            sol.select_all = select_all_save;        
             return false;
+        }
         
         // overlap_cnt > 0
         // 0. find out index of behavior instance
@@ -235,8 +240,8 @@ cr.behaviors.Rex_DragDrop = function(runtime)
         target_inst.drag_info.drag_dy = inst_y - y;
         this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDragStart, target_inst.inst);     
 
-        // recover to select_all
-        sol.select_all = true;
+        // recover to select_all_save
+        sol.select_all = select_all_save;
         
         return true;  // get drag inst
 	}; 
