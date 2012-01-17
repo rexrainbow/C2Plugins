@@ -91,7 +91,7 @@ AddComboParamOption("Right");
 AddComboParamOption("Jump");
 AddComboParam("Control", "The movement control to configure.");
 AddKeybParam("Key", "Control Key");
-AddAction(10, 0, "Set control", "", "Set {my} control <i>{0}</i> to <i>{1}</i>", 
+AddAction(10, 0, "Set control", "Control", "Set {my} control <i>{0}</i> to <i>{1}</i>", 
           "Set control by key.", "CfgCtl");
 
 AddComboParamOption("Left");
@@ -99,7 +99,7 @@ AddComboParamOption("Right");
 AddComboParamOption("Jump");
 AddComboParam("Control", "The movement control to configure.");
 AddNumberParam("Key code", "Control Key code.");
-AddAction(11, 0, "Set control by keycode", "", "Set {my} control <i>{0}</i> to keycode <i>{1}</i>", 
+AddAction(11, 0, "Set control by keycode", "Control", "Set {my} control <i>{0}</i> to keycode <i>{1}</i>", 
           "Set control by keycode.", "CfgCtl");
           
 AddStringParam("Name", "Control name.", '""');

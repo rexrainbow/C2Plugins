@@ -835,7 +835,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
         for (keycode in key_extra_dict)
         {
             key_info = key_extra_dict[keycode];
-            if ((key_info.name == name) && key_info.state)
+            if ((key_info != null) && (key_info.name == name) && key_info.state)
             {
                ret = true;
                break;
@@ -1060,7 +1060,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
         for (keycode in key_extra_dict)
         {
             key_info = key_extra_dict[keycode];
-            if (key_info.name == name)
+            if ( (key_info != null) && (key_info.name == name) )
             {
                val = keycode;
                break;

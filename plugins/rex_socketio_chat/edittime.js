@@ -9,7 +9,8 @@ function GetPluginSettings()
 		"category":		"Server",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		0,
+        "dependency":	"socket.io.min.js"
 	};
 };
 
