@@ -757,13 +757,13 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		// otherwise move to side
 		if (side === 0)		// left
 		{
-			this.inst.x -= this.rightx;
-			this.inst.y -= this.righty;
+			this.inst.x -= this.rightx * 2;
+			this.inst.y -= this.righty * 2;
 		}
 		else
 		{
-			this.inst.x += this.rightx;
-			this.inst.y += this.righty;
+			this.inst.x += this.rightx * 2;
+			this.inst.y += this.righty * 2;
 		}
 		
 		this.inst.set_bbox_changed();
