@@ -20,9 +20,9 @@
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the behavior.",1);
+AddComboParam("Activated", "Active debug panel.",1);
 AddAction(0, 0, "Set activated", "Setting", "Set activated to <i>{0}</i>", 
-          "Enable the object's cursor behavior.", "SetActivated");
+          "Active the debug panel.", "SetActivated");
 AddAction(1, 0, "Clean all messages", "Log", "Clean all message", "Clean all messages.", "CleanMessages");
 AddAnyTypeParam("Message", "Log message", '""');
 AddAction(2, 0, "Append a log message", "Log", 
@@ -46,9 +46,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [  
-    new cr.Property(ept_combo, "Enable", "Yes", "Enable to allow dump message.", "No|Yes"),             
-    new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),     
-    new cr.Property(ept_combo, "Stay on top", "No", "Enable if you wish debug pannel always stay on top.", "No|Yes"),     
+    new cr.Property(ept_combo, "Enable", "Yes", "Set 'Yes' to allow dump message.", "No|Yes"),             
+    new cr.Property(ept_combo, "Activated", "Yes", "Set 'Yes' if you wish this to begin at the start of the layout.", "No|Yes"),     
+    new cr.Property(ept_combo, "Stay on top", "No", "Set 'Yes' if you wish debug pannel always stay on top.", "No|Yes"),     
     new cr.Property(ept_integer, "Log buffer length", 100, "The length of maximun log message. 0 is infinity."),             
 ];
 	

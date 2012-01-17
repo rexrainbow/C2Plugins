@@ -103,7 +103,7 @@ cr.plugins_.Rex_FSM = function(runtime)
     };
     
 	instanceProto._load_code = function (dict, name, code_string, code_format)
-	{  
+	{
         if (code_format == 0)  //Simple notation        
             code_string = SN2JS(code_string);
             
@@ -264,12 +264,14 @@ cr.plugins_.Rex_FSM = function(runtime)
 
     acts.Request = function ()
 	{
-	    this.fsm.Request();
+        if (this.activated)
+	        this.fsm.Request();
 	};  
     
     acts.Transit = function (new_state)
 	{
-	    this.fsm.Request(new_state);
+        if (this.activated)    
+	        this.fsm.Request(new_state);
 	};     
 
     acts.CSV2Logic = function (csv_string, code_format)
