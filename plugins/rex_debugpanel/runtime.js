@@ -4,11 +4,13 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
+
+window["Rex_DebugPanel_inst"] = {};
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_DebugPanel = function(runtime)
 {
-	this.runtime = runtime;
+	this.runtime = runtime;   
 };
 
 (function ()
@@ -22,6 +24,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
 	{
 		this.plugin = plugin;
 		this.runtime = plugin.runtime;
+        this._objs = {};          
 	};
 
 	var typeProto = pluginProto.Type.prototype;
@@ -30,7 +33,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
 	typeProto.onCreate = function()
 	{
 	};
-
+    
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -51,18 +54,16 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         if (!this.enable)
             return;
 
+         
         var actived = (this.properties[1]==1);
         if (this.enable && actived)
         {
             this._create_panel();
             this.watch_vars = {};
         }
-        var is_stay_on_top = (this.properties[2]==1);
-        if (is_stay_on_top)
-        {
-            this.runtime.tickMe(this);
-        }
+        this.is_stay_on_top = (this.properties[2]==1);
         this.max_log_length = this.properties[3];
+        this.runtime.tickMe(this);
         
 		jQuery(document).keyup(
 			(function (self) {
@@ -72,6 +73,14 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
 			})(this)
 		);        
         this.KEY_POPUP = 113;  // F2
+       
+        // save instance
+        window["Rex_DebugPanel_inst"][this.uid] = this;
+        // toggle pause
+        this.is_pause = false;
+        this.previous_timescale = 0;
+        // step
+        this.step_stage = 0;
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -80,12 +89,31 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
 	
 	instanceProto.tick = function ()
 	{
-        // always stay on top
-        if (this._has_panel()) 
-        {
-            this.panel.focus();
-        }
+        this._stay_on_top();               
+        this._step();
 	};
+    
+    instanceProto._stay_on_top = function()
+    {
+        if (this.is_stay_on_top && this._has_panel()) 
+            this.panel.focus();    
+    };
+    
+    instanceProto._step = function()
+    {
+        switch(this.step_stage)
+        {
+        case 1:
+            this.toggle_pause(false);
+            this.step_stage = 2;
+            break;
+        case 2: 
+            debugger;
+            this.toggle_pause(true);
+            this.step_stage = 0;
+            break;
+        }  
+    };    
     
 	instanceProto._pop_up_debug_panel = function ()
 	{
@@ -123,15 +151,66 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         if (!this._has_panel())
         {        
             //scrollbars=yes
-            var panel = window.open("", "Debug", "height=600, width=200, location=no, menubar=no, status=no"); 
-            var html_code;
-            html_code  = "<div style='overflow:auto; height:40%'>";
-            html_code += "<table id='watch_table' width='100%' border='1'>";
-            html_code += "<caption>Watch</caption>";
-            html_code += "</table>";
-            html_code += "</div>";
-            html_code += "<div id='logger' style='overflow:auto; height:60%'></div>";
+            var panel = window.open("", "Debug", "height=600, width=200, location=no, menubar=no, status=no");             
+            var html_code = "\
+<html>\
+<style rel='text/css'>\
+body{\
+  font-family:verdana, sans-serif;\
+}\
+h2 {\
+  font-size:1em;\
+  letter-spacing:1em;\
+  font-variant:small-caps;\
+  margin:0;\
+  margin-top:1em;\
+  margin:1em 0 0.4em;\
+  text-align:center;\
+  font-weight:normal;\
+}\
+input,form {\
+  margin:0;\
+}\
+th,td{\
+  border:1px solid black;\
+  margin:0;\
+  padding:0.4em 1em;\
+  text-align:left;\
+  border-spacing:0;\
+}\
+table{\
+  border-collapse:collapse;\
+}\
+</style>\
+<head>\
+<script language='javascript' type='text/javascript'>\
+function _parent_inst(){return opener.window.Rex_DebugPanel_inst[window.parent_uid];}\
+function _toggle_pause() {_parent_inst().toggle_pause();}\
+function _step() {_parent_inst().step();}\
+</script>\
+</head>\
+<body>\
+<div style='overflow:auto'>\
+<h2>Watch</h2>\
+<table id='watch_table'>\
+  <tbody><tr>\
+    <th>Alias</th>\
+    <th>Value</th>\
+  </tr>\
+</table>\
+</div>\
+<h2>Log</h2>\
+<div id='logger' style='overflow:auto'></div>\
+<h2>Control</h2>\
+<div id='Control'>\
+  <form>\
+    <input type='button' value='Pause' name='play_pause' onClick='_toggle_pause();'>\
+    <input type='button' value='Step' name='step' onClick='_step();'>\
+  </form>\
+</div>\
+</body></html>";
             panel.document.write(html_code);
+            panel.window.parent_uid = this.uid;
 
             this.panel = panel;            
             this.debug_panel_doucment = panel.document;
@@ -228,6 +307,32 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         }        
         return row_index;
 	};
+    
+    instanceProto.toggle_pause = function (state)
+    {
+        var cur_state = this.is_pause;
+        if (state == cur_state)
+            return;
+            
+        this.is_pause = (!cur_state);
+        if (this.is_pause)
+        {
+            this.previous_timescale = this.runtime.timescale;
+            this.runtime.timescale = 0;
+        }
+        else
+        {
+            this.runtime.timescale = this.previous_timescale;
+        }
+    };  
+    
+    instanceProto.step = function ()
+    {
+        if (!this.is_pause)
+            return;
+
+        this.step_stage = 1;
+    };      
     
 	//////////////////////////////////////
 	// Conditions
