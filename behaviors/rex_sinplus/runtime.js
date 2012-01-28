@@ -68,9 +68,8 @@ cr.behaviors.Rex_SinEx = function(runtime)
         this.inst_height_save = this.inst.height; 
         this.inst_angle_save = this.inst.angle;                  
         this.mag_save = this.mag;
-		this._initialValue_set();
-		
-		this.lastKnownValue = this.initialValue;               
+        this.i_save = this.i;
+		this._initialValue_set();		      
 	};
     
 	behinstProto._initialValue_set = function ()
@@ -81,6 +80,7 @@ cr.behaviors.Rex_SinEx = function(runtime)
         this.inst.height = this.inst_height_save; 
         this.inst.angle = this.inst_angle_save;
         this.mag = this.mag_save;
+        this.i = this.i_save;
         
 		switch (this.movement) {
 		case 0:		// horizontal
@@ -106,6 +106,7 @@ cr.behaviors.Rex_SinEx = function(runtime)
 		default:
 			assert2(false, "Invalid sin movement type");
 		}  
+		this.lastKnownValue = this.initialValue;         
     };        
     
 	behinstProto.tick = function ()
