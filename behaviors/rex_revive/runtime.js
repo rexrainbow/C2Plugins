@@ -28,17 +28,34 @@ cr.behaviors.Rex_Revive = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-        this.timeline = null;        
+        this.timeline = null;   
+        this.behavior_index = null;        
 	};
 
-	behtypeProto._revive_hanlder = function(layer_name, x, y, angle, width, height)
+	behtypeProto._revive_hanlder = function(custom_data,
+                                            layer_name, x, y, 
+                                            angle, width, height, opacity, visible, cur_frame,
+                                            inst_vars, cur_anim_name)
 	{
         var inst = this.runtime.createInstance(this.objtype, 
                                                this.runtime.getLayerByNumber(layer_name),
                                                x, y);
-        inst.angle = angle;
-        inst.width = width;
-        inst.height = height;
+        if (angle != null)
+        {
+            inst.angle = angle;
+            inst.width = width;
+            inst.height = height;
+            inst.opacity = opacity;
+            inst.visible = visible;
+            inst.cur_frame = cur_frame;  
+            inst.instance_vars = inst_vars.slice();
+            inst.changeAnimName = cur_anim_name;
+            inst.doChangeAnim();            
+        }
+        if (this.behavior_index == null )
+            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);            
+        var behavior_inst = inst.behavior_insts[this.behavior_index];
+        behavior_inst._mem = jQuery.extend({}, custom_data);
         this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnRevive, inst); 
 	};
 	/////////////////////////////////////
@@ -55,16 +72,41 @@ cr.behaviors.Rex_Revive = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.revive_time = this.properties[0];
+        this.activated = (this.properties[0]==1);
+        this.revive_time = this.properties[1];
+        this._revive_at = this.properties[2];
+        this._revive_args = [];
+        if (this._revive_at==0)
+        {
+            var inst = this.inst;
+            this._revive_args = [inst.layer.index, inst.x, inst.y];
+        }
+        this._mem = {};
 	};
 
 	behinstProto.onDestroy = function()
 	{
+        if (!this.activated)
+            return;
+            
+        this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnDestroy, this.inst);             
         var inst = this.inst;
-        var args = [inst.layer.index, inst.x, inst.y, inst.angle, inst.width, inst.height];
+        var args;
+        var custom_data = jQuery.extend({}, this._mem);
+        if (this._revive_at == 1)
+        {
+            args = [custom_data, 
+                    inst.layer.index, inst.x, inst.y, 
+                    inst.angle, inst.width, inst.height, inst.opacity, inst.visible, inst.cur_frame, 
+                    inst.instance_vars.slice(), inst.cur_animation.name];
+        }
+        else
+        {
+            args = [custom_data];
+            args.push.apply(args, this._revive_args.slice());
+        }
         var timer = this.type.timeline.CreateTimer(this.type, this.type._revive_hanlder, args);
-        timer.Start(this.revive_time);
-        this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnDestroy, this.inst);   
+        timer.Start(this.revive_time);  
 	};
 	
 	behinstProto.tick = function ()
@@ -109,11 +151,22 @@ cr.behaviors.Rex_Revive = function(runtime)
 	{
         this.revive_time = t;
 	};
+        
+	acts.SetMemory = function (index, value)
+	{
+        this._mem[index] = value;
+	};    
 
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
 	var exps = behaviorProto.exps;
 
-	
+    exps.Mem = function (ret, index)
+	{
+        var value = this._mem[index];
+        if (value == null) 
+            value = 0;
+	    ret.set_any(value);
+	};
 }());

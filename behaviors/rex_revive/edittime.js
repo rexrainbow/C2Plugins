@@ -25,20 +25,30 @@ AddAction(0, 0, "Setup revive timer", "Setup",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(1, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's revive behavior.", "SetActivated");
+AddAction(1, 0, "Set activated", "Setup", "Set {my} activated to <i>{0}</i>", "Enable the object's revive behavior.", "SetActivated");
 AddNumberParam("Revive time", "Revive sprite after destroyed, in second.");
 AddAction(2, 0, "Set revive time", "", "Set {my} revive time to <i>{0}</i>", "Set the revive time.", "SetReviveTime");
-
+AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of memory", 0);
+AddAction(3, 0, "Set a memory value", "Memory", 
+          "Set {my} Mem[<i>{0}</i>] to <i>{1}</i>", 
+          "Set the value stored in memory.", 
+          "SetMemory");
+          
 ////////////////////////////////////////
 // Expressions
-
+AddExpression(0, ef_return_any | ef_variadic_parameters, 
+              "Get memory", "Memory", "Mem", 
+              "Get the value from memory by index.");
 
 ////////////////////////////////////////
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),    
     new cr.Property(ept_float, "Revive time", 1, "Revive sprite after destroyed, in second."),
+    new cr.Property(ept_combo, "Revive at", "Initial state", "Revive sprite at Initial state or last state.", "Initial state|Last state"),
 	];
 	
 // Called by IDE when a new behavior type is to be created
