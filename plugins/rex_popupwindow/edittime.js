@@ -9,7 +9,7 @@
 		"category":		"Utility",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		pf_singleglobal
 	};
 };
 
@@ -18,8 +18,8 @@
 
 //////////////////////////////////////////////////////////////
 // Actions     
-AddStringParam("Url", "The location (URL) of the window", '""');
 AddStringParam("Name", "Name of window", '""');
+AddStringParam("Url", "The location (URL) of the window", '""');
 AddNumberParam("Width", "Width of window", 300);
 AddNumberParam("Height", "Height of window", 200);
 AddNumberParam("Top", "Top margin of window", 0);
@@ -51,15 +51,20 @@ AddAction(2, 0, "Setup command processor", "Setup",
           "Send commands to a function object.", "Setup");        
 AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0);
-AddAction(3, 0, "Set a parameter", "Timer", 
+AddAction(3, 0, "Set a parameter", "Parameter", 
           "Set parameter[<i>{1}</i>] to <i>{2}</i>",
           "Set a parameter pass into parent or child window.", "SeParameter");
 AddAction(4, 0, "Clean all parameters", "Parameter", 
           "Clean all parameters", "Clean all parameters.", "CleanParameters");  
+AddStringParam("Name", "Name of window", '""');
 AddStringParam("Commands", "Commands", '""');
-AddAction(5, 0, "Execute commands", "Function", "Execute commands <i>{0}</i>", "Execute commands.", "ExecuteCommands");
-AddStringParam("Name", "Function name", '""');
-AddAction(6, 0, "Call function", "Function", "Call <i>{0}</i>", "Call function.", "CallFunction");          
+AddAction(5, 0, "Send commands to child", "Function", 
+         "Send commands <i>{1}</i> to child <i>{0}</i>.", 
+         "Send commands to child window.", "SendCmd2Child");
+AddStringParam("Commands", "Commands", '""');
+AddAction(6, 0, "Send commands to parent", "Function", 
+         "Send commands <i>{0}</i> to parent window.", 
+         "Send commands to parent window.", "SendCmd2Parent");         
 //////////////////////////////////////////////////////////////
 // Expressions
 

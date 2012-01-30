@@ -10,6 +10,8 @@ cr.plugins_.Rex_PopupWindow = function(runtime)
 {
 	this.runtime = runtime;
 };
+cr.plugins_.Rex_PopupWindow.inst = null;
+cr.plugins_.Rex_PopupWindow.parent_inst = null;
 
 (function ()
 {
@@ -41,11 +43,23 @@ cr.plugins_.Rex_PopupWindow = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.child = null;
+        this.children = {};
         this.callback = null;
         this._param = {};
+        
+        cr.plugins_.Rex_PopupWindow.inst = this;
 	};
-	
+    
+    instanceProto.run_callback = function(exe_mode, cmd, params)
+	{
+        if (params != null)
+            this.callback.AddParams(params);
+        if (exe_mode == 0)
+            this.callback.ExecuteCommands(cmd);
+        else
+            this.callback.CallFn(cmd);
+	};  
+
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -56,7 +70,7 @@ cr.plugins_.Rex_PopupWindow = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 
-	acts.PopupWindow = function (url, name, width, height, top_margin, left_margin,
+	acts.PopupWindow = function (name, url, width, height, top_margin, left_margin,
                                  has_toolbar, has_menubar, has_scrollbar, 
                                  can_resizable, show_location, show_status)
 	{
@@ -64,7 +78,10 @@ cr.plugins_.Rex_PopupWindow = function(runtime)
         properties_string  = "height="+height+", width="+width+", top="+top_margin+", left="+left_margin;     
         properties_string += ", toolbar="+has_toolbar+", menubar="+has_menubar+", scrollbar="+has_scrollbar; 
         properties_string += ", resizable="+can_resizable+", location="+show_location+", status="+show_status; 
-        this.child = window.open(url, name, properties_string);
+        var panel = window.open(url, name, properties_string);
+        if (panel.window.Rex_PopupWindow_inst != null)
+            panel.cr.plugins_.Rex_PopupWindow.parent_inst = this;
+        this.children[name] = panel;
 	};    
     
     acts.Setup = function (fn_objs)
@@ -86,12 +103,22 @@ cr.plugins_.Rex_PopupWindow = function(runtime)
         this.param = {};
 	};      
     
-	acts.ExecuteCommands = function (cmd_string)
+	acts.SendCmd2Child = function (name, cmd_string)
 	{
+        var child_inst = this.children[name].cr.plugins_.Rex_PopupWindow.inst;
+        if (child_inst == null)
+            return;
+            
+        child_inst.run_callback(0, cmd_string);
 	};  
 
-	acts.CallFunction = function (cmd_string)
-	{ 
+	acts.SendCmd2Parent = function (cmd_string)
+	{
+        var parent_inst = opener.cr.plugins_.Rex_PopupWindow.parent_inst;
+        if (parent_inst == null)
+            return;
+            
+        parent_inst.run_callback(0, cmd_string);
 	}; 
 	//////////////////////////////////////
 	// Expressions
