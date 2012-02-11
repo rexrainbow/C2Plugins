@@ -52,6 +52,7 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
     
     instanceProto.run_callback = function(exe_mode, cmd, params)
 	{
+        debugger;
         if (params != null)
             this.callback.AddParams(params);
         if (exe_mode == 0)
@@ -113,7 +114,9 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
 	};  
 
 	acts.SendCmd2Parent = function (cmd_string)
-	{
+	{       
+        if (opener==null)
+            return;          
         var parent_inst = opener.cr.plugins_.Rex_PopupWindow.parent_inst;
         if (parent_inst == null)
             return;
