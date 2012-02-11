@@ -142,6 +142,8 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         var sol = obj_type.getCurrentSol();
         var select_all_save = sol.select_all;
         sprite_bank = this._banks[sprite_name];   
+        if (sprite_bank == null)
+            return;
         var sprite_bank_length = sprite_bank.length;
         for (i=0; i<sprite_bank_length; i++)
         {
@@ -225,8 +227,20 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 	};
 
     acts.AdvLoadInstances = function (obj_type, cb_cmd)
-	{  
-        this._load_instances(obj_type.name, obj_type, cb_cmd);
+	{
+        if (obj_type.is_family)
+        {
+            var members = obj_type.members;
+            var member_cnt = members.length;
+            var i,member;
+            for (i=0; i<member_cnt; i++)
+            {
+                member = members[i];
+                this._load_instances(member.name, member, cb_cmd);
+            }
+        }
+        else
+            this._load_instances(obj_type.name, obj_type, cb_cmd);
 	};    
 	//////////////////////////////////////
 	// Expressions
