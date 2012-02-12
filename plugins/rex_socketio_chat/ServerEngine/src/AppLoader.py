@@ -6,15 +6,12 @@ def SysPathExtend(module_name=None):
     if module_name is None:
         if len(sys.path)==1:
             # dist mode
-            dist_dir = "library.zip"
             path_split_list = sys.path[0].split("\\")
-        
-            if path_split_list[-1] == dist_dir:
-                root_path = "\\".join(path_split_list[:-2])
-                sys.path.append(root_path)            
+            root_path = "\\".join(path_split_list[:-2])
+            sys.path.append(root_path)            
     else:
         ext_path = os.path.split(module_name)[0]
-        sys.path.append(ext_path)
+        sys.path.append(ext_path) 
         
 def is_python_file(file_name):
     ret = ( (file_name[-3:] == ".py") or

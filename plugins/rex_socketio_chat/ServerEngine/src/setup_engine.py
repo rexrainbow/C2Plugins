@@ -37,8 +37,9 @@ setup(console=["AppLoader.py",
     options = {
                'py2exe' : {
                            'includes'     : includes,
+                           'bundle_files' : 1, 
                            }
                },
-                           
+    zipfile = None,
 )
       
