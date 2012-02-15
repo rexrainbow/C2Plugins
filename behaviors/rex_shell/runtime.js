@@ -244,7 +244,21 @@ cr.behaviors.Rex_Shell = function(runtime)
         var val = (inst != null)? inst.inst.visible:default_value;
 	    ret.set_float(val);
 	};	    
-    
+
+    exps.ImagePointX = function (ret, uid, imgpt, default_value)
+	{
+	    debugger;
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.getImagePoint(imgpt, true):default_value;
+	    ret.set_float(val);
+	};    
+
+    exps.ImagePointY = function (ret, uid, imgpt, default_value)
+	{
+        var inst = this.uid2inst[uid];
+        var val = (inst != null)? inst.inst.getImagePoint(imgpt, false):default_value;
+	    ret.set_float(val);
+	};	
 }());
 
 (function ()

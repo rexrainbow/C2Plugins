@@ -81,7 +81,18 @@ AddNumberParam(0, "The UID of instance.", 0);
 AddExpression(7, ef_return_number | ef_variadic_parameters, 
               "Get visible", "Instance expression", "Visible", 
               "Get instance's visible form uid.");
-              
+AddNumberParam(0, "The UID of instance.", 0);
+AddAnyTypeParam("ImagePoint", "Name or number of image point to get.", 0);
+AddExpression(8, ef_return_number | ef_variadic_parameters, 
+              "Get image point X", "Instance expression",	"ImagePointX", 
+              "The X position of one of the object's image points.");
+AddNumberParam(0, "The UID of instance.", 0);
+AddAnyTypeParam("ImagePoint", "Name or number of image point to get.", 0);
+AddExpression(9, ef_return_number | ef_variadic_parameters, 
+              "Get image point Y", "Instance expression",	"ImagePointY", 
+              "The Y position of one of the object's image points.");              
+
+                                          
 ACESDone();
 
 // Property grid properties for this plugin

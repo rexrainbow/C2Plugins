@@ -72,7 +72,11 @@ cr.plugins_.Rex_WhileLoop = function(runtime)
 	{ 
 		this.condition_value = value;
 	};
-    
+
+	acts.SubtractConditionValue = function ()
+	{ 
+		this.condition_value -= 1;
+	};    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};

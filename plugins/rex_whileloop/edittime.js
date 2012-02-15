@@ -24,7 +24,9 @@ AddCondition(1, cf_looping | cf_not_invertible,
 AddNumberParam("Value", "Value of condition", 1);
 AddAction(1, 0, "Set condition value", "Condition", "Set condition value to <i>{0}</i>", 
           "Set condition value.", "SetConditionValue");          
-          
+AddAction(2, 0, "Subtract condition value from 1", "Condition", "Subtract condition value from 1", 
+          "Subtract condition value from 1.", "SubtractConditionValue");  
+                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get condtion value", "Condition", "Cond", 
