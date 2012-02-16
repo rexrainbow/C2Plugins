@@ -33,7 +33,7 @@ AddExpression(6, ef_return_number, "Get current seconds", "Time", "Seconds", "Ge
 AddExpression(7, ef_return_number, "Get current milliseconds", "Time", "Milliseconds", "Get current milliseconds from system.");
 AddAnyTypeParam("0", "The naem of timer to get.", "0");
 AddExpression(8, ef_return_number | ef_variadic_parameters, "Get escaped ticks", "Timer", "Timer", "Get escaped ticks of timer in milliseconds.");
-AddExpression(9, ef_deprecated | ef_return_number, "Get current ticks", "Timer", "UnixTimestamp", "Get current ticks of timer in milliseconds. (Date.getTime())");
+AddExpression(9, ef_deprecated | ef_return_number, "Get current ticks", "Timer", "CurTicks", "Get current ticks of timer in milliseconds. (Date.getTime())");
 AddExpression(10, ef_return_number, "Get current unix timestamp", "Date", "UnixTimestamp", "Get current number of milliseconds since the epoch.");
 
 ACESDone();

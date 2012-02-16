@@ -123,6 +123,12 @@ cr.plugins_.Rex_Date = function(runtime)
 		ret.set_int(delta);
 	};	
 
+	exps.CurTicks = function (ret)
+	{
+	    var today = new Date();
+        ret.set_int(today.getTime());
+	};	
+
 	exps.UnixTimestamp = function (ret)
 	{
 	    var today = new Date();
