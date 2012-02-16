@@ -123,9 +123,9 @@ cr.plugins_.Rex_Date = function(runtime)
 		ret.set_int(delta);
 	};	
 
-	exps.CurTicks = function (ret)
+	exps.UnixTimestamp = function (ret)
 	{
-	    var timer = new Date();	
-		ret.set_int(timer.getTime());
+	    var today = new Date();
+        ret.set_int(today.getTime());
 	};		
 }());
