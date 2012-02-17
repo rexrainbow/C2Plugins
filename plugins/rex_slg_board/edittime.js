@@ -16,8 +16,11 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, cf_trigger, "Get moveable brick", "Command", 
-             "Get moveable bricks", 
+             "Get moveable brick", 
              'Callback of "Action:Get moveable brick."', "GetMoveableBrick"); 
+AddCondition(2, cf_trigger, "Get moving path brick", "Command", 
+             "Get moving path", 
+             'Callback of "Action:Move chess."', "GetMovingPathBrick");              
              
 //////////////////////////////////////////////////////////////
 // Actions   
@@ -82,21 +85,27 @@ AddAction(9, 0, "Move chess by UID", "Command",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number | ef_variadic_parameters, 
-              "Get UID of selected chess", "Chess", "UID", 
+              "Get UID of selected chess", "Command", "ChessUID", 
               "Get UID of selected chess.");
 AddExpression(2, ef_return_number | ef_variadic_parameters, 
-              "Get X index of selected chess", "Chess", "X", 
+              "Get X index of selected chess", "Chess", "UID2X", 
               "Get X index of selected chess by UID.");
 AddExpression(3, ef_return_number | ef_variadic_parameters, 
-              "Get Y index of selected chess", "Chess", "Y", 
+              "Get Y index of selected chess", "Chess", "UID2Y", 
               "Get Y index of selected chess by UID.");
 AddExpression(4, ef_return_number | ef_variadic_parameters, 
-              "Get Z index of selected chess", "Chess", "Z", 
+              "Get Z index of selected chess", "Chess", "UID2Z", 
               "Get Z index of selected chess by UID.");
 AddExpression(5, ef_return_number,
               "Get UID of brick", "Command", "BrickUID",
-              'Get UID of brick. Used in "Condition:Get moveable brick" ')
-
+              'Get UID of brick. Used in "Condition:Get moveable brick" ');
+AddExpression(6, ef_return_number | ef_variadic_parameters,
+              "Get UID from XYZ", "Chess", "XYZ2UID",
+              "Get UID from XYZ index.");        
+AddExpression(7, ef_return_number | ef_variadic_parameters,
+              "Get UID from UID and Z", "Chess", "Z2UID",
+              "Get UID from relative UID and Z.");   
+              
 ACESDone();
 
 // Property grid properties for this plugin
@@ -105,6 +114,7 @@ var property_list = [
 		new cr.Property(ept_integer, "Width", 64, "Initial number of elements on the X axis."),
 		new cr.Property(ept_integer, "Height", 64, "Initial number of elements on the Y axis."),
 		new cr.Property(ept_integer, "Depth", 2, "Initial number of elements on the Z axis."),
+		new cr.Property(ept_combo, "Path mode", "Diagonal", "Geometry of moving path.", "Random|Diagonal"),  
 	];
 	
 // Called by IDE when a new object type is to be created
