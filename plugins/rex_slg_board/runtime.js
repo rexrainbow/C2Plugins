@@ -491,7 +491,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var obj_type = this._get_type(_obj_type);
         if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
-        obj = this.(obj_type,x,y,_layer,offset_x,offset_y);
+        var obj = this.CreateItem(obj_type,x,y,_layer,offset_x,offset_y);
 	    this.add_item(obj.uid,x,y,z);
 	};	
     
