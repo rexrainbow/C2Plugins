@@ -169,6 +169,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return obj_type;
     }; 
     
+	instanceProto.CreateItem = function(_obj_type,x,y,_layer,offset_x,offset_y)
+	{
+        var obj_type = this._get_type(_obj_type);
+        var layer = this._get_layer(_layer);
+        return this.runtime.createInstance(obj_type, layer, 
+                                           this.layout.GetX(x,y)+offset_x,  
+                                           this.layout.GetY(x,y)+offset_y );        
+	};
+    
 	instanceProto.add_item = function(uid, _x, _y, _z)
 	{    
 	    uid = _get_uid(uid);
@@ -468,21 +477,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("SLG board should connect to a layout object");
 	};  
 		
-	acts.CreateBrick = function (_obj_type,x,y,layer)
+	acts.CreateBrick = function (_obj_type,x,y,_layer)
 	{
         var obj_type = this._get_type(_obj_type);
         if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
-        var obj = this.layout.CreateItem(obj_type, x, y, this._get_layer(layer),0,0);
+        var obj = this.CreateItem(obj_type,x,y,_layer,0,0);
 	    this.add_item(obj.uid,x,y,0);
 	};
 	
-	acts.CreateChess = function (objs,x,y,z,layer,offset_x,offset_y)
+	acts.CreateChess = function (_obj_type,x,y,z,_layer,offset_x,offset_y)
 	{
         var obj_type = this._get_type(_obj_type);
         if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
-        obj = this.layout.CreateItem(obj_type, x, y, this._get_layer(layer),offset_x,offset_y);
+        obj = this.(obj_type,x,y,_layer,offset_x,offset_y);
 	    this.add_item(obj.uid,x,y,z);
 	};	
     

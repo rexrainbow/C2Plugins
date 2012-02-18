@@ -55,16 +55,7 @@ cr.plugins_.Rex_SLGDiamondTx = function(runtime)
 	instanceProto.GetY = function(logic_x, logic_y)
 	{
         return ((logic_x + logic_y)*this.half_height)+this.PositionOY;
-	}; 
-	instanceProto.CreateItem = function(obj_type,logic_x,logic_y,layer,offset_x,offset_y)
-	{
-        return this.runtime.createInstance(
-                       obj_type, 
-                       layer, 
-                       this.GetX(logic_x,logic_y)+offset_x, 
-                       this.GetY(logic_x,logic_y)+offset_y );
-	};
-   	
+	};    	
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
