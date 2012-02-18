@@ -27,8 +27,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_float, "X co-ordinate at (0,0)", 0, "Physical X co-ordinate at logic (0,0)."),
-    new cr.Property(ept_float, "Y co-ordinate at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
+    new cr.Property(ept_float, "X at (0,0)", 0, "Physical X co-ordinate at logic (0,0)."),
+    new cr.Property(ept_float, "Y at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
 	new cr.Property(ept_float, "Width", 64, "Cell width in pixels."),
 	new cr.Property(ept_float, "Height", 32, "Cell height in pixels.")
 	];

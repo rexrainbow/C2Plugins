@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_Branch = function(runtime)
+cr.plugins_.Rex_SLGDiamondTx = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_Branch.prototype;
+	var pluginProto = cr.plugins_.Rex_SLGDiamondTx.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -47,14 +47,7 @@ cr.plugins_.Rex_Branch = function(runtime)
         this.half_width = this.properties[2]/2;
         this.half_height = this.properties[3]/2;
 	};
-    
-    instanceProto._get_layer = function(layer)
-    {
-        return layer = (typeof layerparam == "number")?
-                       this.runtime.getLayerByNumber(layerparam):
-                       this.runtime.getLayerByName(layerparam);
-    }
-    
+   
 	instanceProto.GetX = function(logic_x, logic_y)
 	{
         return ((logic_x - logic_y)*this.half_width)+this.PositionOX;
@@ -63,13 +56,13 @@ cr.plugins_.Rex_Branch = function(runtime)
 	{
         return ((logic_x + logic_y)*this.half_height)+this.PositionOY;
 	}; 
-	instanceProto.CreateItem = function(obj_type,logic_x,logic_y,layer)
+	instanceProto.CreateItem = function(obj_type,logic_x,logic_y,layer,offset_x,offset_y)
 	{
         return this.runtime.createInstance(
                        obj_type, 
-                       this._get_layer(layer), 
-                       this.GetX(logic_x,logic_y), 
-                       this.GetY(logic_x,logic_y));
+                       layer, 
+                       this.GetX(logic_x,logic_y)+offset_x, 
+                       this.GetY(logic_x,logic_y)+offset_y );
 	};
    	
 	//////////////////////////////////////
