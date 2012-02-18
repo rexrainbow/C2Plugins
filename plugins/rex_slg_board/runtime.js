@@ -61,8 +61,34 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this._chess_xyz = null;
         this._dist_brick_uid = null;
         this._hit_dist_brick = false;
+        
+		// Need to know if pinned object gets destroyed
+		this.myDestroyCallback = (function (self) {
+											return function(inst) {
+												self.onInstanceDestroyed(inst);
+											};
+										})(this);
+										
+		this.runtime.addDestroyCallback(this.myDestroyCallback);        
 	};
 	
+	instanceProto.onDestroy = function ()
+	{
+        this.runtime.removeDestroyCallback(this.myDestroyCallback);
+	};   
+    
+    instanceProto.onInstanceDestroyed = function(inst)
+    {
+        // auto remove uid from board array
+        var uid = inst.uid;
+        var _xyz = this.uid2xyz(uid);
+        if (_xyz != null)
+        {
+            delete this.items[uid];
+            this.board[_xyz.x][_xyz.y][_xyz.z] = null;
+        }
+    };
+    
 	instanceProto.clean_board = function(x_max, y_max, z_max)
 	{
 	    if (x_max>=0)
@@ -111,7 +137,38 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    else
 	        return objs;
 	};
+    
+    instanceProto._get_layer = function(layerparam)
+    {
+        return (typeof layerparam == "number")?
+               this.runtime.getLayerByNumber(layerparam):
+               this.runtime.getLayerByName(layerparam);
+    };    
 
+    instanceProto._get_type = function(_obj_type)
+    {
+        var obj_type;
+        if (typeof _obj_type == "string")
+        {
+            var name = _obj_type;
+            var types = this.runtime.types;
+            var type_name, item;
+            obj_type = null;            
+            for(type_name in types)
+            {
+                item = types[type_name];
+                if (item.name == name)
+                {
+                    obj_type = item;
+                    break;
+                }
+            }
+        }
+        else
+            obj_type = _obj_type;
+        return obj_type;
+    }; 
+    
 	instanceProto.add_item = function(uid, _x, _y, _z)
 	{    
 	    uid = _get_uid(uid);
@@ -411,19 +468,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("SLG board should connect to a layout object");
 	};  
 		
-	acts.CreateBrick = function (obj_type,logic_x,logic_y,layer)
+	acts.CreateBrick = function (_obj_type,x,y,layer)
 	{
-        if ((this.layout == null) || (!this.is_inside_board(logic_x,logic_y,0)))
+        var obj_type = this._get_type(_obj_type);
+        if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
-        obj = this.layout.CreateItem(obj_type, logic_x, logic_y, layer);
+        var obj = this.layout.CreateItem(obj_type, x, y, this._get_layer(layer),0,0);
 	    this.add_item(obj.uid,x,y,0);
 	};
 	
-	acts.CreateChess = function (objs,x,y,z,layer)
+	acts.CreateChess = function (objs,x,y,z,layer,offset_x,offset_y)
 	{
-        if ((this.layout == null) || (!this.is_inside_board(logic_x,logic_y,0)))
+        var obj_type = this._get_type(_obj_type);
+        if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
-        obj = this.layout.CreateItem(obj_type, logic_x, logic_y, layer);
+        obj = this.layout.CreateItem(obj_type, x, y, this._get_layer(layer),offset_x,offset_y);
 	    this.add_item(obj.uid,x,y,z);
 	};	
     
