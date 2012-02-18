@@ -30,29 +30,29 @@ AddNumberParam("Z", "Initial number of elements on the Z axis. 0 is unchanged.",
 AddAction(0, 0, "Clean board", "Initialize", "Clean board", 
           "Clean board to empty.", "CleanBoard"); 
 AddNumberParam("UID", "The UID of brick", 0);         
-AddNumberParam("X", "The X index (0-based) of the chess to set.", 0);
-AddNumberParam("Y", "The Y index (0-based) of the chess to set.", 0);
-AddAction(1, 0, "Add brick by UID", "Board", "Add brick UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
+AddNumberParam("X", "The X index (0-based) of the brick to set.", 0);
+AddNumberParam("Y", "The Y index (0-based) of the brick to set.", 0);
+AddAction(1, 0, "Add brick by UID", "Logic", "Add brick UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
           "Add brick on the board.", "AddBrick");
 AddNumberParam("UID", "The UID of chess", 0);
 AddNumberParam("X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Y", "The Y index (0-based) of the chess to set.", 0);
 AddNumberParam("Z", "The Z index (0-based) of the chess to set. 0 is brick.", 0);
-AddAction(2, 0, "Add chess by UID", "Board", "Add chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
+AddAction(2, 0, "Add chess by UID", "Logic", "Add chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess"); 
 AddObjectParam("Function", "Function object for command's callback");
 AddAction(3, 0, "Setup callback", "Advance: Setup", 
           "Set command's callback to <i>{0}</i>", 
-          "Setup callback.", "Setup");
+          "Setup callback.", "SetupCallback");
 AddNumberParam("UID", "The UID of chess", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddAction(4, 0, "Get moveable bricks by UID", "Command", 
-          "Get moveable bricks of chess UID:<i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>", 
-          "Get moveable bricks.", "GetMoveableBricks");
+AddAction(4, 0, "Get moveable area by UID", "Command", 
+          "Get moveable area of chess UID:<i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>", 
+          "Get moveable area.", "GetMoveableArea");
 AddObjectParam("Brick", "Brick object.");         
-AddNumberParam("X", "The X index (0-based) of the chess to set.", 0);
-AddNumberParam("Y", "The Y index (0-based) of the chess to set.", 0);
+AddNumberParam("X", "The X index (0-based) of the brick to set.", 0);
+AddNumberParam("Y", "The Y index (0-based) of the brick to set.", 0);
 AddAction(5, 0, "Add brick", "Board", "Add brick <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
           "Add brick on the board.", "AddBrick");
 AddObjectParam("Chess", "Chess object.");   
@@ -64,47 +64,77 @@ AddAction(6, 0, "Add chess", "Board", "Add chess <i>{0}</i> to [<i>{1}</i>, <i>{
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddAction(7, 0, "Get moveable bricks", "Command", 
-          "Get moveable bricks of chess <i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>", 
-          "Get moveable bricks.", "GetMoveableBricks");   
+AddAction(7, 0, "Get moveable area", "Command", 
+          "Get moveable area of chess <i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>", 
+          "Get moveable area.", "GetMoveableArea");   
 AddObjectParam("Chess", "Chess object.");
 AddObjectParam("Brick", "Brick object.");
 AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddAction(8, 0, "Move chess", "Command", 
-          "Move chess <i>{0}</i> to brick <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>", 
-          "Move chess to brick.", "MoveChess");
+AddAction(8, 0, "Get moving path", "Command", 
+          "Get moving path of chess <i>{0}</i> to brick <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>", 
+          "Get moving path.", "GetMovingPath");
 AddNumberParam("Chess UID", "The UID of chess", 0);
 AddNumberParam("Brick UID", "The UID of brick", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddAction(9, 0, "Move chess by UID", "Command", 
-          "Move chess UID:<i>{0}</i> to brick UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>", 
-          "Move chess to brick.", "MoveChess");                              
-                    
+AddAction(9, 0, "Get moving path by UID", "Command", 
+          "Get moving path of chess UID:<i>{0}</i> to brick UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>", 
+          "Get moving path.", "GetMovingPath");                              
+AddObjectParam("Layout", "Layout to transfer logic index to physical position");
+AddAction(10, 0, "Setup layout", "Advance: Setup", 
+          "Set layout to <i>{0}</i>", 
+          "Setup layout to transfer logic index to physical position.", "SetupLayout");         
+AddObjectParam("Brick", "Brick object.");        
+AddNumberParam("X", "The X index (0-based) of the brick to set.", 0);
+AddNumberParam("Y", "The Y index (0-based) of the brick to set.", 0);
+AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddAction(11, 0, "Create brick", "Create", "Create brick <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
+          "Create brick on the board.", "CreateBrick");
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("X", "The X index (0-based) of the chess to set.", 0);
+AddNumberParam("Y", "The Y index (0-based) of the chess to set.", 0);
+AddNumberParam("Z", "The Z index (0-based) of the chess to set. 0 is brick.", 0);
+AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddAction(12, 0, "Create chess", "Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
+          "Create chess on the board.", "CreateChess"); 
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number | ef_variadic_parameters, 
               "Get UID of selected chess", "Command", "ChessUID", 
               "Get UID of selected chess.");
 AddExpression(2, ef_return_number | ef_variadic_parameters, 
-              "Get X index of selected chess", "Chess", "UID2X", 
+              "Get X index of selected chess", "Chess", "UID2LX", 
               "Get X index of selected chess by UID.");
 AddExpression(3, ef_return_number | ef_variadic_parameters, 
-              "Get Y index of selected chess", "Chess", "UID2Y", 
+              "Get Y index of selected chess", "Chess", "UID2LY", 
               "Get Y index of selected chess by UID.");
 AddExpression(4, ef_return_number | ef_variadic_parameters, 
-              "Get Z index of selected chess", "Chess", "UID2Z", 
+              "Get Z index of selected chess", "Chess", "UID2LZ", 
               "Get Z index of selected chess by UID.");
 AddExpression(5, ef_return_number,
               "Get UID of brick", "Command", "BrickUID",
               'Get UID of brick. Used in "Condition:Get moveable brick" ');
 AddExpression(6, ef_return_number | ef_variadic_parameters,
-              "Get UID from XYZ", "Chess", "XYZ2UID",
-              "Get UID from XYZ index.");        
+              "Get UID by XYZ", "Chess", "LXYZ2UID",
+              "Get UID by XYZ index.");        
 AddExpression(7, ef_return_number | ef_variadic_parameters,
-              "Get UID from UID and Z", "Chess", "Z2UID",
-              "Get UID from relative UID and Z.");   
+              "Get UID by UID and Z", "Chess", "LZ2UID",
+              "Get UID by relative UID and Z.");
+              
+AddExpression(11, ef_return_number | ef_variadic_parameters,
+              "Get X co-ordinate by logic index", "Physical", "LXY2PX",
+              "Get physical X co-ordinate by logic X,Y index.");               
+AddExpression(12, ef_return_number | ef_variadic_parameters,
+              "Get Y co-ordinate by logic index", "Physical", "LXY2PY",
+              "Get physical Y co-ordinate by logic X,Y index."); 
+AddExpression(13, ef_return_number | ef_variadic_parameters,
+              "Get X co-ordinate by UID", "Physical", "UID2PX",
+              "Get X co-ordinate by UID.");
+AddExpression(14, ef_return_number | ef_variadic_parameters,
+              "Get Y co-ordinate by UID", "Physical", "UID2PY",
+              "Get Y co-ordinate by UID.");
               
 ACESDone();
 

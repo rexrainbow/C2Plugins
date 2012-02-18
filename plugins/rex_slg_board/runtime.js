@@ -52,7 +52,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	                     this.properties[3]-1);
 	    this.path_mode = this.properties[4];
 	                     
-        this.callback = null;    
+        this.callback = null; 
+        this.layout = null;
         this._skip_first = null;
         this._cost = null;
         this._is_cost_fn = null;
@@ -110,7 +111,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    else
 	        return objs;
 	};
-	
+
 	instanceProto.add_item = function(uid, _x, _y, _z)
 	{    
 	    uid = _get_uid(uid);
@@ -290,7 +291,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    }
 	};
 	
-	instanceProto.get_moveable_bricks = function(chess_uid, moving_points, cost)
+	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
 	    this.exp_ChessUID = chess_uid;
 	    this._skip_first = true;
@@ -304,7 +305,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    return this._bricks;
 	};
 	
-	instanceProto.move_chess = function (chess_uid, end_brick_uid, moving_points, cost)
+	instanceProto.get_moving_path = function (chess_uid, end_brick_uid, moving_points, cost)
 	{
 	    this.exp_ChessUID = chess_uid;
 	    this._skip_first = true;
@@ -356,7 +357,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.add_item(objs,x,y,z);
 	};		
     
-    acts.Setup = function (fn_objs)
+    acts.SetupCallback = function (fn_objs)
 	{
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
@@ -365,14 +366,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("SLG board should connect to a function object");
 	};      
 		
-	acts.GetMoveableBricks = function (chess_objs, moving_points, cost)
+	acts.GetMoveableArea = function (chess_objs, moving_points, cost)
 	{	        	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
 	    if ((_xyz == null) || (moving_points<=0))
 	        return;
 	        
-		var bricks_uid = this.get_moveable_bricks(chess_uid, moving_points, cost);
+		var bricks_uid = this.get_moveable_area(chess_uid, moving_points, cost);
 	    var uid;  
 		for(uid in bricks_uid)
 		{
@@ -381,14 +382,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		}
 	};  
 		
-	acts.MoveChess = function (chess_objs, brick_objs, moving_points, cost)	
+	acts.GetMovingPath = function (chess_objs, brick_objs, moving_points, cost)	
 	{
 	    var chess_uid = _get_uid(chess_objs);
 	    var brick_uid = _get_uid(brick_objs);
 	    if ((chess_uid == null) || (brick_uid == null) || (moving_points<=0))
 	        return;
 
-	    var path_bricks_uid = this.move_chess(chess_uid,brick_uid,moving_points, cost);
+	    var path_bricks_uid = this.get_moving_path(chess_uid,brick_uid,moving_points, cost);
 	    if (path_bricks_uid == null)
 	        return;
 	        
@@ -400,7 +401,32 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		    this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.GetMovingPathBrick, this);
 		}	    		      	       
 	};	  	
+    
+    acts.SetupLayout = function (layout_objs)
+	{
+        var layout = layout_objs.instances[0];
+        if (layout.check_name == "LAYOUT")
+            this.layout = layout;        
+        else
+            alert ("SLG board should connect to a layout object");
+	};  
+		
+	acts.CreateBrick = function (obj_type,logic_x,logic_y,layer)
+	{
+        if ((this.layout == null) || (!this.is_inside_board(logic_x,logic_y,0)))
+            return;
+        obj = this.layout.CreateItem(obj_type, logic_x, logic_y, layer);
+	    this.add_item(obj.uid,x,y,0);
+	};
 	
+	acts.CreateChess = function (objs,x,y,z,layer)
+	{
+        if ((this.layout == null) || (!this.is_inside_board(logic_x,logic_y,0)))
+            return;
+        obj = this.layout.CreateItem(obj_type, logic_x, logic_y, layer);
+	    this.add_item(obj.uid,x,y,z);
+	};	
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -411,21 +437,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    ret.set_int(this.exp_ChessUID);
 	};
 	
-	exps.UID2X = function (ret, uid)
+	exps.UID2LX = function (ret, uid)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var x = (_xyz==null)? (-1):_xyz.x;
 		ret.set_int(x);
 	};	
 	
-	exps.UID2Y = function (ret, uid)
+	exps.UID2LY = function (ret, uid)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var y = (_xyz==null)? (-1):_xyz.y;
 		ret.set_int(y);
 	};
 	
-	exps.UID2Z = function (ret, uid)
+	exps.UID2LZ = function (ret, uid)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var z = (_xyz==null)? (-1):_xyz.z;
@@ -437,7 +463,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         ret.set_int(this.exp_BrickUID);
     };	
     
-	exps.XYZ2UID = function (ret,_x,_y,_z)
+	exps.LXYZ2UID = function (ret,_x,_y,_z)
 	{
         var uid = this.xyz2uid(_x,_y,_z);
         if (uid == null)
@@ -445,7 +471,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    ret.set_int(uid);
 	}; 	
     
-	exps.Z2UID = function (ret,uid,_z)
+	exps.LZ2UID = function (ret,uid,_z)
 	{
 	    var ret_uid;
         var _xyz = this.uid2xyz(uid);
@@ -459,4 +485,46 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             ret_uid = -1;
 	    ret.set_int(ret_uid);
 	}; 	
+    
+	exps.LXY2PX = function (ret,logic_x,logic_y)
+	{
+        var px;
+        if (this.layout != null)
+            px = this.layout.GetX(logic_x,logic_y);
+        else
+            px = (-1);
+	    ret.set_int(px);
+	};
+    
+	exps.LXY2PY = function (ret,logic_x,logic_y)
+	{
+        var py;
+        if (this.layout != null)
+            py = this.layout.GetY(logic_x,logic_y);
+        else
+            py = (-1);
+	    ret.set_int(py);
+	};
+    
+	exps.UID2PX = function (ret,uid)
+	{
+        var px;
+        var _xyz = this.uid2xyz(uid);
+        if ((this.layout != null) && (_xyz != null))           
+            px = this.layout.GetX(_xyz.x,_xyz.y)
+        else
+            px = (-1);
+	    ret.set_int(px);
+	};
+    
+	exps.UID2PY = function (ret,uid)
+	{
+        var py;
+        var _xyz = this.uid2xyz(uid);
+        if ((this.layout != null) && (_xyz != null))        
+            py = this.layout.GetX(_xyz.x,_xyz.y)
+        else
+            py = (-1);
+	    ret.set_int(py);
+	};    
 }());
