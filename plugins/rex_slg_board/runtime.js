@@ -446,23 +446,29 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("SLG board should connect to a function object");
 	};      
 		
-	acts.GetMoveableArea = function (chess_objs, moving_points, cost)
+	acts.GetMoveableArea = function (chess_objs, moving_points, cost, cb_name)
 	{	        	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
 	    if ((_xyz == null) || (moving_points<=0))
 	        return;
-	        
+	    
 		var bricks_uid = this.get_moveable_area(chess_uid, moving_points, cost);
 	    var uid;  
+        var is_call_fn_obj = (cb_name!="");
+        if (is_call_fn_obj)
+            assert2(this.callback, "SLG board should connect to a function object");
 		for(uid in bricks_uid)
 		{
 		    this.exp_BrickUID = parseInt(uid);
-		    this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.GetMoveableBrick, this);
+            if (is_call_fn_obj)
+                this.callback.CallFn(cb_name);
+            else
+		        this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.GetMoveableBrick, this);
 		}
 	};  
 		
-	acts.GetMovingPath = function (chess_objs, brick_objs, moving_points, cost)	
+	acts.GetMovingPath = function (chess_objs, brick_objs, moving_points, cost, cb_name)	
 	{
 	    var chess_uid = _get_uid(chess_objs);
 	    var brick_uid = _get_uid(brick_objs);
@@ -472,13 +478,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var path_bricks_uid = this.get_moving_path(chess_uid,brick_uid,moving_points, cost);
 	    if (path_bricks_uid == null)
 	        return;
-	        
+	    
+        var is_call_fn_obj = (cb_name!="");
+        if (is_call_fn_obj)
+            assert2(this.callback, "SLG board should connect to a function object");        
 	    var bricks_cnt = path_bricks_uid.length;
 	    var i;
 		for(i=0;i<bricks_cnt;i++)
 		{
 		    this.exp_BrickUID = path_bricks_uid[i];
-		    this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.GetMovingPathBrick, this);
+		    if (is_call_fn_obj)
+                this.callback.CallFn(cb_name);
+            else
+		        this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.GetMovingPathBrick, this);
 		}	    		      	       
 	};	  	
     
