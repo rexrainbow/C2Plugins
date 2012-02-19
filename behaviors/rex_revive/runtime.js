@@ -31,10 +31,28 @@ cr.behaviors.Rex_Revive = function(runtime)
         this.timeline = null;   
         this.behavior_index = null;        
 	};
-
+    
+    // copy from sprite plugin
+	behtypeProto._set_anim_frame = function (inst, framenumber)
+	{
+		inst.changeAnimFrame = framenumber;
+		
+		// start ticking if not already
+		if (!inst.isTicking)
+		{
+			inst.runtime.tickMe(inst);
+			inst.isTicking = true;
+		}
+		
+		// not in trigger: apply immediately
+		if (!inst.inAnimTrigger)
+			inst.doChangeAnimFrame();
+	}; 
+    
 	behtypeProto._revive_hanlder = function(custom_data,
                                             layer_name, x, y, 
-                                            angle, width, height, opacity, visible, cur_frame,
+                                            angle, width, height, opacity, visible, 
+                                            cur_frame, cur_anim_speed,
                                             inst_vars, cur_anim_name)
 	{
         var inst = this.runtime.createInstance(this.objtype, 
@@ -42,15 +60,16 @@ cr.behaviors.Rex_Revive = function(runtime)
                                                x, y);
         if (angle != null)
         {
+            inst.cur_anim_speed = cur_anim_speed;  
+            this._set_anim_frame(inst, cur_frame);
+            inst.changeAnimName = cur_anim_name;
+            inst.doChangeAnim();              
             inst.angle = angle;
             inst.width = width;
             inst.height = height;
             inst.opacity = opacity;
-            inst.visible = visible;
-            inst.cur_frame = cur_frame;  
-            inst.instance_vars = inst_vars.slice();
-            inst.changeAnimName = cur_anim_name;
-            inst.doChangeAnim();            
+            inst.visible = visible; 
+            inst.instance_vars = inst_vars.slice();          
         }
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);            
@@ -97,7 +116,8 @@ cr.behaviors.Rex_Revive = function(runtime)
         {
             args = [custom_data, 
                     inst.layer.index, inst.x, inst.y, 
-                    inst.angle, inst.width, inst.height, inst.opacity, inst.visible, inst.cur_frame, 
+                    inst.angle, inst.width, inst.height, inst.opacity, inst.visible, 
+                    inst.cur_frame, inst.cur_anim_speed,
                     inst.instance_vars.slice(), inst.cur_animation.name];
         }
         else
