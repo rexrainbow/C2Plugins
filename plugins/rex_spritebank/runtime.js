@@ -79,7 +79,8 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         save_obj["angle"] = inst.angle;
         save_obj["opacity"] = inst.opacity;
         save_obj["visible"] = inst.visible;  
-        save_obj["cur_frame"] = inst.cur_frame;         
+        save_obj["cur_frame"] = inst.cur_frame;     
+        save_obj["cur_anim_speed"] = inst.cur_anim_speed;         
         save_obj["inst_vars"] = inst.instance_vars.slice();
         save_obj["layer"] = inst.layer.index;
         
@@ -114,6 +115,23 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         
         sol.select_all = select_all_save;
 	};    
+    
+    // copy from sprite plugin
+	instanceProto._set_anim_frame = function (inst, framenumber)
+	{
+		inst.changeAnimFrame = framenumber;
+		
+		// start ticking if not already
+		if (!inst.isTicking)
+		{
+			inst.runtime.tickMe(inst);
+			inst.isTicking = true;
+		}
+		
+		// not in trigger: apply immediately
+		if (!inst.inAnimTrigger)
+			inst.doChangeAnimFrame();
+	};    
         
     instanceProto._create_instance = function(obj_type, save_obj)
 	{  
@@ -122,16 +140,19 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
                        this.runtime.getLayerByNumber(save_obj["layer"]), 
                        save_obj["x"], 
                        save_obj["y"]);
-                                    
+                   
+        inst.cur_anim_speed = save_obj["cur_anim_speed"];         
+        this._set_anim_frame(inst, save_obj["cur_frame"])      
+        inst.changeAnimName = save_obj["cur_anim_name"];
+        inst.doChangeAnim();
+        
+        // after set anim frame
         inst.width = save_obj["width"];
-        inst.height = save_obj["height"];
+        inst.height = save_obj["height"];  
         inst.angle = save_obj["angle"];
         inst.opacity = save_obj["opacity"];        
         inst.visible = save_obj["visible"];
-        inst.cur_frame = save_obj["cur_frame"];  
-        inst.instance_vars = save_obj["inst_vars"].slice();  
-        inst.changeAnimName = save_obj["cur_anim_name"];
-        inst.doChangeAnim();
+        inst.instance_vars = save_obj["inst_vars"].slice();        
         return inst;        
 	};   
 
