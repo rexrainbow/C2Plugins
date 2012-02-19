@@ -142,7 +142,7 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
                        save_obj["y"]);
                    
         inst.cur_anim_speed = save_obj["cur_anim_speed"];         
-        this._set_anim_frame(inst, save_obj["cur_frame"])      
+        this._set_anim_frame(inst, save_obj["cur_frame"]);
         inst.changeAnimName = save_obj["cur_anim_name"];
         inst.doChangeAnim();
         
