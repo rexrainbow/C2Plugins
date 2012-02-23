@@ -74,11 +74,6 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 
 	var behinstProto = behaviorProto.Instance.prototype;
 	
-	function roundTo6dp(x)
-	{
-		return Math.round(x * 1000000) / 1000000;
-	};
-	
 	behinstProto.updateGravity = function()
 	{
 		// down vector
@@ -90,10 +85,10 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		this.righty = Math.sin(this.ga - Math.PI / 2);
 		
 		// get rid of any sin/cos small errors
-		this.downx = roundTo6dp(this.downx);
-		this.downy = roundTo6dp(this.downy);
-		this.rightx = roundTo6dp(this.rightx);
-		this.righty = roundTo6dp(this.righty);
+		this.downx = cr.round6dp(this.downx);
+		this.downy = cr.round6dp(this.downy);
+		this.rightx = cr.round6dp(this.rightx);
+		this.righty = cr.round6dp(this.righty);
 		
 		// gravity is negative (up): flip the down vector and make gravity positive
 		// (i.e. change the angle of gravity instead)
@@ -242,7 +237,9 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 
 	behinstProto.isOnFloor = function ()
 	{
-		var ret;
+		var ret = null;
+		var ret2 = null;
+		var i, len, j;
 		
 		// Move object one pixel down
 		var oldx = this.inst.x;
@@ -262,26 +259,50 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		}
 		else
 		{
-			ret = this.runtime.testOverlapSolid(this.inst) || this.runtime.testOverlapJumpThru(this.inst);
+			ret = this.runtime.testOverlapSolid(this.inst);
+			
+			if (!ret)
+				ret2 = this.runtime.testOverlapJumpThru(this.inst, true);
 			
 			// Put the object back
 			this.inst.x = oldx;
 			this.inst.y = oldy;
 			this.inst.set_bbox_changed();
 			
-			// If the object is still overlapping this floor one pixel up, it
-			// must be stuck inside something.  So don't count it as floor.
-			if (ret && this.runtime.testOverlap(this.inst, ret))
-				return null;
-				
-			return ret;
+			if (ret)		// was overlapping solid
+			{
+				// If the object is still overlapping the solid one pixel up, it
+				// must be stuck inside something.  So don't count it as floor.
+				if (this.runtime.testOverlap(this.inst, ret))
+					return null;
+				else
+					return ret;
+			}
+			
+			// Is overlapping one or more jumpthrus
+			if (ret2 && ret2.length)
+			{
+				// Filter out any it is no longer overlapping one pixel up
+				for (i = 0, j = 0, len = ret2.length; i < len; i++)
+				{
+					ret2[j] = ret2[i];
+					
+					if (!this.runtime.testOverlap(this.inst, ret2[i]))
+						j++;
+				}
+					
+				if (j === 1)
+					return ret2[0];
+			}
+			
+			return null;
 		}
 	};
 
 	behinstProto.tick = function ()
 	{
 		var dt = this.runtime.getDt(this.inst);
-		var mx, my, obstacle, mag;
+		var mx, my, obstacle, mag, allover, i, len, j;
 		
 		// The "jumped" flag needs resetting whenever the jump key is not simulated for custom controls
 		// This musn't conflict with default controls so make sure neither the jump key nor simulate jump is on
@@ -596,22 +617,33 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			
 			if (!collobj && (this.dy > 0) && !floor_)
 			{
-				collobj = this.runtime.testOverlapJumpThru(this.inst);
+				// Get all jump-thrus currently overlapping
+				allover = this.runtime.testOverlapJumpThru(this.inst, true);
 				
-				// Must not have been overlapping in old position to be able to fall on to it
-				if (collobj)
+				// Filter out all objects it is not overlapping in its old position
+				if (allover && allover.length)
 				{
 					this.inst.x = oldx;
 					this.inst.y = oldy;
 					this.inst.set_bbox_changed();
 					
-					if (this.runtime.testOverlap(this.inst, collobj))
-						collobj = null;
+					for (i = 0, j = 0, len = allover.length; i < len; i++)
+					{
+						allover[j] = allover[i];
+						
+						if (!this.runtime.testOverlap(this.inst, allover[i]))
+							j++;
+					}
+					
+					allover.length = j;
 						
 					this.inst.x = newx;
 					this.inst.y = newy;
 					this.inst.set_bbox_changed();
 				}
+				
+				if (allover && allover.length === 1)
+					collobj = allover[0];
 				
 				fell_on_jumpthru = !!collobj;
 			}
@@ -706,10 +738,16 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			
 		// Must be overlapping solid/jumpthru in current position
 		var overlapSolid = this.runtime.testOverlapSolid(this.inst);
-		var overlapJumpThru = this.runtime.testOverlapJumpThru(this.inst);
+		var overlapJumpThru = null;
+		var i, len, j;
 		
-		if (!overlapSolid && !overlapJumpThru)
-			return false;
+		if (!overlapSolid)
+		{
+			overlapJumpThru = this.runtime.testOverlapJumpThru(this.inst, true);
+			
+			if (!overlapJumpThru || !overlapJumpThru.length)
+				return false;
+		}
 			
 		// Move 1px up and make sure not overlapping anything
 		var ret = false;
@@ -721,11 +759,23 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		
 		// On a solid floor: only test not overlapping solid above, so jumpthrus are ignored
 		if (overlapSolid)
+		{
 			ret = !this.runtime.testOverlapSolid(this.inst);
+		}
+		// On a jumpthru: filter all objects not overlapping one pixel above, and check there's just one left
+		else
+		{
+			for (i = 0, j = 0, len = overlapJumpThru.length; i < len; i++)
+			{
+				overlapJumpThru[j] = overlapJumpThru[i];
+				
+				if (!this.runtime.testOverlap(this.inst, overlapJumpThru[i]))
+					j++;
+			}
 			
-		// On a jumpthru floor: test not overlapping solid above, and that it has cleared the specific jumpthru it was standing on
-		if (overlapJumpThru && !overlapSolid)
-			ret = !this.runtime.testOverlapSolid(this.inst) && !this.runtime.testOverlap(this.inst, overlapJumpThru);
+			if (j === 1)
+				ret = true;
+		}
 		
 		this.inst.x = oldx;
 		this.inst.y = oldy;
@@ -976,10 +1026,11 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
                 break;
             }
         }
-        if (find_key != null)
-            this.KEY_EXTRA[find_key] = null;  
+		
+		if (find_key != null)
+		    delete this.KEY_EXTRA[find_key]; 
             
-		this.KEY_EXTRA[keycode] = {name:ctl_name, state:false};        
+		this.KEY_EXTRA[keycode] = {name:ctl_name, state:false};        		
 	};     
 
 	//////////////////////////////////////
