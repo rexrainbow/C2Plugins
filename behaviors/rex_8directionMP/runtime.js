@@ -52,9 +52,17 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		this.simleft = false;
 		this.simright = false;
 		
+		// attempted workaround for sticky keys bug
+		this.lastuptick = -1;
+		this.lastdowntick = -1;
+		this.lastlefttick = -1;
+		this.lastrighttick = -1;
+		
 		// Movement
 		this.dx = 0;
 		this.dy = 0;
+		
+		this.enabled = true;
 	};
 	
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -101,23 +109,38 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 
 	behinstProto.onKeyDown = function (info)
 	{	
-        var keycode = info.which;
+	    var keycode = info.which;
+		var tickcount = this.runtime.tickcount;
+		
 		switch (keycode) {
 		case this.KEY_LEFT:	// left
 			info.preventDefault();
-			this.leftkey = true;
+			
+			// Workaround for sticky keys bug: reject if arriving on same tick as onKeyUp event
+			if (this.lastlefttick < tickcount)
+				this.leftkey = true;
+			
 			break;
 		case this.KEY_UP:	// up
 			info.preventDefault();
-			this.upkey = true;
+			
+			if (this.lastuptick < tickcount)
+				this.upkey = true;
+				
 			break;
 		case this.KEY_RIGHT:	// right
 			info.preventDefault();
-			this.rightkey = true;
+			
+			if (this.lastrighttick < tickcount)
+				this.rightkey = true;
+				
 			break;
 		case this.KEY_DOWN:	// down
 			info.preventDefault();
-			this.downkey = true;
+			
+			if (this.lastdowntick < tickcount)
+				this.downkey = true;
+			
 			break;
 		}
         
@@ -135,24 +158,30 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 	};
 
 	behinstProto.onKeyUp = function (info)
-	{  
-        var keycode = info.which;
+	{
+	    var keycode = info.which;
+		var tickcount = this.runtime.tickcount;
+		
 		switch (keycode) {
 		case this.KEY_LEFT:	// left
 			info.preventDefault();
 			this.leftkey = false;
+			this.lastlefttick = tickcount;
 			break;
 		case this.KEY_UP:	// up
 			info.preventDefault();
 			this.upkey = false;
+			this.lastuptick = tickcount;
 			break;
 		case this.KEY_RIGHT:	// right
 			info.preventDefault();
 			this.rightkey = false;
+			this.lastrighttick = tickcount;
 			break;
 		case this.KEY_DOWN:	// down
 			info.preventDefault();
 			this.downkey = false;
+			this.lastdowntick = tickcount;
 			break;
 		}       
         
@@ -180,6 +209,9 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		this.simright = false;
 		this.simup = false;
 		this.simdown = false;
+		
+		if (!this.enabled)
+			return;
 		
 		// Is already overlapping solid: must have moved itself in (e.g. by rotating or being crushed),
 		// so push out
@@ -291,7 +323,9 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 				this.dy += this.acc * dt;
 		}
 		
-		if (this.dx != 0 || this.dy != 0)
+		var ax, ay;
+		
+		if (this.dx !== 0 || this.dy !== 0)
 		{
 			// Limit to max speed
 			var speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
@@ -334,13 +368,19 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 				this.runtime.registerCollision(this.inst, collobj);
 			}
 			
-			// Apply angle
-			if (this.angleMode === 1)	// 90 degree intervals
-				this.inst.angle = cr.to_clamped_radians(Math.round(cr.to_degrees(Math.atan2(this.dy, this.dx)) / 90.0) * 90.0);
-			else if (this.angleMode === 2)	// 45 degree intervals
-				this.inst.angle = cr.to_clamped_radians(Math.round(cr.to_degrees(Math.atan2(this.dy, this.dx)) / 45.0) * 45.0);
-			else if (this.angleMode === 3)	// 360 degree
-				this.inst.angle = Math.atan2(this.dy, this.dx);
+			ax = cr.round6dp(this.dx);
+			ay = cr.round6dp(this.dy);
+			
+			// Apply angle so long as object is still moving and isn't entirely blocked by a solid
+			if (ax !== 0 || ay !== 0)
+			{
+				if (this.angleMode === 1)	// 90 degree intervals
+					this.inst.angle = cr.to_clamped_radians(Math.round(cr.to_degrees(Math.atan2(ay, ax)) / 90.0) * 90.0);
+				else if (this.angleMode === 2)	// 45 degree intervals
+					this.inst.angle = cr.to_clamped_radians(Math.round(cr.to_degrees(Math.atan2(ay, ax)) / 45.0) * 45.0);
+				else if (this.angleMode === 3)	// 360 degree
+					this.inst.angle = Math.atan2(ay, ax);
+			}
 				
 			this.inst.set_bbox_changed();
 			
@@ -510,7 +550,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
             }
         }
         if (find_key != null)
-            this.KEY_EXTRA[find_key] = null;  
+            delete this.KEY_EXTRA[find_key];  
             
 		this.KEY_EXTRA[keycode] = {name:ctl_name, state:false};        
 	}; 
