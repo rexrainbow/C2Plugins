@@ -15,7 +15,7 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, 0, "Is acceptable", "Check", "Is not in iframe or in acceptable iframe", 
+AddCondition(1, 0, "Is acceptable", "Check", "Is in acceptable iframe", 
              "Check If current page is not in iframe or in acceptable iframe.", "Check");
 
 //////////////////////////////////////////////////////////////
