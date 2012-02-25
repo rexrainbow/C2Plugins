@@ -41,6 +41,7 @@ cr.plugins_.Rex_IframeChecker = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+	    this.is_busting_all = (this.properties[0]==1);
         this.white_list = [];
 	};
 	
@@ -51,6 +52,9 @@ cr.plugins_.Rex_IframeChecker = function(runtime)
     
 	cnds.Check = function ()
 	{
+	    if (this.is_busting_all)
+		    return (window.top == window);
+			
         var ref = document.referrer;
 		if (ref == "")    // not in iframe
 		    return true;

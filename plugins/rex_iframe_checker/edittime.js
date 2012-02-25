@@ -33,6 +33,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Busting all iframes", "No", "Enable if you wish to bust ALL iframes.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created
