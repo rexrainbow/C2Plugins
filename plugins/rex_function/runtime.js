@@ -318,6 +318,7 @@ cr.plugins_.Rex_Function = function(runtime)
         this["plugin"] = plugin;
         this["is_debug_mode"] = is_debug_mode;    
         this["fn_name"] = "";
+        this["_fn_name_stack"] = [];
         this["param"] = {};
         this["ret"] = {};
         this["result"] = 0;
@@ -376,8 +377,10 @@ cr.plugins_.Rex_Function = function(runtime)
     
 	FunctionKlassProto["_CallC2Event"] = function(name)
 	{
+	    this["_fn_name_stack"].push(this["fn_name"]);
         this["fn_name"] = name; 
 	    this["plugin"].runtime.trigger(cr.plugins_.Rex_Function.prototype.cnds.OnFunctionCalled, this["plugin"]);
+	    this["fn_name"] = this["_fn_name_stack"].pop();
 	}; 
 
  	FunctionKlassProto["_CallJS"] = function(name)
@@ -402,5 +405,15 @@ cr.plugins_.Rex_Function = function(runtime)
 	FunctionAdapterKlassProto["CallFn"] = function(name, args)
 	{
 	    return this["_plugin"].CallFn(name, args);
-	};     
+	};   
+	
+	FunctionAdapterKlassProto["GetReturns"] = function()
+	{
+	    return this["_plugin"].GetReturns();
+	};  	
+	
+	FunctionAdapterKlassProto["InjectJS"] = function(name, fn)
+	{
+	    this["_plugin"].InjectJS(name, fn);
+	};  	  
 }());

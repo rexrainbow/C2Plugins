@@ -23,6 +23,9 @@ D. inject javascript function
    for exporting to other javascript function
 - fn.CallFn(name, args)
   :: args can be a hash, or some strings/numbers
+- fn.GetReturns()
+  :: return a hash 
+- fn.InjectJS(name, fn)
 
 
 
