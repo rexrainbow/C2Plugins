@@ -27,13 +27,13 @@ AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(1, 0, "Save instances", "Sprite", 
-          "Save <i>{0}</i> form <i>{1}</i>", 
+          "Save <i>{0}</i> from <i>{1}</i>", 
           "Save instances of sprite.", "SaveInstances");
 AddAction(2, 0, "Load all instances", "Sprite", 
           "Load all saved instances", 
           "Load all saved instances.", "LoadInstances");
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(3, 0, "Load bank from JSON string", "Bank", "Load bank form JSON string <i>{0}</i>",
+AddAction(3, 0, "Load bank from JSON string", "Bank", "Load bank from JSON string <i>{0}</i>",
          "Load bank from JSON string.", "StringToBank");
 AddObjectParam("Function", "Function object for callback");
 AddAction(4, 0, "Connect to function object", "Advance: Setup", 
@@ -45,9 +45,9 @@ AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddStringParam("Callback", "Callback for instance saving.", '""');   
 AddAction(5, 0, "Save instances", "Advance: Sprite", 
-          "Save <i>{0}</i> form <i>{1}</i>, callback to <i>{2}</i>", 
+          "Save <i>{0}</i> from <i>{1}</i>, callback to <i>{2}</i>", 
           "Save instances of sprite.", "AdvSaveInstances");
-AddObjectParam("Object", "Object for saving");
+AddObjectParam("Object", "Object for loading");
 AddStringParam("Callback", "Callback for instance saving.", '""');           
 AddAction(6, 0, "Load instances", "Advance: Sprite", 
           "Load <i>{0}</i> instances, callback to <i>{1}</i>", 
