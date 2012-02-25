@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_IframeChecker = function(runtime)
+cr.plugins_.Rex_IframeFilter = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_IframeChecker.prototype;
+	var pluginProto = cr.plugins_.Rex_IframeFilter.prototype;
 		
 	/////////////////////////////////////
 	// Object type class

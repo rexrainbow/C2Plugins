@@ -1,8 +1,8 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Iframe checker",
-		"id":			"Rex_IframeChecker",
+		"name":			"Iframe filter",
+		"id":			"Rex_IframeFilter",
 		"description":	"Check if current page is not in iframe, or in acceptable iframe.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
