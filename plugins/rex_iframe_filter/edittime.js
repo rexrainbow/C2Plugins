@@ -6,7 +6,7 @@
 		"description":	"Check if current page is not in iframe, or in acceptable iframe.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
