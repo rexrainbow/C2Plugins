@@ -52,9 +52,13 @@ cr.plugins_.Rex_IframeFilter = function(runtime)
     
 	cnds.Check = function ()
 	{
+        var is_at_top = (window.top == window);
 	    if (this.is_busting_all)
-		    return (window.top == window);
+		    return is_at_top;
 			
+        if (is_at_top)
+            return true;
+            
         var ref = document.referrer;
 		if (ref == "")    // not in iframe
 		    return true;
