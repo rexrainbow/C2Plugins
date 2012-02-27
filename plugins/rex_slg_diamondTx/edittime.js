@@ -6,7 +6,7 @@
 		"description":	"Transfer logic position to physical position with diamonnd layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"SLG",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
