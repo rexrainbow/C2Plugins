@@ -42,6 +42,9 @@ cr.plugins_.Rex_Hash = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this._clean_all();  
+        var init_data = this.properties[0];
+        if (init_data != "")
+            this._my_hash = JSON.parse(init_data);
 	};
     
 	instanceProto._clean_all = function()
