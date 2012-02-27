@@ -90,8 +90,26 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.atPage = this.current_page_name;  
         this.current_table.SetEntry(col, row, value);       
 	};
-    
-    
+
+	instanceProto.GetColCnt = function (page)
+	{
+        if (page != null)
+        {
+            this.TurnPage(page);
+        }
+        this.atPage = this.current_page_name;  
+        return this.current_table.GetColCnt();   
+	};
+
+	instanceProto.GetRowCnt = function (page)
+	{
+        if (page != null)
+        {
+            this.TurnPage(page);
+        }
+        this.atPage = this.current_page_name;  
+        return this.current_table.GetRowCnt();   
+	};    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -237,7 +255,16 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{ 
 		ret.set_string(this.current_table.ToString());
 	};    
-    
+	
+	exps.ColCnt = function (ret, page)
+	{
+		ret.set_int(this.GetColCnt(page));
+	};
+	
+	exps.RowCnt = function (ret, page)
+	{ 
+		ret.set_int(this.GetRowCnt(page));
+	};      
 }());
 
 
@@ -486,6 +513,15 @@ cr.plugins_.Rex_CSV = function(runtime)
 		this.forRow = "";
 	};     
 	    
+    CSVKlassProto.GetColCnt = function()
+    {
+        return this.keys.length;
+    };
+	    
+    CSVKlassProto.GetRowCnt = function()
+    {
+        return this.items.length;
+    };
     
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm

@@ -66,16 +66,17 @@ AddAction(10, 0, "Remove a row", "Append/Remove", "Remove row <i>{0}</i>",
 // Expressions
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
-AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", "Get value from current table. Add page index to turn the page.");
+AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table: At", "At", "Get value from current table. Add page index to turn the page.");
 AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current column index in a For Each loop.");
 AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
 AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
-AddExpression(4, ef_return_string, "At Col", "Table", "AtCol", "Get the column index in the last At expression.");
-AddExpression(5, ef_return_string, "At Row", "Table", "AtRow", "Get the row index in the last At expression.");
+AddExpression(4, ef_return_string, "At Col", "Table: At", "AtCol", "Get the column index in the last At expression.");
+AddExpression(5, ef_return_string, "At Row", "Table: At", "AtRow", "Get the row index in the last At expression.");
 AddExpression(6, ef_return_string, "At Page", "Page", "AtPage", "Get the page index in the last At expression.");
 AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get the current page index in a For Each loop.");
 AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "TableToString", "Transfer current table to JSON string.");
-
+AddExpression(9, ef_return_number | ef_variadic_parameters, "Get col count", "Table: Count", "ColCnt", "Get column count.");
+AddExpression(10, ef_return_number | ef_variadic_parameters, "Get row count", "Table: Count", "RowCnt", "Get row count.");
 
 ACESDone();
 
