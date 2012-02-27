@@ -21,8 +21,8 @@
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
 AddNumberParam("Y", "Initial number of elements on the Y axis. 0 is unchanged.", 0);
 AddNumberParam("Z", "Initial number of elements on the Z axis. 0 is unchanged.", 0)
-AddAction(0, 0, "Clean board", "Board", "Clean board", 
-          "Clean board to empty.", "CleanBoard"); 
+AddAction(0, 0, "Reset board", "Board", "Reset board with width to <i>{0}</i>, height to <i>{1}</i>, depth to <i>{2}</i>", 
+          "Reset board to empty.", "ResetBoard"); 
 AddObjectParam("Brick", "Brick object.");         
 AddNumberParam("X", "The X index (0-based) of the brick to set.", 0);
 AddNumberParam("Y", "The Y index (0-based) of the brick to set.", 0);

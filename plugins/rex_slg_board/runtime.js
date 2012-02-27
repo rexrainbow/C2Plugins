@@ -44,7 +44,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         this.check_name = "BOARD";
 	    this.board = [];
-	    this.clean_board(this.properties[0]-1,
+	    this.reset_board(this.properties[0]-1,
 	                     this.properties[1]-1,
 	                     this.properties[2]-1);
 	                     
@@ -71,7 +71,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.remove_item(inst.uid);
     };
     
-	instanceProto.clean_board = function(x_max, y_max, z_max)
+	instanceProto.reset_board = function(x_max, y_max, z_max)
 	{
 	    if (x_max>=0)
 	        this.x_max = x_max;
@@ -211,9 +211,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 	
-	acts.CleanBoard = function (x_max,y_max,z_max)
+	acts.ResetBoard = function (x_max,y_max,z_max)
 	{
-		this.clean_board(x_max-1, y_max-1, z_max-1);
+		this.reset_board(x_max-1, y_max-1, z_max-1);
 	};
 		
 	acts.AddBrick = function (objs,x,y)
