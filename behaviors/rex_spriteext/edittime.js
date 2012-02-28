@@ -28,9 +28,12 @@ AddAction(3, 0, "Set flipped", "Animations",
           
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, 0, "Is shown", "Appearance", 
+AddCondition(0, cf_deprecated, "Is shown", "Appearance", 
              "Is {my} shown", "True if the object's layer is visible and object is visible.", "IsShown");
-             
+AddCondition(1, cf_trigger, "On created", "Constructor & destructor", 
+             "On created", "Triggered when instance created.", "OnCreated");  
+AddCondition(2, cf_trigger, "On destroyed", "Constructor & destructor", 
+             "On destroyed", "Triggered when instance destroyed.", "OnDestroyed");  
 //////////////////////////////////////////////////////////////
 // Expressions
 
