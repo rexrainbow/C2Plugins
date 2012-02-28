@@ -4,7 +4,7 @@
 		"name":			"Video",
 		"id":			"Rex_Video",
 		"description":	"Play video.",
-		"author":		"",
+		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Media",
 		"type":			"world",			// appears in layout
