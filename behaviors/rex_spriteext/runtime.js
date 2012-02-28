@@ -44,11 +44,11 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 
 	behinstProto.onCreate = function()
 	{        
-        this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnCreated, this.inst);     
+        this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnCreating, this.inst);     
 	};  
 	behinstProto.onDestroy = function()
 	{
-        this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnDestroyed, this.inst);            
+        this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnDestroying, this.inst);            
 	};    
     
 	behinstProto.tick = function ()
@@ -65,12 +65,12 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 		return (layer.visible && this.inst.visible);  
 	};
 
-	cnds.OnCreated = function ()
+	cnds.OnCreating = function ()
 	{
 		return true;
 	};
 
-	cnds.OnDestroyed = function ()
+	cnds.OnDestroying = function ()
 	{
 		return true;
 	};    
