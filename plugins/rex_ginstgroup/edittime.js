@@ -63,44 +63,39 @@ AddStringParam("Name", "Group result.", '""');
 AddAction(12, 0, "Intersection", "Group: Set operation", "Set group <i>{2}</i> to group <i>{0}</i> intersection group <i>{1}</i>", 
           "Set group by intersection operation.", "Intersection");            
 AddStringParam("Name", "Group name.", '""');
-AddAction(13, 0, "Sort group by shuffling", "List: Sort", "Sort group <i>{0}</i> by shuffling", 
-          "Sort group by shuffling.", "Shuffle"); 
+AddAction(13, 0, "Shuffe", "List: Sort", "Shuffe group <i>{0}</i>", 
+          "Shuffe group.", "Shuffle"); 
 AddStringParam("Name", "Group name.", '""');
 AddStringParam("Sorting function", "Sorting function of group", '""');
 AddAction(14, 0, "Sort group by function", "List: Sort", "Sort group <i>{0}</i> by function <i>{1}</i>", 
           "Sort group by function.", "SortByFn"); 
 AddNumberParam("Result", "Compared result. (-1) is (A < B), 0 is (A == B), 1 is (A > B)", 0);
-AddAction(15, 0, "Set compared result", "List: Sort", "Set compare result to <i>{0}</i>", 
+AddAction(15, 0, "Set compared result by number", "List: Sort function", "Set compare result to <i>{0}</i>", 
           'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultDirectly");
 AddComboParamOption("<");
 AddComboParamOption("=");
 AddComboParamOption(">");
 AddComboParam("Result", "Compared result", 0);   
-AddAction(16, 0, "Set compared result", "List: Sort", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
-          'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");           
-AddStringParam("Name", "Group name.", '""');
-AddAction(17, 0, "Create iterator", "List: Iterator", "Create iterator from group <i>{0}</i>", 
-          "Create iterator from group.", "CreateIterator");                     
+AddAction(16, 0, "Set compared result", "List: Sort function", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
+          'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");                              
 AddStringParam("Name", "Group name.", '""');          
 AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Keep");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Keep or pop UID", 0);
-AddAction(18, 0, "Pick instances", "SOL", 
+AddAction(17, 0, "Pick instances", "SOL", 
           "Pick and <i>{2}</i> <i>{0}</i> from group <i>{1}</i>", "Pick instances from group.", "PickInsts");    
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
-              "Get UID A of sorting function", "List: Sort", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort group by function"');
+              "Get UID A of sorting function", "List: Sort function", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort group by function"');
 AddExpression(2, ef_return_number, 
-              "Get UID B of sorting function", "List: Sort", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort group by function"');              
+              "Get UID B of sorting function", "List: Sort function", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort group by function"');              
 AddExpression(4, ef_return_number | ef_variadic_parameters, 
               "Get item count", "Group", "InstCnt", "Get item count of group.");
 AddExpression(5, ef_return_number | ef_variadic_parameters,
               'Get UID from "For each"', "List", "ForEachUID", 'Get UID in a group. Used in "Condition:For each UID"');                         
-AddExpression(6, ef_return_number | ef_variadic_parameters,
-              "Get UID from iterator", "List", "IterUID", 'Get UID in a group. Used with "Action:Create iterator"');                         
 
 
 ACESDone();

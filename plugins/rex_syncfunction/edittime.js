@@ -6,7 +6,7 @@
 		"description":	"Sync function for network",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility: Network",
+		"category":		"Utility",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

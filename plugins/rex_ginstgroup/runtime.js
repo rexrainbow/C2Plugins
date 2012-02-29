@@ -78,10 +78,10 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 
     var _thisArg  = null;
 	var _sort_fn = function(uid_a, uid_b)
-	{
+	{   
 	    _thisArg._cmp_uidA = uid_a;
 	    _thisArg._cmp_uidB = uid_b;	    
-	    _thisArg.runtime.trigger(cr.plugins_.Rex_gInstGroup.prototype.cnds.OnSortingFn, this);
+	    _thisArg.runtime.trigger(cr.plugins_.Rex_gInstGroup.prototype.cnds.OnSortingFn, _thisArg);
 	    return _thisArg._compared_result;	    
 	};		
 	
@@ -105,7 +105,6 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	  
 	cnds.OnSortingFn = function (name)
 	{
-	    _thisArg = this;
 		return (this._sort_fn_name == name);
 	};	 
 	
@@ -198,8 +197,9 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
     acts.SortByFn = function (name, fn_name)
 	{
+        _thisArg  = this;
 	    this._sort_fn_name = fn_name;
-	    this.get_group(name).GetList().sort(this._sort_fn);
+	    this.get_group(name).GetList().sort(_sort_fn);
 	};		
 	
     acts.SetCmpResultDirectly = function (result)
@@ -212,10 +212,6 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    this._compared_result = result -1;
 	};
 	
-    acts.CreateIterator = function (name)
-	{
-	};	
-		
     acts.PickInsts = function (name, objtype, is_pop)
 	{
 	    var group = this.get_group(name);
@@ -264,10 +260,6 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    ret.set_int(this._foreach_UID);
 	};	
     
-	exps.IterUID = function (ret, name)
-	{   
-	    ret.set_int(0);
-	};		
 }());
 
 (function ()
@@ -313,7 +305,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	};
 		
 	GroupKlassProto.Union = function(uids)
-	{	    		    
+	{
         var uid;        
         for (uid in uids)        
             this.AddUID(parseInt(uid));    

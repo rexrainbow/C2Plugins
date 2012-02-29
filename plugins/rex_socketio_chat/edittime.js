@@ -6,7 +6,7 @@ function GetPluginSettings()
 		"description":	"Allows you to communicate over the Internet via streaming sockets.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Server",
+		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

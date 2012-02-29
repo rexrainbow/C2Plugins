@@ -6,7 +6,7 @@
 		"description":	"The logic of Tetris",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Logic of Game",
+		"category":		"Game logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

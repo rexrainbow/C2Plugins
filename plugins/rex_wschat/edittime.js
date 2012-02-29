@@ -6,7 +6,7 @@
 		"description":	"WasabiStudio Chatroom protocol",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Server",
+		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal
