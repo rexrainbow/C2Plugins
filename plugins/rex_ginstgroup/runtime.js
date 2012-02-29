@@ -249,11 +249,23 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{   
 	    ret.set_int(this._cmp_uidB);
 	};    	
-	
+    
 	exps.InstCnt = function (ret, name)
 	{   
 	    ret.set_int(this.get_group(name).GetList().length);
 	};
+	
+	exps.UID2Index = function (ret, name, uid)
+	{
+	    ret.set_int(this.get_group(name).GetList().indexOf(uid));
+	};   	
+	
+	exps.Index2UID = function (ret, name, index)
+	{
+        var _list = this.get_group(name).GetList();
+        var uid = (index <= _list.length)? _list[index]:(-1);
+	    ret.set_int(uid);
+	}; 
     
 	exps.ForEachUID = function (ret, name)
 	{   

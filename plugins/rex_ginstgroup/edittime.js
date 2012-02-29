@@ -92,9 +92,13 @@ AddExpression(1, ef_return_number,
               "Get UID A of sorting function", "List: Sort function", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort group by function"');
 AddExpression(2, ef_return_number, 
               "Get UID B of sorting function", "List: Sort function", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort group by function"');              
-AddExpression(4, ef_return_number | ef_variadic_parameters, 
+AddExpression(3, ef_return_number | ef_variadic_parameters, 
               "Get item count", "Group", "InstCnt", "Get item count of group.");
-AddExpression(5, ef_return_number | ef_variadic_parameters,
+AddExpression(4, ef_return_number | ef_variadic_parameters, 
+              "Get index by UID", "List", "UID2Index", "Get index by UID.");
+AddExpression(5, ef_return_number | ef_variadic_parameters, 
+              "Get UID by index", "List", "Index2UID", "Get UID by index.");
+AddExpression(6, ef_return_number | ef_variadic_parameters,
               'Get UID from "For each"', "List", "ForEachUID", 'Get UID in a group. Used in "Condition:For each UID"');                         
 
 
