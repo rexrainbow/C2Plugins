@@ -112,30 +112,44 @@ AddAction(15, 0, "Create chess by name", "Physical: Create", "Create chess <i>{0
        
 //////////////////////////////////////////////////////////////
 // Expressions
+AddNumberParam("UID", "The UID of instance.", 0);
 AddExpression(1, ef_return_number | ef_variadic_parameters, 
               "Get X index of selected chess", "Chess", "UID2LX", 
               "Get X index of selected chess by UID.");
+AddNumberParam("UID", "The UID of instance.", 0);              
 AddExpression(2, ef_return_number | ef_variadic_parameters, 
               "Get Y index of selected chess", "Chess", "UID2LY", 
               "Get Y index of selected chess by UID.");
+AddNumberParam("UID", "The UID of instance.", 0);              
 AddExpression(3, ef_return_number | ef_variadic_parameters, 
               "Get Z index of selected chess", "Chess", "UID2LZ", 
               "Get Z index of selected chess by UID.");
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);           
+AddNumberParam("Z", "The logic Z.", 0);   
 AddExpression(4, ef_return_number | ef_variadic_parameters,
               "Get UID by XYZ", "Chess", "LXYZ2UID",
-              "Get UID by XYZ index.");        
+              "Get UID by XYZ index.");
+AddNumberParam("UID", "The UID of instance.", 0);
+AddNumberParam("Z", "The logic Z.", 0);            
 AddExpression(5, ef_return_number | ef_variadic_parameters,
               "Get UID by UID and Z", "Chess", "LZ2UID",
               "Get UID by relative UID and Z.");
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);       
 AddExpression(6, ef_return_number | ef_variadic_parameters,
               "Get X co-ordinate by logic index", "Physical", "LXY2PX",
-              "Get physical X co-ordinate by logic X,Y index.");               
+              "Get physical X co-ordinate by logic X,Y index.");
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);                              
 AddExpression(7, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by logic index", "Physical", "LXY2PY",
               "Get physical Y co-ordinate by logic X,Y index."); 
+AddNumberParam("UID", "The UID of instance.", 0);
 AddExpression(8, ef_return_number | ef_variadic_parameters,
               "Get X co-ordinate by UID", "Physical", "UID2PX",
               "Get X co-ordinate by UID.");
+AddNumberParam("UID", "The UID of instance.", 0);              
 AddExpression(9, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by UID", "Physical", "UID2PY",
               "Get Y co-ordinate by UID.");

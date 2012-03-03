@@ -15,61 +15,66 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "Get moveable brick", "Request: Moveable area", 
-             "Get moveable brick", 
-             'Callback of "Action:Get moveable brick."', "GetMoveableBrick"); 
-AddCondition(2, cf_trigger, "Get moving path brick", "Request: Moving path", 
-             "Get moving path", 
-             'Callback of "Action:Move chess."', "GetMovingPathBrick");              
-             
+AddStringParam("Name", "Cost function name.", '""');
+AddCondition(1, cf_trigger, "On cost", "Cost", 
+             "On cost function <i>{0}</i>", "Cost function.", "OnCostFn");
+AddStringParam("Name", "Filter function name.", '""');
+AddCondition(2, cf_trigger, "On filter", "Filter", 
+             "On filter function <i>{0}</i>", "Filter function.", "OnFilterFn");
+                 
 //////////////////////////////////////////////////////////////
 // Actions 
 AddObjectParam("Board", "Board object");
-AddAction(0, 0, "Set board object", "Setup", 
-          "Set board object to <i>{0}</i>", 
-          "Set board object.", "SetupBoard");  
-AddObjectParam("Function", "Function object for command's callback");
-AddAction(1, 0, "Setup callback", "Advance: Setup", 
-          "Set command's callback to <i>{0}</i>", 
-          "Setup callback.", "SetupCallback");
+AddObjectParam("Group", "Instance group object");
+AddAction(0, 0, "Setup", "Setup", 
+          "Set board object to <i>{0}</i>, instance group object to <i>{1}</i>", 
+          "Set board object and instance group object.", "Setup");  
+AddNumberParam("Cost", "Cost", 0);
+AddAction(1, 0, "Set cost", "Cost", "Set cost to <i>{0}</i>", 
+          "Set cost.", "SetCost");          
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddStringParam("Callback", 'Trigger callback to function object, "" is using default callback.', '""');
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddStringParam("Filter", 'Filter function name to get avaiable uid, "" is passing default.', '""');
+AddStringParam("Group", "Put result in this group", '""');
 AddAction(2, 0, "Get moveable area", "Request: Moveable area", 
-          "Get moveable area of chess <i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>, callback to <i>{3}</i>", 
+          "Get moveable area of chess <i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>, filter to <i>{3}</i>. Then put result to group <i>{4}</i>", 
           "Get moveable area.", "GetMoveableArea");     
 AddNumberParam("UID", "The UID of chess", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddStringParam("Callback", 'Trigger callback to function object, "" is using default callback.', '""');
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddStringParam("Filter", 'Filter function name to get avaiable uid, "" is passing default.', '""');
+AddStringParam("Group", "Put result in this group", '""');
 AddAction(3, 0, "Get moveable area by UID", "Request: Moveable area", 
-          "Get moveable area of chess UID:<i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>, callback to <i>{3}</i>", 
+          "Get moveable area of chess UID:<i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>, filter to <i>{3}</i>. Then put result to group <i>{4}</i>", 
           "Get moveable area.", "GetMoveableArea");
 AddObjectParam("Chess", "Chess object.");
 AddObjectParam("Brick", "Brick object.");
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddStringParam("Callback", 'Trigger callback to function object, "" is using default callback.', '""');
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddStringParam("Group", "Put result in this group", '""');
 AddAction(4, 0, "Get moving path", "Request: Moving path", 
-          "Get moving path of chess <i>{0}</i> to brick <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, callback to <i>{4}</i>", 
+          "Get moving path of chess <i>{0}</i> to brick <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");
 AddNumberParam("Chess UID", "The UID of chess", 0);
 AddNumberParam("Brick UID", "The UID of brick", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a callback name to get moving cost for each brick.", 0);
-AddStringParam("Callback", 'Trigger callback to function object, "" is using default callback.', '""');
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddStringParam("Group", "Put result in this group", '""');
 AddAction(5, 0, "Get moving path by UID", "Request: Moving path", 
-          "Get moving path of chess UID:<i>{0}</i> to brick UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, callback to <i>{4}</i>", 
-          "Get moving path.", "GetMovingPath");                                              
+          "Get moving path of chess UID:<i>{0}</i> to brick UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
+          "Get moving path.", "GetMovingPath");      
+AddNumberParam("UID", "Filter result", 0);
+AddAction(6, 0, "Set filter result", "Filter", "Set filter result to UID:<i>{0}</i>", 
+          "Set filter result in UID.", "SetFilter");
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number | ef_variadic_parameters, 
+AddExpression(1, ef_return_number, 
               "Get UID of selected chess", "Request", "ChessUID", 
               "Get UID of selected chess.");
 AddExpression(2, ef_return_number,
               "Get UID of brick", "Request", "BrickUID",
-              'Get UID of brick. Used in "Condition:Get moveable brick" ');
+              "Get UID of brick.");
               
 ACESDone();
 

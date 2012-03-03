@@ -214,25 +214,19 @@ cr.behaviors.Rex_Cursor = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.activated = this.properties[0];
+        this.activated = (this.properties[0] == 1);
         this.invisible = (this.properties[1]==1);        
 	};
 
 	behinstProto.tick = function ()
 	{
-        var curr_x = this.type.GetABSX();
-        var curr_y = this.type.GetABSY();
-        this.is_moving = (this.pre_x != curr_x) ||
-                         (this.pre_y != curr_y);
-        if ( (this.activated== 1) && this.is_moving) {
+        if (this.activated) {
             var inst = this.inst;
             inst.x = this.type.GetLayerX(inst);
             inst.y = this.type.GetLayerY(inst);
             inst.set_bbox_changed();
             // Trigger OnMoving
             this.runtime.trigger(cr.behaviors.Rex_Cursor.prototype.cnds.OnMoving, inst);
-            this.pre_x = curr_x;
-            this.pre_y = curr_y;
         }
         
         if (this.invisible)
@@ -267,7 +261,7 @@ cr.behaviors.Rex_Cursor = function(runtime)
 
 	acts.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s==1);
 	};  
     
 	//////////////////////////////////////
@@ -297,6 +291,6 @@ cr.behaviors.Rex_Cursor = function(runtime)
     
 	exps.Activated = function (ret)
 	{
-		ret.set_int(this.activated);
+		ret.set_int((this.activated)? 1:0);
 	};     
 }());

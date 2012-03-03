@@ -3,7 +3,7 @@
 	return {
 		"name":			"Inst Group",
 		"id":			"Rex_gInstGroup",
-		"description":	"Set/list of instances stored by uid",
+		"description":	"A set/list to store instances by uid",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Data & Storage",
@@ -18,9 +18,22 @@
 AddStringParam("Name", "Sorting function name.", '""');
 AddCondition(1, cf_trigger, "On sorting", "List: Sort", 
              "On sorting function <i>{0}</i>", "Triggered when sorting by function.", "OnSortingFn");
+AddStringParam("Variable", "Variable name to store UID.", '""');
 AddStringParam("Name", "Group name.", '""');
 AddCondition(2, cf_looping | cf_not_invertible, "For each UID", "List", 
-             "For each UID in group <i>{0}</i>", "Repeat the event for each UID in a group.", "ForEachUID");
+             "For Item<i>{0}</i> in group <i>{0}</i>", "Repeat the event for each UID in a group.", "ForEachUID");
+AddStringParam("Name", "Group name.", '""');          
+AddObjectParam("Object", "Object for picking");
+AddComboParamOption("Keep");
+AddComboParamOption("Pop");
+AddComboParam("Operation", "Keep or pop UID", 0);
+AddCondition(3, 0, "Pick instances", "SOL", 
+             "Pick and <i>{2}</i> <i>{1}</i> from group <i>{0}</i>", "Pick instances from group.", "PickInsts");
+AddNumberParam("UID", "The UID of instance to be tested.", 0);
+AddStringParam("Name", "Group name.", '""');
+AddCondition(4, 0, "UID in group", "Group", 
+             "Instance UID:<i>{0}</i> in group <i>{1}</i>", "Testing if UID is in a group.", "IsInGroup");
+
 
 //////////////////////////////////////////////////////////////
 // Actions      
@@ -30,7 +43,17 @@ AddAction(1, 0, "Clean group", "Group", "Clean group <i>{0}</i>",
 AddStringParam("Name", "Group A.", '""');
 AddStringParam("Name", "Group result.", '""');
 AddAction(2, 0, "Copy", "Group", "Copy group <i>{0}</i> to group <i>{1}</i>", 
-          "Copy group to another group.", "Copy");   
+          "Copy group to another group.", "Copy");  
+AddStringParam("JSON string", "JSON string.", '""');
+AddStringParam("Name", "Group A.", '""');
+AddAction(3, 0, "Load group", "Group: JSON", "Load group <i>{1}</i> to JSON string <i>{0}</i>", 
+          "Load group from JSON string.", "String2Group");     
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(4, 0, "Load all", "Group: JSON", "Load all groups from JSON string <i>{1}</i>", 
+          "Load all groups from JSON string.", "String2All");  
+AddStringParam("Name", "Group name.", '""');
+AddAction(5, 0, "Destroy group", "Group", "Destroy group <i>{0}</i>", 
+          "Destroy group.", "Destroy");                              
 AddObjectParam("Instances", "Instances to be added into group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(6, 0, "Add instances", "Instance: Add", "Add <i>{0}</i> into group <i>{1}</i>", 
@@ -47,27 +70,27 @@ AddNumberParam("UID", "The UID of instance to be removed from group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddAction(9, 0, "Remove instances by UID", "Instance: Reomve", "Remove instance UID:<i>{0}</i> from group <i>{1}</i>", 
           "Remove instances from group by UID.", "RemoveInst");
-AddStringParam("Name", "Group A.", '""');
-AddStringParam("Name", "Group B.", '""');
-AddStringParam("Name", "Group result.", '""');
-AddAction(10, 0, "Union", "Group: Set operation", "Set group <i>{2}</i> to group <i>{0}</i> union group <i>{1}</i>", 
+AddStringParam("A", "Group A.", '""');
+AddStringParam("B", "Group B.", '""');
+AddStringParam("Result", "Group result.", '""');
+AddAction(10, 0, "A + B", "Group: Set operation", "Set group <i>{2}</i> to (group <i>{0}</i> + group <i>{1}</i>)", 
           "Set group by Union operation.", "Union");        
-AddStringParam("Name", "Group A.", '""');
-AddStringParam("Name", "Group B.", '""');
-AddStringParam("Name", "Group result.", '""');
-AddAction(11, 0, "Complement", "Group: Set operation", "Set group <i>{2}</i> to group <i>{0}</i> complement group <i>{1}</i>", 
+AddStringParam("A", "Group A.", '""');
+AddStringParam("B", "Group B.", '""');
+AddStringParam("Result", "Group result.", '""');
+AddAction(11, 0, "A - B", "Group: Set operation", "Set group <i>{2}</i> to (group <i>{0}</i> - group <i>{1}</i>)", 
           "Set group by complement operation.", "Complement");  
-AddStringParam("Name", "Group A.", '""');
-AddStringParam("Name", "Group B.", '""');
-AddStringParam("Name", "Group result.", '""');
-AddAction(12, 0, "Intersection", "Group: Set operation", "Set group <i>{2}</i> to group <i>{0}</i> intersection group <i>{1}</i>", 
+AddStringParam("A", "Group A.", '""');
+AddStringParam("B", "Group B.", '""');
+AddStringParam("Result", "Group result.", '""');
+AddAction(12, 0, "A AND B", "Group: Set operation", "Set group <i>{2}</i> to (group <i>{0}</i> AND group <i>{1}</i>)", 
           "Set group by intersection operation.", "Intersection");            
 AddStringParam("Name", "Group name.", '""');
 AddAction(13, 0, "Shuffe", "List: Sort", "Shuffe group <i>{0}</i>", 
           "Shuffe group.", "Shuffle"); 
 AddStringParam("Name", "Group name.", '""');
 AddStringParam("Sorting function", "Sorting function of group", '""');
-AddAction(14, 0, "Sort group by function", "List: Sort", "Sort group <i>{0}</i> by function <i>{1}</i>", 
+AddAction(14, 0, "Sort by function", "List: Sort", "Sort group <i>{0}</i> by function <i>{1}</i>", 
           "Sort group by function.", "SortByFn"); 
 AddNumberParam("Result", "Compared result. (-1) is (A < B), 0 is (A == B), 1 is (A > B)", 0);
 AddAction(15, 0, "Set compared result by number", "List: Sort function", "Set compare result to <i>{0}</i>", 
@@ -84,22 +107,49 @@ AddComboParamOption("Keep");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Keep or pop UID", 0);
 AddAction(17, 0, "Pick instances", "SOL", 
-          "Pick and <i>{2}</i> <i>{0}</i> from group <i>{1}</i>", "Pick instances from group.", "PickInsts");    
-
+          "Pick and <i>{2}</i> <i>{1}</i> from group <i>{0}</i>", "Pick instances from group.", "PickInsts");    
+AddStringParam("Name", "Group name.", '""');
+AddAction(18, 0, "Sort by UID increasement", "List: Sort", "Sort group <i>{0}</i> by UID increasement", 
+          "Sort group by UID inc.", "SortByUIDInc");
+AddStringParam("Name", "Group name.", '""');
+AddAction(19, 0, "Sort by UID decreasement", "List: Sort", "Sort group <i>{0}</i> by UID decreasement", 
+          "Sort group by UID dec.", "SortByUIDDec"); 
+AddStringParam("Name", "Group name.", '""');
+AddAction(20, 0, "Reverse", "List: Sort", "Reverse group <i>{0}</i> order", 
+          "Reverse group order.", "Reverse");                        
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
               "Get UID A of sorting function", "List: Sort function", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort group by function"');
 AddExpression(2, ef_return_number, 
               "Get UID B of sorting function", "List: Sort function", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort group by function"');              
+AddStringParam("Name", "Group name.", '""');
 AddExpression(3, ef_return_number | ef_variadic_parameters, 
               "Get item count", "Group", "InstCnt", "Get item count of group.");
+AddStringParam("Name", "Group name.", '""');
+AddNumberParam("UID", "The UID of instance.", 0);
 AddExpression(4, ef_return_number | ef_variadic_parameters, 
-              "Get index by UID", "List", "UID2Index", "Get index by UID.");
+              "Get index by UID", "List", "UID2Index", "Get index by UID. Return (-1) if this UID is not in the group.");
+AddStringParam("Name", "Group name.", '""');
+AddNumberParam("Index", "The index of group.", 0);
 AddExpression(5, ef_return_number | ef_variadic_parameters, 
-              "Get UID by index", "List", "Index2UID", "Get UID by index.");
+              "Get UID by index", "List", "Index2UID", "Get UID by index. Return (-1) if index is not in the group.");
+AddStringParam("Variable", "Variable name to store UID.", '""');
 AddExpression(6, ef_return_number | ef_variadic_parameters,
-              'Get UID from "For each"', "List", "ForEachUID", 'Get UID in a group. Used in "Condition:For each UID"');                         
+              'Get UID from "For each"', "List: For each", "Item", 'Get UID in a group. Used in "Condition:For each UID".');                         
+AddStringParam("Variable", "Variable name to store UID.", '""');
+AddExpression(7, ef_return_number | ef_variadic_parameters,
+              'Get index from "For each"', "List: For each", "Index", 'Get index in a group. Used in "Condition:For each UID"');                         
+AddStringParam("Name", "Group name.", '""');
+AddExpression(8, ef_return_string | ef_variadic_parameters, 
+              "Transfer group to string", "JSON", "GroupToString", "Transfer group to JSON string.");
+AddExpression(9, ef_return_string, 
+              "Transfer all groups to string", "JSON", "AllToString", "Transfer all groups to JSON string.");              
+AddNumberParam("UID", "Group name.", '""');
+AddStringParam("Name", "Group name.", '""');              
+AddExpression(10, ef_return_string | ef_variadic_parameters, 
+              "Get private group name", "Private group", "PrivateGroup", "Get instance's private group name.");
 
 
 ACESDone();

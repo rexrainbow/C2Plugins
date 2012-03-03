@@ -43,15 +43,18 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.exp_ChessUID =0;
-	    this.exp_BrickUID =0;
+	    this.exp_BrickUID =0;	   
 	    
 	    this.is_tetragon_grid = (this.properties[0]==0);
 	    this.path_mode = this.properties[1];
 	                     
         this.board = null; 
-        this.callback = null; 
+        this.group = null;
         this._skip_first = null;
-        this._cost = null;
+        this._cost_fn_name = null;
+        this._filter_fn_name = null;
+        this._cost_value = 0;
+        this._filter_uid = 0;
         this._is_cost_fn = null;
         this._bricks = {};
         this._chess_xyz = null;
@@ -93,16 +96,18 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return this.board.uid2xyz(uid);
 	};
 	
-	instanceProto._get_cost = function(_cost, brick_uid)
+	instanceProto._get_cost = function(brick_uid)
 	{
 	    var cost;
 	    if (this._is_cost_fn)
 	    {
 	        this.exp_BrickUID = brick_uid;
-	        cost = this.callback.CallFn(this._cost);
+	        this._cost_value = 0;
+	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
+	        cost = this._cost_value;
 	    }
 	    else
-	        cost = _cost;
+	        cost = this._cost_fn_name;
 	    return cost; 
 	};
 	
@@ -181,7 +186,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         }
         else if (!at_chess_xy)  // try to move to this brick
         {
-	        var brick_cost = this._get_cost(this._cost,brick_uid);
+	        var brick_cost = this._get_cost(brick_uid);
 	        if (brick_cost == null)
 	        {
 	            // maybe an error?
@@ -253,9 +258,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
-	    this.exp_ChessUID = chess_uid;
+	    //this.exp_ChessUID = chess_uid;
 	    this._skip_first = true;
-	    this._cost = cost;
+	    this._cost_fn_name = cost;
 	    this._is_cost_fn = (typeof cost == "string");
 	    this._bricks = {};
 	    this._chess_xyz = this.uid2xyz(chess_uid);
@@ -267,9 +272,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	instanceProto.get_moving_path = function (chess_uid, end_brick_uid, moving_points, cost)
 	{
-	    this.exp_ChessUID = chess_uid;
+	    //this.exp_ChessUID = chess_uid;
 	    this._skip_first = true;
-	    this._cost = cost;
+	    this._cost_fn_name = cost;
 	    this._is_cost_fn = (typeof cost == "string");
 	    this._bricks = {};
 	    this._chess_xyz = this.uid2xyz(chess_uid);
@@ -287,14 +292,14 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;        
 
-	cnds.GetMoveableBrick = function ()
+	cnds.OnCostFn = function (name)
 	{
-        return true;
+        return (this._cost_fn_name == name);
 	};    
 
-	cnds.GetMovingPathBrick = function ()
+	cnds.OnFilterFn = function (name)
 	{
-        return true;
+        return (this._filter_fn_name == name);
 	}; 	
 	
 	//////////////////////////////////////
@@ -302,70 +307,64 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
     
-    acts.SetupBoard = function (board_objs)
+    acts.Setup = function (board_objs, group_objs)
 	{
         var board = board_objs.instances[0];
         if (board.check_name == "BOARD")
             this.board = board;        
         else
             alert ("SLG movement should connect to a board object");
+            
+        var group = group_objs.instances[0];
+        if (group.check_name == "GROUP")
+            this.group = group;        
+        else
+            alert ("SLG movement should connect to a instance group object");            
 	};   
     
-    acts.SetupCallback = function (fn_objs)
+    acts.SetCost = function (cost_value)
 	{
-        var callback = fn_objs.instances[0];
-        if (callback.check_name == "FUNCTION")
-            this.callback = callback;        
-        else
-            alert ("SLG movement should connect to a function object");
-	};      
-		
-	acts.GetMoveableArea = function (chess_objs, moving_points, cost, cb_name)
+        this._cost_value = cost_value;           
+	}; 
+    
+    acts.SetFilter = function (filter_uid)
+	{
+        this._filter_uid = filter_uid;           
+	}; 	   
+	 
+	acts.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
 	{	        	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
 	    if ((_xyz == null) || (moving_points<=0))
 	        return;
 	    
-		var bricks_uid = this.get_moveable_area(chess_uid, moving_points, cost);
-	    var uid;  
-        var is_call_fn_obj = (cb_name!="");
-        if (is_call_fn_obj)
-            assert2(this.callback, "SLG movement should connect to a function object");
-		for(uid in bricks_uid)
+	    this.exp_ChessUID = chess_uid;
+		var bricks_uids = this.get_moveable_area(chess_uid, moving_points, cost);
+	    var uid;
+	    var avaiable_uids = [];  
+        this._filter_fn_name = filter;
+	    for(uid in bricks_uids)
 		{
-		    this.exp_BrickUID = parseInt(uid);
-            if (is_call_fn_obj)
-                this.callback.CallFn(cb_name);
-            else
-		        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.GetMoveableBrick, this);
+		    this.exp_BrickUID = parseInt(uid);		        
+	        this._filter_uid = uid;
+	        if (filter != "")
+	            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
+	        avaiable_uids.push(this._filter_uid);
 		}
+		this.group.GetGroup(group_name).SetByUIDList(avaiable_uids);
 	};  
 		
-	acts.GetMovingPath = function (chess_objs, brick_objs, moving_points, cost, cb_name)	
+	acts.GetMovingPath = function (chess_objs, brick_objs, moving_points, cost, group_name)	
 	{
 	    var chess_uid = _get_uid(chess_objs);
 	    var brick_uid = _get_uid(brick_objs);
 	    if ((chess_uid == null) || (brick_uid == null) || (moving_points<=0))
 	        return;
 
-	    var path_bricks_uid = this.get_moving_path(chess_uid,brick_uid,moving_points, cost);
-	    if (path_bricks_uid == null)
-	        return;
-	    
-        var is_call_fn_obj = (cb_name!="");
-        if (is_call_fn_obj)
-            assert2(this.callback, "SLG movement should connect to a function object");        
-	    var bricks_cnt = path_bricks_uid.length;
-	    var i;
-		for(i=0;i<bricks_cnt;i++)
-		{
-		    this.exp_BrickUID = path_bricks_uid[i];
-		    if (is_call_fn_obj)
-                this.callback.CallFn(cb_name);
-            else
-		        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.GetMovingPathBrick, this);
-		}	    		      	       
+        this.exp_ChessUID = chess_uid;
+	    var path_bricks_uids = this.get_moving_path(chess_uid,brick_uid,moving_points, cost);
+	    this.group.GetGroup(group_name).SetByUIDList(path_bricks_uids);	    		      	       
 	};	  	
     
 	//////////////////////////////////////
