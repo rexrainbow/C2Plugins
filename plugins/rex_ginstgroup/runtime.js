@@ -253,9 +253,11 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    this.DestroyGroup(name);
 	}; 	
 	
-    acts.Copy = function (group_a, group_result)
+    acts.Copy = function (source, target)
 	{
-	    this.GetGroup(group_result).Copy(this.GetGroup(group_a));
+        if (source == target)
+            return;
+	    this.GetGroup(target).Copy(this.GetGroup(source));
 	};	
 	
     acts.String2Group = function (JSON_string, name)
@@ -362,7 +364,17 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 	    this.GetGroup(name).GetList().reverse();
 	};
-					
+	
+    acts.Slice = function (source, start, end, target, is_pop)
+	{
+        var source_group = this.GetGroup(source);
+        var target_group = this.GetGroup(target);
+	    var _list = source_group.GetList().slice(start, end);
+        target_group.SetByUIDList(_list);
+        if (is_pop==1)
+            source_group.Complement(target_group);
+	};	
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};

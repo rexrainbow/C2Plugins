@@ -40,8 +40,8 @@ AddCondition(4, 0, "UID in group", "Group",
 AddStringParam("Name", "Group name.", '""');
 AddAction(1, 0, "Clean group", "Group", "Clean group <i>{0}</i>", 
           "Clean group to empty.", "Clean");
-AddStringParam("Name", "Group A.", '""');
-AddStringParam("Name", "Group result.", '""');
+AddStringParam("Source", "Group A.", '""');
+AddStringParam("Target", "Group result.", '""');
 AddAction(2, 0, "Copy", "Group", "Copy group <i>{0}</i> to group <i>{1}</i>", 
           "Copy group to another group.", "Copy");  
 AddStringParam("JSON string", "JSON string.", '""');
@@ -117,6 +117,15 @@ AddAction(19, 0, "Sort by UID decreasement", "List: Sort", "Sort group <i>{0}</i
 AddStringParam("Name", "Group name.", '""');
 AddAction(20, 0, "Reverse", "List: Sort", "Reverse group <i>{0}</i> order", 
           "Reverse group order.", "Reverse");                        
+AddStringParam("Source", "Group A.", '""');
+AddNumberParam("Start", "Start index", 0);
+AddNumberParam("End", "End index", 0);
+AddStringParam("Target", "Group result.", '""');
+AddComboParamOption("Copy");
+AddComboParamOption("Pop");
+AddComboParam("Operation", "Copy or pop UID", 0);
+AddAction(21, 0, "Slice", "List", "<i>{4}</i> group <i>{0}</i>[<i>{1}</i>:<i>{2}</i>] to group <i>{3}</i>", 
+          "Copy or pop group slice to another group.", "Slice");
           
 //////////////////////////////////////////////////////////////
 // Expressions

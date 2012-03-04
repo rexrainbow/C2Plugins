@@ -316,7 +316,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             alert ("SLG movement should connect to a board object");
             
         var group = group_objs.instances[0];
-        if (group.check_name == "GROUP")
+        if (group.check_name == "INSTGROUP")
             this.group = group;        
         else
             alert ("SLG movement should connect to a instance group object");            
@@ -364,7 +364,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
         this.exp_ChessUID = chess_uid;
 	    var path_bricks_uids = this.get_moving_path(chess_uid,brick_uid,moving_points, cost);
-	    this.group.GetGroup(group_name).SetByUIDList(path_bricks_uids);	    		      	       
+        if (path_bricks_uids != null)
+	        this.group.GetGroup(group_name).SetByUIDList(path_bricks_uids);	    		      	       
 	};	  	
     
 	//////////////////////////////////////
