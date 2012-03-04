@@ -21,7 +21,7 @@ AddCondition(1, cf_trigger, "On sorting", "List: Sort",
 AddStringParam("Variable", "Variable name to store UID.", '""');
 AddStringParam("Name", "Group name.", '""');
 AddCondition(2, cf_looping | cf_not_invertible, "For each UID", "List", 
-             "For Item<i>{0}</i> in group <i>{0}</i>", "Repeat the event for each UID in a group.", "ForEachUID");
+             "For Item<i>{0}</i> in group <i>{1}</i>", "Repeat the event for each UID in a group.", "ForEachUID");
 AddStringParam("Name", "Group name.", '""');          
 AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Keep");
@@ -118,8 +118,8 @@ AddStringParam("Name", "Group name.", '""');
 AddAction(20, 0, "Reverse", "List: Sort", "Reverse group <i>{0}</i> order", 
           "Reverse group order.", "Reverse");                        
 AddStringParam("Source", "Group A.", '""');
-AddNumberParam("Start", "Start index", 0);
-AddNumberParam("End", "End index", 0);
+AddNumberParam("Start", "Start index.", 0);
+AddNumberParam("End", "End index.", 1);
 AddStringParam("Target", "Group result.", '""');
 AddComboParamOption("Copy");
 AddComboParamOption("Pop");
