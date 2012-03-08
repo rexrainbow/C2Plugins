@@ -41,21 +41,25 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.board = null;
-        this.callback = null;
-        this.layout = new cr.plugins_.Rex_TMXImporter.LayoutKlass(this.properties[0], this.properties[1],
-                                                               0,0,0);
-        this._tmx_obj = null;
+        this.exp_CreatedInstUID = (-1);
+        this.exp_LogicX = (-1);
+        this.exp_LogicY = (-1);        
+        this._tmx_obj = null;    
+        this.layout = new cr.plugins_.Rex_TMXImporter.LayoutKlass(this, this.properties[0], this.properties[1],
+                                                                  0,0,0);
 	};
-	instanceProto.LoadTMX = function(tmx_string)
+	instanceProto.ImportTMX = function(tmx_string)
 	{
         this._tmx_obj = new cr.plugins_.Rex_TMXImporter.TMXKlass(tmx_string);
+	};
+	instanceProto.CreateInstances = function()
+	{
         this._layout_set(this._tmx_obj);
         var layers = this._tmx_obj.layers;
         var layers_cnt = layers.length;
         var i;
         for(i=0; i<layers_cnt; i++)
-           this._create_objects(layers[i]);
+           this._create_objects(layers[i]);           
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
@@ -65,54 +69,137 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};	
 	instanceProto._create_objects = function(tmx_layer)
 	{
-        var layer_name = tmx_layer.name;
+        var c2_layer =  this._get_layer(this._tmx_obj.GetLayerName(tmx_layer));
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
-        var x,y,sprite_image,i=0;
+        var x,y,image_index,c2_obj_type,inst,i=0; 
         for (y=0; y<height; y++)
         {
             for (x=0; x<width; x++)
-            {           
-                sprite_image = this._tmx_obj.GetSpriteImage(data[i]);
+            {     
+                image_index = this._tmx_obj.GetImageIndex(data[i]);      
+                c2_obj_type = this._get_type(image_index.name);
+                inst = this.layout.CreateItem(c2_obj_type,x,y,c2_layer);
+                this._set_anim_frame(inst, image_index.cur_frame);
+                
+                this.exp_CreatedInstUID = inst.uid;
+                this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnInstCreating, this);
                 i++;
             }
         }
+        
+        this.exp_CreatedInstUID = (-1);
 	};	
+    
+    instanceProto._get_type = function(_obj_type)
+    {
+        var obj_type;
+        if (typeof _obj_type == "string")
+        {
+            var name = _obj_type;
+            var types = this.runtime.types;
+            var type_name, item;
+            obj_type = null;            
+            for(type_name in types)
+            {
+                item = types[type_name];
+                if (item.name == name)
+                {
+                    obj_type = item;
+                    break;
+                }
+            }
+        }
+        else
+            obj_type = _obj_type;
+        return obj_type;
+    };	
+    instanceProto._get_layer = function(layerparam)
+    {
+        return (typeof layerparam == "number")?
+               this.runtime.getLayerByNumber(layerparam):
+               this.runtime.getLayerByName(layerparam);
+    };   
+    // copy from sprite plugin
+	instanceProto._set_anim_frame = function (inst, framenumber)
+	{
+		inst.changeAnimFrame = framenumber;
+		
+		// start ticking if not already
+		if (!inst.isTicking)
+		{
+			inst.runtime.tickMe(inst);
+			inst.isTicking = true;
+		}
+		
+		// not in trigger: apply immediately
+		if (!inst.inAnimTrigger)
+			inst.doChangeAnimFrame();
+	};            
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;    
+	  
+	cnds.OnInstCreating = function ()
+	{
+		return true;
+	};	
     
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 	
-    acts.LoadTMXImporter = function (tmx_string, board_objs)
-	{
-        var board = board_objs.instances[0];
-        if (board.check_name == "BOARD")
-        {
-            this.board = board;        
-            board.layout = this.layout;
-        }
-        else
-            alert ("TMXImporter should connect to a board object");
-            
-        this.LoadTMX(tmx_string);
-                      
-	};
-	
-    acts.LoadTMX = function (tmx_string)
+    acts.ImportTMX = function (tmx_string)
 	{	     
-        this.LoadTMX(tmx_string);
+        this.ImportTMX(tmx_string);
+	};
+
+    acts.CreateTileInstances = function ()
+	{	     
+        this.CreateInstances();
 	};	
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
-
+    
+	exps.MapWidth = function (ret)
+	{   
+        var map_width = (this._tmx_obj != null)? this._tmx_obj.map.width:0;
+	    ret.set_int(map_width);
+	};
+	exps.MapHeight = function (ret)
+	{   
+        var map_height = (this._tmx_obj != null)? this._tmx_obj.map.height:0;
+	    ret.set_int(map_height);
+	};
+	exps.TileWidth = function (ret)
+	{   
+        var tile_width = (this._tmx_obj != null)? this._tmx_obj.map.tilewidth:0;   
+	    ret.set_int(tile_width);
+	};
+	exps.TileHeight = function (ret)
+	{   
+        var tile_height = (this._tmx_obj != null)? this._tmx_obj.map.tileheight:0;  
+	    ret.set_int(tile_height);
+	}; 	
+	exps.CreatedInstUID = function (ret)
+	{   
+	    ret.set_int(this.exp_CreatedInstUID);
+	}; 
+	exps.LogicX = function (ret)
+	{   
+	    ret.set_int(this.exp_LogicX);
+	};
+	exps.LogicY = function (ret)
+	{   
+	    ret.set_int(this.exp_LogicY);
+	};    
+    
+    
 }());
 
 (function ()
@@ -126,43 +213,58 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     };
     var TMXKlassProto = cr.plugins_.Rex_TMXImporter.TMXKlass.prototype;
     
-    TMXKlassProto.GetSpriteImage = function (gid)
+    TMXKlassProto.GetLayerName = function (layer)
+    {
+        var layer_name = layer.name;
+        var properties = layer.properties;
+        if (properties != null)
+        {
+            var _layer_name = properties["name"];
+            if (_layer_name != null)
+                layer_name = _layer_name;
+        }
+        return layer_name;            
+    };
+    TMXKlassProto.GetImageIndex = function (gid)
     {
         var tilesets_cnt = this.tilesets.length;
         var i, tileset, tile;
-        var sprie_image = {};
+        var image_index = {};
         for (i=tilesets_cnt-1; i>=0; i--)
         {
             tileset = this.tilesets[i];
             if (gid >= tileset.firstgid)
             {
-                var _image = _tile2sprite_image(tileset.tiles[gid]);
-                if (_image != null)
-                    sprie_image = _image;
+                var _image_index = _tile2image_index(tileset.tiles[gid]);
+                if (_image_index != null)
+                    image_index = _image_index;
                 else
                 {
-                    sprie_image.name = tileset.name;
-                    sprie_image.cur_frame = gid;
+                    image_index.name = tileset.name;
+                    image_index.cur_frame = gid-1;
                 }
                 break;
             }
         }
-        return sprie_image;
+        return image_index;
     };
     
-    var _tile2sprite_image = function(tile)
+    var _tile2image_index = function(tile)
     {
         if (tile == null)
             return null;
-        var name = tile.properties.name;
-        var cur_frame = tile.properties.cur_frame;
+        var properties = tile.properties;
+        if (properties == null)
+            return null;        
+        var name = properties.name;
+        var cur_frame = properties.cur_frame;
         if ((name == null) || (cur_frame == null))
             return null;
         
-        var sprie_image = {};
-        sprie_image.name = name;
-        sprie_image. cur_frame = cur_frame;
-        return sprie_image;    
+        var image_index = {};
+        image_index.name = name;
+        image_index. cur_frame = cur_frame;
+        return image_index;    
     };
     
     var _get_map = function (xml_obj)
@@ -294,17 +396,20 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     };
     var _decCSV = function(data) 
     {     
-        data = data.trim().split("\n");
+        data = data.replace(/(^\s*)|(\s*$)/g,"");
+        data = data.split(",");
         var data_cnt = data.length;
-        var i;
+        var i,entries;
+        var arr = [];
         for(i=0; i<data_cnt; i++)
             data[i] = parseInt(data[i]);
         return data;
     };
     
       
-    cr.plugins_.Rex_TMXImporter.LayoutKlass = function(OX, OY, width, height, is_isometric)
+    cr.plugins_.Rex_TMXImporter.LayoutKlass = function(plugin, OX, OY, width, height, is_isometric)
     {
+        this.plugin = plugin;
         this.is_isometric = is_isometric;
         this.PositionOX = OX;
         this.PositionOY = OY;
@@ -323,21 +428,15 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.height = height;
         this.half_height = height/2;        
 	};     
-	LayoutKlassProto.GetX = function(logic_x, logic_y)
+    LayoutKlassProto.CreateItem = function(obj_type,logic_x,logic_y, layer)
 	{
         var x = (this.is_isometric)? ((logic_x - logic_y)*this.half_width):
                                      (logic_x*this.width);
-        return x+this.PositionOX;
-	};
-	LayoutKlassProto.GetY = function(logic_x, logic_y)
-	{
+        x += this.PositionOX; 
         var y = (this.is_isometric)? ((logic_x + logic_y)*this.half_height):
                                      (logic_y*this.height);
-        return y+this.PositionOY;
-	};   
-	LayoutKlassProto.CreateItem = function(obj_type,x,y,layer,offset_x,offset_y)
-	{
-        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y)+offset_x,this.GetY(x,y)+offset_y );        
+        y += this.PositionOY;        
+        return this.plugin.runtime.createInstance(obj_type, layer, x, y );        
 	}; 
 	
 	
@@ -387,6 +486,5 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		return singleton;
 
 	})();
-	
-	   
+
 }());    

@@ -201,6 +201,16 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    return this.items[uid];
 	};
 	
+	instanceProto.CreateChess = function(_obj_type,x,y,z,_layer,offset_x,offset_y)
+	{
+        var obj_type = this._get_type(_obj_type);
+        if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
+            return;
+            
+        var obj = this.CreateItem(obj_type,x,y,_layer,offset_x,offset_y);
+	    this.add_item(obj.uid,x,y,z);  
+	    return obj;
+	};	
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -237,21 +247,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		
 	acts.CreateBrick = function (_obj_type,x,y,_layer)
 	{
-        var obj_type = this._get_type(_obj_type);
-        if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
-            return;
-        var obj = this.CreateItem(obj_type,x,y,_layer,0,0);
-	    this.add_item(obj.uid,x,y,0);
+	    this.CreateChess(_obj_type,x,y,0,_layer,offset_x,offset_y);
 	};
 	
 	acts.CreateChess = function (_obj_type,x,y,z,_layer,offset_x,offset_y)
 	{
-        var obj_type = this._get_type(_obj_type);
-        if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
-            return;
-            
-        var obj = this.CreateItem(obj_type,x,y,_layer,offset_x,offset_y);
-	    this.add_item(obj.uid,x,y,z);        
+	    this.CreateChess(_obj_type,x,y,z,_layer,offset_x,offset_y);        
 	};	
 	
 	acts.RemoveChess = function (objs)

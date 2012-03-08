@@ -3,7 +3,7 @@
 	return {
 		"name":			"TMX Importer",
 		"id":			"Rex_TMXImporter",
-		"description":	"Create sprites according to tmx file.",
+		"description":	"Create sprites according to tmx string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Utility",
@@ -15,29 +15,33 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(1, cf_trigger, "On instance creating", "TMX", 
+             "On instance creating", 'Triggered when instance creating by "action:Create tile instances".', "OnInstCreating");
+             
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
-AddObjectParam("Board", "Board object");
-AddAction(1, 0, "Load TMX to board", "Load", "Load objects from tmx string <i>{0}</i> to <i>{1}</i>",
-         "Load objects from tmx string to board.", "LoadTMX2Board");      
-AddStringParam("TMX string", "The tmx string for loading.", '""');
-AddAction(2, 0, "Load TMX", "Load", "Load objects from tmx string <i>{0}</i>",
-         "Load objects from tmx string.", "LoadTMX");
-AddStringParam("TMX string", "The tmx string for loading.", '""');
-AddObjectParam("Board", "Board object");
-AddObjectParam("Function", "Function object");
-AddStringParam("Callback", "Callback name.", '""');
-AddAction(3, 0, "Load TMX to board", "Advance: Load", "Load objects from tmx string <i>{0}</i> to <i>{1}</i>, with callback <i>{3}</i> in <i>{2}</i>",
-         "Load objects from tmx string to board with callback.", "LoadTMX2BoardAdv");      
-AddStringParam("TMX string", "The tmx string for loading.", '""');
-AddObjectParam("Function", "Function object");
-AddStringParam("Callback", "Callback name.", '""');
-AddAction(4, 0, "Load TMX", "Load", "Load objects from tmx string <i>{0}</i>, with callback <i>{3}</i> in <i>{2}</i>",
-         "Load objects from tmx string with callback.", "LoadTMXAdv");           
+AddAction(1, 0, "Import tmx", "TMX", "Import tmx string <i>{0}</i>",
+         "Import tmx string.", "ImportTMX");  
+AddAction(2, 0, "Create tile instances", "TMX", "Create tile instances",
+         "Create tile instances from tmx string.", "CreateTileInstances");
+         
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, 
+              "Get map width", "Map", "MapWidth", "Get map width in tile number.");
+AddExpression(2, ef_return_number, 
+              "Get map height", "Map", "MapHeight", "Get map height in tile number.");
+AddExpression(3, ef_return_number, 
+              "Get tile width", "Map", "TileWidth", "Get tile width in pixel.");
+AddExpression(4, ef_return_number, 
+              "Get tile height", "Map", "TileHeight", "Get tile height in pixel.");              
+AddExpression(5, ef_return_number, 
+              "Get UID of created instance UID", "OnCreating", "CreatedInstUID", 'Get UID of created Instance. Used in "Condition:On instance creating"');
+AddExpression(6, ef_return_number, 
+              "Get logic X index of created instance", "OnCreating", "LogicX", 'Get logic X index of created instance. Used in "Condition:On instance creating"');
+AddExpression(7, ef_return_number, 
+              "Get logic Y index of created instance", "OnCreating", "LogicY", 'Get logic Y index of created instance. Used in "Condition:On instance creating"');
 
 
 ACESDone();
