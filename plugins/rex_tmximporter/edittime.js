@@ -25,6 +25,12 @@ AddAction(1, 0, "Import tmx", "TMX", "Import tmx string <i>{0}</i>",
          "Import tmx string.", "ImportTMX");  
 AddAction(2, 0, "Create tile instances", "TMX", "Create tile instances",
          "Create tile instances from tmx string.", "CreateTileInstances");
+AddAction(3, 0, "Release tmx object", "TMX", "Release tmx object",
+         "Release tmx object.", "ReleaseTMX");
+AddNumberParam("X", "X co-ordinate of instance at Logic(0,0).", 0);
+AddNumberParam("Y", "Y co-ordinate of instance at Logic(0,0).", 0);       
+AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance position of (0,0) to (<i>{0}</i>,<i>{1}</i>)",
+         "Set instance position of (0,0).", "SetOPosition");
          
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -36,13 +42,21 @@ AddExpression(3, ef_return_number,
               "Get tile width", "Map", "TileWidth", "Get tile width in pixel.");
 AddExpression(4, ef_return_number, 
               "Get tile height", "Map", "TileHeight", "Get tile height in pixel.");              
-AddExpression(5, ef_return_number, 
-              "Get UID of created instance UID", "OnCreating", "CreatedInstUID", 'Get UID of created Instance. Used in "Condition:On instance creating"');
-AddExpression(6, ef_return_number, 
-              "Get logic X index of created instance", "OnCreating", "LogicX", 'Get logic X index of created instance. Used in "Condition:On instance creating"');
-AddExpression(7, ef_return_number, 
-              "Get logic Y index of created instance", "OnCreating", "LogicY", 'Get logic Y index of created instance. Used in "Condition:On instance creating"');
+AddExpression(12, ef_return_number, 
+              "Get logic X index", "OnCreating", "LogicX", 'Get logic X index of created instance. Used in "Condition:On instance creating"');
+AddExpression(13, ef_return_number, 
+              "Get logic Y index", "OnCreating", "LogicY", 'Get logic Y index of created instance. Used in "Condition:On instance creating"');
+AddStringParam("Name", "Property name.", '""');
+AddExpression(14, ef_return_any | ef_variadic_parameters, 
+              "Get layer properties", "OnCreating", "LayerProp", 'Get layer properties of created instance. Used in "Condition:On instance creating"');
+AddStringParam("Name", "Property name.", '""');
+AddExpression(15, ef_return_any | ef_variadic_parameters,
+              "Get tileset properties", "OnCreating", "TilesetProp", 'Get tileset properties of created instance. Used in "Condition:On instance creating"');
+AddStringParam("Name", "Property name.", '""');
+AddExpression(16, ef_return_any | ef_variadic_parameters,
+              "Get tile properties", "OnCreating", "TileProp", 'Get tile properties of created instance. Used in "Condition:On instance creating"');
 
+              
 
 ACESDone();
 

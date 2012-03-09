@@ -41,9 +41,12 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.exp_CreatedInstUID = (-1);
         this.exp_LogicX = (-1);
-        this.exp_LogicY = (-1);        
+        this.exp_LogicY = (-1);  
+        this.exp_layer_properties = {};
+        this.exp_tileset_properties = {};        
+        this.exp_tile_properties = {};
+        
         this._tmx_obj = null;    
         this.layout = new cr.plugins_.Rex_TMXImporter.LayoutKlass(this, this.properties[0], this.properties[1],
                                                                   0,0,0);
@@ -73,23 +76,35 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
-        var x,y,image_index,c2_obj_type,inst,i=0; 
+        var x,y,image_index,c2_obj_type,inst,tile_id,tileset_obj,tile_obj; 
+        var i=0;
+        
+        this.exp_layer_properties = tmx_layer.properties;
         for (y=0; y<height; y++)
         {
             for (x=0; x<width; x++)
             {     
-                image_index = this._tmx_obj.GetImageIndex(data[i]);      
+                tile_id = data[i];
+                image_index = this._tmx_obj.GetImageIndex(tile_id);      
                 c2_obj_type = this._get_type(image_index.name);
                 inst = this.layout.CreateItem(c2_obj_type,x,y,c2_layer);
                 this._set_anim_frame(inst, image_index.cur_frame);
                 
-                this.exp_CreatedInstUID = inst.uid;
+                this.exp_LogicX = x;
+                this.exp_LogicY = y;
+                tileset_obj = this._tmx_obj.GetTileSet(tile_id);
+                this.exp_tileset_properties = tileset_obj.properties;
+                tile_obj = tileset_obj.tiles[tile_id];
+                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
+                
+                var sol = inst.type.getCurrentSol();
+                sol.select_all = false;
+		        sol.instances.length = 1;
+		        sol.instances[0] = inst;
                 this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnInstCreating, this);
                 i++;
             }
-        }
-        
-        this.exp_CreatedInstUID = (-1);
+        }         
 	};	
     
     instanceProto._get_type = function(_obj_type)
@@ -156,11 +171,19 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{	     
         this.ImportTMX(tmx_string);
 	};
-
     acts.CreateTileInstances = function ()
 	{	     
         this.CreateInstances();
+	};
+    acts.ReleaseTMX = function ()
+	{	     
+        this._tmx_obj = null;    
 	};	
+    acts.SetOPosition = function (x,y)
+	{	     
+        this.layout.PositionOX = x;
+        this.layout.PositionOY = y;        
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -186,7 +209,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var tile_height = (this._tmx_obj != null)? this._tmx_obj.map.tileheight:0;  
 	    ret.set_int(tile_height);
 	}; 	
-	exps.CreatedInstUID = function (ret)
+	exps.InstUID = function (ret)
 	{   
 	    ret.set_int(this.exp_CreatedInstUID);
 	}; 
@@ -198,8 +221,27 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{   
 	    ret.set_int(this.exp_LogicY);
 	};    
-    
-    
+	exps.LayerProp = function (ret, name)
+	{   
+        var value = this.exp_layer_properties[name];
+        if (value == null)
+            value = 0;
+	    ret.set_any(value);
+	};
+	exps.TilesetProp = function (ret, name)
+	{       
+        var value = this.exp_tileset_properties[name];
+        if (value == null)
+            value = 0;        
+	    ret.set_any(value);
+	};     
+	exps.TileProp = function (ret, name)
+	{       
+        var value = this.exp_tile_properties[name];
+        if (value == null)
+            value = 0;        
+	    ret.set_any(value);
+	};      
 }());
 
 (function ()
@@ -225,27 +267,31 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         }
         return layer_name;            
     };
-    TMXKlassProto.GetImageIndex = function (gid)
+    TMXKlassProto.GetTileSet = function (gid)
     {
         var tilesets_cnt = this.tilesets.length;
-        var i, tileset, tile;
+        var i, tileset;
         var image_index = {};
         for (i=tilesets_cnt-1; i>=0; i--)
         {
             tileset = this.tilesets[i];
             if (gid >= tileset.firstgid)
-            {
-                var _image_index = _tile2image_index(tileset.tiles[gid]);
-                if (_image_index != null)
-                    image_index = _image_index;
-                else
-                {
-                    image_index.name = tileset.name;
-                    image_index.cur_frame = gid-1;
-                }
-                break;
-            }
+                return tileset;
         }
+        return null;    
+    }; 
+    TMXKlassProto.GetImageIndex = function (gid)
+    {
+        var image_index = {};
+        var tileset = this.GetTileSet(gid);
+        var tile_image_index = _tile2image_index(tileset.tiles[gid])
+        if (tile_image_index != null)
+            image_index = tile_image_index;
+        else
+        {
+            image_index.name = tileset.name;
+            image_index.cur_frame = gid-1;
+        }        
         return image_index;
     };
     
@@ -299,8 +345,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         tileset.margin = parseInt(xml_tileset.getAttribute("margin"));     
         var xml_tiles = jQuery(xml_tileset).find("tile");
         tileset.tiles = _get_tiles(xml_tiles);
-        //var xml_properties = jQuery(xml_tileset).find("properties").find("property");
-        //tileset.properties = _get_properties(xml_properties);
+        
+        var xml_properties = jQuery(xml_tileset).children("properties").find("property");
+        tileset.properties = _get_properties(xml_properties);
         return tileset;
     };
     var _get_tiles = function(xml_tiles)
@@ -311,7 +358,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         for(i=0; i<tiles_cnt; i++)
         {
             xml_tile = xml_tiles[i];
-            id = parseInt(xml_tile.getAttribute("id"));
+            id = parseInt(xml_tile.getAttribute("id"))+1;
             tiles[id] = _get_tile(xml_tile);
         }
         return tiles;
