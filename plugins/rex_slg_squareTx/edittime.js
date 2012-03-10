@@ -3,7 +3,7 @@
 	return {
 		"name":			"Square Tx",
 		"id":			"Rex_SLGSquareTx",
-		"description":	"Transfer logic position to physical position with square layout",
+		"description":	"Transfer logic position to physical position with orthogonal or isometric layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"SLG",
@@ -27,9 +27,10 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Orientation", "Orthogonal", "Map orientation.", "Orthogonal|Isometric"),      
     new cr.Property(ept_float, "X at (0,0)", 0, "Physical X co-ordinate at logic (0,0)."),
     new cr.Property(ept_float, "Y at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
-	new cr.Property(ept_float, "Width", 64, "Cell width in pixels."),
+	new cr.Property(ept_float, "Width", 32, "Cell width in pixels."),
 	new cr.Property(ept_float, "Height", 32, "Cell height in pixels.")
 	];
 	

@@ -40,21 +40,36 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{
+	{        
         this.check_name = "LAYOUT";
-        this.PositionOX = this.properties[0];
-        this.PositionOY = this.properties[1];
-        this.width = this.properties[2];
-        this.height = this.properties[3];
+        this.is_isometric = (this.properties[0]==1);
+        this.PositionOX = this.properties[1];
+        this.PositionOY = this.properties[2];
+        this.SetWidth(this.properties[3]);
+        this.SetHeight(this.properties[4]);
 	};
    
+	instanceProto.SetWidth = function(width)
+	{
+        this.width = width;
+        this.half_width = width/2;        
+	}; 
+	instanceProto.SetHeight = function(height)
+	{
+        this.height = height;
+        this.half_height = height/2;        
+	};     
 	instanceProto.GetX = function(logic_x, logic_y)
 	{
-        return (logic_x*this.width)+this.PositionOX;
+        var x = (this.is_isometric)? ((logic_x - logic_y)*this.half_width):
+                                     (logic_x*this.width);
+        return x+this.PositionOX;
 	};
 	instanceProto.GetY = function(logic_x, logic_y)
 	{
-        return (logic_y*this.height)+this.PositionOY;
+        var y = (this.is_isometric)? ((logic_x + logic_y)*this.half_height):
+                                     (logic_y*this.height);
+        return y+this.PositionOY;
 	};   
 	instanceProto.CreateItem = function(obj_type,x,y,layer,offset_x,offset_y)
 	{
