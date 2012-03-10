@@ -15,18 +15,21 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On instance creating", "TMX", 
-             "On instance creating", 'Triggered when instance creating by "action:Create tile instances".', "OnInstCreating");
-             
+AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless", 
+             "On each tile cell", "Triggered when retrieve each tile cell.", "OnEachTileCell");
+            
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
 AddAction(1, 0, "Import tmx", "TMX", "Import tmx string <i>{0}</i>",
-         "Import tmx string.", "ImportTMX");  
-AddAction(2, 0, "Create tile instances", "TMX", "Create tile instances",
-         "Create tile instances from tmx string.", "CreateTileInstances");
+         "Import tmx string.", "ImportTMX"); 
+AddObjectParam("Tile", "Tile object.");
+AddAction(2, 0, "Create tiles", "TMX", "Create tiles <i>{0}</i>",
+         'Retrieve tile array and creating tiles. It will trigger "Condition:On each tile cell".', "CreateTiles");
 AddAction(3, 0, "Release tmx object", "TMX", "Release tmx object",
-         "Release tmx object.", "ReleaseTMX");
+         "Release tmx object.", "ReleaseTMX");       
+AddAction(7, 0, "Retrieve tile array", "Advance", "Retrieve tile array",
+         'Retrieve tile array. It will trigger "Condition:On each tile cell"', "RetrieveTileArray");         
 AddNumberParam("X", "X co-ordinate of instance at Logic(0,0).", 0);
 AddNumberParam("Y", "Y co-ordinate of instance at Logic(0,0).", 0);       
 AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance position of (0,0) to (<i>{0}</i>,<i>{1}</i>)",
@@ -43,19 +46,24 @@ AddExpression(3, ef_return_number,
 AddExpression(4, ef_return_number, 
               "Get tile height", "Map", "TileHeight", "Get tile height in pixel.");              
 AddExpression(12, ef_return_number, 
-              "Get logic X index", "OnCreating", "LogicX", 'Get logic X index of created instance. Used in "Condition:On instance creating"');
+              "Get logic X index", "Callback", "LogicX", 'Get logic X index of created instance. Used in "Condition:On each created instance"');
 AddExpression(13, ef_return_number, 
-              "Get logic Y index", "OnCreating", "LogicY", 'Get logic Y index of created instance. Used in "Condition:On instance creating"');
+              "Get logic Y index", "Callback", "LogicY", 'Get logic Y index of created instance. Used in "Condition:On each created instance"');
 AddStringParam("Name", "Property name.", '""');
 AddExpression(14, ef_return_any | ef_variadic_parameters, 
-              "Get layer properties", "OnCreating", "LayerProp", 'Get layer properties of created instance. Used in "Condition:On instance creating"');
+              "Get layer properties", "Callback", "LayerProp", "Get layer properties of created instance.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(15, ef_return_any | ef_variadic_parameters,
-              "Get tileset properties", "OnCreating", "TilesetProp", 'Get tileset properties of created instance. Used in "Condition:On instance creating"');
+              "Get tileset properties", "Callback", "TilesetProp", "Get tileset properties of created instance.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(16, ef_return_any | ef_variadic_parameters,
-              "Get tile properties", "OnCreating", "TileProp", 'Get tile properties of created instance. Used in "Condition:On instance creating"');
-
+              "Get tile properties", "Callback", "TileProp", "Get tile properties of created instance.");
+AddExpression(17, ef_return_number, 
+              "Get physical X index", "Callback", "PhysicalX", "Get physical X index (in pixel) of created instance.");
+AddExpression(18, ef_return_number, 
+              "Get physical Y index", "Callback", "PhysicalY", "Get logic Y index (in pixel) of created instance.");
+AddExpression(19, ef_return_string, 
+              "Get layer name", "Callback", "LayerName", "Get layer name of created instance.");
               
 
 ACESDone();

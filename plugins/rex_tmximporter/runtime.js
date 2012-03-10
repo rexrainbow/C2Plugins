@@ -43,6 +43,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
+        this.exp_PhysicalX = (-1);
+        this.exp_PhysicalY = (-1);
+        this.exp_LayerName = "";        
         this.exp_layer_properties = {};
         this.exp_tileset_properties = {};        
         this.exp_tile_properties = {};
@@ -55,14 +58,14 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{
         this._tmx_obj = new cr.plugins_.Rex_TMXImporter.TMXKlass(tmx_string);
 	};
-	instanceProto.CreateInstances = function()
+	instanceProto.RetrieveTileArray = function(obj_type)
 	{
         this._layout_set(this._tmx_obj);
         var layers = this._tmx_obj.layers;
         var layers_cnt = layers.length;
         var i;
         for(i=0; i<layers_cnt; i++)
-           this._create_objects(layers[i]);           
+           this._create_layer_objects(obj_type, layers[i]);           
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
@@ -70,66 +73,61 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.layout.SetWidth(tmx_obj.map.tilewidth);
         this.layout.SetHeight(tmx_obj.map.tileheight);
 	};	
-	instanceProto._create_objects = function(tmx_layer)
+	instanceProto._create_layer_objects = function(obj_type, tmx_layer)
 	{
-        var c2_layer =  this._get_layer(this._tmx_obj.GetLayerName(tmx_layer));
+        var c2_layer =  this._get_layer(tmx_layer.name);
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
-        var x,y,image_index,c2_obj_type,inst,tile_id,tileset_obj,tile_obj; 
+        var x,y,inst,tile_id,tileset_obj,tile_obj; 
         var i=0;
         
+        this.exp_LayerName = tmx_layer.name;        
         this.exp_layer_properties = tmx_layer.properties;
         for (y=0; y<height; y++)
         {
             for (x=0; x<width; x++)
             {     
+                // get tile id
                 tile_id = data[i];
-                image_index = this._tmx_obj.GetImageIndex(tile_id);      
-                c2_obj_type = this._get_type(image_index.name);
-                inst = this.layout.CreateItem(c2_obj_type,x,y,c2_layer);
-                this._set_anim_frame(inst, image_index.cur_frame);
+                i++;
+                if (tile_id == 0)
+                    continue;
                 
+                if (obj_type != null)
+                {
+                    inst = this._create_instance(obj_type,x,y,c2_layer,tile_id);
+                    this._setup_SOL(inst);     
+                }
+                
+                // prepare expressions
                 this.exp_LogicX = x;
                 this.exp_LogicY = y;
+                this.exp_PhysicalX = this.layout.GetX(x,y);
+                this.exp_PhysicalY = this.layout.GetY(x,y);                
                 tileset_obj = this._tmx_obj.GetTileSet(tile_id);
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[tile_id];
                 this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
-                
-                var sol = inst.type.getCurrentSol();
-                sol.select_all = false;
-		        sol.instances.length = 1;
-		        sol.instances[0] = inst;
-                this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnInstCreating, this);
-                i++;
+                   
+                // trigger callback
+                this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnEachTileCell, this); 
             }
         }         
-	};	
-    
-    instanceProto._get_type = function(_obj_type)
-    {
-        var obj_type;
-        if (typeof _obj_type == "string")
-        {
-            var name = _obj_type;
-            var types = this.runtime.types;
-            var type_name, item;
-            obj_type = null;            
-            for(type_name in types)
-            {
-                item = types[type_name];
-                if (item.name == name)
-                {
-                    obj_type = item;
-                    break;
-                }
-            }
-        }
-        else
-            obj_type = _obj_type;
-        return obj_type;
+	};
+	instanceProto._create_instance = function(obj_type,x,y,c2_layer,tile_id)
+	{  
+        var inst = this.layout.CreateItem(obj_type,x,y,c2_layer);
+        this._set_anim_frame(inst, tile_id-1);
+        return inst;        
     };	
+	instanceProto._setup_SOL = function(inst)
+	{
+        var sol = inst.type.getCurrentSol();
+        sol.select_all = false;
+		sol.instances.length = 1;
+		sol.instances[0] = inst;     
+    };
     instanceProto._get_layer = function(layerparam)
     {
         return (typeof layerparam == "number")?
@@ -157,7 +155,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;    
 	  
-	cnds.OnInstCreating = function ()
+	cnds.OnEachTileCell = function ()
 	{
 		return true;
 	};	
@@ -171,9 +169,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{	     
         this.ImportTMX(tmx_string);
 	};
-    acts.CreateTileInstances = function ()
+    acts.CreateTiles = function (obj_type)
 	{	     
-        this.CreateInstances();
+        this.RetrieveTileArray(obj_type);
 	};
     acts.ReleaseTMX = function ()
 	{	     
@@ -183,7 +181,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{	     
         this.layout.PositionOX = x;
         this.layout.PositionOY = y;        
-	};	    
+	};
+    acts.RetrieveTileArray = function ()
+	{	  
+        this.RetrieveTileArray();
+	};    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -241,7 +243,19 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         if (value == null)
             value = 0;        
 	    ret.set_any(value);
-	};      
+	}; 
+	exps.PhysicalX = function (ret)
+	{   
+	    ret.set_int(this.exp_PhysicalX);
+	};
+	exps.PhysicalY = function (ret)
+	{   
+	    ret.set_int(this.exp_PhysicalY);
+	};
+	exps.LayerName = function (ret)
+	{   
+	    ret.set_string(this.exp_LayerName);
+	};    
 }());
 
 (function ()
@@ -254,19 +268,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.layers = _get_layers(xml_obj);        
     };
     var TMXKlassProto = cr.plugins_.Rex_TMXImporter.TMXKlass.prototype;
-    
-    TMXKlassProto.GetLayerName = function (layer)
-    {
-        var layer_name = layer.name;
-        var properties = layer.properties;
-        if (properties != null)
-        {
-            var _layer_name = properties["name"];
-            if (_layer_name != null)
-                layer_name = _layer_name;
-        }
-        return layer_name;            
-    };
+
     TMXKlassProto.GetTileSet = function (gid)
     {
         var tilesets_cnt = this.tilesets.length;
@@ -280,39 +282,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         }
         return null;    
     }; 
-    TMXKlassProto.GetImageIndex = function (gid)
-    {
-        var image_index = {};
-        var tileset = this.GetTileSet(gid);
-        var tile_image_index = _tile2image_index(tileset.tiles[gid])
-        if (tile_image_index != null)
-            image_index = tile_image_index;
-        else
-        {
-            image_index.name = tileset.name;
-            image_index.cur_frame = gid-1;
-        }        
-        return image_index;
-    };
-    
-    var _tile2image_index = function(tile)
-    {
-        if (tile == null)
-            return null;
-        var properties = tile.properties;
-        if (properties == null)
-            return null;        
-        var name = properties.name;
-        var cur_frame = properties.cur_frame;
-        if ((name == null) || (cur_frame == null))
-            return null;
-        
-        var image_index = {};
-        image_index.name = name;
-        image_index. cur_frame = cur_frame;
-        return image_index;    
-    };
-    
+
     var _get_map = function (xml_obj)
     {
         var xml_map = jQuery(xml_obj).find("map");
@@ -474,16 +444,22 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{
         this.height = height;
         this.half_height = height/2;        
-	};     
-    LayoutKlassProto.CreateItem = function(obj_type,logic_x,logic_y, layer)
+	};   
+    LayoutKlassProto.GetX = function(logic_x, logic_y)
 	{
         var x = (this.is_isometric)? ((logic_x - logic_y)*this.half_width):
                                      (logic_x*this.width);
-        x += this.PositionOX; 
+        return x+this.PositionOX;
+	};
+	LayoutKlassProto.GetY = function(logic_x, logic_y)
+	{
         var y = (this.is_isometric)? ((logic_x + logic_y)*this.half_height):
                                      (logic_y*this.height);
-        y += this.PositionOY;        
-        return this.plugin.runtime.createInstance(obj_type, layer, x, y );        
+        return y+this.PositionOY;
+	};
+    LayoutKlassProto.CreateItem = function(obj_type,x,y,layer)
+	{
+        return this.plugin.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );         
 	}; 
 	
 	
