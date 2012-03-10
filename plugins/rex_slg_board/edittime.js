@@ -84,12 +84,6 @@ AddNumberParam("Logic X", "The X index (0-based) of the brick to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the brick to set.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(12, 0, "Create brick", "Physical: Create", "Create brick <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0] on layer <i>{3}</i>", 
-          "Create brick on the board.", "CreateBrick");
-AddStringParam("Brick", "Brick object name.",'""');        
-AddNumberParam("Logic X", "The X index (0-based) of the brick to set.", 0);
-AddNumberParam("Logic Y", "The Y index (0-based) of the brick to set.", 0);
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
-AddAction(13, 0, "Create brick by name", "Physical: Create", "Create brick <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0] on layer <i>{3}</i>", 
           "Create brick on the board.", "CreateBrick");          
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
@@ -99,16 +93,7 @@ AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddNumberParam("Offset X", "The X co-ordinate offset of this instance.", 0);
 AddNumberParam("Offset Y", "The Y co-ordinate offset of this instance.", 0);
 AddAction(14, 0, "Create chess", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>, offset to (<i>{5}</i>,<i>{6}</i>)", 
-          "Create chess on the board.", "CreateChess"); 
-AddStringParam("Chess", "Chess object name.",'""'); 
-AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddNumberParam("Z", "The Z index (0-based) of the chess to set. 0 is brick.", 0);
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
-AddNumberParam("Offset X", "The X co-ordinate offset of this instance.", 0);
-AddNumberParam("Offset Y", "The Y co-ordinate offset of this instance.", 0);
-AddAction(15, 0, "Create chess by name", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>, offset to (<i>{5}</i>,<i>{6}</i>)", 
-          "Create chess on the board.", "CreateChess");   
+          "Create chess on the board.", "CreateChess");  
        
 //////////////////////////////////////////////////////////////
 // Expressions

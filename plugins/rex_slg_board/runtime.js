@@ -128,34 +128,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
     };    
-
-    instanceProto._get_type = function(_obj_type)
-    {
-        var obj_type;
-        if (typeof _obj_type == "string")
-        {
-            var name = _obj_type;
-            var types = this.runtime.types;
-            var type_name, item;
-            obj_type = null;            
-            for(type_name in types)
-            {
-                item = types[type_name];
-                if (item.name == name)
-                {
-                    obj_type = item;
-                    break;
-                }
-            }
-        }
-        else
-            obj_type = _obj_type;
-        return obj_type;
-    }; 
-    
-	instanceProto.CreateItem = function(_obj_type,x,y,_layer,offset_x,offset_y)
+	instanceProto.CreateItem = function(obj_type,x,y,_layer,offset_x,offset_y)
 	{
-        var obj_type = this._get_type(_obj_type);
         var layer = this._get_layer(_layer);
         var inst = this.layout.CreateItem(obj_type,x,y,layer,offset_x,offset_y);
 
@@ -201,9 +175,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    return this.items[uid];
 	};
 	
-	instanceProto.CreateChess = function(_obj_type,x,y,z,_layer,offset_x,offset_y)
+	instanceProto.CreateChess = function(obj_type,x,y,z,_layer,offset_x,offset_y)
 	{
-        var obj_type = this._get_type(_obj_type);
         if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
             
