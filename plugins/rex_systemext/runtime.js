@@ -49,30 +49,6 @@ cr.plugins_.Rex_SysExt = function(runtime)
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
     };    
-
-    instanceProto._get_type = function(_obj_type)
-    {
-        var obj_type;
-        if (typeof _obj_type == "string")
-        {
-            var name = _obj_type;
-            var types = this.runtime.types;
-            var type_name, item;
-            obj_type = null;            
-            for(type_name in types)
-            {
-                item = types[type_name];
-                if (item.name == name)
-                {
-                    obj_type = item;
-                    break;
-                }
-            }
-        }
-        else
-            obj_type = _obj_type;
-        return obj_type;
-    };
 	var GetInstPropertyValue = function(inst, prop_index)
 	{
 	    var val;
@@ -231,14 +207,6 @@ cr.plugins_.Rex_SysExt = function(runtime)
 			this.runtime.redraw = true;
 		}
     };    
-        
-    acts.CreateObjectByname = function (name, layer, x, y)
-	{
-        var obj_type = this._get_type(name);
-        if (obj_type == null)
-            return;
-        this.runtime.createInstance(obj_type, this._get_layer(layer), x, y);
-	}; 
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};

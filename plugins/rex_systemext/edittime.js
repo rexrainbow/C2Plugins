@@ -60,12 +60,6 @@ AddNumberParam("Visibled", "0 = invisible, 1 = visible", 0);
 AddAction(4, 0, "Set visible", "Layers & transforms", 
           "Set layer <i>{0}</i>'s visible to <i>{1}</i>", 
           "Set the visible of a layer.", "SetLayerVisible");             
-AddStringParam("Object", "Object name.",'""');    
-AddAnyTypeParam("Layer", "Name of number the layer to create instance on.", 0);    
-AddNumberParam("X", "The X co-ordinate at which place the create instance.", 0);
-AddNumberParam("Y", "The Y co-ordinate at which place the create instance.", 0);
-AddAction(5, 0, "Create object by name", "Create", "Create object <i>{0}</i> on layer <i>{1}</i> at (<i>{2}</i>,<i>{3}</i>)", 
-          "Create object by name.", "CreateObjectByname");
           
 //////////////////////////////////////////////////////////////
 // Expressions
