@@ -220,7 +220,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		
 	acts.CreateBrick = function (_obj_type,x,y,_layer)
 	{
-	    this.CreateChess(_obj_type,x,y,0,_layer,offset_x,offset_y);
+	    this.CreateChess(_obj_type,x,y,0,_layer,0,0);
 	};
 	
 	acts.CreateChess = function (_obj_type,x,y,z,_layer,offset_x,offset_y)
