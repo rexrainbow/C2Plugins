@@ -41,31 +41,43 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        this.exp_MapWidth = 0;
+    
+        this.exp_TileID = (-1);
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
         this.exp_PhysicalY = (-1);
-        this.exp_LayerName = "";        
+        this.exp_IsMirrored = 0;
+        this.exp_IsFlipped = 0;        
+        this.exp_LayerName = "";  
+        this.exp_LayerOpacity = 1;          
         this.exp_layer_properties = {};
         this.exp_tileset_properties = {};        
         this.exp_tile_properties = {};
         
-        this._tmx_obj = null;    
+        this._tmx_obj = null;  
+        this._obj_type = null;
         this.layout = new cr.plugins_.Rex_TMXImporter.LayoutKlass(this, this.properties[0], this.properties[1],
                                                                   0,0,0);
 	};
 	instanceProto.ImportTMX = function(tmx_string)
 	{
         this._tmx_obj = new cr.plugins_.Rex_TMXImporter.TMXKlass(tmx_string);
+        this.exp_MapWidth = this._tmx_obj.map.width;
+        this.exp_MapHeight = this._tmx_obj.map.height;  
+        this.exp_TileWidth = this._tmx_obj.map.tilewidth; 
+        this.exp_TileHeight = this._tmx_obj.map.tileheight;         
 	};
 	instanceProto.RetrieveTileArray = function(obj_type)
 	{
         this._layout_set(this._tmx_obj);
         var layers = this._tmx_obj.layers;
         var layers_cnt = layers.length;
+        this._obj_type = obj_type;
         var i;
         for(i=0; i<layers_cnt; i++)
-           this._create_layer_objects(obj_type, layers[i]);           
+           this._create_layer_objects(layers[i]);           
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
@@ -73,60 +85,67 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.layout.SetWidth(tmx_obj.map.tilewidth);
         this.layout.SetHeight(tmx_obj.map.tileheight);
 	};	
-	instanceProto._create_layer_objects = function(obj_type, tmx_layer)
+	// bitmaks to check for flipped & rotated tiles
+	var FlippedHorizontallyFlag		= 0x80000000;
+	var FlippedVerticallyFlag		= 0x40000000;
+	var FlippedAntiDiagonallyFlag   = 0x20000000;    
+	instanceProto._create_layer_objects = function(tmx_layer)
 	{
         var c2_layer =  this._get_layer(tmx_layer.name);
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
-        var x,y,inst,tile_id,tileset_obj,tile_obj; 
+        var x,y,inst,tileset_obj,tile_obj,layer_opacity,_gid; 
         var i=0;
         
         this.exp_LayerName = tmx_layer.name;        
         this.exp_layer_properties = tmx_layer.properties;
+        this.exp_LayerOpacity = tmx_layer.opacity;
         for (y=0; y<height; y++)
         {
             for (x=0; x<width; x++)
             {     
                 // get tile id
-                tile_id = data[i];
+                _gid = data[i];
                 i++;
-                if (tile_id == 0)
+                this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);
+                if (this.exp_TileID == 0)
                     continue;
-                
-                if (obj_type != null)
-                {
-                    inst = this._create_instance(obj_type,x,y,c2_layer,tile_id);
-                    this._setup_SOL(inst);     
-                }
-                
+  
                 // prepare expressions
                 this.exp_LogicX = x;
                 this.exp_LogicY = y;
                 this.exp_PhysicalX = this.layout.GetX(x,y);
-                this.exp_PhysicalY = this.layout.GetY(x,y);                
-                tileset_obj = this._tmx_obj.GetTileSet(tile_id);
+                this.exp_PhysicalY = this.layout.GetY(x,y);
+                this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
+                this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
                 this.exp_tileset_properties = tileset_obj.properties;
-                tile_obj = tileset_obj.tiles[tile_id];
+                tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
                    
+                if (this._obj_type != null)
+                    this._create_instance(x,y,c2_layer); 
+                    
                 // trigger callback
                 this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnEachTileCell, this); 
             }
         }         
 	};
-	instanceProto._create_instance = function(obj_type,x,y,c2_layer,tile_id)
+	instanceProto._create_instance = function(x,y,c2_layer)
 	{  
-        var inst = this.layout.CreateItem(obj_type,x,y,c2_layer);
-        this._set_anim_frame(inst, tile_id-1);
-        return inst;        
-    };	
-	instanceProto._setup_SOL = function(inst)
-	{
+        var inst = this.layout.CreateItem(this._obj_type,x,y,c2_layer);
+        this._set_anim_frame(inst, this.exp_TileID-1);
+        inst.opacity = this.exp_LayerOpacity;
+        if (this.exp_IsMirrored ==1)
+            inst.width = -inst.width;
+        if (this.exp_IsFlipped ==1)
+            inst.height = -inst.height;            
+        
         var sol = inst.type.getCurrentSol();
         sol.select_all = false;
 		sol.instances.length = 1;
-		sol.instances[0] = inst;     
+		sol.instances[0] = inst;    
     };
     instanceProto._get_layer = function(layerparam)
     {
@@ -193,27 +212,23 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     
 	exps.MapWidth = function (ret)
 	{   
-        var map_width = (this._tmx_obj != null)? this._tmx_obj.map.width:0;
-	    ret.set_int(map_width);
+	    ret.set_int(this.exp_MapWidth);
 	};
 	exps.MapHeight = function (ret)
 	{   
-        var map_height = (this._tmx_obj != null)? this._tmx_obj.map.height:0;
-	    ret.set_int(map_height);
+	    ret.set_int(this.exp_MapHeight);
 	};
 	exps.TileWidth = function (ret)
-	{   
-        var tile_width = (this._tmx_obj != null)? this._tmx_obj.map.tilewidth:0;   
-	    ret.set_int(tile_width);
+	{     
+	    ret.set_int(this.exp_TileWidth);
 	};
 	exps.TileHeight = function (ret)
-	{   
-        var tile_height = (this._tmx_obj != null)? this._tmx_obj.map.tileheight:0;  
-	    ret.set_int(tile_height);
+	{    
+	    ret.set_int(this.exp_TileHeight);
 	}; 	
-	exps.InstUID = function (ret)
-	{   
-	    ret.set_int(this.exp_CreatedInstUID);
+	exps.TileID = function (ret)
+	{    
+	    ret.set_int(this.exp_TileID);
 	}; 
 	exps.LogicX = function (ret)
 	{   
@@ -223,25 +238,25 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{   
 	    ret.set_int(this.exp_LogicY);
 	};    
-	exps.LayerProp = function (ret, name)
+	exps.LayerProp = function (ret, name, default_value)
 	{   
         var value = this.exp_layer_properties[name];
         if (value == null)
-            value = 0;
+            value = default_value;
 	    ret.set_any(value);
 	};
-	exps.TilesetProp = function (ret, name)
+	exps.TilesetProp = function (ret, name, default_value)
 	{       
         var value = this.exp_tileset_properties[name];
         if (value == null)
-            value = 0;        
+            value = default_value;        
 	    ret.set_any(value);
 	};     
-	exps.TileProp = function (ret, name)
+	exps.TileProp = function (ret, name, default_value)
 	{       
         var value = this.exp_tile_properties[name];
         if (value == null)
-            value = 0;        
+            value = default_value;        
 	    ret.set_any(value);
 	}; 
 	exps.PhysicalX = function (ret)
@@ -255,6 +270,18 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	exps.LayerName = function (ret)
 	{   
 	    ret.set_string(this.exp_LayerName);
+	};
+	exps.LayerOpacity = function (ret)
+	{   
+	    ret.set_float(this.exp_LayerOpacity);
+	}; 
+	exps.IsMirrored = function (ret)
+	{   
+	    ret.set_int(this.exp_IsMirrored);
+	};
+	exps.IsFlipped = function (ret)
+	{   
+	    ret.set_int(this.exp_IsFlipped);
 	};    
 }());
 
@@ -288,10 +315,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var xml_map = jQuery(xml_obj).find("map");
         var map = {};
         map.orientation = xml_map.attr("orientation");
-        map.width = parseInt(xml_map.attr("width"));
-        map.height = parseInt(xml_map.attr("height"));
-        map.tilewidth = parseInt(xml_map.attr("tilewidth"));
-        map.tileheight = parseInt(xml_map.attr("tileheight"));
+        map.width = _string2int(xml_map.attr("width"),0);
+        map.height = _string2int(xml_map.attr("height"),0);
+        map.tilewidth = _string2int(xml_map.attr("tilewidth"),0);
+        map.tileheight = _string2int(xml_map.attr("tileheight"),0);
         return map;           
     };
     var _get_tilesets = function (xml_obj)
@@ -308,11 +335,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     {
         var tileset = {};
         tileset.name = xml_tileset.getAttribute("name");
-        tileset.firstgid = parseInt(xml_tileset.getAttribute("firstgid"));
-        tileset.tilewidth = parseInt(xml_tileset.getAttribute("tilewidth"));
-        tileset.tileheight = parseInt(xml_tileset.getAttribute("tileheight"));
-        tileset.spacing = parseInt(xml_tileset.getAttribute("spacing"));
-        tileset.margin = parseInt(xml_tileset.getAttribute("margin"));     
+        tileset.firstgid = _string2int(xml_tileset.getAttribute("firstgid"),1);
+        tileset.tilewidth = _string2int(xml_tileset.getAttribute("tilewidth"),0);
+        tileset.tileheight = _string2int(xml_tileset.getAttribute("tileheight"),0);
+        tileset.spacing = _string2int(xml_tileset.getAttribute("spacing"),0);
+        tileset.margin = _string2int(xml_tileset.getAttribute("margin"),0);     
         var xml_tiles = jQuery(xml_tileset).find("tile");
         tileset.tiles = _get_tiles(xml_tiles);
         
@@ -328,7 +355,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         for(i=0; i<tiles_cnt; i++)
         {
             xml_tile = xml_tiles[i];
-            id = parseInt(xml_tile.getAttribute("id"))+1;
+            id = _string2int(xml_tile.getAttribute("id"),0)+1;
             tiles[id] = _get_tile(xml_tile);
         }
         return tiles;
@@ -362,9 +389,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             
         var layer = {};     
         layer.name = xml_layer.getAttribute("name");
-        layer.width = parseInt(xml_layer.getAttribute("width"));
-        layer.height = parseInt(xml_layer.getAttribute("width"));
-        layer.opacity = parseFloat(xml_layer.getAttribute("opacity"));
+        layer.width = _string2int(xml_layer.getAttribute("width"),0);
+        layer.height = _string2int(xml_layer.getAttribute("width"),0);
+        layer.opacity = _string2float(xml_layer.getAttribute("opacity"), 1);
         var xml_properties = jQuery(xml_layer).find("properties").find("property"); 
         layer.properties = _get_properties(xml_properties);
         var xml_data = jQuery(xml_layer).find("data");
@@ -394,7 +421,16 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             properties[name] = value;
         }
         return properties;
-    }; 
+    };
+    var _string2int = function(s, default_value)
+    {
+        return (s!=null)? parseInt(s):default_value;
+    };    
+    var _string2float = function(s, default_value)
+    {
+        return (s!=null)? parseFloat(s):default_value;
+    };
+    
     var _decBase64AsArray = function(data) 
     {
         data = Base64.decode(data);
@@ -419,7 +455,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var i,entries;
         var arr = [];
         for(i=0; i<data_cnt; i++)
-            data[i] = parseInt(data[i]);
+            data[i] = _string2int(data[i]);
         return data;
     };
     

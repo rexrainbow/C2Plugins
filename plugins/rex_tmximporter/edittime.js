@@ -16,7 +16,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless", 
-             "On each tile cell", "Triggered when retrieve each tile cell.", "OnEachTileCell");
+             "On each tile cell", "Triggered when retrieving each avaiable tile cell.", "OnEachTileCell");
             
 //////////////////////////////////////////////////////////////
 // Actions 
@@ -44,27 +44,35 @@ AddExpression(2, ef_return_number,
 AddExpression(3, ef_return_number, 
               "Get tile width", "Map", "TileWidth", "Get tile width in pixel.");
 AddExpression(4, ef_return_number, 
-              "Get tile height", "Map", "TileHeight", "Get tile height in pixel.");              
+              "Get tile height", "Map", "TileHeight", "Get tile height in pixel.");  
+AddExpression(11, ef_return_number, 
+              "Get tile id", "Callback", "TileID", "Get tile id.");           
 AddExpression(12, ef_return_number, 
-              "Get logic X index", "Callback", "LogicX", 'Get logic X index of created instance. Used in "Condition:On each created instance"');
+              "Get logic X index", "Callback", "LogicX", "Get logic X index of created instance.");
 AddExpression(13, ef_return_number, 
-              "Get logic Y index", "Callback", "LogicY", 'Get logic Y index of created instance. Used in "Condition:On each created instance"');
+              "Get logic Y index", "Callback", "LogicY", "Get logic Y index of created instance.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(14, ef_return_any | ef_variadic_parameters, 
-              "Get layer properties", "Callback", "LayerProp", "Get layer properties of created instance.");
+              "Get layer properties", "Callback", "LayerProp", "Get layer properties of created instance. Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(15, ef_return_any | ef_variadic_parameters,
-              "Get tileset properties", "Callback", "TilesetProp", "Get tileset properties of created instance.");
+              "Get tileset properties", "Callback", "TilesetProp", "Get tileset properties of created instance.  Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(16, ef_return_any | ef_variadic_parameters,
-              "Get tile properties", "Callback", "TileProp", "Get tile properties of created instance.");
+              "Get tile properties", "Callback", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
 AddExpression(17, ef_return_number, 
               "Get physical X index", "Callback", "PhysicalX", "Get physical X index (in pixel) of created instance.");
 AddExpression(18, ef_return_number, 
               "Get physical Y index", "Callback", "PhysicalY", "Get logic Y index (in pixel) of created instance.");
 AddExpression(19, ef_return_string, 
               "Get layer name", "Callback", "LayerName", "Get layer name of created instance.");
-              
+AddExpression(20, ef_return_number, 
+              "Get layer opacity", "Callback", "LayerOpacity", "Get layer opacity of created instance.");
+AddExpression(21, ef_return_number, 
+              "Get mirrored", "Callback", "IsMirrored", "Get mirrored of created instance.");
+AddExpression(22, ef_return_number, 
+              "Get flipped", "Callback", "IsFlipped", "Get flipped of created instance.");
+          
 
 ACESDone();
 
