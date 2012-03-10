@@ -42,7 +42,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.exp_MapWidth = 0;
-    
+        this.exp_MapHeight = 0;  
+        this.exp_TileWidth = 0;
+        this.exp_TileHeight = 0;         
         this.exp_TileID = (-1);
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
