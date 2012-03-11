@@ -96,8 +96,17 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		}
 		
 		assert2(this.pxHeight, "Could not determine font text height");
+        
+        this.timeline = null; 
+        this.typing_timer = null;
+        this.typing_speed = 0;        
 	};
 	
+	instanceProto.onDestroy = function ()
+	{
+        this.typing_timer_remove();
+	}
+    
 	instanceProto.updateFont = function ()
 	{
 		this.font = this.fontstyle + " " + this.ptSize.toString() + "pt " + this.facename;
@@ -174,9 +183,15 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	
 	instanceProto.drawGL = function(glw)
 	{
+		// Take in to account the layer opacity, since we're drawing to an overlay.
+		var oldopacity = this.opacity;
+		this.opacity *= this.layer.opacity;
+		
 		// Draw to overlay canvas instead
 		if (this.runtime.overlay_ctx)
 			this.draw(this.runtime.overlay_ctx);
+			
+		this.opacity = oldopacity;
 	};
 	
 	var wordsCache = [];
@@ -527,7 +542,12 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			// Use it immediately without requesting again.  Whichever object
 			// made the original request will refresh the canvas when it finishes
 			// loading.
-			this.facename = "'" + familyname_ + "'";
+			var newfacename = "'" + familyname_ + "'";
+			
+			if (this.facename === newfacename)
+				return;	// no change
+				
+			this.facename = newfacename;
 			this.updateFont();
 			return;
 		}

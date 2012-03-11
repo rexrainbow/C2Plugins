@@ -4,8 +4,8 @@
 		"name":			"Text",
 		"id":			"Rex_TextPlus",
 		"description":	"Enhancement text object.",
-		"author":		"Scirra",
-		"help url":		"http://www.scirra.com",
+		"author":		"Rex.Rainbow",
+		"help url":		"",
 		"category":		"General",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,				// can be rotated in layout
@@ -76,6 +76,7 @@ AddExpression(1, ef_return_number,	"Get typing speed",	"Type", "TypingSpeed", "G
 AddExpression(2,	ef_return_number,	"Get face size",	"Appearance",	"FaceSize",	"Get the current font face size (pt).");
 AddExpression(3,	ef_return_number,	"Get text width",	"Text",			"TextWidth", "Get the width extent of the text in the object in pixels.");
 AddExpression(4,	ef_return_number,	"Get text height",	"Text",			"TextHeight", "Get the height extent of the text in the object in pixels.");
+AddExpression(5,	ef_return_string,	"Get face name",	"Appearance",	"FaceName",	"Get the current font face name.");
 
 ACESDone();
 
