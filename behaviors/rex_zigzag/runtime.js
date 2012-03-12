@@ -464,7 +464,20 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	{
 		ret.set_int(this.CmdQueue.export_queue_index);
 	};
-    
+        
+	exps.MovAngle = function (ret)
+	{
+        var angle;
+        if (_is_in_cmd(this.cur_cmd, 2) || _is_in_cmd(this.cur_cmd, 3))
+        {
+            angle = this.CmdRotate.current_angle_deg;
+            if (angle < 0)
+                angle = 360 + angle;
+        }
+        else
+            angle = cr.to_clamped_degrees(this.pos_state.angle);
+		ret.set_float(angle);
+	};    
         
 }());
 

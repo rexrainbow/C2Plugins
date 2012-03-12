@@ -166,6 +166,8 @@ AddExpression(10, ef_return_number, "Get repeat count", "Setting", "RepCnt",
               "The times to execute commands repeatly. 0 is infinity.");
 AddExpression(11, ef_return_number, "Get current command index", "Current", "CmdIndex", 
               "Get current command index in command queue. 0 is the first command.");               
+AddExpression(12, ef_return_number, "Get moving angle", "Current", "MovAngle", 
+              "The moving angle, in degree.");               
 
               
 ACESDone();
