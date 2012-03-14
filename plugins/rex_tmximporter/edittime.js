@@ -45,6 +45,10 @@ AddExpression(3, ef_return_number,
               "Get tile width", "Map", "TileWidth", "Get tile width in pixel.");
 AddExpression(4, ef_return_number, 
               "Get tile height", "Map", "TileHeight", "Get tile height in pixel.");  
+AddExpression(5, ef_return_number, 
+              "Get total width", "Map", "TotalWidth", "Get total width in pixel.");
+AddExpression(6, ef_return_number, 
+              "Get total height", "Map", "TotalHeight", "Get total height in pixel.");                
 AddExpression(11, ef_return_number, 
               "Get tile id", "Callback", "TileID", "Get tile id.");           
 AddExpression(12, ef_return_number, 
