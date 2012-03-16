@@ -41,13 +41,16 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this._clean_bank();
-        this.callback = null;
+        this._z_sorting = new cr.plugins_.Rex_SpriteBank.ZSortingKlass(this);
+        this.callback = null; 
+                
+        this._clean_bank();     
 	};
 
 	instanceProto._clean_bank = function()
 	{
         this._banks = {};
+        this._z_sorting.Clean();
 	};   
     
     
@@ -83,6 +86,7 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         save_obj["cur_anim_speed"] = inst.cur_anim_speed;         
         save_obj["inst_vars"] = inst.instance_vars.slice();
         save_obj["layer"] = inst.layer.index;
+        save_obj["z_order"] = inst.zindex;
         
         // save inst.cur_animation.name for restoring animation
         save_obj["cur_anim_name"] = inst.cur_animation.name;           
@@ -132,12 +136,13 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 		if (!inst.inAnimTrigger)
 			inst.doChangeAnimFrame();
 	};    
-        
+          
     instanceProto._create_instance = function(obj_type, save_obj)
 	{  
+	    var _layer = this.runtime.getLayerByNumber(save_obj["layer"]);
         var inst = this.runtime.createInstance(
                        obj_type, 
-                       this.runtime.getLayerByNumber(save_obj["layer"]), 
+                       _layer, 
                        save_obj["x"], 
                        save_obj["y"]);
                    
@@ -152,11 +157,13 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         inst.angle = save_obj["angle"];
         inst.opacity = save_obj["opacity"];        
         inst.visible = save_obj["visible"];
-        inst.instance_vars = save_obj["inst_vars"].slice();        
+        inst.instance_vars = save_obj["inst_vars"].slice();  
+        
+        this._z_sorting.AddLayer(_layer);
+        this._z_sorting.UID2ZIndex(inst.uid, save_obj["z_order"]);
+        
         return inst;        
-	};   
-
-    
+	};     
     instanceProto._load_instances = function(sprite_name, obj_type, cb_cmd)
 	{
         var sprite_bank, i, save_obj, inst;
@@ -179,6 +186,8 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
                 this.callback.ExecuteCommands(cb_cmd);
             }
         }
+        
+        this._z_sorting.Sorting();
         
         sol.select_all = select_all_save;
 	};
@@ -274,3 +283,53 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 		ret.set_string(json_string);
 	};    
 }());
+
+(function ()
+{
+    // for injecting javascript
+    cr.plugins_.Rex_SpriteBank.ZSortingKlass = function(plugin)
+    {
+        this.plugin = plugin;
+        this.Clean();      
+    };
+    var ZSortingKlassProto = cr.plugins_.Rex_SpriteBank.ZSortingKlass.prototype;
+    
+    ZSortingKlassProto.Clean = function()
+    {
+        this.layers = {};
+        this.uid2zorder = {}; 
+    };    
+    ZSortingKlassProto.AddLayer = function(layer)
+    {
+        if (this.layers[layer.index] == null)
+            this.layers[layer.index] = layer;
+    };
+    ZSortingKlassProto.UID2ZIndex = function(uid, z_index)
+    {
+        this.uid2zorder[uid] = z_index;
+    };
+    var thisArg = null;
+    var ZSORT = function(inst_a, inst_b)
+    {
+        var z_order_a = thisArg.uid2zorder[inst_a.uid];
+        var z_order_b = thisArg.uid2zorder[inst_b.uid];
+        if ( (z_order_a != null) && (z_order_b != null) )
+            return (z_order_a > z_order_b)? 1:
+                   (z_order_a < z_order_b)? (-1):0;
+        else
+            return ((z_order_a == null) && (z_order_b == null))? 0:
+                   (z_order_b == null)?                          1:(-1);           
+    };      
+    ZSortingKlassProto.Sorting = function()
+    {
+	    var index, layer;
+        thisArg = this;
+	    for (index in this.layers)
+	    {
+	        layer = this.layers[index];
+	        layer.instances.sort(ZSORT);
+	        layer.zindices_stale = true;
+	    }
+	    this.plugin.runtime.redraw = true;
+    };
+}());    
