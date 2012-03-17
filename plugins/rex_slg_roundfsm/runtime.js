@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_SLGCTLFSM = function(runtime)
+cr.plugins_.Rex_SLGRoundFSM = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_SLGCTLFSM.prototype;
+	var pluginProto = cr.plugins_.Rex_SLGRoundFSM.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -56,25 +56,31 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
                                  "GetTarget":this._request_GetTarget,
                                  "AcceptCommand":this._request_AcceptCommand,
                                  "RunCommand":this._request_RunCommand       };  
-        this._enterTrigs = {"Idle":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnEnterIdle,
-                            "GetSource":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnEnterGetSource,
-                            "GetCommand":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnEnterGetCommand,
-                            "GetTarget":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnEnterGetTarget,
-                            "AcceptCommand":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnEnterAcceptCommand,
-                            "RunCommand":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnEnterRunCommand       };   
-        this._exitTrigs =  {"Idle":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnExitIdle,
-                            "GetSource":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnExitGetSource,
-                            "GetCommand":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnExitGetCommand,
-                            "GetTarget":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnExitGetTarget,
-                            "AcceptCommand":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnExitAcceptCommand,
-                            "RunCommand":cr.plugins_.Rex_SLGCTLFSM.prototype.cnds.OnExitRunCommand       };   
-
+        this._enterTrigs = {"Idle":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnEnterIdle,
+                            "GetSource":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnEnterGetSource,
+                            "GetCommand":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnEnterGetCommand,
+                            "GetTarget":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnEnterGetTarget,
+                            "AcceptCommand":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnEnterAcceptCommand,
+                            "RunCommand":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnEnterRunCommand       };   
+        this._exitTrigs =  {"Idle":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnExitIdle,
+                            "GetSource":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnExitGetSource,
+                            "GetCommand":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnExitGetCommand,
+                            "GetTarget":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnExitGetTarget,
+                            "AcceptCommand":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnExitAcceptCommand,
+                            "RunCommand":cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnExitRunCommand       };   
+        this._state2int =  {"Idle":0,
+                            "GetSource":1,
+                            "GetCommand":2,
+                            "GetTarget":3,
+                            "AcceptCommand":4,
+                            "RunCommand":5 };
         this._request();  // "Off" -> "Idle"                    
 	};
    	
 	instanceProto._request = function(cmd)
 	{
-        return this._request_handler[this._cur_state](cmd);
+        var new_state = this._request_handler[this._cur_state](cmd);
+        this._on_state_transfer(new_state);
 	};
 	instanceProto._request_Off = function(cmd)
 	{
@@ -82,14 +88,8 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
 	};    
 	instanceProto._request_Idle = function(cmd)
 	{
-        if (cmd == "GetAvailableSource")
-        {
-            if (this._has_instances(this._available_source))   
-                return "GetSource";
-            //else
-            // TODO
-                
-        }
+        if (cmd == "Start")
+            return "GetSource";
 	};
 	instanceProto._request_GetSource = function(cmd)
 	{
@@ -103,25 +103,25 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
         if (cmd == "GetCommand")
            return "GetTarget";
         else if (cmd == "Cancel")
-           return "Idle";             
+           return "GetSource";             
 	};
 	instanceProto._request_GetTarget = function(cmd)
 	{
         if (cmd == "GetTarget")
            return "AcceptCommand";
         else if (cmd == "Cancel")
-           return "Idle"; 
+           return "GetSource"; 
 	};  
 	instanceProto._request_AcceptCommand = function(cmd)
 	{
         if (cmd == "AcceptCommand")
            return "RunCommand";
         else if (cmd == "Cancel")
-           return "Idle"; 
+           return "GetSource"; 
 	};
 	instanceProto._request_RunCommand = function(cmd)
 	{
-        if (cmd == "FinishExecution")    
+        if (cmd == "Finish")    
             return "Idle"; 
 	};     
 	instanceProto._on_state_transfer = function(new_state)
@@ -147,19 +147,24 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
-	    
-	cnds.OnEnterIdle = function (name)  { return true; };    
-	cnds.OnExitIdle = function (name)  { return true; };  	
-	cnds.OnEnterGetSource = function (name)  { return true; };    
-	cnds.OnExitGetSource = function (name)  { return true; };
-	cnds.OnEnterGetCommand = function (name)  { return true; };    
-	cnds.OnExitGetCommand = function (name)  { return true; };	
-	cnds.OnEnterGetTarget = function (name)  { return true; };    
-	cnds.OnExitGetTarget = function (name)  { return true; };  	
-	cnds.OnEnterAcceptCommand = function (name)  { return true; };    
-	cnds.OnExitAcceptCommand = function (name)  { return true; };
-	cnds.OnEnterRunCommand = function (name)  { return true; };    
-	cnds.OnExitRunCommand = function (name)  { return true; };		
+    
+    var _state_list = ["Idle","GetSource","GetCommand","GetTarget","AcceptCommand","RunCommand"];    
+	cnds.IsState = function (state_index)  
+    {       
+        return (this._cur_state == _state_list[state_index]);
+    };   	    
+	cnds.OnEnterIdle = function ()  { return true; };    
+	cnds.OnExitIdle = function ()  { return true; };  	
+	cnds.OnEnterGetSource = function ()  { return true; };    
+	cnds.OnExitGetSource = function ()  { return true; };
+	cnds.OnEnterGetCommand = function ()  { return true; };    
+	cnds.OnExitGetCommand = function ()  { return true; };	
+	cnds.OnEnterGetTarget = function ()  { return true; };    
+	cnds.OnExitGetTarget = function ()  { return true; };  	
+	cnds.OnEnterAcceptCommand = function ()  { return true; };    
+	cnds.OnExitAcceptCommand = function ()  { return true; };
+	cnds.OnEnterRunCommand = function ()  { return true; };    
+	cnds.OnExitRunCommand = function ()  { return true; };		
 	 
 	 
 	//////////////////////////////////////
@@ -174,16 +179,20 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
             this.group = group;        
         else
             alert ("SLG CTLFSM should connect to a instance group object");            
-	};     
+	}; 
+    acts.Start = function ()
+    {        
+        this._request("Start");
+	};      
     acts.GetAvailableSourceGroup = function (group_name)
     {        
         this._available_source = group_name;
-        this._on_state_transfer(this._request("GetAvailableSource"));    
+        this._request("GetAvailableSource");    
 	};
     acts.GetSourceGroup = function (group_name)
     {        
         this.exp_Source = group_name;  
-        this._on_state_transfer(this._request("GetSource"));
+        this._request("GetSource");
 	};  
     acts.GetAvailableCommands = function (command)
     {
@@ -192,7 +201,7 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
     acts.GetCommand = function (command)
     {        
         this.exp_Command = command;
-        this._on_state_transfer(this._request("GetCommand"));
+        this._request("GetCommand");
 	}; 
     acts.GetAvailableTargetGroup = function (group_name)
     {
@@ -201,30 +210,30 @@ cr.plugins_.Rex_SLGCTLFSM = function(runtime)
     acts.GetTargetGroup = function (group_name)
     {
         this.exp_Target = group_name;
-        this._on_state_transfer(this._request("GetTarget"));
+        this._request("GetTarget");
 	}; 
     acts.AcceptCommand = function ()
     {        
-        this._on_state_transfer(this._request("AcceptCommand"));
+        this._request("AcceptCommand");
 	};
-    acts.FinishExecution = function ()
+    acts.Finish = function ()
     {        
-        this._on_state_transfer(this._request("FinishExecution"));
+        this._request("Finish");
 	};    
     acts.Cancel = function ()
     {        
-        this._on_state_transfer(this._request("Cancel"));
+        this._request("Cancel");
 	};     
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
     
-	exps.NewState = function (ret)
+	exps.CurState = function (ret)
 	{   
 	    ret.set_string(this._cur_state);
 	};  
-	exps.CurState = function (ret)
+	exps.PreState = function (ret)
 	{   
 	    ret.set_string(this._pre_state);
 	};    
