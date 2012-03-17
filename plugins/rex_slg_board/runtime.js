@@ -199,7 +199,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		this.reset_board(x_max-1, y_max-1, z_max-1);
 	};
 		
-	acts.AddBrick = function (objs,x,y)
+	acts.AddTile = function (objs,x,y)
 	{
 	    this.add_item(_get_uid(objs),x,y,0);
 	};
@@ -218,7 +218,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("SLG board should connect to a layout object");
 	};  
 		
-	acts.CreateBrick = function (_obj_type,x,y,_layer)
+	acts.CreateTile = function (_obj_type,x,y,_layer)
 	{
 	    this.CreateChess(_obj_type,x,y,0,_layer,0,0);
 	};
@@ -233,17 +233,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.remove_item(_get_uid(objs));
 	}; 
 	
-	acts.MoveChess = function (chess_objs, brick_objs)
+	acts.MoveChess = function (chess_objs, tile_objs)
 	{	
         var chess_uid = _get_uid(chess_objs);
-        var brick_uid = _get_uid(brick_objs);
-	    if ((chess_uid == null) || (brick_uid == null))
+        var tile_uid = _get_uid(tile_objs);
+	    if ((chess_uid == null) || (tile_uid == null))
 	        return;  
         
         var chess_xyz = this.uid2xyz(chess_uid);
-        var brick_xyz = this.uid2xyz(brick_uid);
+        var tile_xyz = this.uid2xyz(tile_uid);
 	    this.remove_item(chess_uid);   
-        this.add_item(chess_uid, brick_xyz.x, brick_xyz.y, chess_xyz.z);        
+        this.add_item(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z);        
 	};
 	
 	acts.MoveChess2Index = function (chess_objs, x, y, z)
