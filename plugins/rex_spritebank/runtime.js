@@ -42,7 +42,7 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this._z_sorting = new cr.plugins_.Rex_SpriteBank.ZSortingKlass(this);
-        this.callback = null; 
+        this.callback = null;
                 
         this._clean_bank();     
 	};
@@ -86,8 +86,8 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         save_obj["cur_anim_speed"] = inst.cur_anim_speed;         
         save_obj["inst_vars"] = inst.instance_vars.slice();
         save_obj["layer"] = inst.layer.index;
-        save_obj["z_order"] = inst.zindex;
-        
+        save_obj["z_order"] = inst.layer.instances.indexOf(inst);
+
         // save inst.cur_animation.name for restoring animation
         save_obj["cur_anim_name"] = inst.cur_animation.name;           
         
@@ -159,12 +159,12 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         inst.visible = save_obj["visible"];
         inst.instance_vars = save_obj["inst_vars"].slice();  
         
-        this._z_sorting.AddLayer(_layer);
-        this._z_sorting.UID2ZIndex(inst.uid, save_obj["z_order"]);
+        this._z_sorting.add_layer(_layer);
+        this._z_sorting.uid2Zinidex(inst.uid, save_obj["z_order"]);
         
         return inst;        
 	};     
-    instanceProto._load_instances = function(sprite_name, obj_type, cb_cmd)
+    instanceProto._load_instances = function(sprite_name, obj_type, cb_cmd, do_sorting)
 	{
         var sprite_bank, i, save_obj, inst;
         var sol = obj_type.getCurrentSol();
@@ -187,19 +187,23 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
             }
         }
         
-        this._z_sorting.Sorting();
+        if (do_sorting)
+            this._z_sorting.Sorting();
         
         sol.select_all = select_all_save;
 	};
     
     instanceProto._load_all_instances = function()
 	{
-        var sprite_name, sprite_bank, uid, obj_type;               
+        var sprite_name, sprite_bank, uid, obj_type;
+       
         for (sprite_name in this._banks)
         {
             obj_type = this.runtime.types[sprite_name];
-            this._load_instances(sprite_name, obj_type);
+            this._load_instances(sprite_name, obj_type, null, false);
         }
+
+        this._z_sorting.Sorting();
 	};
     
     instanceProto._bank2string = function()
@@ -266,11 +270,11 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
             for (i=0; i<member_cnt; i++)
             {
                 member = members[i];
-                this._load_instances(member.name, member, cb_cmd);
+                this._load_instances(member.name, member, cb_cmd, true);
             }
         }
         else
-            this._load_instances(obj_type.name, obj_type, cb_cmd);
+            this._load_instances(obj_type.name, obj_type, cb_cmd, true);
 	};    
 	//////////////////////////////////////
 	// Expressions
@@ -299,12 +303,12 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
         this.layers = {};
         this.uid2zorder = {}; 
     };    
-    ZSortingKlassProto.AddLayer = function(layer)
+    ZSortingKlassProto.add_layer = function(layer)
     {
         if (this.layers[layer.index] == null)
             this.layers[layer.index] = layer;
     };
-    ZSortingKlassProto.UID2ZIndex = function(uid, z_index)
+    ZSortingKlassProto.uid2Zinidex = function(uid, z_index)
     {
         this.uid2zorder[uid] = z_index;
     };
@@ -323,7 +327,7 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
     ZSortingKlassProto.Sorting = function()
     {
 	    var index, layer;
-        thisArg = this;
+        thisArg = this;      
 	    for (index in this.layers)
 	    {
 	        layer = this.layers[index];
