@@ -3,10 +3,11 @@
 	return {
 		"name":			"Date",
 		"id":			"Rex_Date",
+		"version":		"1.0",
 		"description":	"Data and time",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
