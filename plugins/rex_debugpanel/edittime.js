@@ -3,10 +3,11 @@
 	return {
 		"name":			"Debug Panel",
 		"id":			"Rex_DebugPanel",
+		"version":		"1.0",        
 		"description":	"Dump debug message to panel.",
 		"author":		"",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"General",
 		"type":			"object",			// appears in layout
 		"rotatable":	false,
 		"flags":		0

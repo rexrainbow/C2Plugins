@@ -3,10 +3,11 @@
 	return {
 		"name":			"While Loop",
 		"id":			"Rex_WhileLoop",
+		"version":		"1.0",          
 		"description":	"Looping if condtion value larger then zero",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

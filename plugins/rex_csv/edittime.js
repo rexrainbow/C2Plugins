@@ -3,6 +3,7 @@
 	return {
 		"name":			"CSV",
 		"id":			"Rex_CSV",
+		"version":		"1.0",          
 		"description":	"Read 2d table from cvs string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

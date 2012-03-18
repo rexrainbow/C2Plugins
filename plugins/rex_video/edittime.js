@@ -3,6 +3,7 @@
 	return {
 		"name":			"Video",
 		"id":			"Rex_Video",
+		"version":		"1.0",  
 		"description":	"Play video.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

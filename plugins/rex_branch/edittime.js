@@ -3,10 +3,11 @@
 	return {
 		"name":			"Branch",
 		"id":			"Rex_Branch",
+		"version":		"1.0",          
 		"description":	"Control the execution flow",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
