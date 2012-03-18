@@ -3,6 +3,7 @@
 	return {
 		"name":			"Batch AJAX",
 		"id":			"Rex_BatchAJAX",
+		"version":		"1.0",
 		"description":	"Batch request and receive other web pages.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
