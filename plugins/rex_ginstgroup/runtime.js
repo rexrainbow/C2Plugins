@@ -235,7 +235,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	  
 	cnds.IsInGroup = function (uid, name)
 	{
-		return this.GetGroup(name).IsInGroup();        
+		return this.GetGroup(name).IsInGroup(uid);        
 	};  
 		
 	//////////////////////////////////////
@@ -442,14 +442,17 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 {
     cr.plugins_.Rex_gInstGroup.GroupKlass = function()
     {
-        this.Clean();
+		this._set = {};
+        this._list = [];    
     };
     var GroupKlassProto = cr.plugins_.Rex_gInstGroup.GroupKlass.prototype;
     
 	GroupKlassProto.Clean = function()
 	{
-		this._set = {};
-        this._list = [];
+        var key;
+        for (key in this._set)
+            delete this._set[key];
+        this._list.length = 0;
 	};
     
 	GroupKlassProto.Copy = function(group)
