@@ -42,11 +42,11 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.activated = (this.properties[0]==1);
-        this._available_source = "";
+        this.exp_AvailableSource = "";
         this.exp_Source = "";
-        this._available_command = "";
+        this.exp_AvailableCommand = "";
         this.exp_Command = "";
-        this._available_target = "";
+        this.exp_AvailableTarget = "";
         this.exp_Target = "";
         this._pre_state = "";
         this._cur_state = "Off";
@@ -201,7 +201,7 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
     {        
         if (!this.activated)
             return;    
-        this._available_source = group_name;
+        this.exp_AvailableSource = group_name;
         this._request("GetAvailableSource");    
 	};
     acts.GetSourceGroup = function (group_name)
@@ -215,7 +215,7 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
     {
         if (!this.activated)
             return;    
-        this._available_command = command;
+        this.exp_AvailableCommand = command;
 	};
     acts.GetCommand = function (command)
     {        
@@ -228,7 +228,7 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
     {
         if (!this.activated)
             return;    
-        this._available_target = group_name;
+        this.exp_AvailableTarget = group_name;
 	};
     acts.GetTargetGroup = function (group_name)
     {
@@ -279,5 +279,17 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
 	exps.Target = function (ret)
 	{   
 	    ret.set_string(this.exp_Target);
-	};      
+	};  
+ 	exps.AvailableSource = function (ret)
+	{   
+	    ret.set_string(this.exp_AvailableSource);
+	};
+	exps.AvailableCommand = function (ret)
+	{   
+	    ret.set_string(this.exp_AvailableCommand);
+	};   
+	exps.AvailableTarget = function (ret)
+	{   
+	    ret.set_string(this.exp_AvailableTarget);
+	};    
 }());

@@ -108,7 +108,12 @@ AddExpression(6, ef_return_string,
               "Get command", "Command", "Command", "Get command.");
 AddExpression(7, ef_return_string, 
               "Get target group", "Command", "Target", "Get target group.");              
-
+AddExpression(8, ef_return_string, 
+              "Get available source group", "Available", "AvailableSource", "Get available source group.");
+AddExpression(9, ef_return_string, 
+              "Get available command", "Available", "AvailableCommand", "Get available command.");
+AddExpression(10, ef_return_string, 
+              "Get available target group", "Available", "AvailableTarget", "Get available target group.");      
               
 ACESDone();
 
