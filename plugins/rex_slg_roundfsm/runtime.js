@@ -134,13 +134,15 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
         var old_state = this._cur_state;
         this._pre_state = this._cur_state;
         this._cur_state = new_state;
+        
+        this.runtime.trigger(cr.plugins_.Rex_SLGRoundFSM.prototype.cnds.OnStateChanging,this); 
         var trig;
         trig = this._exitTrigs[old_state];
         if (trig != null)
             this.runtime.trigger(this._exitTrigs[old_state],this);
         trig = this._enterTrigs[new_state];
         if (trig != null)            
-            this.runtime.trigger(this._enterTrigs[new_state],this);
+            this.runtime.trigger(this._enterTrigs[new_state],this);              
 	};
 	instanceProto._has_instances = function(group_name)
 	{
@@ -168,7 +170,7 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
 	cnds.OnExitAcceptCommand = function ()  { return true; };
 	cnds.OnEnterRunCommand = function ()  { return true; };    
 	cnds.OnExitRunCommand = function ()  { return true; };		
-	 
+	cnds.OnStateChanging = function ()  { return true; };		 
 	 
 	//////////////////////////////////////
 	// Actions

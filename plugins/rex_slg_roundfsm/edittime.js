@@ -48,7 +48,8 @@ AddCondition(11, cf_trigger, 'On enter "RunCommand"', '6. "RunCommand" state',
              'On enter "RunCommand"', 'Trigger when state enter to "RunCommand".', "OnEnterRunCommand");
 AddCondition(12, cf_trigger, 'On exit "RunCommand"', '6. "RunCommand" state', 
              'On exit "RunCommand"', 'Trigger when state exit from "RunCommand".', "OnExitRunCommand"); 
-             
+AddCondition(13, cf_trigger, "On state changing", "Debug", 
+             "On state changing", "Trigger when state changing.", "OnStateChanging");           
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Group", "Instance group object");
