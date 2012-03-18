@@ -41,6 +41,7 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        this.activated = (this.properties[0]==1);
         this._available_source = "";
         this.exp_Source = "";
         this._available_command = "";
@@ -74,7 +75,9 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
                             "GetTarget":3,
                             "AcceptCommand":4,
                             "RunCommand":5 };
-        this._request();  // "Off" -> "Idle"                    
+                            
+        if (this.activated)
+            this._request();  // "Off" -> "Idle"                    
 	};
    	
 	instanceProto._request = function(cmd)
@@ -179,49 +182,75 @@ cr.plugins_.Rex_SLGRoundFSM = function(runtime)
             this.group = group;        
         else
             alert ("SLG CTLFSM should connect to a instance group object");            
-	}; 
+	};    
+	acts.SetActivated = function (s)
+	{
+		this.activated = (s==1);
+        if (this.activated && (this._cur_state == "Off"))
+            this._request();  // "Off" -> "Idle"  
+	};
     acts.Start = function ()
-    {        
+    {
+        if (!this.activated)
+            return;
         this._request("Start");
 	};      
     acts.GetAvailableSourceGroup = function (group_name)
     {        
+        if (!this.activated)
+            return;    
         this._available_source = group_name;
         this._request("GetAvailableSource");    
 	};
     acts.GetSourceGroup = function (group_name)
-    {        
+    {       
+        if (!this.activated)
+            return;     
         this.exp_Source = group_name;  
         this._request("GetSource");
 	};  
     acts.GetAvailableCommands = function (command)
     {
+        if (!this.activated)
+            return;    
         this._available_command = command;
 	};
     acts.GetCommand = function (command)
     {        
+        if (!this.activated)
+            return;    
         this.exp_Command = command;
         this._request("GetCommand");
 	}; 
     acts.GetAvailableTargetGroup = function (group_name)
     {
+        if (!this.activated)
+            return;    
         this._available_target = group_name;
 	};
     acts.GetTargetGroup = function (group_name)
     {
+        if (!this.activated)
+            return;    
         this.exp_Target = group_name;
         this._request("GetTarget");
 	}; 
     acts.AcceptCommand = function ()
-    {        
+    {      
+        if (!this.activated)
+            return;    
         this._request("AcceptCommand");
 	};
     acts.Finish = function ()
-    {        
+    {      
+        if (!this.activated)
+            return;    
         this._request("Finish");
 	};    
     acts.Cancel = function ()
-    {        
+    {     
+        if (!this.activated)
+            return;    
         this._request("Cancel");
 	};     
 	//////////////////////////////////////

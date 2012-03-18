@@ -55,6 +55,10 @@ AddObjectParam("Group", "Instance group object");
 AddAction(0, 0, "Setup", "Setup", 
           "Set instance group object to <i>{1}</i>", 
           "Set instance group object.", "Setup"); 
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable fsm.",1);
+AddAction(4, 0, "Set activated", "Activated", "Set activated to <i>{0}</i>", "Enable fsm transfer.", "SetActivated");          
 AddAction(5, 0, "Start", 'Request: "Idle"', 
           "Start a round", 
           "Start a round.", "Start");            
@@ -109,6 +113,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created
