@@ -3,10 +3,11 @@
 	return {
 		"name":			"Pause",
 		"id":			"Rex_Pause",
+		"version":		"1.0",        
 		"description":	"Pause timescale",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal
