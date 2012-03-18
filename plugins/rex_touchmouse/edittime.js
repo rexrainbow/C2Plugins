@@ -3,6 +3,7 @@
 	return {
 		"name":			"TouchMouse",
 		"id":			"Rex_TouchMouse",
+		"version":		"1.0",      
 		"description":	"Retrieve input from the mouse or touchscreen devices.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
