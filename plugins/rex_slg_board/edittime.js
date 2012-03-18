@@ -90,9 +90,7 @@ AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
-AddNumberParam("Offset X", "The X co-ordinate offset of this instance.", 0);
-AddNumberParam("Offset Y", "The Y co-ordinate offset of this instance.", 0);
-AddAction(14, 0, "Create chess", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>, offset to (<i>{5}</i>,<i>{6}</i>)", 
+AddAction(14, 0, "Create chess", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>", 
           "Create chess on the board.", "CreateChess");  
        
 //////////////////////////////////////////////////////////////

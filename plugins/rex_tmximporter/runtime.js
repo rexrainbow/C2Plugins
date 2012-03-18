@@ -46,7 +46,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_TileWidth = 0;
         this.exp_TileHeight = 0;
         this.exp_TotalWidth = 0;
-        this.exp_TotalHeight = 0;                 
+        this.exp_TotalHeight = 0; 
+        this.exp_IsIsometric = 0;         
         this.exp_TileID = (-1);
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
@@ -72,11 +73,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_MapHeight = this._tmx_obj.map.height;  
         this.exp_TileWidth = this._tmx_obj.map.tilewidth; 
         this.exp_TileHeight = this._tmx_obj.map.tileheight; 
-        var is_isometric = (this._tmx_obj.map.orientation == "isometric");
-        this.exp_TotalWidth = (is_isometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileWidth: 
-                                              this.exp_MapWidth*this.exp_TileWidth;
-        this.exp_TotalHeight = (is_isometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileHeight: 
-                                               this.exp_MapHeight*this.exp_TileHeight;
+        this.exp_IsIsometric = (this._tmx_obj.map.orientation == "isometric");
+        this.exp_TotalWidth = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileWidth: 
+                                                      this.exp_MapWidth*this.exp_TileWidth;
+        this.exp_TotalHeight = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileHeight: 
+                                                       this.exp_MapHeight*this.exp_TileHeight;
 	};
 	instanceProto.RetrieveTileArray = function(obj_type)
 	{
@@ -90,9 +91,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
-        this.layout.is_isometric = (tmx_obj.map.orientation == "isometric");
-        this.layout.SetWidth(tmx_obj.map.tilewidth);
-        this.layout.SetHeight(tmx_obj.map.tileheight);
+        this.layout.is_isometric = this.exp_IsIsometric;
+        this.layout.SetWidth(this.exp_TileWidth);
+        this.layout.SetHeight(this.exp_TileHeight);
 	};	
 	// bitmaks to check for flipped & rotated tiles
 	var FlippedHorizontallyFlag		= 0x80000000;
@@ -240,6 +241,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	    ret.set_int(this.exp_TotalWidth);
 	};
 	exps.TotalHeight = function (ret)
+	{    
+	    ret.set_int(this.exp_TotalHeight);
+	}; 	
+	exps.IsIsometric = function (ret)
 	{    
 	    ret.set_int(this.exp_TotalHeight);
 	}; 		

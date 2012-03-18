@@ -128,10 +128,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
     };    
-	instanceProto.CreateItem = function(obj_type,x,y,_layer,offset_x,offset_y)
+	instanceProto.CreateItem = function(obj_type,x,y,_layer)
 	{
         var layer = this._get_layer(_layer);
-        var inst = this.layout.CreateItem(obj_type,x,y,layer,offset_x,offset_y);
+        var inst = this.layout.CreateItem(obj_type,x,y,layer);
 
         // Pick just this instance
         var sol = inst.type.getCurrentSol();
@@ -175,12 +175,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    return this.items[uid];
 	};
 	
-	instanceProto.CreateChess = function(obj_type,x,y,z,_layer,offset_x,offset_y)
+	instanceProto.CreateChess = function(obj_type,x,y,z,_layer)
 	{
         if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
             
-        var obj = this.CreateItem(obj_type,x,y,_layer,offset_x,offset_y);
+        var obj = this.CreateItem(obj_type,x,y,_layer);
 	    this.add_item(obj.uid,x,y,z);  
 	    return obj;
 	};	
@@ -210,7 +210,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};		
     
     acts.SetupLayout = function (layout_objs)
-	{
+	{   
         var layout = layout_objs.instances[0];
         if (layout.check_name == "LAYOUT")
             this.layout = layout;        
@@ -220,12 +220,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		
 	acts.CreateTile = function (_obj_type,x,y,_layer)
 	{
-	    this.CreateChess(_obj_type,x,y,0,_layer,0,0);
+	    this.CreateChess(_obj_type,x,y,0,_layer);
 	};
 	
-	acts.CreateChess = function (_obj_type,x,y,z,_layer,offset_x,offset_y)
-	{
-	    this.CreateChess(_obj_type,x,y,z,_layer,offset_x,offset_y);        
+	acts.CreateChess = function (_obj_type,x,y,z,_layer)
+	{ 
+	    this.CreateChess(_obj_type,x,y,z,_layer);        
 	};	
 	
 	acts.RemoveChess = function (objs)

@@ -73,7 +73,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	};   
 	instanceProto.CreateItem = function(obj_type,x,y,layer,offset_x,offset_y)
 	{
-        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y)+offset_x,this.GetY(x,y)+offset_y );        
+        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );        
 	}; 	
 	//////////////////////////////////////
 	// Conditions
@@ -84,7 +84,21 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	// Actions
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
-
+    
+    acts.SetOrientation = function (orientation)
+    {        
+        this.is_isometric = (orientation == 1);
+	};
+    acts.SetCellSize = function (width, height)
+    {        
+        this.SetWidth(width);
+        this.SetHeight(height);
+	};
+    acts.SetOffset = function (x, y)
+    {        
+        this.PositionOX = x;
+        this.PositionOY = y;
+	};    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};

@@ -17,7 +17,27 @@
 // Conditions
 
 //////////////////////////////////////////////////////////////
-// Actions     
+// Actions  
+AddComboParamOption("Orthogonal");
+AddComboParamOption("Isometric");
+AddComboParam("Orientation", "orientation of map", 0);
+AddAction(1, 0, "Set orientation", "Orientation", 
+          "Set orientation to <i>{0}</i>", 
+          "Set orientation.", "SetOrientation");
+AddNumberParam("Isometric", "1=Isometric, 0=Orthogonal", 0);
+AddAction(2, 0, "Set orientation by number", "Orientation", 
+          "Set orientation to <i>{0}</i>", 
+          "Set orientation.", "SetOrientation");
+AddNumberParam("Width", "Cell width in pixels.", 0);
+AddNumberParam("Height", "Cell height in pixels.", 0);
+AddAction(3, 0, "Set cell size", "Size", 
+          "Set cell width to <i>{0}</i>, height to <i>{1}</i>", 
+          "Set cell size.", "SetCellSize");
+AddNumberParam("X", "Physical X co-ordinate at logic (0,0).", 0);
+AddNumberParam("Y", "Physical Y co-ordinate at logic (0,0).", 0);
+AddAction(4, 0, "Set position offset", "Position", 
+          "Set offset to (<i>{0}</i>, <i>{1}</i>)", 
+          "Set Physical position offset (position of logic (0,0)).", "SetOffset");          
           
 //////////////////////////////////////////////////////////////
 // Expressions

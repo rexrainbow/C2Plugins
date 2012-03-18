@@ -48,7 +48,9 @@ AddExpression(4, ef_return_number,
 AddExpression(5, ef_return_number, 
               "Get total width", "Map", "TotalWidth", "Get total width in pixel.");
 AddExpression(6, ef_return_number, 
-              "Get total height", "Map", "TotalHeight", "Get total height in pixel.");                
+              "Get total height", "Map", "TotalHeight", "Get total height in pixel."); 
+AddExpression(7, ef_return_number, 
+              "Get orientation", "Map", "IsIsometric", "Get orientation. 1=Isometric, 0=Orthogonal");               
 AddExpression(11, ef_return_number, 
               "Get tile id", "Callback", "TileID", "Get tile id.");           
 AddExpression(12, ef_return_number, 
