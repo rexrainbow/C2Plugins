@@ -3,6 +3,7 @@
 	return {
 		"name":			"Sprite Bank",
 		"id":			"Rex_SpriteBank",
+		"version":		"0.8",            
 		"description":	"Save/Load sprites.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

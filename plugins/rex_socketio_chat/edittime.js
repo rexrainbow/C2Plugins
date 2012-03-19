@@ -3,6 +3,7 @@ function GetPluginSettings()
 	return {
 		"name":			"Chat",
 		"id":			"Rex_SocketIO_Chat",
+		"version":		"0.1",               
 		"description":	"Allows you to communicate over the Internet via streaming sockets.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

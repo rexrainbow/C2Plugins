@@ -3,6 +3,7 @@
 	return {
 		"name":			"Hash",
 		"id":			"Rex_Hash",
+		"version":		"0.5",            
 		"description":	"Store value in a hash table",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

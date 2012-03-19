@@ -3,6 +3,7 @@
 	return {
 		"name":			"Text",
 		"id":			"Rex_TextPlus",
+		"version":		"1.0",            
 		"description":	"Enhancement text object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
