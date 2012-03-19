@@ -3,7 +3,7 @@
 	return {
 		"name":			"Debug Panel",
 		"id":			"Rex_DebugPanel",
-		"version":		"1.0",        
+		"version":		"0.1",        
 		"description":	"Dump debug message to panel.",
 		"author":		"",
 		"help url":		"",
