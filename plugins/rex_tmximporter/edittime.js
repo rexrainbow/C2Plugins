@@ -3,10 +3,11 @@
 	return {
 		"name":			"TMX Importer",
 		"id":			"Rex_TMXImporter",
+		"version":		"0.1",          
 		"description":	"Create sprites according to tmx string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
