@@ -3,10 +3,11 @@
 	return {
 		"name":			"Function",
 		"id":			"Rex_Function",
-		"description":	"Function",
+		"version":		"1.0",          
+		"description":	"Call named events from actions and expressions.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility: Core",
+		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

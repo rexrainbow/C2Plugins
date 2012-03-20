@@ -3,10 +3,11 @@
 	return {
 		"name":			"Sync-Function",
 		"id":			"Rex_SyncFn",
-		"description":	"Sync function for network",
+		"version":		"0.1",          
+		"description":	"Sync function call for network.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
