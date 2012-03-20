@@ -33,6 +33,9 @@ AddNumberParam("UID", "The UID of instance to be tested.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddCondition(4, 0, "UID in group", "Group", 
              "Instance UID:<i>{0}</i> in group <i>{1}</i>", "Testing if UID is in a group.", "IsInGroup");
+AddStringParam("Name", "Group name.", '""');
+AddCondition(5, 0, "Empty", "Group", 
+             "Group <i>{0}</i> is empty", "Testing if group is empty.", "IsEmpty");
 
 
 //////////////////////////////////////////////////////////////
@@ -126,6 +129,14 @@ AddComboParamOption("Pop");
 AddComboParam("Operation", "Copy or pop UID", 0);
 AddAction(21, 0, "Slice", "List", "<i>{4}</i> group <i>{0}</i>[<i>{1}</i>:<i>{2}</i>] to group <i>{3}</i>", 
           "Copy or pop group slice to another group.", "Slice");
+AddStringParam("Name", "Group name.", '""'); 
+AddNumberParam("Index", "Pop index.", 0);
+AddObjectParam("Object", "Object for picking");
+AddComboParamOption("Get");
+AddComboParamOption("Pop");
+AddComboParam("Operation", "Get or pop", 1);
+AddAction(22, 0, "Pop instance", "SOL", "<i>{3}</i> instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
+          "Get or pop instance from group.", "PopInstance");
           
 //////////////////////////////////////////////////////////////
 // Expressions

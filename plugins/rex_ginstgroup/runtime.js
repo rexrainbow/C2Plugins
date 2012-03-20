@@ -236,7 +236,13 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	cnds.IsInGroup = function (uid, name)
 	{
 		return this.GetGroup(name).IsInGroup(uid);        
-	};  
+	}; 
+	  
+	cnds.IsEmpty = function (name)
+	{
+		return (this.GetGroup(name).GetList().length == 0);        
+	}; 	
+	 
 		
 	//////////////////////////////////////
 	// Actions
@@ -374,6 +380,37 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         if (is_pop==1)
             source_group.Complement(target_group);
 	};	
+	
+    acts.PopInstance = function (name, index, objtype, is_pop)
+	{	    
+        var uid_list = this.GetGroup(name).GetList();
+        var is_valid_index = (uid_list.length > index);
+                   
+        var sol = objtype.getCurrentSol();  
+        sol.select_all = true;   
+        var insts = sol.getObjects();
+        var insts_length = insts.length;
+        var i, inst;
+        sol.instances.length = 0;   // clear contents
+        if (is_valid_index)
+        {
+            var _uid = uid_list[index];
+            for (i=0; i < insts_length; i++)
+            {
+               inst = insts[i];
+               if (inst.uid == _uid)
+               {
+                   sol.instances.push(inst);
+                   break;
+               }
+            }
+        }
+        sol.select_all = false;       
+        
+        if ((is_pop==1) && is_valid_index)
+            cr.arrayRemove(uid_list, index);        
+	};		
+	
     
 	//////////////////////////////////////
 	// Expressions
