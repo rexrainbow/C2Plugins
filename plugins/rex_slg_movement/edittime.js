@@ -34,7 +34,7 @@ AddAction(1, 0, "Set cost", "Cost", "Set cost to <i>{0}</i>",
           "Set cost.", "SetCost");          
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Filter", 'Filter function name to get avaiable uid, "" is passing default.', '""');
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(2, 0, "Get moveable area", "Request: Moveable area", 
@@ -42,27 +42,27 @@ AddAction(2, 0, "Get moveable area", "Request: Moveable area",
           "Get moveable area.", "GetMoveableArea");     
 AddNumberParam("UID", "The UID of chess", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Filter", 'Filter function name to get avaiable uid, "" is passing default.', '""');
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(3, 0, "Get moveable area by UID", "Request: Moveable area", 
           "Get moveable area of chess UID:<i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>, filter to <i>{3}</i>. Then put result to group <i>{4}</i>", 
           "Get moveable area.", "GetMoveableArea");
 AddObjectParam("Chess", "Chess object.");
-AddObjectParam("Brick", "Brick object.");
+AddObjectParam("Tile", "Tile object.");
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(4, 0, "Get moving path", "Request: Moving path", 
-          "Get moving path of chess <i>{0}</i> to brick <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
+          "Get moving path of chess <i>{0}</i> to tile <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");
 AddNumberParam("Chess UID", "The UID of chess", 0);
-AddNumberParam("Brick UID", "The UID of brick", 0);
+AddNumberParam("Tile UID", "The UID of tile", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
-AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each brick.", 0);
+AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(5, 0, "Get moving path by UID", "Request: Moving path", 
-          "Get moving path of chess UID:<i>{0}</i> to brick UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
+          "Get moving path of chess UID:<i>{0}</i> to tile UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");      
 AddNumberParam("UID", "Filter result", 0);
 AddAction(6, 0, "Set filter result", "Filter", "Set filter result to UID:<i>{0}</i>", 
@@ -73,8 +73,8 @@ AddExpression(1, ef_return_number,
               "Get UID of selected chess", "Request", "ChessUID", 
               "Get UID of selected chess.");
 AddExpression(2, ef_return_number,
-              "Get UID of brick", "Request", "BrickUID",
-              "Get UID of brick.");
+              "Get UID of tile", "Request", "TileUID",
+              "Get UID of tile.");
               
 ACESDone();
 

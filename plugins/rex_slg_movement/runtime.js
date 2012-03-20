@@ -43,7 +43,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.exp_ChessUID =0;
-	    this.exp_BrickUID =0;	   
+	    this.exp_TileUID =0;	   
 	    
 	    this.is_tetragon_grid = (this.properties[0]==0);
 	    this.path_mode = this.properties[1];
@@ -56,10 +56,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._cost_value = 0;
         this._filter_uid = 0;
         this._is_cost_fn = null;
-        this._bricks = {};
+        this._tiles = {};
         this._chess_xyz = null;
-        this._dist_brick_uid = null;
-        this._hit_dist_brick = false;   
+        this._dist_tile_uid = null;
+        this._hit_dist_tile = false;   
 	};
 
 	instanceProto.is_inside_board = function (x,y,z)
@@ -96,12 +96,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return this.board.uid2xyz(uid);
 	};
 	
-	instanceProto._get_cost = function(brick_uid)
+	instanceProto._get_cost = function(tile_uid)
 	{
 	    var cost;
 	    if (this._is_cost_fn)
 	    {
-	        this.exp_BrickUID = brick_uid;
+	        this.exp_TileUID = tile_uid;
 	        this._cost_value = 0;
 	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
 	        cost = this._cost_value;
@@ -126,131 +126,131 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         return neighbors;
 	};	
 	
-	instanceProto._get_pre_brick = function(pre_bricks, pre_dir)
+	instanceProto._get_pre_tile = function(pre_tiles, pre_dir)
 	{
-	    var pre_bricks_cnt = pre_bricks.length;
-	    var pre_brick;
-	    if (pre_bricks_cnt == 1)
-	        pre_brick = pre_bricks[0];
+	    var pre_tiles_cnt = pre_tiles.length;
+	    var pre_tile;
+	    if (pre_tiles_cnt == 1)
+	        pre_tile = pre_tiles[0];
 	    else
 	    {
 	        switch (this.path_mode)
 	        {
 	        case 0:  
-	            var i = Math.floor(Math.random()*pre_bricks_cnt);
-	            pre_brick = pre_bricks[i];
+	            var i = Math.floor(Math.random()*pre_tiles_cnt);
+	            pre_tile = pre_tiles[i];
 	            break;
 	        case 1:  
 	            var i;
-	            for(i=0;i<pre_bricks_cnt;i++)
+	            for(i=0;i<pre_tiles_cnt;i++)
 	            {
-	                pre_brick = pre_bricks[i];
-	                if (pre_dir != pre_brick.dir)
+	                pre_tile = pre_tiles[i];
+	                if (pre_dir != pre_tile.dir)
 	                    break;
 	            }	            
 	            break;
 	        }
 	    }
-	    return pre_brick;
+	    return pre_tile;
 	};
 	
-	instanceProto.get_path_bricks = function(bricks, start_uid, end_uid)
+	instanceProto.get_path_tiles = function(tiles, start_uid, end_uid)
 	{
-	    var path_bricks = [];
+	    var path_tiles = [];
 	    var _uid = end_uid;	
-	    var pre_brick;    
+	    var pre_tile;    
 	    var pre_dir = null;
 	    while (_uid != start_uid)
 	    {
-	        path_bricks.push(_uid);
-	        pre_brick = this._get_pre_brick(bricks[_uid].pre_brick, pre_dir);
-	        _uid = pre_brick.uid;
-	        pre_dir = pre_brick.dir;
+	        path_tiles.push(_uid);
+	        pre_tile = this._get_pre_tile(tiles[_uid].pre_tile, pre_dir);
+	        _uid = pre_tile.uid;
+	        pre_dir = pre_tile.dir;
 	    }
-	    return path_bricks.reverse();
+	    return path_tiles.reverse();
 	};
 	
-	instanceProto._get_moveable_brick = function(brick_uid, moving_points, pre_brick_uid, direction)
+	instanceProto._get_moveable_tile = function(tile_uid, moving_points, pre_tile_uid, direction)
 	{
-	    if (brick_uid == null)
+	    if (tile_uid == null)
 	        return;
 
-	    var brick_xyz = this.uid2xyz(brick_uid);
-	    var at_chess_xy = ((brick_xyz.x==this._chess_xyz.x) && (brick_xyz.y==this._chess_xyz.y));
+	    var tile_xyz = this.uid2xyz(tile_uid);
+	    var at_chess_xy = ((tile_xyz.x==this._chess_xyz.x) && (tile_xyz.y==this._chess_xyz.y));
 	    var remain;
 
-        if (this._skip_first)  // start from chess's brick
+        if (this._skip_first)  // start from chess's tile
         {
             remain = moving_points;
             this._skip_first = false;
         }
-        else if (!at_chess_xy)  // try to move to this brick
+        else if (!at_chess_xy)  // try to move to this tile
         {
-	        var brick_cost = this._get_cost(brick_uid);
-	        if (brick_cost == null)
+	        var tile_cost = this._get_cost(tile_uid);
+	        if (tile_cost == null)
 	        {
 	            // maybe an error?
 	            return;
 	        }
 	            
-	        remain = moving_points - brick_cost;
+	        remain = moving_points - tile_cost;
 	        
-	        if (remain >= 0)  // can move to this brick
+	        if (remain >= 0)  // can move to this tile
 	        {
-	            //console.log(pre_brick_uid+"->"+brick_uid+":remain="+remain);
-	            var node = this._bricks[brick_uid];
+	            //console.log(pre_tile_uid+"->"+tile_uid+":remain="+remain);
+	            var node = this._tiles[tile_uid];
 	            if (node == null)
 	            {
-	                //console.log("Create:["+brick_uid+"]="+pre_brick_uid);
-	                node = {cost:remain, pre_brick:[ {uid:pre_brick_uid, dir:direction} ] };	
-	                this._bricks[brick_uid] = node;                
+	                //console.log("Create:["+tile_uid+"]="+pre_tile_uid);
+	                node = {cost:remain, pre_tile:[ {uid:pre_tile_uid, dir:direction} ] };	
+	                this._tiles[tile_uid] = node;                
 	            }
 	            else
 	            {
 	                var remain_cost = node.cost;
-	                if (remain > remain_cost)  // move to the same brick and pay less cost
+	                if (remain > remain_cost)  // move to the same tile and pay less cost
 	                {
-	                    //console.log("Reset:["+brick_uid+"]="+pre_brick_uid);
-	                    node.pre_brick.length = 1;
-	                    node.pre_brick[0] = {uid:pre_brick_uid, dir:direction};
+	                    //console.log("Reset:["+tile_uid+"]="+pre_tile_uid);
+	                    node.pre_tile.length = 1;
+	                    node.pre_tile[0] = {uid:pre_tile_uid, dir:direction};
 	                }
-	                else if (remain == remain_cost)  // move to the same brick and pay the same cost
+	                else if (remain == remain_cost)  // move to the same tile and pay the same cost
 	                {
-	                    //console.log("Push:["+brick_uid+"]+="+pre_brick_uid);
-	                    node.pre_brick.push({uid:pre_brick_uid, dir:direction});
+	                    //console.log("Push:["+tile_uid+"]+="+pre_tile_uid);
+	                    node.pre_tile.push({uid:pre_tile_uid, dir:direction});
 	                    return;   // leave
 	                }   
-	                else  // move to the same brick but pay more cost
+	                else  // move to the same tile but pay more cost
 	                    return;
 	            }
 	        }         
       	}
-      	else  // at_chess_xy && !this._skip_first : go back to chess's brick
+      	else  // at_chess_xy && !this._skip_first : go back to chess's tile
       	{
       	    return;
       	}
 
-      	// arrive distance brick
-      	if ((brick_uid == this._dist_brick_uid) && (remain >= 0))
+      	// arrive distance tile
+      	if ((tile_uid == this._dist_tile_uid) && (remain >= 0))
         {
-      	    this._hit_dist_brick = true;
+      	    this._hit_dist_tile = true;
       	    return;
       	}
-      	// get next moveable bricks
+      	// get next moveable tiles
       	else if (remain > 0)
 	    {
-	        var next_brick_uid;
+	        var next_tile_uid;
 	        if (this.is_tetragon_grid)
 	        {
-	            var neighbors = this._get_neighbors(brick_xyz.x, brick_xyz.y);
+	            var neighbors = this._get_neighbors(tile_xyz.x, tile_xyz.y);
 	            var neighbors_cnt = neighbors.length;
 	            var i, neighbor_xy;
 	            for(i=0;i<neighbors_cnt;i++)
 	            {
 	                neighbor_xy = neighbors[i];
-	                next_brick_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
-	                if (pre_brick_uid != next_brick_uid)
-	                    this._get_moveable_brick(next_brick_uid, remain, brick_uid, neighbor_xy.dir);	                
+	                next_tile_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
+	                if (pre_tile_uid != next_tile_uid)
+	                    this._get_moveable_tile(next_tile_uid, remain, tile_uid, neighbor_xy.dir);	                
 	            }
 	        }
 	    }
@@ -262,29 +262,29 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    this._skip_first = true;
 	    this._cost_fn_name = cost;
 	    this._is_cost_fn = (typeof cost == "string");
-	    this._bricks = {};
+	    this._tiles = {};
 	    this._chess_xyz = this.uid2xyz(chess_uid);
-	    this._dist_brick_uid = null;
-	    var start_brick_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_brick(start_brick_uid, moving_points, null, null);
-	    return this._bricks;
+	    this._dist_tile_uid = null;
+	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
+	    this._get_moveable_tile(start_tile_uid, moving_points, null, null);
+	    return this._tiles;
 	};
 	
-	instanceProto.get_moving_path = function (chess_uid, end_brick_uid, moving_points, cost)
+	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost)
 	{
 	    //this.exp_ChessUID = chess_uid;
 	    this._skip_first = true;
 	    this._cost_fn_name = cost;
 	    this._is_cost_fn = (typeof cost == "string");
-	    this._bricks = {};
+	    this._tiles = {};
 	    this._chess_xyz = this.uid2xyz(chess_uid);
-	    this._dist_brick_uid = end_brick_uid;
-	    this._hit_dist_brick = false;
-	    var start_brick_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_brick(start_brick_uid, moving_points, null, null);
-	    var path_bricks = (this._hit_dist_brick)? 
-	                      this.get_path_bricks(this._bricks, start_brick_uid, end_brick_uid): null;
-	    return path_bricks;
+	    this._dist_tile_uid = end_tile_uid;
+	    this._hit_dist_tile = false;
+	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
+	    this._get_moveable_tile(start_tile_uid, moving_points, null, null);
+	    var path_tiles = (this._hit_dist_tile)? 
+	                      this.get_path_tiles(this._tiles, start_tile_uid, end_tile_uid): null;
+	    return path_tiles;
 	};
 	
 	//////////////////////////////////////
@@ -340,13 +340,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	        return;
 	    
 	    this.exp_ChessUID = chess_uid;
-		var bricks_uids = this.get_moveable_area(chess_uid, moving_points, cost);
+		var tiles_uids = this.get_moveable_area(chess_uid, moving_points, cost);
 	    var uid;
 	    var avaiable_uids = [];  
         this._filter_fn_name = filter;
-	    for(uid in bricks_uids)
+	    for(uid in tiles_uids)
 		{
-		    this.exp_BrickUID = parseInt(uid);		        
+		    this.exp_TileUID = parseInt(uid);		        
 	        this._filter_uid = uid;
 	        if (filter != "")
 	            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
@@ -355,17 +355,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		this.group.GetGroup(group_name).SetByUIDList(avaiable_uids);
 	};  
 		
-	acts.GetMovingPath = function (chess_objs, brick_objs, moving_points, cost, group_name)	
+	acts.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
 	{
 	    var chess_uid = _get_uid(chess_objs);
-	    var brick_uid = _get_uid(brick_objs);
-	    if ((chess_uid == null) || (brick_uid == null) || (moving_points<=0))
+	    var tile_uid = _get_uid(tile_objs);
+	    if ((chess_uid == null) || (tile_uid == null) || (moving_points<=0))
 	        return;
 
         this.exp_ChessUID = chess_uid;
-	    var path_bricks_uids = this.get_moving_path(chess_uid,brick_uid,moving_points, cost);
-        if (path_bricks_uids != null)
-	        this.group.GetGroup(group_name).SetByUIDList(path_bricks_uids);	    		      	       
+	    var path_tiles_uids = this.get_moving_path(chess_uid,tile_uid,moving_points, cost);
+        if (path_tiles_uids != null)
+	        this.group.GetGroup(group_name).SetByUIDList(path_tiles_uids);	    		      	       
 	};	  	
     
 	//////////////////////////////////////
@@ -378,9 +378,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    ret.set_int(this.exp_ChessUID);
 	};
 	
-    exps.BrickUID = function (ret)
+    exps.TileUID = function (ret)
     {
-        ret.set_int(this.exp_BrickUID);
+        ret.set_int(this.exp_TileUID);
     };	
     
 }());
