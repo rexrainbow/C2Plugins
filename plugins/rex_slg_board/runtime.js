@@ -344,5 +344,27 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         else
             py = (-1);
 	    ret.set_float(py);
-	};    
+	};  
+    
+	exps.UID2LA = function (ret, uid_o, uid_to)
+	{
+        var angle;
+        var xyz_o = this.uid2xyz(uid_o);
+        var xyz_to = this.uid2xyz(uid_to);
+        if ((xyz_o == null) || (xyz_to == null))
+            angle = (-1);
+        else
+        {
+            var dx = xyz_to.x - xyz_o.x;
+            var dy = xyz_to.y - xyz_o.y;
+            if (dy == 0)
+                angle = (dx>0)? 0: 180;
+            else if (dx == 0)
+                angle = (dy>0)? 90: 270;
+            else
+                angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
+        }
+	    ret.set_float(angle);
+	};  
+    
 }());

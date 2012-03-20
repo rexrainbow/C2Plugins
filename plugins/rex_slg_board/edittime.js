@@ -136,6 +136,11 @@ AddNumberParam("UID", "The UID of instance.", 0);
 AddExpression(9, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by UID", "Physical", "UID2PY",
               "Get Y co-ordinate by UID.");
+AddNumberParam("Origin", "The UID of instance at origin.", 0);   
+AddNumberParam("FaceTo", "The UID of instance to face.", 0);         
+AddExpression(10, ef_return_number | ef_variadic_parameters,
+              "Get Logic angle by UID", "Chess", "UID2LA",
+              "Get Logic angle by UID, in degree. (-1) is invalid angle.");              
               
 ACESDone();
 
