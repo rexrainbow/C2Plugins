@@ -3,10 +3,10 @@
 	return {
 		"name":			"Work Sheet",
 		"id":			"Rex_WorkSheet",
-		"description":	"Executing instructions from a string",
+		"description":	"Executing instructions from a string while time-out",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
