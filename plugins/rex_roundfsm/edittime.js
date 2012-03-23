@@ -2,11 +2,11 @@
 {
 	return {
 		"name":			"Round FSM",
-		"id":			"Rex_SLGRoundFSM",
-		"description":	"Round FSM of SLG game",
+		"id":			"Rex_RoundFSM",
+		"description":	"A finite state machine to descript a round",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"SLG",
+		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -52,48 +52,35 @@ AddCondition(13, cf_trigger, "On state changing", "Debug",
              "On state changing", "Trigger when state changing.", "OnStateChanging");           
 //////////////////////////////////////////////////////////////
 // Actions
-AddObjectParam("Group", "Instance group object");
-AddAction(0, 0, "Setup", "Setup", 
-          "Set instance group object to <i>{1}</i>", 
-          "Set instance group object.", "Setup"); 
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable fsm.",1);
-AddAction(4, 0, "Set activated", "Activated", "Set activated to <i>{0}</i>", "Enable fsm transfer.", "SetActivated");          
+AddAction(1, 0, "Set activated", "Activated", "Set activated to <i>{0}</i>", "Enable fsm transfer.", "SetActivated");    
+AddAction(4, 0, "Turn off", "Request", 
+          "Turn off", 
+          'Turn off this fsm. It will push state to "Off" and set activated to "No"', "TurnOff");       
 AddAction(5, 0, "Start", 'Request: "Idle"', 
           "Start a round", 
-          "Start a round.", "Start");            
-AddStringParam("Available", "Group name of available instances", '""');
-AddAction(6, 0, "Get available source group", 'Input: "GetSource"', 
-          "Get available source group to <i>{0}</i>", 
-          "Get available source group.", "GetAvailableSourceGroup");     
-AddStringParam("Source", "Group name of target instances", '""');
-AddAction(7, 0, "Get source group", 'Request: "GetSource"', 
-          "Get source group to <i>{0}</i>", 
-          "Get source group.", "GetSourceGroup");
-AddStringParam("Commands", "Available commands", '""');
-AddAction(8, 0, "Get available commands", 'Input: "GetCommand"', 
-          "Get available commands to <i>{0}</i>", 
-          "Get available commands.", "GetAvailableCommands");
-AddStringParam("Commands", "Executed command", '""');
-AddAction(9, 0, "Get command", 'Request: "GetCommand"', 
+          'Start a round. It will push state from "Idle" to "GetSource"', "Start"); 
+AddAnyTypeParam("Source", "Source instance(s)", 0);
+AddAction(6, 0, "Get source", 'Request: "GetSource"', 
+          "Get source to <i>{0}</i>", 
+         'Get source. It will push state from "GetSource" to "GetCommand"', "GetSource");
+AddAnyTypeParam("Commands", "Executed command", '""');
+AddAction(7, 0, "Get command", 'Request: "GetCommand"', 
           "Get executed command to <i>{0}</i>", 
-          "Get executed command.", "GetCommand");   
-AddStringParam("Available", "Group name of available instances", '""');
-AddAction(10, 0, "Get available target group", 'Input: "GetTarget"', 
-          "Get available target group to <i>{0}</i>", 
-          "Get available target group.", "GetAvailableTargetGroup");         
-AddStringParam("Target", "Group name of target instances", '""');
-AddAction(11, 0, "Get target group", 'Request: "GetTarget"', 
-          "Get target group to <i>{0}</i>", 
-          "Get target group.", "GetTargetGroup"); 
-AddAction(12, 0, "Accept command", 'Request: "AcceptCommand"', 
+          'Get executed command. It will push state from "GetCommand" to "GetTarget"', "GetCommand");       
+AddAnyTypeParam("Target", "Target instance(s)", 0);
+AddAction(8, 0, "Get target", 'Request: "GetTarget"', 
+          "Get target to <i>{0}</i>", 
+          'Get target. It will push state from "GetTarget" to "AcceptCommand"', "GetTarget"); 
+AddAction(9, 0, "Accept command", 'Request: "AcceptCommand"', 
           "Accept command", 
-          "Accept command.", "AcceptCommand");   
-AddAction(13, 0, "Finish", 'Request: "RunCommand"', 
+          'Accept command. It will push state from "AcceptCommand" to "RunCommand"', "AcceptCommand");   
+AddAction(10, 0, "Finish", 'Request: "RunCommand"', 
           "Finish this round", 
-          "Finish this round.", "Finish");          
-AddAction(14, 0, "Cancel", 'Request: Cancel', 
+          'Finish this round. It will push state from "RunCommand" to "Idle"', "Finish");          
+AddAction(11, 0, "Cancel", 'Request: Cancel', 
           "Cancel", 
           "Cancel operation.", "Cancel");   
 //////////////////////////////////////////////////////////////
@@ -102,18 +89,12 @@ AddExpression(3, ef_return_string,
               "Get current state", "State", "CurState", "Get current state.");
 AddExpression(4, ef_return_string, 
               "Get previous state", "State", "PreState", "Get previous state.");              
-AddExpression(5, ef_return_string, 
-              "Get source group", "Command", "Source", "Get source group.");
-AddExpression(6, ef_return_string, 
+AddExpression(5, ef_return_any, 
+              "Get source", "Command", "Source", "Get source.");
+AddExpression(6, ef_return_any, 
               "Get command", "Command", "Command", "Get command.");
-AddExpression(7, ef_return_string, 
-              "Get target group", "Command", "Target", "Get target group.");              
-AddExpression(8, ef_return_string, 
-              "Get available source group", "Available", "AvailableSource", "Get available source group.");
-AddExpression(9, ef_return_string, 
-              "Get available command", "Available", "AvailableCommand", "Get available command.");
-AddExpression(10, ef_return_string, 
-              "Get available target group", "Available", "AvailableTarget", "Get available target group.");      
+AddExpression(7, ef_return_any, 
+              "Get target", "Command", "Target", "Get target.");
               
 ACESDone();
 
