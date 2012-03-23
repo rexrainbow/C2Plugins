@@ -6,7 +6,7 @@
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility",
+		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
