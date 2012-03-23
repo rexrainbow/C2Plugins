@@ -81,7 +81,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
         new cr.Property(ept_combo, "Grid type", "Tetragon", "Grid type of board.", "Tetragon|Hexagon"),  
-		new cr.Property(ept_combo, "Path mode", "Diagonal", "Geometry of moving path.", "Random|Diagonal"),  
+		new cr.Property(ept_combo, "Path mode", "Diagonal", "Geometry of moving path.", "Random|Diagonal|Straight"),  
 	];
 	
 // Called by IDE when a new object type is to be created
