@@ -3,6 +3,7 @@
 	return {
 		"name":			"Swing",
 		"id":			"Rex_Swing",
+		"version":		"1.0",          
 		"description":	"Swing sprite",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

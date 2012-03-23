@@ -3,6 +3,7 @@
 	return {
 		"name":			"Timer",
 		"id":			"Rex_Timer",
+		"version":		"1.0",          
 		"description":	"Timer, to execute function at time-out",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

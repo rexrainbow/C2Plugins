@@ -3,6 +3,7 @@
 	return {
 		"name":			"Gleam",
 		"id":			"Rex_Flash",
+		"version":		"1.0",        
 		"description":	"Change an object's opacity over time periodly.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

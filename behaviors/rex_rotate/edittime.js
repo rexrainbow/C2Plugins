@@ -3,6 +3,7 @@
 	return {
 		"name":			"Rotate",
 		"id":			"Rex_Rotate",
+		"version":		"1.0",          
 		"description":	"Rotate Sprite",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

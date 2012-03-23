@@ -3,6 +3,7 @@
 	return {
 		"name":			"Zigzag",
 		"id":			"Rex_Zigzag",
+		"version":		"1.0",          
 		"description":	"Using LOGO-like script to move/rotate sprite.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

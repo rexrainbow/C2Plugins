@@ -3,6 +3,7 @@
 	return {
 		"name":			"Cooldown",
 		"id":			"Rex_Cooldown",
+		"version":		"1.0",        
 		"description":	"Accept request when cooldown",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
