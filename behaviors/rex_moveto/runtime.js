@@ -129,8 +129,20 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         {
             this.current_speed = this.move.max;
         }
-	};    
-
+	};  
+    
+	behinstProto.SetTargetPos = function (_x, _y)
+	{
+        var dx = _x - this.inst.x;
+        var dy = _y - this.inst.y;
+        
+        this.is_moving = true;         
+		this.target.x = _x;
+        this.target.y = _y; 
+        this.target.angle = Math.atan2(dy, dx);
+        this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
+        this.SetCurrentSpeed(null);
+	};
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
@@ -185,15 +197,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
     
 	acts.SetTargetPos = function (_x, _y)
 	{
-        var dx = _x - this.inst.x;
-        var dy = _y - this.inst.y;
-        
-        this.is_moving = true;         
-		this.target.x = _x;
-        this.target.y = _y; 
-        this.target.angle = Math.atan2(dy, dx);
-        this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
-        this.SetCurrentSpeed(null);
+        this.SetTargetPos(_x, _y)
 	};
     
 	acts.SetCurrentSpeed = function (s)
@@ -201,6 +205,14 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this.SetCurrentSpeed(s);
 	}; 
     
+ 	acts.SetTargetPosOnObject = function (objtype)
+	{
+		if (!objtype)
+			return;
+		var inst = objtype.getFirstPicked();
+        if (inst != null)
+            this.SetTargetPos(inst.x, inst.y)
+	};
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};

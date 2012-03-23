@@ -3,6 +3,7 @@
 	return {
 		"name":			"MoveTo",
 		"id":			"Rex_MoveTo",
+		"version":		"1.0",        
 		"description":	"Move sprite to specific position",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -63,6 +64,11 @@ AddAction(5, 0, "Set current speed", "Speed",
           "Set {my} current speed to <i>{0}</i>", 
           "Set the object's Current speed.", "SetCurrentSpeed");
   
+AddObjectParam("Target", "Target object.");
+AddAction(6, 0, "Set target position to object", "Position", 
+          "Set {my} target position to <i>{0}</i>", 
+          "Set target position to move toward.", 
+          "SetTargetPosOnObject");  
   
 //////////////////////////////////////////////////////////////
 // Expressions
