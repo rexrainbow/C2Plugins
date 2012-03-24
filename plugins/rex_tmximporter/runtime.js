@@ -246,7 +246,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	}; 	
 	exps.IsIsometric = function (ret)
 	{    
-	    ret.set_int(this.exp_TotalHeight);
+	    ret.set_int(this.exp_IsIsometric? 1:0);
 	}; 		
 	exps.TileID = function (ret)
 	{    
