@@ -3,6 +3,7 @@
 	return {
 		"name":			"Ninja",
 		"id":			"Rex_Ninja",
+		"version":		"1.0",        
 		"description":	"Set sprite visiable when cursor is overed",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
