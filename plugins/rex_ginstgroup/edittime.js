@@ -26,7 +26,7 @@ AddStringParam("Name", "Group name.", '""');
 AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Keep");
 AddComboParamOption("Pop");
-AddComboParam("Operation", "Keep or pop UID", 0);
+AddComboParam("Operation", "Keep or pop", 0);
 AddCondition(3, 0, "Pick instances", "SOL", 
              "Pick and <i>{2}</i> <i>{1}</i> from group <i>{0}</i>", "Pick instances from group.", "PickInsts");
 AddNumberParam("UID", "The UID of instance to be tested.", 0);
@@ -36,6 +36,14 @@ AddCondition(4, 0, "UID in group", "Group",
 AddStringParam("Name", "Group name.", '""');
 AddCondition(5, 0, "Empty", "Group", 
              "Group <i>{0}</i> is empty", "Testing if group is empty.", "IsEmpty");
+AddStringParam("Name", "Group name.", '""'); 
+AddNumberParam("Index", "Pop index.", 0);
+AddObjectParam("Object", "Object for picking");
+AddComboParamOption("Get");
+AddComboParamOption("Pop");
+AddComboParam("Operation", "Get or pop", 1);
+AddCondition(6, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
+             "Get or pop one instance from group.", "PopInstance");             
 
 
 //////////////////////////////////////////////////////////////
@@ -109,7 +117,7 @@ AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Keep");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Keep or pop UID", 0);
-AddAction(17, 0, "Pick instances", "SOL", 
+AddAction(17, 0, "Pick instances", "SOL: Group", 
           "Pick and <i>{2}</i> <i>{1}</i> from group <i>{0}</i>", "Pick instances from group.", "PickInsts");    
 AddStringParam("Name", "Group name.", '""');
 AddAction(18, 0, "Sort by UID increasement", "List: Sort", "Sort group <i>{0}</i> by UID increasement", 
@@ -135,8 +143,8 @@ AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Get");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
-AddAction(22, 0, "Pop instance", "SOL", "<i>{3}</i> instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
-          "Get or pop instance from group.", "PopInstance");
+AddAction(22, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
+          "Get or pop one instance from group.", "PopInstance");
           
 //////////////////////////////////////////////////////////////
 // Expressions

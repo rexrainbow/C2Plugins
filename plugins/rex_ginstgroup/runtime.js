@@ -186,8 +186,40 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                    group.RemoveUID(inst.uid);
            }
         }
-        sol.select_all = false;        
+        sol.select_all = false;    
+        return  (sol.instances.length >0);       
 	};  
+    
+    instanceProto._pop_one_instance = function (name, index, objtype, is_pop)
+	{	    
+        var uid_list = this.GetGroup(name).GetList();
+        var is_valid_index = (uid_list.length > index);
+                   
+        var sol = objtype.getCurrentSol();  
+        sol.select_all = true;   
+        var insts = sol.getObjects();
+        var insts_length = insts.length;
+        var i, inst;
+        sol.instances.length = 0;   // clear contents
+        if (is_valid_index)
+        {
+            var _uid = uid_list[index];
+            for (i=0; i < insts_length; i++)
+            {
+               inst = insts[i];
+               if (inst.uid == _uid)
+               {
+                   sol.instances.push(inst);
+                   break;
+               }
+            }
+        }
+        sol.select_all = false;       
+        
+        if ((is_pop==1) && is_valid_index)
+            cr.arrayRemove(uid_list, index);  
+        return  (sol.instances.length >0);              
+	};	    
 
     var _thisArg  = null;
 	var _sort_fn = function(uid_a, uid_b)
@@ -229,8 +261,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	  
 	cnds.PickInsts = function (name, objtype, is_pop)
 	{
-	    this._pick_insts(name, objtype, is_pop);
-		return true;        
+		return this._pick_insts(name, objtype, is_pop);   
 	};  
 	  
 	cnds.IsInGroup = function (uid, name)
@@ -242,7 +273,11 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 		return (this.GetGroup(name).GetList().length == 0);        
 	}; 	
-	 
+	  
+	cnds.PopInstance = function (name, index, objtype, is_pop)
+	{
+		return this._pop_one_instance(name, index, objtype, is_pop);     
+	};	 
 		
 	//////////////////////////////////////
 	// Actions
@@ -383,32 +418,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
     acts.PopInstance = function (name, index, objtype, is_pop)
 	{	    
-        var uid_list = this.GetGroup(name).GetList();
-        var is_valid_index = (uid_list.length > index);
-                   
-        var sol = objtype.getCurrentSol();  
-        sol.select_all = true;   
-        var insts = sol.getObjects();
-        var insts_length = insts.length;
-        var i, inst;
-        sol.instances.length = 0;   // clear contents
-        if (is_valid_index)
-        {
-            var _uid = uid_list[index];
-            for (i=0; i < insts_length; i++)
-            {
-               inst = insts[i];
-               if (inst.uid == _uid)
-               {
-                   sol.instances.push(inst);
-                   break;
-               }
-            }
-        }
-        sol.select_all = false;       
-        
-        if ((is_pop==1) && is_valid_index)
-            cr.arrayRemove(uid_list, index);        
+        this._pop_one_instance(name, index, objtype, is_pop);  
 	};		
 	
     
