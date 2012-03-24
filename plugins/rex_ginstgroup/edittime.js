@@ -3,6 +3,7 @@
 	return {
 		"name":			"Inst Group",
 		"id":			"Rex_gInstGroup",
+		"version":		"1.0",         
 		"description":	"A set/list to store instances by uid",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
