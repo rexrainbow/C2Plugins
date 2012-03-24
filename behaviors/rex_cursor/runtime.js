@@ -215,15 +215,29 @@ cr.behaviors.Rex_Cursor = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.activated = (this.properties[0] == 1);
-        this.invisible = (this.properties[1]==1);        
+        this.invisible = (this.properties[1]==1); 
+        this.move_axis = this.properties[2];         
 	};
 
 	behinstProto.tick = function ()
 	{
         if (this.activated) {
-            var inst = this.inst;
-            inst.x = this.type.GetLayerX(inst);
-            inst.y = this.type.GetLayerY(inst);
+            var inst = this.inst;        
+            var cursor_x = this.type.GetLayerX(inst);
+            var cursor_y = this.type.GetLayerY(inst);
+            switch (this.move_axis)
+            {
+                case 1:
+                    inst.x = cursor_x;
+                    break;
+                case 2:
+                    inst.y = cursor_y;
+                    break;
+                default:
+                    inst.x = cursor_x;
+                    inst.y = cursor_y;
+                    break;
+            }
             inst.set_bbox_changed();
             // Trigger OnMoving
             this.runtime.trigger(cr.behaviors.Rex_Cursor.prototype.cnds.OnMoving, inst);
