@@ -206,11 +206,11 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	        
 	        if (remain >= 0)  // can move to this tile
 	        {
-	            console.log(pre_tile_uid+"->"+tile_uid+":remain="+remain);
+	            //console.log(pre_tile_uid+"->"+tile_uid+":remain="+remain);
 	            var node = this._tiles[tile_uid];
 	            if (node == null)
 	            {
-	                console.log("Create:["+tile_uid+"]="+pre_tile_uid);
+	                //console.log("Create:["+tile_uid+"]="+pre_tile_uid);
 	                node = {cost:remain, pre_tile:[ {uid:pre_tile_uid, dir:direction} ] };	
 	                this._tiles[tile_uid] = node;                
 	            }
@@ -219,13 +219,14 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	                var remain_cost = node.cost;
 	                if (remain > remain_cost)  // move to the same tile and pay less cost
 	                {
-	                    console.log("Reset:["+tile_uid+"]="+pre_tile_uid);
+	                    //console.log("Reset:["+tile_uid+"]="+pre_tile_uid);
+                        node.cost = remain;
 	                    node.pre_tile.length = 1;
 	                    node.pre_tile[0] = {uid:pre_tile_uid, dir:direction};
 	                }
 	                else if (remain == remain_cost)  // move to the same tile and pay the same cost
 	                {
-	                    console.log("Push:["+tile_uid+"]+="+pre_tile_uid);
+	                    //console.log("Push:["+tile_uid+"]+="+pre_tile_uid);
 	                    node.pre_tile.push({uid:pre_tile_uid, dir:direction});
 	                    return;   // leave
 	                }   
