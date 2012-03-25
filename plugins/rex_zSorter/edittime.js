@@ -3,6 +3,7 @@
 	return {
 		"name":			"Z Sorter",
 		"id":			"Rex_ZSorter",
+		"version":		"1.0",
 		"description":	"Sorts Objects in Layer By Y",
 		"author":		"Juan Pablo Tarquino",
 		"help url":		"",
@@ -15,20 +16,44 @@
 
 ////////////////////////////////////////
 // Conditions
-
+AddStringParam("Name", "Sorting function name.", '""');
+AddCondition(1, cf_trigger, "On sorting", "Custom sorting: sorting function", 
+             "On sorting function <i>{0}</i>", "Triggered when sorting by function.", "OnSortingFn");
+             
 ////////////////////////////////////////
 // Actions
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
-AddAction(0, 0, "Sort All Objects in Layer By Y", "Depth", 
-          "Sort All Objects in Layer <i>{0}</i> By Y", "Sort All Objects in Layer By Y", "SortObjsLayerByY");
-
+AddAction(0, 0, "Sort all Objects in layer by Y", "Default sorting", 
+          "Sort all Objects in Layer <i>{0}</i> by Y", "Sort All Objects in Layer By Y", "SortObjsLayerByY");
+AddComboParamOption("Increasing");
+AddComboParamOption("Decreasing");
+AddComboParam("X order", "Sorting order of x co-ordinate.", 0);   
+AddAction(1, 0, "Set X order", "Default sorting", "Set sorting order of x co-ordinate to <i>{0}</i>", 
+          "Set sorting order of x co-ordinate.", "SetXorder");
+AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddStringParam("Sorting function", "Sorting function", '""');
+AddAction(2, 0, "Sort by function", "Custom sorting", "Sort all objects in layer <i>{0}</i> by function <i>{1}</i>", 
+          "Sort z order by function.", "SortByFn");     
+AddNumberParam("Result", "Compared result. (-1) is (A < B), 0 is (A == B), 1 is (A > B)", 0);
+AddAction(3, 0, "Set compared result by number", "Custom sorting: result", "Set compare result to <i>{0}</i>", 
+          'Set compared result. Used in callback of "Action: Sort by function"', "SetCmpResultDirectly");
+AddComboParamOption("<");
+AddComboParamOption("=");
+AddComboParamOption(">");
+AddComboParam("Result", "Compared result", 0);   
+AddAction(4, 0, "Set compared result", "Custom sorting: result", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
+          'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");           
 ////////////////////////////////////////
 // Expressions
-
+AddExpression(1, ef_return_number, 
+              "Get UID A of sorting function", "Custom sorting", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort by function"');
+AddExpression(2, ef_return_number, 
+              "Get UID B of sorting function", "Custom sorting", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort by function"');   
+              
 ACESDone();
 
 var property_list = [
-
+    new cr.Property(ept_combo, "X order", "Increasing", "Sorting order of x co-ordinate.", "Increasing|Decreasing")
 	];
 	
 // Called by IDE when a new object type is to be created
