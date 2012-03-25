@@ -3,10 +3,11 @@
 	return {
 		"name":			"TimeLine",
 		"id":			"Rex_TimeLine",
-		"description":	"TimeLine & Timer, to execute function at time-out.",
+		"version":		"1.0",          
+		"description":	"TimeLine & Timer, to execute function while time-out.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Utility: Core",
+		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -71,15 +72,19 @@ AddAction(10, 0, "Set a parameter", "Timer",
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddStringParam("Name", "Timer's name.", '""');  
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Get remainder time of timer", 
               "Timer", "TimerRemainder", 
               "Get remainder time of timer.");
+AddStringParam("Name", "Timer's name.", '""');                
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Get elapsed time of timer", 
               "Timer", "TimerElapsed", 
               "Get elapsed time of timer.");
+AddStringParam("Name", "Timer's name.", '""');                
 AddExpression(2, ef_return_number | ef_variadic_parameters, "Get remainder time percentage of timer", 
               "Timer", "TimerRemainderPercent", 
               "Get remainder time percentage of timer.");
+AddStringParam("Name", "Timer's name.", '""');                
 AddExpression(3, ef_return_number | ef_variadic_parameters, "Get elapsed time percentage of timer", 
               "Timer", "TimerElapsedPercent", 
               "Get elapsed time percentage of timer.");

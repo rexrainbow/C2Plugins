@@ -300,27 +300,26 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this._waiting_timer_queue.sort(_TIMERQUEUE_SORT);
 
         // get time-out timer
-        this._process_timer_queue = [];
-        var i;
         var quene_length = this._waiting_timer_queue.length;
-        var timer;
+        var i, timer;
+        var _timer_cnt = 0;
         for (i=0; i<quene_length; i++)
         {
             timer = this._waiting_timer_queue[i];
             if (this._is_timer_time_out(timer))
             {
                 this._process_timer_queue.push(timer);
+                _timer_cnt += 1;
             }
         }
         
         // remainder timers
-        quene_length = this._process_timer_queue.length;
-        if (quene_length)
+        if (_timer_cnt)
         {
-            if (quene_length==1)
+            if (_timer_cnt==1)
                 this._waiting_timer_queue.shift();
             else
-                this._waiting_timer_queue.splice(0,quene_length);
+                this._waiting_timer_queue.splice(0,_timer_cnt);
         }
 
         // do call back function with arg list
@@ -375,7 +374,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // internal function        
     TimeLineProto._is_timer_time_out = function(timer)
     {
-        return (timer._abs_time < this.ABS_Time);
+        return (timer._abs_time <= this.ABS_Time);
     };
 
     TimeLineProto._add_timer_to_activate_lists = function(timer)
