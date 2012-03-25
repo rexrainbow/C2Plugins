@@ -3,6 +3,7 @@
 	return {
 		"name":			"Drag & Drop",
 		"id":			"Rex_DragDrop",
+		"version":		"1.0",        
 		"description":	"Use the mouse to drag and drop an object",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

@@ -3,6 +3,7 @@
 	return {
 		"name":			"shell",
 		"id":			"Rex_Shell",
+		"version":		"0.1",           
 		"description":	"Shell behavior allowed inserted javascript",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
