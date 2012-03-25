@@ -3,6 +3,7 @@
 	return {
 		"name":			"Work Sheet",
 		"id":			"Rex_WorkSheet",
+		"version":		"1.0",           
 		"description":	"Executing instructions from a string while time-out",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
