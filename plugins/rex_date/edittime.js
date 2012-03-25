@@ -7,7 +7,7 @@
 		"description":	"Data and time",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"General",
+		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
