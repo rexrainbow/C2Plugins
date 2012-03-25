@@ -3,6 +3,7 @@
 	return {
 		"name":			"Step",
 		"id":			"Rex_Step",
+		"version":		"0.8",
 		"description":	"Insert x,y position.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
