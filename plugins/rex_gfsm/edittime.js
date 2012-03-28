@@ -33,7 +33,7 @@ AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
 AddComboParamOption("Simple notation");
 AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(3, 0, "Load state transfer logic from csv table", "Logic", 
+AddAction(3, 0, "Load logic from CSV", "Logic (CSV)", 
           "Load state transfer logic from csv table <i>{0}</i> in <i>{1}</i> format",
           "Load state transfer logic from csv table.", "CSV2Logic");
 AddStringParam("State", "Transfer from state.", '""');        
@@ -41,7 +41,7 @@ AddStringParam("Logic code", "The logic code of state transfer.", '""');
 AddComboParamOption("Simple notation");
 AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(4, 0, "Load state transfer logic", "Logic", 
+AddAction(4, 0, "Load logic", "Logic", 
           "Load <i>{0}</i> state transfer logic <i>{1}</i> in <i>{2}</i> format",
           "Load state transfer logic from code string.", "String2Logic");          
 AddObjectParam("Function", "Function object for controlling the game world");
@@ -53,23 +53,23 @@ AddAction(6, 0, "Connect to CSV object", "Advance: Setup",
           "Connect to CSV object <i>{0}</i>", 
           "Connect to CSV object.", "ConnectCSV");     
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddAction(7, 0, "Load state transfer action from csv table", "Advance: Action", 
+AddAction(7, 0, "Load action from CSV", "Advance: Action (CSV)", 
           "Load state transfer action from csv table <i>{0}</i>",
           "Load state transfer action from csv table.", "CSV2Action");          
 AddStringParam("State", "Transfer from state.", '""');   
 AddStringParam("State", "Transfer to state.", '""');       
 AddStringParam("Action code", "The action code of state transfer.", '""');
-AddAction(8, 0, "Load state transfer action", "Advance: Action", 
+AddAction(8, 0, "Load action", "Advance: Action", 
           "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i>",
           "Load state transfer action from code string.", "String2Action");   
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddAction(9, 0, "Load state enter-exit action from csv table", "Advance: Action", 
+AddAction(9, 0, "Load enter-exit action from CSV", "Advance: Action (CSV)", 
           "Load state enter-exit action from csv table <i>{0}</i>",
           "Load state enter-exit action from csv table.", "CSV2EnterExit");          
 AddStringParam("State", "State name.", '""');   
 AddStringParam("Enter code", "The code of state enter.", '""');     
 AddStringParam("Exit code", "The code of state exit.", '""');
-AddAction(10, 0, "Load state enter-exit action", "Advance: Action", 
+AddAction(10, 0, "Load enter-exit action", "Advance: Action", 
           "Load <i>{0}</i>'s enter action to <i>{1}</i>, exist action to <i>{2}</i>",
           "Load state enter-exit action from code string.", "String2EnterExit"); 
 AddStringParam("Name", "State name", '""');
