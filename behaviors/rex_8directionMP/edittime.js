@@ -3,6 +3,7 @@
 	return {
 		"name":			"8 Direction MP",
 		"id":			"Rex_EightDirMP",
+		"version":		"1.0",        
 		"description":	"Moves an object up, down, left, right and on diagonals.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

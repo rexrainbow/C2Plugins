@@ -3,6 +3,7 @@
 	return {
 		"name":			"Platform MP",
 		"id":			"Rex_PlatformMP",
+		"version":		"1.0",        
 		"description":	"Jump and run between platforms (solid objects).",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

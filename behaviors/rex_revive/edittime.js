@@ -6,7 +6,7 @@
 		"description":	"Revive sprite after destroyed.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"General",
+		"category":		"Timer",
 		"flags":		bf_onlyone
 	};
 };
