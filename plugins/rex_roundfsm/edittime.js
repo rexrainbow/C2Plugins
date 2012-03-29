@@ -3,6 +3,7 @@
 	return {
 		"name":			"Round FSM",
 		"id":			"Rex_RoundFSM",
+		"version":		"0.1",   		
 		"description":	"A finite state machine to descript a round",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -59,25 +60,25 @@ AddAction(1, 0, "Set activated", "Activated", "Set activated to <i>{0}</i>", "En
 AddAction(4, 0, "Turn off", "Request", 
           "Turn off", 
           'Turn off this fsm. It will push state to "Off" and set activated to "No"', "TurnOff");       
-AddAction(5, 0, "Start", 'Request: "Idle"', 
+AddAction(5, 0, "Start", '1. Request: "Idle"', 
           "Start a round", 
           'Start a round. It will push state from "Idle" to "GetSource"', "Start"); 
 AddAnyTypeParam("Source", "Source instance(s)", 0);
-AddAction(6, 0, "Get source", 'Request: "GetSource"', 
+AddAction(6, 0, "Get source", '2. Request: "GetSource"', 
           "Get source to <i>{0}</i>", 
          'Get source. It will push state from "GetSource" to "GetCommand"', "GetSource");
 AddAnyTypeParam("Commands", "Executed command", '""');
-AddAction(7, 0, "Get command", 'Request: "GetCommand"', 
+AddAction(7, 0, "Get command", '3. Request: "GetCommand"', 
           "Get executed command to <i>{0}</i>", 
           'Get executed command. It will push state from "GetCommand" to "GetTarget"', "GetCommand");       
 AddAnyTypeParam("Target", "Target instance(s)", 0);
-AddAction(8, 0, "Get target", 'Request: "GetTarget"', 
+AddAction(8, 0, "Get target", '4. Request: "GetTarget"', 
           "Get target to <i>{0}</i>", 
           'Get target. It will push state from "GetTarget" to "AcceptCommand"', "GetTarget"); 
-AddAction(9, 0, "Accept command", 'Request: "AcceptCommand"', 
+AddAction(9, 0, "Accept command", '5. Request: "AcceptCommand"', 
           "Accept command", 
           'Accept command. It will push state from "AcceptCommand" to "RunCommand"', "AcceptCommand");   
-AddAction(10, 0, "Finish", 'Request: "RunCommand"', 
+AddAction(10, 0, "Finish", '6. Request: "RunCommand"', 
           "Finish this round", 
           'Finish this round. It will push state from "RunCommand" to "Idle"', "Finish");          
 AddAction(11, 0, "Cancel", 'Request: Cancel', 
