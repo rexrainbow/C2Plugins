@@ -28,6 +28,7 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
+	    this._has_SysExtPlg = (cr.plugins_.Rex_SysExt != null);
 	};
 
 	/////////////////////////////////////
@@ -43,12 +44,16 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
 	behinstProto.onCreate = function()
-	{        
+	{
+	    if (this.type._has_SysExtPlg)
+	        cr.plugins_.Rex_SysExt.push_inst(this.inst);	      
         this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnCreating, this.inst);     
 	};  
 	behinstProto.onDestroy = function()
-	{
+	{	    	    
         this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnDestroying, this.inst);            
+	    if (this.type._has_SysExtPlg)
+	        cr.plugins_.Rex_SysExt.remove_inst(this.inst);	        
 	};    
     
 	behinstProto.tick = function ()

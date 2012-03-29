@@ -88,7 +88,12 @@ AddAction(10, 0, "Set extra control", "Extra control", "Set {my} control <i>{0}<
 AddStringParam("Name", "Control name.", '""');
 AddNumberParam("Key code", "Control Key code.");
 AddAction(11, 0, "Set extra control by keycode", "Extra control", "Set {my} control <i>{0}</i> to keycode <i>{1}</i>", 
-          "Set extra control by keycode.", "CfgExtraCtl");        
+          "Set extra control by keycode.", "CfgExtraCtl");
+                  
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Set whether to enable or disable the behavior.");
+AddAction(12, 0, "Set enabled", "", "Set {my} <b>{0}</b>", "Set whether this behavior is enabled.", "SetEnabled");
 
 //////////////////////////////////////////////////////////////
 // Expressions

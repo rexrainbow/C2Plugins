@@ -3,6 +3,7 @@
 	return {
 		"name":			"Sprite Ext",
 		"id":			"Rex_SpriteExt",
+		"version":		"0.1",			
 		"description":	"Extension of sprite",
 		"author":		"Rex.Rainbow",
 		"help url":		"",

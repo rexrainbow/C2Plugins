@@ -282,7 +282,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			// Is overlapping one or more jumpthrus
 			if (ret2 && ret2.length)
 			{
-				// Filter out any it is no longer overlapping one pixel up
+				// Filter out jumpthrus it is still overlapping one pixel up
 				for (i = 0, j = 0, len = ret2.length; i < len; i++)
 				{
 					ret2[j] = ret2[i];
@@ -290,8 +290,10 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 					if (!this.runtime.testOverlap(this.inst, ret2[i]))
 						j++;
 				}
-					
-				if (j === 1)
+				
+				// All jumpthrus it is only overlapping one pixel down are floor pieces/tiles.
+				// Return first in list.
+				if (j >= 1)
 					return ret2[0];
 			}
 			
@@ -640,10 +642,10 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 					this.inst.x = newx;
 					this.inst.y = newy;
 					this.inst.set_bbox_changed();
+					
+					if (allover.length >= 1)
+						collobj = allover[0];
 				}
-				
-				if (allover && allover.length === 1)
-					collobj = allover[0];
 				
 				fell_on_jumpthru = !!collobj;
 			}
@@ -685,8 +687,8 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		// Is on floor?
 		if (floor_)
 		{
-			// Was falling? (i.e. has just landed)
-			if (this.animMode === ANIMMODE_FALLING)
+			// Was falling? (i.e. has just landed) or has jumped, but jump was blocked
+			if (this.animMode === ANIMMODE_FALLING || (jump && this.dy === 0))
 			{
 				this.runtime.trigger(cr.behaviors.Rex_PlatformMP.prototype.cnds.OnLand, this.inst);
 				
@@ -773,7 +775,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 					j++;
 			}
 			
-			if (j === 1)
+			if (j >= 1)
 				ret = true;
 		}
 		

@@ -554,6 +554,11 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
             
 		this.KEY_EXTRA[keycode] = {name:ctl_name, state:false};        
 	}; 
+	
+	acts.SetEnabled = function (en)
+	{
+		this.enabled = (en === 1);
+	};	
     
 	//////////////////////////////////////
 	// Expressions
