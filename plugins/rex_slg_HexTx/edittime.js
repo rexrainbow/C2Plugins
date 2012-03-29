@@ -3,6 +3,7 @@
 	return {
 		"name":			"Hex Tx",
 		"id":			"Rex_SLGHexTx",
+		"version":		"0.1",   		
 		"description":	"Transfer logic position to physical position with hexagon layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
