@@ -3,6 +3,7 @@
 	return {
 		"name":			"Board",
 		"id":			"Rex_SLGBoard",
+		"version":		"0.1",   		
 		"description":	"A chess board container for SLG",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -15,7 +16,12 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-           
+AddNumberParam("Logic X", "The X index (0-based).", 0);
+AddNumberParam("Logic Y", "The Y index (0-based).", 0);
+AddNumberParam("Logic Z", "The Z index (0-based).", 0);
+AddCondition(5, 0, "Empty", "Board", 
+             "Cell [<i>{0}</i>,<i>{1}</i>,<i>{2}</i>] is empty", "Testing if cell is empty.", "IsEmpty");
+             
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);

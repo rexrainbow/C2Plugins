@@ -188,7 +188,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	// Conditions
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;        
-
+	  
+	cnds.IsEmpty = function (_x,_y,_z)
+	{
+		return (this.board[_x][_y][_z] == null);
+	}; 	
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
