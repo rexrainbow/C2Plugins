@@ -3,6 +3,7 @@
 	return {
 		"name":			"Movement",
 		"id":			"Rex_SLGMovement",
+		"version":		"0.1",   		
 		"description":	"Movement on the SLG chess board",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -65,8 +66,8 @@ AddAction(5, 0, "Get moving path by UID", "Request: Moving path",
           "Get moving path of chess UID:<i>{0}</i> to tile UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");      
 AddNumberParam("UID", "Filter result", 0);
-AddAction(6, 0, "Set filter result", "Filter", "Set filter result to UID:<i>{0}</i>", 
-          "Set filter result in UID.", "SetFilter");
+AddAction(6, 0, "Append filter result", "Filter", "Append filter result to UID:<i>{0}</i>", 
+          "Append filter result in UID.", "AppendFilter");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

@@ -54,7 +54,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._cost_fn_name = null;
         this._filter_fn_name = null;
         this._cost_value = 0;
-        this._filter_uid = 0;
+        this._filter_uid_list = [];
         this._is_cost_fn = null;
         this._tiles = {};
         this._chess_xyz = null;
@@ -337,9 +337,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._cost_value = cost_value;           
 	}; 
     
-    acts.SetFilter = function (filter_uid)
+    acts.AppendFilter = function (filter_uid)
 	{
-        this._filter_uid = filter_uid;           
+        this._filter_uid_list.push(filter_uid);
 	}; 	   
 	 
 	acts.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
@@ -356,13 +356,25 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._filter_fn_name = filter;
 	    for(uid in tiles_uids)
 		{
-		    this.exp_TileUID = parseInt(uid);		        
-	        this._filter_uid = uid;
+		    this.exp_TileUID = parseInt(uid);
 	        if (filter != "")
+	        {
+	            this._filter_uid_list.length = 0;
 	            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
-	        avaiable_uids.push(this._filter_uid);
+	        }
+	        else
+	        {
+		        this._filter_uid_list.length = 1;  
+	            this._filter_uid_list[0] = uid;
+	        }
+	        
+            var i;
+	        var len = this._filter_uid_list.length;
+	        for (i=0; i<len; i++)
+	            avaiable_uids.push(this._filter_uid_list[i]);
 		}
 		this.group.GetGroup(group_name).SetByUIDList(avaiable_uids);
+		this._filter_uid_list.length = 0;
 	};  
 		
 	acts.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
