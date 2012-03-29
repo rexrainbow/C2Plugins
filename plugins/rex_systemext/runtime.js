@@ -10,6 +10,58 @@ cr.plugins_.Rex_SysExt = function(runtime)
 {
 	this.runtime = runtime;
 };
+cr.plugins_.Rex_SysExt._uid2inst = {};
+cr.plugins_.Rex_SysExt._get_objtype = function (type_name)
+{    
+    if (this._uid2inst[type_name] == null)    
+        this._uid2inst[type_name] = {}    
+    return this._uid2inst[type_name];
+};
+cr.plugins_.Rex_SysExt.push_inst = function (inst)
+{
+    this._get_objtype(inst.type.name)[inst.uid] = inst;
+};
+cr.plugins_.Rex_SysExt.remove_inst = function (inst)
+{
+    delete this._get_objtype(inst.type.name)[inst.uid];
+};
+cr.plugins_.Rex_SysExt.get_inst = function (type_name, uid)
+{
+    var objs = this._get_objtype(type_name);   
+    return (objs != null)? objs[uid]:null;
+};
+cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
+{
+    var inst = this.get_inst(objtype.name, uid);	    
+    var sol = objtype.getCurrentSol();  	    
+    if (inst!=null)
+    {
+        sol.instances.length = 1;
+        sol.instances[0] = inst;
+    }
+    else
+    {
+        var insts = sol.getObjects();
+        var insts_length = insts.length;
+        var i, inst;
+        var is_find = false;
+        
+        for (i=0; i < insts_length; i++)
+        {
+            inst = insts[i];
+            if (inst.uid == uid)
+            {
+                is_find = true;
+                break;
+            }
+        }
+        
+        sol.instances.length = 0;   // clear contents
+        if (is_find)
+            sol.instances.push(inst);
+    } 
+    sol.select_all = false;
+};
 
 (function ()
 {
@@ -81,7 +133,6 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	    }
 	    return val;
 	};	
-    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -107,6 +158,10 @@ cr.plugins_.Rex_SysExt = function(runtime)
     
     acts.PickByUID = function (objtype, uid, is_pick_all)
 	{
+        var sol = objtype.getCurrentSol();  	    
+	    var inst = cr.plugins_.Rex_SysExt.get_inst(objtype.name, uid);
+	    if (inst!=null)
+	    
         var sol = objtype.getCurrentSol();  
         if (is_pick_all==1)
             sol.select_all = true;  
@@ -133,6 +188,11 @@ cr.plugins_.Rex_SysExt = function(runtime)
         sol.select_all = false;
 	}; 
     
+    acts.QuickPickByUID = function (objtype, uid)
+	{	    
+	    cr.plugins_.Rex_SysExt.pick_inst(objtype, uid);
+	};    
+        
     acts.PickByPropCmp = function (objtype, prop_index, cmp, value, is_pick_all)
 	{
         var sol = objtype.getCurrentSol();  

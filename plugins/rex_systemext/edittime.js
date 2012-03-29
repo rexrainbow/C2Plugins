@@ -3,6 +3,7 @@
 	return {
 		"name":			"SysExt",
 		"id":			"Rex_SysExt",
+		"version":		"0.1",	
 		"description":	"System extension",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -24,13 +25,13 @@ AddCondition(0, 0, "Pick all instances", "SOL", "Pick all <i>{0}</i> instances",
 AddObjectParam("Object", "Object for picking");
 AddAction(0, 0, "Pick all instances", "SOL", 
           "Pick all <i>{0}</i> instances", 
-          "Pick all instances.", "PickAll");
+          "Pick all.", "PickAll");
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(1, 0, "Pick instance by UID", "SOL", 
+AddAction(1, 0, "Pick by UID", "SOL", 
           "Pick <i>{0}</i> instance by UID = <i>{1}</i>, form <i>{2}</i>", 
           "Pick instance by UID.", "PickByUID");          
 AddObjectParam("Object", "Object for picking");
@@ -47,7 +48,7 @@ AddAnyTypeParam("Value", "The target compare value", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(2, 0, "Pick instances by property comparing", "SOL", 
+AddAction(2, 0, "Pick by property", "SOL", 
           "Pick <i>{0}</i> instances by comparing <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
           "Pick instances by property comparing.", "PickByPropCmp");
 AddStringParam("Group", "Group name", '""');          
@@ -59,7 +60,12 @@ AddAnyTypeParam("Layer", "Name or number of the layer to set visible", 0);
 AddNumberParam("Visibled", "0 = invisible, 1 = visible", 0);          
 AddAction(4, 0, "Set visible", "Layers & transforms", 
           "Set layer <i>{0}</i>'s visible to <i>{1}</i>", 
-          "Set the visible of a layer.", "SetLayerVisible");             
+          "Set the visible of a layer.", "SetLayerVisible");     
+AddObjectParam("Object", "Object for picking");
+AddNumberParam("UID", "UID of object", 0);
+AddAction(5, 0, "Quick picking by UID", "SOL", 
+          "Quick picking <i>{0}</i> instance by UID = <i>{1}</i>", 
+          "Quick picking instance by UID.", "QuickPickByUID");                    
           
 //////////////////////////////////////////////////////////////
 // Expressions
