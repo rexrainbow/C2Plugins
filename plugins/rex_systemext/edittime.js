@@ -3,7 +3,7 @@
 	return {
 		"name":			"SysExt",
 		"id":			"Rex_SysExt",
-		"version":		"0.1",	
+		"version":		"0.11",	
 		"description":	"System extension",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
