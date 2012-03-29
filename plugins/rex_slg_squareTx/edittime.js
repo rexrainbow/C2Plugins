@@ -3,6 +3,7 @@
 	return {
 		"name":			"Square Tx",
 		"id":			"Rex_SLGSquareTx",
+		"version":		"0.1",   		
 		"description":	"Transfer logic position to physical position with orthogonal or isometric layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
