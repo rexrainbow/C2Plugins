@@ -79,7 +79,10 @@ AddExpression(21, ef_return_number,
               "Get mirrored", "Callback", "IsMirrored", "Get mirrored of created instance.");
 AddExpression(22, ef_return_number, 
               "Get flipped", "Callback", "IsFlipped", "Get flipped of created instance.");
-          
+AddExpression(23, ef_return_number, 
+              "Get instance UID", "Callback", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
+AddExpression(24, ef_return_number, 
+              "Get frame number", "Callback", "Frame", "Get frame number.");                
 
 ACESDone();
 

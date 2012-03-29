@@ -53,6 +53,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
         this.exp_PhysicalY = (-1);
+        this.exp_InstUID = (-1);        
         this.exp_IsMirrored = 0;
         this.exp_IsFlipped = 0;        
         this.exp_LayerName = "";  
@@ -152,6 +153,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         if (this.exp_IsFlipped ==1)
             inst.height = -inst.height;            
         
+        this.exp_InstUID = inst.uid;
         var sol = inst.type.getCurrentSol();
         sol.select_all = false;
 		sol.instances.length = 1;
@@ -304,7 +306,15 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	exps.IsFlipped = function (ret)
 	{   
 	    ret.set_int(this.exp_IsFlipped);
-	};    
+	}; 
+	exps.InstUID = function (ret)
+	{   
+	    ret.set_int(this.exp_IsFlipped);
+	}; 
+	exps.Frame = function (ret)
+	{   
+	    ret.set_int(this.exp_TileID-1);
+	};     
 }());
 
 (function ()
