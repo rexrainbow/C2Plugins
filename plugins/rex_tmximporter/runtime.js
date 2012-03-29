@@ -52,7 +52,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
-        this.exp_PhysicalY = (-1);
+        this.exp_PhysicalY = (-1);        
         this.exp_InstUID = (-1);        
         this.exp_IsMirrored = 0;
         this.exp_IsFlipped = 0;        
@@ -66,6 +66,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this._obj_type = null;
         this.layout = new cr.plugins_.Rex_TMXImporter.LayoutKlass(this, this.properties[0], this.properties[1],
                                                                   0,0,0);
+        this._created_inst = null;
 	};
 	instanceProto.ImportTMX = function(tmx_string)
 	{
@@ -136,7 +137,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
                    
                 if (this._obj_type != null)
-                    this._create_instance(x,y,c2_layer); 
+                    this._created_inst = this._create_instance(x,y,c2_layer); 
+                else
+                    this._created_inst = null;
                     
                 // trigger callback
                 this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnEachTileCell, this); 
@@ -153,11 +156,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         if (this.exp_IsFlipped ==1)
             inst.height = -inst.height;            
         
-        this.exp_InstUID = inst.uid;
-        var sol = inst.type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;    
+        this.exp_InstUID = inst.uid; 
+        return inst        
     };
     instanceProto._get_layer = function(layerparam)
     {
@@ -188,6 +188,13 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	  
 	cnds.OnEachTileCell = function ()
 	{
+        if (this._created_inst != null)
+        {
+            var sol = this._created_inst.type.getCurrentSol();
+            sol.select_all = false;
+		    sol.instances.length = 1;
+		    sol.instances[0] = this._created_inst;    
+        }
 		return true;
 	};	
     
