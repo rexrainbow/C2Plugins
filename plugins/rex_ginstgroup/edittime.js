@@ -179,7 +179,10 @@ AddNumberParam("UID", "Group name.", '""');
 AddStringParam("Name", "Group name.", '""');              
 AddExpression(10, ef_return_string | ef_variadic_parameters, 
               "Get private group name", "Private group", "PrivateGroup", "Get instance's private group name.");
-
+AddStringParam("Name", "Group name.", '""'); 
+AddNumberParam("Index", "Pop index.", 0);
+AddExpression(11, ef_return_number | ef_variadic_parameters, 
+              "Pop UID by index", "List", "Pop", "Pop UID by index.");
 
 ACESDone();
 
