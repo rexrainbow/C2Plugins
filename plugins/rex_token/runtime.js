@@ -44,6 +44,7 @@ cr.plugins_.Rex_Token = function(runtime)
 	    this._set_id_list(this.properties[0]);
         this.index = this.properties[1];
         this.is_inc_order = (this.properties[2] == 0);
+        this._pre_index = (-1);
 	};
 	
 	instanceProto._set_id_list = function(id_list_string)
@@ -53,6 +54,7 @@ cr.plugins_.Rex_Token = function(runtime)
 	
 	instanceProto._set_next_index = function()
 	{
+	    this._pre_index = this.index;
 	    var last_index = this.player_id_list.length-1;
 	    if (this.index == (-1))
 	        this.index = (this.is_inc_order)? 0: last_index;
@@ -63,6 +65,7 @@ cr.plugins_.Rex_Token = function(runtime)
 	        else
 	            this.index = (this.index == 0)? last_index: (this.index-1);
 	    }
+	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
 	};	
 
 	//////////////////////////////////////
@@ -70,6 +73,10 @@ cr.plugins_.Rex_Token = function(runtime)
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;    
     
+	cnds.OnIndexChanging = function ()
+	{
+		return true;        
+	}; 	
 	cnds.IsFirst = function ()
 	{
 		return (this.index == 0);        
@@ -114,13 +121,23 @@ cr.plugins_.Rex_Token = function(runtime)
 	};	
 	acts.RemoveIDList = function (_id)
 	{        
-        //
+        var _index = this.player_id_list.indexOf(_id);
+        if (_index == (-1))
+            return;
+        
+        cr.arrayRemove(this.player_id_list, _index); 
+        if (this.index > _index)
+            this.index -= 1;      
 	};		
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
-    
+	
+	exps.ListLength = function (ret)
+	{
+	    ret.set_int(this.player_id_list.length);
+	};     
 	exps.Index2ID = function (ret, _index, default_value)
 	{
 	    ret.set_any(this.player_id_list[_index]);
@@ -137,5 +154,13 @@ cr.plugins_.Rex_Token = function(runtime)
 	{
 	    ret.set_any(this.player_id_list[this.index]);
 	};	
+	exps.PreIndex = function (ret)
+	{
+	    ret.set_int(this._pre_index);
+	};
+	exps.PreID = function (ret)
+	{
+	    ret.set_any(this.player_id_list[this._pre_index]);
+	};
 	
 }());
