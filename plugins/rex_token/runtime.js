@@ -49,9 +49,10 @@ cr.plugins_.Rex_Token = function(runtime)
 	
 	instanceProto._set_id_list = function(id_list_string)
 	{
-	    this.player_id_list = JSON.parse("["+id_list_string+"]");
+        if (id_list_string.charAt(0) != "[")
+            id_list_string = "["+id_list_string+"]";         
+	    this.player_id_list = JSON.parse(id_list_string);
 	};	
-	
 	instanceProto._set_next_index = function()
 	{
 	    this._pre_index = this.index;
@@ -66,8 +67,22 @@ cr.plugins_.Rex_Token = function(runtime)
 	            this.index = (this.index == 0)? last_index: (this.index-1);
 	    }
 	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
-	};	
-
+	};
+	instanceProto._set_pre_index = function()
+	{
+	    this._pre_index = this.index;
+	    var last_index = this.player_id_list.length-1;
+	    if (this.index == (-1))
+	        return;
+	    else
+	    {
+	        if (this.is_inc_order)
+                this.index = (this.index == 0)? last_index: (this.index-1);
+	        else
+	            this.index = (this.index == last_index)? 0: (this.index+1);
+	    }
+	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
+	};
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -94,23 +109,19 @@ cr.plugins_.Rex_Token = function(runtime)
 	{        
 	    this._set_next_index();
 	};	
-	
 	acts.SetIndex = function (_index)
 	{        
         if (_index < this.player_id_list.length)
             this.index = _index;
 	};
-	
 	acts.TurnOff = function ()
 	{        
         this.index = (-1);
 	};
-		
 	acts.InvertOrder = function ()
 	{        
         this.is_inc_order = !this.is_inc_order;
 	};
-	
 	acts.SetIDList = function (id_list_string)
 	{        
         this._set_id_list(id_list_string);
@@ -120,15 +131,30 @@ cr.plugins_.Rex_Token = function(runtime)
         this.player_id_list.push(_id);
 	};	
 	acts.RemoveIDList = function (_id)
-	{        
+	{
         var _index = this.player_id_list.indexOf(_id);
         if (_index == (-1))
             return;
         
         cr.arrayRemove(this.player_id_list, _index); 
-        if (this.index > _index)
-            this.index -= 1;      
-	};		
+        this._set_pre_index();     
+	};	
+	acts.SwitchID = function (_idA, _idB)
+	{       
+        if (_idA == _idB)
+            return;
+        var _indexA = this.player_id_list.indexOf(_idA);
+        var _indexB = this.player_id_list.indexOf(_idB);
+        if ((_indexA == (-1)) || (_indexB == (-1)))
+            return;
+            
+        this.player_id_list[_indexA] = _idB;
+        this.player_id_list[_indexB] = _idA;
+	};	
+	acts.CleanIDList = function ()
+	{       
+        this.player_id_list.length = 0;
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -162,5 +188,8 @@ cr.plugins_.Rex_Token = function(runtime)
 	{
 	    ret.set_any(this.player_id_list[this._pre_index]);
 	};
-	
+	exps.List2String = function (ret)
+	{
+	    ret.set_string(JSON.stringify(this.player_id_list));
+	};	
 }());

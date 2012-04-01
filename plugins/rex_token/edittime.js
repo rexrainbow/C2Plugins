@@ -31,7 +31,7 @@ AddAction(2, 0, "Invert", "Order",
 AddAction(3, 0, "Next", "Index", 
           "Turn to next player", 
           "Turn to next player.", "NextIndex");
-AddNumberParam("Index", "Player index", 0);
+AddNumberParam("Index", "Player index (0-based)", 0);
 AddAction(4, 0, "Set", "Index", 
           "Set next player index to <i>{0}</i>", 
           "Set next player index.", "SetIndex"); 
@@ -39,18 +39,25 @@ AddAction(5, 0, "Turn off", "Index",
           "Turn off token", 
           "Turn off token.", "TurnOff");                 
 AddStringParam("ID", "Player ID string", "1,2");
-AddAction(10, 0, "Set ID list", "ID", 
-          "Set ID list to [ <i>{0}</i> ]", 
+AddAction(10, 0, "Set list", "ID", 
+          "Set ID list to <i>{0}</i>", 
           "Set ID list.", "SetIDList");  
 AddAnyTypeParam("ID", "Player ID", 1);
-AddAction(11, 0, "Append ID", "ID", 
+AddAction(11, 0, "Append", "ID", 
           "Append <i>{0}</i> to ID list", 
           "Append ID to list.", "AppendIDList");  
 AddAnyTypeParam("ID", "Player ID", 1);
-AddAction(12, 0, "Remove ID", "ID", 
+AddAction(12, 0, "Remove", "ID", 
           "Remove <i>{0}</i> from ID list", 
           "Remove ID from list.", "RemoveIDList");                   
-       
+AddAnyTypeParam("A", "Player ID", 1);
+AddAnyTypeParam("B", "Player ID", 2);
+AddAction(13, 0, "Switch", "ID", 
+          "Switch <i>{0}</i> and <i>{1}</i>", 
+          "Switch ID.", "SwitchID"); 
+AddAction(14, 0, "Clean list", "ID", 
+          "Clean ID list", 
+          "Clean ID list.", "CleanIDList");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number,
@@ -72,7 +79,8 @@ AddExpression(5, ef_return_number,
               "Get previous index", "Index", "PreIndex", "Get previous player index.");
 AddExpression(6, ef_return_any, 
               "Get previous ID", "ID", "PreID", "Get previous player ID.");
-
+AddExpression(7, ef_return_string, 
+              "Get ID list", "List", "List2String", "Get ID list in string fromat.");
 
 ACESDone();
 
