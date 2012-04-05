@@ -211,7 +211,9 @@ cr.plugins_.Rex_FSM = function(runtime)
     {
         this.next_state = null;
         this.is_echo = false;
+        this.is_my_call = true;
         this.runtime.trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnLogic,this);
+        this.is_my_call = false;
         return this.next_state;
     };   
 
