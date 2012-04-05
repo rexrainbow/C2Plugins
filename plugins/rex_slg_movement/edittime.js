@@ -7,7 +7,7 @@
 		"description":	"Movement on the SLG chess board",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"SLG",
+		"category":		"Game logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
