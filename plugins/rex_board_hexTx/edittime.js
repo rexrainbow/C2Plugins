@@ -7,7 +7,7 @@
 		"description":	"Transfer logic position to physical position with hexagon layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"SLG",
+		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

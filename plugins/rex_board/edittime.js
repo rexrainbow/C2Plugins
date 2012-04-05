@@ -4,10 +4,10 @@
 		"name":			"Board",
 		"id":			"Rex_SLGBoard",
 		"version":		"0.1",   		
-		"description":	"A chess board container for SLG",
+		"description":	"A chess board container",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"SLG",
+		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
