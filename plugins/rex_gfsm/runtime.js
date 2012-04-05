@@ -68,7 +68,8 @@ cr.plugins_.Rex_FSM = function(runtime)
                                                      previous_state, current_state,
                                                      mem); 
         this.is_echo = false;
-        this.is_my_call = false;                                                     
+        this.is_my_call = false; 
+        this.next_state = null;
 	};  
     
     var _sn2js = function(code_line)
@@ -204,7 +205,15 @@ cr.plugins_.Rex_FSM = function(runtime)
 
         // Return the parsed data.
         return( arrData );
-    };        
+    };     
+    
+    instanceProto.get_next_state = function()
+    {
+        this.next_state = null;
+        this.is_echo = false;
+        this.runtime.trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnLogic,this);
+        return this.next_state;
+    };   
 
 	//////////////////////////////////////
 	// Conditions
@@ -241,7 +250,15 @@ cr.plugins_.Rex_FSM = function(runtime)
         this.is_echo |= is_my_call;
 		return is_my_call;
 	};	
-    
+	cnds.OnStateChanging = function ()
+	{
+		return true;
+	};     
+	cnds.OnLogic = function (name)
+	{
+        this.is_echo = true;
+		return (this.is_my_call && (this.fsm["CurState"] == name));
+	}; 	    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -386,7 +403,11 @@ cr.plugins_.Rex_FSM = function(runtime)
         var fn = eval("("+code_string+")");
         fn(this.type.adapter, this.type.fn_obj, this.type.csv_obj);
 	};    
-    
+
+	acts.NextStateSet = function (state)
+	{
+        this.next_state = state;
+	};      
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -402,12 +423,12 @@ cr.plugins_.Rex_FSM = function(runtime)
 	    ret.set_string(this.fsm["PreState"]);
 	};
 	
-    exps.Mem = function (ret, index)
+    exps.Mem = function (ret, index, default_value)
 	{
         var value = this.fsm["Mem"][index];
         if (value == null) 
         {
-            value = 0;
+            value = default_value;
             if (this.is_debug_mode) 
                 alert ("Can not find index in memory '" + index + "'");
                 
@@ -435,29 +456,40 @@ cr.plugins_.Rex_FSM = function(runtime)
     {
         if (new_state == null)
         {
-            var fn = this["_type"].logic[this["CurState"]];
-            if (fn == null)
-                return;
-        
-            // fn != null        
-            new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            // try to get next state from event sheet first
+            new_state = this["_plugin"].get_next_state();
+            
+            // no transfer logic defined in event sheet
+            if (!this["_plugin"].is_echo)
+            {
+                var fn = this["_type"].logic[this["CurState"]];
+                if (fn == null)
+                    return;
+                // fn != null      
+                new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);            
+            }
+                 
             if (new_state == null)
                 return;
         }
             
-        // new_state != null
+        // new_state != null: state transfer
         this["PreState"] = this["CurState"];
         this["CurState"] = new_state;
                 
         var pre_state = this["PreState"];
         var cur_state = this["CurState"];
         
+        // trigger OnStateChanging first
+        this["_plugin"].runtime.trigger(
+            cr.plugins_.Rex_FSM.prototype.cnds.OnStateChanging, this["_plugin"]);  
+                        
         // try to run transfer_action
         var is_echo = this._run_transfer_action(pre_state, cur_state);
         if (is_echo)
             return;
          
-        // (fn == null) && (this["_plugin"].is_echo==false)
+        // no transfer_action found
         this._run_exit_action(pre_state);
         this._run_enter_action(cur_state);
     };

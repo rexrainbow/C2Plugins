@@ -3,6 +3,7 @@
 	return {
 		"name":			"state",
 		"id":			"Rex_FSM",
+		"version":		"0.1",   		
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -33,7 +34,7 @@ AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
 AddComboParamOption("Simple notation");
 AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(3, 0, "Load logic from CSV", "Logic (CSV)", 
+AddAction(3, 0, "Load logic from CSV", "Advance: Logic (CSV)", 
           "Load state transfer logic from csv table <i>{0}</i> in <i>{1}</i> format",
           "Load state transfer logic from csv table.", "CSV2Logic");
 AddStringParam("State", "Transfer from state.", '""');        
@@ -41,7 +42,7 @@ AddStringParam("Logic code", "The logic code of state transfer.", '""');
 AddComboParamOption("Simple notation");
 AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(4, 0, "Load logic", "Logic", 
+AddAction(4, 0, "Load logic", "Advance: Logic", 
           "Load <i>{0}</i> state transfer logic <i>{1}</i> in <i>{2}</i> format",
           "Load state transfer logic from code string.", "String2Logic");          
 AddObjectParam("Function", "Function object for controlling the game world");
@@ -76,29 +77,31 @@ AddStringParam("Name", "State name", '""');
 AddAction(11, 0, "Transit to state", "Request", 
           "Transit state to <i>{0}</i>", "Transit to state.",  "Transit");          
 AddStringParam("Code", "JS function code", '""');
-AddAction(12, 0, "Inject JS function objects", "JS Function", 
+AddAction(12, 0, "Inject JS function objects", "Advance: JS Function", 
           "Inject JS <i>{0}</i>", "Inject JS function objects.", "InjectJSFunctionObjects");
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
 AddAction(13, 0, "Set activated", "Setup", "Set {my} activated to <i>{0}</i>", "Enable the object's cursor behavior.", "SetActivated");
-          
+AddStringParam("Name", "State name", '""');
+AddAction(14, 0, "Set next state", "Logic", 
+          "Set next state to <i>{0}</i>", 'Set next state. Used in "Condition: On transfer logic"',  "NextStateSet");          
           
 //////////////////////////////////////////////////////////////
 // Conditions
 AddStringParam("Name", "State name", '""');
-AddCondition(0, cf_trigger, "On enter state", "Action", 
+AddCondition(0, cf_trigger, "On enter", "Action", 
              "On enter to <i>{0}</i>", 
 			 "Triggered when enter state.", 
 			 "OnEnter");
 AddStringParam("Name", "State name", '""');
-AddCondition(1, cf_trigger, "On exit state", "Action", 
+AddCondition(1, cf_trigger, "On exit", "Action", 
              "On exit from <i>{0}</i>", 
 			 "Triggered when exit state.", 
 			 "OnExit");
 AddStringParam("Name", "Exit from state", '""');
 AddStringParam("Name", "Enter to state", '""');
-AddCondition(2, cf_trigger, "On state transfer", "Action", 
+AddCondition(2, cf_trigger, "On transfer", "Action", 
              "On exit from <i>{0}</i> and enter to <i>{1}</i>", 
 			 "Triggered when state transfer.", 
 			 "OnTransfer");             
@@ -110,7 +113,16 @@ AddCondition(4, cf_trigger, "On default exit", "Action",
              "On exit from any state", 
 			 "Triggered when no exit callback.", 
 			 "OnDefaultExit"); 
-             
+AddCondition(5, cf_trigger, "On state changing", "Action", 
+             "On state changing", 
+			 "Triggered when state changing. Useful when debugging.", 
+			 "OnStateChanging");
+AddStringParam("Name", "State name", '""');
+AddCondition(6, cf_trigger, "On transfer logic", "Logic", 
+             "On <i>{0}</i> transfer logic", 
+			 "Triggered to get next state.", 
+			 "OnLogic");
+			              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");
@@ -173,6 +185,9 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
+    var mem_string = this.properties["Default memory"];
+    if (mem_string != "")
+        var mem = JSON.parse(mem_string);
 }
 	
 // Called by the IDE to draw this instance in the editor
