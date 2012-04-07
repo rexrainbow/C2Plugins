@@ -1,5 +1,5 @@
 1. Interface of "Action:Inject JS function objects"
-- function(fsm, fn, csv) { ... }
+- function(fsm, fn) { ... }
   
 2. API of FSM plugin 
    for injecting state transfer logic or state transfer action 
@@ -16,7 +16,7 @@
 
 3. API in state transfer logic and state transfer action 
 A. function prototype
-- function(fsm, fn, csv){ ... }
+- function(fsm, fn){ ... }
   :: fn is adapter of function plugin
   :: csv is adapter of csv plugin
 
