@@ -32,7 +32,6 @@ cr.plugins_.Rex_FSM = function(runtime)
         this.exit_action = {};
         this.enter_action = {};        
         this.fn_obj = null;
-        this.csv_obj = null;
         this.adapter = new cr.plugins_.Rex_FSM.FSMAdapterKlass(this);
 	};
 
@@ -260,7 +259,11 @@ cr.plugins_.Rex_FSM = function(runtime)
 	{
         this.is_echo = true;
 		return (this.is_my_call && (this.fsm["CurState"] == name));
-	}; 	    
+	}; 
+	cnds.IsCurState = function (name)
+	{
+		return (this.fsm["CurState"] == name);
+	};    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -325,16 +328,7 @@ cr.plugins_.Rex_FSM = function(runtime)
         else
             alert ("Can not connect to a function object");
 	};    
-    
-    acts.ConnectCSV = function (csv_objs)
-	{  
-        var csv_obj = csv_objs.instances[0];
-        if (csv_obj.check_name == "CSV")
-            this.type.csv_obj = csv_obj.adapter;        
-        else
-            alert ("Can not connect to a csv object");
-	};   
-    
+
     acts.CSV2Action = function (csv_string)
 	{
         if (csv_string == "")
@@ -403,7 +397,7 @@ cr.plugins_.Rex_FSM = function(runtime)
 	acts.InjectJSFunctionObjects = function (code_string)
 	{
         var fn = eval("("+code_string+")");
-        fn(this.type.adapter, this.type.fn_obj, this.type.csv_obj);
+        fn(this.type.adapter, this.type.fn_obj);
 	};    
 
 	acts.NextStateSet = function (state)
@@ -468,7 +462,7 @@ cr.plugins_.Rex_FSM = function(runtime)
                 if (fn == null)
                     return;
                 // fn != null      
-                new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);            
+                new_state = fn(this, this["_type"].fn_obj);            
             }
                  
             if (new_state == null)
@@ -502,7 +496,7 @@ cr.plugins_.Rex_FSM = function(runtime)
         var fn = this["_type"].transfer_action[name];
         if (fn != null)
         {
-            fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            fn(this, this["_type"].fn_obj);
         }        
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
@@ -517,7 +511,7 @@ cr.plugins_.Rex_FSM = function(runtime)
     {
         var fn = this["_type"].exit_action[pre_state];
         if (fn != null)
-             fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+             fn(this, this["_type"].fn_obj);
         
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
@@ -538,7 +532,7 @@ cr.plugins_.Rex_FSM = function(runtime)
     {
         var fn = this["_type"].enter_action[cur_state];
         if (fn != null)
-            fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            fn(this, this["_type"].fn_obj);
 
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;

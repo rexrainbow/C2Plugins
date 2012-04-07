@@ -48,11 +48,7 @@ AddAction(4, 0, "Load logic", "Advance: Logic",
 AddObjectParam("Function", "Function object for controlling the game world");
 AddAction(5, 0, "Connect to function object", "Advance: Setup", 
           "Connect to function object <i>{0}</i>", 
-          "Connect to function object.", "ConnectFn");
-AddObjectParam("CSV", "CSV object for accessing global variables");
-AddAction(6, 0, "Connect to CSV object", "Advance: Setup", 
-          "Connect to CSV object <i>{0}</i>", 
-          "Connect to CSV object.", "ConnectCSV");     
+          "Connect to function object.", "ConnectFn");   
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
 AddAction(7, 0, "Load action from CSV", "Advance: Action (CSV)", 
           "Load state transfer action from csv table <i>{0}</i>",
@@ -122,7 +118,12 @@ AddCondition(6, cf_trigger, "On transfer logic", "Logic",
              "On <i>{0}</i> transfer logic", 
 			 "Triggered to get next state.", 
 			 "OnLogic");
-			              
+AddStringParam("Name", "State name", '""');
+AddCondition(7, 0, "Compare current state", "State", 
+             "Current state = <i>{0}</i>", 
+			 "Compare current state.", 
+			 "IsCurState");
+             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");
