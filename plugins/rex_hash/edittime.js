@@ -57,8 +57,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Contains", "", 
-                   'Set initial contains. ex:"{"a":10,"b":{"c":"d"}}".'),	     
+    new cr.Property(ept_text, "Initial data", "", 
+                   'Set initial data. ex:"{"a":10,"b":{"c":"d"}}".'),	     
 	];
 	
 // Called by IDE when a new object type is to be created
@@ -103,6 +103,8 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
+    if (this.properties["Initial data"] != "")
+        var data = JSON.parse(this.properties["Initial data"]);
 }
 	
 // Called by the IDE to draw this instance in the editor
