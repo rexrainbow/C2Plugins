@@ -164,7 +164,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         delete this.items[uid];
         this.board[_xyz.x][_xyz.y][_xyz.z] = null;
 	};
-        
+	instanceProto.move_item = function(chess_uid, target_x, target_y, target_z)
+	{    
+	    this.remove_item(chess_uid);   
+        this.add_item(chess_uid, target_x, target_y, target_z); 
+	}; 
 	instanceProto.xyz2uid = function(x, y, z)
 	{
 	    return (this.is_inside_board(x, y, z))? this.board[x][y][z]:null;
@@ -246,8 +250,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         var chess_xyz = this.uid2xyz(chess_uid);
         var tile_xyz = this.uid2xyz(tile_uid);
-	    this.remove_item(chess_uid);   
-        this.add_item(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z);        
+        this.move_item(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z);    
 	};
 	
 	acts.MoveChess2Index = function (chess_objs, x, y, z)
