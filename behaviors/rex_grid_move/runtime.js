@@ -55,6 +55,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this._target_xyz = {x:0,y:0,z:0};        
         this._is_moving_request_accepted = false;
         this.is_my_call = false;
+        this.exp_BlockerUID = (-1);
+        this.exp_Direction = (-1);
+        this.exp_DestinationLX = (-1);
+        this.exp_DestinationLY = (-1);        
 	};
 	behinstProto.onDestroy = function()
 	{
@@ -107,6 +111,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
 
     behinstProto._test_move_to = function (target_x, target_y, target_z)
     {
+        this.exp_BlockerUID = (-1);
+        this.exp_DestinationLX = target_x;
+        this.exp_DestinationLY = target_y;
         var _target_uid = this.board.xyz2uid(target_x, target_y, target_z);
         if (_target_uid == null)  // no overlap at the same z
         {
@@ -118,12 +125,18 @@ cr.behaviors.Rex_GridMove = function(runtime)
                 if ((z==0) && (_target_uid == null))  // tile does not exist
                     return null;
                 else if ((_target_uid != null) && (this.uid2solid[_target_uid]))  // solid
+                {
+                    this.exp_BlockerUID = _target_uid;
                     return (-1);
+                }
             }           
             return 1; // can move to target
         }
-        else        
+        else    
+        {
+            this.exp_BlockerUID = _target_uid;      
             return (-1);
+        }
     };
     behinstProto._move_to_target = function (target_x, target_y, target_z)
     {
@@ -228,6 +241,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
 	acts.MoveToNeighbor = function (dir)
 	{
+        this.exp_Direction = dir;
 	    if (this._cmd_move_to.activated)
 		{
 		    var _board = this._board_get();
@@ -302,8 +316,27 @@ cr.behaviors.Rex_GridMove = function(runtime)
  	exps.Solid = function (ret)
 	{
         ret.set_int((this.is_solid)? 1:0);		
-	};     
-	
+	};   
+    
+ 	exps.BlockerUID = function (ret)
+	{
+        ret.set_int(this.exp_BlockerUID);		
+	}; 
+    
+ 	exps.Direction = function (ret)
+	{
+        ret.set_int(this.exp_Direction);		
+	};
+    
+ 	exps.DestinationLX = function (ret)
+	{
+        ret.set_int(this.exp_DestinationLX);		
+	};    
+    
+ 	exps.DestinationLY = function (ret)
+	{
+        ret.set_int(this.exp_DestinationLY);		
+	};  	
 }());
 
 (function ()

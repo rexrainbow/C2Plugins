@@ -105,7 +105,15 @@ AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY",
               "The Y co-ordinate of target position to move toward."); 
 AddExpression(7, ef_return_number, "Get solid", "Setting", "Solid", 
               "Solid property. 0=No, 1=Yes.");
-                          
+AddExpression(8, ef_return_number, "Get blocker UID", "Request", "BlockerUID", 
+              "Get UID of blocker when moving request rejected.");
+AddExpression(9, ef_return_number, "Get moving direction", "Request", "Direction", 
+              "Get last moving direction of moving request.");
+AddExpression(10, ef_return_number, "Get logic X of destination", "Request", "DestinationLX", 
+              "Get logic X of destination X when moving request.");  
+AddExpression(11, ef_return_number, "Get logic Y of destination", "Request", "DestinationLY", 
+              "Get logic Y of destination when moving request.");  
+              
 ACESDone();
 
 // Property grid properties for this plugin
