@@ -61,6 +61,30 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
         return this.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );        
 	}; 	
+	instanceProto.GetNeighborLX = function(x, y, dir)
+	{
+	    var dx;
+	    if ((y%2) == 1)
+		{
+		    dx = ((dir==0) || (dir==1) || (dir==5))? 1:
+			     (dir==3)?                          (-1):
+                                                   0;
+        }												  
+        else
+		{
+		    dx = ((dir==2) || (dir==3) || (dir==4))? (-1):
+			     (dir==0)?                           1:
+                                                     0;
+        }
+		return (x+dx);
+	};
+	instanceProto.GetNeighborLY = function(x, y, dir)
+	{
+        var dy = ((dir==1) || (dir==2))? 1:
+			     ((dir==4) || (dir==5))? (-1):
+                                         0;        
+        return (y+dy);						 
+	};	
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};

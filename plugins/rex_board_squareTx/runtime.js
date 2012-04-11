@@ -74,7 +74,21 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.CreateItem = function(obj_type,x,y,layer,offset_x,offset_y)
 	{
         return this.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );        
-	}; 	
+	};
+	instanceProto.GetNeighborLX = function(x, y, dir)
+	{
+        var dx = (dir==0)? 1:
+		         (dir==2)? (-1):
+				          0;
+		return (x+dx);
+	};
+	instanceProto.GetNeighborLY = function(x, y, dir)
+	{
+        var dy = (dir==1)? 1:
+		        (dir==3)? (-1):
+				          0;       
+        return (y+dy);
+	};
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
