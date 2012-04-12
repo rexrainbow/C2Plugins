@@ -272,30 +272,39 @@ cr.plugins_.Rex_CSV = function(runtime)
 {
     cr.plugins_.Rex_CSV.CSVKlass = function(plugin, is_debug_mode)
     {
-		this.Clear();
         this.plugin = plugin;
-        this.is_debug_mode = is_debug_mode;
+        this.is_debug_mode = is_debug_mode;    
+		this._table = {};
+        this.keys = [];
+        this.items = [];
         this.forCol = "";
         this.forRow = "";        
     };
     var CSVKlassProto = cr.plugins_.Rex_CSV.CSVKlass.prototype;
     
 	CSVKlassProto.Clear = function()
-	{
-		this._table = {};
-        this._current_entry = {};
-        this.keys = [];
-        this.items = [];
+	{        
+        var key;
+        for (key in this._table)
+            delete this._table[key];
+        this.keys.length = 0;
+        this.items.length = 0;
 	};  
     
 	CSVKlassProto.ToString = function()
 	{
-		return JSON.stringify(this._table);   
+        var save_data = {"table":this._table,
+                         "keys":this.keys,
+                         "items":this.items};
+		return JSON.stringify(save_data);   
 	};
     
 	CSVKlassProto.JSONString2Page = function(JSON_string)
 	{
-		this._table = JSON.parse(JSON_string);
+        var save_data = JSON.parse(JSON_string);
+		this._table = save_data["table"];
+        this.keys = save_data["keys"];
+        this.items = save_data["items"];        
 	};        
 
     CSVKlassProto._create_keys = function()
