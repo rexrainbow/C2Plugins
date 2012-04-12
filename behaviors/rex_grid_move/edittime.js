@@ -66,14 +66,6 @@ AddNumberParam("Current speed", "Current speed, in pixel per second.", 400);
 AddAction(6, 0, "Set current speed", "Speed", 
           "Set {my} current speed to <i>{0}</i>", 
           "Set the object's Current speed.", "SetCurrentSpeed");                     
-AddComboParamOption("No");
-AddComboParamOption("Yes");
-AddComboParam("Solid", "Solid.", 0);
-AddAction(7, 0, "Set solid", "Solid", "Set {my} solid to <i>{0}</i>", 
-          "Set solid.", "SetSolid");    
-AddNumberParam("Solid", "Set solid. 0=No, 1=Yes", 0);
-AddAction(8, 0, "Set solid by number", "Solid", "Set {my} solid to <i>{0}</i>", 
-          "Set solid by number.", "SetSolid"); 
 AddComboParamOption("Right");
 AddComboParamOption("Down-right");	  
 AddComboParamOption("Down-left");	 
@@ -103,8 +95,6 @@ AddExpression(5, ef_return_number, "Get target position X", "Target", "TargetX",
               "The X co-ordinate of target position to move toward.");
 AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY", 
               "The Y co-ordinate of target position to move toward."); 
-AddExpression(7, ef_return_number, "Get solid", "Setting", "Solid", 
-              "Solid property. 0=No, 1=Yes.");
 AddExpression(8, ef_return_number, "Get blocker UID", "Request", "BlockerUID", 
               "Get UID of blocker when moving request rejected.");
 AddExpression(9, ef_return_number, "Get moving direction", "Request", "Direction", 
@@ -118,7 +108,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Solid", "No", "Enable if you do not allow other chess move over.", "No|Yes"),
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),                    
 	new cr.Property(ept_float, "Max speed", 400, "Maximum speed, in pixel per second."),
 	new cr.Property(ept_float, "Acceleration", 0, 

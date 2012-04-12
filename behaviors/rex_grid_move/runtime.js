@@ -9,7 +9,6 @@ assert2(cr.behaviors, "cr.behaviors not created");
 cr.behaviors.Rex_GridMove = function(runtime)
 {
 	this.runtime = runtime;
-    this.uid2solid = {};     // mapping uid to solid property of behavior instance
 };
 
 (function ()
@@ -40,7 +39,6 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
         
-        this.uid2solid = this.behavior.uid2solid;   // mapping uid to behavior instance
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -48,9 +46,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.board = null;
-        this.is_solid = (this.properties[0] == 1);
         this._cmd_move_to = new cr.behaviors.Rex_GridMove.CmdMoveTo(this);
-        this.uid2solid[this.inst.uid] = this.is_solid; 
         		
         this._target_xyz = {x:0,y:0,z:0};        
         this._is_moving_request_accepted = false;
@@ -59,11 +55,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.exp_Direction = (-1);
         this.exp_DestinationLX = (-1);
         this.exp_DestinationLY = (-1);        
-	};
-	behinstProto.onDestroy = function()
-	{
-		delete this.uid2solid[this.inst.uid];
-	};        
+	};       
 
     behinstProto.tick = function ()
 	{
@@ -108,6 +100,11 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	    else
             return null;
     };
+    
+    var _solid_get = function(inst)
+    {
+        return (inst.extra != null) && (inst.extra.solidEnabled);
+    };
 
     behinstProto._test_move_to = function (target_x, target_y, target_z)
     {
@@ -124,7 +121,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
                 _target_uid = this.board.xyz2uid(target_x, target_y, z);
                 if ((z==0) && (_target_uid == null))  // tile does not exist
                     return null;
-                else if ((_target_uid != null) && (this.uid2solid[_target_uid]))  // solid
+                else if ((_target_uid != null) && _solid_get(this.board.uid2inst(_target_uid)))  // solid
                 {
                     this.exp_BlockerUID = _target_uid;
                     return (-1);
@@ -263,12 +260,6 @@ cr.behaviors.Rex_GridMove = function(runtime)
 			if (_xyz != null)
 		        this._move_to_target(_xyz.x+dx, _xyz.y+dy, _xyz.z);
 	    }
-	};	
-	
-	acts.SetSolid = function (enable)
-	{
-		this.is_solid = (enable == 1);
-        this.uid2solid[this.inst.uid] = this.is_solid;
 	};    
 	
 	//////////////////////////////////////
@@ -313,11 +304,6 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		ret.set_float(y);
 	};     
 
- 	exps.Solid = function (ret)
-	{
-        ret.set_int((this.is_solid)? 1:0);		
-	};   
-    
  	exps.BlockerUID = function (ret)
 	{
         ret.set_int(this.exp_BlockerUID);		
@@ -343,10 +329,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
 {
     cr.behaviors.Rex_GridMove.CmdMoveTo = function(plugin)
     {
-        this.activated = plugin.properties[1];
-        this.move = {max:plugin.properties[2],
-                     acc:plugin.properties[3],
-                     dec:plugin.properties[4]};
+        this.activated = plugin.properties[0];
+        this.move = {max:plugin.properties[1],
+                     acc:plugin.properties[2],
+                     dec:plugin.properties[3]};
         this.target = {x:0 , y:0, angle:0};
         this.is_moving = false;  
         this.current_speed = 0;       
