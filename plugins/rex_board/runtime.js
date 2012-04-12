@@ -98,6 +98,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		}
 		
 		this.items = {};
+        this._insts = {};
 	};
 	
 	instanceProto.is_inside_board = function (x,y,z)
@@ -142,15 +143,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return inst;        
 	};
     
-	instanceProto.add_item = function(uid, _x, _y, _z)
-	{    
-        if ((uid == null) || (!this.is_inside_board(_x, _y, _z)))
+	instanceProto.add_item = function(inst, _x, _y, _z)
+	{            
+        // inst could be instance(object) or uid(number)
+        if ((inst == null) || (!this.is_inside_board(_x, _y, _z)))
             return;
         
+        var is_inst = (typeof(inst) != "number");
+        var uid = (is_inst)? inst.uid:inst;
         this.remove_item(this.xyz2uid(_x,_y,_z));
 	    this.board[_x][_y][_z] = uid;
 	    this.items[uid] = {x:_x, y:_y, z:_z};
-	};	
+        
+        if (is_inst)
+            this._insts[uid] = inst;
+	};
     
 	instanceProto.remove_item = function(uid)
 	{    
@@ -163,6 +170,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
         delete this.items[uid];
         this.board[_xyz.x][_xyz.y][_xyz.z] = null;
+        delete this._insts[uid];
 	};
 	instanceProto.move_item = function(chess_uid, target_x, target_y, target_z)
 	{    
@@ -178,14 +186,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 	    return this.items[uid];
 	};
-	
+
+	instanceProto.uid2inst = function(uid)
+	{
+	    return this._insts[uid];
+	};
+    
 	instanceProto.CreateChess = function(obj_type,x,y,z,_layer)
 	{
         if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
             return;
             
         var obj = this.CreateItem(obj_type,x,y,_layer);
-	    this.add_item(obj.uid,x,y,z);  
+	    this.add_item(obj,x,y,z);  
 	    return obj;
 	};	
 	//////////////////////////////////////
@@ -209,12 +222,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		
 	acts.AddTile = function (objs,x,y)
 	{
-	    this.add_item(_get_uid(objs),x,y,0);
+        var inst = objs.getFirstPicked();
+	    this.add_item(inst,x,y,0);
 	};
 	
 	acts.AddChess = function (objs,x,y,z)
 	{
-	    this.add_item(_get_uid(objs),x,y,z);
+        var inst = objs.getFirstPicked();
+	    this.add_item(inst,x,y,z);
 	};		
     
     acts.SetupLayout = function (layout_objs)

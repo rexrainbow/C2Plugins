@@ -34,22 +34,11 @@ AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
 AddAction(1, 0, "Add tile", "Logic: Add", "Add tile <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
           "Add tile on the board.", "AddTile");
-AddNumberParam("UID", "The UID of tile", 0);
-AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
-AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
-AddAction(2, 0, "Add tile by UID", "Logic: Add", "Add tile UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
-          "Add tile on the board.", "AddTile");
 AddObjectParam("Chess", "Chess object.");   
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(3, 0, "Add chess", "Logic: Add", "Add chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
-          "Add chess on the board.", "AddChess"); 
-AddNumberParam("UID", "The UID of chess", 0);
-AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
-AddAction(4, 0, "Add chess by UID", "Logic: Add", "Add chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess");  
 AddObjectParam("Chess", "Chess object.");
 AddAction(5, 0, "Remove chess", "Logic: Remove", "Remove chess <i>{0}</i>", 
