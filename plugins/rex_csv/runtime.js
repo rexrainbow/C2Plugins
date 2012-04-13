@@ -302,9 +302,16 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.JSONString2Page = function(JSON_string)
 	{
         var save_data = JSON.parse(JSON_string);
-		this._table = save_data["table"];
-        this.keys = save_data["keys"];
-        this.items = save_data["items"];        
+        try
+        {
+	        this._table = save_data["table"];
+            this.keys = save_data["keys"];
+            this.items = save_data["items"];  
+        }
+        catch(err)  // compatible with older version
+        {
+            this._table = save_data;
+        }
 	};        
 
     CSVKlassProto._create_keys = function()
