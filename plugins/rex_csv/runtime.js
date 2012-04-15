@@ -144,6 +144,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		}
 
 		this.forPage = "";
+		return false;        
 	};     
 	//////////////////////////////////////
 	// Actions
