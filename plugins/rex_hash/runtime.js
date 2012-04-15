@@ -41,6 +41,8 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        this.exp_CurKey = "";
+        this.exp_CurValue = 0;
         this._clean_all();  
         var init_data = this.properties[0];
         if (init_data != "")
@@ -72,6 +74,17 @@ cr.plugins_.Rex_Hash = function(runtime)
         this._current_entry = _entry;
 	};
     
+	instanceProto._set_current_entey = function (key_string)
+	{        
+        if (key_string != "")
+        {
+            var keys = key_string.split(".");      
+		    this._set_entry_byKeys(keys);
+        }
+        else
+            this._current_entry = this._my_hash;
+	};
+    
 	instanceProto._get_data = function(keys)
 	{           
         var last_key = keys.splice(keys.length-1, 1);      
@@ -84,6 +97,29 @@ cr.plugins_.Rex_Hash = function(runtime)
 	pluginProto.cnds = {};
 	var cnds = pluginProto.cnds;
 
+	cnds.ForEachKey = function (key_string)
+	{
+        this._set_current_entey(key_string);
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+
+        var key, value;
+		for (key in this._current_entry)
+	    {
+            value = this._current_entry[key];
+            if ((typeof value != "number") && (typeof value != "string"))
+                continue;
+                
+            this.exp_CurKey = key;
+            this.exp_CurValue = value;
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+        this.exp_CurKey = "";
+        this.exp_CurValue = 0;      
+		return false;
+	}; 
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -100,13 +136,9 @@ cr.plugins_.Rex_Hash = function(runtime)
         }
 	};
 
-	acts.SetCurHashEntey = function (key_string, val)
+	acts.SetCurHashEntey = function (key_string)
 	{        
-        if (key_string != "")
-        {
-            var keys = key_string.split(".");      
-		    this._set_entry_byKeys(keys);
-        }
+        this._set_current_entey(key_string);
 	};
 
 	acts.SetValueInCurHashEntey = function (key_name, val)
@@ -159,5 +191,15 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{
         var json_string = JSON.stringify(this._my_hash);
 		ret.set_string(json_string);
+	};  
+	
+	exps.CurKey = function (ret)
+	{
+		ret.set_string(this.exp_CurKey);
+	};  
+    
+	exps.CurValue = function (ret)
+	{
+		ret.set_any(this.exp_CurValue);
 	};    
 }());
