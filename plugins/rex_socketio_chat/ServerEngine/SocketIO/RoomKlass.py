@@ -5,6 +5,7 @@ class RoomKlass:
         self.conns = [] 
         self.MAXUSERCNT = 0   # 0 is inifnity
         self.storage = {}
+        self._sync_list = []
         
     def user_joined(self, conn):
         is_success = (self.MAXUSERCNT == 0) or  \
@@ -47,3 +48,10 @@ class RoomKlass:
         
     def _is_room_moderator(self, conn):
         return (conn == self.conns[0])
+        
+    def push_sync_signal(self, conn):
+        if len(self._sync_list) == 0:
+            self._sync_list = self.conns[:]
+        self._sync_list.remove(conn)
+        
+        return (len(self._sync_list) == 0)

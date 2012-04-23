@@ -4,16 +4,19 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
+// load socket.io.min.js
+document.write('<script src="socket.io.min.js"></script>');
+
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_SocketIO_Chat = function(runtime)
+cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_SocketIO_Chat.prototype;
+	var pluginProto = cr.plugins_.Rex_Bottleneck_Lobby.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -39,13 +42,20 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.socket = new cr.plugins_.Rex_SocketIO_Chat.SocketIOKlass(this);
+        this.channel_url = this.properties[0];
+        this.game_name = "Chat"; //this.properties[1];        
+        this.socket = new cr.plugins_.Rex_Bottleneck_Lobby.SocketIOKlass(this);
         this._branch = this.CreateBranch(this, this.on_message);
+        this.gamerooms_list = new cr.plugins_.Rex_Bottleneck_Lobby.AvaiableRoomList();
         this.current_usrID = 0;
         this.current_data = "";    
         this.runtime.tickMe(this);        
 
-        this.check_name = "NETWORK";        
+        //this.check_name = "NETWORK";  
+        this._exp_RoomName = "";
+        this._exp_RoomID = "";   
+        this._exp_RoomDescription = "";
+        this._exp_RoomURL = "";             
 	};
     
     instanceProto.tick = function()
@@ -57,14 +67,14 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	{
         this.current_usrID = usr_id;
         this.current_data = msg;
-        this.runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnData, this);
+        this.runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnData, this);
 	};
     
 
     // export: get new socket branch instance
     instanceProto.CreateBranch = function(cb_this, cb_fn)
     {
-        return (new cr.plugins_.Rex_SocketIO_Chat.BranchKlass(this.socket, cb_this, cb_fn));
+        return (new cr.plugins_.Rex_Bottleneck_Lobby.BranchKlass(this.socket, cb_this, cb_fn));
     };
     
 
@@ -126,23 +136,57 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 		return this._branch.am_I_room_moderator();
 	}; 
     
-	cnds.OnRoomStorageData = function()
-	{
-		return true;
-	}; 
-    
 	cnds.OnStartOfLayout = function()
 	{
 		return true;
-	};    
+	};   
+    
+	cnds.OnGameroomAvaiable = function()
+	{
+		return true;
+	};  	
+    
+	cnds.OnGameroomUnavaiable = function()
+	{
+		return true;
+	}; 
+	
+	cnds.ForEachGameroom = function()
+	{
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+
+        var rooms = this.gamerooms_list.get_list();
+        var room_cnt = rooms.length;
+        var i, room_info;
+		for (i=0; i<room_cnt; i++ )
+	    {
+	        room_info = rooms[i];
+	        this._exp_RoomName = room_info.["room_name"];
+	        this._exp_RoomID = room_info.["room_id"];    
+	        this._exp_RoomDescription = room_info.["room_description"];
+	        this._exp_RoomURL = room_info.["src"];
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+		return false;        
+	}; 		 
 	//////////////////////////////////////
 	// Actions    
 	pluginProto.acts = {};
 	var acts = pluginProto.acts;
 
-	acts.Connect = function(host, port, user_name)
+	acts.SetChannel = function(host)
 	{
-        this.socket.connect(host, port, user_name);
+        this.channel_url = host;
+	};    
+    
+	acts.Connect = function(room_id, user_name, is_public)
+	{
+        this.socket.connect(this.channel_url,
+                            this.game_name, room_id, user_name,
+                            is_public);
 	};
 	acts.Disconnect = function()
 	{
@@ -170,7 +214,12 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	};      
 	acts.EnterLayout = function()
 	{        
-	};     	
+	};    
+	acts.JoinGame = function(game_url, room_id, user_name)
+	{        
+	    var url = game_url+"?"+"room_id="+room_id+"&"+"user_name="+user_name;
+	    window.location = url;
+	};    	 	
 	//////////////////////////////////////
 	// Expressions    
 	pluginProto.exps = {};
@@ -192,10 +241,6 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	{
 		ret.set_string(this.socket.host);        
 	};    
-	exps.Port = function(ret)
-	{   
-		ret.set_string(this.socket.port);     
-	}; 
 	exps.RoomData = function(ret, key, default_data)
 	{   
         var data = this._branch.get_room_storage_data(key);
@@ -203,28 +248,45 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
             data = default_data;
 		ret.set_any(data);   
 	};
-}());
+	exps.RoomName = function(ret)
+	{
+		ret.set_string(this._exp_RoomName);        
+	};   
+	exps.RoomID = function(ret)
+	{
+		ret.set_string(this._exp_RoomID);        
+	}; 	
+	exps.RoomDescription = function(ret)
+	{
+		ret.set_string(this._exp_RoomDescription);        
+	};   
+	exps.RoomURL = function(ret)
+	{
+		ret.set_string(this._exp_RoomURL);        
+	}; 	
+	
+}());	
 
 (function ()
 {
-    cr.plugins_.Rex_SocketIO_Chat.SocketIOKlass = function(plugin)
+    cr.plugins_.Rex_Bottleneck_Lobby.SocketIOKlass = function(plugin)
     {
         this.plugin = plugin;
         this.socket = null;
         this.host = "";
         this.port = "";
         this.user_id = -1;    
-        this.users_list = new cr.plugins_.Rex_SocketIO_Chat.UsersList();
+        this.users_list = new cr.plugins_.Rex_Bottleneck_Lobby.UsersList();
         this.room_storage_data = {};
         this.send_queue = [];
-        this.received_quue = new cr.plugins_.Rex_SocketIO_Chat.PKGQueue(this);
+        this.received_quue = new cr.plugins_.Rex_Bottleneck_Lobby.PKGQueue(this);
         this.trigger_user_info = [0,""];
         this.is_connection = false;
 
         this.branch_sn = 0;
         this.branchs = {};
     };
-    var SocketIOKlassProto = cr.plugins_.Rex_SocketIO_Chat.SocketIOKlass.prototype; 
+    var SocketIOKlassProto = cr.plugins_.Rex_Bottleneck_Lobby.SocketIOKlass.prototype; 
     
     SocketIOKlassProto.branch_append = function(branch)
     {
@@ -240,57 +302,52 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
         return [parseInt(msg.slice(0,comma_index)),
                 msg.slice(comma_index+1)];    
     };    
-    SocketIOKlassProto.connect = function(host, port, user_name)
-    {
-        var thisArg = this;
-        // load "socket.io.min.js" script first
-        jQuery.getScript("socket.io.min.js",
-            function()
-            {
-                // then try to connect link
-                thisArg._connect(host, port, user_name);        
-            }
-        );    
-    };
-    SocketIOKlassProto._connect = function(host, port, user_name)
-    {
+    SocketIOKlassProto.connect = function(host, 
+                                          room_name, room_id, user_name,
+                                          is_public)
+    {    
+        var login_info = {"room_name":room_name,
+                          "room_id":room_id,
+                          "user_name":user_name,
+                          "is_public":is_public};
+
         this.is_connection = false;
         if(this.socket)
 			this.socket.disconnect();
         
-        this.user_name = user_name;
-        this.host = host.toString();
-        this.port = port.toString();
-        var addr = this.host + ':' + this.port;   //"http://localhost:8001"		                  
-        var socket = window["io"]["connect"](addr); 
+        this.user_name = login_info["user_name"];
+        this.host = host;                  
+        var socket = window["io"]["connect"](host, { 
+                                             "transports":['xhr-polling'] 
+                                             });
         
 		var instance = this;
 		var plugin = this.plugin;
 		var runtime = plugin.runtime;
         socket["on"]('connect', function () {
-            debugger;
-            socket["emit"]('user.initialize', user_name,
-                function (pkg_id, user_id, users_info, room_storage_data) {
-                    instance.received_quue.set_sn(pkg_id);
-                    instance.user_id = user_id;
-                    instance.users_list.set_users_list(users_info);
-                    instance.room_storage_data = room_storage_data;
-                    instance.is_connection = true;                    
+            socket["emit"]('user.initialize', login_info,
+                function (init_info) { 
+                    instance.received_quue.set_sn(init_info["pkg_id"]);
+                    instance.user_id = init_info["user_id"];
+                    instance.users_list.set_users_list(init_info["user_info_list"]);
+                    instance.room_storage_data = init_info["room_data"];
+                    instance.is_connection = true; 
+                    plugin.gamerooms_list.set_list(init_info["avaiable_gamerooms"]);
                     // connect completed
-                    runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnConnect, plugin);
+                    runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnConnect, plugin);
             });
         });
         socket["on"]('disconnect', function () {
             instance.is_connection = false; 
-            runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnDisconnect, plugin);
+            runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnDisconnect, plugin);
         });          
         socket["on"]('error', function () {
             instance.is_connection = true;
-            runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnError, plugin);
+            runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnError, plugin);
         });  
 
         // add other events
-        socket["on"]('message', function (msg) {                 
+        socket["on"]('message', function (msg) { 
             instance.received_quue.ExeCmd(msg[0], instance.received, [msg[1]]);
         }); 
         // custom event
@@ -301,8 +358,17 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
             instance.received_quue.ExeCmd(args[0], instance.on_user_left, [args[1]]);
         });         
         socket["on"]('start_of_layout', function () {
-            runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnStartOfLayout, plugin);
+            runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnStartOfLayout, plugin);
         });
+        socket["on"]('gameroom.avaiable', function (args) {
+            plugin.gamerooms_list.add(args);
+            runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnGameroomAvaiable, plugin);
+        });
+        socket["on"]('gameroom.unavaiable', function (args) {
+            plugin.gamerooms_list.remove(args);
+            runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnGameroomUnavaiable, plugin);
+        });            
+        
         this.socket = socket;      
     };
     
@@ -347,13 +413,13 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	{
         this.users_list.append_user(trigger_user_info[0], trigger_user_info[1]);
         this.trigger_user_info = trigger_user_info;
-        this.plugin.runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnUserJoined, this.plugin);
+        this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnUserJoined, this.plugin);
 	};    
 	SocketIOKlassProto.on_user_left = function(trigger_user_info)
 	{
-        this.users_list.remove_user(trigger_user_info[0]);
         this.trigger_user_info = trigger_user_info;
-        this.plugin.runtime.trigger(cr.plugins_.Rex_SocketIO_Chat.prototype.cnds.OnUserLeft, this.plugin);
+        this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnUserLeft, this.plugin);
+        this.users_list.remove_user(trigger_user_info[0]);        
 	}; 
 	SocketIOKlassProto.get_triggered_user_id = function()
 	{
@@ -393,13 +459,13 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	};	 
     
     // socket branch
-    cr.plugins_.Rex_SocketIO_Chat.BranchKlass = function(socket, cb_this, cb_fn)
+    cr.plugins_.Rex_Bottleneck_Lobby.BranchKlass = function(socket, cb_this, cb_fn)
     {
         this._branch_id = socket.branch_append(this);
         this.socket = socket;
         this.cb_on_message = {"this":cb_this, "fn":cb_fn};
     };
-    var BranchKlassProto = cr.plugins_.Rex_SocketIO_Chat.BranchKlass.prototype; 
+    var BranchKlassProto = cr.plugins_.Rex_Bottleneck_Lobby.BranchKlass.prototype; 
     
     BranchKlassProto.send = function(data)
 	{
@@ -436,13 +502,13 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 	};    
     
     // package queue for sync
-    cr.plugins_.Rex_SocketIO_Chat.PKGQueue = function(thisArgs)
+    cr.plugins_.Rex_Bottleneck_Lobby.PKGQueue = function(thisArgs)
     {   
         this._queue = [];
         this.expire_pkg_id = null;
         this.thisArgs = thisArgs;
     };
-    var PKGQueueProto = cr.plugins_.Rex_SocketIO_Chat.PKGQueue.prototype;
+    var PKGQueueProto = cr.plugins_.Rex_Bottleneck_Lobby.PKGQueue.prototype;
         
     var _PKGQUEUE_SORT = function(instA, instB)
     {
@@ -506,17 +572,19 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
     
     
     // users list
-    cr.plugins_.Rex_SocketIO_Chat.UsersList = function()
+    cr.plugins_.Rex_Bottleneck_Lobby.UsersList = function()
     {   
-        this.cleanAll();
+        this.id_list = [];
+        this.id2name = {};        
     };
     
-    
-    var UsersListProto = cr.plugins_.Rex_SocketIO_Chat.UsersList.prototype;  
+    var UsersListProto = cr.plugins_.Rex_Bottleneck_Lobby.UsersList.prototype;  
     UsersListProto.cleanAll = function()
     { 
-        this.id_list = [];
-        this.id2name = {};
+        this.id_list.length = 0;
+        var key;
+        for (key in this.id2name)
+            delete this.id2name[key];
     };
     
     UsersListProto.set_users_list = function(users_list)
@@ -563,4 +631,48 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
         }
         return -1;
     };
+    
+    // users list
+    cr.plugins_.Rex_Bottleneck_Lobby.AvaiableRoomList = function()
+    {   
+        this.rooms = [];    
+    };
+    
+    var AvaiableRoomListProto = cr.plugins_.Rex_Bottleneck_Lobby.AvaiableRoomList.prototype;  
+    AvaiableRoomListProto.get_list = function()
+    { 
+        return this.rooms;
+    };    
+    AvaiableRoomListProto.set_list = function(rooms_list)
+    { 
+        this.rooms = rooms_list;
+    };
+    AvaiableRoomListProto.add = function(room_info)
+    { 
+        this.rooms.append(room_info);
+    };  
+    AvaiableRoomListProto.remove = function(room_info)
+    { 
+        var room_name = room_info[0];
+        var room_id = room_info[1];
+        var i, room_info, room_cnt = this.rooms.length;
+        var find_index = null;
+        for (i=0; i<room_cnt; i++)
+        {
+            room_info = this.rooms[i];
+            if ((room_info["room_name"] == room_name) && 
+                (room_info["room_id"] == room_id))
+            {
+                find_index = i;
+                break;
+            }
+        }
+        if (find_index != null)
+        {
+            if (find_index == 0)
+                this._users.shift();
+            else
+                this._users.splice(find_index, 1);            
+        }
+    }; 
 }());

@@ -59,3 +59,8 @@ class ChatConnection(SocketConnection):
     def _room_storage_set(self, key, data):
         self.room.storage[key] = data
         
+    @event('room.start_of_layout')
+    def _room_start_of_layout(self):
+        sync_completed = self.room.push_sync_signal(self)     
+        if sync_completed:
+            self.broadcast_event('start_of_layout')
