@@ -111,7 +111,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	};       
     
 	cnds.ForEachUsrID = function()
-	{
+	{ 
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
 		var usr_id_save = this.current_usrID;
@@ -161,10 +161,10 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		for (i=0; i<room_cnt; i++ )
 	    {
 	        room_info = rooms[i];
-	        this._exp_RoomName = room_info.["room_name"];
-	        this._exp_RoomID = room_info.["room_id"];    
-	        this._exp_RoomDescription = room_info.["room_description"];
-	        this._exp_RoomURL = room_info.["src"];
+	        this._exp_RoomName = room_info["room_name"];
+	        this._exp_RoomID = room_info["room_id"];    
+	        this._exp_RoomDescription = room_info["room_description"];
+	        this._exp_RoomURL = room_info["src"];
 		    this.runtime.pushCopySol(current_event.solModifiers);
 			current_event.retrigger();
 			this.runtime.popSol(current_event.solModifiers);
@@ -608,6 +608,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
     };
     UsersListProto.append_user = function(id, name)
     { 
+        this.remove_user(id);
         this.id_list.push(id);
         this.id2name[id] = name;
     };
@@ -616,7 +617,10 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         var index = this.id_list.indexOf(id);
         if (index != (-1) )
         {
-            this.id_list.splice(index,1); 
+            if (index == 0)
+                this.id_list.shift();
+            else
+                this.id_list.splice(index, 1);
             delete this.id2name[id];
         }
     };    

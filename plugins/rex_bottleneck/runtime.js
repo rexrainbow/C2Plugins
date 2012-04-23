@@ -594,6 +594,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
     };
     UsersListProto.append_user = function(id, name)
     { 
+        this.remove_user(id);    
         this.id_list.push(id);
         this.id2name[id] = name;
     };
@@ -602,7 +603,10 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         var index = this.id_list.indexOf(id);
         if (index != (-1) )
         {
-            this.id_list.splice(index,1); 
+            if (index == 0)
+                this.id_list.shift();
+            else
+                this.id_list.splice(index, 1);
             delete this.id2name[id];
         }
     };    
