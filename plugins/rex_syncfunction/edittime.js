@@ -49,11 +49,15 @@ AddAction(6, 0, "Set user name", "Users",
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0,ef_return_number,"Get user id","Received","UsrID","Get user id.");
+AddExpression(0,ef_return_number,"Get triggered user id","Triggered","UsrID","Get triggered user id.");
 AddNumberParam("UsrID","The user id.",0);
-AddExpression(1,ef_return_string | ef_variadic_parameters, 
+AddExpression(1,ef_deprecated | ef_return_string | ef_variadic_parameters, 
               "Get user name from user id","Users","UsrName","Get user name from user id.");
-
+AddNumberParam("UsrID","The user id.",0);
+AddExpression(15,ef_return_string | ef_variadic_parameters, 
+              "Get user name from user id","Users","UsrID2Name","Get user name from user id.");                 
+AddExpression(16,ef_return_string,"Get my user name","My","MyUserName","Get my user name."); 
+AddExpression(17,ef_return_string,"Get my user id","My","MyUserID","Get my user id.");     
 
 ACESDone();
 

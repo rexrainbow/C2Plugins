@@ -94,9 +94,13 @@ AddExpression(3,ef_return_string,"Get server address","Socket","IPAddr",
 AddAnyTypeParam("Key","The key of data stored in room storage.","\"\"");
 AddExpression(5,ef_return_any | ef_variadic_parameters, 
               "Get room storage data","Room","RoomData","Get room storage data from key.");
+AddExpression(6,ef_return_string,"Get user name from external","External","ExtUsrName","Get user name from external.");    
+AddExpression(7,ef_return_string,"Get room id from external","External","ExtRoomID","Get room id from external.");          
 AddNumberParam("UsrID","The user id.",0);
 AddExpression(15,ef_return_string | ef_variadic_parameters, 
               "Get user name from user id","Users","UsrID2Name","Get user name from user id.");                            
+AddExpression(16,ef_return_string,"Get my user name","My","MyUserName","Get my user name."); 
+AddExpression(17,ef_return_string,"Get my user id","My","MyUserID","Get my user id.");               
 
 ACESDone();
 

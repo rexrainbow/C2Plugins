@@ -90,6 +90,8 @@ AddExpression(9,ef_return_string,"Get url","Avaiable gameroom","RoomURL","Get ro
 AddNumberParam("UsrID","The user id.",0);
 AddExpression(15,ef_return_string | ef_variadic_parameters, 
               "Get user name from user id","Users","UsrID2Name","Get user name from user id.");
+AddExpression(16,ef_return_string,"Get my user name","My","MyUserName","Get my user name."); 
+AddExpression(17,ef_return_number,"Get my user id","My","MyUserID","Get my user id.");               
               
 ACESDone();
 

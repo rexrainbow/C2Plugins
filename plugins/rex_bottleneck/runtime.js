@@ -48,8 +48,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.ext_setting = this._get_ext_setting();         
         this.socket = new cr.plugins_.Rex_Bottleneck.SocketIOKlass(this);
         this._branch = this.CreateBranch(this, this.on_message);
-        this.triggered_usrID = 0;
-        this.triggered_usrName = "";
+        this.triggered_userID = 0;
+        this.triggered_userName = "";
         this.current_data = "";    
         this.runtime.tickMe(this);        
 
@@ -60,11 +60,23 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
     {
         this.socket.tick();
     };    
-    
+
+    instanceProto._get_triggered_source = function(user_id)
+    {
+        if (user_id == null)
+        {
+            this.triggered_userID = this.socket.get_triggered_user_id();
+            this.triggered_userName = this.socket.get_triggered_user_name();  
+        }
+        else
+        {
+            this.triggered_userID = user_id;
+            this.triggered_userName = this._branch.get_user_name(user_id);
+        }
+    };     
     instanceProto.on_message = function(user_id, msg)
 	{
-        this.triggered_usrID = user_id;
-        this.triggered_usrName = this._branch.get_user_name(user_id);
+        this._get_triggered_source(user_id);
         this.current_data = msg;
         this.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnData, this);
 	};
@@ -103,6 +115,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 
 	cnds.OnConnect = function()
 	{
+        this._get_triggered_source();       
 		return true;
 	};
 	cnds.OnDisconnect = function()
@@ -119,14 +132,12 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	cnds.OnUserJoined = function()
 	{
-        this.triggered_usrID = this.socket.get_triggered_user_id();
-        this.triggered_usrName = this.socket.get_triggered_user_name();
+        this._get_triggered_source();    
 		return true;
 	};   
 	cnds.OnUserLeft = function()
 	{
-        this.triggered_usrID = this.socket.get_triggered_user_id();
-        this.triggered_usrName = this.socket.get_triggered_user_name();
+        this._get_triggered_source();    
 		return true;
 	};       
     
@@ -134,23 +145,23 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	{
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
-		var user_id_save = this.triggered_usrID;
-        var user_name_save = this.triggered_usrName;
+		var user_id_save = this.triggered_userID;
+        var user_name_save = this.triggered_userName;
         
         var userID_list = this._branch.get_userID_list();
         var id_cnt = userID_list.length;
         var i;
 		for (i=0; i<id_cnt; i++ )
 	    {
-            this.triggered_usrID = userID_list[i];
-            this.triggered_usrName = this._branch.get_user_name(this.triggered_usrID);
+            this.triggered_userID = userID_list[i];
+            this.triggered_userName = this._branch.get_user_name(this.triggered_userID);
 		    this.runtime.pushCopySol(current_event.solModifiers);
 			current_event.retrigger();
 			this.runtime.popSol(current_event.solModifiers);
 		}
 
-		this.triggered_usrID = user_id_save;
-		this.triggered_usrName = user_name_save;
+		this.triggered_userID = user_id_save;
+		this.triggered_userName = user_name_save;
 		return false;        
 	};  
     
@@ -241,16 +252,26 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	exps.UsrID = function(ret)
 	{
-		ret.set_int(this.triggered_usrID);        
+		ret.set_int(this.triggered_userID);        
 	};    
 	exps.UsrName = function(ret)
 	{   
-		ret.set_string(this.triggered_usrName);        
+		ret.set_string(this.triggered_userName);        
 	};     
 	exps.IPAddr = function(ret)
 	{
 		ret.set_string(this.socket.host);        
-	};     
+	};
+	exps.ExtUsrName = function(ret)
+	{   
+        var user_name = (this._has_ext_setting())? this.ext_setting["user_name"]:"";
+		ret.set_string(user_name);   
+	};  
+	exps.ExtRoomID = function(ret)
+	{   
+        var room_id = (this._has_ext_setting())? this.ext_setting["room_id"]:"";
+		ret.set_string(room_id);   
+	};    
 	exps.RoomData = function(ret, key, default_data)
 	{   
         var data = this._branch.get_room_storage_data(key);
@@ -258,6 +279,19 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
             data = default_data;
 		ret.set_any(data);   
 	};
+	exps.UsrID2Name = function(ret, user_id)
+	{   
+		ret.set_string(this._branch.get_user_name(user_id));         
+	};      
+	exps.MyUserName = function(ret)
+	{   
+		ret.set_string(this._branch.get_my_user_name());         
+	};
+	exps.MyUserID = function(ret)
+	{   
+		ret.set_int(this._branch.get_my_user_id());         
+	};  
+
 }());
 
 (function ()
@@ -326,17 +360,20 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
                     instance.user_id = init_info["user_id"];
                     instance.users_list.set_users_list(init_info["user_info_list"]);
                     instance.room_storage_data = init_info["room_data"];
-                    instance.is_connection = true;                    
+                    instance.is_connection = true;   
+                    instance.trigger_user_info = [instance.user_id, instance.user_name];                    
                     // connect completed
                     runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnConnect, plugin);
             });
         });
         socket["on"]('disconnect', function () {
-            instance.is_connection = false; 
+            instance.is_connection = false;
+            instance.user_id = -1;      
             runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnDisconnect, plugin);
         });          
         socket["on"]('error', function () {
-            instance.is_connection = true;
+            instance.is_connection = false;
+            instance.user_id = -1;      
             runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnError, plugin);
         });  
 
@@ -470,6 +507,14 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         var cb = this.cb_on_message;
 		cb["fn"].call(cb["this"], user_id, msg);
 	};
+    BranchKlassProto.get_my_user_name = function()
+	{
+        return (this.socket.is_connection)? this.socket.user_name:"";
+	};
+    BranchKlassProto.get_my_user_id = function()
+	{
+        return (this.socket.is_connection)? this.socket.user_id:(-1);
+	};     
     BranchKlassProto.get_user_name = function(user_id)
 	{
         return this.socket.users_list.get_name(user_id);
@@ -566,13 +611,13 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
     
     
     // users list
-    cr.plugins_.Rex_Bottleneck_Lobby.UsersList = function()
+    cr.plugins_.Rex_Bottleneck.UsersList = function()
     {   
         this.id_list = [];
         this.id2name = {};        
     };
     
-    var UsersListProto = cr.plugins_.Rex_Bottleneck_Lobby.UsersList.prototype;  
+    var UsersListProto = cr.plugins_.Rex_Bottleneck.UsersList.prototype;  
     UsersListProto.cleanAll = function()
     { 
         this.id_list.length = 0;

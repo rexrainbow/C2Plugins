@@ -44,7 +44,7 @@ cr.plugins_.Rex_SyncFn = function(runtime)
         this.sync_mode = (this.properties[0]==0);
         this.branch = null;
         this.callback = null;         
-        this.user_id = (-1);
+        this.user_id = (this.sync_mode)? (-1):1;
         this.user_name = this.properties[1];
         this.param = {};        
 	};
@@ -144,9 +144,7 @@ cr.plugins_.Rex_SyncFn = function(runtime)
     
 	exps.UsrID = function(ret)
 	{
-        var user_id = (this.sync_mode)?
-                      this.user_id:
-                      1;    
+        var user_id = (this.sync_mode)? this.user_id:1;    
 		ret.set_int(user_id);        
 	};    
 	exps.UsrName = function(ret, user_id)
@@ -155,5 +153,20 @@ cr.plugins_.Rex_SyncFn = function(runtime)
                         this.branch.get_user_name(user_id):
                         this.user_name;
 		ret.set_string(user_name);        
-	};   
+	};  
+	exps.UsrID2Name = function(ret, user_id)
+	{   
+        var user_name = (this.sync_mode)?
+                        this.branch.get_user_name(user_id):
+                        this.user_name;
+		ret.set_string(user_name);          
+	};      
+	exps.MyUserName = function(ret)
+	{   
+		ret.set_string(this._branch.get_my_user_name());         
+	};
+	exps.MyUserID = function(ret)
+	{   
+		ret.set_int(this._branch.get_my_user_id());         
+	};      
 }());
