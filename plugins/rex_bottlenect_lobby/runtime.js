@@ -190,7 +190,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	};
 	acts.Disconnect = function()
 	{
-        this.socket.disconnect();
+        this.socket["disconnect"]();
 	};
 	acts.Send = function(data)
 	{
@@ -313,7 +313,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 
         this.is_connection = false;
         if(this.socket)
-			this.socket.disconnect();
+			this.socket["disconnect"]();
         
         this.user_name = login_info["user_name"];
         this.host = host;                  
@@ -326,7 +326,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		var runtime = plugin.runtime;
         socket["on"]('connect', function () {
             socket["emit"]('user.initialize', login_info,
-                function (init_info) { 
+                function (init_info) {             
                     instance.received_quue.set_sn(init_info["pkg_id"]);
                     instance.user_id = init_info["user_id"];
                     instance.users_list.set_users_list(init_info["user_info_list"]);
@@ -379,20 +379,17 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
     
 	SocketIOKlassProto.tick = function()     // execute this each tick
 	{
-		var socket = this.socket;
-        var data = this.send_queue;
-		if (socket && (data.length > 0))
+		if (this.socket && (this.send_queue.length > 0))
         {
             // format: [user_id, [[branch_id, data], [branch_id, data], ...]]
-            socket["json"]["send"]([this.user_id, data]);
+            this.socket["json"]["send"]([this.user_id, this.send_queue]);
             this.send_queue = [];
         }
 	};
 	SocketIOKlassProto.disconnect = function()
 	{
-		var socket = this.socket;
-		if(socket)
-			socket["disconnect"]();
+		if(this.socket)
+			this.socket["disconnect"]();
 	};
 	SocketIOKlassProto.received = function(data)
 	{

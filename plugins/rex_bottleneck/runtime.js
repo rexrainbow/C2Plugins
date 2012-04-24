@@ -194,7 +194,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	
 	acts.Disconnect = function()
 	{
-        this.socket.disconnect();
+        this.socket["disconnect"]();
 	};
 	acts.Send = function(data)
 	{
@@ -301,7 +301,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         
         this.is_connection = false;
         if(this.socket)
-			this.socket.disconnect();
+			this.socket["disconnect"]();
         
         this.user_name = user_name;
         this.host = host;                  
