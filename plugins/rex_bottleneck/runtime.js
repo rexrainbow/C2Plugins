@@ -135,6 +135,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
 		var user_id_save = this.triggered_usrID;
+        var user_name_save = this.triggered_usrName;
         
         var userID_list = this._branch.get_userID_list();
         var id_cnt = userID_list.length;
@@ -149,7 +150,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 		}
 
 		this.triggered_usrID = user_id_save;
-		this.triggered_usrName = this._branch.get_user_name(user_id_save);
+		this.triggered_usrName = user_name_save;
 		return false;        
 	};  
     
