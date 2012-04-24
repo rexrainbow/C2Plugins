@@ -87,15 +87,16 @@ AddAction(12,0,"Set room state by number","Room management: Room",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0,ef_return_string,"Get received data","Received","Data","Get the last chunk of data that was received via the socket.");
-AddExpression(1,ef_return_number,"Get triggered user id","Received","UsrID","Get triggered user id.");
-AddNumberParam("UsrID","The user id.",0);
-AddExpression(2,ef_return_string | ef_variadic_parameters, 
-              "Get user name from user id","Users","UsrName","Get user name from user id.");
+AddExpression(1,ef_return_number,"Get triggered user id","Triggered","UsrID","Get triggered user id.");
+AddExpression(2,ef_return_string,"Get triggered user name","Triggered","UsrName","Get triggered user name.");
 AddExpression(3,ef_return_string,"Get server address","Socket","IPAddr",
               "Get the server address that the socket connected to.");
 AddAnyTypeParam("Key","The key of data stored in room storage.","\"\"");
 AddExpression(5,ef_return_any | ef_variadic_parameters, 
-              "Get room storage data","Room","RoomData","Get room storage data from key.");              
+              "Get room storage data","Room","RoomData","Get room storage data from key.");
+AddNumberParam("UsrID","The user id.",0);
+AddExpression(15,ef_return_string | ef_variadic_parameters, 
+              "Get user name from user id","Users","UsrID2Name","Get user name from user id.");                            
 
 ACESDone();
 

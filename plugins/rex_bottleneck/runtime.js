@@ -48,7 +48,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.ext_setting = this._get_ext_setting();         
         this.socket = new cr.plugins_.Rex_Bottleneck.SocketIOKlass(this);
         this._branch = this.CreateBranch(this, this.on_message);
-        this.current_usrID = 0;
+        this.triggered_usrID = 0;
+        this.triggered_usrName = "";
         this.current_data = "";    
         this.runtime.tickMe(this);        
 
@@ -60,9 +61,10 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.socket.tick();
     };    
     
-    instanceProto.on_message = function(usr_id, msg)
+    instanceProto.on_message = function(user_id, msg)
 	{
-        this.current_usrID = usr_id;
+        this.triggered_usrID = user_id;
+        this.triggered_usrName = this._branch.get_user_name(user_id);
         this.current_data = msg;
         this.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnData, this);
 	};
@@ -117,12 +119,14 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	cnds.OnUserJoined = function()
 	{
-        this.current_usrID = this.socket.get_triggered_user_id();
+        this.triggered_usrID = this.socket.get_triggered_user_id();
+        this.triggered_usrName = this.socket.get_triggered_user_name();
 		return true;
 	};   
 	cnds.OnUserLeft = function()
 	{
-        this.current_usrID = this.socket.get_triggered_user_id();
+        this.triggered_usrID = this.socket.get_triggered_user_id();
+        this.triggered_usrName = this.socket.get_triggered_user_name();
 		return true;
 	};       
     
@@ -130,20 +134,22 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	{
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
-		var usr_id_save = this.current_usrID;
+		var user_id_save = this.triggered_usrID;
         
         var userID_list = this._branch.get_userID_list();
         var id_cnt = userID_list.length;
         var i;
 		for (i=0; i<id_cnt; i++ )
 	    {
-            this.current_usrID = userID_list[i];
+            this.triggered_usrID = userID_list[i];
+            this.triggered_usrName = this._branch.get_user_name(this.triggered_usrID);
 		    this.runtime.pushCopySol(current_event.solModifiers);
 			current_event.retrigger();
 			this.runtime.popSol(current_event.solModifiers);
 		}
 
-		this.current_usrID = usr_id_save;
+		this.triggered_usrID = user_id_save;
+		this.triggered_usrName = this._branch.get_user_name(user_id_save);
 		return false;        
 	};  
     
@@ -234,11 +240,11 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	exps.UsrID = function(ret)
 	{
-		ret.set_int(this.current_usrID);        
+		ret.set_int(this.triggered_usrID);        
 	};    
-	exps.UsrName = function(ret, user_id)
+	exps.UsrName = function(ret)
 	{   
-		ret.set_string(this._branch.get_user_name(user_id));        
+		ret.set_string(this.triggered_usrName);        
 	};     
 	exps.IPAddr = function(ret)
 	{
@@ -357,20 +363,17 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
     
 	SocketIOKlassProto.tick = function()     // execute this each tick
 	{
-		var socket = this.socket;
-        var data = this.send_queue;
-		if (socket && (data.length > 0))
+		if (this.socket && (this.send_queue.length > 0))
         {
             // format: [user_id, [[branch_id, data], [branch_id, data], ...]]
-            socket["json"]["send"]([this.user_id, data]);
+            this.socket["json"]["send"]([this.user_id, this.send_queue]);
             this.send_queue = [];
         }
 	};
 	SocketIOKlassProto.disconnect = function()
 	{
-		var socket = this.socket;
-		if(socket)
-			socket["disconnect"]();
+		if(this.socket)
+			this.socket["disconnect"]();
 	};
 	SocketIOKlassProto.received = function(data)
 	{
@@ -389,20 +392,24 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	SocketIOKlassProto.on_user_joined = function(trigger_user_info)
 	{
+        this.trigger_user_info = trigger_user_info;	    
         this.users_list.append_user(trigger_user_info[0], trigger_user_info[1]);
-        this.trigger_user_info = trigger_user_info;
         this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnUserJoined, this.plugin);
 	};    
 	SocketIOKlassProto.on_user_left = function(trigger_user_info)
 	{
         this.trigger_user_info = trigger_user_info;
-        this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnUserLeft, this.plugin);
-        this.users_list.remove_user(trigger_user_info[0]);        
+        this.users_list.remove_user(trigger_user_info[0]);         
+        this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnUserLeft, this.plugin);       
 	}; 
 	SocketIOKlassProto.get_triggered_user_id = function()
 	{
         return this.trigger_user_info[0];
-	};     
+	};  
+	SocketIOKlassProto.get_triggered_user_name = function()
+	{
+        return this.trigger_user_info[1];
+	};	   
     
     // custom event
 	SocketIOKlassProto.set_room_user_max_cnt = function(user_max_cnt)
@@ -457,10 +464,10 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	{
 		this.socket.send(this._branch_id, data);
 	};
-    BranchKlassProto.on_message = function(usr_id, msg)
+    BranchKlassProto.on_message = function(user_id, msg)
 	{
         var cb = this.cb_on_message;
-		cb["fn"].call(cb["this"], usr_id, msg);
+		cb["fn"].call(cb["this"], user_id, msg);
 	};
     BranchKlassProto.get_user_name = function(user_id)
 	{

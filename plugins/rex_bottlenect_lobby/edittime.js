@@ -65,12 +65,7 @@ AddAction(7,0,"Set max member count","Room management",
 AddAnyTypeParam("User","User name(string) or user id(number).","\"\"");
 AddAction(8,0,"Kick member","Room management",
           "Kick member <b>{0}</b>",
-          "Kick member.","KickMember");  
-AddAnyTypeParam("Key","The key of data stored in room storage.","\"\"");
-AddAnyTypeParam("Data","The data stored in room storage.","\"\""); 
-AddAction(9,0,"Save data","Room storage",
-          "Save data <b>{1}</b> with key <b>{0}</b> into room storage",
-          "Save data to room storage.","SetRoomStorage");          
+          "Kick member.","KickMember");         
 AddAction(10,0,"Enter layout","Start layout",
           "Enter layout",
           'Send "prepared" signal. It will trigger "Condition:OnStartOfLayout" when all user prepared.',"EnterLayout"); 
@@ -84,20 +79,18 @@ AddAction(11,0,"Join game","Game",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0,ef_return_string,"Get received data","Received","Data","Get the last chunk of data that was received via the socket.");
-AddExpression(1,ef_return_number,"Get triggered user id","Received","UsrID","Get triggered user id.");
-AddNumberParam("UsrID","The user id.",0);
-AddExpression(2,ef_return_string | ef_variadic_parameters, 
-              "Get user name from user id","Users","UsrName","Get user name from user id.");
+AddExpression(1,ef_return_number,"Get triggered user id","Triggered","UsrID","Get triggered user id.");
+AddExpression(2,ef_return_string,"Get triggered user name","Triggered","UsrName","Get triggered user name.");
 AddExpression(3,ef_return_string,"Get server address","Socket","IPAddr",
               "Get the server address that the socket connected to.");
-AddAnyTypeParam("Key","The key of data stored in room storage.","\"\"");
-AddExpression(5,ef_return_any | ef_variadic_parameters, 
-              "Get room storage data","Lobby","RoomData","Get room storage data from key.");
 AddExpression(6,ef_return_string,"Get name","Avaiable gameroom","RoomName","Get room name (game name)."); 
 AddExpression(7,ef_return_string,"Get id","Avaiable gameroom","RoomID","Get room id."); 
 AddExpression(8,ef_return_string,"Get description","Avaiable gameroom","RoomDescription","Get room description."); 
 AddExpression(9,ef_return_string,"Get url","Avaiable gameroom","RoomURL","Get room url."); 
-
+AddNumberParam("UsrID","The user id.",0);
+AddExpression(15,ef_return_string | ef_variadic_parameters, 
+              "Get user name from user id","Users","UsrID2Name","Get user name from user id.");
+              
 ACESDone();
 
 var property_list = [  
