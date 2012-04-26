@@ -104,6 +104,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	instanceProto._create_layer_objects = function(tmx_layer)
 	{
         var c2_layer =  this._get_layer(tmx_layer.name);
+        if (c2_layer == null)
+            alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
