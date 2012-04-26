@@ -404,7 +404,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         {
             // format: [user_id, [[branch_id, data], [branch_id, data], ...]]
             this.socket["json"]["send"]([this.user_id, this.send_queue]);
-            this.send_queue.length = 0;
+            this.send_queue = [];  // do not use length=0
         }
 	};
 	SocketIOKlassProto.disconnect = function()

@@ -74,6 +74,11 @@ cr.plugins_.Rex_SyncFn = function(runtime)
     cnds.IsNetworkMode = function()
 	{
 		return this.sync_mode;
+	};  
+    
+    cnds.IsMyCommand = function()
+	{
+		return (this.branch.get_my_user_id() == this.user_id);
 	};    
 	//////////////////////////////////////
 	// Actions
@@ -129,7 +134,9 @@ cr.plugins_.Rex_SyncFn = function(runtime)
     
 	acts.CleanParameters = function ()
 	{
-        this.param = {};
+        var key;
+        for (key in this.param)
+            delete this.param[key];
 	};      
     
     acts.SetUserName = function (name)
@@ -163,10 +170,10 @@ cr.plugins_.Rex_SyncFn = function(runtime)
 	};      
 	exps.MyUserName = function(ret)
 	{   
-		ret.set_string(this._branch.get_my_user_name());         
+		ret.set_string(this.branch.get_my_user_name());         
 	};
 	exps.MyUserID = function(ret)
 	{   
-		ret.set_int(this._branch.get_my_user_id());         
+		ret.set_int(this.branch.get_my_user_id());         
 	};      
 }());

@@ -195,6 +195,13 @@ cr.plugins_.Rex_Function = function(runtime)
         return( arrData );
     };      
 
+    var clean_hashtable = function (hash_table)
+	{
+        var key;
+        for (key in hash_table)
+            delete hash_table[key];
+	};      
+    
 	//////////////////////////////////////
 	// Conditions
 	pluginProto.cnds = {};
@@ -219,7 +226,7 @@ cr.plugins_.Rex_Function = function(runtime)
     
 	acts.CleanParameters = function ()
 	{
-        this.fnObj["param"] = {};
+        clean_hashtable(this.fnObj["param"]);
 	};    
     
 	acts.SetParameter = function (index, value)
@@ -229,7 +236,7 @@ cr.plugins_.Rex_Function = function(runtime)
 
 	acts.CleanRetruns = function ()
 	{
-        this.fnObj["ret"] = {};
+        clean_hashtable(this.fnObj["ret"]);    
 	};    
     
 	acts.SetReturn = function (index, value)

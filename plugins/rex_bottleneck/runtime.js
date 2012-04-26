@@ -47,7 +47,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.game_description = this.properties[2];
         this.ext_setting = this._get_ext_setting();         
         this.socket = new cr.plugins_.Rex_Bottleneck.SocketIOKlass(this);
-        this._branch = this.CreateBranch(this, this.on_message);
+        this.branch = this.CreateBranch(this, this.on_message);
         this.triggered_userID = 0;
         this.triggered_userName = "";
         this.current_data = "";    
@@ -71,7 +71,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         else
         {
             this.triggered_userID = user_id;
-            this.triggered_userName = this._branch.get_user_name(user_id);
+            this.triggered_userName = this.branch.get_user_name(user_id);
         }
     };     
     instanceProto.on_message = function(user_id, msg)
@@ -148,13 +148,13 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 		var user_id_save = this.triggered_userID;
         var user_name_save = this.triggered_userName;
         
-        var userID_list = this._branch.get_userID_list();
+        var userID_list = this.branch.get_userID_list();
         var id_cnt = userID_list.length;
         var i;
 		for (i=0; i<id_cnt; i++ )
 	    {
             this.triggered_userID = userID_list[i];
-            this.triggered_userName = this._branch.get_user_name(this.triggered_userID);
+            this.triggered_userName = this.branch.get_user_name(this.triggered_userID);
 		    this.runtime.pushCopySol(current_event.solModifiers);
 			current_event.retrigger();
 			this.runtime.popSol(current_event.solModifiers);
@@ -167,7 +167,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
     
 	cnds.AmIRoomModerator = function()
 	{
-		return this._branch.am_I_room_moderator();
+		return this.branch.am_I_room_moderator();
 	}; 
 
 	cnds.OnStartOfLayout = function()
@@ -220,7 +220,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	acts.Send = function(data)
 	{
-        this._branch.send(data);
+        this.branch.send(data);
 	};
 	acts.SetMaxMemberCount = function(count)
 	{
@@ -232,11 +232,11 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};   
 	acts.SetRoomStorage = function(key, data)
 	{
-        this._branch.set_room_storage_data(key, data);
+        this.branch.set_room_storage_data(key, data);
 	};   
 	acts.GetRoomStorage = function(key)
 	{
-        this._branch.get_room_storage_data(key, this, this.on_room_storage);
+        this.branch.get_room_storage_data(key, this, this.on_room_storage);
 	};      
 	acts.EnterLayout = function()
 	{
@@ -279,22 +279,22 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};    
 	exps.RoomData = function(ret, key, default_data)
 	{   
-        var data = this._branch.get_room_storage_data(key);
+        var data = this.branch.get_room_storage_data(key);
         if (data == null)
             data = default_data;
 		ret.set_any(data);   
 	};
 	exps.UsrID2Name = function(ret, user_id)
 	{   
-		ret.set_string(this._branch.get_user_name(user_id));         
+		ret.set_string(this.branch.get_user_name(user_id));         
 	};      
 	exps.MyUserName = function(ret)
 	{   
-		ret.set_string(this._branch.get_my_user_name());         
+		ret.set_string(this.branch.get_my_user_name());         
 	};
 	exps.MyUserID = function(ret)
 	{   
-		ret.set_int(this._branch.get_my_user_id());         
+		ret.set_int(this.branch.get_my_user_id());         
 	};  
 
 }());
@@ -383,7 +383,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         });  
 
         // add other events
-        socket["on"]('message', function (msg) { 
+        socket["on"]('message', function (msg) {       
             instance.received_quue.ExeCmd(msg[0], instance.received, [msg[1]]);
         }); 
         // custom event
@@ -413,7 +413,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         {
             // format: [user_id, [[branch_id, data], [branch_id, data], ...]]
             this.socket["json"]["send"]([this.user_id, this.send_queue]);
-            this.send_queue.length = 0;
+            this.send_queue = [];  // do not use length=0
         }
 	};
 	SocketIOKlassProto.disconnect = function()
