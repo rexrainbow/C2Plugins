@@ -37,7 +37,9 @@ AddCondition(8, 0, "Room moderator", "Room management",
 AddCondition(9,cf_trigger,"On start of layout","Start layout","On start of layout",
              'Triggered when all users are prepared by passing "Action:Start of layout".',"OnStartOfLayout");
 AddCondition(10, 0, "Has external setting", "Room setting", 
-             "Has external setting", "Reture true if it has external setting from querystring", "HasExternalSetting");        
+             "Has external setting", "Reture true if it has external setting from querystring", "HasExternalSetting");
+AddCondition(11,cf_trigger,"On room unavaliable","Room","On room unavaliable",
+             'Triggered when room unavaliable.',"OnRoomUnavaiable");             
              
 //////////////////////////////////////////////////////////////
 // Actions
@@ -70,11 +72,11 @@ AddAnyTypeParam("Data","The data stored in room storage.","\"\"");
 AddAction(9,0,"Save data","Room storage",
           "Save data <b>{1}</b> with key <b>{0}</b> into room storage",
           "Save data to room storage.","SetRoomStorage");          
-AddAction(10,0,"Enter layout","Start layout",
-          "Enter layout",
-          'Send "prepared" signal. It will trigger "Condition:OnStartOfLayout" when all user prepared.',"EnterLayout"); 
+AddAction(10,0,"Start layout","Sync",
+          "Start layout",
+          'Send "start" signal. It will trigger "Condition:On start of layout" when all user prepared.',"EnterLayout"); 
 AddComboParamOption("Open");
-AddComboParamOption("Close");
+AddComboParamOption("Closed");
 AddComboParamOption("Toggle");
 AddComboParam("Room state", "Set room state.",0);
 AddAction(11,0,"Set room state","Room management: Room",

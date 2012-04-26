@@ -179,7 +179,11 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	{
 	    return this._has_ext_setting();
 	}; 	
-	   
+    
+	cnds.OnRoomUnavaiable = function()
+	{
+	    return true;
+	}; 		   
 	//////////////////////////////////////
 	// Actions    
 	pluginProto.acts = {};
@@ -235,7 +239,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this._branch.get_room_storage_data(key, this, this.on_room_storage);
 	};      
 	acts.EnterLayout = function()
-	{        
+	{
+        this.socket.syncStart();
 	};  
 	acts.SetRoomState = function(state)
 	{     
@@ -388,9 +393,12 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         socket["on"]('user.left', function (args) {
             instance.received_quue.ExeCmd(args[0], instance.on_user_left, [args[1]]);
         });         
-        socket["on"]('start_of_layout', function () {
+        socket["on"]('room.syncStart', function () {
             runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnStartOfLayout, plugin);
         });
+        socket["on"]('room.unavaliable', function () {
+            runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnRoomUnavaiable, plugin);
+        });        
         this.socket = socket;      
     };
     
@@ -405,7 +413,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         {
             // format: [user_id, [[branch_id, data], [branch_id, data], ...]]
             this.socket["json"]["send"]([this.user_id, this.send_queue]);
-            this.send_queue = [];
+            this.send_queue.length = 0;
         }
 	};
 	SocketIOKlassProto.disconnect = function()
@@ -452,40 +460,35 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
     // custom event
 	SocketIOKlassProto.set_room_user_max_cnt = function(user_max_cnt)
 	{
-		var socket = this.socket;
-		if(socket)
-			socket["emit"]('room.set_MAXUSERCNT', user_max_cnt);
+		if(this.socket)
+			this.socket["emit"]('room.set_MAXUSERCNT', user_max_cnt);
 	};  
 	SocketIOKlassProto.kick_user = function(user_id)
 	{
-		var socket = this.socket;
-		if(socket)
+		if(this.socket)
         {
             if (typeof user_id == "string")
                 user_id = this.users_list.get_id(user_id);
-			socket["emit"]('room.kick_user', user_id);
+			this.socket["emit"]('room.kick_user', user_id);
         }
 	};     
 	SocketIOKlassProto.set_room_storage_data = function(key, data)
 	{
-		var socket = this.socket;
-		if(socket)
+		if(this.socket)
         {
-			socket["emit"]('room.storage.set', key, data);
+			this.socket["emit"]('room.storage.set', key, data);
         }
 	};    
-	SocketIOKlassProto.start_of_layout = function()
+	SocketIOKlassProto.syncStart = function()
 	{
-		var socket = this.socket;
-		if(socket)
-			socket["emit"]('room.start_of_layout');
+		if(this.socket)
+			this.socket["emit"]('room.syncStart');
 	};	
 	SocketIOKlassProto.set_room_state = function(state)
 	{
-		var socket = this.socket;
-		if(socket)
+		if(this.socket)
         {
-			socket["emit"]('room.state.set', state);
+			this.socket["emit"]('room.state.set', state);
         }
 	};     
     
