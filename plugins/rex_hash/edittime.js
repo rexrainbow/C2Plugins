@@ -39,8 +39,12 @@ AddAction(4, 0, "Clean all", "Hash table", "Clean all entries",
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(5, 0, "Load hash table from JSON string", "JSON", 
           "Load hash table form JSON string <i>{0}</i>",
-          "Load hash table from JSON string.", "StringToHashTable");         
-
+          "Load hash table from JSON string.", "StringToHashTable");
+AddStringParam("Key string", "The key string of the hash table value to remove.", '""');          
+AddAction(6, 0, "Remove value by key string", "Remove", 
+          "Remove value at <i>{0}</i>",
+          "Remove value by a key string.", "RemoveByKeyString");
+         
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key string", "The key string of the hash to get.", '""');

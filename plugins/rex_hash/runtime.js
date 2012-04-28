@@ -157,8 +157,18 @@ cr.plugins_.Rex_Hash = function(runtime)
     acts.StringToHashTable = function (JSON_string)
 	{  
         this._my_hash = JSON.parse(JSON_string);
-	};     
-
+	};  
+    
+    acts.RemoveByKeyString = function (key_string)
+	{  
+        if (key_string != "")
+        {
+		    var keys = key_string.split(".");             
+            var last_key = keys.splice(keys.length-1, 1);      
+            this._set_entry_byKeys(keys);
+            delete this._current_entry[last_key];
+        }
+	};  
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
