@@ -269,12 +269,12 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	};
 	exps.ExtUsrName = function(ret)
 	{   
-        var user_name = (this._has_ext_setting())? this.ext_setting["user_name"]:"";
+        var user_name = (this._has_ext_setting())? decodeURI(this.ext_setting["user_name"]):"";
 		ret.set_string(user_name);   
 	};  
 	exps.ExtRoomID = function(ret)
 	{   
-        var room_id = (this._has_ext_setting())? this.ext_setting["room_id"]:"";
+        var room_id = (this._has_ext_setting())? decodeURI(this.ext_setting["room_id"]):"";
 		ret.set_string(room_id);   
 	};    
 	exps.RoomData = function(ret, key, default_data)
@@ -393,8 +393,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         socket["on"]('user.left', function (args) {
             instance.received_quue.ExeCmd(args[0], instance.on_user_left, [args[1]]);
         });         
-        socket["on"]('room.syncStart', function () {
-            runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnStartOfLayout, plugin);
+        socket["on"]('room.syncStart', function (args) {
+            instance.received_quue.ExeCmd(args[0], instance.on_sync_start, [args[1]]);
         });
         socket["on"]('room.unavaliable', function () {
             runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnRoomUnavaiable, plugin);
@@ -448,6 +448,10 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.users_list.remove_user(trigger_user_info[0]);         
         this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnUserLeft, this.plugin);       
 	}; 
+	SocketIOKlassProto.on_sync_start = function()
+	{    
+        this.plugin.runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnStartOfLayout, this.plugin);       
+	};     
 	SocketIOKlassProto.get_triggered_user_id = function()
 	{
         return this.trigger_user_info[0];

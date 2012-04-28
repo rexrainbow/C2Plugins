@@ -72,8 +72,11 @@ AddAction(10,0,"Enter layout","Start layout",
 AddStringParam("Game url","Url of game.","");
 AddStringParam("Room ID","Room ID.","");
 AddStringParam("User name","The user name in this game.",'""');
+AddComboParamOption("Current window");
+AddComboParamOption("New window");
+AddComboParam("Game window", "Create game at which window.",0);
 AddAction(11,0,"Join game","Game",
-          "User <b>{2}</b> join to room <b>{1}</b> of game <b>{0}</b>",
+          "User <b>{2}</b> join to room <b>{1}</b> of game <b>{0}</b> at <b>{3}</b>",
           "Join game","JoinGame"); 
         
 //////////////////////////////////////////////////////////////

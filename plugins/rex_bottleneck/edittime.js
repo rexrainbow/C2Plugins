@@ -75,8 +75,8 @@ AddAction(9,0,"Save data","Room storage",
 AddAction(10,0,"Start layout","Sync",
           "Start layout",
           'Send "start" signal. It will trigger "Condition:On start of layout" when all user prepared.',"EnterLayout"); 
-AddComboParamOption("Open");
 AddComboParamOption("Closed");
+AddComboParamOption("Open");
 AddComboParamOption("Toggle");
 AddComboParam("Room state", "Set room state.",0);
 AddAction(11,0,"Set room state","Room management: Room",

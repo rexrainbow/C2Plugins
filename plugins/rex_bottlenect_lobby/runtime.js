@@ -221,18 +221,17 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	acts.KickMember = function(user_id)
 	{
         this.socket.kick_user(user_id);
-	};
-	acts.GetRoomStorage = function(key)
-	{
-        this._branch.get_room_storage_data(key, this, this.on_room_storage);
-	};      
+	};  
 	acts.EnterLayout = function()
 	{        
 	};    
-	acts.JoinGame = function(game_url, room_id, user_name)
+	acts.JoinGame = function(game_url, room_id, user_name, is_new_window)
 	{        
-	    var url = game_url+"?"+"room_id="+room_id+"&"+"user_name="+user_name;
-	    window.location = url;
+	    var uri = game_url+"?"+"room_id="+encodeURI(room_id)+"&"+"user_name="+encodeURI(user_name);
+        if (is_new_window == 0)
+	        window.location = uri;
+        else
+            window.open(uri);
 	};    	 	
 	//////////////////////////////////////
 	// Expressions    
@@ -295,7 +294,6 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         this.port = "";
         this.user_id = -1;    
         this.users_list = new cr.plugins_.Rex_Bottleneck_Lobby.UsersList();
-        this.room_storage_data = {};
         this.send_queue = [];
         this.received_quue = new cr.plugins_.Rex_Bottleneck_Lobby.PKGQueue(this);
         this.trigger_user_info = [0,""];
@@ -344,11 +342,10 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		var runtime = plugin.runtime;
         socket["on"]('connect', function () {
             socket["emit"]('user.initialize', login_info,
-                function (init_info) {             
+                function (init_info) {             				
                     instance.received_quue.set_sn(init_info["pkg_id"]);
                     instance.user_id = init_info["user_id"];
                     instance.users_list.set_users_list(init_info["user_info_list"]);
-                    instance.room_storage_data = init_info["room_data"];
                     instance.is_connection = true; 
                     plugin.gamerooms_list.set_list(init_info["avaiable_gamerooms"]);
                     instance.trigger_user_info = [instance.user_id, instance.user_name];	
@@ -464,15 +461,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
                 user_id = this.users_list.get_id(user_id);
 			socket["emit"]('room.kick_user', user_id);
         }
-	};     
-	SocketIOKlassProto.set_room_storage_data = function(key, data)
-	{
-		var socket = this.socket;
-		if(socket)
-        {
-			socket["emit"]('room.storage.set', key, data);
-        }
-	};    
+	};      
 	SocketIOKlassProto.start_of_layout = function()
 	{
 		var socket = this.socket;
@@ -522,14 +511,6 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	{
         return (this.get_my_user_id() == (this.get_userID_list()[0]));
 	}; 
-    BranchKlassProto.set_room_storage_data = function(key, data)
-	{
-        this.socket.set_room_storage_data(key, data);
-	};
-    BranchKlassProto.get_room_storage_data = function(key)
-	{
-        return this.socket.room_storage_data[key];
-	};    
     
     // package queue for sync
     cr.plugins_.Rex_Bottleneck_Lobby.PKGQueue = function(thisArgs)
@@ -683,7 +664,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
     };
     AvaiableRoomListProto.add = function(room_info)
     { 
-        this.rooms.append(room_info);
+        this.rooms.push(room_info);
     };  
     AvaiableRoomListProto.remove = function(room_info)
     { 
