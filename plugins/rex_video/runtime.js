@@ -44,15 +44,22 @@ cr.plugins_.Rex_Video = function(runtime)
 	// called whenever an instance is created
 	instanceProto.onCreate = function()
 	{
+		// Not supported in directCanvas
+		if (this.runtime.isDomFree)
+			return;
+            
         this.elem = document.createElement("video");
-        this.elem.src = this.properties[0];      
+        var source = document.createElement('source');
+        this.elem.appendChild(source);
+        source.src = this.properties[0]; 
+        //this.elem.src = this.properties[0];      
         this.elem.poster = this.properties[1];            
         this.elem.autoplay = (this.properties[2]==1); 
         this.elem.controls = (this.properties[3]==1);   
         this.elem.preload = ["auto","metadata","none"][this.properties[4]];
         this.elem.loop = (this.properties[5]==1);  
-        this.elem.muted = (this.properties[6]==1);          
-        jQuery(this.elem).appendTo("body");
+        this.elem.muted = (this.properties[6]==1);
+        jQuery(this.elem).appendTo(this.runtime.canvasdiv ? this.runtime.canvasdiv : "body");
         
         this._pre_ended = false;
 
@@ -63,6 +70,9 @@ cr.plugins_.Rex_Video = function(runtime)
 	
 	instanceProto.onDestroy = function ()
 	{
+		if (this.runtime.isDomFree)
+			return;
+            
 		jQuery(this.elem).remove();
 		this.elem = null;
 	};
