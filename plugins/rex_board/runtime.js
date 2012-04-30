@@ -45,8 +45,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.check_name = "BOARD";
 	    this.board = [];
 	    this.reset_board(this.properties[0]-1,
-	                     this.properties[1]-1,
-	                     this.properties[2]-1);
+	                     this.properties[1]-1);
 	                     
         this.layout = null;
         
@@ -71,30 +70,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.remove_item(inst.uid);
     };
     
-	instanceProto.reset_board = function(x_max, y_max, z_max)
+	instanceProto.reset_board = function(x_max, y_max)
 	{
 	    if (x_max>=0)
 	        this.x_max = x_max;
 	    if (y_max>=0)    
 	        this.y_max = y_max;
-	    if (z_max>=0)
-	        this.z_max = z_max;
 	    
 		this.board.length = x_max;
-		var x, y, z;
+		var x, y;
 		for (x=0;x<=x_max;x++)
 		{
 		    this.board[x] = [];
 		    this.board[x].length = y_max;
 		    for(y=0;y<=y_max;y++)
-		    {
-		        this.board[x][y] = [];
-		        this.board[x][y].length = z_max;
-		        for(z=0;z<=z_max;z++)
-		        {
-		            this.board[x][y][z] = null;
-		        }
-		    }
+		        this.board[x][y] = {};
 		}
 		
 		this.items = {};
@@ -103,8 +93,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	instanceProto.is_inside_board = function (x,y,z)
 	{
-	    return ((x>=0) && (y>=0) && (z>=0) &&
-	            (x<=this.x_max) && (y<=this.y_max) && (z<=this.z_max));
+	    var is_in_board = (x>=0) && (y>=0) && (x<=this.x_max) && (y<=this.y_max);
+	    if (is_in_board && (z != null))
+	        is_in_board = (z in this.board[x][y]);
+	    return is_in_board;
 	};	
 	
 	var _get_uid = function(objs)
@@ -146,7 +138,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	instanceProto.add_item = function(inst, _x, _y, _z)
 	{            
         // inst could be instance(object) or uid(number)
-        if ((inst == null) || (!this.is_inside_board(_x, _y, _z)))
+        if ((inst == null) || (!this.is_inside_board(_x, _y)))
             return;
         
         var is_inst = (typeof(inst) != "number");
@@ -157,6 +149,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         if (is_inst)
             this._insts[uid] = inst;
+            
+        this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnCollided, this);                                           
 	};
     
 	instanceProto.remove_item = function(uid)
@@ -169,7 +163,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return;
 
         delete this.items[uid];
-        this.board[_xyz.x][_xyz.y][_xyz.z] = null;
+        delete this.board[_xyz.x][_xyz.y][_xyz.z];
         delete this._insts[uid];
 	};
 	instanceProto.move_item = function(chess_uid, target_x, target_y, target_z)
@@ -177,11 +171,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.remove_item(chess_uid);   
         this.add_item(chess_uid, target_x, target_y, target_z); 
 	}; 
+	
 	instanceProto.xyz2uid = function(x, y, z)
 	{
 	    return (this.is_inside_board(x, y, z))? this.board[x][y][z]:null;
 	};
 	
+	instanceProto.xy2zhash = function(x, y)
+	{
+	    return (this.is_inside_board(x, y))? this.board[x][y]:null;
+	};
+		
 	instanceProto.uid2xyz = function(uid)
 	{
 	    return this.items[uid];
@@ -194,12 +194,84 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     
 	instanceProto.CreateChess = function(obj_type,x,y,z,_layer)
 	{
-        if ((obj_type ==null) || (this.layout == null) || (!this.is_inside_board(x,y,0)))
+        if ( (obj_type ==null) || (this.layout == null) || 
+             ((z != 0) && (!this.is_inside_board(x,y,0)))   )
             return;
             
         var obj = this.CreateItem(obj_type,x,y,_layer);
 	    this.add_item(obj,x,y,z);  
 	    return obj;
+	};	
+
+	instanceProto._overlap_test = function(_objA, _objB)
+	{
+	    var _insts_A = _objA.getCurrentSol().getObjects();
+	    var _insts_B = _objB.getCurrentSol().getObjects();
+        var objA, objB, insts_A, insts_B;
+        if (_insts_A.length > _insts_B.length)
+        {
+            objA = _objB;
+            objB = _objA;
+            insts_A = _insts_B;
+            insts_B = _insts_A;
+        }
+        else
+        {
+            objA = _objA;
+            objB = _objB;
+            insts_A = _insts_A;
+            insts_B = _insts_B;        
+        }
+        
+	    var runtime = this.runtime;
+	    var current_event = runtime.getCurrentEventStack().current_event;     
+        var is_the_same_type = (objA === objB);          
+        var cnt_instA = insts_A.length;     
+        var i, z, inst_A, uid_A, xyz_A, z_hash, tmp_inst, tmp_uid;
+        var cursol_A, cursol_B;
+        for (i=0; i<cnt_instA; i++)
+        {
+            inst_A = insts_A[i];
+            uid_A = inst_A.uid;
+            xyz_A = this.uid2xyz(uid_A);
+            if (xyz_A == null)
+                continue;
+                
+            var z_hash = this.xy2zhash(xyz_A.x, xyz_A.y);
+            for (z in z_hash)
+            {
+                tmp_uid = z_hash[z];
+                if (tmp_uid == uid_A)
+                    continue;
+                tmp_inst = this.uid2inst(tmp_uid);                
+                if (insts_B.indexOf(tmp_inst) != (-1))
+                {
+                    runtime.pushCopySol(current_event.solModifiers);
+                    cursol_A = objA.getCurrentSol();
+                    cursol_B = objB.getCurrentSol();
+                    cursol_A.select_all = false;
+                    cursol_B.select_all = false;
+                    // If ltype === rtype, it's the same object (e.g. Sprite collides with Sprite)
+                    // In which case, pick both instances                                        
+                    if (is_the_same_type) 
+                    {
+                        // just use lsol, is same reference as rsol
+                        cursol_A.instances.length = 2;
+				        cursol_A.instances[0] = inst_A;
+                        cursol_A.instances[1] = tmp_inst;
+                    }
+                    else   // Pick each instance in its respective SOL
+                    {
+                        cursol_A.instances.length = 1;
+				        cursol_A.instances[0] = inst_A;     
+                        cursol_B.instances.length = 1;
+				        cursol_B.instances[0] = tmp_inst; 				                           
+                    }
+                    current_event.retrigger();
+                    runtime.popSol(current_event.solModifiers);   
+                }
+            }
+        }
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -209,7 +281,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	cnds.IsEmpty = function (_x,_y,_z)
 	{
 		return (this.board[_x][_y][_z] == null);
-	}; 	
+	}; 
+	
+	cnds.OnCollided = function (objA, objB)
+	{
+	    this._overlap_test(objA, objB);
+		// We've aleady run the event by now.
+		return false;
+	};
+	
+	cnds.IsOverlapping = function (objA, objB)
+	{
+	    this._overlap_test(objA, objB);
+		// We've aleady run the event by now.
+		return false;
+	};	 		
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};

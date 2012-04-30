@@ -18,15 +18,24 @@
 // Conditions
 AddNumberParam("Logic X", "The X index (0-based).", 0);
 AddNumberParam("Logic Y", "The Y index (0-based).", 0);
-AddNumberParam("Logic Z", "The Z index (0-based).", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based).", 0);
 AddCondition(5, 0, "Empty", "Board", 
              "Cell [<i>{0}</i>,<i>{1}</i>,<i>{2}</i>] is empty", "Testing if cell is empty.", "IsEmpty");
+AddObjectParam("Chess", "Chess object A.");
+AddObjectParam("Chess", "Chess object B.");             
+AddCondition(6, cf_trigger, "On collision", "Collisions", 
+            "On <i>{0}</i> collided with <i>{1}</i>", "Triggered when the object collides with another object.", "OnCollided");
+AddObjectParam("Chess", "Chess object A.");
+AddObjectParam("Chess", "Chess object B.");             
+AddCondition(7, 0, "Is overlapping", "Collisions", 
+            "Is <i>{0}</i> overlapping with <i>{1}</i>", "Test if the object is overlapping another object.", "IsOverlapping");
+
              
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
 AddNumberParam("Y", "Initial number of elements on the Y axis. 0 is unchanged.", 0);
-AddNumberParam("Z", "Initial number of elements on the Z axis. 0 is unchanged.", 0)
+AddAnyTypeParam("Z", "Initial number of elements on the Z axis. 0 is unchanged.", 0)
 AddAction(0, 0, "Reset board", "Board", "Reset board with width to <i>{0}</i>, height to <i>{1}</i>, depth to <i>{2}</i>", 
           "Reset board to empty.", "ResetBoard"); 
 AddObjectParam("Tile", "Tile object.");         
@@ -37,7 +46,7 @@ AddAction(1, 0, "Add tile", "Logic: Add", "Add tile <i>{0}</i> to [<i>{1}</i>, <
 AddObjectParam("Chess", "Chess object.");   
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(3, 0, "Add chess", "Logic: Add", "Add chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess");  
 AddObjectParam("Chess", "Chess object.");
@@ -59,14 +68,14 @@ AddAction(8, 0, "Move chess by UID", "Logic: Move",
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(9, 0, "Move chess to xyz", "Logic: Move", 
           "Move chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Move chess on the board.", "MoveChess2Index");  
 AddNumberParam("Chess UID", "The UID of chess", 0);
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(10, 0, "Move chess to xyz by UID", "Logic: Move", 
           "Move chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Move chess to xyz index by UID on the board.", "MoveChess2Index");              
@@ -83,7 +92,7 @@ AddAction(12, 0, "Create tile", "Physical: Create", "Create tile <i>{0}</i> to [
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(14, 0, "Create chess", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>", 
           "Create chess on the board.", "CreateChess");  
@@ -99,17 +108,17 @@ AddExpression(2, ef_return_number | ef_variadic_parameters,
               "Get Y index of selected chess", "Chess", "UID2LY", 
               "Get Y index of selected chess by UID.");
 AddNumberParam("UID", "The UID of instance.", 0);              
-AddExpression(3, ef_return_number | ef_variadic_parameters, 
+AddExpression(3, ef_return_any | ef_variadic_parameters, 
               "Get Z index of selected chess", "Chess", "UID2LZ", 
               "Get Z index of selected chess by UID.");
 AddNumberParam("X", "The logic X.", 0);
 AddNumberParam("Y", "The logic Y.", 0);           
-AddNumberParam("Z", "The logic Z.", 0);   
+AddAnyTypeParam("Z", "The logic Z.", 0);   
 AddExpression(4, ef_return_number | ef_variadic_parameters,
               "Get UID by XYZ", "Chess", "LXYZ2UID",
               "Get UID by XYZ index.");
 AddNumberParam("UID", "The UID of instance.", 0);
-AddNumberParam("Z", "The logic Z.", 0);            
+AddAnyTypeParam("Z", "The logic Z.", 0);            
 AddExpression(5, ef_return_number | ef_variadic_parameters,
               "Get UID by UID and Z", "Chess", "LZ2UID",
               "Get UID by relative UID and Z.");
