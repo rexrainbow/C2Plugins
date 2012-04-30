@@ -111,28 +111,33 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.exp_BlockerUID = (-1);
         this.exp_DestinationLX = target_x;
         this.exp_DestinationLY = target_y;
+        
+        if (!this.board.is_inside_board(target_x, target_y))  // tile does not exist
+            return null;        
+            
         var _target_uid = this.board.xyz2uid(target_x, target_y, target_z);
         if (_target_uid == null)  // no overlap at the same z
         {
-            var z_max = this.board.z_max;
+            // find out if neighbors have solid property
+            var z_hash = this.board.xy2zhash(target_x, target_y);
             var z;
-            for (z=0; z<=z_max; z++)    // find out if neighbors have solid property
+            if (!(0 in z_hash))  // tile does not exist
+                return null;                
+            for (z in z_hash)
             {
-                _target_uid = this.board.xyz2uid(target_x, target_y, z);
-                if ((z==0) && (_target_uid == null))  // tile does not exist
-                    return null;
-                else if ((_target_uid != null) && _solid_get(this.board.uid2inst(_target_uid)))  // solid
+                _target_uid = z_hash[z];
+                if (_solid_get(this.board.uid2inst(_target_uid)))  // solid
                 {
                     this.exp_BlockerUID = _target_uid;
-                    return (-1);
+                    return (-1);  // blocked
                 }
-            }           
+            }       
             return 1; // can move to target
         }
         else    
         {
             this.exp_BlockerUID = _target_uid;      
-            return (-1);
+            return (-1);  // blocked
         }
     };
     behinstProto._move_to_target = function (target_x, target_y, target_z)
