@@ -60,6 +60,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 										
 		this.runtime.addDestroyCallback(this.myDestroyCallback);     	    
 	};
+	cr.plugins_.Rex_gInstGroup._random_gen = null;  // random generator for Shuffing
 	
 	instanceProto.onDestroy = function ()
 	{
@@ -421,7 +422,14 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         this._pop_one_instance(name, index, objtype, is_pop);  
 	};		
 	
-    
+    acts.SetRandomGenerator = function (random_gen_objs)
+	{
+        var random_gen = random_gen_objs.instances[0];
+        if (random_gen.check_name == "RANDOM")
+            cr.plugins_.Rex_gInstGroup._random_gen = random_gen;        
+        else
+            alert ("[Instance group] This object is not a random generator object.");
+	};  
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
@@ -624,11 +632,14 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 		
 	var _shuffle = function (arr)
 	{
-        var i = arr.length, j, temp;
+        var i = arr.length, j, temp, random_value;
+		var random_gen = cr.plugins_.Rex_gInstGroup._random_gen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
-            j = Math.floor( Math.random() * (i+1) );
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
+            j = Math.floor( random_value * (i+1) );
             temp = arr[i]; 
             arr[i] = arr[j]; 
             arr[j] = temp;

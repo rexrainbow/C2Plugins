@@ -46,7 +46,6 @@ AddComboParam("Operation", "Get or pop", 1);
 AddCondition(6, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
              "Get or pop one instance from group.", "PopInstance");             
 
-
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Name", "Group name.", '""');
@@ -146,7 +145,10 @@ AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
 AddAction(22, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
           "Get or pop one instance from group.", "PopInstance");
-          
+AddObjectParam("Random generator", "Random generator object");
+AddAction(23, 0, "Set random generator", "Setup", 
+          "Set random generator object to <i>{0}</i>", 
+          "Set random generator object.", "SetRandomGenerator"); 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

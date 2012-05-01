@@ -19,9 +19,9 @@
 
 //////////////////////////////////////////////////////////////
 // Actions     
-AddNumberParam("Seed", "Set seed", 0);
-AddAction(2, 0, "Create", "Random generator", "Create a random value generator with a seed to <i>{0}</i>", 
-          "Create a random value generator with a seed.", "SetSeed");
+AddNumberParam("Seed", "Seed.", 0);
+AddAction(2, 0, "Set seed", "Seed", "Set seed to <i>{0}</i>", 
+          "Set seed.", "SetSeed");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_number, 
