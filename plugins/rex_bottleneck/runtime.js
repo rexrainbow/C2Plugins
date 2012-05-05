@@ -45,6 +45,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.channel_url = this.properties[0];
         this.game_name = this.properties[1];    
         this.game_description = this.properties[2];
+		this.max_users_cnt = this.properties[3];
         this.ext_setting = this._get_ext_setting();         
         this.socket = new cr.plugins_.Rex_Bottleneck.SocketIOKlass(this);
         this.branch = this.CreateBranch(this, this.on_message);
@@ -183,7 +184,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	cnds.OnRoomUnavaiable = function()
 	{
 	    return true;
-	}; 		   
+	}; 
+	
 	//////////////////////////////////////
 	// Actions    
 	pluginProto.acts = {};
@@ -198,7 +200,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	{
         this.socket.connect(this.channel_url,
                             this.game_name, room_id, user_name,
-                            this.game_description, is_public);
+                            this.max_users_cnt, this.game_description,
+							is_public);
 	};
     
 	acts.QucikConnect = function()
@@ -210,7 +213,8 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 	        var is_public = false;
             this.socket.connect(this.channel_url,
                                 this.game_name, room_id, user_name,
-                                this.game_description, is_public);
+                                this.max_users_cnt, this.game_description,
+								is_public);
         }
 	};	
 	
@@ -311,7 +315,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.users_list = new cr.plugins_.Rex_Bottleneck.UsersList();
         this.room_storage_data = {};
         this.send_queue = [];
-        this.received_quue = new cr.plugins_.Rex_Bottleneck.PKGQueue(this);
+        this.received_queue = new cr.plugins_.Rex_Bottleneck.PKGQueue(this);
         this.trigger_user_info = [0,""];
         this.is_connection = false;
 
@@ -334,15 +338,18 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         return [parseInt(msg.slice(0,comma_index)),
                 msg.slice(comma_index+1)];    
     };    
+	
     SocketIOKlassProto.connect = function(host, 
                                           room_name, room_id, user_name,
-                                          description, is_public)
+                                          max_users_cnt, description, 
+										  is_public)
     {  
        var login_info = {"src":document.location.href,
-                         "room_name":room_name,   
-                         "description": description,                              
+                         "room_name":room_name,                               
                          "room_id":room_id,
                          "user_name":user_name,
+						 "max_users_cnt":max_users_cnt,
+                         "description": description,  						 
                          "is_public":is_public};  
         
         this.is_connection = false;
@@ -361,7 +368,7 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         socket["on"]('connect', function () {
             socket["emit"]('user.initialize', login_info,
                 function (init_info) { 
-                    instance.received_quue.set_sn(init_info["pkg_id"]);
+                    instance.received_queue.set_sn(init_info["pkg_id"]);
                     instance.user_id = init_info["user_id"];
                     instance.users_list.set_users_list(init_info["user_info_list"]);
                     instance.room_storage_data = init_info["room_data"];
@@ -384,21 +391,22 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
 
         // add other events
         socket["on"]('message', function (msg) {       
-            instance.received_quue.ExeCmd(msg[0], instance.received, [msg[1]]);
+            instance.received_queue.ExeCmd(msg[0], instance.received, [msg[1]]);
         }); 
         // custom event
         socket["on"]('user.joined', function (args) {
-            instance.received_quue.ExeCmd(args[0], instance.on_user_joined, [args[1]]);
+            instance.received_queue.ExeCmd(args[0], instance.on_user_joined, [args[1]]);
         });          
         socket["on"]('user.left', function (args) {
-            instance.received_quue.ExeCmd(args[0], instance.on_user_left, [args[1]]);
+            instance.received_queue.ExeCmd(args[0], instance.on_user_left, [args[1]]);
         });         
         socket["on"]('room.syncStart', function (args) {
-            instance.received_quue.ExeCmd(args[0], instance.on_sync_start, [args[1]]);
+            instance.received_queue.ExeCmd(args[0], instance.on_sync_start, [args[1]]);
         });
         socket["on"]('room.unavaliable', function () {
             runtime.trigger(cr.plugins_.Rex_Bottleneck.prototype.cnds.OnRoomUnavaiable, plugin);
-        });        
+        });  
+
         this.socket = socket;      
     };
     
@@ -504,7 +512,11 @@ cr.plugins_.Rex_Bottleneck = function(runtime)
         this.cb_on_message = {"this":cb_this, "fn":cb_fn};
     };
     var BranchKlassProto = cr.plugins_.Rex_Bottleneck.BranchKlass.prototype; 
-    
+
+    BranchKlassProto.is_connection = function()
+	{
+		return this.socket.is_connection;
+	};	
     BranchKlassProto.send = function(data)
 	{
 		this.socket.send(this._branch_id, data);

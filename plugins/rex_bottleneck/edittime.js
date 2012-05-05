@@ -40,7 +40,7 @@ AddCondition(10, 0, "Has external setting", "Room setting",
              "Has external setting", "Reture true if it has external setting from querystring", "HasExternalSetting");
 AddCondition(11,cf_trigger,"On room unavaliable","Room","On room unavaliable",
              'Triggered when room unavaliable.',"OnRoomUnavaiable");             
-             
+           
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Address","The address (eg. URL or IP) to connect to. Supports cross-domain requests.",'"http://localhost/game"');
@@ -111,6 +111,7 @@ var property_list = [
     new cr.Property(ept_section, "Properties of game", "",	"Properties of game."),
     new cr.Property(ept_text, 'Name', 'Chat', 'Name of this game.'),    
     new cr.Property(ept_text, 'Description', '', 'Description of this game.'), 
+	new cr.Property(ept_integer, "Players", 0, "Maximun players count. 0 is infinity."),
     ];
 
 function CreateIDEObjectType()
