@@ -47,6 +47,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         this.socket = new cr.plugins_.Rex_Bottleneck_Lobby.SocketIOKlass(this);
         this._branch = this.CreateBranch(this, this.on_message);
         this.gamerooms_list = new cr.plugins_.Rex_Bottleneck_Lobby.AvaiableRoomList();
+		this.hot_game_rank = [];
         this.triggered_userID = 0;
         this.triggered_userName = "";
         this.current_data = "";    
@@ -56,7 +57,11 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         this._exp_RoomName = "";
         this._exp_RoomID = "";   
         this._exp_RoomDescription = "";
-        this._exp_RoomURL = "";             
+        this._exp_RoomURL = "";   
+		
+        this._exp_HotGameName = "";	
+        this._exp_HotGameCnt = 0;			
+        this._exp_HotGameURL = "";   		
 	};
     
     instanceProto.tick = function()
@@ -189,7 +194,32 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		}
 
 		return false;        
-	}; 		 
+	}; 	
+	
+	cnds.OnHotGameUpdated = function()
+	{
+		return true;  
+	}; 	
+		
+	cnds.ForEachHotGame = function()
+	{
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+
+        var rank_cnt = this.hot_game_rank.length;
+        var i, item;
+		for (i=0; i<rank_cnt; i++ )
+	    {
+	        item = this.hot_game_rank[i];  // [name, cnt, url]
+	        this._exp_HotGameName = item[0];
+			this._exp_HotGameCnt = item[1];
+	        this._exp_HotGameURL = item[2];
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+		return false;  
+	}; 
 	//////////////////////////////////////
 	// Actions    
 	pluginProto.acts = {};
@@ -281,7 +311,20 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	exps.MyUserID = function(ret)
 	{   
 		ret.set_int(this._branch.get_my_user_id());         
-	};    
+	}; 
+	exps.HotGameName = function(ret)
+	{
+		ret.set_string(this._exp_HotGameName);        
+	}; 
+	exps.HotGameCnt = function(ret)
+	{
+		ret.set_int(this._exp_HotGameCnt);        
+	};	
+	exps.HotGameURL = function(ret)
+	{
+		ret.set_string(this._exp_HotGameURL);        
+	}; 	
+	
 }());	
 
 (function ()
@@ -325,7 +368,8 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         var login_info = {"room_name":room_name,
                           "room_id":room_id,
                           "user_name":user_name,
-                          "is_public":is_public};
+                          "is_public":is_public,
+						  };
 
         this.is_connection = false;
         if(this.socket)
@@ -342,7 +386,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		var runtime = plugin.runtime;
         socket["on"]('connect', function () {
             socket["emit"]('user.initialize', login_info,
-                function (init_info) {             				
+                function (init_info) {                     				
                     instance.received_quue.set_sn(init_info["pkg_id"]);
                     instance.user_id = init_info["user_id"];
                     instance.users_list.set_users_list(init_info["user_info_list"]);
@@ -350,7 +394,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
                     plugin.gamerooms_list.set_list(init_info["avaiable_gamerooms"]);
                     instance.trigger_user_info = [instance.user_id, instance.user_name];	
                     // connect completed
-                    runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnConnect, plugin);
+                    runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnConnect, plugin);				
             });
         });
         socket["on"]('disconnect', function () {
@@ -386,7 +430,11 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
             plugin.gamerooms_list.remove(args);
             runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnGameroomUnavaiable, plugin);
         });            
-        
+		socket["on"]('game.hotrank', function (args) {
+		    plugin.hot_game_rank = args;
+            runtime.trigger(cr.plugins_.Rex_Bottleneck_Lobby.prototype.cnds.OnHotGameUpdated, plugin);	
+        }); 
+		
         this.socket = socket;      
     };
     

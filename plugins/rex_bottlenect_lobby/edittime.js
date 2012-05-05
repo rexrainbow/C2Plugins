@@ -42,7 +42,11 @@ AddCondition(10,cf_trigger,"On avaiable","Gameroom","On gameroom avaiable",
              'Triggered when gameroom unavaiable.',"OnGameroomUnavaiable");
 AddCondition(12, cf_looping | cf_not_invertible, "For each avaiable gameroom", "For Each", 
              "For each avaiable gameroom", "Repeat the event for each avaiable gameroom.", "ForEachGameroom");
-             
+AddCondition(13,cf_trigger,"On hot game rank updated","Game","On hot game rank updated",
+             'Triggered when hot game rank updated.',"OnHotGameUpdated");  
+AddCondition(14, cf_looping | cf_not_invertible, "For each hot game", "For Each", 
+             "For each hot game", "Repeat the event for each hot game.", "ForEachHotGame");
+			 
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Address","The address (eg. URL or IP) to connect to. Supports cross-domain requests.",'"http://localhost/game"');
@@ -94,7 +98,10 @@ AddNumberParam("UsrID","The user id.",0);
 AddExpression(15,ef_return_string | ef_variadic_parameters, 
               "Get user name from user id","Users","UsrID2Name","Get user name from user id.");
 AddExpression(16,ef_return_string,"Get my user name","My","MyUserName","Get my user name."); 
-AddExpression(17,ef_return_number,"Get my user id","My","MyUserID","Get my user id.");               
+AddExpression(17,ef_return_number,"Get my user id","My","MyUserID","Get my user id.");   
+AddExpression(18,ef_return_string,"Get name","Hot game rank","HotGameName","Get game name in hot game rank."); 
+AddExpression(19,ef_return_number,"Get count","Hot game rank","HotGameCnt","Get count in hot game rank."); 
+AddExpression(20,ef_return_string,"Get url","Hot game rank","HotGameURL","Get url in hot game rank."); 
               
 ACESDone();
 
