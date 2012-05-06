@@ -70,7 +70,7 @@ cr.plugins_.Rex_Token = function(runtime)
 	                this.index = (this.index == 0)? last_index: (this.index-1);
 	        }        
         }
-        else if (_next_index < this.player_id_list.length)
+        else if ((_next_index >= 0) && (_next_index < this.player_id_list.length))
             this.index = _next_index;
         
 	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
@@ -107,6 +107,11 @@ cr.plugins_.Rex_Token = function(runtime)
 	{
 		return (this.index == (this.player_id_list.length-1));        
 	};
+	cnds.IsCurID = function (_id)
+	{
+		return (_id == this.player_id_list[this.index]);        
+	};    
+    
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};

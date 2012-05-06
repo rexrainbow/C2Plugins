@@ -22,6 +22,11 @@ AddCondition(2, 0, "Last index", "Index",
              "Last index", "Testing if current index is the last.", "IsLast");
 AddCondition(5, cf_trigger, "On player changing", "Index", 
              "On player changing", 'Triggered when player changing by "Action:Next".', "OnIndexChanging");
+AddAnyTypeParam("ID", "Player ID", 1);
+AddCondition(7, 0, "Compare current ID", "ID", 
+             "Current state = <i>{0}</i>", 
+			 "Compare current ID.", 
+			 "IsCurID");             
                    
 //////////////////////////////////////////////////////////////
 // Actions          
@@ -91,7 +96,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Player ID list", "1,2", 'Player ID. Seprate by","'),
-    new cr.Property(ept_integer, "Initial index", (-1), "Initial index, 0 base. The next index of (-1) is 0."),
+    new cr.Property(ept_integer, "Initial index", 0, "Initial index, 0 base. The next index of (-1) is 0."),
     new cr.Property(ept_combo, "Order", "Increasing", "Order of transfering player index.", "Increasing|Decreasing"),
 	];
 	
