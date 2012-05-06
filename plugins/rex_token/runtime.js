@@ -53,23 +53,30 @@ cr.plugins_.Rex_Token = function(runtime)
             id_list_string = "["+id_list_string+"]";         
 	    this.player_id_list = JSON.parse(id_list_string);
 	};	
-	instanceProto._set_next_index = function()
+	instanceProto._set_next_index = function(_next_index)
 	{
 	    this._pre_index = this.index;
-	    var last_index = this.player_id_list.length-1;
-	    if (this.index == (-1))
-	        this.index = (this.is_inc_order)? 0: last_index;
-	    else
-	    {
-	        if (this.is_inc_order)
-	            this.index = (this.index == last_index)? 0: (this.index+1);
+        
+        if (_next_index == null)
+        {
+	        var last_index = this.player_id_list.length-1;
+	        if (this.index == (-1))
+	            this.index = (this.is_inc_order)? 0: last_index;
 	        else
-	            this.index = (this.index == 0)? last_index: (this.index-1);
-	    }
+	        {
+	            if (this.is_inc_order)
+	                this.index = (this.index == last_index)? 0: (this.index+1);
+	            else
+	                this.index = (this.index == 0)? last_index: (this.index-1);
+	        }        
+        }
+        else if (_next_index < this.player_id_list.length)
+            this.index = _next_index;
+        
 	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
 	};
 	instanceProto._set_pre_index = function()
-	{
+	{        
 	    this._pre_index = this.index;
 	    var last_index = this.player_id_list.length-1;
 	    if (this.index == (-1))
@@ -109,10 +116,9 @@ cr.plugins_.Rex_Token = function(runtime)
 	{        
 	    this._set_next_index();
 	};	
-	acts.SetIndex = function (_index)
+	acts.SetNextIndex = function (_index)
 	{        
-        if (_index < this.player_id_list.length)
-            this.index = _index;
+        this._set_next_index(_index);
 	};
 	acts.TurnOff = function ()
 	{        
@@ -154,7 +160,13 @@ cr.plugins_.Rex_Token = function(runtime)
 	acts.CleanIDList = function ()
 	{       
         this.player_id_list.length = 0;
-	};	    
+	};
+    acts.SetNextID = function (_id)
+	{        
+        var index = this.player_id_list.indexOf(_id);
+        if (index != (-1))
+            this._set_next_index(index);
+	};
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};

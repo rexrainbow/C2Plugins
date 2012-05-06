@@ -32,10 +32,10 @@ AddAction(3, 0, "Next", "Index",
           "Turn to next player", 
           "Turn to next player.", "NextIndex");
 AddNumberParam("Index", "Player index (0-based)", 0);
-AddAction(4, 0, "Set", "Index", 
+AddAction(4, 0, "Set next index", "Order", 
           "Set next player index to <i>{0}</i>", 
-          "Set next player index.", "SetIndex"); 
-AddAction(5, 0, "Turn off", "Index", 
+          "Set next player index.", "SetNextIndex"); 
+AddAction(5, 0, "Turn off", "Order", 
           "Turn off token", 
           "Turn off token.", "TurnOff");                 
 AddStringParam("ID", "Player ID string", "1,2");
@@ -57,7 +57,11 @@ AddAction(13, 0, "Switch", "ID",
           "Switch ID.", "SwitchID"); 
 AddAction(14, 0, "Clean list", "ID", 
           "Clean ID list", 
-          "Clean ID list.", "CleanIDList");           
+          "Clean ID list.", "CleanIDList");
+AddAnyTypeParam("ID", "Player ID", 1);
+AddAction(15, 0, "Set next ID", "Order", 
+          "Set next player ID to <i>{0}</i>", 
+          "Set next player ID.", "SetNextID");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number,
