@@ -74,7 +74,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);            
         var behavior_inst = inst.behavior_insts[this.behavior_index];
-        behavior_inst._mem = jQuery.extend({}, custom_data);
+        behavior_inst._mem = hash_copy(custom_data);
         this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnRevive, inst); 
 	};
 	/////////////////////////////////////
@@ -111,7 +111,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnDestroy, this.inst);             
         var inst = this.inst;
         var args;
-        var custom_data = jQuery.extend({}, this._mem);
+        var custom_data = hash_copy(this._mem);
         if (this._revive_at == 1)
         {
             args = [custom_data, 
@@ -132,6 +132,16 @@ cr.behaviors.Rex_Revive = function(runtime)
 	behinstProto.tick = function ()
 	{
 	};
+    
+    var hash_copy = function (obj_in, obj_src)
+    {
+        var obj_out = (obj_src == null)? {}:obj_src;
+        var key;
+        for (key in obj_in)
+            obj_out[key] = obj_in[key];
+            
+        return obj_out;
+    };
 
 	//////////////////////////////////////
 	// Conditions

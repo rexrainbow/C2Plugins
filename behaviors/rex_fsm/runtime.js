@@ -60,7 +60,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 		var mem = this.properties[3];
         try
         {
-            mem = (mem!="")? jQuery.parseJSON(mem):{};      
+            mem = (mem!="")? JSON.parse(mem):{};      
         }
         catch(err)
         {

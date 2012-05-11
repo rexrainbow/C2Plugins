@@ -96,7 +96,7 @@ cr.behaviors.Rex_Shell = function(runtime)
 		// initial memory
 		var mem = this.properties[2];
         try
-        { mem = (mem!="")? jQuery.parseJSON(mem):{}; }
+        { mem = (mem!="")? JSON.parse(mem):{}; }
         catch(err)
         { alert(err); mem = {}; }
         this.shell_obj = new cr.behaviors.Rex_Shell.ShellKlass(this,
