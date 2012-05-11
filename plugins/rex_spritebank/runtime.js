@@ -97,7 +97,7 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
             sol.instances.push(inst);
             sol.select_all = false;
             this.callback.ExecuteCommands(cb_cmd);
-            save_obj["custom_data"] = jQuery.extend({}, this.callback.GetReturns());
+            save_obj["custom_data"] = hash_copy(this.callback.GetReturns());
         }
 	};
     
@@ -215,6 +215,16 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 	{
         this._banks = JSON.parse(JSON_string);
 	};
+    
+    var hash_copy = function (obj_in, obj_src)
+    {
+        var obj_out = (obj_src == null)? {}:obj_src;
+        var key;
+        for (key in obj_in)
+            obj_out[key] = obj_in[key];
+            
+        return obj_out;
+    };    
     
 	//////////////////////////////////////
 	// Conditions

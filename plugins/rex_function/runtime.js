@@ -92,7 +92,7 @@ cr.plugins_.Rex_Function = function(runtime)
 	instanceProto.AddParams = function(param)
 	{
         if (param)
-            jQuery.extend(this.fnObj["param"], param);
+            this.fnObj["param"] = this.hash_copy(param, this.fnObj["param"]);
 	};  
     
 	instanceProto.GetReturns = function()
@@ -105,6 +105,16 @@ cr.plugins_.Rex_Function = function(runtime)
         var args = (typeof _args === "string")? arguments:_args;
         return this.fnObj["_ExeCmd"](args);
 	};    
+   
+    instanceProto.hash_copy = function (obj_in, obj_src)
+    {
+        var obj_out = (obj_src == null)? {}:obj_src;
+        var key;
+        for (key in obj_in)
+            obj_out[key] = obj_in[key];
+            
+        return obj_out;
+    }; 
         
 
     // copy from    
@@ -200,7 +210,7 @@ cr.plugins_.Rex_Function = function(runtime)
         var key;
         for (key in hash_table)
             delete hash_table[key];
-	};      
+	}; 
     
 	//////////////////////////////////////
 	// Conditions
@@ -362,9 +372,9 @@ cr.plugins_.Rex_Function = function(runtime)
 	}; 
     
 	FunctionKlassProto["_CallFn"] = function(name, args)
-	{    
+	{   
         if (args)
-            jQuery.extend(this["param"], args);
+            this["param"] = this["plugin"].hash_copy(args, this["param"]);
         
         this["is_echo"] = false;
         

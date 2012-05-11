@@ -520,12 +520,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
 	GroupKlassProto.Copy = function(group)
 	{
-		this._set = jQuery.extend({}, group._set);
+		this._set = hash_copy(group._set);
         this._list.length =0;
         var uid;
         for (uid in this._set)
             this._list.push(parseInt(uid));
 	};
+    
+    var hash_copy = function (obj_in, obj_src)
+    {
+        var obj_out = (obj_src == null)? {}:obj_src;
+        var key;
+        for (key in obj_in)
+            obj_out[key] = obj_in[key];
+            
+        return obj_out;
+    };      
 	
 	GroupKlassProto.SetByUIDList = function(uid_list)
 	{
