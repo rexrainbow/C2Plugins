@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Touch direction",
+		"name":			"Touch direction2",
 		"id":			"Rex_TouchDirection2",
 		"description":	"Move sprite with mouse or touch moving",
 		"author":		"Rex.Rainbow",

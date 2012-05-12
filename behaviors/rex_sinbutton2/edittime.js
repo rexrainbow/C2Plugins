@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Sin button",
+		"name":			"Sin button2",
 		"id":			"Rex_SinButton2",
 		"description":	"Active sin behavior when cursor is overed",
 		"author":		"Rex.Rainbow",

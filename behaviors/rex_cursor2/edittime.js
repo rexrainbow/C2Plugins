@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Cursor",
+		"name":			"Cursor2",
 		"id":			"Rex_Cursor2",
 		"version":		"1.0",        
 		"description":	"Move Sprite to cursor of mouse",

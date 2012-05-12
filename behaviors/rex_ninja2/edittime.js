@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Ninja",
+		"name":			"Ninja2",
 		"id":			"Rex_Ninja2",
 		"version":		"1.0",        
 		"description":	"Set sprite visiable when cursor is overed",
