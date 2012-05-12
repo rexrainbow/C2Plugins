@@ -1,0 +1,44 @@
+1. API of Touch wrap plugin 
+   for exporting to other plugins/behaviors
+- touchwrap.HookMe(obj)  
+  :: hook plugins to get triggers. Plugins need to implement
+     - OnTouchStart()
+     - OnTouchEnd()
+- touchwrap.UseMouseInput()
+  :: is using mouse input     
+- touchwrap.IsInTouch()
+  :: IsInTouch test 
+- touchwrap.OnTouchObject(type)
+  :: OnTouchObject test  
+- touchwrap.IsTouchingObject(type)
+  :: IsTouchingObject test   
+- touchwrap.OrientationSupported()
+  :: OrientationSupported test     
+- touchwrap.MotionSupported()
+  :: MotionSupported test
+- touchwrap.GetX(layerparam)
+  :: get layer position of X  
+- touchwrap.GetY(layerparam)
+  :: get layer position of Y    
+- touchwrap.GetAbsoluteX()
+  :: get absolute position of X  
+- touchwrap.GetAbsoluteY()
+  :: get absolute position of Y
+- touchwrap.GetAlpha()
+  :: get alpha
+- touchwrap.GetBeta()
+  :: get beta
+- touchwrap.GetGamma()
+  :: get gamma
+- touchwrap.GetAccelerationXWithG()
+  :: get acceleration X with G
+- touchwrap.GetAccelerationYWithG()
+  :: get acceleration Y with G  
+- touchwrap.GetAccelerationZWithG()
+  :: get acceleration Z with G   
+- touchwrap.GetAccelerationX()
+  :: get acceleration X
+- touchwrap.GetAccelerationY()
+  :: get acceleration Y 
+- touchwrap.GetAccelerationZ()
+  :: get acceleration Z
