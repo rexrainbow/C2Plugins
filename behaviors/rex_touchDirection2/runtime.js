@@ -156,7 +156,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         }
         this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoving, inst);
                                 
-        if ( this.type._is_release(this.mouse_buton) )
+        if ( this.type._is_release() )
         {
             this.is_on_moving = false;
             this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoveStop, inst); 
