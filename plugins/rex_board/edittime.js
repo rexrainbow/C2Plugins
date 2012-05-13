@@ -152,7 +152,6 @@ ACESDone();
 var property_list = [
 		new cr.Property(ept_integer, "Width", 64, "Initial number of elements on the X axis."),
 		new cr.Property(ept_integer, "Height", 64, "Initial number of elements on the Y axis."),
-		new cr.Property(ept_integer, "Depth", 2, "Initial number of elements on the Z axis."), 
 	];
 	
 // Called by IDE when a new object type is to be created
