@@ -146,7 +146,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         if (can_move == 1)
         {
             // can move to neighbor
-            this.board.move_item(this.inst.uid, target_x, target_y, target_z);
+            this.board.move_item(this.inst, target_x, target_y, target_z);
             // set moveTo
             var layout = this.board.layout;
             this._cmd_move_to._set_target_pos(layout.GetX(target_x, target_y), 
