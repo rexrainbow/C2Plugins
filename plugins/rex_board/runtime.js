@@ -136,7 +136,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};
     
 	instanceProto.add_item = function(inst, _x, _y, _z)
-	{            
+	{                
         // inst could be instance(object) or uid(number)
         if ((inst == null) || (!this.is_inside_board(_x, _y)))
             return;
@@ -154,7 +154,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};
     
 	instanceProto.remove_item = function(uid)
-	{    
+	{        
         if (uid == null)
             return;
 	    
@@ -166,10 +166,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         delete this.board[_xyz.x][_xyz.y][_xyz.z];
         delete this._insts[uid];
 	};
-	instanceProto.move_item = function(chess_uid, target_x, target_y, target_z)
-	{    
-	    this.remove_item(chess_uid);   
-        this.add_item(chess_uid, target_x, target_y, target_z); 
+	instanceProto.move_item = function(chess_inst, target_x, target_y, target_z)
+	{
+        if (typeof(chess_inst) == "number")    // uid
+            chess_inst = this.uid2inst(chess_inst);
+        if (chess_inst == null)
+            return;        
+	    this.remove_item(chess_inst.uid);   
+        this.add_item(chess_inst, target_x, target_y, target_z); 
 	}; 
 	
 	instanceProto.xyz2uid = function(x, y, z)
