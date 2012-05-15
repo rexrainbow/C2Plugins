@@ -164,9 +164,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	behinstProto.onCreate = function()
 	{   
-        this.activated = this.properties[0]; 
-        this.dragButton = this.properties[1]; 
-        this.move_axis = this.properties[2];  
+        this.activated = this.properties[0];  
+        this.move_axis = this.properties[1];  
 	};
 
 	behinstProto.tick = function ()
