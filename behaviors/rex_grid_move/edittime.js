@@ -29,7 +29,26 @@ AddCondition(6,	0, "Moving accepted", "Request", "Is {my} moving request accepte
 AddNumberParam("X offset", "Relatived X offset.",0);
 AddNumberParam("Y offset", "Relatived Y offset.",0);
 AddCondition(7,	0, "Can move to", "Test", "{my} can move to offset [<i>{0}</i>, <i>{1}</i>]", 
-             "Test if object can move to relatived offset target.", "TestMoveToOffset");  
+             "Test if object can move to relatived offset target.", "TestMoveToOffset");
+AddNumberParam("Direction", "The direction of neighbor.", 0);		  
+AddCondition(8, 0, "Can move to neighbor", "Request", "{my} move to direction <i>{0}</i>", 
+          "Test if object can move to neighbor.", "TestMoveToNeighbor");              
+AddComboParamOption("Right");		  
+AddComboParamOption("Down");
+AddComboParamOption("Left");
+AddComboParamOption("Up");
+AddComboParam("Direction", "Moving direction.", 0);              
+AddCondition(9,	0, "Can move to neighbor", "Test: Square grid", "{my} can move to <i>{0}</i>", 
+             "Test if object can move to neighbor.", "TestMoveToNeighbor");   
+AddComboParamOption("Right");
+AddComboParamOption("Down-right");	  
+AddComboParamOption("Down-left");	 
+AddComboParamOption("Left");
+AddComboParamOption("Up-left");
+AddComboParamOption("Up-right");
+AddComboParam("Direction", "Moving direction.", 0);             
+AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid", "{my} can move to <i>{0}</i>", 
+             "Test if object can move to neighbor.", "TestMoveToNeighbor");                     
 
 //////////////////////////////////////////////////////////////
 // Actions

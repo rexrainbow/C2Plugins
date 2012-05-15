@@ -208,6 +208,18 @@ cr.behaviors.Rex_GridMove = function(runtime)
 
         var can_move = this._test_move_to(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
 		return (can_move==1);
+	};
+    cnds.TestMoveToNeighbor = function (dir)
+	{
+		var _xyz = this._xyz_get();
+		if (_xyz == null)
+		    return false;
+
+        var _board = this._board_get();
+        var can_move = this._test_move_to(_board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
+		                                  _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
+							              _xyz.z);	    
+		return (can_move==1);			 
 	};			
 	//////////////////////////////////////
 	// Actions
@@ -243,28 +255,27 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
 	acts.MoveToNeighbor = function (dir)
 	{
-        this.exp_Direction = dir;
-	    if (this._cmd_move_to.activated)
-		{
-		    var _board = this._board_get();
-			if (_board != null)
-			{
-	            var _xyz = this._xyz_get();
-		        this._move_to_target(_board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
-				                     _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
-									 _xyz.z);
-	        }
-        }
+	    if (!this._cmd_move_to.activated)
+	        return;
+	        
+        this.exp_Direction = dir;	    
+	    var _xyz = this._xyz_get();
+        if (_xyz == null)
+            return;
+        var _board = this._board_get();		        
+        this._move_to_target(_board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
+                             _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
+        					 _xyz.z);
 	};
 	
 	acts.MoveToOffset = function (dx, dy)
 	{
-	    if (this._cmd_move_to.activated)
-		{
-		    var _xyz = this._xyz_get();
-			if (_xyz != null)
-		        this._move_to_target(_xyz.x+dx, _xyz.y+dy, _xyz.z);
-	    }
+	    if (!this._cmd_move_to.activated)
+	        return;
+	        
+		var _xyz = this._xyz_get();
+		if (_xyz != null)
+		    this._move_to_target(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
 	};    
 	
 	//////////////////////////////////////
