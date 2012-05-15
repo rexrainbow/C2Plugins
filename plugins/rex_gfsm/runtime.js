@@ -263,7 +263,11 @@ cr.plugins_.Rex_FSM = function(runtime)
 	cnds.IsCurState = function (name)
 	{
 		return (this.fsm["CurState"] == name);
-	};    
+	};
+	cnds.CmpMemValue = function (index, cmp, val)
+	{
+		return cr.do_cmp(this.fsm["Mem"][index], cmp, val);
+	};
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
