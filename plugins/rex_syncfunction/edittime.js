@@ -18,7 +18,9 @@
 // Conditions
 AddCondition(0,0,"Network mode","Network mode","Is network mode","True if sync-mode is network mode.","IsNetworkMode");
 AddCondition(1,0,"My command","My","Is my command","True if current command is sent by myself.","IsMyCommand");
-
+AddCondition(8, 0, "Room moderator", "Room management", 
+             "I am room moderator", "Reture true if I am room moderator", "AmIRoomModerator");
+             
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Network", "Network object for synchronization");

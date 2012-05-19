@@ -79,7 +79,12 @@ cr.plugins_.Rex_SyncFn = function(runtime)
     cnds.IsMyCommand = function()
 	{
 		return (this.branch.get_my_user_id() == this.user_id);
-	};    
+	};   
+    
+	cnds.AmIRoomModerator = function()
+	{
+		return (this.sync_mode)? this.branch.am_I_room_moderator():true;
+	};     
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
