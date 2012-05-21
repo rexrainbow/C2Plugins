@@ -240,7 +240,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
         
             
         this.check_name = "TOUCHWRAP";
-		this._is_touch_mode = (!this.useMouseInput);
+		this._is_mouse_mode = false;
         this._plugins_hook = [];
 	};
 
@@ -261,7 +261,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		// Trigger OnTouchStart
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchStart, this);  
-		this._is_touch_mode = true;
         var i, cnt=this._plugins_hook.length;        
         for (i=0;i<cnt;i++)
             this._plugins_hook[i].OnTouchStart();
@@ -302,6 +301,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onMouseDown = function(info)
 	{
+        this._is_mouse_mode = true;
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -351,7 +351,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.IsInTouch = function ()
 	{
-		return (this._is_touch_mode)?  this.touches.length:this.mouseDown;
+		return (this._is_mouse_mode)?  (this.mouseDown):this.touches.length;
 	};    
     
 	instanceProto.OnTouchObject = function (type)
