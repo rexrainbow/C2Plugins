@@ -44,6 +44,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Directions", "8 directions", "The number of directions of movement available.", "Up & down|Left & right|4 directions|8 directions"),
+    new cr.Property(ept_float, "Sensitivity", 10, "Sensitivity of touch movment, in pixel."),    
 	];
 	
 // Called by IDE when a new object type is to be created
@@ -100,4 +101,7 @@ IDEInstance.prototype.Draw = function(renderer)
 // Don't worry about releasing them - the renderer will free them - just null out references.
 IDEInstance.prototype.OnRendererReleased = function()
 {
+	if (this.properties["Sensitivity"] < 0)
+		this.properties["Sensitivity"] = 1;
+		
 }

@@ -42,6 +42,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this._directions = this.properties[0]; 
+        this._sensitivity = this.properties[1]; 
         this.runtime.tickMe(this);
      
         this.setup_stage = true;
@@ -139,7 +140,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         var cur_y = this.get_touch_y();
         var dx = cur_x - this.pre_x;
         var dy = cur_y - this.pre_y;
-        if ( (dx!=0) || (dy!=0) )
+        if ( Math.sqrt(dx*dx + dy*dy) >= this._sensitivity )
         {
             var angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
             switch (this._directions)
@@ -215,7 +216,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	{
         return this.keyMap[2];
 	};
-	cnds.IsRIGHDown = function()
+	cnds.IsRIGHTDown = function()
 	{
         return this.keyMap[0];
 	};    
