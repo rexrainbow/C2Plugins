@@ -491,7 +491,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    ret.set_string(_pg_prefix+uid.toString()+_pg_postfix+name);
 	};	
     
-	exps.PopUID = function (ret, name, index)
+	exps.Pop = function (ret, name, index)
 	{
 	    var uid_list = this.GetGroup(name).GetList();
 	    var uid = uid_list[index];
