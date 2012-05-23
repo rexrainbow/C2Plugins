@@ -37,6 +37,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime = type.runtime;
 		this.touches = [];
 		this.mouseDown = false;
+		this.touchDown = false;
+        this.check_name = "TOUCHWRAP";
+		this._is_mouse_mode = false;
+        this._plugins_hook = [];
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
@@ -47,14 +51,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	{
 		if (!t)
 			return;
-		
-        // work around for mouse inpit
-        if (this.useMouseInput && (t.length==0))
-		{
-            return;
-        }        
-        
-        
+
 		this.touches.length = 0;
 		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
 		
@@ -236,12 +233,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (this.runtime.isPhoneGap)
 		{
 			navigator["accelerometer"]["watchAcceleration"](PhoneGapGetAcceleration, null, { "frequency": 40 });
-		}
-        
-            
-        this.check_name = "TOUCHWRAP";
-		this._is_mouse_mode = false;
-        this._plugins_hook = [];
+		}        
 	};
 
 	instanceProto.onTouchMove = function (info)
@@ -254,6 +246,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onTouchStart = function (info)
 	{
+	    this.touchDown = true;
 		if (info.preventDefault)
 			info.preventDefault();
 			
@@ -284,6 +277,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onTouchEnd = function (info)
 	{
+	    this.touchDown = false;	
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -294,14 +288,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
             this._plugins_hook[i].OnTouchEnd();
 		
 		// Save touches after, so OnTouchEnd can access the x and y of the touch
-		this.saveTouches(info.touches);
+		// work around: skip save 0
+		//this.saveTouches(info.touches);
 	};
 	
 	var noop_func = function(){};
 
 	instanceProto.onMouseDown = function(info)
-	{
+	{	
         this._is_mouse_mode = true;
+		this.mouseDown = true;		
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -309,7 +305,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var t = { pageX: info.pageX, pageY: info.pageY };
 		var fakeinfo = { touches: [t], changedTouches: [t], preventDefault: noop_func };
 		this.onTouchStart(fakeinfo);
-		this.mouseDown = true;
 	};
 	
 	instanceProto.onMouseMove = function(info)
@@ -328,13 +323,13 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onMouseUp = function(info)
 	{
+		this.mouseDown = false;
 		if (info.preventDefault)
 			info.preventDefault();
 		
 		// Send a fake touch end event
 		var fakeinfo = { touches: [], preventDefault: noop_func };
 		this.onTouchEnd(fakeinfo);
-		this.mouseDown = false;
 	};
     
     
@@ -351,7 +346,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.IsInTouch = function ()
 	{
-		return (this._is_mouse_mode)?  (this.mouseDown):this.touches.length;
+		return this.touchDown;
 	};    
     
 	instanceProto.OnTouchObject = function (type)
