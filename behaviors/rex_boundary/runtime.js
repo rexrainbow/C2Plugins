@@ -59,11 +59,14 @@ cr.behaviors.Rex_boundary = function(runtime)
 	
 	behinstProto.tick = function ()
 	{
-	    var has_updated = false;
-	    has_updated |= this.horizontal_boundary_check();
-	    has_updated |= this.vertical_boundary_check();		
-		if (has_updated)
-		    this.inst.set_bbox_changed();  
+	    var is_hit_boundary = false;
+	    is_hit_boundary |= this.horizontal_boundary_check();
+	    is_hit_boundary |= this.vertical_boundary_check();		
+		if (is_hit_boundary)
+        {                         
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitAnyBoundary, this.inst);            
+		    this.inst.set_bbox_changed();             
+        }
 	};
 	
 	behinstProto.horizontal_boundary_check = function ()
@@ -72,9 +75,15 @@ cr.behaviors.Rex_boundary = function(runtime)
 		    return false;
 		var curr_x = this.inst.x;
 		if (this.inst.x < this.horizontal_boundary[0])
+        {
 		    this.inst.x = this.horizontal_boundary[0];
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
+        }
         else if (this.inst.x > this.horizontal_boundary[1])
+        {
 		    this.inst.x = this.horizontal_boundary[1];
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
+        }
 	    return (curr_x != this.inst.x);
 	};
 	
@@ -84,16 +93,46 @@ cr.behaviors.Rex_boundary = function(runtime)
 		    return false;
 	    var curr_y = this.inst.y;
 		if (this.inst.y < this.vertical_boundary[0])
+        {
 		    this.inst.y = this.vertical_boundary[0];
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitUpBoundary, this.inst);
+        }
         else if (this.inst.y > this.vertical_boundary[1])
+        {
 		    this.inst.y = this.vertical_boundary[1];
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitDownBoundary, this.inst);
+        }
 	    return (curr_y != this.inst.y);			
 	};
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
 	var cnds = behaviorProto.cnds;
-
+    
+	cnds.OnHitAnyBoundary = function ()
+	{
+		return true;
+	};
+    
+	cnds.OnHitLeftBoundary = function ()
+	{
+		return true;
+	};
+    
+	cnds.OnHitRightBoundary = function ()
+	{
+		return true;
+	};    
+    
+	cnds.OnHitUpBoundary = function ()
+	{
+		return true;
+	};
+    
+	cnds.OnHitDownBoundary = function ()
+	{
+		return true;
+	};        
 	//////////////////////////////////////
 	// Actions
 	behaviorProto.acts = {};
@@ -126,5 +165,34 @@ cr.behaviors.Rex_boundary = function(runtime)
 	// Expressions
 	behaviorProto.exps = {};
 	var exps = behaviorProto.exps;
+    
+	exps.HorizontalEnable = function (ret)
+	{
+        ret.set_int( (this.horizontal_enable)? 1:0 );
+	};
 
+	exps.VerticalEnable = function (ret)
+	{
+        ret.set_int( (this.vertical_enable)? 1:0 );
+	}; 
+    
+	exps.LeftBound = function (ret)
+	{
+        ret.set_float( this.horizontal_boundary[0] );
+	};
+
+	exps.RightBound = function (ret)
+	{
+        ret.set_float( this.horizontal_boundary[1] );
+	};  
+
+	exps.UpBound = function (ret)
+	{
+        ret.set_float( this.vertical_boundary[0] );
+	};
+
+	exps.DownBound = function (ret)
+	{
+        ret.set_float( this.vertical_boundary[1] );
+	};    
 }());

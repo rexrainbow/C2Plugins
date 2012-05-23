@@ -13,7 +13,17 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(2,	cf_trigger, "On hit any boundary", "Hit", 
+             "On {my} hit any boundary", "Triggered when object hit any boundary.", "OnHitAnyBoundary");  
+AddCondition(3,	cf_trigger, "On hit lefy boundary", "Hit", 
+             "On {my} hit lefy boundary", "Triggered when object hit lefy boundary.", "OnHitLeftBoundary"); 
+AddCondition(4,	cf_trigger, "On hit right boundary", "Hit", 
+             "On {my} hit right boundary", "Triggered when object hit right boundary.", "OnHitRightBoundary"); 
+AddCondition(5,	cf_trigger, "On hit up boundary", "Hit", 
+             "On {my} hit up boundary", "Triggered when object hit up boundary.", "OnHitUpBoundary"); 
+AddCondition(6,	cf_trigger, "On hit down boundary", "Hit", 
+             "On {my} hit down boundary", "Triggered when object hit down boundary.", "OnHitDownBoundary"); 
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -32,10 +42,16 @@ AddAction(5, 0, "Set horizontal boundary", "Set boundary",
           "Set {my} horizontal boundary to [<i>{0}</i>, <i>{1}</i>]", "Set the object's horizontal boundary.", "SetHorizontalBoundary");
 AddNumberParam("Up", "Up boundary.");
 AddNumberParam("Down", "Down boundary.");
-AddAction(5, 0, "Set vertical boundary", "Set boundary", 
+AddAction(6, 0, "Set vertical boundary", "Set boundary", 
           "Set {my} vertical boundary to [<i>{0}</i>, <i>{1}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundary");
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get horizontal boundary enable", "Enable", "HorizontalEnable", "Horizontal boundary enable setting.");
+AddExpression(2, ef_return_number, "Get vertical boundary enable", "Enable", "VerticalEnable", "Vertical boundary enable setting.");
+AddExpression(3, ef_return_number, "Get left boundary", "Boundary", "LeftBound", "Left boundary setting.");
+AddExpression(4, ef_return_number, "Get right boundary", "Boundary", "RightBound", "Right boundary setting.");
+AddExpression(5, ef_return_number, "Get up boundary", "Boundary", "UpBound", "Up boundary setting.");
+AddExpression(6, ef_return_number, "Get down boundary", "Boundary", "DownBound", "Down boundary setting.");
 
 
 ACESDone();
