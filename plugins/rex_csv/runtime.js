@@ -145,7 +145,19 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 		this.forPage = "";
 		return false;        
-	};     
+	};    
+    
+	cnds.ForEachRow = function ()
+	{
+        this.current_table.ForEachRow();
+		return false;
+	};    
+
+	cnds.ForEachColInRow = function (row)
+	{
+        this.current_table.ForEachColInRow(row);
+		return false;
+	}; 	 
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -503,8 +515,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	CSVKlassProto.ForEachRowInCol = function (col)
 	{
-        var current_entry = this._table[col];
-        if ( current_entry == null )
+        if (! (col in this.keys))
         {
             if (this.is_debug_mode)
                 alert ("Can not find col index '" +col+"' in table.");          
@@ -529,6 +540,54 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 		this.forRow = "";
 	};     
+	
+	CSVKlassProto.ForEachRow = function ()
+	{   
+        var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
+		
+		this.forRow = "";
+        
+        var items = this.items;
+        var item_cnt = items.length;
+        var i;
+		for (i=0; i<item_cnt; i++ )
+	    {
+            this.forRow = items[i];
+		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.plugin.runtime.popSol(current_event.solModifiers);
+		}
+
+		this.forRow = "";
+	};    
+
+	CSVKlassProto.ForEachColInRow = function (row)
+	{
+        if (! (row in this.items))
+        {
+            if (this.is_debug_mode)
+                alert ("Can not find col index '" +row+"' in table.");          
+		    return;        
+        }
+            
+        // current_entry is valid
+        var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
+		
+		this.forCol = "";
+        
+        var keys = this.keys;
+        var key_cnt = keys.length;
+        var i;
+		for (i=0; i<key_cnt; i++ )
+	    {
+            this.forCol = keys[i];
+		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.plugin.runtime.popSol(current_event.solModifiers);
+		}
+
+		this.forCol = "";
+	};     	
 	    
     CSVKlassProto.GetColCnt = function()
     {

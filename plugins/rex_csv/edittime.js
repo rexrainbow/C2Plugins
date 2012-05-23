@@ -16,13 +16,18 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For Each", "For each col", 
+AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For each col", "For each col", 
              "Repeat the event for each column in the table.", "ForEachCol");
 AddStringParam("Col", "The column index.", '""');
-AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For Each", 
+AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For each col", 
              "For each row in a column <i>{0}</i>", "Repeat the event for each row in a column.", "ForEachRowInCol");
-AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For Each", "For each page", 
+AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For each page", "For each page", 
              "Repeat the event for each page.", "ForEachPage");
+AddCondition(3, cf_looping | cf_not_invertible, "For each row", "For each row", "For each row", 
+             "Repeat the event for each row in the table.", "ForEachRow");
+AddStringParam("Row", "The row index.", '""');
+AddCondition(4, cf_looping | cf_not_invertible, "For each col in row", "For each row", 
+             "For each col in a row <i>{0}</i>", "Repeat the event for each column in a row.", "ForEachColInRow");             
              
 
 //////////////////////////////////////////////////////////////
