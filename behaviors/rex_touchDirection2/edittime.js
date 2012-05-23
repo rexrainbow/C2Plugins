@@ -45,7 +45,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
-    new cr.Property(ept_combo, "Axis", "Both", "The axis this object can move on.", "Both|Horizontal|Vertical"),
+    new cr.Property(ept_combo, "Axis", "Both", "The axis this object can move on.", "Both|Horizontal|Vertical|Horizontal or vertical"),
     new cr.Property(ept_float, "Proportion", 1, "The proportion of sprite moving followed mouse."),
     ];
 	

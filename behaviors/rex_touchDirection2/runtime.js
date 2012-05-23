@@ -110,6 +110,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 		this.pre_x = 0;
 		this.pre_y = 0;           
         this.is_on_moving = false;
+        this._dir = null;
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -139,13 +140,21 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         {
             switch (this.move_axis)
             {
-                case 1:
+                case 1:    // Horizontal
                     inst.x += (this.move_proportion * dx);
                     break;
-                case 2:
+                case 2:    // Vertical
                     inst.y += (this.move_proportion * dy);
                     break;
-                default:
+                case 3:    // Horizontal or vertical
+                    if (this._dir == null)
+                        this._dir = (Math.abs(dx) >= Math.abs(dy))? 0:1;
+                    if (this._dir == 0)
+                        inst.x += (this.move_proportion * dx);
+                    else if (this._dir == 1)
+                        inst.y += (this.move_proportion * dy);
+                    break;
+                default:   // Both
                     inst.x += (this.move_proportion * dx);
                     inst.y += (this.move_proportion * dy);
                     break;
@@ -159,6 +168,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         if ( this.type._is_release() )
         {
             this.is_on_moving = false;
+            this._dir = null;
             this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoveStop, inst); 
         }
 	};  
