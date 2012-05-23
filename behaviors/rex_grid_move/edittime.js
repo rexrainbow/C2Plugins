@@ -31,7 +31,7 @@ AddNumberParam("Y offset", "Relatived Y offset.",0);
 AddCondition(7,	0, "Can move to", "Test", "{my} can move to offset [<i>{0}</i>, <i>{1}</i>]", 
              "Test if object can move to relatived offset target.", "TestMoveToOffset");
 AddNumberParam("Direction", "The direction of neighbor.", 0);		  
-AddCondition(8, 0, "Can move to neighbor", "Request", "{my} move to direction <i>{0}</i>", 
+AddCondition(8, 0, "Can move to neighbor", "Request", "{my} can move to direction <i>{0}</i>", 
           "Test if object can move to neighbor.", "TestMoveToNeighbor");              
 AddComboParamOption("Right");		  
 AddComboParamOption("Down");
