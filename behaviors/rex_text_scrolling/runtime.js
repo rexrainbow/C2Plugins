@@ -49,6 +49,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    this.total_lines = 0;
 	    this.visible_lines = 0;
         this.line_pos_percent = 0;
+        this.start_line_index = 0;        
+        this.text_changed = false;
         this.lastwidth = this.inst.width;
 	};
 
@@ -58,25 +60,39 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	
 	behinstProto.tick = function ()
 	{  
-        this.width_update();    
-	};
-    
-	behinstProto.width_update = function ()
-	{   
-        if (this.lastwidth == this.inst.width)
+        if ((this.lastwidth == this.inst.width) &&
+            (!this.text_changed) )
             return;
         
-        this.SetContent();
+        this.SetContent(); 
+        this.text_changed = false;
+        this.lastwidth = this.inst.width;
 	};
     
-	behinstProto._get_visible_lines = function (percent)
+	behinstProto._last_start_line = function ()
+	{  
+        return this.total_lines - this.visible_lines;
+	};
+    
+	behinstProto.perent2line = function (percent)
+	{  
+        return Math.floor(this._last_start_line() * percent);
+	};
+
+	behinstProto.line2percent = function (line_index)
+	{  
+        var percent = line_index/this._last_start_line();
+        return cr.clamp(percent, 0, 1);
+	};    
+    
+	behinstProto._get_visible_lines = function (start_line_index)
 	{
-        var start_index = Math.floor((this.total_lines - this.visible_lines) * percent);
-        var end_index = start_index + this.visible_lines;
+        this.start_line_index = cr.clamp(start_line_index, 0, this._last_start_line());
+        var end_index = this.start_line_index + this.visible_lines;
         if (end_index > this.total_lines)
             end_index = this.total_lines;
         var i,text = "";
-        for (i=start_index; i<end_index; i++)
+        for (i=this.start_line_index; i<end_index; i++)
             text += (this.content_lines[i] + "\n");
         return text;
 	};
@@ -89,10 +105,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	        this.content_lines.push(lines[i].text);
 	};	
 
-	behinstProto.SetContent = function (s)
+	behinstProto.SetContent = function ()
 	{
-        if (s != null)
-            this.content_raw = s;
         var inst = this.inst;              
         this.SetText(this.content_raw);
         inst.draw(this.runtime.overlay_ctx);                      // call this function to get lines
@@ -101,7 +115,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         if ((inst.height%inst.pxHeight) == 0)
             this.visible_lines -= 1;
 	    this._copy_content_lines(inst.lines);
-	    this.SetText(this._get_visible_lines(this.line_pos_percent));
+	    this.SetText(this._get_visible_lines(this.start_line_index));
 	};    
 	
 	behinstProto.SetText = function (s)
@@ -128,18 +142,21 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     
 	acts.SetContent = function(param)
 	{   
-        this.SetContent(_param2string(param));
+        this.content_raw = _param2string(param);
+        this.text_changed = true;
 	};
 
 	acts.ScrollTo = function(percent)
 	{   
         this.line_pos_percent = cr.clamp(percent, 0, 1);
-        this.SetText(this._get_visible_lines(this.line_pos_percent));
+        var start_line_index = this.perent2line(this.line_pos_percent);
+        this.SetText(this._get_visible_lines(start_line_index));
 	};
     
 	acts.AppendContent = function(param)
 	{   
-        this.SetContent(this.content_raw + _param2string(param));
+        this.content_raw += _param2string(param);
+        this.text_changed = true;
 	};    
 	//////////////////////////////////////
 	// Expressions
