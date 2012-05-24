@@ -52,6 +52,10 @@ AddExpression(3, ef_return_number, "Get left boundary", "Boundary", "LeftBound",
 AddExpression(4, ef_return_number, "Get right boundary", "Boundary", "RightBound", "Right boundary setting.");
 AddExpression(5, ef_return_number, "Get up boundary", "Boundary", "UpBound", "Up boundary setting.");
 AddExpression(6, ef_return_number, "Get down boundary", "Boundary", "DownBound", "Down boundary setting.");
+AddExpression(7, ef_return_number, "Get horizontal position persentage", "Persentage", "HorPercent", 
+             "Get horizontal position persentage. 0 is at left boundary, 1 is at right boundary");
+AddExpression(8, ef_return_number, "Get vertical position persentage", "Persentage", "VerPercent", 
+              "Get vertical position persentage. 0 is at up boundary, 1 is at down boundary");
 
 
 ACESDone();

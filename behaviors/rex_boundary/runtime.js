@@ -194,5 +194,29 @@ cr.behaviors.Rex_boundary = function(runtime)
 	exps.DownBound = function (ret)
 	{
         ret.set_float( this.vertical_boundary[1] );
-	};    
+	};  
+
+	exps.HorPercent = function (ret)
+	{
+        var offset_inst = this.inst.x - this.horizontal_boundary[0];
+        var offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0];
+        var pec = offset_inst/offset_bound;
+        if (pec < 0)
+            pec = 0;
+        else if (pec > 1)    
+            pec = 1;
+        ret.set_float( pec );
+	};
+
+	exps.VerPercent = function (ret)
+	{
+        var offset_inst = this.inst.y - this.vertical_boundary[0];
+        var offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0];
+        var pec = offset_inst/offset_bound;
+        if (pec < 0)
+            pec = 0;
+        else if (pec > 1)    
+            pec = 1;
+        ret.set_float( pec );
+	};      
 }());

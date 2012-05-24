@@ -1,27 +1,47 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Textarea Addon",
-		"id":			"Rex_textbox_addon",
-		"description":	"Addon of textarea.",
+		"name":			"Typing",
+		"id":			"Rex_text_typing",
+		"description":	"Typing text on text object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Textbox",
-		"flags":		0
+		"category":		"Text",
+		"flags":		bf_onlyone
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(1, cf_trigger, "On text typing", "Typing", "On typing", 
+             "Triggered when text typing.", "OnTextTyping");
+AddCondition(2, cf_trigger, "On typing completed", "Typing", "On typing completed", 
+             "Triggered when typing completed.", "OnTypingCompleted");            
+AddCondition(3, 0, "Is text typing", "Typing", "Is typing", 
+             "Is text typing.", "IsTextTyping");
+             
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(0, 0, "Scroll down", "", "Scroll down to bottom", 
-          "Scroll textarea down.", "ScrollDown");
-            
+AddObjectParam("Timeline", "Timeline object for getting timer");
+AddAction(2, 0, "Setup text-typing", "Setup", 
+          "Get timer from <i>{0}</i> for text-typing", 
+          "Setup text-typing.", "SetupTimer");
+AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
+AddNumberParam("Speed", "1 letter per seconds", 0.1);
+AddAction(3, 0, "Type text", "Typing", 
+          "Type <i>{0}</i> at 1 letter per <i>{1}</i> seconds", 
+          "Type text letter by letter.", "TypeText");
+AddNumberParam("Speed", "1 letter per seconds", 0.1);
+AddAction(4, 0, "Set typing speed", "Typing", 
+          "Set typing speed to <i>{0}</i> seconds", 
+          "Set typing speed.", "SetTypingSpeed");          
+AddAction(5, 0, "Stop typing", "Typing", 
+          "Stop typing", 
+          "Stop typing.", "StopTyping");   
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number,	"Get typing speed",	"Type", "TypingSpeed", "Get typing speed.");
 
 
 ACESDone();

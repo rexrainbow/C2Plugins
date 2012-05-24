@@ -6,14 +6,14 @@ assert2(cr.behaviors, "cr.behaviors not created");
 
 /////////////////////////////////////
 // Behavior class
-cr.behaviors.Rex_textbox_addon = function(runtime)
+cr.behaviors.Rex_textbox_scrolling = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var behaviorProto = cr.behaviors.Rex_textbox_addon.prototype;
+	var behaviorProto = cr.behaviors.Rex_textbox_scrolling.prototype;
 		
 	/////////////////////////////////////
 	// Behavior type class
