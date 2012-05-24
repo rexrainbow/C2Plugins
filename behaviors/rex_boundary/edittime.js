@@ -43,7 +43,18 @@ AddAction(5, 0, "Set horizontal boundary", "Set boundary",
 AddNumberParam("Up", "Up boundary.");
 AddNumberParam("Down", "Down boundary.");
 AddAction(6, 0, "Set vertical boundary", "Set boundary", 
-          "Set {my} vertical boundary to [<i>{0}</i>, <i>{1}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundary");
+          "Set {my} vertical boundary to [<i>{0}</i>, <i>{1}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundary");         
+AddObjectParam("Pin to", "Choose the object to pin to.");
+AddAnyTypeParam("Left", "Name or number of image point for left boundary.");
+AddAnyTypeParam("Right", "Name or number of image point for right boundary.");
+AddAction(7, 0, "Set horizontal boundary to", "Set boundary to object", 
+          "Set {my} horizontal boundary to <i>{0}</i> at image point [<i>{1}</i>, <i>{2}</i>]", "Set the object's horizontal boundary.", "SetHorizontalBoundaryToObject");
+AddObjectParam("Pin to", "Choose the object to pin to.");
+AddAnyTypeParam("Up", "Name or number of image point for up boundary.");
+AddAnyTypeParam("Down", "Name or number of image point for down boundary.");
+AddAction(8, 0, "Set vertical boundary to", "Set boundary to object", 
+          "Set {my} vertical boundary to <i>{0}</i> at image point [<i>{1}</i>, <i>{2}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundaryToObject"); 
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get horizontal boundary enable", "Enable", "HorizontalEnable", "Horizontal boundary enable setting.");

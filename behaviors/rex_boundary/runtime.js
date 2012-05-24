@@ -54,11 +54,40 @@ cr.behaviors.Rex_boundary = function(runtime)
         this.vertical_enable = (this.properties[3]==1);
         this.vertical_boundary = [this.properties[4], this.properties[5]];	
 		this.horizontal_boundary.sort(_sort_fn);
-		this.vertical_boundary.sort(_sort_fn);		
+		this.vertical_boundary.sort(_sort_fn);
+        this.horizontal_pin_instance = {inst:null, p0:null, p1:null};
+        this.vertical_pin_instance = {inst:null, p0:null, p1:null};
+        
+		// Need to know if pinned object gets destroyed
+		this.myDestroyCallback = (function (self) {
+											return function(inst) {
+												self.onInstanceDestroyed(inst);
+											};
+										})(this);
+										
+		this.runtime.addDestroyCallback(this.myDestroyCallback);        
+	};
+	
+	behinstProto.onInstanceDestroyed = function (inst)
+	{
+		// Pinned object being destroyed
+		if (this.horizontal_pin_instance.inst == inst)
+			this.horizontal_pin_instance.inst = null;
+		if (this.vertical_pin_instance.inst == inst)
+			this.vertical_pin_instance.inst = null;            
+	};    
+	
+	behinstProto.onDestroy = function()
+	{
+		this.horizontal_pin_instance.inst = null;
+        this.vertical_pin_instance.inst = null;
+		this.runtime.removeDestroyCallback(this.myDestroyCallback);
 	};
 	
 	behinstProto.tick = function ()
 	{
+        this.horizontal_boundary_update();
+        this.vertical_boundary_update();
 	    var is_hit_boundary = false;
 	    is_hit_boundary |= this.horizontal_boundary_check();
 	    is_hit_boundary |= this.vertical_boundary_check();		
@@ -68,7 +97,27 @@ cr.behaviors.Rex_boundary = function(runtime)
 		    this.inst.set_bbox_changed();             
         }
 	};
-	
+    
+	behinstProto.horizontal_boundary_update = function ()
+	{
+        var pin = this.horizontal_pin_instance;
+        if (pin.inst == null)
+            return;
+        this.horizontal_boundary[0] = pin.inst.getImagePoint(pin.p0, true);
+        this.horizontal_boundary[1] = pin.inst.getImagePoint(pin.p1, true);    
+        this.horizontal_boundary.sort(_sort_fn);
+	};
+    
+	behinstProto.vertical_boundary_update = function ()
+	{
+        var pin = this.vertical_pin_instance;
+        if (pin.inst == null)
+            return;
+        this.vertical_boundary[0] = pin.inst.getImagePoint(pin.p0, false);
+        this.vertical_boundary[1] = pin.inst.getImagePoint(pin.p1, false);    
+        this.vertical_boundary.sort(_sort_fn);
+	};
+    
 	behinstProto.horizontal_boundary_check = function ()
 	{
 	    if (!this.horizontal_enable)
@@ -153,6 +202,7 @@ cr.behaviors.Rex_boundary = function(runtime)
 		this.horizontal_boundary[0] = l;
 		this.horizontal_boundary[1] = r;
 		this.horizontal_boundary.sort(_sort_fn);
+        this.horizontal_pin_instance.inst = null;
 	};
 
 	acts.SetVerticalBoundary = function (u, d)
@@ -160,7 +210,31 @@ cr.behaviors.Rex_boundary = function(runtime)
 		this.vertical_boundary[0] = l;
 		this.vertical_boundary[1] = r;
 		this.vertical_boundary.sort(_sort_fn);
+        this.vertical_pin_instance.inst = null;        
 	};
+
+    var _get_instance = function (obj)
+	{
+		if (!obj)
+			return null;
+		return obj.getFirstPicked();
+	};
+	acts.SetHorizontalBoundaryToObject = function (obj, left_imgpt, right_imgpt)
+	{
+        var pin = this.horizontal_pin_instance;
+		pin.inst = _get_instance(obj);	
+        pin.p0 = left_imgpt;	
+        pin.p1 = right_imgpt;	
+	};   
+    
+	acts.SetVerticalBoundaryToObject = function (obj, up_imgpt, down_imgpt)
+	{
+        var pin = this.vertical_pin_instance;
+		pin.inst = _get_instance(obj);	
+        pin.p0 = up_imgpt;	
+        pin.p1 = down_imgpt;	        
+	};
+ 
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
@@ -178,45 +252,43 @@ cr.behaviors.Rex_boundary = function(runtime)
     
 	exps.LeftBound = function (ret)
 	{
+        this.horizontal_boundary_update();   
         ret.set_float( this.horizontal_boundary[0] );
 	};
 
 	exps.RightBound = function (ret)
 	{
+        this.horizontal_boundary_update();    
         ret.set_float( this.horizontal_boundary[1] );
 	};  
 
 	exps.UpBound = function (ret)
 	{
+        this.vertical_boundary_update();     
         ret.set_float( this.vertical_boundary[0] );
 	};
 
 	exps.DownBound = function (ret)
 	{
+        this.vertical_boundary_update();     
         ret.set_float( this.vertical_boundary[1] );
 	};  
-
+    
 	exps.HorPercent = function (ret)
 	{
+        this.horizontal_boundary_update();        
         var offset_inst = this.inst.x - this.horizontal_boundary[0];
         var offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0];
         var pec = offset_inst/offset_bound;
-        if (pec < 0)
-            pec = 0;
-        else if (pec > 1)    
-            pec = 1;
-        ret.set_float( pec );
+        ret.set_float( cr.clamp(pec, 0, 1) );
 	};
 
 	exps.VerPercent = function (ret)
 	{
+        this.vertical_boundary_update(); 
         var offset_inst = this.inst.y - this.vertical_boundary[0];
         var offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0];
         var pec = offset_inst/offset_bound;
-        if (pec < 0)
-            pec = 0;
-        else if (pec > 1)    
-            pec = 1;
-        ret.set_float( pec );
+        ret.set_float( cr.clamp(pec, 0, 1) );
 	};      
 }());
