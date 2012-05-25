@@ -46,9 +46,7 @@ cr.behaviors.Rex_boundary = function(runtime)
 	{   
 	    if (boundary[1] < boundary[0])
 	    {
-	        var tmp = boundary[0];
-	        boundary[0] = boundary[1];
-	        boundary[1] = tmp;
+	        var tmp = boundary[0]; boundary[0] = boundary[1]; boundary[1] = tmp;
 	    }
 	};    	
 	behinstProto.onCreate = function()
@@ -157,6 +155,24 @@ cr.behaviors.Rex_boundary = function(runtime)
         }
 	    return (curr_y != this.inst.y);			
 	};
+    
+	behinstProto._horizontal_percent_get = function ()
+	{
+        this.horizontal_boundary_update();        
+        var offset_inst = this.inst.x - this.horizontal_boundary[0];
+        var offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0];
+        var pec = cr.clamp((offset_inst/offset_bound), 0, 1) ;
+        return pec;
+	};    
+	behinstProto._vertical_percent_get = function ()
+	{
+        this.vertical_boundary_update(); 
+        var offset_inst = this.inst.y - this.vertical_boundary[0];
+        var offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0];
+        var pec = cr.clamp((offset_inst/offset_bound), 0, 1);
+        return pec;
+	};        
+    
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
@@ -280,19 +296,31 @@ cr.behaviors.Rex_boundary = function(runtime)
     
 	exps.HorPercent = function (ret)
 	{
-        this.horizontal_boundary_update();        
-        var offset_inst = this.inst.x - this.horizontal_boundary[0];
-        var offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0];
-        var pec = offset_inst/offset_bound;
-        ret.set_float( cr.clamp(pec, 0, 1) );
+        ret.set_float( this._horizontal_percent_get() );
 	};
 
 	exps.VerPercent = function (ret)
 	{
-        this.vertical_boundary_update(); 
-        var offset_inst = this.inst.y - this.vertical_boundary[0];
-        var offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0];
-        var pec = offset_inst/offset_bound;
-        ret.set_float( cr.clamp(pec, 0, 1) );
-	};      
+        ret.set_float( this._vertical_percent_get() );
+	};   
+    
+	exps.HorScale = function (ret, min_value, max_value)
+	{
+        if (max_value < min_value)
+        {
+            var tmp = max_value; max_value = min_value; min_value = tmp;
+        }
+        var scaled = min_value + this._horizontal_percent_get()*(max_value-min_value);
+        ret.set_float( scaled );
+	};
+    
+	exps.VerScale = function (ret, min_value, max_value)
+	{
+        if (max_value < min_value)
+        {
+            var tmp = max_value; max_value = min_value; min_value = tmp;
+        }
+        var scaled = min_value + this._vertical_percent_get()*(max_value-min_value);
+        ret.set_float( scaled );
+	};    
 }());
