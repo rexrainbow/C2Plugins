@@ -306,21 +306,25 @@ cr.behaviors.Rex_boundary = function(runtime)
     
 	exps.HorScale = function (ret, min_value, max_value)
 	{
+        var pec = this._horizontal_percent_get();
         if (max_value < min_value)
         {
             var tmp = max_value; max_value = min_value; min_value = tmp;
+            pec = 1.0-pec;
         }
-        var scaled = min_value + this._horizontal_percent_get()*(max_value-min_value);
+        var scaled = min_value + pec*(max_value-min_value);
         ret.set_float( scaled );
 	};
     
 	exps.VerScale = function (ret, min_value, max_value)
 	{
+        var pec = this._vertical_percent_get();
         if (max_value < min_value)
         {
             var tmp = max_value; max_value = min_value; min_value = tmp;
+            pec = 1.0-pec;
         }
-        var scaled = min_value + this._vertical_percent_get()*(max_value-min_value);
+        var scaled = min_value + pec*(max_value-min_value);
         ret.set_float( scaled );
 	};    
 }());

@@ -67,14 +67,14 @@ AddExpression(7, ef_return_number, "Get horizontal position persentage", "Persen
              "Get horizontal position persentage. 0 is at left boundary, 1 is at right boundary");
 AddExpression(8, ef_return_number, "Get vertical position persentage", "Persentage", "VerPercent", 
               "Get vertical position persentage. 0 is at top boundary, 1 is at bottom boundary");
-AddNumberParam("Min", "Minimum value.", 0);         
-AddNumberParam("Max", "Maximum value.", 1);      
+AddNumberParam("Left", "Left value.", 0);         
+AddNumberParam("Right", "Right value.", 1);      
 AddExpression(9, ef_return_number | ef_variadic_parameters, "Get horizontal scaled value", "Scaled value", "HorScale", 
-              "Get horizontal scaled value between minimum and maximum value");
-AddNumberParam("Min", "Minimum value.", 0);         
-AddNumberParam("Max", "Maximum value.", 1);      
+              "Get horizontal scaled value between left and right value");
+AddNumberParam("Top", "Minimum value.", 0);         
+AddNumberParam("Bottom", "Maximum value.", 1);      
 AddExpression(10, ef_return_number | ef_variadic_parameters, "Get vertical scaled value", "Scaled value", "VerScale", 
-              "Get vertical scaled value between minimum and maximum value");              
+              "Get vertical scaled value between top and bottom value");              
 
 ACESDone();
 
