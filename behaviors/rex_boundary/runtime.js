@@ -42,19 +42,23 @@ cr.behaviors.Rex_boundary = function(runtime)
 	
 	var behinstProto = behaviorProto.Instance.prototype;
 
-	var _sort_fn = function(a,b)
+	var _sort_boundary = function(boundary)
 	{   
-	    return (a>b)? 1:
-               (a<b)? (-1):0;    
+	    if (boundary[1] < boundary[0])
+	    {
+	        var tmp = boundary[0];
+	        boundary[0] = boundary[1];
+	        boundary[1] = tmp;
+	    }
 	};    	
 	behinstProto.onCreate = function()
 	{    
         this.horizontal_enable = (this.properties[0]==1);
         this.horizontal_boundary = [this.properties[1], this.properties[2]];
         this.vertical_enable = (this.properties[3]==1);
-        this.vertical_boundary = [this.properties[4], this.properties[5]];	
-		this.horizontal_boundary.sort(_sort_fn);
-		this.vertical_boundary.sort(_sort_fn);
+        this.vertical_boundary = [this.properties[4], this.properties[5]];
+        _sort_boundary(this.horizontal_boundary);
+        _sort_boundary(this.vertical_boundary);
         this.horizontal_pin_instance = {inst:null, p0:null, p1:null};
         this.vertical_pin_instance = {inst:null, p0:null, p1:null};
         
@@ -105,7 +109,7 @@ cr.behaviors.Rex_boundary = function(runtime)
             return;
         this.horizontal_boundary[0] = pin.inst.getImagePoint(pin.p0, true);
         this.horizontal_boundary[1] = pin.inst.getImagePoint(pin.p1, true);    
-        this.horizontal_boundary.sort(_sort_fn);
+        _sort_boundary(this.horizontal_boundary);
 	};
     
 	behinstProto.vertical_boundary_update = function ()
@@ -115,7 +119,7 @@ cr.behaviors.Rex_boundary = function(runtime)
             return;
         this.vertical_boundary[0] = pin.inst.getImagePoint(pin.p0, false);
         this.vertical_boundary[1] = pin.inst.getImagePoint(pin.p1, false);    
-        this.vertical_boundary.sort(_sort_fn);
+        _sort_boundary(this.vertical_boundary);
 	};
     
 	behinstProto.horizontal_boundary_check = function ()
@@ -144,12 +148,12 @@ cr.behaviors.Rex_boundary = function(runtime)
 		if (this.inst.y < this.vertical_boundary[0])
         {
 		    this.inst.y = this.vertical_boundary[0];
-            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitUpBoundary, this.inst);
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
         }
         else if (this.inst.y > this.vertical_boundary[1])
         {
 		    this.inst.y = this.vertical_boundary[1];
-            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitDownBoundary, this.inst);
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
         }
 	    return (curr_y != this.inst.y);			
 	};
@@ -173,12 +177,12 @@ cr.behaviors.Rex_boundary = function(runtime)
 		return true;
 	};    
     
-	cnds.OnHitUpBoundary = function ()
+	cnds.OnHitTopBoundary = function ()
 	{
 		return true;
 	};
     
-	cnds.OnHitDownBoundary = function ()
+	cnds.OnHitBottomBoundary = function ()
 	{
 		return true;
 	};        
@@ -201,7 +205,7 @@ cr.behaviors.Rex_boundary = function(runtime)
 	{
 		this.horizontal_boundary[0] = l;
 		this.horizontal_boundary[1] = r;
-		this.horizontal_boundary.sort(_sort_fn);
+		_sort_boundary(this.horizontal_boundary);
         this.horizontal_pin_instance.inst = null;
 	};
 
@@ -209,7 +213,7 @@ cr.behaviors.Rex_boundary = function(runtime)
 	{
 		this.vertical_boundary[0] = l;
 		this.vertical_boundary[1] = r;
-		this.vertical_boundary.sort(_sort_fn);
+		_sort_boundary(this.vertical_boundary);
         this.vertical_pin_instance.inst = null;        
 	};
 
@@ -227,12 +231,12 @@ cr.behaviors.Rex_boundary = function(runtime)
         pin.p1 = right_imgpt;	
 	};   
     
-	acts.SetVerticalBoundaryToObject = function (obj, up_imgpt, down_imgpt)
+	acts.SetVerticalBoundaryToObject = function (obj, top_imgpt, bottom_imgpt)
 	{
         var pin = this.vertical_pin_instance;
 		pin.inst = _get_instance(obj);	
-        pin.p0 = up_imgpt;	
-        pin.p1 = down_imgpt;	        
+        pin.p0 = top_imgpt;	
+        pin.p1 = bottom_imgpt;	        
 	};
  
 	//////////////////////////////////////
@@ -262,13 +266,13 @@ cr.behaviors.Rex_boundary = function(runtime)
         ret.set_float( this.horizontal_boundary[1] );
 	};  
 
-	exps.UpBound = function (ret)
+	exps.TopBound = function (ret)
 	{
         this.vertical_boundary_update();     
         ret.set_float( this.vertical_boundary[0] );
 	};
 
-	exps.DownBound = function (ret)
+	exps.BottomBound = function (ret)
 	{
         this.vertical_boundary_update();     
         ret.set_float( this.vertical_boundary[1] );

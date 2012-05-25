@@ -19,10 +19,10 @@ AddCondition(3,	cf_trigger, "On hit lefy boundary", "Hit",
              "On {my} hit lefy boundary", "Triggered when object hit lefy boundary.", "OnHitLeftBoundary"); 
 AddCondition(4,	cf_trigger, "On hit right boundary", "Hit", 
              "On {my} hit right boundary", "Triggered when object hit right boundary.", "OnHitRightBoundary"); 
-AddCondition(5,	cf_trigger, "On hit up boundary", "Hit", 
-             "On {my} hit up boundary", "Triggered when object hit up boundary.", "OnHitUpBoundary"); 
-AddCondition(6,	cf_trigger, "On hit down boundary", "Hit", 
-             "On {my} hit down boundary", "Triggered when object hit down boundary.", "OnHitDownBoundary"); 
+AddCondition(5,	cf_trigger, "On hit top boundary", "Hit", 
+             "On {my} hit top boundary", "Triggered when object hit top boundary.", "OnHitTopBoundary"); 
+AddCondition(6,	cf_trigger, "On hit bottom boundary", "Hit", 
+             "On {my} hit bottom boundary", "Triggered when object hit bottom boundary.", "OnHitBottomBoundary"); 
              
 //////////////////////////////////////////////////////////////
 // Actions
@@ -40,8 +40,8 @@ AddNumberParam("Left", "Left boundary.");
 AddNumberParam("Right", "Right boundary.");
 AddAction(5, 0, "Set horizontal boundary", "Set boundary", 
           "Set {my} horizontal boundary to [<i>{0}</i>, <i>{1}</i>]", "Set the object's horizontal boundary.", "SetHorizontalBoundary");
-AddNumberParam("Up", "Up boundary.");
-AddNumberParam("Down", "Down boundary.");
+AddNumberParam("Top", "Top boundary.");
+AddNumberParam("Bottom", "Bottom boundary.");
 AddAction(6, 0, "Set vertical boundary", "Set boundary", 
           "Set {my} vertical boundary to [<i>{0}</i>, <i>{1}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundary");         
 AddObjectParam("Pin to", "Choose the object to pin to.");
@@ -50,8 +50,8 @@ AddAnyTypeParam("Right", "Name or number of image point for right boundary.");
 AddAction(7, 0, "Set horizontal boundary to", "Set boundary to object", 
           "Set {my} horizontal boundary to <i>{0}</i> at image point [<i>{1}</i>, <i>{2}</i>]", "Set the object's horizontal boundary.", "SetHorizontalBoundaryToObject");
 AddObjectParam("Pin to", "Choose the object to pin to.");
-AddAnyTypeParam("Up", "Name or number of image point for up boundary.");
-AddAnyTypeParam("Down", "Name or number of image point for down boundary.");
+AddAnyTypeParam("Top", "Name or number of image point for top boundary.");
+AddAnyTypeParam("Bottom", "Name or number of image point for bottom boundary.");
 AddAction(8, 0, "Set vertical boundary to", "Set boundary to object", 
           "Set {my} vertical boundary to <i>{0}</i> at image point [<i>{1}</i>, <i>{2}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundaryToObject"); 
           
@@ -61,12 +61,12 @@ AddExpression(1, ef_return_number, "Get horizontal boundary enable", "Enable", "
 AddExpression(2, ef_return_number, "Get vertical boundary enable", "Enable", "VerticalEnable", "Vertical boundary enable setting.");
 AddExpression(3, ef_return_number, "Get left boundary", "Boundary", "LeftBound", "Left boundary setting.");
 AddExpression(4, ef_return_number, "Get right boundary", "Boundary", "RightBound", "Right boundary setting.");
-AddExpression(5, ef_return_number, "Get up boundary", "Boundary", "UpBound", "Up boundary setting.");
-AddExpression(6, ef_return_number, "Get down boundary", "Boundary", "DownBound", "Down boundary setting.");
+AddExpression(5, ef_return_number, "Get top boundary", "Boundary", "TopBound", "Top boundary setting.");
+AddExpression(6, ef_return_number, "Get bottom boundary", "Boundary", "BottomBound", "Bottom boundary setting.");
 AddExpression(7, ef_return_number, "Get horizontal position persentage", "Persentage", "HorPercent", 
              "Get horizontal position persentage. 0 is at left boundary, 1 is at right boundary");
 AddExpression(8, ef_return_number, "Get vertical position persentage", "Persentage", "VerPercent", 
-              "Get vertical position persentage. 0 is at up boundary, 1 is at down boundary");
+              "Get vertical position persentage. 0 is at top boundary, 1 is at bottom boundary");
 
 
 ACESDone();
@@ -77,8 +77,8 @@ var property_list = [
     new cr.Property(ept_float, "Left", 0, "Left boundary."),	
 	new cr.Property(ept_float, "Right", 0, "Right boundary."),	
 	new cr.Property(ept_combo, "Vertical", "No", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
-	new cr.Property(ept_float, "Up", 0, "Up boundary."),	
-	new cr.Property(ept_float, "Down", 0, "Down boundary."),	
+	new cr.Property(ept_float, "Top", 0, "Top boundary."),	
+	new cr.Property(ept_float, "Bottom", 0, "Bottom boundary."),	
 	];
 	
 // Called by IDE when a new behavior type is to be created
