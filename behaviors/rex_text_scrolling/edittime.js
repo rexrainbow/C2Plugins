@@ -20,18 +20,31 @@ AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\""
 AddAction(1, 0, "Set content", "Content", 
           "Set content to <i>{0}</i>", 
           "Set content.", "SetContent");
-AddNumberParam("Percentage", "Scroll lines, 0 is top, 1 is bottom.", 1);
-AddAction(2, 0, "Scroll", "Scrolling", 
-          "Scroll lines by percentage to <i>{0}</i>", 
-          "Scroll lines by percentage. 0 is top, 1 is bottom.", "ScrollTo");
+AddNumberParam("Percentage", "Scroll content, 0 is top, 1 is bottom.", 1);
+AddAction(2, 0, "Scroll by percentage", "Scrolling", 
+          "Scroll content by percentage to <i>{0}</i>", 
+          "Scroll content by percentage. 0 is top, 1 is bottom.", "ScrollByPercent");
 AddAnyTypeParam("Text", "Enter the text to append to the object's content.", "\"\"");
 AddAction(3, 0, "Append content", "Content", 
           "Append <i>{0}</i>", 
           "Add text to the end of the existing content.", "AppendContent");          
-
+AddNumberParam("Line index", "Scroll content.", 1);
+AddAction(4, 0, "Scroll by line index", "Scrolling", 
+          "Scroll content by line index to <i>{0}</i>", 
+          "Scroll content by line index.", "ScrollByIndex");
+AddAction(6, 0, "Scroll to next line", "Scrolling", 
+          "Scroll content to next line", 
+          "Scroll content to next line.", "ScrollToNext");     
+AddAction(7, 0, "Scroll to previous line", "Scrolling", 
+          "Scroll content to previous line", 
+          "Scroll content to previous line.", "ScrollToPrevious");            
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0,	ef_return_string,	"Get text",			"Text",			"Text",		"Get the object's text.");
+AddExpression(0, ef_return_string, "Get text", "Text", "Text", "Get the object's text.");
+AddExpression(1, ef_return_number, "Get total lines count", "Lines count", "TotalCnt", "Get total lines count of content.");
+AddExpression(2, ef_return_number, "Get visible lines count", "Lines count", "VisibleCnt", "Get visible lines count of content.");
+AddExpression(3, ef_return_number, "Get current lines index", "Lines index", "CurrIndex", "Get current lines index.");
+
 
 ACESDone();
 

@@ -52,6 +52,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.start_line_index = 0;        
         this.text_changed = false;
         this.lastwidth = this.inst.width;
+        this.lastheight = this.inst.height;
 	};
 
 	behinstProto.onDestroy = function()
@@ -61,12 +62,14 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto.tick = function ()
 	{  
         if ((this.lastwidth == this.inst.width) &&
+            (this.lastheight == this.inst.height) &&
             (!this.text_changed) )
             return;
         
         this.SetContent(); 
         this.text_changed = false;
         this.lastwidth = this.inst.width;
+        this.lastheight = this.inst.height;
 	};
     
 	behinstProto._last_start_line = function ()
@@ -146,7 +149,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.text_changed = true;
 	};
 
-	acts.ScrollTo = function(percent)
+	acts.ScrollByPercent = function(percent)
 	{   
         this.line_pos_percent = cr.clamp(percent, 0, 1);
         var start_line_index = this.perent2line(this.line_pos_percent);
@@ -157,7 +160,22 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{   
         this.content_raw += _param2string(param);
         this.text_changed = true;
-	};    
+	}; 
+
+	acts.ScrollByIndex = function(line_index)
+	{   
+        this.SetText(this._get_visible_lines(line_index));
+	}; 
+
+	acts.ScrollToNext = function()
+	{   
+        this.SetText(this._get_visible_lines(this.start_line_index+1));
+	}; 
+
+	acts.ScrollToPrevious = function()
+	{   
+        this.SetText(this._get_visible_lines(this.start_line_index-1));
+	};     
 	//////////////////////////////////////
 	// Expressions
 	behaviorProto.exps = {};
@@ -167,5 +185,19 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{
 		ret.set_string(this.content_raw);
 	};
-	
+
+	exps.TotalCnt = function(ret)
+	{
+		ret.set_int(this.total_lines);
+	};	
+
+	exps.VisibleCnt = function(ret)
+	{
+		ret.set_int(this.visible_lines);
+	};	    
+
+	exps.CurrIndex = function(ret)
+	{
+		ret.set_int(this.start_line_index);
+	};	    
 }());
