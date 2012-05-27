@@ -70,7 +70,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};
 	instanceProto.ImportTMX = function(tmx_string)
 	{
-        this._tmx_obj = new cr.plugins_.Rex_TMXImporter.TMXKlass(tmx_string);
+        var isIE = this.runtime.isIE;
+        this._tmx_obj = new cr.plugins_.Rex_TMXImporter.TMXKlass(tmx_string, isIE);
         this.exp_MapWidth = this._tmx_obj.map.width;
         this.exp_MapHeight = this._tmx_obj.map.height;  
         this.exp_TileWidth = this._tmx_obj.map.tilewidth; 
@@ -328,9 +329,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 
 (function ()
 {
-    cr.plugins_.Rex_TMXImporter.TMXKlass = function(tmx_string)
+    cr.plugins_.Rex_TMXImporter.TMXKlass = function(tmx_string, isIE)
     {
-        var xml_obj= jQuery.parseXML(tmx_string);
+        var xml_obj=  new XMLParser(tmx_string, isIE);
         this.map = _get_map(xml_obj);
         this.tilesets = _get_tilesets(xml_obj);
         this.layers = _get_layers(xml_obj);        
@@ -352,115 +353,130 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     }; 
 
     var _get_map = function (xml_obj)
-    {
-        var xml_map = jQuery(xml_obj).find("map");
-        var map = {};
-        map.orientation = xml_map.attr("orientation");
-        map.width = _string2int(xml_map.attr("width"),0);
-        map.height = _string2int(xml_map.attr("height"),0);
-        map.tilewidth = _string2int(xml_map.attr("tilewidth"),0);
-        map.tileheight = _string2int(xml_map.attr("tileheight"),0);
+    {     
+        var map = {};          
+        map.orientation = xml_obj.get_string_value("@orientation");
+        map.width =  xml_obj.get_number_value("@width");
+        map.height = xml_obj.get_number_value("@height");
+        map.tilewidth = xml_obj.get_number_value("@tilewidth");
+        map.tileheight = xml_obj.get_number_value("@tileheight");
         return map;           
     };
     var _get_tilesets = function (xml_obj)
-    {
-        var xml_tilesets = jQuery(xml_obj).find("tileset");  
-        var tilesets_cnt = xml_tilesets.length;
-        var i;
+    {  
+        var xml_tilesets = xml_obj.get_nodes("//tileset");
         var tilesets = [];
-        for (i=0; i<tilesets_cnt; i++)
-            tilesets.push(_get_tileset(xml_tilesets[i]));
+        var xml_tileset = xml_tilesets.get_next_node();
+        while (xml_tileset != null)
+        {
+            tilesets.push(_get_tileset(xml_obj, xml_tileset));
+            xml_tileset = xml_tilesets.get_next_node();
+        }
         return tilesets;
     };
-    var _get_tileset = function(xml_tileset)
-    {
-        var tileset = {};
-        tileset.name = xml_tileset.getAttribute("name");
-        tileset.firstgid = _string2int(xml_tileset.getAttribute("firstgid"),1);
-        tileset.tilewidth = _string2int(xml_tileset.getAttribute("tilewidth"),0);
-        tileset.tileheight = _string2int(xml_tileset.getAttribute("tileheight"),0);
-        tileset.spacing = _string2int(xml_tileset.getAttribute("spacing"),0);
-        tileset.margin = _string2int(xml_tileset.getAttribute("margin"),0);     
-        var xml_tiles = jQuery(xml_tileset).find("tile");
-        tileset.tiles = _get_tiles(xml_tiles);
+    var _get_tileset = function(xml_obj, xml_tileset)
+    {      
+        var tileset = {};    
+        tileset.name = xml_obj.get_string_value("@name", xml_tileset);
+        tileset.firstgid = xml_obj.get_number_value("@firstgid", xml_tileset);
+        tileset.tilewidth = xml_obj.get_number_value("@tilewidth", xml_tileset);
+        tileset.tileheight = xml_obj.get_number_value("@tileheight", xml_tileset);
+        tileset.spacing = xml_obj.get_number_value("@spacing", xml_tileset);
+        tileset.margin = xml_obj.get_number_value("@margin", xml_tileset);
+        var xml_tiles = xml_obj.get_nodes("./tile", xml_tileset);
+        tileset.tiles = _get_tiles(xml_obj, xml_tiles);
         
-        var xml_properties = jQuery(xml_tileset).children("properties").find("property");
-        tileset.properties = _get_properties(xml_properties);
+        var xml_properties = xml_obj.get_nodes("./properties/property", xml_tileset);
+        tileset.properties = _get_properties(xml_obj, xml_properties);
         return tileset;
     };
-    var _get_tiles = function(xml_tiles)
+    var _get_tiles = function(xml_obj, xml_tiles)
     {
-        var i, xml_tile, id, properties;
-        var tiles_cnt = xml_tiles.length;
-        var tiles = {};
-        for(i=0; i<tiles_cnt; i++)
+   
+        var tiles = {};  
+        var id;
+        var xml_tile = xml_tiles.get_next_node();              
+        while (xml_tile != null)
         {
-            xml_tile = xml_tiles[i];
-            id = _string2int(xml_tile.getAttribute("id"),0)+1;
-            tiles[id] = _get_tile(xml_tile);
-        }
+            id = xml_obj.get_number_value("@id", xml_tile) + 1;
+            tiles[id] = _get_tile(xml_obj, xml_tile); 
+            xml_tile = xml_tiles.get_next_node();
+        }        
         return tiles;
     };
-    var _get_tile = function(xml_tile)
-    {
+    var _get_tile = function(xml_obj, xml_tile)
+    {    
         var tile = {};
-        var xml_properties = jQuery(xml_tile).find("properties").find("property");
-        tile.properties = _get_properties(xml_properties);
+        var xml_properties = xml_obj.get_nodes("./properties/property", xml_tile);
+        tile.properties = _get_properties(xml_obj, xml_properties);
         return tile;
     };
     var _get_layers = function (xml_obj)
-    {            
-        var xml_layers = jQuery(xml_obj).find("layer");
-        var layers_cnt = xml_layers.length;
-        var i, layer;
-        var layers = [];        
-        for(i=0; i<layers_cnt; i++)
+    {       
+        var layers = [];
+        var layer;
+        var xml_layers = xml_obj.get_nodes("//layer");
+        var xml_tayer = xml_layers.get_next_node(); 
+        while (xml_tayer != null)
         {
-            layer = _get_layer(xml_layers[i]);
+            layer = _get_layer(xml_obj, xml_tayer);
             if (layer != null)
                 layers.push(layer);
-        }
+            xml_tayer = xml_layers.get_next_node();
+        }  
         return layers;
     };    
-    var _get_layer = function (xml_layer)
+    var _get_layer = function (xml_obj, xml_layer)
     {
-        var visible = xml_layer.getAttribute("visible");
+        var visible = xml_obj.get_string_value("@visible", xml_layer);
         if (visible == "0")
             return null;
             
-        var layer = {};     
-        layer.name = xml_layer.getAttribute("name");
-        layer.width = _string2int(xml_layer.getAttribute("width"),0);
-        layer.height = _string2int(xml_layer.getAttribute("width"),0);
-        layer.opacity = _string2float(xml_layer.getAttribute("opacity"), 1);
-        var xml_properties = jQuery(xml_layer).find("properties").find("property"); 
-        layer.properties = _get_properties(xml_properties);
-        var xml_data = jQuery(xml_layer).find("data");
-        layer.data = _get_data(xml_data);
+        var layer = {};    
+       
+        layer.name = xml_obj.get_string_value("@name", xml_layer);
+        layer.width = xml_obj.get_number_value("@width", xml_layer);
+        layer.height = xml_obj.get_number_value("@height", xml_layer);        
+        layer.opacity = xml_obj.get_number_value("@opacity", xml_layer, 1);
+        var xml_properties = xml_obj.get_nodes("./properties/property", xml_layer);
+        layer.properties = _get_properties(xml_obj, xml_properties);
+        var xml_data = xml_obj.get_nodes("./data", xml_layer).get_next_node();
+        layer.data = _get_data(xml_obj, xml_data);
         return layer;
     };
-    var _get_data = function (xml_data)
-    {
-        var encoding = xml_data.attr("encoding");
-        var compression = xml_data.attr("compression");      
-        var data = xml_data.text();
+    var _get_data = function (xml_obj, xml_data)
+    {      
+        var encoding = xml_obj.get_string_value("@encoding", xml_data);
+        var compression = xml_obj.get_string_value("@compression", xml_data);      
+        var data = _get_node_text(xml_data);
         data = (encoding == "base64")? _decBase64AsArray(data):_decCSV(data);
-        if (compression != null)
-            alert ("TMXImporter could not support any decompression"); 
+        if (compression != "")
+            alert ("TMXImporter could not support any decompression");             
         return data;
-    };    
-    var _get_properties = function (xml_properties)
+    };
+    
+    // xpath: text() has 4096 limitation
+    var _get_node_text = function (node) 
     {
-        var i, name, value, xml_property;
-        var properties_cnt = xml_properties.length;
-        var properties = {};
-        for(i=0; i<properties_cnt; i++)
-        {
-            xml_property = xml_properties[i];
-            name = xml_property.getAttribute("name");
-            value = xml_property.getAttribute("value");
-            properties[name] = value;
+        var r = "", x, cnt = node.childNodes.length;
+        for (x = 0;x < cnt; x++) {
+            r = r + node.childNodes[x].nodeValue;
         }
+        return r;
+    };
+    
+    var _get_properties = function (xml_obj, xml_properties)
+    {  
+        var properties = {};
+        var name, value;         
+        var xml_property = xml_properties.get_next_node();              
+        while (xml_property != null)
+        {            
+            name = xml_obj.get_string_value("@name", xml_property);
+            value = xml_obj.get_string_value("@value", xml_property);
+            properties[name] = value;
+            xml_property = xml_properties.get_next_node();
+        }   
         return properties;
     };
     var _string2int = function(s, default_value)
@@ -586,5 +602,147 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		return singleton;
 
 	})();
+    
+    // copy from xml plugin
+    var XMLParser = function(xml_string, isIE) 
+	{
+        this.isIE = isIE;
+        this.xmlDoc = null;
+        this._xml_nodes = new XMLNodes(null, isIE);
+        
+		var xml, tmp;
+		try {
+			if (isIE)
+			{
+				var versions = ["MSXML2.DOMDocument.6.0",
+                                "MSXML2.DOMDocument.3.0",
+                                "MSXML2.DOMDocument"];
 
+				for (var i = 0; i < 3; i++){
+					try {
+						xml = new ActiveXObject(versions[i]);
+						
+						if (xml)
+							break;
+					} catch (ex){
+						xml = null;
+					}
+				}
+				
+				if (xml)
+				{
+					xml.async = "false";
+					xml.loadXML(xml_string);
+				}
+			}
+			else {
+				tmp = new DOMParser();
+				xml = tmp.parseFromString(xml_string, "text/xml");
+			}
+		} catch(e) {
+			xml = null;
+		}
+		
+		if (xml)
+		{
+			this.xmlDoc = xml;
+			
+			if (isIE)
+				this.xmlDoc.setProperty("SelectionLanguage","XPath");
+		}
+	};   
+    var XMLParserProto = XMLParser.prototype;
+
+    XMLParserProto._xpath_eval_one = function (xpath, result_type, root)
+	{
+		if (!this.xmlDoc)
+			return;
+		
+        if (root == null)
+		    root = this.xmlDoc.documentElement;
+		
+		try {
+			if (this.isIE)
+				return root.selectSingleNode(xpath);
+			else
+				return this.xmlDoc.evaluate(xpath, root, null, result_type, null);
+		}
+		catch (e) { return null; }
+	};
+	
+	XMLParserProto._xpath_eval_many = function(xpath, result_type, root)
+	{
+		if (!this.xmlDoc)
+			return;
+		
+        if (root == null)
+		    root = this.xmlDoc.documentElement;
+		
+		try {
+			if (this.isIE)
+				return root.selectNodes(xpath);
+			else
+				return this.xmlDoc.evaluate(xpath, root, null, result_type, null);
+		}
+		catch (e) { return null; }
+	};
+    
+    XMLParserProto.get_number_value = function(xpath, root, default_value)
+    {
+        default_value = default_value || 0;
+		var result = this._xpath_eval_one(xpath, 1, root);
+		
+		if (!result)
+			result = default_value;
+		else if (this.isIE)
+			result = parseInt(result.nodeValue, 10) || default_value;
+		else
+			result = result.numberValue || default_value;
+        return result;
+    };
+    
+    XMLParserProto.get_string_value = function(xpath, root, default_value)
+    {
+        default_value = default_value || "";    
+		var result = this._xpath_eval_one(xpath, 2, root);
+		
+		if (!result)
+			result = default_value;
+		else if (this.isIE)
+			result = result.nodeValue || default_value;
+		else
+			result = result.stringValue || default_value;    
+        return result;
+    };
+    
+    XMLParserProto.get_nodes = function(xpath, root)
+    {
+        this._xml_nodes._set_nodes(this._xpath_eval_many(xpath, 7, root));
+        return this._xml_nodes;
+    };
+    
+    var XMLNodes = function (nodes, isIE) 
+	{ 
+        this.isIE = isIE;
+        this._set_nodes(nodes);
+    };
+    var XMLNodesProto = XMLNodes.prototype;
+    
+    XMLNodesProto._set_nodes = function(nodes)
+    {
+        this.nodes = nodes;  
+        this.node_cnt = (nodes == null)? 0:
+                        (this.isIE)? nodes.length:nodes.snapshotLength;
+        this._i = 0;                        
+    };
+    
+    XMLNodesProto.get_next_node = function()
+    {
+        if ((this._i >= this.node_cnt) || (this.nodes == null))
+            return null;
+        
+        var node = (this.isIE)? this.nodes[this._i]:this.nodes.snapshotItem(this._i);
+        this._i += 1;
+        return node;
+    };
 }());    
