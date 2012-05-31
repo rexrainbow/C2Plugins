@@ -105,7 +105,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	instanceProto._create_layer_objects = function(tmx_layer)
 	{
         var c2_layer =  this._get_layer(tmx_layer.name);
-        if (c2_layer == null)
+        if ((c2_layer == null) && (this._obj_type != null))
             alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
         var width = tmx_layer.width;
         var height = tmx_layer.height;
@@ -382,7 +382,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         tileset.tilewidth = xml_obj.get_number_value("@tilewidth", xml_tileset);
         tileset.tileheight = xml_obj.get_number_value("@tileheight", xml_tileset);
         tileset.spacing = xml_obj.get_number_value("@spacing", xml_tileset);
-        tileset.margin = xml_obj.get_number_value("@margin", xml_tileset);
+        tileset.margin = xml_obj.get_number_value("@margin", xml_tileset); 
         var xml_tiles = xml_obj.get_nodes("./tile", xml_tileset);
         tileset.tiles = _get_tiles(xml_obj, xml_tiles);
         
@@ -395,7 +395,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
    
         var tiles = {};  
         var id;
-        var xml_tile = xml_tiles.get_next_node();              
+        var xml_tile = xml_tiles.get_next_node();    
+     
         while (xml_tile != null)
         {
             id = xml_obj.get_number_value("@id", xml_tile) + 1;
@@ -717,8 +718,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     
     XMLParserProto.get_nodes = function(xpath, root)
     {
-        this._xml_nodes._set_nodes(this._xpath_eval_many(xpath, 7, root));
-        return this._xml_nodes;
+        return new XMLNodes(this._xpath_eval_many(xpath, 7, root), this.isIE);
     };
     
     var XMLNodes = function (nodes, isIE) 
