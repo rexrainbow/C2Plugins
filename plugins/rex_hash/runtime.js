@@ -87,9 +87,19 @@ cr.plugins_.Rex_Hash = function(runtime)
     
 	instanceProto._get_data = function(keys)
 	{           
-        var last_key = keys.splice(keys.length-1, 1);      
-        this._set_entry_byKeys(keys);
-        return this._current_entry[last_key];
+        var key_len = keys.length;
+        var i;
+        var _entry = this._my_hash;
+        for (i=0; i< key_len; i++)
+        {
+             _entry = _entry[keys[i]];
+            if ( (_entry == null) ||
+                 ((typeof _entry != "object") && (i != (key_len-1))) )
+            {
+                return null;
+            }              
+        }
+        return _entry;        
 	}; 
 	
 	//////////////////////////////////////
@@ -120,6 +130,15 @@ cr.plugins_.Rex_Hash = function(runtime)
         this.exp_CurValue = 0;      
 		return false;
 	}; 
+
+	cnds.KeyExists = function (key_string)
+	{
+	    if (key_string == "")
+            return false;
+        var data = this._get_data(key_string.split("."));		    
+        return (data != null);
+	}; 	
+	
 	//////////////////////////////////////
 	// Actions
 	pluginProto.acts = {};
@@ -169,26 +188,47 @@ cr.plugins_.Rex_Hash = function(runtime)
             delete this._current_entry[last_key];
         }
 	};  
+    
+    acts.PickKeysToArray = function (key_string, array_objs)
+	{  
+        var array_obj = array_objs.getFirstPicked();
+        if (array_obj.arr == null)
+        {
+            alert("Action:Pick keys : it is not an array object.");
+            return;
+        }
+        cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [0,1,1]);
+        
+        this._set_current_entey(key_string);
+        var key;
+		for (key in this._current_entry)
+            cr.plugins_.Arr.prototype.acts.Push.apply(array_obj, [0,key,0]); 
+	};     
+    
 	//////////////////////////////////////
 	// Expressions
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
     
-	exps.Hash = function (ret, key_string)
+	exps.Hash = function (ret, key_string, default_value)
 	{   
         var keys = (arguments.length > 2)?
                    Array.prototype.slice.call(arguments,1):
                    key_string.split(".");
         var val = this._get_data(keys);
+        if ((typeof val != "number") && (typeof val != "string"))
+            val = default_value;
 		ret.set_any(val);
 	};
     
-	exps.At = function (ret, key_string)
+	exps.At = function (ret, key_string, default_value)
 	{     
         var keys = (arguments.length > 2)?
                    Array.prototype.slice.call(arguments,1):
                    key_string.split(".");
         var val = this._get_data(keys);
+        if ((typeof val != "number") && (typeof val != "string"))
+            val = default_value;        
 		ret.set_any(val);
 	};
     

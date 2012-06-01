@@ -16,10 +16,13 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddStringParam("Key string", "The key string of the hash table.", '""');
 AddCondition(1, cf_looping | cf_not_invertible, "For each item", "For Each", 
              "For each item in <i>{0}</i>", "Repeat the event for each item in key.", "ForEachKey");
-             
+AddStringParam("Key string", "The key string of the hash table.", '""');
+AddCondition(2,0,"Key exists","Key","Key {0} exists","Check if a key exists in hash table.","KeyExists");
+
+            
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
@@ -44,12 +47,17 @@ AddStringParam("Key string", "The key string of the hash table value to remove."
 AddAction(6, 0, "Remove value by key string", "Remove", 
           "Remove value at <i>{0}</i>",
           "Remove value by a key string.", "RemoveByKeyString");
+AddStringParam("Key string", "The key string of the hash table.", '""');
+AddObjectParam("Arra", "array object to put result.");      
+AddAction(7, 0, "Pick keys", "Keys", 
+          "Pick keys at <i>{0}</i> into <i>{1}</i>",
+          "Pick keys into an array.", "PickKeysToArray");          
          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key string", "The key string of the hash to get.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get value at", 
-              "Value", "Hash", "Get value from the hash by key string.");
+              "Value", "Hash", "Get value from the hash by key string. Add second parameter to return default value when got invalid value.");
 AddStringParam("Key name", "The key string of the hash value to get.", '""');
 AddExpression(1, ef_return_any | ef_variadic_parameters, 
               "Get value from current entry", "Entry", "Entry", 
@@ -58,7 +66,7 @@ AddExpression(2, ef_return_string, "Transfer hash to string",
               "JSON", "HashTableToString", "Transfer hash table to JSON string.");
 AddStringParam("Key string", "The key string of the hash to get.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
-              "Value", "At", "Get value from the hash by key string.");
+              "Value", "At", "Get value from the hash by key string. Add second parameter to return default value when got invalid value.");
 AddExpression(4, ef_return_string, "Current key", "For Each", "CurKey", "Get the current key in a For Each loop.");
 AddExpression(5, ef_return_any, "Current value", "For Each", "CurValue", "Get the current value in a For Each loop.");
 
