@@ -107,8 +107,6 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
-	if (this.properties["Gravitation force"] < 0)
-		this.properties["Gravitation force"] = Math.abs(this.properties["Gravitation force"]);
 	if (this.properties["Gravitation range"] < 0)
 		this.properties["Gravitation range"] = Math.abs(this.properties["Gravitation range"]);		
 }
