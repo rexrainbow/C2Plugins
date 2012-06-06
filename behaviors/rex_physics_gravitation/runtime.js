@@ -293,7 +293,6 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	acts.SetTargetActivated = function (s)
 	{
 		this._set_target((s==1));
-		this._set_target((s==1));
 	}; 	
 
 	acts.SetForce = function (f)
