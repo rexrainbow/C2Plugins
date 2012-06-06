@@ -201,7 +201,6 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	    {
 	        if (uid in this.current_targets)
 	            continue;
-	            
             this.attracted_target_uid = parseInt(uid);	        
 	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.EndAttracting, this.inst);  
 	    }   	          
@@ -210,13 +209,11 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	behinstProto._attracted_by_source_end = function ()
 	{
 	    var uid, source_inst;
-	    var sources = this.sources[this.target_tag];
 	    for (uid in this.pre_sources)
 	    {
 	        if (uid in this.current_sources)
-	            continue;
-	        source_inst = sources[uid];        
-	        this.attracting_source_uid = source_inst.uid;  
+	            continue;     
+	        this.attracting_source_uid = uid;  
 	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.EndAttracted, this.inst);  
 	    }  
 	};		
