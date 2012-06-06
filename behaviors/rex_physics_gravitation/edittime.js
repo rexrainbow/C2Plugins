@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, 0, "Has been attracted", "", "{my} has been attracted", 
-             "Target has been attracted by source.", "HasBeenAttract");
+             "Target has been attracted by source.", "HasBeenAttracted");
 AddCondition(2, cf_trigger, "Begin attracted", "Target", 
              "{my} Begin attracted", 
 			 "Triggered when attracted beginning, to get attracted source uid.", 
