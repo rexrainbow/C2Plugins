@@ -6,20 +6,31 @@
 		"description":	"Local gravitation, standed on physics behavior.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Attributes",
+		"category":		"Physics helper",
 		"flags":		bf_onlyone
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, 0, "Has been inhaled", "", "{my} has been inhaled", 
-             "Target has been inhaled by source.", "Inhaled");
-AddCondition(2, cf_trigger, "On inhaled", "", 
-             "On {my} inhaled", 
-			 "Triggered when inhaled, to get inhaled source uid.", 
-			 "OnInhaled");  
-
+AddCondition(1, 0, "Has been attracted", "", "{my} has been attracted", 
+             "Target has been attracted by source.", "HasBeenAttract");
+AddCondition(2, cf_trigger, "Begin attracted", "Target", 
+             "{my} Begin attracted", 
+			 "Triggered when attracted beginning, to get attracted source uid.", 
+			 "BeginAttracted");  
+AddCondition(3, cf_trigger, "Begin attracting", "Source", 
+             "{my} Begin attracting", 
+			 "Triggered when attracting beginning, to get attracted target uid.", 
+			 "BeginAttracting");  	
+AddCondition(4, cf_trigger, "End attracted", "Target", 
+             "{my} End attracted", 
+			 "Triggered when attracted ending, to get attracted source uid.", 
+			 "EndAttracted");  
+AddCondition(5, cf_trigger, "End attracting", "Source", 
+             "{my} End attracting", 
+			 "Triggered when attracting ending, to get attracted target uid.", 
+			 "EndAttracting");  			 		 
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -51,7 +62,9 @@ AddExpression(1, ef_return_number, "Get source enable", "Enable", "IsSource", "1
 AddExpression(2, ef_return_number, "Get target enable", "Enable", "IsTarget", "1 is target.");
 AddExpression(3, ef_return_number, "Get force", "", "Force", "Get applied force.");
 AddExpression(4, ef_return_number, "Get sensitivity range", "", "Range", "Get sensitivity range.");
-AddExpression(5, ef_return_number, "Get inhaled source uid", "Source", "SourceUID", "Get inhaled source uid.");
+AddExpression(5, ef_return_number, "Get attracting source uid", "Source", "SourceUID", "Get attracting source uid.");
+AddExpression(6, ef_return_number, "Get attracted target uid", "Target", "TargetUID", "Get attracted target uid.");
+
 
 ACESDone();
 

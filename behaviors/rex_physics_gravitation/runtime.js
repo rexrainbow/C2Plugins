@@ -56,9 +56,28 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         this._set_target((this.properties[4] == 1));
         this.gravitation_force = this.properties[2];
         this._set_range(this.properties[3]);
-        this.inhaled = false;
-        this.inhaled_source_uid = 0;
+        this.attracted = false;
+        this.attracting_source_uid = (-1);
+        this.attracted_target_uid = (-1);
+
+        this.pre_sources = {};
+        this.pre_targets = {};        
+        this.current_sources = {};
+        this.current_targets = {};
 	};
+	
+	behinstProto.onDestroy = function()
+	{
+	    this._source_remove();
+	    var uid, has_inst = false;
+	    for (uid in this.sources[this.source_tag])
+	    {
+	        has_inst = true;
+	        break;
+	    }
+	    if (!has_inst)
+	        delete this.sources[this.source_tag];
+	}; 	
 	
 	behinstProto._source_append = function()
 	{
@@ -126,7 +145,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         if (!this.is_target)
             return;
             
-        this.inhaled = false;
+        this.attracted = false;
         if (!(this.target_tag in this.sources))
             return;
             
@@ -140,13 +159,68 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
             if (this._in_range(inst,  source_grange_pow2))
             {
                 this._apply_force_toward(source_inst.gravitation_force, inst.x, inst.y);
-                this.inhaled = true;
-                this.inhaled_source_uid = uid;
-                this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.OnInhaled, this.inst);  
+                this.attracted = true;
+                this._attracting_target(source_inst, this.inst.uid);
+                this._attracted_by_source(this, uid);
             }
         }
 	};
-    
+	behinstProto.tick2 = function ()
+	{   
+	    this._attracting_target_end();
+	    this._attracted_by_source_end();
+	    	    
+	    copy_table(this.pre_sources, this.current_sources);
+	    clean_table(this.current_sources);
+	    copy_table(this.pre_targets, this.current_targets);
+	    clean_table(this.current_targets);	    	    
+	};	
+	
+	behinstProto._attracting_target = function (source_inst, target_uid)
+	{
+	    source_inst.attracted_target_uid = target_uid;
+	    var pre_targets = source_inst.pre_targets;
+	    if (!(target_uid in source_inst.pre_targets))
+	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.BeginAttracting, source_inst.inst);  
+	    source_inst.current_targets[target_uid] = true;
+	}; 
+	
+	behinstProto._attracted_by_source = function (target_inst, source_uid)
+	{
+	    this.attracting_source_uid = source_uid;	    
+	    var pre_sources = target_inst.pre_sources;
+	    if (!(source_uid in target_inst.pre_sources))
+    	    this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.BeginAttracted, target_inst.inst);  
+	    target_inst.current_sources[source_uid] = true; 
+	};	
+	
+	behinstProto._attracting_target_end = function ()
+	{
+	    var uid;
+	    for (uid in this.pre_targets)
+	    {
+	        if (uid in this.current_targets)
+	            continue;
+	            
+            this.attracted_target_uid = parseInt(uid);	        
+	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.EndAttracting, this.inst);  
+	    }   	          
+	}; 
+	
+	behinstProto._attracted_by_source_end = function ()
+	{
+	    var uid, source_inst;
+	    var sources = this.sources[this.target_tag];
+	    for (uid in this.pre_sources)
+	    {
+	        if (uid in this.current_sources)
+	            continue;
+	        source_inst = sources[uid];        
+	        this.attracting_source_uid = source_inst.uid;  
+	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.EndAttracted, this.inst);  
+	    }  
+	};		
+	
 	behinstProto._in_range = function (inst1, sensitivity_range_pow2)
 	{
 	   if (sensitivity_range_pow2 == 0)
@@ -163,21 +237,49 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	{
        cr.behaviors.Physics.prototype.acts.ApplyForceToward.apply(this.physics_behavior_inst, [f, px, py, 0]);       
 	};    
-    
+
+    var clean_table = function (table)
+    {
+        var key;
+        for (key in table)
+            delete table[key];
+    };
+    var copy_table = function (target, source)
+    {
+        clean_table(target);
+        var key;
+        for (key in source)
+            target[key] = source[key];
+    };    
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};
 	var cnds = behaviorProto.cnds;
 
-	cnds.Inhaled = function ()
+	cnds.HasBeenAttracted = function ()
 	{
-		return this.inhaled;
+		return this.attracted;
 	};
 
-	cnds.OnInhaled = function ()
+	cnds.BeginAttracted = function ()
 	{
 		return true;
 	};	
+
+	cnds.BeginAttracting = function ()
+	{
+		return true;
+	};	
+	
+	cnds.EndAttracted = function ()
+	{
+		return true;
+	};	
+
+	cnds.EndAttracting = function ()
+	{
+		return true;
+	};		
 	//////////////////////////////////////
 	// Actions
 	behaviorProto.acts = {};
@@ -239,6 +341,10 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	};	
 	exps.SourceUID = function (ret)
 	{
-		ret.set_int(this.inhaled_source_uid);
+		ret.set_int(this.attracting_source_uid);
 	};		
+	exps.TargetUID = function (ret)
+	{
+		ret.set_int(this.attracted_target_uid);
+	};			
 }());
