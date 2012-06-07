@@ -7,13 +7,13 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Physics helper",
-		"flags":		bf_onlyone
+		"flags":		0
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, 0, "Has been attracted", "", "{my} has been attracted", 
+AddCondition(1, 0, "Has been attracted", "Target", "{my} has been attracted", 
              "Target has been attracted by source.", "HasBeenAttracted");
 AddCondition(2, cf_trigger, "Begin attracted", "Target", 
              "{my} Begin attracted", 
@@ -30,7 +30,9 @@ AddCondition(4, cf_trigger, "End attracted", "Target",
 AddCondition(5, cf_trigger, "End attracting", "Source", 
              "{my} End attracting", 
 			 "Triggered when attracting ending, to get attracted target uid.", 
-			 "EndAttracting");  			 		 
+			 "EndAttracting"); 
+AddCondition(6, 0, "Has attracting", "Source", "{my} has attracting", 
+             "Source has attracting target.", "HasAttracting");			  			 		 
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -64,6 +66,8 @@ AddExpression(3, ef_return_number, "Get force", "", "Force", "Get applied force.
 AddExpression(4, ef_return_number, "Get sensitivity range", "", "Range", "Get sensitivity range.");
 AddExpression(5, ef_return_number, "Get attracting source uid", "Source", "SourceUID", "Get attracting source uid.");
 AddExpression(6, ef_return_number, "Get attracted target uid", "Target", "TargetUID", "Get attracted target uid.");
+AddExpression(7, ef_return_string, "Get source tag", "Tag", "SourceTag", "Get source tag.");
+AddExpression(8, ef_return_string, "Get target tag", "Tag", "TargetTag", "Get target tag.");
 
 
 ACESDone();

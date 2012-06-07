@@ -56,7 +56,8 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         this._set_target((this.properties[4] == 1));
         this.gravitation_force = this.properties[2];
         this._set_range(this.properties[3]);
-        this.attracted = false;
+        this.has_been_attracted = false;
+        this.has_attracting = false;
         this.attracting_source_uid = (-1);
         this.attracted_target_uid = (-1);
 
@@ -145,7 +146,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         if (!this.is_target)
             return;
             
-        this.attracted = false;
+        this.has_been_attracted = false;
         if (!(this.target_tag in this.sources))
             return;
             
@@ -159,7 +160,8 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
             if (this._in_range(inst,  source_grange_pow2))
             {
                 this._apply_force_toward(source_inst.gravitation_force, inst.x, inst.y);
-                this.attracted = true;
+                this.has_been_attracted = true;
+                source_inst.has_attracting = true;
                 this._attracting_target(source_inst, this.inst.uid);
                 this._attracted_by_source(this, uid);
             }
@@ -173,7 +175,8 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	    copy_table(this.pre_sources, this.current_sources);
 	    clean_table(this.current_sources);
 	    copy_table(this.pre_targets, this.current_targets);
-	    clean_table(this.current_targets);	    	    
+	    clean_table(this.current_targets);	  
+	    this.has_attracting = false;  	    
 	};	
 	
 	behinstProto._attracting_target = function (source_inst, target_uid)
@@ -255,7 +258,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 
 	cnds.HasBeenAttracted = function ()
 	{
-		return this.attracted;
+		return this.has_been_attracted;
 	};
 
 	cnds.BeginAttracted = function ()
@@ -277,6 +280,12 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	{
 		return true;
 	};		
+
+	cnds.HasAttracting = function ()
+	{
+		return this.has_attracting;
+	};	
+	
 	//////////////////////////////////////
 	// Actions
 	behaviorProto.acts = {};
@@ -342,5 +351,14 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	exps.TargetUID = function (ret)
 	{
 		ret.set_int(this.attracted_target_uid);
-	};			
+	};	
+	exps.SourceTag = function (ret)
+	{
+		ret.set_string(this.source_tag);
+	};		
+	exps.TargetTag = function (ret)
+	{
+		ret.set_string(this.target_tag);
+	};		
+			
 }());
