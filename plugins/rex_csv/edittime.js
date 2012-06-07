@@ -66,7 +66,9 @@ AddAction(9, 0, "Remove a column", "Append/Remove", "Remove column <i>{0}</i>",
 AddStringParam("Row index", "Row index.", '""');
 AddAction(10, 0, "Remove a row", "Append/Remove", "Remove row <i>{0}</i>",
          "Remove a row.", "RemoveRow");           
-
+AddStringParam("Delimiter", "Set delimiter for splitting items.", ",");
+AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
+         "Set delimiter for splitting items.", "SetDelimiter");
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -83,12 +85,14 @@ AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get t
 AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "TableToString", "Transfer current table to JSON string.");
 AddExpression(9, ef_return_number | ef_variadic_parameters, "Get col count", "Table: Count", "ColCnt", "Get column count.");
 AddExpression(10, ef_return_number | ef_variadic_parameters, "Get row count", "Table: Count", "RowCnt", "Get row count.");
+AddExpression(11, ef_return_string, "Get delimiter", "Delimiter", "Delimiter", "Get delimiter.");
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [	
-    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),     
+    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"), 
+    new cr.Property(ept_text, "Delimiter", ",", "Set delimiter for splitting items."),     
 	];
 	
 // Called by IDE when a new object type is to be created
@@ -145,4 +149,6 @@ IDEInstance.prototype.Draw = function(renderer)
 // Don't worry about releasing them - the renderer will free them - just null out references.
 IDEInstance.prototype.OnRendererReleased = function()
 {
+    if (this.properties["Delimiter"] == "")
+        this.properties["Delimiter"] = ",";
 }

@@ -42,6 +42,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	instanceProto.onCreate = function()
 	{  
         this.is_debug_mode = this.properties[0];
+        this.strDelimiter = this.properties[1];
         this._tables = {};
         this.current_page_name = null;
         this.current_table = null;
@@ -218,6 +219,10 @@ cr.plugins_.Rex_CSV = function(runtime)
        this.current_table.RemoveRow(row);
 	};     
     
+	acts.SetDelimiter = function (s)
+	{
+       this.strDelimiter = s;
+	};      
     
 	//////////////////////////////////////
 	// Expressions
@@ -277,7 +282,13 @@ cr.plugins_.Rex_CSV = function(runtime)
 	exps.RowCnt = function (ret, page)
 	{ 
 		ret.set_int(this.GetRowCnt(page));
-	};      
+	}; 
+	
+	exps.Delimiter = function (ret, page)
+	{ 
+		ret.set_string(this.strDelimiter);
+	}; 
+    
 }());
 
 
@@ -363,7 +374,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             return;
         }
                        
-        var read_array = CSVToArray(csv_string); 
+        var read_array = CSVToArray(csv_string, this.plugin.strDelimiter); 
         
         this.keys = read_array.shift();      
         this._create_keys();
