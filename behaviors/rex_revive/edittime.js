@@ -96,4 +96,6 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
+    if (this.properties["Revive time"] < 0)
+		this.properties["Revive time"] = Math.abs(this.properties["Revive time"]);		
 }
