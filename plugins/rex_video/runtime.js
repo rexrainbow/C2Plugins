@@ -52,13 +52,21 @@ cr.plugins_.Rex_Video = function(runtime)
         var source = document.createElement('source');
         this.elem.appendChild(source);
         source.src = this.properties[0]; 
-        //this.elem.src = this.properties[0];      
-        this.elem.poster = this.properties[1];            
-        this.elem.autoplay = (this.properties[2]==1); 
-        this.elem.controls = (this.properties[3]==1);   
-        this.elem.preload = ["auto","metadata","none"][this.properties[4]];
-        this.elem.loop = (this.properties[5]==1);  
-        this.elem.muted = (this.properties[6]==1);
+        //  append other sources
+        source = document.createElement('source');
+        this.elem.appendChild(source);
+        source.src = this.properties[1];  
+        source = document.createElement('source');
+        this.elem.appendChild(source);
+        source.src = this.properties[2];
+        //          
+        this.elem.poster = this.properties[3];            
+        this.elem.autoplay = (this.properties[4]==1); 
+        this.elem.controls = (this.properties[5]==1);   
+        this.elem.preload = ["auto","metadata","none"][this.properties[6]];
+        this.elem.loop = (this.properties[7]==1);  
+        this.elem.muted = (this.properties[8]==1);
+      
         jQuery(this.elem).appendTo(this.runtime.canvasdiv ? this.runtime.canvasdiv : "body");
         
         this._pre_ended = false;

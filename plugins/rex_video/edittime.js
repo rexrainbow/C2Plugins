@@ -61,7 +61,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Source", "", "The location (URL) of the video file."),    
+    new cr.Property(ept_text, "Source 1", "", "The location (URL) of the video file."),   
+    new cr.Property(ept_text, "Source 2", "", "The location (URL) of the video file."),   
+    new cr.Property(ept_text, "Source 3", "", "The location (URL) of the video file."),    
     new cr.Property(ept_text, "Poster", "", 
                     "An image to be shown while the video is downloading."),        
     new cr.Property(ept_combo,"Autoplay", "No", 
@@ -73,7 +75,7 @@ var property_list = [
     new cr.Property(ept_combo,"Loop", "No", 
                     "The video will start over again, every time it is finished.", "No|Yes"),      
     new cr.Property(ept_combo,"Muted", "No", 
-                    "The audio output of the video should be muted.", "No|Yes"),        
+                    "The audio output of the video should be muted.", "No|Yes"),   
 ];
 	
 // Called by IDE when a new object type is to be created
