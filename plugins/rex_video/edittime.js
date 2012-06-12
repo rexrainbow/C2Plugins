@@ -61,7 +61,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Source 1", "", "The location (URL) of the video file."),   
+    new cr.Property(ept_text, "Source", "", "The location (URL) of the video file."),   
     new cr.Property(ept_text, "Source 2", "", "The location (URL) of the video file."),   
     new cr.Property(ept_text, "Source 3", "", "The location (URL) of the video file."),    
     new cr.Property(ept_text, "Poster", "", 
