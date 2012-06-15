@@ -4,7 +4,7 @@
 		"name":			"Duration",
 		"id":			"Rex_Duration",
 		"version":		"1.0",          
-		"description":	"Timer, to execute function at time-out",
+		"description":	"Execute callback during duration",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Timer",
