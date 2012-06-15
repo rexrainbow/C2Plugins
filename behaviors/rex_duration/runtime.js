@@ -92,9 +92,9 @@ cr.behaviors.Rex_Duration = function(runtime)
         else
         {
             duration_remain -= interval;         
-            timer.__duration_duration_remain = duration_remain;        
-            this._exec_callback(timer.__duration_cb_on_interval);     
-            timer.Start(Math.min(duration_remain, interval));  
+            timer.__duration_duration_remain = duration_remain;          
+            timer.Start(Math.min(duration_remain, interval)); 
+            this._exec_callback(timer.__duration_cb_on_interval);               
         }
     };
 
@@ -172,7 +172,10 @@ cr.behaviors.Rex_Duration = function(runtime)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
+        {
             this.timer.Remove();
+            timer.__duration_is_alive = false;
+        }
 	};
 
     acts.PauseAll = function ()
@@ -205,6 +208,7 @@ cr.behaviors.Rex_Duration = function(runtime)
             timer = this.timers[name];
             if (timer.IsActive());
                 timer.Remove();
+            timer.__duration_is_alive = false;
         }
 	};
 	//////////////////////////////////////
