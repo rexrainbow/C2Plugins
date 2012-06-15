@@ -14,7 +14,7 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Duration", "Duration name", '""');
+AddAnyTypeParam("Duration", "Duration name", '""');
 AddCondition(0, 0, "Is duration running", "Durations", "Is {my} <i>{0}</i> running", "", "IsRunning");
 
 //////////////////////////////////////////////////////////////
@@ -24,7 +24,7 @@ AddObjectParam("Function", "Function object for callback");
 AddAction(0, 0, "Setup", "Setup", 
           "Get {my} timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");          
-AddStringParam("Duration", "Duration name", '""');
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');
 AddNumberParam("Duration", "Duration time", 1);
 AddNumberParam("Interval", "Interval time", 0.1);
 AddStringParam("On start", "Callback at duration starting", '""');
@@ -33,25 +33,25 @@ AddStringParam("On end", "Callback at duration finished", '""');
 AddAction(2, 0, "Start duration", "Control", 
           "Start {my} <i>{0}</i> with duration to <i>{1}</i> second for each <i>{2}</i> second. Callback of 'On start' to <i>{3}</i>, 'On interval' to <i>{4}</i>, and 'On end' to <i>{5}</i>", 
           "Start duration.", "Start");
-AddStringParam("Duration", "Duration name", '""');      
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');      
 AddAction(3, 0, "Pause duration", "Control", 
           "Pause {my} <i>{0}</i>", 
           "Pause duration.", "Pause"); 
-AddStringParam("Duration", "Duration name", '""');          
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');      
 AddAction(4, 0, "Resume duration", "Control", 
           "Resume {my} <i>{0}</i>", 
           "Resume duration.", "Resume"); 
-AddStringParam("Duration", "Duration name", '""');          
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');        
 AddAction(5, 0, "Stop duration", "Control", 
           "Stop {my} <i>{0}</i>", 
           "Stop duration.", "Stop");
-AddAction(6, 0, "Pause all durations", "Control", 
+AddAction(6, 0, "Pause all durations", "Control: All", 
           "Pause {my} all durations", 
           "Pause all durations.", "PauseAll");                    
-AddAction(7, 0, "Resume all durations", "Control", 
+AddAction(7, 0, "Resume all durations", "Control: All", 
           "Resume {my} all durations", 
           "Resume all durations.", "ResumeAll"); 
-AddAction(8, 0, "Stop all durations", "Control", 
+AddAction(8, 0, "Stop all durations", "Control: All", 
           "Stop {my} all durations", 
           "Stop all durations.", "StopAll");          
 

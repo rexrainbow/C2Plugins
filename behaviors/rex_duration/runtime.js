@@ -47,7 +47,8 @@ cr.behaviors.Rex_Duration = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.timers = {};
-        this._trigger_timer = null;        
+        this._trigger_timer = null;     
+        this._timers_cache = [];        
 	};
     
 	behinstProto.onDestroy = function()
@@ -56,6 +57,25 @@ cr.behaviors.Rex_Duration = function(runtime)
         for (name in this.timers)
             this.timers[name].Remove();
 	};    
+    
+    
+	behinstProto._create_timer = function ()
+	{
+        var timer;
+        if (this._timers_cache.length > 0)
+            timer = this._timers_cache.pop()
+        else
+            timer = this.type.timeline.CreateTimer(this, this._timer_handle);       
+        return timer;
+	};
+    
+	behinstProto._destroy_timer = function (timer_name)
+	{
+        var timer = this.timers[timer_name];
+        delete this.timers[timer_name];
+        if (this._timers_cache.length < 3)
+            this._timers_cache.push(timer);            
+	};
     
 	behinstProto.tick = function ()
 	{
@@ -86,8 +106,13 @@ cr.behaviors.Rex_Duration = function(runtime)
             timer.__duration_duration_remain = 0;
             if (duration_remain == interval)
                 this._exec_callback(timer.__duration_cb_on_interval);
+            timer.__duration_is_new = false;                
             this._exec_callback(timer.__duration_cb_on_end); 
-            timer.__duration_is_alive = false;
+            if (!timer.__duration_is_new)
+            {
+                timer.__duration_is_alive = false;
+                this._destroy_timer(duration_name);
+            }
         }
         else
         {
@@ -139,7 +164,7 @@ cr.behaviors.Rex_Duration = function(runtime)
             timer.Remove(); 
         else
         {
-            timer = this.type.timeline.CreateTimer(this, this._timer_handle);          
+            timer = this._create_timer();          
             this.timers[duration_name] = timer;
         }
         timer.SetCallbackArgs(args);
@@ -149,32 +174,34 @@ cr.behaviors.Rex_Duration = function(runtime)
         timer.__duration_cb_on_interval = cb_on_interval;
         timer.__duration_cb_on_end = cb_on_end;
         timer.__duration_is_alive = true;
+        timer.__duration_is_new = true;   // prevent destroy after on end callback
         timer.Start(interval_time);
         this._trigger_timer = timer;
         this._exec_callback(cb_on_start);        
 	};
 
-    acts.Pause = function ()
+    acts.Pause = function (duration_name)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
             timer.Suspend();
 	};   
 
-    acts.Resume = function ()
+    acts.Resume = function (duration_name)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
             this.timer.Resume();
 	};       
     
-    acts.Stop = function ()
+    acts.Stop = function (duration_name)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
         {
             this.timer.Remove();
             timer.__duration_is_alive = false;
+            this._destroy_timer(duration_name);
         }
 	};
 
@@ -209,6 +236,7 @@ cr.behaviors.Rex_Duration = function(runtime)
             if (timer.IsActive());
                 timer.Remove();
             timer.__duration_is_alive = false;
+            this._destroy_timer(name);
         }
 	};
 	//////////////////////////////////////
