@@ -175,7 +175,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         timer.__duration_cb_on_end = cb_on_end;
         timer.__duration_is_alive = true;
         timer.__duration_is_new = true;   // prevent destroy after on end callback
-        timer.Start(interval_time);
+        timer.Start(Math.min(duration_time, interval_time));
         this._trigger_timer = timer;
         this._exec_callback(cb_on_start);        
 	};
