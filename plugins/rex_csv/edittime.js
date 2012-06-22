@@ -20,7 +20,7 @@ AddCondition(0, cf_looping | cf_not_invertible, "For each col", "For each col", 
              "Repeat the event for each column in the table.", "ForEachCol");
 AddStringParam("Col", "The column index.", '""');
 AddCondition(1, cf_looping | cf_not_invertible, "For each row in col", "For each col", 
-             "For each row in a column <i>{0}</i>", "Repeat the event for each row in a column.", "ForEachRowInCol");
+             "For each row in column <i>{0}</i>", "Repeat the event for each row in a column.", "ForEachRowInCol");
 AddCondition(2, cf_looping | cf_not_invertible, "For each page", "For each page", "For each page", 
              "Repeat the event for each page.", "ForEachPage");
 AddCondition(3, cf_looping | cf_not_invertible, "For each row", "For each row", "For each row", 

@@ -526,7 +526,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	CSVKlassProto.ForEachRowInCol = function (col)
 	{
-        if (! (col in this.keys))
+        if (this.keys.indexOf(col)== (-1))
         {
             if (this.is_debug_mode)
                 alert ("Can not find col index '" +col+"' in table.");          
@@ -574,7 +574,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	CSVKlassProto.ForEachColInRow = function (row)
 	{
-        if (! (row in this.items))
+        if (this.items.indexOf(row) == (-1))
         {
             if (this.is_debug_mode)
                 alert ("Can not find col index '" +row+"' in table.");          
