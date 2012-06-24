@@ -113,6 +113,13 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
             grade_out = 0;
 		ret.set_float(grade_out);
 	}; 
+	
+	exps.MemberShip = function (ret, var_name)
+	{
+        var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
+		ret.set_string(max_membership);
+	};     
+    
 }());
 
 (function ()
@@ -180,6 +187,9 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
     FRuleBankProto.execute = function ()
     {
+        var name;
+        for (name in this.out_vars)
+            this.out_vars[name] = 0;
         var i, rule_cnt = this.rules.length;
         for (i=0; i<rule_cnt; i++)
             this.rules[i].execute();
@@ -195,7 +205,10 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
     FRuleProto.execute = function()
     {
-        this.out_vars[this.out_var_name] = this.cond.get_grade();
+        var grade_value = this.cond.get_grade();
+        var current_grade_value = this.out_vars[this.out_var_name];
+        if ((current_grade_value == null) || (current_grade_value < grade_value))
+            this.out_vars[this.out_var_name] = grade_value;
     };
     
     var FCond = function(op, opA, opB)
@@ -254,6 +267,24 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         return this._membership_cb[membership].get_grade(this.value);
     }; 
     
+    FMembershipProto.get_max_membership = function()
+    {
+        var max_grade = -1;
+        var grade, membership, max_membership;
+        for (membership in this._membership_cb)
+        {
+            grade = this._membership_cb[membership].get_grade(this.value);
+            if (grade == null)
+                continue;
+            else if (grade > max_grade)
+            {             
+                max_grade = grade;
+                max_membership = membership;
+            }
+        }
+        return max_membership;
+    }; 
+    
     var FGrade = function(points)
     {
         if (points == null)
@@ -266,6 +297,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
                            3:this.get_3p_grade,
                            4:this.get_4p_grade}[points.length];
         this.points = points;
+        this.grade = 0;
     };
     var FGradeProto = FGrade.prototype;    
     
@@ -324,8 +356,14 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
     FGradeProto.get_grade = function(x)
     {
-        var grade = this._get_grade(x);
-        return grade;
+        if (x== null)
+            return this.grade;
+            
+        if (this._get_grade == null)
+            this.grade = null;
+        else
+            this.grade = this._get_grade(x);
+        return this.grade;
     }; 
     
 }());   

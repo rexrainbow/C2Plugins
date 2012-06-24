@@ -69,6 +69,8 @@ AddAction(10, 0, "Set variable value", "Input",
 // Expressions
 AddStringParam("Output", "Output name.", '""');
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Get output grade", "Output", "Grade", "Get output grade.");
+AddStringParam("Input", "Input name.", '""');
+AddExpression(2, ef_return_string | ef_variadic_parameters, "Get input maximum membership", "Input", "MemberShip", "Get input maximum membership.");
 
 ACESDone();
 
