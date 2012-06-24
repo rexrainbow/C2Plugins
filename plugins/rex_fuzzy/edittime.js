@@ -41,30 +41,30 @@ AddComboParamOption("Positive Medium");
 AddComboParamOption("Positive Big");
 AddComboParam("Membership", "Membership of variable", 3);
 AddAction(2, 0, "Add membership condition", "Condition", 
-          "Add condition <i>{0}</i>: <i>{1}</i> is <i>{2}</i>", "Add condition from membership.", "AddMembershipCond"); 
+          "Add condition <i>{0}</i> : <i>{1}</i> is <i>{2}</i>", "Add condition from membership.", "AddMembershipCond"); 
 AddStringParam("Condition", "Condition name.", '""');
 AddStringParam("Condition from", "Condition name.", '""');
 AddAction(3, 0, "Add invert condition", "Condition", 
-          "Add invert condition <i>{0}</i> from condition <i>{1}</i>", "Add invert condition.", "AddInvertCond");            
+          "Add condition <i>{0}</i> : NOT <i>{1}</i>", "Add invert condition.", "AddInvertCond");            
 AddStringParam("Condition", "Condition name.", '""');
 AddStringParam("Condition A", "Sub-condition name.", '""');
-AddComboParamOption("And");
-AddComboParamOption("Or");
+AddComboParamOption("AND");
+AddComboParamOption("OR");
 AddComboParam("Logic", "Logic", 1);
 AddStringParam("Condition B", "Sub-condition name.", '""');
 AddAction(4, 0, "Add combination condition", "Condition", 
-          "Add condition <i>{0}</i> to '<i>{1}</i> <i>{2}</i> <i>{3}</i>'", "Add combination condition.", "AddCombinationCond");    
-AddStringParam("Rule", "Rule name.", '""');
+          "Add condition <i>{0}</i> : <i>{1}</i> <i>{2}</i> <i>{3}</i>", "Add combination condition.", "AddCombinationCond");    
 AddStringParam("Condition", "Condition name.", '""');
 AddStringParam("Variable", "Variable name.", '""');
 AddAction(5, 0, "Add rule", "Rule", 
-          "Add rule <i>{0}</i>: <i>{1}</i> -> <i>{2}</i>", "Add rule.", "AddRule");  
+          "Add rule <i>{0}</i> -> <i>{1}</i>", "Add rule.", "AddRule");  
 AddAction(6, 0, "Execute rules", "Rule", 
           "Execute rules", "Execute rules.", "ExecuteRules");          
 AddStringParam("Name", "Variable name.", '""');
 AddNumberParam("Value", "Variable value.", 0);
 AddAction(10, 0, "Set variable value", "Input", 
-          "Set variable <i>{0}</i> value to <i>{1}</i>", "Set variable value.", "SetVarValue");      
+          "Set variable <i>{0}</i> value to <i>{1}</i>", "Set variable value.", "SetVarValue");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Output", "Output name.", '""');

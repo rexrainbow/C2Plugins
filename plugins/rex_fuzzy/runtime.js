@@ -86,9 +86,9 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 		this.rule_bank.add_combination_cond(cond_name, cond_A, logic_op_map[logic_op], cond_B);
 	}; 
     
-	acts.AddRule = function (rule_name, cond_name, var_name)
+	acts.AddRule = function (cond_name, var_name)
 	{
-		this.rule_bank.add_rule(rule_name, cond_name, var_name);
+		this.rule_bank.add_rule(cond_name, var_name);
 	};  
     
 	acts.SetVarValue = function (var_name, value)
@@ -119,7 +119,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 {
     cr.plugins_.Rex_Fuzzy.FRuleBank = function()
     {
-        this.rules = {};
+        this.rules = [];
         this.conds = {};
         this.in_vars = {};
         this.out_vars = {};
@@ -163,16 +163,14 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         this.conds[cond_name] = new FCond(logic_op, cond_A_obj, cond_B_obj );
     }; 
 
-	FRuleBankProto.add_rule = function (rule_name, cond_name, var_name)
-	{
-        if (this.rules[rule_name] != null)
-            alert("Fuzzy: rule "+ rule_name + " had existed");    
+	FRuleBankProto.add_rule = function (cond_name, var_name)
+	{   
         var cond_obj = this.conds[cond_name];            
         if (cond_obj == null)
             alert("Fuzzy: can not find condition "+ cond_name); 
         if (this.out_vars[var_name] != null)
             alert("Fuzzy: Output "+ var_name + " had been defined");       
-		this.rules[rule_name] = new FRule(cond_obj, var_name, this.out_vars);
+		this.rules.push( new FRule(cond_obj, var_name, this.out_vars) );
 	}; 
     
     FRuleBankProto.set_variable_value = function (var_name, value)
@@ -182,9 +180,9 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
     FRuleBankProto.execute = function ()
     {
-        var name;
-        for (name in this.rules)
-            this.rules[name].execute();
+        var i, rule_cnt = this.rules.length;
+        for (i=0; i<rule_cnt; i++)
+            this.rules[i].execute();
     }; 
     
     var FRule = function(cond, out_var_name, out_vars)
@@ -282,7 +280,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         else if (x<p1)
             return (x-p0)/(p1-p0);
         else // if (x>p2)
-            return (x-p2)/(p3-p2);
+            return (p3-x)/(p3-p2);
     }; 
     
     FGradeProto.get_3p_grade = function(x)
@@ -295,14 +293,13 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
             return 0;
         else if (x<p1)
             return (x-p0)/(p1-p0);
-        else // if (x>p2)
-            return (x-p2)/(p3-p2);    
+        else // if (x>p1)
+            return (p2-x)/(p2-p1);    
     }; 
     
     FGradeProto.get_2p_grade = function(x)
     {
         var p0=this.points[0], p1=this.points[1];
-        var is_inorder = (p0 < p1);
         
         if (p0 < p1)
         {
@@ -317,17 +314,18 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         else
         {
             if (x<=p1)
-                return 0;
+                return 1;
             else if (x>=p0)
-                return 1;    
+                return 0;   
             else
-                return (x-p1)/(p0-p1);        
+                return (x-p0)/(p1-p0);        
         }
     }; 
     
     FGradeProto.get_grade = function(x)
     {
-        return this._get_grade(x);
+        var grade = this._get_grade(x);
+        return grade;
     }; 
     
 }());   
