@@ -67,6 +67,7 @@ cr.plugins_.Rex_Pause = function(runtime)
         else
         {
             this.runtime.timescale = this.previous_timescale;
+            this.previous_timescale = 0;
             trig_method = cr.plugins_.Rex_Pause.prototype.cnds.OnResume;
         }
         this.runtime.trigger(trig_method, this);   
