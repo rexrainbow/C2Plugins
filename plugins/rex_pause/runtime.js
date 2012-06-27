@@ -113,7 +113,7 @@ cr.plugins_.Rex_Pause = function(runtime)
 	pluginProto.exps = {};
 	var exps = pluginProto.exps;
 
-    exps.Timescale = function (ret)
+    exps.PreTimescale = function (ret)
 	{
 	    ret.set_float( this.previous_timescale );
 	};
