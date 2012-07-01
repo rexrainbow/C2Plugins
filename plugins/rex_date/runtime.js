@@ -46,14 +46,14 @@ cr.plugins_.Rex_Date = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 	
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
-	acts.StartTimer = function (name)
+	function Acts() {};
+	pluginProto.acts = new Acts();
+	Acts.prototype.StartTimer = function (name)
 	{
 	    var timer = new Date();
 		this._timers[name] = timer.getTime();
@@ -61,58 +61,58 @@ cr.plugins_.Rex_Date = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.Year = function (ret)
+	Exps.prototype.Year = function (ret)
 	{	
 	    var today = new Date();
 		ret.set_int(today.getFullYear());
 	};
 	
-	exps.Month = function (ret)
+	Exps.prototype.Month = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getMonth()+1);
 	};
 	
-	exps.Date = function (ret)
+	Exps.prototype.Date = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getDate());
 	};	
 	
-	exps.Day = function (ret)
+	Exps.prototype.Day = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getDay());
 	};	
 	
-	exps.Hours = function (ret)
+	Exps.prototype.Hours = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getHours());
 	};	
 
-	exps.Minutes = function (ret)
+	Exps.prototype.Minutes = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getMinutes());
 	};	
 	
-	exps.Seconds = function (ret)
+	Exps.prototype.Seconds = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getSeconds());
 	};	
 
-	exps.Milliseconds = function (ret)
+	Exps.prototype.Milliseconds = function (ret)
 	{
 	    var today = new Date();	
 		ret.set_int(today.getMilliseconds());
 	};	
 	
-	exps.Timer = function (ret, name)
+	Exps.prototype.Timer = function (ret, name)
 	{
 	    var delta = 0;
 		var start_tick = this._timers[name];
@@ -123,15 +123,15 @@ cr.plugins_.Rex_Date = function(runtime)
 		ret.set_int(delta);
 	};	
 
-	exps.CurTicks = function (ret)
+	Exps.prototype.CurTicks = function (ret)
 	{
 	    var today = new Date();
         ret.set_int(today.getTime());
 	};	
 
-	exps.UnixTimestamp = function (ret)
+	Exps.prototype.UnixTimestamp = function (ret)
 	{
 	    var today = new Date();
-        ret.set_int(today.getTime());
+        ret.set_float(today.getTime());
 	};		
 }());
