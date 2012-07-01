@@ -133,10 +133,10 @@ cr.behaviors.Rex_Flash = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnFlashFinish = function ()
+	Cnds.prototype.OnFlashFinish = function ()
 	{
 		return (this.is_my_call);
 	};
@@ -144,25 +144,25 @@ cr.behaviors.Rex_Flash = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 
-	acts.Start = function ()
+	Acts.prototype.Start = function ()
 	{
         this.Start();
 	};     
     
-	acts.End = function ()
+	Acts.prototype.End = function ()
 	{
         this.End();
 	};  
 
-	acts.SetParameters = function (s)
+	Acts.prototype.SetParameters = function (s)
 	{
 		var params = s.split(",");
         
@@ -179,7 +179,7 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.CmdQueue.SetRepeatCnt(parseFloat(params[6]));       
 	};  
     
-	acts.SetStartEndValue = function (start, end)
+	Acts.prototype.SetStartEndValue = function (start, end)
 	{
         this.CmdStart2End.SetStartEnd(start, end);
         this.CmdEndHold.SetHold(end);
@@ -187,7 +187,7 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.CmdStartHold.SetHold(start);    
 	};  
         
-	acts.SetDuration = function (start2end, endHold, end2start, startHold)
+	Acts.prototype.SetDuration = function (start2end, endHold, end2start, startHold)
 	{
         this.CmdStart2End.SetDuration(start2end);
         this.CmdEndHold.SetDuration(endHold);
@@ -195,17 +195,17 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.CmdStartHold.SetDuration(startHold);  
 	}; 
     
-	acts.SetRepeatCount = function (repeat_count)
+	Acts.prototype.SetRepeatCount = function (repeat_count)
 	{
         this.CmdQueue.SetRepeatCnt(repeat_count);    
 	}; 
     
-	acts.SetDestroy = function (s)
+	Acts.prototype.SetDestroy = function (s)
 	{
         this.destroy_at_finish = s;    
 	}; 
     
-	acts.Flash = function (period, repeat_count)
+	Acts.prototype.Flash = function (period, repeat_count)
 	{
 
         var start = 1;
@@ -229,50 +229,50 @@ cr.behaviors.Rex_Flash = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    
     
-	exps.StartValue = function (ret)
+	Exps.prototype.StartValue = function (ret)
 	{
 		ret.set_float(this.CmdStartHold.hold);
 	};  
     
-	exps.EndValue = function (ret)
+	Exps.prototype.EndValue = function (ret)
 	{
 		ret.set_float(this.CmdEndHold.hold);
 	};  
     
-	exps.Start2End = function (ret)
+	Exps.prototype.Start2End = function (ret)
 	{
 		ret.set_float(this.CmdStart2End.duration_save);
 	};  
     
-	exps.EndHold = function (ret)
+	Exps.prototype.EndHold = function (ret)
 	{
 		ret.set_float(this.CmdEndHold.duration_save);
 	};
     
-	exps.End2Start = function (ret)
+	Exps.prototype.End2Start = function (ret)
 	{
 		ret.set_float(this.CmdEnd2Start.duration_save);
 	};  
     
-	exps.StartHold = function (ret)
+	Exps.prototype.StartHold = function (ret)
 	{
 		ret.set_float(this.CmdStartHold.duration_save);
 	};    
     
-	exps.Repeat = function (ret)
+	Exps.prototype.Repeat = function (ret)
 	{
 		ret.set_int(this.CmdQueue.repeat_count_save);
 	};   
     
-	exps.IsDestroy = function (ret)
+	Exps.prototype.IsDestroy = function (ret)
 	{
 		ret.set_int(this.destroy_at_finish);
 	};   

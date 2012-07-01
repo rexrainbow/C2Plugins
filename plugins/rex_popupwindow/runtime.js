@@ -63,15 +63,15 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
 
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.PopupWindow = function (name, url, width, height, top_margin, left_margin,
+	Acts.prototype.PopupWindow = function (name, url, width, height, top_margin, left_margin,
                                  has_toolbar, has_menubar, has_scrollbar, 
                                  can_resizable, show_location, show_status)
 	{
@@ -85,7 +85,7 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
         this.children[name] = panel;
 	};    
     
-    acts.Setup = function (fn_objs)
+    Acts.prototype.Setup = function (fn_objs)
 	{
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
@@ -94,17 +94,17 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
             alert ("Popup window should connect to a function object");
 	};      
     
-    acts.SeParameter = function (index, value)
+    Acts.prototype.SeParameter = function (index, value)
 	{
         this.param[index] = value;
 	};    
     
-	acts.CleanParameters = function ()
+	Acts.prototype.CleanParameters = function ()
 	{
         this.param = {};
 	};      
     
-	acts.SendCmd2Child = function (name, cmd_string)
+	Acts.prototype.SendCmd2Child = function (name, cmd_string)
 	{
         var child_inst = this.children[name].cr.plugins_.Rex_PopupWindow.inst;
         if (child_inst == null)
@@ -113,7 +113,7 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
         child_inst.run_callback(0, cmd_string);
 	};  
 
-	acts.SendCmd2Parent = function (cmd_string)
+	Acts.prototype.SendCmd2Parent = function (cmd_string)
 	{       
         if (opener==null)
             return;          
@@ -125,7 +125,7 @@ cr.plugins_.Rex_PopupWindow.parent_inst = null;
 	}; 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

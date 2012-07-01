@@ -145,25 +145,25 @@ cr.behaviors.Rex_Revive = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnDestroy = function ()
+	Cnds.prototype.OnDestroy = function ()
 	{
 		return true;
 	};
 
-	cnds.OnRevive = function ()
+	Cnds.prototype.OnRevive = function ()
 	{
 		return true;
 	};
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-    acts.Setup = function (timeline_objs)
+    Acts.prototype.Setup = function (timeline_objs)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -172,27 +172,27 @@ cr.behaviors.Rex_Revive = function(runtime)
             alert ("Revive behavior should connect to a timeline object");
 	}; 
     
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 	
-	acts.SetReviveTime = function (t)
+	Acts.prototype.SetReviveTime = function (t)
 	{
         this.revive_time = t;
 	};
         
-	acts.SetMemory = function (index, value)
+	Acts.prototype.SetMemory = function (index, value)
 	{
         this._mem[index] = value;
 	};    
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-    exps.Mem = function (ret, index)
+    Exps.prototype.Mem = function (ret, index)
 	{
         var value = this._mem[index];
         if (value == null) 

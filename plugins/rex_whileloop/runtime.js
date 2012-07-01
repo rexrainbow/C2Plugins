@@ -46,10 +46,10 @@ cr.plugins_.Rex_WhileLoop = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
-	cnds.While = function ()
+	Cnds.prototype.While = function ()
 	{
         var current_event = this.runtime.getCurrentEventStack().current_event;
         
@@ -65,24 +65,24 @@ cr.plugins_.Rex_WhileLoop = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.SetConditionValue = function (value)
+	Acts.prototype.SetConditionValue = function (value)
 	{ 
 		this.condition_value = value;
 	};
 
-	acts.SubtractConditionValue = function ()
+	Acts.prototype.SubtractConditionValue = function ()
 	{ 
 		this.condition_value -= 1;
 	};    
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.Cond = function (ret)
+	Exps.prototype.Cond = function (ret)
 	{
 		ret.set_int(this.condition_value);
 	};

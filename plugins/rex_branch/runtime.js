@@ -46,21 +46,21 @@ cr.plugins_.Rex_Branch = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
-	cnds.BranchIf = function ()
+	Cnds.prototype.BranchIf = function ()
 	{
         this.switch_branch = true;
 		return true;
 	};
 
-	cnds.BranchElseIf = function ()
+	Cnds.prototype.BranchElseIf = function ()
 	{
 		return this.switch_branch;
 	};    
 
-	cnds.BranchBreak = function ()
+	Cnds.prototype.BranchBreak = function ()
 	{
         this.switch_branch = false;
 		return true;
@@ -68,12 +68,12 @@ cr.plugins_.Rex_Branch = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

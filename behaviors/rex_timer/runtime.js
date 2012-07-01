@@ -78,20 +78,20 @@ cr.behaviors.Rex_Timer = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
     
-	cnds.IsRunning = function ()
+	Cnds.prototype.IsRunning = function ()
 	{  
 		return ((this.timer)? this.timer.IsActive():false);  
 	};
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-    acts.Setup = function (timeline_objs, fn_objs)
+    Acts.prototype.Setup = function (timeline_objs, fn_objs)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -106,7 +106,7 @@ cr.behaviors.Rex_Timer = function(runtime)
             alert ("Timer behavior should connect to a function object");
 	};      
     
-    acts.Create = function (command)
+    Acts.prototype.Create = function (command)
 	{
         this.command = command;
         if (this.timer)  // timer exist
@@ -115,59 +115,59 @@ cr.behaviors.Rex_Timer = function(runtime)
             this.timer = this.type.timeline.CreateTimer(this, this._timer_handle);   
 	}; 
     
-    acts.Start = function (delay_time)
+    Acts.prototype.Start = function (delay_time)
 	{
         if (this.timer)
             this.timer.Start(delay_time);
 	};
 
-    acts.Pause = function ()
+    Acts.prototype.Pause = function ()
 	{
         if (this.timer)
             this.timer.Suspend();
 	};   
 
-    acts.Resume = function ()
+    Acts.prototype.Resume = function ()
 	{
         if (this.timer)
             this.timer.Resume();
 	};       
     
-    acts.Stop = function ()
+    Acts.prototype.Stop = function ()
 	{
         if (this.timer)
             this.timer.Remove();
 	};   
     
-    acts.SetParameter = function (index, value)
+    Acts.prototype.SetParameter = function (index, value)
 	{
         this.param[index] = value;
 	};    
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-    exps.Remainder = function (ret)
+    Exps.prototype.Remainder = function (ret)
 	{
         var val = (this.timer)? this.timer.RemainderTimeGet():0;     
 	    ret.set_float(val);
 	};
     
-	exps.Elapsed = function (ret, timer_name)
+	Exps.prototype.Elapsed = function (ret, timer_name)
 	{
         var val = (this.timer)? this.timer.ElapsedTimeGet():0;     
 	    ret.set_float(val);
 	};  
 
-    exps.RemainderPercent = function (ret)
+    Exps.prototype.RemainderPercent = function (ret)
 	{
         var val = (this.timer)? this.timer.RemainderTimePercentGet():0;     
 	    ret.set_float(val);
 	};
     
-	exps.ElapsedPercent = function (ret, timer_name)
+	Exps.prototype.ElapsedPercent = function (ret, timer_name)
 	{
         var val = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(val);

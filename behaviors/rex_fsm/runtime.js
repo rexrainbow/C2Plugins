@@ -215,32 +215,32 @@ cr.behaviors.Rex_FSM = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnEnter = function (name)
+	Cnds.prototype.OnEnter = function (name)
 	{
         this.is_echo = true;
 		return (this.is_my_call & (this.fsm["CurState"] == name));
 	};
 
-	cnds.OnDefaultEnter = function ()
+	Cnds.prototype.OnDefaultEnter = function ()
 	{
 		return (this.is_my_call);
 	}; 	
 	
-	cnds.OnExit = function (name)
+	Cnds.prototype.OnExit = function (name)
 	{
         this.is_echo = true;
 		return (this.is_my_call && (this.fsm["PreState"] == name));
 	};	
     
-	cnds.OnDefaultExit = function ()
+	Cnds.prototype.OnDefaultExit = function ()
 	{
 		return (this.is_my_call);
 	}; 	    
 
-	cnds.OnTransfer = function (name_from, name_to)
+	Cnds.prototype.OnTransfer = function (name_from, name_to)
 	{
 	    var is_my_call = this.is_my_call &&
                          ((this.fsm["PreState"] == name_from) && 
@@ -251,37 +251,37 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
     
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = (s==1);
 	};      
     
-	acts.CleanMemory = function ()
+	Acts.prototype.CleanMemory = function ()
 	{
         this.fsm["Mem"] = {};
 	};  
         
-	acts.SetMemory = function (index, value)
+	Acts.prototype.SetMemory = function (index, value)
 	{
         this.fsm["Mem"][index] = value;
 	};
 
-    acts.Request = function ()
+    Acts.prototype.Request = function ()
 	{
         if (this.activated)
 	        this.fsm.Request();
 	};  
     
-    acts.Transit = function (new_state)
+    Acts.prototype.Transit = function (new_state)
 	{
         if (this.activated)    
 	        this.fsm.Request(new_state);
 	};     
 
-    acts.CSV2Logic = function (csv_string, code_format)
+    Acts.prototype.CSV2Logic = function (csv_string, code_format)
 	{
         if (csv_string == "")
             return;
@@ -298,14 +298,14 @@ cr.behaviors.Rex_FSM = function(runtime)
         }  
 	};
 
-    acts.String2Logic = function (state_name, code_string, code_format)
+    Acts.prototype.String2Logic = function (state_name, code_string, code_format)
 	{
         if (code_string == "")
             return;
         this._load_code(this.type.logic, state_name, code_string, code_format);
 	};
     
-    acts.ConnectFn = function (fn_objs)
+    Acts.prototype.ConnectFn = function (fn_objs)
 	{  
         var fn_obj = fn_objs.instances[0];
         if (fn_obj.check_name == "FUNCTION")
@@ -314,7 +314,7 @@ cr.behaviors.Rex_FSM = function(runtime)
             alert ("Can not connect to a function object");
 	};    
     
-    acts.ConnectCSV = function (csv_objs)
+    Acts.prototype.ConnectCSV = function (csv_objs)
 	{  
         var csv_obj = csv_objs.instances[0];
         if (csv_obj.check_name == "CSV")
@@ -323,7 +323,7 @@ cr.behaviors.Rex_FSM = function(runtime)
             alert ("Can not connect to a csv object");
 	};   
     
-    acts.CSV2Action = function (csv_string)
+    Acts.prototype.CSV2Action = function (csv_string)
 	{
         if (csv_string == "")
             return;
@@ -346,7 +346,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         }  
 	};    
     
-    acts.String2Action = function (pre_state, cur_state, code_string)
+    Acts.prototype.String2Action = function (pre_state, cur_state, code_string)
 	{
         if (code_string == "")
             return;
@@ -355,7 +355,7 @@ cr.behaviors.Rex_FSM = function(runtime)
                         code_string, 1);
 	};    
 
-    acts.CSV2EnterExit = function (csv_string)
+    Acts.prototype.CSV2EnterExit = function (csv_string)
 	{
         if (csv_string == "")
             return;
@@ -377,7 +377,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         }  
 	};    
     
-    acts.String2EnterExit = function (state, 
+    Acts.prototype.String2EnterExit = function (state, 
                                          enter_code_string, exit_code_string)
 	{
         if (enter_code_string != "")
@@ -388,7 +388,7 @@ cr.behaviors.Rex_FSM = function(runtime)
                             state_name, enter_code_string, 1);       
 	}; 
 
-	acts.InjectJSFunctionObjects = function (code_string)
+	Acts.prototype.InjectJSFunctionObjects = function (code_string)
 	{
         var fn = eval("("+code_string+")");
         fn(this.type.adapter, this.type.fn_obj, this.type.csv_obj);
@@ -396,20 +396,20 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.CurState = function (ret)
+	Exps.prototype.CurState = function (ret)
 	{
 	    ret.set_string(this.fsm["CurState"]);
 	};	
 	
-	exps.PreState = function (ret)
+	Exps.prototype.PreState = function (ret)
 	{
 	    ret.set_string(this.fsm["PreState"]);
 	};
 	
-    exps.Mem = function (ret, index)
+    Exps.prototype.Mem = function (ret, index)
 	{
         var value = this.fsm["Mem"][index];
         if (value == null) 

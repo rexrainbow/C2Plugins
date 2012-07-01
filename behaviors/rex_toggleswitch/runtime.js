@@ -69,44 +69,44 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnTurnOn = function ()
+	Cnds.prototype.OnTurnOn = function ()
 	{
 		return (this.is_my_call);
 	};
 
-	cnds.OnTurnOff = function ()
+	Cnds.prototype.OnTurnOff = function ()
 	{
 		return (this.is_my_call);
 	};    
 
-	cnds.IsTurnOn = function ()
+	Cnds.prototype.IsTurnOn = function ()
 	{
 		return (this.value);
 	};       
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.ToogleValue = function ()
+	Acts.prototype.ToogleValue = function ()
 	{
 		this._toogle_value();
 	};  
 
-	acts.SetValue = function (s)
+	Acts.prototype.SetValue = function (s)
 	{
 		this._toogle_value((s==1));
 	};
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Value = function (ret)
+	Exps.prototype.Value = function (ret)
 	{        
 		ret.set_int((this.value)? 1:0);
 	};  

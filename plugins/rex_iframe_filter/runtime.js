@@ -47,10 +47,10 @@ cr.plugins_.Rex_IframeFilter = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
-	cnds.Check = function ()
+	Cnds.prototype.Check = function ()
 	{
         var is_at_top = (window.top == window);
 	    if (this.is_busting_all)
@@ -75,22 +75,22 @@ cr.plugins_.Rex_IframeFilter = function(runtime)
 	};
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-	acts.Append = function (url)
+	Acts.prototype.Append = function (url)
 	{
 	    this.white_list.push(url);
 	}; 
     
-	acts.SetJSON = function (JSON_string)
+	Acts.prototype.SetJSON = function (JSON_string)
 	{
 	    this.white_list = JSON.parse(JSON_string);
 	}; 	
 	
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

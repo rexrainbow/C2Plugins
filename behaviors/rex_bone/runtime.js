@@ -118,20 +118,20 @@ cr.behaviors.rex_Bone = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.IsPinned = function ()
+	Cnds.prototype.IsPinned = function ()
 	{
 		return !!this.pinObject;
 	};
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.Pin = function (obj)
+	Acts.prototype.Pin = function (obj)
 	{
 		if (!obj)
 			return;
@@ -149,22 +149,22 @@ cr.behaviors.rex_Bone = function(runtime)
 		this.theirStartAngle = otherinst.angle;
 	};
 	
-	acts.Unpin = function ()
+	Acts.prototype.Unpin = function ()
 	{
 		this.pinObject = null;
 	};
 	
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = (s==1);
 	};
 	
-	acts.SetEnableLockAngle = function (e)
+	Acts.prototype.SetEnableLockAngle = function (e)
 	{
 		this.is_lock_angle = (e==1);
 	};    
 	
-	acts.ForcePin = function ()
+	Acts.prototype.ForcePin = function ()
 	{
         var activated_save = this.activated;
         this.activated = true;
@@ -173,8 +173,8 @@ cr.behaviors.rex_Bone = function(runtime)
 	};      
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
 	
 }());

@@ -101,32 +101,32 @@ cr.plugins_.Rex_Tetris = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 	
-	cnds.EmptyTest = function (x, y)
+	Cnds.prototype.EmptyTest = function (x, y)
 	{	
 		return (this._is_in_array(x, y))? 
                    (this.board[x][y].mask==0):
                    false;	
 	};	
 	
-	cnds.OnBricksEliminated = function ()
+	Cnds.prototype.OnBricksEliminated = function ()
 	{
 		return true;
 	};
 
-	cnds.OnBricksFalling = function ()
+	Cnds.prototype.OnBricksFalling = function ()
 	{
 		return true;
 	};	
 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.SetData = function (x, y, mask, uid)
+	Acts.prototype.SetData = function (x, y, mask, uid)
 	{
 		var cell = this._at(x,y);
 		if (cell != null) {
@@ -135,7 +135,7 @@ cr.plugins_.Rex_Tetris = function(runtime)
 		}
 	};
 	
-	acts.BricksElimination = function ()
+	Acts.prototype.BricksElimination = function ()
 	{
 	    var x, y;
 		var is_full_line;
@@ -167,7 +167,7 @@ cr.plugins_.Rex_Tetris = function(runtime)
         this.FullLineCnt = this.full_line_indexs.length;
 	};    
     
-	acts.BricksFallen = function ()
+	Acts.prototype.BricksFallen = function ()
 	{
         var x, y, i;  
         var empty_line_index,  upper_line_index;
@@ -205,10 +205,10 @@ cr.plugins_.Rex_Tetris = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.DumpMaskArray = function (ret)
+	Exps.prototype.DumpMaskArray = function (ret)
 	{
 		var x, y;	
         var dump_out = "";
@@ -223,7 +223,7 @@ cr.plugins_.Rex_Tetris = function(runtime)
 		ret.set_string(dump_out);
 	};
     
-	exps.DumpUIDArray = function (ret)
+	Exps.prototype.DumpUIDArray = function (ret)
 	{
 		var x, y;	
         var dump_out = "";
@@ -241,7 +241,7 @@ cr.plugins_.Rex_Tetris = function(runtime)
 		ret.set_string(dump_out);
 	}; 
 	
-	exps.Mask = function (ret, x, y)
+	Exps.prototype.Mask = function (ret, x, y)
 	{
         var val = (this._is_in_array(x, y))? 
                       this.board[x][y].mask:
@@ -249,7 +249,7 @@ cr.plugins_.Rex_Tetris = function(runtime)
 	    ret.set_int(val);
 	};
 	
-	exps.UID = function (ret, x, y)
+	Exps.prototype.UID = function (ret, x, y)
 	{
         var val = (this._is_in_array(x, y))? 
                       this.board[x][y].uid:
@@ -257,27 +257,27 @@ cr.plugins_.Rex_Tetris = function(runtime)
 	    ret.set_int(val);
 	};	
 	
-	exps.CurBrickUID = function (ret)
+	Exps.prototype.CurBrickUID = function (ret)
 	{
 		ret.set_int(this.CurBrickUID);
 	};
 
-	exps.CurBrickArrX = function (ret)
+	Exps.prototype.CurBrickArrX = function (ret)
 	{
 		ret.set_int(this.CurBrickArrX);
 	};	
     
-	exps.CurBrickArrY = function (ret)
+	Exps.prototype.CurBrickArrY = function (ret)
 	{
 		ret.set_int(this.CurBrickArrY);
 	}; 
 
-	exps.FullLineCnt = function (ret)
+	Exps.prototype.FullLineCnt = function (ret)
 	{
 		ret.set_int(this.FullLineCnt);
 	}; 
 
-	exps.CurFallingLevel = function (ret)
+	Exps.prototype.CurFallingLevel = function (ret)
 	{
 		ret.set_int(this.FallingLevel);
 	};     

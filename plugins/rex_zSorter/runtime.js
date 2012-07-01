@@ -74,18 +74,18 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds; 
+	function Cnds() {};
+	pluginProto.cnds = new Cnds(); 
 	  
-	cnds.OnSortingFn = function (name)
+	Cnds.prototype.OnSortingFn = function (name)
 	{
 		return (this._sort_fn_name == name);
 	};	
 	
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
     var ZSORT = function(instance_a, instance_b)
     {        
@@ -109,7 +109,7 @@ cr.plugins_.Rex_ZSorter = function(runtime)
     }
 
     //Z-Sort all objects in current layer by their Y position
-	acts.SortObjsLayerByY = function (layerparam)
+	Acts.prototype.SortObjsLayerByY = function (layerparam)
 	{
         var layer = this.get_layer(layerparam);        
         if (layer == null)
@@ -122,12 +122,12 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	    this.runtime.redraw = true;
 	};
     
-	acts.SetXorder = function (x_order)
+	Acts.prototype.SetXorder = function (x_order)
 	{
         x_increasing = (x_order == 0);
 	};    
     
-	acts.SortByFn = function (layerparam, fn_name)
+	Acts.prototype.SortByFn = function (layerparam, fn_name)
 	{
         var layer = this.get_layer(layerparam);  
         if (layer == null)
@@ -142,26 +142,26 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	    this.runtime.redraw = true;        
 	}; 
 
-	acts.SetCmpResultDirectly = function (result)
+	Acts.prototype.SetCmpResultDirectly = function (result)
 	{
 	    this._compared_result = result;
 	};		
 	
-    acts.SetCmpResultCombo = function (result)
+    Acts.prototype.SetCmpResultCombo = function (result)
 	{
 	    this._compared_result = result -1;
 	};
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.CmpUIDA = function (ret)
+	Exps.prototype.CmpUIDA = function (ret)
 	{   
 	    ret.set_int(this._cmp_uidA);
 	};    
 	
-	exps.CmpUIDB = function (ret)
+	Exps.prototype.CmpUIDB = function (ret)
 	{   
 	    ret.set_int(this._cmp_uidB);
 	};   

@@ -598,111 +598,111 @@ cr.plugins_.rex_TouchWrap = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.OnTouchStart = function ()
+	Cnds.prototype.OnTouchStart = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnTouchEnd = function ()
+	Cnds.prototype.OnTouchEnd = function ()
 	{
 		return true;
 	};
 	
-	cnds.IsInTouch = function ()
+	Cnds.prototype.IsInTouch = function ()
 	{
 		return this.IsInTouch();
 	};
 	
-	cnds.OnTouchObject = function (type)
+	Cnds.prototype.OnTouchObject = function (type)
 	{
 		return this.OnTouchObject(type);
 	};
 	
-	cnds.IsTouchingObject = function (type)
+	Cnds.prototype.IsTouchingObject = function (type)
 	{
 		return this.IsTouchingObject(type);
 	};
 	
-	cnds.OrientationSupported = function ()
+	Cnds.prototype.OrientationSupported = function ()
 	{
 		return this.OrientationSupported();
 	};
 	
-	cnds.MotionSupported = function ()
+	Cnds.prototype.MotionSupported = function ()
 	{
 		return this.MotionSupported();
 	};
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 	// TODO: multitouch support
-	exps.X = function (ret, layerparam)
+	Exps.prototype.X = function (ret, layerparam)
 	{
 		ret.set_float(this.GetX(layerparam));
 	};
 	
-	exps.Y = function (ret, layerparam)
+	Exps.prototype.Y = function (ret, layerparam)
 	{
 		ret.set_float(this.GetY(layerparam));
 	};
 	
-	exps.AbsoluteX = function (ret)
+	Exps.prototype.AbsoluteX = function (ret)
 	{
 		ret.set_float(this.GetAbsoluteX());
 	};
 	
-	exps.AbsoluteY = function (ret)
+	Exps.prototype.AbsoluteY = function (ret)
 	{
         ret.set_float(this.GetAbsoluteY());
 	};
 	
-	exps.Alpha = function (ret)
+	Exps.prototype.Alpha = function (ret)
 	{
 		ret.set_float(this.GetAlpha());
 	};
 	
-	exps.Beta = function (ret)
+	Exps.prototype.Beta = function (ret)
 	{
 		ret.set_float(this.GetBeta());
 	};
 	
-	exps.Gamma = function (ret)
+	Exps.prototype.Gamma = function (ret)
 	{
 		ret.set_float(this.GetGamma());
 	};
 	
-	exps.AccelerationXWithG = function (ret)
+	Exps.prototype.AccelerationXWithG = function (ret)
 	{
 		ret.set_float(this.acc_g_x);
 	};
 	
-	exps.AccelerationYWithG = function (ret)
+	Exps.prototype.AccelerationYWithG = function (ret)
 	{
 		ret.set_float(this.GetAccelerationYWithG());
 	};
 	
-	exps.AccelerationZWithG = function (ret)
+	Exps.prototype.AccelerationZWithG = function (ret)
 	{
 		ret.set_float(this.GetAccelerationZWithG());
 	};
 	
-	exps.AccelerationX = function (ret)
+	Exps.prototype.AccelerationX = function (ret)
 	{
 		ret.set_float(this.GetAccelerationX());
 	};
 	
-	exps.AccelerationY = function (ret)
+	Exps.prototype.AccelerationY = function (ret)
 	{
 		ret.set_float(this.GetAccelerationY());
 	};
 	
-	exps.AccelerationZ = function (ret)
+	Exps.prototype.AccelerationZ = function (ret)
 	{
 		ret.set_float(this.GetAccelerationZ());
 	};

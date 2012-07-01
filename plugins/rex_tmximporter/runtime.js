@@ -186,10 +186,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};            
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
 	  
-	cnds.OnEachTileCell = function ()
+	Cnds.prototype.OnEachTileCell = function ()
 	{
         if (this._created_inst != null)
         {
@@ -203,125 +203,125 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 	
-    acts.ImportTMX = function (tmx_string)
+    Acts.prototype.ImportTMX = function (tmx_string)
 	{	     
         this.ImportTMX(tmx_string);
 	};
-    acts.CreateTiles = function (obj_type)
+    Acts.prototype.CreateTiles = function (obj_type)
 	{	     
         this.RetrieveTileArray(obj_type);
 	};
-    acts.ReleaseTMX = function ()
+    Acts.prototype.ReleaseTMX = function ()
 	{	     
         this._tmx_obj = null;    
 	};	
-    acts.SetOPosition = function (x,y)
+    Acts.prototype.SetOPosition = function (x,y)
 	{	     
         this.layout.PositionOX = x;
         this.layout.PositionOY = y;        
 	};
-    acts.RetrieveTileArray = function ()
+    Acts.prototype.RetrieveTileArray = function ()
 	{	  
         this.RetrieveTileArray();
 	};    
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
     
-	exps.MapWidth = function (ret)
+	Exps.prototype.MapWidth = function (ret)
 	{   
 	    ret.set_int(this.exp_MapWidth);
 	};
-	exps.MapHeight = function (ret)
+	Exps.prototype.MapHeight = function (ret)
 	{   
 	    ret.set_int(this.exp_MapHeight);
 	};
-	exps.TileWidth = function (ret)
+	Exps.prototype.TileWidth = function (ret)
 	{     
 	    ret.set_int(this.exp_TileWidth);
 	};
-	exps.TileHeight = function (ret)
+	Exps.prototype.TileHeight = function (ret)
 	{    
 	    ret.set_int(this.exp_TileHeight);
 	}; 	
-	exps.TotalWidth = function (ret)
+	Exps.prototype.TotalWidth = function (ret)
 	{     
 	    ret.set_int(this.exp_TotalWidth);
 	};
-	exps.TotalHeight = function (ret)
+	Exps.prototype.TotalHeight = function (ret)
 	{    
 	    ret.set_int(this.exp_TotalHeight);
 	}; 	
-	exps.IsIsometric = function (ret)
+	Exps.prototype.IsIsometric = function (ret)
 	{    
 	    ret.set_int(this.exp_IsIsometric? 1:0);
 	}; 		
-	exps.TileID = function (ret)
+	Exps.prototype.TileID = function (ret)
 	{    
 	    ret.set_int(this.exp_TileID);
 	}; 
-	exps.LogicX = function (ret)
+	Exps.prototype.LogicX = function (ret)
 	{   
 	    ret.set_int(this.exp_LogicX);
 	};
-	exps.LogicY = function (ret)
+	Exps.prototype.LogicY = function (ret)
 	{   
 	    ret.set_int(this.exp_LogicY);
 	};    
-	exps.LayerProp = function (ret, name, default_value)
+	Exps.prototype.LayerProp = function (ret, name, default_value)
 	{   
         var value = this.exp_layer_properties[name];
         if (value == null)
             value = default_value;
 	    ret.set_any(value);
 	};
-	exps.TilesetProp = function (ret, name, default_value)
+	Exps.prototype.TilesetProp = function (ret, name, default_value)
 	{       
         var value = this.exp_tileset_properties[name];
         if (value == null)
             value = default_value;        
 	    ret.set_any(value);
 	};     
-	exps.TileProp = function (ret, name, default_value)
+	Exps.prototype.TileProp = function (ret, name, default_value)
 	{       
         var value = this.exp_tile_properties[name];
         if (value == null)
             value = default_value;        
 	    ret.set_any(value);
 	}; 
-	exps.PhysicalX = function (ret)
+	Exps.prototype.PhysicalX = function (ret)
 	{   
 	    ret.set_int(this.exp_PhysicalX);
 	};
-	exps.PhysicalY = function (ret)
+	Exps.prototype.PhysicalY = function (ret)
 	{   
 	    ret.set_int(this.exp_PhysicalY);
 	};
-	exps.LayerName = function (ret)
+	Exps.prototype.LayerName = function (ret)
 	{   
 	    ret.set_string(this.exp_LayerName);
 	};
-	exps.LayerOpacity = function (ret)
+	Exps.prototype.LayerOpacity = function (ret)
 	{   
 	    ret.set_float(this.exp_LayerOpacity);
 	}; 
-	exps.IsMirrored = function (ret)
+	Exps.prototype.IsMirrored = function (ret)
 	{   
 	    ret.set_int(this.exp_IsMirrored);
 	};
-	exps.IsFlipped = function (ret)
+	Exps.prototype.IsFlipped = function (ret)
 	{   
 	    ret.set_int(this.exp_IsFlipped);
 	}; 
-	exps.InstUID = function (ret)
+	Exps.prototype.InstUID = function (ret)
 	{   
 	    ret.set_int(this.exp_IsFlipped);
 	}; 
-	exps.Frame = function (ret)
+	Exps.prototype.Frame = function (ret)
 	{   
 	    ret.set_int(this.exp_TileID-1);
 	};     

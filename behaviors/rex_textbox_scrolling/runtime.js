@@ -52,15 +52,15 @@ cr.behaviors.Rex_textbox_scrolling = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.ScrollDown = function (s)
+	Acts.prototype.ScrollDown = function (s)
 	{
         var elem = this.inst.elem;
         elem.scrollTop = elem.scrollHeight; 
@@ -68,7 +68,7 @@ cr.behaviors.Rex_textbox_scrolling = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
 }());

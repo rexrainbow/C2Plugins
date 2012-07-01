@@ -125,10 +125,10 @@ cr.behaviors.Rex_Duration = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
     
-	cnds.IsRunning = function (name)
+	Cnds.prototype.IsRunning = function (name)
 	{  
         var timer = this.timers[duration_name];        
         return ((timer != null) && timer.__duration_is_alive);
@@ -136,10 +136,10 @@ cr.behaviors.Rex_Duration = function(runtime)
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-    acts.Setup = function (timeline_objs, fn_objs)
+    Acts.prototype.Setup = function (timeline_objs, fn_objs)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -155,7 +155,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	};      
     
 
-    acts.Start = function (duration_name, duration_time, interval_time,
+    Acts.prototype.Start = function (duration_name, duration_time, interval_time,
                            cb_on_start, cb_on_interval, cb_on_end)
 	{
         var args = [duration_name];
@@ -180,21 +180,21 @@ cr.behaviors.Rex_Duration = function(runtime)
         this._exec_callback(cb_on_start);        
 	};
 
-    acts.Pause = function (duration_name)
+    Acts.prototype.Pause = function (duration_name)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
             timer.Suspend();
 	};   
 
-    acts.Resume = function (duration_name)
+    Acts.prototype.Resume = function (duration_name)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
             this.timer.Resume();
 	};       
     
-    acts.Stop = function (duration_name)
+    Acts.prototype.Stop = function (duration_name)
 	{
         var timer = this.timers[duration_name];
         if (timer != null)
@@ -205,7 +205,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         }
 	};
 
-    acts.PauseAll = function ()
+    Acts.prototype.PauseAll = function ()
 	{
         var name, timer;
         for (name in this.timers)
@@ -216,7 +216,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         }
 	};   
 
-    acts.ResumeAll = function ()
+    Acts.prototype.ResumeAll = function ()
 	{
         var name, timer;
         for (name in this.timers)
@@ -227,7 +227,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         }
 	};       
     
-    acts.StopAll = function ()
+    Acts.prototype.StopAll = function ()
 	{
         var name, timer;
         for (name in this.timers)
@@ -241,10 +241,10 @@ cr.behaviors.Rex_Duration = function(runtime)
 	};
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-    exps.Remainder = function (ret, duration_name)
+    Exps.prototype.Remainder = function (ret, duration_name)
 	{
 	    var timer = (duration_name != null)? 
 	                this.timers[duration_name]:this._trigger_timer;
@@ -256,7 +256,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    ret.set_float(val);
 	};
     
-	exps.Elapsed = function (ret, duration_name)
+	Exps.prototype.Elapsed = function (ret, duration_name)
 	{
 	    var timer = (duration_name != null)? 
 	                this.timers[duration_name]:this._trigger_timer;
@@ -268,7 +268,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    ret.set_float(val);
 	};  
 
-    exps.RemainderPercent = function (ret, duration_name)
+    Exps.prototype.RemainderPercent = function (ret, duration_name)
 	{
 	    var timer = (duration_name != null)? 
 	                this.timers[duration_name]:this._trigger_timer;
@@ -280,7 +280,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    ret.set_float(val);
 	};
     
-	exps.ElapsedPercent = function (ret, duration_name)
+	Exps.prototype.ElapsedPercent = function (ret, duration_name)
 	{
 	    var timer = (duration_name != null)? 
 	                this.timers[duration_name]:this._trigger_timer;
@@ -292,7 +292,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    ret.set_float(val);
 	};  
 
-    exps.Interval = function (ret, duration_name)
+    Exps.prototype.Interval = function (ret, duration_name)
 	{
 	    var timer = (duration_name != null)? 
 	                this.timers[duration_name]:this._trigger_timer;
@@ -304,7 +304,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    ret.set_float(val);
 	};
     
-	exps.Duration = function (ret, duration_name)
+	Exps.prototype.Duration = function (ret, duration_name)
 	{
 	    var timer = (duration_name != null)? 
 	                this.timers[duration_name]:this._trigger_timer;

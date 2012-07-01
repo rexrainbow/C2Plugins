@@ -175,49 +175,49 @@ cr.behaviors.Rex_boundary = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
     
-	cnds.OnHitAnyBoundary = function ()
+	Cnds.prototype.OnHitAnyBoundary = function ()
 	{
 		return true;
 	};
     
-	cnds.OnHitLeftBoundary = function ()
+	Cnds.prototype.OnHitLeftBoundary = function ()
 	{
 		return true;
 	};
     
-	cnds.OnHitRightBoundary = function ()
+	Cnds.prototype.OnHitRightBoundary = function ()
 	{
 		return true;
 	};    
     
-	cnds.OnHitTopBoundary = function ()
+	Cnds.prototype.OnHitTopBoundary = function ()
 	{
 		return true;
 	};
     
-	cnds.OnHitBottomBoundary = function ()
+	Cnds.prototype.OnHitBottomBoundary = function ()
 	{
 		return true;
 	};        
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.EnableHorizontal = function (s)
+	Acts.prototype.EnableHorizontal = function (s)
 	{
 		this.horizontal_enable = (s==1);
 	};  
 
-	acts.EnableVertical = function (s)
+	Acts.prototype.EnableVertical = function (s)
 	{
 		this.vertical_enable = (s==1);
 	};
 
-	acts.SetHorizontalBoundary = function (l, r)
+	Acts.prototype.SetHorizontalBoundary = function (l, r)
 	{
 		this.horizontal_boundary[0] = l;
 		this.horizontal_boundary[1] = r;
@@ -225,7 +225,7 @@ cr.behaviors.Rex_boundary = function(runtime)
         this.horizontal_pin_instance.inst = null;
 	};
 
-	acts.SetVerticalBoundary = function (u, d)
+	Acts.prototype.SetVerticalBoundary = function (u, d)
 	{
 		this.vertical_boundary[0] = l;
 		this.vertical_boundary[1] = r;
@@ -239,7 +239,7 @@ cr.behaviors.Rex_boundary = function(runtime)
 			return null;
 		return obj.getFirstPicked();
 	};
-	acts.SetHorizontalBoundaryToObject = function (obj, left_imgpt, right_imgpt)
+	Acts.prototype.SetHorizontalBoundaryToObject = function (obj, left_imgpt, right_imgpt)
 	{
         var pin = this.horizontal_pin_instance;
 		pin.inst = _get_instance(obj);	
@@ -247,7 +247,7 @@ cr.behaviors.Rex_boundary = function(runtime)
         pin.p1 = right_imgpt;	
 	};   
     
-	acts.SetVerticalBoundaryToObject = function (obj, top_imgpt, bottom_imgpt)
+	Acts.prototype.SetVerticalBoundaryToObject = function (obj, top_imgpt, bottom_imgpt)
 	{
         var pin = this.vertical_pin_instance;
 		pin.inst = _get_instance(obj);	
@@ -257,54 +257,54 @@ cr.behaviors.Rex_boundary = function(runtime)
  
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.HorizontalEnable = function (ret)
+	Exps.prototype.HorizontalEnable = function (ret)
 	{
         ret.set_int( (this.horizontal_enable)? 1:0 );
 	};
 
-	exps.VerticalEnable = function (ret)
+	Exps.prototype.VerticalEnable = function (ret)
 	{
         ret.set_int( (this.vertical_enable)? 1:0 );
 	}; 
     
-	exps.LeftBound = function (ret)
+	Exps.prototype.LeftBound = function (ret)
 	{
         this.horizontal_boundary_update();   
         ret.set_float( this.horizontal_boundary[0] );
 	};
 
-	exps.RightBound = function (ret)
+	Exps.prototype.RightBound = function (ret)
 	{
         this.horizontal_boundary_update();    
         ret.set_float( this.horizontal_boundary[1] );
 	};  
 
-	exps.TopBound = function (ret)
+	Exps.prototype.TopBound = function (ret)
 	{
         this.vertical_boundary_update();     
         ret.set_float( this.vertical_boundary[0] );
 	};
 
-	exps.BottomBound = function (ret)
+	Exps.prototype.BottomBound = function (ret)
 	{
         this.vertical_boundary_update();     
         ret.set_float( this.vertical_boundary[1] );
 	};  
     
-	exps.HorPercent = function (ret)
+	Exps.prototype.HorPercent = function (ret)
 	{
         ret.set_float( this._horizontal_percent_get() );
 	};
 
-	exps.VerPercent = function (ret)
+	Exps.prototype.VerPercent = function (ret)
 	{
         ret.set_float( this._vertical_percent_get() );
 	};   
     
-	exps.HorScale = function (ret, min_value, max_value)
+	Exps.prototype.HorScale = function (ret, min_value, max_value)
 	{
         var pec = this._horizontal_percent_get();
         if (max_value < min_value)
@@ -316,7 +316,7 @@ cr.behaviors.Rex_boundary = function(runtime)
         ret.set_float( scaled );
 	};
     
-	exps.VerScale = function (ret, min_value, max_value)
+	Exps.prototype.VerScale = function (ret, min_value, max_value)
 	{
         var pec = this._vertical_percent_get();
         if (max_value < min_value)

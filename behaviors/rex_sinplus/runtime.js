@@ -158,30 +158,30 @@ cr.behaviors.Rex_SinEx = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 	
-	cnds.IsActive = function ()
+	Cnds.prototype.IsActive = function ()
 	{
 		return this.active;
 	};
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 	
-	acts.SetActive = function (a)
+	Acts.prototype.SetActive = function (a)
 	{
 		this.active = (a === 1);
 	};
 	
-	acts.SetPeriod = function (x)
+	Acts.prototype.SetPeriod = function (x)
 	{
 		this.period = x;
 	};
 	
-	acts.SetMagnitude = function (x)
+	Acts.prototype.SetMagnitude = function (x)
 	{
 		this.mag = x;
 		
@@ -189,7 +189,7 @@ cr.behaviors.Rex_SinEx = function(runtime)
 			this.mag = cr.to_radians(this.mag);
 	};
 	
-	acts.SetMovement = function (mode)
+	Acts.prototype.SetMovement = function (mode)
 	{
 		this.movement = mode;
         this._initialValue_set();
@@ -197,20 +197,20 @@ cr.behaviors.Rex_SinEx = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.CyclePosition = function (ret)
+	Exps.prototype.CyclePosition = function (ret)
 	{
 		ret.set_float(this.i / (2 * Math.PI));
 	};
 	
-	exps.Period = function (ret)
+	Exps.prototype.Period = function (ret)
 	{
 		ret.set_float(this.period);
 	};
 	
-	exps.Magnitude = function (ret)
+	Exps.prototype.Magnitude = function (ret)
 	{
 		if (this.movement === 5)	// angle
 			ret.set_float(cr.to_degrees(this.mag));

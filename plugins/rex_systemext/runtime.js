@@ -135,10 +135,10 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 	};	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
 
-	cnds.PickAll = function (objtype)
+	Cnds.prototype.PickAll = function (objtype)
 	{
         var sol = objtype.getCurrentSol();        
         sol.select_all = true;
@@ -147,16 +147,16 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-    acts.PickAll = function (objtype)
+    Acts.prototype.PickAll = function (objtype)
 	{
         var sol = objtype.getCurrentSol();        
         sol.select_all = true;
 	}; 
     
-    acts.PickByUID = function (objtype, uid, is_pick_all)
+    Acts.prototype.PickByUID = function (objtype, uid, is_pick_all)
 	{
         var sol = objtype.getCurrentSol();  	    
 	    var inst = cr.plugins_.Rex_SysExt.get_inst(objtype.name, uid);
@@ -188,12 +188,12 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
         sol.select_all = false;
 	}; 
     
-    acts.QuickPickByUID = function (objtype, uid)
+    Acts.prototype.QuickPickByUID = function (objtype, uid)
 	{	    
 	    cr.plugins_.Rex_SysExt.pick_inst(objtype, uid);
 	};    
         
-    acts.PickByPropCmp = function (objtype, prop_index, cmp, value, is_pick_all)
+    Acts.prototype.PickByPropCmp = function (objtype, prop_index, cmp, value, is_pick_all)
 	{
         var sol = objtype.getCurrentSol();  
         if (is_pick_all==1)
@@ -218,7 +218,7 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
         sol.select_all = false;
 	};  
 
-    acts.SetGroupActive = function (group, active)
+    Acts.prototype.SetGroupActive = function (group, active)
     {
 		var activeGroups = this.runtime.activeGroups;
         
@@ -249,7 +249,7 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 		}
     };
 
-    acts.SetLayerVisible = function (layerparam, visible_)
+    Acts.prototype.SetLayerVisible = function (layerparam, visible_)
     {
         var layer;
 		if (cr.is_number(layerparam))
@@ -269,10 +269,10 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
     };    
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-    exps.Eval = function (ret, code_string)
+    Exps.prototype.Eval = function (ret, code_string)
 	{
 	    ret.set_any( eval( "("+code_string+")" ) );
 	};

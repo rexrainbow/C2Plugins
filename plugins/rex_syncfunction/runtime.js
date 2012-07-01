@@ -68,29 +68,29 @@ cr.plugins_.Rex_SyncFn = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
 	
-    cnds.IsNetworkMode = function()
+    Cnds.prototype.IsNetworkMode = function()
 	{
 		return this.sync_mode;
 	};  
     
-    cnds.IsMyCommand = function()
+    Cnds.prototype.IsMyCommand = function()
 	{
 		return (this.branch.get_my_user_id() == this.user_id);
 	};   
     
-	cnds.AmIRoomModerator = function()
+	Cnds.prototype.AmIRoomModerator = function()
 	{
 		return (this.sync_mode)? this.branch.am_I_room_moderator():true;
 	};     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-    acts.Setup = function (network_objs, fn_objs)
+    Acts.prototype.Setup = function (network_objs, fn_objs)
 	{  
         var network = network_objs.instances[0];
         if (network.check_name == "NETWORK")
@@ -105,17 +105,17 @@ cr.plugins_.Rex_SyncFn = function(runtime)
             alert ("Sync-Function should connect to a function object");
 	};  
     
-	acts.SetSyncMode = function (sync_mode)
+	Acts.prototype.SetSyncMode = function (sync_mode)
 	{
         this.sync_mode = (sync_mode==0);
 	}; 
     
-    acts.SetParameter = function (index, value)
+    Acts.prototype.SetParameter = function (index, value)
 	{
         this.param[index] = value;
 	};     
     
-	acts.ExecuteCommands = function (cmd_string)
+	Acts.prototype.ExecuteCommands = function (cmd_string)
 	{
         if (this.sync_mode)
         {
@@ -126,7 +126,7 @@ cr.plugins_.Rex_SyncFn = function(runtime)
             this.run_callback(0, cmd_string, this.param);
 	};  
 
-	acts.CallFunction = function (cmd_string)
+	Acts.prototype.CallFunction = function (cmd_string)
 	{  
         if (this.sync_mode)
         {
@@ -137,47 +137,47 @@ cr.plugins_.Rex_SyncFn = function(runtime)
             this.run_callback(1, cmd_string, this.param);
 	};    
     
-	acts.CleanParameters = function ()
+	Acts.prototype.CleanParameters = function ()
 	{
         var key;
         for (key in this.param)
             delete this.param[key];
 	};      
     
-    acts.SetUserName = function (name)
+    Acts.prototype.SetUserName = function (name)
 	{
         this.user_name = name;
 	}; 
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
     
-	exps.UsrID = function(ret)
+	Exps.prototype.UsrID = function(ret)
 	{
         var user_id = (this.sync_mode)? this.user_id:1;    
 		ret.set_int(user_id);        
 	};    
-	exps.UsrName = function(ret, user_id)
+	Exps.prototype.UsrName = function(ret, user_id)
 	{   
         var user_name = (this.sync_mode)?
                         this.branch.get_user_name(user_id):
                         this.user_name;
 		ret.set_string(user_name);        
 	};  
-	exps.UsrID2Name = function(ret, user_id)
+	Exps.prototype.UsrID2Name = function(ret, user_id)
 	{   
         var user_name = (this.sync_mode)?
                         this.branch.get_user_name(user_id):
                         this.user_name;
 		ret.set_string(user_name);          
 	};      
-	exps.MyUserName = function(ret)
+	Exps.prototype.MyUserName = function(ret)
 	{   
 		ret.set_string(this.branch.get_my_user_name());         
 	};
-	exps.MyUserID = function(ret)
+	Exps.prototype.MyUserID = function(ret)
 	{   
 		ret.set_int(this.branch.get_my_user_id());         
 	};      

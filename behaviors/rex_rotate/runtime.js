@@ -76,55 +76,55 @@ cr.behaviors.Rex_Rotate = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.CompareSpeed = function (cmp, s)
+	Cnds.prototype.CompareSpeed = function (cmp, s)
 	{
 		return cr.do_cmp(this.speed, cmp, s);
 	};
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 
-	acts.SetDirection = function (s)
+	Acts.prototype.SetDirection = function (s)
 	{
 		this.direction = s;
 	};      
     
-	acts.SetSpeed = function (s)
+	Acts.prototype.SetSpeed = function (s)
 	{
 		this.speed = s;
 	};
 	
-	acts.SetAcceleration = function (a)
+	Acts.prototype.SetAcceleration = function (a)
 	{
 		this.acc = a;
 	};
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Speed = function (ret)
+	Exps.prototype.Speed = function (ret)
 	{
 		ret.set_float(this.speed);
 	};
 	
-	exps.Acceleration = function (ret)
+	Exps.prototype.Acceleration = function (ret)
 	{
 		ret.set_float(this.acc);
 	};
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    

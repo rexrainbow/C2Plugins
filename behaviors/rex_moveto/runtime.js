@@ -145,67 +145,67 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnHitTarget = function ()
+	Cnds.prototype.OnHitTarget = function ()
 	{
 		return (this.is_my_call);
 	};
 
-	cnds.CompareSpeed = function (cmp, s)
+	Cnds.prototype.CompareSpeed = function (cmp, s)
 	{
 		return cr.do_cmp(this.current_speed, cmp, s);
 	};   
 
-    cnds.OnMoving = function ()
+    Cnds.prototype.OnMoving = function ()
 	{
 		return (this.is_my_call);
 	};
     
-	cnds.IsMoving = function ()
+	Cnds.prototype.IsMoving = function ()
 	{
 		return (this.is_moving);
 	};
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 
-	acts.SetMaxSpeed = function (s)
+	Acts.prototype.SetMaxSpeed = function (s)
 	{
 		this.move.max = s;
         this.SetCurrentSpeed(null);
 	};      
     
-	acts.SetAcceleration = function (a)
+	Acts.prototype.SetAcceleration = function (a)
 	{
 		this.move.acc = a;
         this.SetCurrentSpeed(null);
 	};
 	
-	acts.SetDeceleration = function (a)
+	Acts.prototype.SetDeceleration = function (a)
 	{
 		this.move.dec = a;
 	};
     
-	acts.SetTargetPos = function (_x, _y)
+	Acts.prototype.SetTargetPos = function (_x, _y)
 	{
         this.SetTargetPos(_x, _y)
 	};
     
-	acts.SetCurrentSpeed = function (s)
+	Acts.prototype.SetCurrentSpeed = function (s)
 	{
         this.SetCurrentSpeed(s);
 	}; 
     
- 	acts.SetTargetPosOnObject = function (objtype)
+ 	Acts.prototype.SetTargetPosOnObject = function (objtype)
 	{
 		if (!objtype)
 			return;
@@ -215,41 +215,41 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	};
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    
     
-	exps.Speed = function (ret)
+	Exps.prototype.Speed = function (ret)
 	{
 		ret.set_float(this.current_speed);
 	};
     
-	exps.MaxSpeed = function (ret)
+	Exps.prototype.MaxSpeed = function (ret)
 	{
 		ret.set_float(this.move.max);
 	}; 
 
-	exps.Acc = function (ret)
+	Exps.prototype.Acc = function (ret)
 	{
 		ret.set_float(this.move.acc);
 	};  
 
- 	exps.Dec = function (ret)
+ 	Exps.prototype.Dec = function (ret)
 	{
 		ret.set_float(this.move.dec);
 	}; 
 
-	exps.TargetX = function (ret)
+	Exps.prototype.TargetX = function (ret)
 	{
         var x = (this.is_moving)? this.target.x:0;
 		ret.set_float(x);
 	};  
 
- 	exps.TargetY = function (ret)
+ 	Exps.prototype.TargetY = function (ret)
 	{
         var y = (this.is_moving)? this.target.y:0;
 		ret.set_float(y);

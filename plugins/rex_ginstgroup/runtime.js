@@ -234,15 +234,15 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds; 
+	function Cnds() {};
+	pluginProto.cnds = new Cnds(); 
 	  
-	cnds.OnSortingFn = function (name)
+	Cnds.prototype.OnSortingFn = function (name)
 	{
 		return (this._sort_fn_name == name);
 	};	 
 	
-	cnds.ForEachUID = function (var_name, name)
+	Cnds.prototype.ForEachUID = function (var_name, name)
 	{
 	    var uids = this.GetGroup(name).GetList();
 	    var uids_len = uids.length;
@@ -260,54 +260,54 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         return false;
 	};
 	  
-	cnds.PickInsts = function (name, objtype, is_pop)
+	Cnds.prototype.PickInsts = function (name, objtype, is_pop)
 	{
 		return this._pick_insts(name, objtype, is_pop);   
 	};  
 	  
-	cnds.IsInGroup = function (uid, name)
+	Cnds.prototype.IsInGroup = function (uid, name)
 	{
 		return this.GetGroup(name).IsInGroup(uid);        
 	}; 
 	  
-	cnds.IsEmpty = function (name)
+	Cnds.prototype.IsEmpty = function (name)
 	{
 		return (this.GetGroup(name).GetList().length == 0);        
 	}; 	
 	  
-	cnds.PopInstance = function (name, index, objtype, is_pop)
+	Cnds.prototype.PopInstance = function (name, index, objtype, is_pop)
 	{
 		return this._pop_one_instance(name, index, objtype, is_pop);     
 	};	 
 		
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts; 
+	function Acts() {};
+	pluginProto.acts = new Acts(); 
 	
-    acts.Clean = function (name)
+    Acts.prototype.Clean = function (name)
 	{
 	    this.GetGroup(name).Clean();
 	};  	
 	
-    acts.Destroy = function (name)
+    Acts.prototype.Destroy = function (name)
 	{
 	    this.DestroyGroup(name);
 	}; 	
 	
-    acts.Copy = function (source, target)
+    Acts.prototype.Copy = function (source, target)
 	{
         if (source == target)
             return;
 	    this.GetGroup(target).Copy(this.GetGroup(source));
 	};	
 	
-    acts.String2Group = function (JSON_string, name)
+    Acts.prototype.String2Group = function (JSON_string, name)
 	{
 	    this.GetGroup(name).JSONString2Group(JSON_string);
 	};		
 	
-    acts.String2All = function (JSON_string)
+    Acts.prototype.String2All = function (JSON_string)
 	{
 	    var groups = JSON.parse(JSON_string);
 	    var name;
@@ -315,7 +315,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        this.GetGroup(name).JSONString2Group(groups[name]);
 	};	
 	
-    acts.PushInsts = function (objtype, name)
+    Acts.prototype.PushInsts = function (objtype, name)
 	{
 	    var insts = objtype.getCurrentSol().getObjects();
 	    var insts_length = insts.length;
@@ -326,12 +326,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        group.AddUID(insts[i].uid);
 	};		
 	
-    acts.PushInst = function (uid, name)
+    Acts.prototype.PushInst = function (uid, name)
 	{
 	    this.GetGroup(name).AddUID(uid);	    
 	};		
 	
-    acts.RemoveInsts = function (objtype, name)
+    Acts.prototype.RemoveInsts = function (objtype, name)
 	{
 	    var insts = objtype.getCurrentSol().getObjects();
 	    var insts_length = insts.length;
@@ -342,72 +342,72 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        group.RemoveUID(insts[i].uid);	    
 	};		
 	
-    acts.RemoveInst = function (uid, name)
+    Acts.prototype.RemoveInst = function (uid, name)
 	{
 	    this.GetGroup(name).RemoveUID(uid);		    
 	};		
 	
-    acts.Union = function (group_a, group_b, group_result)
+    Acts.prototype.Union = function (group_a, group_b, group_result)
 	{
 	    var groups = this._sets_operation_target_get(group_a, group_b, group_result);
 	    this.GetGroup(groups["a"]).Union(this.GetGroup(groups["b"]));
 	};
 	
-    acts.Complement = function (group_a, group_b, group_result)
+    Acts.prototype.Complement = function (group_a, group_b, group_result)
 	{
 	    var groups = this._sets_operation_target_get(group_a, group_b, group_result);
 	    this.GetGroup(groups["a"]).Complement(this.GetGroup(groups["b"]));	    
 	};	
 	
-    acts.Intersection = function (group_a, group_b, group_result)
+    Acts.prototype.Intersection = function (group_a, group_b, group_result)
 	{
 	    var groups = this._sets_operation_target_get(group_a, group_b, group_result);	
 	    this.GetGroup(groups["a"]).Intersection(this.GetGroup(groups["b"]));	      
 	};		
 	
-    acts.Shuffle = function (name)
+    Acts.prototype.Shuffle = function (name)
 	{
 	    this.GetGroup(name).Shuffle();
 	};	
 	
-    acts.SortByFn = function (name, fn_name)
+    Acts.prototype.SortByFn = function (name, fn_name)
 	{
         _thisArg  = this;
 	    this._sort_fn_name = fn_name;
 	    this.GetGroup(name).GetList().sort(_sort_fn);
 	};		
 	
-    acts.SetCmpResultDirectly = function (result)
+    Acts.prototype.SetCmpResultDirectly = function (result)
 	{
 	    this._compared_result = result;
 	};		
 	
-    acts.SetCmpResultCombo = function (result)
+    Acts.prototype.SetCmpResultCombo = function (result)
 	{
 	    this._compared_result = result -1;
 	};
 	
-    acts.PickInsts = function (name, objtype, is_pop)
+    Acts.prototype.PickInsts = function (name, objtype, is_pop)
 	{
 	    this._pick_insts(name, objtype, is_pop);
 	};
 	
-    acts.SortByUIDInc = function (name)
+    Acts.prototype.SortByUIDInc = function (name)
 	{
 	    this.GetGroup(name).GetList().sort();
 	};	
 	
-    acts.SortByUIDDec = function (name)
+    Acts.prototype.SortByUIDDec = function (name)
 	{
 	    this.GetGroup(name).GetList().sort().reverse();
 	};		
 	
-    acts.Reverse = function (name)
+    Acts.prototype.Reverse = function (name)
 	{
 	    this.GetGroup(name).GetList().reverse();
 	};
 	
-    acts.Slice = function (source, start, end, target, is_pop)
+    Acts.prototype.Slice = function (source, start, end, target, is_pop)
 	{
         var source_group = this.GetGroup(source);
         var target_group = this.GetGroup(target);
@@ -417,12 +417,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
             source_group.Complement(target_group);
 	};	
 	
-    acts.PopInstance = function (name, index, objtype, is_pop)
+    Acts.prototype.PopInstance = function (name, index, objtype, is_pop)
 	{	    
         this._pop_one_instance(name, index, objtype, is_pop);  
 	};		
 	
-    acts.SetRandomGenerator = function (random_gen_objs)
+    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
         var random_gen = random_gen_objs.instances[0];
         if (random_gen.check_name == "RANDOM")
@@ -432,35 +432,35 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	};  
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.CmpUIDA = function (ret)
+	Exps.prototype.CmpUIDA = function (ret)
 	{   
 	    ret.set_int(this._cmp_uidA);
 	};    
 	
-	exps.CmpUIDB = function (ret)
+	Exps.prototype.CmpUIDB = function (ret)
 	{   
 	    ret.set_int(this._cmp_uidB);
 	};    	
     
-	exps.InstCnt = function (ret, name)
+	Exps.prototype.InstCnt = function (ret, name)
 	{   
 	    ret.set_int(this.GetGroup(name).GetList().length);
 	};
 	
-	exps.UID2Index = function (ret, name, uid)
+	Exps.prototype.UID2Index = function (ret, name, uid)
 	{
 	    ret.set_int(this.GetGroup(name).UID2Index(uid));
 	};   	
 	
-	exps.Index2UID = function (ret, name, index)
+	Exps.prototype.Index2UID = function (ret, name, index)
 	{
 	    ret.set_int(this.GetGroup(name).Index2UID(index));
 	}; 
     
-	exps.Item = function (ret, var_name)
+	Exps.prototype.Item = function (ret, var_name)
 	{   
 	    var item = this._foreach_item[var_name];
 	    if (item == null)
@@ -468,7 +468,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    ret.set_int(item);
 	};	
     
-	exps.Index = function (ret, var_name)
+	Exps.prototype.Index = function (ret, var_name)
 	{   
 	    var index = this._foreach_index[var_name];
 	    if (index == null)
@@ -476,22 +476,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    ret.set_int(index);
 	};	  
     
-	exps.GroupToString = function (ret, name)
+	Exps.prototype.GroupToString = function (ret, name)
 	{
 	    ret.set_string(this.GetGroup(name).ToString());
 	};
     
-	exps.AllToString = function (ret)
+	Exps.prototype.AllToString = function (ret)
 	{
 	    ret.set_string(this.all2string());
 	};		
     
-	exps.PrivateGroup = function (ret, uid, name)
+	Exps.prototype.PrivateGroup = function (ret, uid, name)
 	{
 	    ret.set_string(_pg_prefix+uid.toString()+_pg_postfix+name);
 	};	
     
-	exps.Pop = function (ret, name, index)
+	Exps.prototype.Pop = function (ret, name, index)
 	{
 	    var uid_list = this.GetGroup(name).GetList();
 	    var uid = uid_list[index];

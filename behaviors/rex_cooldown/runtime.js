@@ -84,40 +84,40 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
     
-	cnds.OnCallAccepted = function ()
+	Cnds.prototype.OnCallAccepted = function ()
 	{  
 		return (this.is_my_call);  
 	};
     
-	cnds.OnCallRejected = function ()
+	Cnds.prototype.OnCallRejected = function ()
 	{  
 		return (this.is_my_call);  
 	}; 
     
-	cnds.OnCD = function ()
+	Cnds.prototype.OnCD = function ()
 	{  
 		return (this.is_my_call);  
 	};    
 
-	cnds.OnCDFinished = function ()
+	Cnds.prototype.OnCDFinished = function ()
 	{  
 		return (this.is_my_call);  
 	};
     
-	cnds.IsCallAccepted = function ()
+	Cnds.prototype.IsCallAccepted = function ()
 	{  
 		return (this.is_accept && (this.is_my_call));  
 	};
     
-	cnds.IsCallRejected = function ()
+	Cnds.prototype.IsCallRejected = function ()
 	{  
 		return ((!this.is_accept) & (this.is_my_call)); 
 	}; 
     
-	cnds.IsAtCD = function ()
+	Cnds.prototype.IsAtCD = function ()
 	{         
         var is_at_cooldown = (this.timer)? this.timer.IsActive():false; 
 		return ((this.is_my_call) & is_at_cooldown);
@@ -125,10 +125,10 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-    acts.Setup = function (timeline_objs, cd_interval)
+    Acts.prototype.Setup = function (timeline_objs, cd_interval)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -139,7 +139,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.cd_interval = cd_interval;       
 	};    
     
-    acts.Request = function ()
+    Acts.prototype.Request = function ()
 	{
         if (this.activated == 0)
             return;
@@ -169,58 +169,58 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         }
 	}; 
     
-    acts.SetCDInterval = function (cd_interval)
+    Acts.prototype.SetCDInterval = function (cd_interval)
 	{
         this.cd_interval = cd_interval;       
 	};  
     
-    acts.Pause = function ()
+    Acts.prototype.Pause = function ()
 	{
         if (this.timer)
             this.timer.Suspend();
 	};   
 
-    acts.Resume = function ()
+    Acts.prototype.Resume = function ()
 	{
         if (this.timer)
             this.timer.Resume();
 	};   
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};      
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-    exps.Remainder = function (ret)
+    Exps.prototype.Remainder = function (ret)
 	{
         var t = (this.timer)? this.timer.RemainderTimeGet():0;     
 	    ret.set_float(t);
 	};
     
-	exps.Elapsed = function (ret, timer_name)
+	Exps.prototype.Elapsed = function (ret, timer_name)
 	{
         var t = (this.timer)? this.timer.ElapsedTimeGet():0;     
 	    ret.set_float(t);
 	};  
 
-    exps.RemainderPercent = function (ret)
+    Exps.prototype.RemainderPercent = function (ret)
 	{
         var t = (this.timer)? this.timer.RemainderTimePercentGet():0;     
 	    ret.set_float(t);
 	};
     
-	exps.ElapsedPercent = function (ret, timer_name)
+	Exps.prototype.ElapsedPercent = function (ret, timer_name)
 	{
         var t = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(t);
 	}; 
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    

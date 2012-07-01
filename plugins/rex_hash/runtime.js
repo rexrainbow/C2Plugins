@@ -104,10 +104,10 @@ cr.plugins_.Rex_Hash = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.ForEachKey = function (key_string)
+	Cnds.prototype.ForEachKey = function (key_string)
 	{
         this._set_current_entey(key_string);
         var current_event = this.runtime.getCurrentEventStack().current_event;
@@ -131,7 +131,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 		return false;
 	}; 
 
-	cnds.KeyExists = function (key_string)
+	Cnds.prototype.KeyExists = function (key_string)
 	{
 	    if (key_string == "")
             return false;
@@ -141,10 +141,10 @@ cr.plugins_.Rex_Hash = function(runtime)
 	
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-	acts.SetByKeyString = function (key_string, val)
+	Acts.prototype.SetByKeyString = function (key_string, val)
 	{        
         if (key_string != "")
         {
@@ -155,12 +155,12 @@ cr.plugins_.Rex_Hash = function(runtime)
         }
 	};
 
-	acts.SetCurHashEntey = function (key_string)
+	Acts.prototype.SetCurHashEntey = function (key_string)
 	{        
         this._set_current_entey(key_string);
 	};
 
-	acts.SetValueInCurHashEntey = function (key_name, val)
+	Acts.prototype.SetValueInCurHashEntey = function (key_name, val)
 	{        
         if (key_name != "")
         {
@@ -168,17 +168,17 @@ cr.plugins_.Rex_Hash = function(runtime)
         }        
 	};    
 
-	acts.CleanAll = function ()
+	Acts.prototype.CleanAll = function ()
 	{        
         this._clean_all();      
 	};  
 
-    acts.StringToHashTable = function (JSON_string)
+    Acts.prototype.StringToHashTable = function (JSON_string)
 	{  
         this._my_hash = JSON.parse(JSON_string);
 	};  
     
-    acts.RemoveByKeyString = function (key_string)
+    Acts.prototype.RemoveByKeyString = function (key_string)
 	{  
         if (key_string != "")
         {
@@ -189,7 +189,7 @@ cr.plugins_.Rex_Hash = function(runtime)
         }
 	};  
     
-    acts.PickKeysToArray = function (key_string, array_objs)
+    Acts.prototype.PickKeysToArray = function (key_string, array_objs)
 	{  
         var array_obj = array_objs.getFirstPicked();
         if (array_obj.arr == null)
@@ -207,10 +207,10 @@ cr.plugins_.Rex_Hash = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
     
-	exps.Hash = function (ret, key_string, default_value)
+	Exps.prototype.Hash = function (ret, key_string, default_value)
 	{   
         var keys = (arguments.length > 2)?
                    Array.prototype.slice.call(arguments,1):
@@ -221,7 +221,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 		ret.set_any(val);
 	};
     
-	exps.At = function (ret, key_string, default_value)
+	Exps.prototype.At = function (ret, key_string, default_value)
 	{     
         var keys = (arguments.length > 2)?
                    Array.prototype.slice.call(arguments,1):
@@ -232,23 +232,23 @@ cr.plugins_.Rex_Hash = function(runtime)
 		ret.set_any(val);
 	};
     
-	exps.Entry = function (ret, key_name)
+	Exps.prototype.Entry = function (ret, key_name)
 	{       
 		ret.set_any(this._current_entry[key_name]);
 	};
 
-	exps.HashTableToString = function (ret)
+	Exps.prototype.HashTableToString = function (ret)
 	{
         var json_string = JSON.stringify(this._my_hash);
 		ret.set_string(json_string);
 	};  
 	
-	exps.CurKey = function (ret)
+	Exps.prototype.CurKey = function (ret)
 	{
 		ret.set_string(this.exp_CurKey);
 	};  
     
-	exps.CurValue = function (ret)
+	Exps.prototype.CurValue = function (ret)
 	{
 		ret.set_any(this.exp_CurValue);
 	};    

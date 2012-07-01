@@ -61,31 +61,31 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.IsShown = function ()
+	Cnds.prototype.IsShown = function ()
 	{
         var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
 		return (layer.visible && this.inst.visible);  
 	};
 
-	cnds.OnCreating = function ()
+	Cnds.prototype.OnCreating = function ()
 	{
 		return true;
 	};
 
-	cnds.OnDestroying = function ()
+	Cnds.prototype.OnDestroying = function ()
 	{
 		return true;
 	};    
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetVisible = function (s)
+	Acts.prototype.SetVisible = function (s)
 	{
         var visible = this.inst.visible
         if ( (visible && (s==1)) ||
@@ -95,7 +95,7 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
         this.runtime.redraw = true;
 	};    
 
-	acts.SetMirrored = function (s)
+	Acts.prototype.SetMirrored = function (s)
 	{
         var width = this.inst.width;
         if ( ((width >= 0) && (s==0)) ||
@@ -106,7 +106,7 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
         this.runtime.redraw = true;
 	};
 
-	acts.SetFlipped = function (s)
+	Acts.prototype.SetFlipped = function (s)
 	{
         var height = this.inst.height;
         if ( ((height >= 0) && (s==0)) ||
@@ -119,7 +119,7 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
 }());

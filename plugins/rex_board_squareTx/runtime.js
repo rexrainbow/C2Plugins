@@ -91,31 +91,31 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-    acts.SetOrientation = function (orientation)
+    Acts.prototype.SetOrientation = function (orientation)
     {        
         this.is_isometric = (orientation == 1);
 	};
-    acts.SetCellSize = function (width, height)
+    Acts.prototype.SetCellSize = function (width, height)
     {        
         this.SetWidth(width);
         this.SetHeight(height);
 	};
-    acts.SetOffset = function (x, y)
+    Acts.prototype.SetOffset = function (x, y)
     {        
         this.PositionOX = x;
         this.PositionOY = y;
 	};    
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

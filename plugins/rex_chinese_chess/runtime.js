@@ -58,78 +58,78 @@ cr.plugins_.Rex_ChineseChess = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;        
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();        
 	
-	cnds.CBPutChess = function ()
+	Cnds.prototype.CBPutChess = function ()
 	{
 		return true;
 	};
 	
-	cnds.CBMoveChess = function ()
+	Cnds.prototype.CBMoveChess = function ()
 	{
 		return true;
 	};	
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.NewGame = function (black_side_uids, red_side_uids, is_red_first)
+	Acts.prototype.NewGame = function (black_side_uids, red_side_uids, is_red_first)
 	{
 	    this._create_new_game(JSON.parse('[' + black_side_uids + ']'),
 	                          JSON.parse('[' + red_side_uids + ']'), is_red_first);
 	}; 	
 
-	acts.CmdMoveChess = function (chess_uid, toX, toY)
+	Acts.prototype.CmdMoveChess = function (chess_uid, toX, toY)
 	{
 	    this._create_new_game(JSON.parse('[' + black_side_uids + ']'),
 	                          JSON.parse('[' + red_side_uids + ']'), is_red_first)
 	}; 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.SelectedUID = function (ret)
+	Exps.prototype.SelectedUID = function (ret)
 	{
 		ret.set_int(this.exp_SelectedUID);
 	};
 	
-	exps.SelectedX = function (ret, uid)
+	Exps.prototype.SelectedX = function (ret, uid)
 	{
 	    var chess = this.board.uid2chess(uid);
 	    var x = (chess==null)? (-1):chess.x;
 		ret.set_int(x);
 	};	
 	
-	exps.SelectedY = function (ret, uid)
+	Exps.prototype.SelectedY = function (ret, uid)
 	{
 	    var chess = this.board.uid2chess(uid);
 	    var y = (chess==null)? (-1):chess.y;
 		ret.set_int(y);
 	};		
 	
-	exps.SelectedName = function (ret, uid)
+	Exps.prototype.SelectedName = function (ret, uid)
 	{
 	    var chess = this.board.uid2chess(uid);
 	    var name = (chess==null)? "":chess.name;
 		ret.set_string(name);
 	};	
 	
-	exps.SelectedPlayerID = function (ret, uid)
+	Exps.prototype.SelectedPlayerID = function (ret, uid)
 	{
 	    var chess = this.board.uid2chess(uid);
 	    var player_id = (chess==null)? (-1):chess.player_id;
 		ret.set_string(player_id);
 	};	
 			
-	exps.ToX = function (ret)
+	Exps.prototype.ToX = function (ret)
 	{
 		ret.set_int(this.exp_ToX);
 	};	
 	
-	exps.ToY = function (ret)
+	Exps.prototype.ToY = function (ret)
 	{
 		ret.set_int(this.exp_ToY);
 	};	

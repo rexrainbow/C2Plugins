@@ -153,67 +153,67 @@ cr.behaviors.Rex_Swing = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnHitStart = function ()
+	Cnds.prototype.OnHitStart = function ()
 	{
 		return (this.is_my_call);
 	};
     
-	cnds.OnHitEnd = function ()
+	Cnds.prototype.OnHitEnd = function ()
 	{
 		return (this.is_my_call);
 	};  
 
- 	cnds.OnHitStartEnd = function ()
+ 	Cnds.prototype.OnHitStartEnd = function ()
 	{
 		return (this.is_my_call);
 	};     
     
-	cnds.CompareSpeed = function (cmp, s)
+	Cnds.prototype.CompareSpeed = function (cmp, s)
 	{
 		return cr.do_cmp(this.current_speed, cmp, s);
 	};  
     
-	cnds.IsClockwise = function ()
+	Cnds.prototype.IsClockwise = function ()
 	{
 		return (this.current_dir);
 	};     
     
-	cnds.IsAntiClockwise = function ()
+	Cnds.prototype.IsAntiClockwise = function ()
 	{
 		return (!this.current_dir);
 	};     
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 
-	acts.SetMaxSpeed = function (s)
+	Acts.prototype.SetMaxSpeed = function (s)
 	{
 		this.rotate.max = s;
         if (this.rotate.acc == 0)
             this.current_speed = s;
 	};      
     
-	acts.SetAcceleration = function (a)
+	Acts.prototype.SetAcceleration = function (a)
 	{
 		this.rotate.acc = a;
 	};
 	
-	acts.SetDeceleration = function (a)
+	Acts.prototype.SetDeceleration = function (a)
 	{
 		this.rotate.dec = a;
 	};
     
-	acts.SetStartAngle = function (a)
+	Acts.prototype.SetStartAngle = function (a)
 	{
 		this.swing.start = a;
         this.swing.end = this._get_target_angle(a,this.swing.dir,this.swing.angle); 
@@ -223,7 +223,7 @@ cr.behaviors.Rex_Swing = function(runtime)
         this.current_dir = this.swing.dir;
 	};
     
-	acts.SetRotateTO = function (_angle)
+	Acts.prototype.SetRotateTO = function (_angle)
 	{
         var dir = (_angle >= 0);
         var angle = (dir)? _angle:(-_angle);
@@ -238,45 +238,45 @@ cr.behaviors.Rex_Swing = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    
     
-	exps.Speed = function (ret)
+	Exps.prototype.Speed = function (ret)
 	{
 		ret.set_float(this.current_speed);
 	};
     
-	exps.Direction = function (ret)
+	Exps.prototype.Direction = function (ret)
 	{
 		ret.set_int(this.current_dir);
 	};  
 
-	exps.MaxSpeed = function (ret)
+	Exps.prototype.MaxSpeed = function (ret)
 	{
 		ret.set_float(this.rotate.max);
 	}; 
 
-	exps.Acc = function (ret)
+	Exps.prototype.Acc = function (ret)
 	{
 		ret.set_float(this.rotate.acc);
 	};  
 
- 	exps.Dec = function (ret)
+ 	Exps.prototype.Dec = function (ret)
 	{
 		ret.set_float(this.rotate.dec);
 	}; 
 
- 	exps.Start = function (ret)
+ 	Exps.prototype.Start = function (ret)
 	{
 		ret.set_float(this.swing.start);
 	};  
 
- 	exps.Angle = function (ret)
+ 	Exps.prototype.Angle = function (ret)
 	{
         var angle = this.swing.angle;
         if (!this.swing.dir)

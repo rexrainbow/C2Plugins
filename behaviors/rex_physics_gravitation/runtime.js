@@ -253,110 +253,110 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
     };    
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.HasBeenAttracted = function ()
+	Cnds.prototype.HasBeenAttracted = function ()
 	{
 		return this.has_been_attracted;
 	};
 
-	cnds.BeginAttracted = function ()
+	Cnds.prototype.BeginAttracted = function ()
 	{
 		return true;
 	};	
 
-	cnds.BeginAttracting = function ()
+	Cnds.prototype.BeginAttracting = function ()
 	{
 		return true;
 	};	
 	
-	cnds.EndAttracted = function ()
+	Cnds.prototype.EndAttracted = function ()
 	{
 		return true;
 	};	
 
-	cnds.EndAttracting = function ()
+	Cnds.prototype.EndAttracting = function ()
 	{
 		return true;
 	};		
 
-	cnds.HasAttracting = function ()
+	Cnds.prototype.HasAttracting = function ()
 	{
 		return this.has_attracting;
 	};	
 	
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetSourceActivated = function (s)
+	Acts.prototype.SetSourceActivated = function (s)
 	{
 		this._set_source((s==1));
 	}; 
 
-	acts.SetTargetActivated = function (s)
+	Acts.prototype.SetTargetActivated = function (s)
 	{
 		this._set_target((s==1));
 	}; 	
 
-	acts.SetForce = function (f)
+	Acts.prototype.SetForce = function (f)
 	{
 		this.gravitation_force = f;
 	}; 
 
-	acts.SetRange = function (range)
+	Acts.prototype.SetRange = function (range)
 	{
 		this._set_range(range);
 	}; 
 
-	acts.SetSourceTag = function (tag)
+	Acts.prototype.SetSourceTag = function (tag)
 	{
 		this.source_tag = tag; 
         this._source_append();
 	}; 		
 
-	acts.SetTargetTag = function (tag)
+	Acts.prototype.SetTargetTag = function (tag)
 	{
 		this.target_tag = tag; 
 	}; 			
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 	
-	exps.IsSource = function (ret)
+	Exps.prototype.IsSource = function (ret)
 	{
 		ret.set_int((this.is_source)? 1:0);
 	};
 	
-	exps.IsTarget = function (ret)
+	Exps.prototype.IsTarget = function (ret)
 	{
 		ret.set_int((this.is_target)? 1:0);
 	};	
 	
-	exps.Force = function (ret)
+	Exps.prototype.Force = function (ret)
 	{
 		ret.set_float(this.gravitation_force);
 	};
-	exps.Range = function (ret)
+	Exps.prototype.Range = function (ret)
 	{
 		ret.set_float(this.sensitivity_range);
 	};	
-	exps.SourceUID = function (ret)
+	Exps.prototype.SourceUID = function (ret)
 	{
 		ret.set_int(this.attracting_source_uid);
 	};		
-	exps.TargetUID = function (ret)
+	Exps.prototype.TargetUID = function (ret)
 	{
 		ret.set_int(this.attracted_target_uid);
 	};	
-	exps.SourceTag = function (ret)
+	Exps.prototype.SourceTag = function (ret)
 	{
 		ret.set_string(this.source_tag);
 	};		
-	exps.TargetTag = function (ret)
+	Exps.prototype.TargetTag = function (ret)
 	{
 		ret.set_string(this.target_tag);
 	};		

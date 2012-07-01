@@ -113,22 +113,22 @@ cr.plugins_.Rex_CSV = function(runtime)
 	};    
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
     
-	cnds.ForEachCol = function ()
+	Cnds.prototype.ForEachCol = function ()
 	{
         this.current_table.ForEachCol();
 		return false;
 	};    
 
-	cnds.ForEachRowInCol = function (col)
+	Cnds.prototype.ForEachRowInCol = function (col)
 	{
         this.current_table.ForEachRowInCol(col);
 		return false;
 	}; 
     
-	cnds.ForEachPage = function ()
+	Cnds.prototype.ForEachPage = function ()
 	{   
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
@@ -148,143 +148,143 @@ cr.plugins_.Rex_CSV = function(runtime)
 		return false;        
 	};    
     
-	cnds.ForEachRow = function ()
+	Cnds.prototype.ForEachRow = function ()
 	{
         this.current_table.ForEachRow();
 		return false;
 	};    
 
-	cnds.ForEachColInRow = function (row)
+	Cnds.prototype.ForEachColInRow = function (row)
 	{
         this.current_table.ForEachColInRow(row);
 		return false;
 	}; 	 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-	acts.LoadCSV = function (csv_string)
+	Acts.prototype.LoadCSV = function (csv_string)
 	{         
         this.current_table._parsing(csv_string);
 	};
     
-	acts.SetEntry = function (col, row, val)
+	Acts.prototype.SetEntry = function (col, row, val)
 	{
         this.current_table.SetEntry(col, row, val);       
 	};
     
-	acts.Clear = function ()
+	Acts.prototype.Clear = function ()
 	{
 		this.current_table.Clear();
 	};    
     
-	acts.ConvertType = function (row, to_type)
+	Acts.prototype.ConvertType = function (row, to_type)
 	{
         this.current_table.ConvertType(row, to_type);
 	};   
     
-	acts.TurnPage = function (page)
+	Acts.prototype.TurnPage = function (page)
 	{
         this.TurnPage(page);
 	};
     
-	acts.StringToPage = function (JSON_string)
+	Acts.prototype.StringToPage = function (JSON_string)
 	{
        this.current_table.JSONString2Page(JSON_string);
 	};    
     
-	acts.StringToPage = function (JSON_string)
+	Acts.prototype.StringToPage = function (JSON_string)
 	{
        this.current_table.JSONString2Page(JSON_string);
 	};   
     
-	acts.AppendCol = function (col)
+	Acts.prototype.AppendCol = function (col)
 	{
        this.current_table.AppendCol(col);
 	}; 
     
-	acts.AppendRow = function (row, init_value)
+	Acts.prototype.AppendRow = function (row, init_value)
 	{
        this.current_table.AppendRow(row, init_value);
 	}; 
     
-	acts.RemoveCol = function (col)
+	Acts.prototype.RemoveCol = function (col)
 	{
        this.current_table.RemoveCol(col);
 	}; 
     
-	acts.RemoveRow = function (row)
+	Acts.prototype.RemoveRow = function (row)
 	{
        this.current_table.RemoveRow(row);
 	};     
     
-	acts.SetDelimiter = function (s)
+	Acts.prototype.SetDelimiter = function (s)
 	{
        this.strDelimiter = s;
 	};      
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
     
-	exps.At = function (ret, col, row, page)
+	Exps.prototype.At = function (ret, col, row, page)
 	{  
         ret.set_any(this.Get(col, row, page));
 	}; 
     
-	exps.CurCol = function (ret)
+	Exps.prototype.CurCol = function (ret)
 	{
 		ret.set_string(this.current_table.forCol);
 	};
 	
-	exps.CurRow = function (ret)
+	Exps.prototype.CurRow = function (ret)
 	{
 		ret.set_string(this.current_table.forRow);
 	};
 	
-	exps.CurValue = function (ret)
+	Exps.prototype.CurValue = function (ret)
 	{
 		ret.set_any(this.current_table.At( this.current_table.forCol, this.current_table.forRow ));
 	}; 
 
-	exps.AtCol = function (ret)
+	Exps.prototype.AtCol = function (ret)
 	{
 		ret.set_string(this.atCol);
 	};
 	
-	exps.AtRow = function (ret)
+	Exps.prototype.AtRow = function (ret)
 	{
 		ret.set_string(this.atRow);
 	};   
 	
-	exps.AtPage = function (ret)
+	Exps.prototype.AtPage = function (ret)
 	{
 		ret.set_string(this.atPage);
 	}; 
 	
-	exps.CurPage = function (ret)
+	Exps.prototype.CurPage = function (ret)
 	{
 		ret.set_string(this.forPage);
 	};
 	
-	exps.TableToString = function (ret)
+	Exps.prototype.TableToString = function (ret)
 	{ 
 		ret.set_string(this.current_table.ToString());
 	};    
 	
-	exps.ColCnt = function (ret, page)
+	Exps.prototype.ColCnt = function (ret, page)
 	{
 		ret.set_int(this.GetColCnt(page));
 	};
 	
-	exps.RowCnt = function (ret, page)
+	Exps.prototype.RowCnt = function (ret, page)
 	{ 
 		ret.set_int(this.GetRowCnt(page));
 	}; 
 	
-	exps.Delimiter = function (ret, page)
+	Exps.prototype.Delimiter = function (ret, page)
 	{ 
 		ret.set_string(this.strDelimiter);
 	}; 

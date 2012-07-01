@@ -144,55 +144,55 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;   
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();   
     
-	cnds.OnMoving = function ()
+	Cnds.prototype.OnMoving = function ()
 	{
 		return true;
 	};
     
-	cnds.IsMoving = function ()
+	Cnds.prototype.IsMoving = function ()
 	{
 		return (this.is_moving);
 	};    
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = (s==1);
 	};  
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.X = function (ret)
+	Exps.prototype.X = function (ret)
 	{
         ret.set_float( this.type.GetLayerX(this.inst) );
 	};
 	
-	exps.Y = function (ret)
+	Exps.prototype.Y = function (ret)
 	{
 	    ret.set_float( this.type.GetLayerY(this.inst) );
 	};
 	
-	exps.AbsoluteX = function (ret)
+	Exps.prototype.AbsoluteX = function (ret)
 	{
         ret.set_float( this.type.GetABSX(this.inst) );
 	};
 	
-	exps.AbsoluteY = function (ret)
+	Exps.prototype.AbsoluteY = function (ret)
 	{
         ret.set_float( this.type.GetABSY(this.inst) );
 	};
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int((this.activated)? 1:0);
 	};     

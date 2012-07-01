@@ -194,20 +194,20 @@ cr.behaviors.Rex_SinButton = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;   
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();   
     
-	cnds.OnOver = function ()
+	Cnds.prototype.OnOver = function ()
 	{
 		return true;
 	};
     
-	cnds.IsOver = function ()
+	Cnds.prototype.IsOver = function ()
 	{
 		return (this.is_over);
 	};  
 	
-	cnds.IsActive = function ()
+	Cnds.prototype.IsActive = function ()
 	{
 		return this.active;
 	};
@@ -215,20 +215,20 @@ cr.behaviors.Rex_SinButton = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActive = function (a)
+	Acts.prototype.SetActive = function (a)
 	{
 		this.active = (a === 1);
 	};
 	
-	acts.SetPeriod = function (x)
+	Acts.prototype.SetPeriod = function (x)
 	{
 		this.sin_obj.period = x;
 	};
 	
-	acts.SetMagnitude = function (x)
+	Acts.prototype.SetMagnitude = function (x)
 	{
 		if (this.movement === 5)	// angle
 			x= cr.to_radians(x);
@@ -239,20 +239,20 @@ cr.behaviors.Rex_SinButton = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.CyclePosition = function (ret)
+	Exps.prototype.CyclePosition = function (ret)
 	{
 		ret.set_float(this.sin_obj.i / (2 * Math.PI));
 	};
 	
-	exps.Period = function (ret)
+	Exps.prototype.Period = function (ret)
 	{
 		ret.set_float(this.sin_obj.period);
 	};
 	
-	exps.Magnitude = function (ret)
+	Exps.prototype.Magnitude = function (ret)
 	{
 		if (this.movement === 5)	// angle
 			ret.set_float(cr.to_degrees(this.sin_obj.mag));

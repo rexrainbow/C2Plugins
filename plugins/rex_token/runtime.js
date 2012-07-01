@@ -92,56 +92,56 @@ cr.plugins_.Rex_Token = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
-	cnds.OnIndexChanging = function ()
+	Cnds.prototype.OnIndexChanging = function ()
 	{
 		return true;        
 	}; 	
-	cnds.IsFirst = function ()
+	Cnds.prototype.IsFirst = function ()
 	{
 		return (this.index == 0);        
 	}; 	    
-	cnds.IsLast = function ()
+	Cnds.prototype.IsLast = function ()
 	{
 		return (this.index == (this.player_id_list.length-1));        
 	};
-	cnds.IsCurID = function (_id)
+	Cnds.prototype.IsCurID = function (_id)
 	{
 		return (_id == this.player_id_list[this.index]);        
 	};    
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 		
-	acts.NextIndex = function ()
+	Acts.prototype.NextIndex = function ()
 	{        
 	    this._set_next_index();
 	};	
-	acts.SetNextIndex = function (_index)
+	Acts.prototype.SetNextIndex = function (_index)
 	{        
         this._set_next_index(_index);
 	};
-	acts.TurnOff = function ()
+	Acts.prototype.TurnOff = function ()
 	{        
         this.index = (-1);
 	};
-	acts.InvertOrder = function ()
+	Acts.prototype.InvertOrder = function ()
 	{        
         this.is_inc_order = !this.is_inc_order;
 	};
-	acts.SetIDList = function (id_list_string)
+	Acts.prototype.SetIDList = function (id_list_string)
 	{        
         this._set_id_list(id_list_string);
 	};	
-	acts.AppendIDList = function (_id)
+	Acts.prototype.AppendIDList = function (_id)
 	{        
         this.player_id_list.push(_id);
 	};	
-	acts.RemoveIDList = function (_id)
+	Acts.prototype.RemoveIDList = function (_id)
 	{
         var _index = this.player_id_list.indexOf(_id);
         if (_index == (-1))
@@ -150,7 +150,7 @@ cr.plugins_.Rex_Token = function(runtime)
         cr.arrayRemove(this.player_id_list, _index); 
         this._set_pre_index();     
 	};	
-	acts.SwitchID = function (_idA, _idB)
+	Acts.prototype.SwitchID = function (_idA, _idB)
 	{       
         if (_idA == _idB)
             return;
@@ -162,11 +162,11 @@ cr.plugins_.Rex_Token = function(runtime)
         this.player_id_list[_indexA] = _idB;
         this.player_id_list[_indexB] = _idA;
 	};	
-	acts.CleanIDList = function ()
+	Acts.prototype.CleanIDList = function ()
 	{       
         this.player_id_list.length = 0;
 	};
-    acts.SetNextID = function (_id)
+    Acts.prototype.SetNextID = function (_id)
 	{        
         var index = this.player_id_list.indexOf(_id);
         if (index != (-1))
@@ -174,38 +174,38 @@ cr.plugins_.Rex_Token = function(runtime)
 	};
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.ListLength = function (ret)
+	Exps.prototype.ListLength = function (ret)
 	{
 	    ret.set_int(this.player_id_list.length);
 	};     
-	exps.Index2ID = function (ret, _index, default_value)
+	Exps.prototype.Index2ID = function (ret, _index, default_value)
 	{
 	    ret.set_any(this.player_id_list[_index]);
 	};    
-	exps.ID2Index = function (ret, _id)
+	Exps.prototype.ID2Index = function (ret, _id)
 	{
 	    ret.set_int(this.player_id_list.indexOf(_id));
 	};   
-	exps.CurrIndex = function (ret)
+	Exps.prototype.CurrIndex = function (ret)
 	{
 	    ret.set_int(this.index);
 	};
-	exps.CurrID = function (ret)
+	Exps.prototype.CurrID = function (ret)
 	{
 	    ret.set_any(this.player_id_list[this.index]);
 	};	
-	exps.PreIndex = function (ret)
+	Exps.prototype.PreIndex = function (ret)
 	{
 	    ret.set_int(this._pre_index);
 	};
-	exps.PreID = function (ret)
+	Exps.prototype.PreID = function (ret)
 	{
 	    ret.set_any(this.player_id_list[this._pre_index]);
 	};
-	exps.List2String = function (ret)
+	Exps.prototype.List2String = function (ret)
 	{
 	    ret.set_string(JSON.stringify(this.player_id_list));
 	};	

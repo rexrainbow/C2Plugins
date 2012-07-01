@@ -214,40 +214,40 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;    
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();    
     
-	cnds.OnDragStart = function ()
+	Cnds.prototype.OnDragStart = function ()
 	{
         return true;
 	};
     
-	cnds.OnDrop = function ()
+	Cnds.prototype.OnDrop = function ()
 	{
 		return true;
 	}; 
 
- 	cnds.OnDragging = function ()
+ 	Cnds.prototype.OnDragging = function ()
 	{   
         return true;
     }
     
- 	cnds.IsDragging = function ()
+ 	Cnds.prototype.IsDragging = function ()
 	{   
         return (this.is_on_drag);
     }    
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 
-	acts.ForceDropp = function ()
+	Acts.prototype.ForceDropp = function ()
 	{
         if (this.drag_info.is_on_drag)
         {
@@ -257,30 +257,30 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	};      
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.X = function (ret)
+	Exps.prototype.X = function (ret)
 	{
         ret.set_float( this.type.GetLayerX(this.inst) );
 	};
 	
-	exps.Y = function (ret)
+	Exps.prototype.Y = function (ret)
 	{
 	    ret.set_float( this.type.GetLayerY(this.inst) );
 	};
 	
-	exps.AbsoluteX = function (ret)
+	Exps.prototype.AbsoluteX = function (ret)
 	{
         ret.set_float( this.type.GetABSX(this.inst) );
 	};
 	
-	exps.AbsoluteY = function (ret)
+	Exps.prototype.AbsoluteY = function (ret)
 	{
         ret.set_float( this.type.GetABSY(this.inst) );
 	};
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    

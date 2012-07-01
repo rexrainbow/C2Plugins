@@ -128,25 +128,25 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
     
-	cnds.OnCompleted = function ()
+	Cnds.prototype.OnCompleted = function ()
 	{
 		return true;
 	};  
 
-	cnds.IsRunning = function ()
+	Cnds.prototype.IsRunning = function ()
 	{
 		return ((this.timer)? this.timer.IsActive():false);
 	};      
 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-    acts.Setup = function (timeline_objs, fn_objs)
+    Acts.prototype.Setup = function (timeline_objs, fn_objs)
 	{  
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -161,40 +161,40 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             alert ("Worksheet should connect to a function object");
 	};    
     
-    acts.Start = function (instructions, offset)
+    Acts.prototype.Start = function (instructions, offset)
 	{   
         this.Start(instructions, offset);
 	};   
     
-    acts.Pause = function ()
+    Acts.prototype.Pause = function ()
 	{
         if (this.timer)
             this.timer.Suspend();  
 	};
 
-    acts.Resume = function (timer_name)
+    Acts.prototype.Resume = function (timer_name)
 	{
         if (this.timer)
             this.timer.Resume();
 	};
     
-    acts.Stop = function ()
+    Acts.prototype.Stop = function ()
 	{
         if (this.timer)
             this.timer.Remove();
 	};  
     
-    acts.SetOffset = function (offset)
+    Acts.prototype.SetOffset = function (offset)
 	{
         this.offset = offset;
 	}; 
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-    exps.Offset = function (ret)
+    Exps.prototype.Offset = function (ret)
 	{
 	    ret.set_float( this.offset );
 	};	

@@ -252,24 +252,24 @@ MersenneTwister.prototype.genrand_res53 = function() {
 
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 	
-    acts.SetSeed = function (seed)
+    Acts.prototype.SetSeed = function (seed)
 	{  
         this.rand_gen = new MersenneTwister(seed);
 	};
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.random = function (ret)
+	Exps.prototype.random = function (ret)
 	{
 		ret.set_float(this.random());
 	};	

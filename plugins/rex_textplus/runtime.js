@@ -18,7 +18,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	pluginProto.onCreate = function ()
 	{
 		// Override the 'set width' action
-		pluginProto.acts.SetWidth = function (w)
+		pluginProto.Acts.prototype.SetWidth = function (w)
 		{
 			if (this.width !== w)
 			{
@@ -416,10 +416,10 @@ cr.plugins_.Rex_TextPlus = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.CompareText = function(text_to_compare, case_sensitive)
+	Cnds.prototype.CompareText = function(text_to_compare, case_sensitive)
 	{
 		if (case_sensitive)
 			return this.text == text_to_compare;
@@ -427,37 +427,37 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 			return this.text.toLowerCase() == text_to_compare.toLowerCase();
 	};
  
-    cnds.OnTextTyping = function ()
+    Cnds.prototype.OnTextTyping = function ()
 	{
 		return true;
 	};  
  
-    cnds.OnTypingCompleted = function ()
+    Cnds.prototype.OnTypingCompleted = function ()
 	{
 		return true;
 	}; 
     
-	cnds.IsTextTyping = function ()
+	Cnds.prototype.IsTextTyping = function ()
 	{ 
         return this.typing_timer.IsActive();
 	};      
 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.SetText = function(param)
+	Acts.prototype.SetText = function(param)
 	{
 		this.SetText(param);
 	};
 	
-	acts.AppendText = function(param)
+	Acts.prototype.AppendText = function(param)
 	{
 		this.AppendText(param);
 	};
     
-    acts.SetupTimer = function (timeline_objs)
+    Acts.prototype.SetupTimer = function (timeline_objs)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -469,7 +469,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
             alert ("Text-typing should connect to a timeline object");
 	};     
 
-	acts.TypeText = function(param, speed)
+	Acts.prototype.TypeText = function(param, speed)
 	{
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
@@ -477,7 +477,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
         this._start_typing(param.toString(), speed);
 	};
 
-	acts.SetTypingSpeed = function(speed)
+	Acts.prototype.SetTypingSpeed = function(speed)
 	{
         this.typing_speed = speed;
         var timer = this.typing_timer;
@@ -487,7 +487,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
         }
 	};  
 	
-	acts.SetTextColor = function(color)
+	Acts.prototype.SetTextColor = function(color)
 	{
 		if (color === this.color)
 			return;    
@@ -495,7 +495,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
         this.runtime.redraw = true;
 	};    
 	
-	acts.SetFontFace = function (face_, style_)
+	Acts.prototype.SetFontFace = function (face_, style_)
 	{
 		var newstyle = "";
 		
@@ -513,7 +513,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		this.updateFont();
 	};
 	
-	acts.SetFontSize = function (size_)
+	Acts.prototype.SetFontSize = function (size_)
 	{
 		if (this.ptSize === size_)
 			return;
@@ -523,7 +523,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		this.updateFont();
 	};
 	
-	acts.SetFontColor = function (rgb)
+	Acts.prototype.SetFontColor = function (rgb)
 	{
 		var newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";
 		
@@ -534,7 +534,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		this.runtime.redraw = true;
 	};
 	
-	acts.SetWebFont = function (familyname_, cssurl_)
+	Acts.prototype.SetWebFont = function (familyname_, cssurl_)
 	{
 		// Already requested this web font?
 		if (requestedWebFonts.hasOwnProperty(cssurl_))
@@ -585,29 +585,29 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-	exps.Text = function(ret)
+	Exps.prototype.Text = function(ret)
 	{
 		ret.set_string(this.text);
 	};
     
-    exps.TypingSpeed = function (ret)
+    Exps.prototype.TypingSpeed = function (ret)
 	{
 	    ret.set_float( this.this.typing_speed );
 	}; 
-	exps.FaceName = function (ret)
+	Exps.prototype.FaceName = function (ret)
 	{
 		ret.set_string(this.facename);
 	};
 	
-	exps.FaceSize = function (ret)
+	Exps.prototype.FaceSize = function (ret)
 	{
 		ret.set_int(this.ptSize);
 	};
 	
-	exps.TextWidth = function (ret)
+	Exps.prototype.TextWidth = function (ret)
 	{
 		var w = 0;
 		var i, len, x;
@@ -622,7 +622,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 		ret.set_int(w);
 	};
 	
-	exps.TextHeight = function (ret)
+	Exps.prototype.TextHeight = function (ret)
 	{
 		ret.set_int(this.lines.length * this.pxHeight);
 	};

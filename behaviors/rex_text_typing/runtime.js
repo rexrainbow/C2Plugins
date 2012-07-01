@@ -104,30 +104,30 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	};  
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
  
-    cnds.OnTextTyping = function ()
+    Cnds.prototype.OnTextTyping = function ()
 	{
 		return true;
 	};  
  
-    cnds.OnTypingCompleted = function ()
+    Cnds.prototype.OnTypingCompleted = function ()
 	{
 		return true;
 	}; 
     
-	cnds.IsTextTyping = function ()
+	Cnds.prototype.IsTextTyping = function ()
 	{ 
         return this.typing_timer.IsActive();
 	}; 
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
     
-    acts.SetupTimer = function (timeline_objs)
+    Acts.prototype.SetupTimer = function (timeline_objs)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
@@ -136,7 +136,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
             alert ("Text-typing should connect to a timeline object");
 	}; 
 
-	acts.TypeText = function(param, speed)
+	Acts.prototype.TypeText = function(param, speed)
 	{
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
@@ -144,7 +144,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this._start_typing(param.toString(), speed);
 	};
 
-	acts.SetTypingSpeed = function(speed)
+	Acts.prototype.SetTypingSpeed = function(speed)
 	{
         this.typing_speed = speed;
         var timer = this.typing_timer;
@@ -154,16 +154,16 @@ cr.behaviors.Rex_text_typing = function(runtime)
         }
 	};
     
-	acts.StopTyping = function()
+	Acts.prototype.StopTyping = function()
 	{
         this.typing_timer_remove();   
 	};    
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-    exps.TypingSpeed = function (ret)
+    Exps.prototype.TypingSpeed = function (ret)
 	{
 	    ret.set_float( this.typing_speed );
 	};

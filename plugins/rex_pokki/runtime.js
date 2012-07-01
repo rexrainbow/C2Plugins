@@ -75,37 +75,37 @@ cr.plugins_.Rex_Pokki = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
-	cnds.OnHidden = function ()
+	Cnds.prototype.OnHidden = function ()
 	{
 		return true;
 	};
 
-	cnds.OnShown = function ()
+	Cnds.prototype.OnShown = function ()
 	{
 		return true;
 	};     
 
-	cnds.HasPokki = function ()
+	Cnds.prototype.HasPokki = function ()
 	{
 		return (window["pokki"] != null);
 	};     
 	
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.ClosePopup = function ()
+	Acts.prototype.ClosePopup = function ()
 	{
         var pokki = window["pokki"];   
         if (pokki != null)
             pokki["closePopup"]();
 	};  
 
-	acts.OpenURLInDefaultBrowser = function (url)
+	Acts.prototype.OpenURLInDefaultBrowser = function (url)
 	{
         var pokki = window["pokki"];   
         if (pokki != null)
@@ -114,7 +114,7 @@ cr.plugins_.Rex_Pokki = function(runtime)
 	
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

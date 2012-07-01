@@ -299,25 +299,25 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;        
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();        
 
-	cnds.OnCostFn = function (name)
+	Cnds.prototype.OnCostFn = function (name)
 	{
         return (this._cost_fn_name == name);
 	};    
 
-	cnds.OnFilterFn = function (name)
+	Cnds.prototype.OnFilterFn = function (name)
 	{
         return (this._filter_fn_name == name);
 	}; 	
 	
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-    acts.Setup = function (board_objs, group_objs)
+    Acts.prototype.Setup = function (board_objs, group_objs)
 	{
         var board = board_objs.instances[0];
         if (board.check_name == "BOARD")
@@ -332,17 +332,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             alert ("SLG movement should connect to a instance group object");            
 	};   
     
-    acts.SetCost = function (cost_value)
+    Acts.prototype.SetCost = function (cost_value)
 	{
         this._cost_value = cost_value;           
 	}; 
     
-    acts.AppendFilter = function (filter_uid)
+    Acts.prototype.AppendFilter = function (filter_uid)
 	{
         this._filter_uid_list.push(filter_uid);
 	}; 	   
 	 
-	acts.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
+	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
 	{	        	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
@@ -377,7 +377,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		this._filter_uid_list.length = 0;
 	};  
 		
-	acts.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
+	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
 	{        
 	    var chess_uid = _get_uid(chess_objs);
 	    var tile_uid = _get_uid(tile_objs);
@@ -392,15 +392,15 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.ChessUID = function (ret)
+	Exps.prototype.ChessUID = function (ret)
 	{
 	    ret.set_int(this.exp_ChessUID);
 	};
 	
-    exps.TileUID = function (ret)
+    Exps.prototype.TileUID = function (ret)
     {
         ret.set_int(this.exp_TileUID);
     };	

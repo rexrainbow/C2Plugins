@@ -128,13 +128,13 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
     var _param2string = function (param)
     {
@@ -143,60 +143,60 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         return param.toString();    
     };
     
-	acts.SetContent = function(param)
+	Acts.prototype.SetContent = function(param)
 	{   
         this.content_raw = _param2string(param);
         this.text_changed = true;
 	};
 
-	acts.ScrollByPercent = function(percent)
+	Acts.prototype.ScrollByPercent = function(percent)
 	{   
         this.line_pos_percent = cr.clamp(percent, 0, 1);
         var start_line_index = this.perent2line(this.line_pos_percent);
         this.SetText(this._get_visible_lines(start_line_index));
 	};
     
-	acts.AppendContent = function(param)
+	Acts.prototype.AppendContent = function(param)
 	{   
         this.content_raw += _param2string(param);
         this.text_changed = true;
 	}; 
 
-	acts.ScrollByIndex = function(line_index)
+	Acts.prototype.ScrollByIndex = function(line_index)
 	{   
         this.SetText(this._get_visible_lines(line_index));
 	}; 
 
-	acts.ScrollToNext = function()
+	Acts.prototype.ScrollToNext = function()
 	{   
         this.SetText(this._get_visible_lines(this.start_line_index+1));
 	}; 
 
-	acts.ScrollToPrevious = function()
+	Acts.prototype.ScrollToPrevious = function()
 	{   
         this.SetText(this._get_visible_lines(this.start_line_index-1));
 	};     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.Text = function(ret)
+	Exps.prototype.Text = function(ret)
 	{
 		ret.set_string(this.content_raw);
 	};
 
-	exps.TotalCnt = function(ret)
+	Exps.prototype.TotalCnt = function(ret)
 	{
 		ret.set_int(this.total_lines);
 	};	
 
-	exps.VisibleCnt = function(ret)
+	Exps.prototype.VisibleCnt = function(ret)
 	{
 		ret.set_int(this.visible_lines);
 	};	    
 
-	exps.CurrIndex = function(ret)
+	Exps.prototype.CurrIndex = function(ret)
 	{
 		ret.set_int(this.start_line_index);
 	};	    

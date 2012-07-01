@@ -201,73 +201,73 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     };
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
 
-	cnds.IsUPDown = function()
+	Cnds.prototype.IsUPDown = function()
 	{
         return this.keyMap[3];
 	};
-	cnds.IsDOWNDown = function()
+	Cnds.prototype.IsDOWNDown = function()
 	{
         return this.keyMap[1];    
 	};	
-	cnds.IsLEFTDown = function()
+	Cnds.prototype.IsLEFTDown = function()
 	{
         return this.keyMap[2];
 	};
-	cnds.IsRIGHTDown = function()
+	Cnds.prototype.IsRIGHTDown = function()
 	{
         return this.keyMap[0];
 	};    
     
-	cnds.OnUPKey = function()
+	Cnds.prototype.OnUPKey = function()
 	{
         return true;
 	};
-	cnds.OnDOWNKey = function()
+	Cnds.prototype.OnDOWNKey = function()
 	{
         return true;    
 	};    
-	cnds.OnLEFTKey = function()
+	Cnds.prototype.OnLEFTKey = function()
 	{
         return true;    
 	};
-	cnds.OnRIGHTKey = function()
+	Cnds.prototype.OnRIGHTKey = function()
 	{
         return true;    
 	};      
 	
-	cnds.OnAnyKey = function()
+	Cnds.prototype.OnAnyKey = function()
 	{
         return true;    
 	};
 	
-	cnds.OnUPKeyReleased = function()
+	Cnds.prototype.OnUPKeyReleased = function()
 	{
         return true;
 	};
-	cnds.OnDOWNKeyReleased = function()
+	Cnds.prototype.OnDOWNKeyReleased = function()
 	{
         return true;    
 	};  
-	cnds.OnLEFTKeyReleased = function()
+	Cnds.prototype.OnLEFTKeyReleased = function()
 	{
         return true;    
 	};
-	cnds.OnRIGHTKeyReleased = function()
+	Cnds.prototype.OnRIGHTKeyReleased = function()
 	{
         return true;    
 	};   
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

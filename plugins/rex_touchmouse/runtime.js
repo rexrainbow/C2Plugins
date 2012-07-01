@@ -275,36 +275,36 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.OnClick = function (button, type)
+	Cnds.prototype.OnClick = function (button, type)
 	{
 		return (this.trigger_source == 1)?
                (button === this.triggerButton && type === this.triggerType):  // mouse
                true;  //touch
 	};
 	
-	cnds.OnAnyClick = function ()
+	Cnds.prototype.OnAnyClick = function ()
 	{
 		return true;
 	};
 	
-	cnds.IsButtonDown = function (button)
+	Cnds.prototype.IsButtonDown = function (button)
 	{
 		return (this.trigger_source==1)?
                (this.buttonMap[button + 1]):   // mouse:jQuery uses 1-based buttons for some reason
                (this.touches.length);    // touch
 	};
 	
-	cnds.OnRelease = function (button)
+	Cnds.prototype.OnRelease = function (button)
 	{
 		return (this.trigger_source == 1)?
                (button === this.triggerButton):  // mouse
                true;  //touch
 	};
 	
-	cnds.IsOverObject = function (obj)
+	Cnds.prototype.IsOverObject = function (obj)
 	{
         if (this.trigger_source == 1)  // mouse
         {    
@@ -371,7 +371,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
         }        
 	};
 
-	cnds.OnObjectClicked = function (button, type, obj)
+	Cnds.prototype.OnObjectClicked = function (button, type, obj)
 	{
         if (this.trigger_source == 1)  // mouse
         {
@@ -391,10 +391,10 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-	exps.X = function (ret, layerparam)
+	Exps.prototype.X = function (ret, layerparam)
 	{
         var layer, oldScale;
 		
@@ -433,7 +433,7 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 		}
 	};
 	
-	exps.Y = function (ret, layerparam)
+	Exps.prototype.Y = function (ret, layerparam)
 	{
         var layer, oldScale;
 		
@@ -472,12 +472,12 @@ cr.plugins_.Rex_TouchMouse = function(runtime)
 		}          
 	};
 	
-	exps.AbsoluteX = function (ret)
+	Exps.prototype.AbsoluteX = function (ret)
 	{
         ret.set_float(this.GetABSX());
 	};
 	
-	exps.AbsoluteY = function (ret)
+	Exps.prototype.AbsoluteY = function (ret)
 	{
         ret.set_float(this.GetABSY());
 	};

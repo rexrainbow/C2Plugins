@@ -127,36 +127,36 @@ cr.behaviors.Rex_Shell = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
     
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = (s==1);
 	};   
     
-	acts.CleanMemory = function ()
+	Acts.prototype.CleanMemory = function ()
 	{
         this.shell_obj["Mem"] = {};
 	};  
         
-	acts.SetMemory = function (index, value)
+	Acts.prototype.SetMemory = function (index, value)
 	{
         this.shell_obj["Mem"][index] = value;
 	};
     
-	acts.InjectJSFunctionObjects = function (code_string)
+	Acts.prototype.InjectJSFunctionObjects = function (code_string)
 	{
         var fn = eval("("+code_string+")");
         fn(this.shell_obj, this.type.fn_obj, this.type.csv_obj);
 	};      
 
-    acts.ConnectFn = function (fn_objs)
+    Acts.prototype.ConnectFn = function (fn_objs)
 	{  
         var fn_obj = fn_objs.instances[0];
         if (fn_obj.check_name == "FUNCTION")
@@ -165,7 +165,7 @@ cr.behaviors.Rex_Shell = function(runtime)
             alert ("Can not connect to a function object");
 	};    
     
-    acts.ConnectCSV = function (csv_objs)
+    Acts.prototype.ConnectCSV = function (csv_objs)
 	{  
         var csv_obj = csv_objs.instances[0];
         if (csv_obj.check_name == "CSV")
@@ -174,16 +174,16 @@ cr.behaviors.Rex_Shell = function(runtime)
             alert ("Can not connect to a csv object");
 	};  
     
-    acts.CallFunction = function (fn_name)
+    Acts.prototype.CallFunction = function (fn_name)
 	{  
         this.execute_callback(this.type.fn_obj[name]);
 	};     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-    exps.Mem = function (ret, index)
+    Exps.prototype.Mem = function (ret, index)
 	{
         var value = this.fsm["Mem"][index];
         if (value == null) 
@@ -196,56 +196,56 @@ cr.behaviors.Rex_Shell = function(runtime)
 	    ret.set_any(value);
 	};	
 
-    exps.X = function (ret, uid, default_value)
+    Exps.prototype.X = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.x:default_value;
 	    ret.set_float(val);
 	};	    
 
-    exps.Y = function (ret, uid, default_value)
+    Exps.prototype.Y = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.y:default_value;
 	    ret.set_float(val);
 	};
 
-    exps.Width = function (ret, uid, default_value)
+    Exps.prototype.Width = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.width:default_value;
 	    ret.set_float(val);
 	};	    
 
-    exps.Height = function (ret, uid, default_value)
+    Exps.prototype.Height = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.height:default_value;
 	    ret.set_float(val);
 	};    
 
-    exps.Angle = function (ret, uid, default_value)
+    Exps.prototype.Angle = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? cr.to_clamped_degrees(inst.inst.angle):default_value;
 	    ret.set_float(val);
 	};	    
 
-    exps.Opacity = function (ret, uid, default_value)
+    Exps.prototype.Opacity = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.opacity:default_value;
 	    ret.set_float(val);
 	};     
 
-    exps.Visible = function (ret, uid, default_value)
+    Exps.prototype.Visible = function (ret, uid, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.visible:default_value;
 	    ret.set_float(val);
 	};	    
 
-    exps.ImagePointX = function (ret, uid, imgpt, default_value)
+    Exps.prototype.ImagePointX = function (ret, uid, imgpt, default_value)
 	{
 	    debugger;
         var inst = this.uid2inst[uid];
@@ -253,7 +253,7 @@ cr.behaviors.Rex_Shell = function(runtime)
 	    ret.set_float(val);
 	};    
 
-    exps.ImagePointY = function (ret, uid, imgpt, default_value)
+    Exps.prototype.ImagePointY = function (ret, uid, imgpt, default_value)
 	{
         var inst = this.uid2inst[uid];
         var val = (inst != null)? inst.inst.getImagePoint(imgpt, false):default_value;

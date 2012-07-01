@@ -75,35 +75,35 @@ cr.plugins_.Rex_Pause = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
 
-	cnds.OnPause = function ()
+	Cnds.prototype.OnPause = function ()
 	{
 		return true;
 	};
 
-	cnds.OnResume = function ()
+	Cnds.prototype.OnResume = function ()
 	{
 		return true;
 	};   
 
-	cnds.IsPause = function ()
+	Cnds.prototype.IsPause = function ()
 	{
 		return this.is_pause;
 	};
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-    acts.TooglePause = function ()
+    Acts.prototype.TooglePause = function ()
 	{
         this._toogle_pause();       
 	}; 
 
-    acts.SetState = function (state)
+    Acts.prototype.SetState = function (state)
 	{
         var is_pause = (state == 0);
         this._toogle_pause(is_pause);       
@@ -111,10 +111,10 @@ cr.plugins_.Rex_Pause = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-    exps.PreTimescale = function (ret)
+    Exps.prototype.PreTimescale = function (ret)
 	{
 	    ret.set_float( this.previous_timescale );
 	};

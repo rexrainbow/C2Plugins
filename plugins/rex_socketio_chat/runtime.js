@@ -70,37 +70,37 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions    
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.OnConnect = function()
+	Cnds.prototype.OnConnect = function()
 	{
 		return true;
 	};
-	cnds.OnDisconnect = function()
+	Cnds.prototype.OnDisconnect = function()
 	{
 		return true;
 	};
-	cnds.OnError = function()
+	Cnds.prototype.OnError = function()
 	{
 		return true;
 	};
-	cnds.OnData = function()
+	Cnds.prototype.OnData = function()
 	{
 		return true;
 	};
-	cnds.OnUserJoined = function()
+	Cnds.prototype.OnUserJoined = function()
 	{
         this.current_usrID = this.socket.get_triggered_user_id();
 		return true;
 	};   
-	cnds.OnUserLeft = function()
+	Cnds.prototype.OnUserLeft = function()
 	{
         this.current_usrID = this.socket.get_triggered_user_id();
 		return true;
 	};       
     
-	cnds.ForEachUsrID = function()
+	Cnds.prototype.ForEachUsrID = function()
 	{
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
@@ -121,82 +121,82 @@ cr.plugins_.Rex_SocketIO_Chat = function(runtime)
 		return false;        
 	};  
     
-	cnds.AmIRoomModerator = function()
+	Cnds.prototype.AmIRoomModerator = function()
 	{
 		return this._branch.am_I_room_moderator();
 	}; 
     
-	cnds.OnRoomStorageData = function()
+	Cnds.prototype.OnRoomStorageData = function()
 	{
 		return true;
 	}; 
     
-	cnds.OnStartOfLayout = function()
+	Cnds.prototype.OnStartOfLayout = function()
 	{
 		return true;
 	};    
 	//////////////////////////////////////
 	// Actions    
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.Connect = function(host, port, user_name)
+	Acts.prototype.Connect = function(host, port, user_name)
 	{
         this.socket.connect(host, port, user_name);
 	};
-	acts.Disconnect = function()
+	Acts.prototype.Disconnect = function()
 	{
         this.socket.disconnect();
 	};
-	acts.Send = function(data)
+	Acts.prototype.Send = function(data)
 	{
         this._branch.send(data);
 	};
-	acts.SetMaxMemberCount = function(count)
+	Acts.prototype.SetMaxMemberCount = function(count)
 	{
         this.socket.set_room_user_max_cnt(count);
 	};
-	acts.KickMember = function(user_id)
+	Acts.prototype.KickMember = function(user_id)
 	{
         this.socket.kick_user(user_id);
 	};   
-	acts.SetRoomStorage = function(key, data)
+	Acts.prototype.SetRoomStorage = function(key, data)
 	{
         this._branch.set_room_storage_data(key, data);
 	};   
-	acts.GetRoomStorage = function(key)
+	Acts.prototype.GetRoomStorage = function(key)
 	{
         this._branch.get_room_storage_data(key, this, this.on_room_storage);
 	};      
-	acts.EnterLayout = function()
+	Acts.prototype.EnterLayout = function()
 	{        
 	};     	
 	//////////////////////////////////////
 	// Expressions    
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-	exps.Data = function(ret)
+	Exps.prototype.Data = function(ret)
 	{
 		ret.set_string(this.current_data);
 	};
-	exps.UsrID = function(ret)
+	Exps.prototype.UsrID = function(ret)
 	{
 		ret.set_int(this.current_usrID);        
 	};    
-	exps.UsrName = function(ret, user_id)
+	Exps.prototype.UsrName = function(ret, user_id)
 	{   
 		ret.set_string(this._branch.get_user_name(user_id));        
 	};     
-	exps.IPAddr = function(ret)
+	Exps.prototype.IPAddr = function(ret)
 	{
 		ret.set_string(this.socket.host);        
 	};    
-	exps.Port = function(ret)
+	Exps.prototype.Port = function(ret)
 	{   
 		ret.set_string(this.socket.port);     
 	}; 
-	exps.RoomData = function(ret, key, default_data)
+	Exps.prototype.RoomData = function(ret, key, default_data)
 	{   
         var data = this._branch.get_room_storage_data(key);
         if (data == null)

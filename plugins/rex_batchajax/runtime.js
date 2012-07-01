@@ -91,25 +91,25 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.OnComplete = function ()
+	Cnds.prototype.OnComplete = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnError = function ()
+	Cnds.prototype.OnError = function ()
 	{
 		return true;
 	};
 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-	acts.AddRequest = function (tag, url)
+	Acts.prototype.AddRequest = function (tag, url)
 	{   
         if (this._is_process_request)
         {
@@ -120,7 +120,7 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
         this._jobs[tag] = url;
 	}; 
     
-	acts.RequestStart = function ()
+	Acts.prototype.RequestStart = function ()
 	{
         if (this._is_process_request)
         {
@@ -137,7 +137,7 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
         }
 	};
     
-	acts.Clean = function ()
+	Acts.prototype.Clean = function ()
 	{     
 		this._data = {};
         this._jobs = {};
@@ -145,15 +145,15 @@ cr.plugins_.Rex_BatchAJAX = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-	exps.Data = function (ret, tag)
+	Exps.prototype.Data = function (ret, tag)
 	{
 		ret.set_string(this._data[tag]);
 	};
 
-	exps.ErrorTag = function (ret)
+	Exps.prototype.ErrorTag = function (ret)
 	{
 		ret.set_string(this._error_tag);
 	};    

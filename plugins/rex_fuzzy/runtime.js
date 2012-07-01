@@ -46,13 +46,13 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
    
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 	
     var _get_points = function (list_string)
     {
@@ -63,50 +63,50 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
             points.length = 3;
         return points;
     };    
-	acts.DefineMembership = function (var_name, nb, nm, ns, zo, ps, pm, pb)
+	Acts.prototype.DefineMembership = function (var_name, nb, nm, ns, zo, ps, pm, pb)
 	{     
 		this.rule_bank.add_variable(var_name, _get_points(nb).reverse(), _get_points(nm), _get_points(ns), 
                                     _get_points(zo), _get_points(ps), _get_points(pm), _get_points(pb));
 	};  
     
     var membership_map = ["nb", "nm", "ns", "zo", "ps", "pm", "pb"];
-	acts.AddMembershipCond = function (cond_name, var_name, membership)
+	Acts.prototype.AddMembershipCond = function (cond_name, var_name, membership)
 	{
 		this.rule_bank.add_membership_cond(cond_name, var_name, membership_map[membership]);
 	};  
     
-	acts.AddInvertCond = function (cond_name, cond_from)
+	Acts.prototype.AddInvertCond = function (cond_name, cond_from)
 	{
 		this.rule_bank.add_invert_cond(cond_name, cond_from);
 	};        
     
     var logic_op_map = ["and", "or"];
-	acts.AddCombinationCond = function (cond_name, cond_A, logic_op, cond_B)
+	Acts.prototype.AddCombinationCond = function (cond_name, cond_A, logic_op, cond_B)
 	{
 		this.rule_bank.add_combination_cond(cond_name, cond_A, logic_op_map[logic_op], cond_B);
 	}; 
     
-	acts.AddRule = function (cond_name, var_name)
+	Acts.prototype.AddRule = function (cond_name, var_name)
 	{
 		this.rule_bank.add_rule(cond_name, var_name);
 	};  
     
-	acts.SetVarValue = function (var_name, value)
+	Acts.prototype.SetVarValue = function (var_name, value)
 	{
 		this.rule_bank.set_variable_value(var_name, value);
 	};     
     
-	acts.ExecuteRules = function ()
+	Acts.prototype.ExecuteRules = function ()
 	{
 		this.rule_bank.execute();
 	};     
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.Grade = function (ret, var_name)
+	Exps.prototype.Grade = function (ret, var_name)
 	{
         var grade_out = this.rule_bank.out_vars[var_name];
         if (grade_out == null)
@@ -114,7 +114,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 		ret.set_float(grade_out);
 	}; 
 	
-	exps.MemberShip = function (ret, var_name)
+	Exps.prototype.MemberShip = function (ret, var_name)
 	{
         var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
 		ret.set_string(max_membership);

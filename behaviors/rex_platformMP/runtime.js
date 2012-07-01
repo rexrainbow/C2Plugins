@@ -718,22 +718,22 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.IsMoving = function ()
+	Cnds.prototype.IsMoving = function ()
 	{
 		return this.dx !== 0 || this.dy !== 0;
 	};
 	
-	cnds.CompareSpeed = function (cmp, s)
+	Cnds.prototype.CompareSpeed = function (cmp, s)
 	{
 		var speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
 		
 		return cr.do_cmp(speed, cmp, s);
 	};
 	
-	cnds.IsOnFloor = function ()
+	Cnds.prototype.IsOnFloor = function ()
 	{
 		if (this.dy !== 0)
 			return false;
@@ -786,7 +786,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		return ret;
 	};
 	
-	cnds.IsByWall = function (side)
+	Cnds.prototype.IsByWall = function (side)
 	{
 		// Move 1px up to side and make sure not overlapping anything
 		var ret = false;
@@ -830,56 +830,56 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		return ret;
 	};
 	
-	cnds.IsJumping = function ()
+	Cnds.prototype.IsJumping = function ()
 	{
 		return this.dy < 0;
 	};
 	
-	cnds.IsFalling = function ()
+	Cnds.prototype.IsFalling = function ()
 	{
 		return this.dy > 0;
 	};
 	
-	cnds.OnJump = function ()
+	Cnds.prototype.OnJump = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnFall = function ()
+	Cnds.prototype.OnFall = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnStop = function ()
+	Cnds.prototype.OnStop = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnMove = function ()
+	Cnds.prototype.OnMove = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnLand = function ()
+	Cnds.prototype.OnLand = function ()
 	{
 		return true;
 	};
     
-	cnds.OnExtraCtlPressed = function (name)
+	Cnds.prototype.OnExtraCtlPressed = function (name)
 	{
         var is_my_call = (this.current_extra_ctlName == name);
         this.is_echo |= is_my_call;
 		return is_my_call;
 	}; 
     
-	cnds.OnExtraCtlReleased = function (name)
+	Cnds.prototype.OnExtraCtlReleased = function (name)
 	{
         var is_my_call = (this.current_extra_ctlName == name);
         this.is_echo |= is_my_call;
 		return is_my_call;
 	};
     
-	cnds.IsExtraCtlDown = function (name)
+	Cnds.prototype.IsExtraCtlDown = function (name)
 	{
         var ret = false;
         var keycode, key_info;
@@ -898,15 +898,15 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetIgnoreInput = function (ignoring)
+	Acts.prototype.SetIgnoreInput = function (ignoring)
 	{
 		this.ignoreInput = ignoring;
 	};
 	
-	acts.SetMaxSpeed = function (maxspeed)
+	Acts.prototype.SetMaxSpeed = function (maxspeed)
 	{
 		this.maxspeed = maxspeed;
 		
@@ -914,7 +914,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.maxspeed = 0;
 	};
 	
-	acts.SetAcceleration = function (acc)
+	Acts.prototype.SetAcceleration = function (acc)
 	{
 		this.acc = acc;
 		
@@ -922,7 +922,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.acc = 0;
 	};
 	
-	acts.SetDeceleration = function (dec)
+	Acts.prototype.SetDeceleration = function (dec)
 	{
 		this.dec = dec;
 		
@@ -930,7 +930,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.dec = 0;
 	};
 	
-	acts.SetJumpStrength = function (js)
+	Acts.prototype.SetJumpStrength = function (js)
 	{
 		this.jumpStrength = js;
 		
@@ -938,7 +938,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.jumpStrength = 0;
 	};
 	
-	acts.SetGravity = function (grav)
+	Acts.prototype.SetGravity = function (grav)
 	{
 		if (grav === this.g)
 			return;		// no change
@@ -950,7 +950,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		this.lastFloorObject = null;
 	};
 	
-	acts.SetMaxFallSpeed = function (mfs)
+	Acts.prototype.SetMaxFallSpeed = function (mfs)
 	{
 		this.maxFall = mfs;
 		
@@ -958,7 +958,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 			this.maxFall = 0;
 	};
 	
-	acts.SimulateControl = function (ctrl)
+	Acts.prototype.SimulateControl = function (ctrl)
 	{
 		// 0=left, 1=right, 2=jump
 		switch (ctrl) {
@@ -968,17 +968,17 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		}
 	};
 	
-	acts.SetVectorX = function (vx)
+	Acts.prototype.SetVectorX = function (vx)
 	{
 		this.dx = vx;
 	};
 	
-	acts.SetVectorY = function (vy)
+	Acts.prototype.SetVectorY = function (vy)
 	{
 		this.dy = vy;
 	};
 	
-	acts.SetGravityAngle = function (a)
+	Acts.prototype.SetGravityAngle = function (a)
 	{
 		a = cr.to_radians(a);
 		a = cr.clamp_angle(a);
@@ -993,12 +993,12 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		this.lastFloorObject = null;
 	};
 	
-	acts.SetEnabled = function (en)
+	Acts.prototype.SetEnabled = function (en)
 	{
 		this.enabled = (en === 1);
 	};
     
-	acts.CfgCtl = function (ctrl, keycode)
+	Acts.prototype.CfgCtl = function (ctrl, keycode)
 	{
 		// 0=left, 1=right, 2=jump
 		switch (ctrl) {
@@ -1014,7 +1014,7 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 		}      
 	};
 
-	acts.CfgExtraCtl = function (ctl_name, keycode)
+	Acts.prototype.CfgExtraCtl = function (ctl_name, keycode)
 	{
         // remove the existed keycode of ctl_name    
         var key;
@@ -1037,75 +1037,75 @@ cr.behaviors.Rex_PlatformMP = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.Speed = function (ret)
+	Exps.prototype.Speed = function (ret)
 	{
 		ret.set_float(Math.sqrt(this.dx * this.dx + this.dy * this.dy));
 	};
 	
-	exps.MaxSpeed = function (ret)
+	Exps.prototype.MaxSpeed = function (ret)
 	{
 		ret.set_float(this.maxspeed);
 	};
 	
-	exps.Acceleration = function (ret)
+	Exps.prototype.Acceleration = function (ret)
 	{
 		ret.set_float(this.acc);
 	};
 	
-	exps.Deceleration = function (ret)
+	Exps.prototype.Deceleration = function (ret)
 	{
 		ret.set_float(this.dec);
 	};
 	
-	exps.JumpStrength = function (ret)
+	Exps.prototype.JumpStrength = function (ret)
 	{
 		ret.set_float(this.jumpStrength);
 	};
 	
-	exps.Gravity = function (ret)
+	Exps.prototype.Gravity = function (ret)
 	{
 		ret.set_float(this.g);
 	};
 	
-	exps.MaxFallSpeed = function (ret)
+	Exps.prototype.MaxFallSpeed = function (ret)
 	{
 		ret.set_float(this.maxFall);
 	};
 	
-	exps.MovingAngle = function (ret)
+	Exps.prototype.MovingAngle = function (ret)
 	{
 		ret.set_float(cr.to_degrees(Math.atan2(this.dy, this.dx)));
 	};
 	
-	exps.VectorX = function (ret)
+	Exps.prototype.VectorX = function (ret)
 	{
 		ret.set_float(this.dx);
 	};
 	
-	exps.VectorY = function (ret)
+	Exps.prototype.VectorY = function (ret)
 	{
 		ret.set_float(this.dy);
 	};
 	
-	exps.LEFT = function (ret)
+	Exps.prototype.LEFT = function (ret)
 	{
 		ret.set_int(this.KEY_LEFT);
 	};
 	
-	exps.RIGHT = function (ret)
+	Exps.prototype.RIGHT = function (ret)
 	{
 		ret.set_int(this.KEY_RIGHT);
 	};   
 	
-	exps.JUMP = function (ret)
+	Exps.prototype.JUMP = function (ret)
 	{
 		ret.set_int(this.KEY_SHIFT);
 	};
 	
-	exps.EXTRA = function (ret, name)
+	Exps.prototype.EXTRA = function (ret, name)
 	{
         var val = 0;
         var keycode, key_info;

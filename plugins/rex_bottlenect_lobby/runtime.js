@@ -99,38 +99,38 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions    
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.OnConnect = function()
+	Cnds.prototype.OnConnect = function()
 	{
         this._get_triggered_source();    
 		return true;
 	};
-	cnds.OnDisconnect = function()
+	Cnds.prototype.OnDisconnect = function()
 	{
 		return true;
 	};
-	cnds.OnError = function()
+	Cnds.prototype.OnError = function()
 	{
 		return true;
 	};
-	cnds.OnData = function()
+	Cnds.prototype.OnData = function()
 	{
 		return true;
 	};
-	cnds.OnUserJoined = function()
+	Cnds.prototype.OnUserJoined = function()
 	{
         this._get_triggered_source();  
 		return true;
 	};   
-	cnds.OnUserLeft = function()
+	Cnds.prototype.OnUserLeft = function()
 	{
         this._get_triggered_source();  
 		return true;
 	};       
     
-	cnds.ForEachUsrID = function()
+	Cnds.prototype.ForEachUsrID = function()
 	{ 
         var current_event = this.runtime.getCurrentEventStack().current_event;
 		
@@ -154,27 +154,27 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		return false;        
 	};  
     
-	cnds.AmIRoomModerator = function()
+	Cnds.prototype.AmIRoomModerator = function()
 	{
 		return this._branch.am_I_room_moderator();
 	}; 
     
-	cnds.OnStartOfLayout = function()
+	Cnds.prototype.OnStartOfLayout = function()
 	{
 		return true;
 	};   
     
-	cnds.OnGameroomAvaiable = function()
+	Cnds.prototype.OnGameroomAvaiable = function()
 	{
 		return true;
 	};  	
     
-	cnds.OnGameroomUnavaiable = function()
+	Cnds.prototype.OnGameroomUnavaiable = function()
 	{
 		return true;
 	}; 
 	
-	cnds.ForEachGameroom = function()
+	Cnds.prototype.ForEachGameroom = function()
 	{
         var current_event = this.runtime.getCurrentEventStack().current_event;
 
@@ -196,12 +196,12 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 		return false;        
 	}; 	
 	
-	cnds.OnHotGameUpdated = function()
+	Cnds.prototype.OnHotGameUpdated = function()
 	{
 		return true;  
 	}; 	
 		
-	cnds.ForEachHotGame = function()
+	Cnds.prototype.ForEachHotGame = function()
 	{
         var current_event = this.runtime.getCurrentEventStack().current_event;
 
@@ -222,40 +222,40 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	}; 
 	//////////////////////////////////////
 	// Actions    
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.SetChannel = function(host)
+	Acts.prototype.SetChannel = function(host)
 	{
         this.channel_url = host;
 	};    
     
-	acts.Connect = function(room_id, user_name, is_public)
+	Acts.prototype.Connect = function(room_id, user_name, is_public)
 	{
         this.socket.connect(this.channel_url,
                             this.game_name, room_id, user_name,
                             is_public);
 	};
-	acts.Disconnect = function()
+	Acts.prototype.Disconnect = function()
 	{
         this.socket["disconnect"]();
 	};
-	acts.Send = function(data)
+	Acts.prototype.Send = function(data)
 	{
         this._branch.send(data);
 	};
-	acts.SetMaxMemberCount = function(count)
+	Acts.prototype.SetMaxMemberCount = function(count)
 	{
         this.socket.set_room_user_max_cnt(count);
 	};
-	acts.KickMember = function(user_id)
+	Acts.prototype.KickMember = function(user_id)
 	{
         this.socket.kick_user(user_id);
 	};  
-	acts.EnterLayout = function()
+	Acts.prototype.EnterLayout = function()
 	{        
 	};    
-	acts.JoinGame = function(game_url, room_id, user_name, is_new_window)
+	Acts.prototype.JoinGame = function(game_url, room_id, user_name, is_new_window)
 	{        
 	    var uri = game_url+"?"+"room_id="+encodeURI(room_id)+"&"+"user_name="+encodeURI(user_name);
         if (is_new_window == 0)
@@ -265,62 +265,62 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	};    	 	
 	//////////////////////////////////////
 	// Expressions    
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-	exps.Data = function(ret)
+	Exps.prototype.Data = function(ret)
 	{
 		ret.set_string(this.current_data);
 	};
-	exps.UsrID = function(ret)
+	Exps.prototype.UsrID = function(ret)
 	{
 		ret.set_int(this.triggered_userID);        
 	};    
-	exps.UsrName = function(ret)
+	Exps.prototype.UsrName = function(ret)
 	{   
 		ret.set_string(this.triggered_userName);        
 	};     
-	exps.IPAddr = function(ret)
+	Exps.prototype.IPAddr = function(ret)
 	{
 		ret.set_string(this.socket.host);        
 	};  
-	exps.RoomName = function(ret)
+	Exps.prototype.RoomName = function(ret)
 	{
 		ret.set_string(this._exp_RoomName);        
 	};   
-	exps.RoomID = function(ret)
+	Exps.prototype.RoomID = function(ret)
 	{
 		ret.set_string(this._exp_RoomID);        
 	}; 	
-	exps.RoomDescription = function(ret)
+	Exps.prototype.RoomDescription = function(ret)
 	{
 		ret.set_string(this._exp_RoomDescription);        
 	};   
-	exps.RoomURL = function(ret)
+	Exps.prototype.RoomURL = function(ret)
 	{
 		ret.set_string(this._exp_RoomURL);        
 	}; 	
-	exps.UsrID2Name = function(ret, user_id)
+	Exps.prototype.UsrID2Name = function(ret, user_id)
 	{   
 		ret.set_string(this._branch.get_user_name(user_id));         
 	};     
-	exps.MyUserName = function(ret)
+	Exps.prototype.MyUserName = function(ret)
 	{   
 		ret.set_string(this._branch.get_my_user_name());         
 	};
-	exps.MyUserID = function(ret)
+	Exps.prototype.MyUserID = function(ret)
 	{   
 		ret.set_int(this._branch.get_my_user_id());         
 	}; 
-	exps.HotGameName = function(ret)
+	Exps.prototype.HotGameName = function(ret)
 	{
 		ret.set_string(this._exp_HotGameName);        
 	}; 
-	exps.HotGameCnt = function(ret)
+	Exps.prototype.HotGameCnt = function(ret)
 	{
 		ret.set_int(this._exp_HotGameCnt);        
 	};	
-	exps.HotGameURL = function(ret)
+	Exps.prototype.HotGameURL = function(ret)
 	{
 		ret.set_string(this._exp_HotGameURL);        
 	}; 	

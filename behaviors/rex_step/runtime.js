@@ -154,30 +154,30 @@ cr.behaviors.Rex_Step = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnCMStep = function ()
+	Cnds.prototype.OnCMStep = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnCMHorizStep = function ()
+	Cnds.prototype.OnCMHorizStep = function ()
 	{
 		return true;
 	};
 	
-	cnds.OnCMVertStep = function ()
+	Cnds.prototype.OnCMVertStep = function ()
 	{
 		return true;
 	};
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
         if ( (this.activated==0) && (s==1) )
         {
@@ -187,18 +187,18 @@ cr.behaviors.Rex_Step = function(runtime)
 		this.activated = s;
 	};
     
-	acts.StopStepping = function (mode)
+	Acts.prototype.StopStepping = function (mode)
 	{
 		// set to 1 = go back a step, 2 = stay at current position
 		this.cancelStep = mode + 1;
 	};
  
-	acts.SetPixelPerStep = function (s)
+	Acts.prototype.SetPixelPerStep = function (s)
 	{
 		this.pixel_per_step = s;
 	};
  
-	acts.ForceStepping = function ()
+	Acts.prototype.ForceStepping = function ()
 	{
 		this.tick();
 	};    
@@ -206,7 +206,7 @@ cr.behaviors.Rex_Step = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
 }());

@@ -177,32 +177,32 @@ cr.behaviors.Rex_Ninja = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;   
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();   
     
-	cnds.OnOver = function ()
+	Cnds.prototype.OnOver = function ()
 	{
 		return true;
 	};
     
-	cnds.IsOver = function ()
+	Cnds.prototype.IsOver = function ()
 	{
 		return (this.is_over);
 	};    
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
 }());

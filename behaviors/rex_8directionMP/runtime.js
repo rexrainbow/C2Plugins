@@ -399,36 +399,36 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.IsMoving = function ()
+	Cnds.prototype.IsMoving = function ()
 	{
 		return this.dx !== 0 || this.dy !== 0;
 	};
 	
-	cnds.CompareSpeed = function (cmp, s)
+	Cnds.prototype.CompareSpeed = function (cmp, s)
 	{
 		var speed = Math.sqrt(this.dx * this.dx + this.dy * this.dy);
 		
 		return cr.do_cmp(speed, cmp, s);
 	};
     
-	cnds.OnExtraCtlPressed = function (name)
+	Cnds.prototype.OnExtraCtlPressed = function (name)
 	{
         var is_my_call = (this.current_extra_ctlName == name);
         this.is_echo |= is_my_call;
 		return is_my_call;
 	}; 
     
-	cnds.OnExtraCtlReleased = function (name)
+	Cnds.prototype.OnExtraCtlReleased = function (name)
 	{
         var is_my_call = (this.current_extra_ctlName == name);
         this.is_echo |= is_my_call;
 		return is_my_call;
 	};
     
-	cnds.IsExtraCtlDown = function (name)
+	Cnds.prototype.IsExtraCtlDown = function (name)
 	{
         var ret = false;
         var keycode, key_info;
@@ -448,27 +448,27 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.Stop = function ()
+	Acts.prototype.Stop = function ()
 	{
 		this.dx = 0;
 		this.dy = 0;
 	};
 	
-	acts.Reverse = function ()
+	Acts.prototype.Reverse = function ()
 	{
 		this.dx *= -1;
 		this.dy *= -1;
 	};
 	
-	acts.SetIgnoreInput = function (ignoring)
+	Acts.prototype.SetIgnoreInput = function (ignoring)
 	{
 		this.ignoreInput = ignoring;
 	};
 	
-	acts.SetSpeed = function (speed)
+	Acts.prototype.SetSpeed = function (speed)
 	{
 		if (speed < 0)
 			speed = 0;
@@ -481,7 +481,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		this.dy = speed * Math.sin(a);
 	};
 	
-	acts.SetMaxSpeed = function (maxspeed)
+	Acts.prototype.SetMaxSpeed = function (maxspeed)
 	{
 		this.maxspeed = maxspeed;
 		
@@ -489,7 +489,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 			this.maxspeed = 0;
 	};
 	
-	acts.SetAcceleration = function (acc)
+	Acts.prototype.SetAcceleration = function (acc)
 	{
 		this.acc = acc;
 		
@@ -497,7 +497,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 			this.acc = 0;
 	};
 	
-	acts.SetDeceleration = function (dec)
+	Acts.prototype.SetDeceleration = function (dec)
 	{
 		this.dec = dec;
 		
@@ -505,7 +505,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 			this.dec = 0;
 	};
 	
-	acts.SimulateControl = function (ctrl)
+	Acts.prototype.SimulateControl = function (ctrl)
 	{
 		// 0=left, 1=right, 2=up, 3=down
 		switch (ctrl) {
@@ -516,7 +516,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		}
 	};
 	
-	acts.CfgCtl = function (ctrl, keycode)
+	Acts.prototype.CfgCtl = function (ctrl, keycode)
 	{
 		// 0=left, 1=right, 2=up, 3=down
 		switch (ctrl) {
@@ -535,7 +535,7 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		}      
 	};  
 
-	acts.CfgExtraCtl = function (ctl_name, keycode)
+	Acts.prototype.CfgExtraCtl = function (ctl_name, keycode)
 	{
         // remove the existed keycode of ctl_name    
         var key;
@@ -555,72 +555,72 @@ cr.behaviors.Rex_EightDirMP = function(runtime)
 		this.KEY_EXTRA[keycode] = {name:ctl_name, state:false};        
 	}; 
 	
-	acts.SetEnabled = function (en)
+	Acts.prototype.SetEnabled = function (en)
 	{
 		this.enabled = (en === 1);
 	};	
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.Speed = function (ret)
+	Exps.prototype.Speed = function (ret)
 	{
 		ret.set_float(Math.sqrt(this.dx * this.dx + this.dy * this.dy));
 	};
 	
-	exps.MaxSpeed = function (ret)
+	Exps.prototype.MaxSpeed = function (ret)
 	{
 		ret.set_float(this.maxspeed);
 	};
 	
-	exps.Acceleration = function (ret)
+	Exps.prototype.Acceleration = function (ret)
 	{
 		ret.set_float(this.acc);
 	};
 	
-	exps.Deceleration = function (ret)
+	Exps.prototype.Deceleration = function (ret)
 	{
 		ret.set_float(this.dec);
 	};
 	
-	exps.MovingAngle = function (ret)
+	Exps.prototype.MovingAngle = function (ret)
 	{
 		ret.set_float(cr.to_degrees(Math.atan2(this.dy, this.dx)));
 	};
 	
-	exps.VectorX = function (ret)
+	Exps.prototype.VectorX = function (ret)
 	{
 		ret.set_float(this.dx);
 	};
 	
-	exps.VectorY = function (ret)
+	Exps.prototype.VectorY = function (ret)
 	{
 		ret.set_float(this.dy);
 	};
 	
-	exps.LEFT = function (ret)
+	Exps.prototype.LEFT = function (ret)
 	{
 		ret.set_int(this.KEY_LEFT);
 	};
 	
-	exps.RIGHT = function (ret)
+	Exps.prototype.RIGHT = function (ret)
 	{
 		ret.set_int(this.KEY_RIGHT);
 	};   
 	
-	exps.UP = function (ret)
+	Exps.prototype.UP = function (ret)
 	{
 		ret.set_int(this.KEY_UP);
 	};
 	
-	exps.DOWN = function (ret)
+	Exps.prototype.DOWN = function (ret)
 	{
 		ret.set_int(this.KEY_DOWN);
 	};   
 	
-	exps.EXTRA = function (ret, name)
+	Exps.prototype.EXTRA = function (ret, name)
 	{
         var val = 0;
         var keycode, key_info;

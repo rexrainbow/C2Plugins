@@ -45,13 +45,13 @@ cr.plugins_.Rex_Layout = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;    
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
     var _INST_SORT = function(instA, instB)
     {
@@ -64,7 +64,7 @@ cr.plugins_.Rex_Layout = function(runtime)
             return -1;
     };   
     
-    acts.DistributeInsts = function (objtype, start_x, start_y, end_x, end_y)
+    Acts.prototype.DistributeInsts = function (objtype, start_x, start_y, end_x, end_y)
 	{
         var sol = objtype.getCurrentSol();  
             
@@ -88,7 +88,7 @@ cr.plugins_.Rex_Layout = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
     
 }());

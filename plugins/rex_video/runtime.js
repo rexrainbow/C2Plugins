@@ -143,95 +143,95 @@ cr.plugins_.Rex_Video = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
     
-	cnds.OnEnded = function ()
+	Cnds.prototype.OnEnded = function ()
 	{
 		return true;
 	};
 	
-	cnds.IsEnded = function ()
+	Cnds.prototype.IsEnded = function ()
 	{
 		return this.elem.ended;
 	};
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.SetSource = function (src)
+	Acts.prototype.SetSource = function (src)
 	{
 		this.elem.src = src;
 	};      
     
-	acts.Play = function ()
+	Acts.prototype.Play = function ()
 	{
 		this.elem.play();
 	};  
 
-	acts.Pause = function ()
+	Acts.prototype.Pause = function ()
 	{
 		this.elem.pause();
 	}; 
 
-	acts.SetControls = function (is_enable)
+	Acts.prototype.SetControls = function (is_enable)
 	{
 		this.elem.controls = (is_enable==1);
 	};   
 
-	acts.SetVolume = function (volume)
+	Acts.prototype.SetVolume = function (volume)
 	{
 		this.elem.volume = cr.clamp(volume, 0, 1);
 	};   
     
-	acts.SetPoster = function (poster)
+	Acts.prototype.SetPoster = function (poster)
 	{
 		this.elem.poster = poster;
 	};      
 
-	acts.SetLoop = function (is_enable)
+	Acts.prototype.SetLoop = function (is_enable)
 	{
 		this.elem.loop = (is_enable==1);
 	};
 
-	acts.SetMuted = function (is_enable)
+	Acts.prototype.SetMuted = function (is_enable)
 	{
 		this.elem.muted = (is_enable==1);
 	};
 
-	acts.SetAutoplay = function (is_enable)
+	Acts.prototype.SetAutoplay = function (is_enable)
 	{
 		this.elem.autoplay = (is_enable==1);
 	};    
    
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.CurrentTime = function (ret)
+	Exps.prototype.CurrentTime = function (ret)
 	{
 		ret.set_float(this.elem.currentTime);
 	};
 	
-	exps.IsPaused = function (ret)
+	Exps.prototype.IsPaused = function (ret)
 	{
 		ret.set_int(this.elem.paused);
 	};  
 	
-	exps.IsMuted = function (ret)
+	Exps.prototype.IsMuted = function (ret)
 	{
 		ret.set_int(this.elem.muted);
 	};  
 	
-	exps.Volume = function (ret)
+	Exps.prototype.Volume = function (ret)
 	{
 		ret.set_float(this.elem.volume);
 	};     
 	
-	exps.ReadyState = function (ret)
+	Exps.prototype.ReadyState = function (ret)
 	{
 		ret.set_int(this.elem.readyState);
 	};       

@@ -231,15 +231,15 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
         if (!this.enable)
             return;
@@ -249,7 +249,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
             this._close_panel();
 	};  
     
-	acts.CleanMessages = function ()
+	Acts.prototype.CleanMessages = function ()
 	{
         if (this._has_panel())
         {
@@ -260,7 +260,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
 		}
 	};      
     
-	acts.AppendLogMessage = function (message)
+	Acts.prototype.AppendLogMessage = function (message)
 	{
         if (this._has_panel())
         {    
@@ -268,7 +268,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         }
 	};
     
-	acts.AppendErrorMessage = function (message)
+	Acts.prototype.AppendErrorMessage = function (message)
 	{
         if (!this.enable)
             return;
@@ -276,7 +276,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         this._append_log_message(message, "red");
 	};
     
-	acts.UpdateWatchVariable = function (name, value)
+	Acts.prototype.UpdateWatchVariable = function (name, value)
 	{
         if (this._has_panel())
         {
@@ -286,7 +286,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         }
 	}; 
     
-	acts.SetPopupKey = function (keycode)
+	Acts.prototype.SetPopupKey = function (keycode)
 	{
         if (!this.enable)
             return;    
@@ -294,7 +294,7 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
 	};      
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
 }());

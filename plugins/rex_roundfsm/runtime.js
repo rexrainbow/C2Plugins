@@ -154,84 +154,84 @@ cr.plugins_.Rex_RoundFSM = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
     
     var _state_list = ["Idle","GetSource","GetCommand","GetTarget","AcceptCommand","RunCommand"];    
-	cnds.IsState = function (state_index)  
+	Cnds.prototype.IsState = function (state_index)  
     {       
         return (this._cur_state == _state_list[state_index]);
     };   	    
-	cnds.OnEnterIdle = function ()  { return true; };    
-	cnds.OnExitIdle = function ()  { return true; };  	
-	cnds.OnEnterGetSource = function ()  { return true; };    
-	cnds.OnExitGetSource = function ()  { return true; };
-	cnds.OnEnterGetCommand = function ()  { return true; };    
-	cnds.OnExitGetCommand = function ()  { return true; };	
-	cnds.OnEnterGetTarget = function ()  { return true; };    
-	cnds.OnExitGetTarget = function ()  { return true; };  	
-	cnds.OnEnterAcceptCommand = function ()  { return true; };    
-	cnds.OnExitAcceptCommand = function ()  { return true; };
-	cnds.OnEnterRunCommand = function ()  { return true; };    
-	cnds.OnExitRunCommand = function ()  { return true; };		
-	cnds.OnStateChanging = function ()  { return true; };		 
+	Cnds.prototype.OnEnterIdle = function ()  { return true; };    
+	Cnds.prototype.OnExitIdle = function ()  { return true; };  	
+	Cnds.prototype.OnEnterGetSource = function ()  { return true; };    
+	Cnds.prototype.OnExitGetSource = function ()  { return true; };
+	Cnds.prototype.OnEnterGetCommand = function ()  { return true; };    
+	Cnds.prototype.OnExitGetCommand = function ()  { return true; };	
+	Cnds.prototype.OnEnterGetTarget = function ()  { return true; };    
+	Cnds.prototype.OnExitGetTarget = function ()  { return true; };  	
+	Cnds.prototype.OnEnterAcceptCommand = function ()  { return true; };    
+	Cnds.prototype.OnExitAcceptCommand = function ()  { return true; };
+	Cnds.prototype.OnEnterRunCommand = function ()  { return true; };    
+	Cnds.prototype.OnExitRunCommand = function ()  { return true; };		
+	Cnds.prototype.OnStateChanging = function ()  { return true; };		 
 	 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
    
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = (s==1);
         if (this.activated && (this._cur_state == "Off"))
             this._request();  // "Off" -> "Idle"  
 	};
-	acts.TurnOff = function ()
+	Acts.prototype.TurnOff = function ()
 	{
 		this._on_state_transfer("Off");
         this.activated = false;
 	};    
-    acts.Start = function ()
+    Acts.prototype.Start = function ()
     {
         if (!this.activated)
             return;
         this._request("Start");
 	};
-    acts.GetSource = function (source)
+    Acts.prototype.GetSource = function (source)
     {       
         if (!this.activated)
             return;     
         this.exp_Source = source;  
         this._request("GetSource");
 	}; 
-    acts.GetCommand = function (command)
+    Acts.prototype.GetCommand = function (command)
     {        
         if (!this.activated)
             return;    
         this.exp_Command = command;
         this._request("GetCommand");
 	}; 
-    acts.GetTarget = function (target)
+    Acts.prototype.GetTarget = function (target)
     {
         if (!this.activated)
             return;    
         this.exp_Target = target;
         this._request("GetTarget");
 	}; 
-    acts.AcceptCommand = function ()
+    Acts.prototype.AcceptCommand = function ()
     {      
         if (!this.activated)
             return;    
         this._request("AcceptCommand");
 	};
-    acts.Finish = function ()
+    Acts.prototype.Finish = function ()
     {      
         if (!this.activated)
             return;    
         this._request("Finish");
 	};    
-    acts.Cancel = function ()
+    Acts.prototype.Cancel = function ()
     {     
         if (!this.activated)
             return;    
@@ -239,26 +239,26 @@ cr.plugins_.Rex_RoundFSM = function(runtime)
 	};     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
     
-	exps.CurState = function (ret)
+	Exps.prototype.CurState = function (ret)
 	{   
 	    ret.set_string(this._cur_state);
 	};  
-	exps.PreState = function (ret)
+	Exps.prototype.PreState = function (ret)
 	{   
 	    ret.set_string(this._pre_state);
 	};    
-	exps.Source = function (ret)
+	Exps.prototype.Source = function (ret)
 	{   
 	    ret.set_string(this.exp_Source);
 	};
-	exps.Command = function (ret)
+	Exps.prototype.Command = function (ret)
 	{   
 	    ret.set_string(this.exp_Command);
 	};   
-	exps.Target = function (ret)
+	Exps.prototype.Target = function (ret)
 	{   
 	    ret.set_string(this.exp_Target);
 	};

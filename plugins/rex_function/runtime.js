@@ -214,10 +214,10 @@ cr.plugins_.Rex_Function = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
     
-	cnds.OnFunctionCalled = function (name)
+	Cnds.prototype.OnFunctionCalled = function (name)
 	{
         var is_my_call = (this.fnObj["fn_name"] == name);
         this.fnObj["is_echo"] |= is_my_call;
@@ -226,51 +226,51 @@ cr.plugins_.Rex_Function = function(runtime)
 
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-	acts.CallFunction = function (name)
+	Acts.prototype.CallFunction = function (name)
 	{  
         this.CallFn(name);
 	}; 
     
-	acts.CleanParameters = function ()
+	Acts.prototype.CleanParameters = function ()
 	{
         clean_hashtable(this.fnObj["param"]);
 	};    
     
-	acts.SetParameter = function (index, value)
+	Acts.prototype.SetParameter = function (index, value)
 	{
         this.fnObj["param"][index] = value;
 	};  
 
-	acts.CleanRetruns = function ()
+	Acts.prototype.CleanRetruns = function ()
 	{
         clean_hashtable(this.fnObj["ret"]);    
 	};    
     
-	acts.SetReturn = function (index, value)
+	Acts.prototype.SetReturn = function (index, value)
 	{
         this.fnObj["ret"][index] = value;
 	};
 
-	acts.CreateJSFunctionObject = function (name, code_string)
+	Acts.prototype.CreateJSFunctionObject = function (name, code_string)
 	{
         var fn = eval("("+code_string+")");
         this.InjectJS(name, fn);
 	};
 
-	acts.SetResult = function (value)
+	Acts.prototype.SetResult = function (value)
 	{
         this.fnObj["result"] = value;
 	};  
 
-	acts.ExecuteCommands = function (command_string)
+	Acts.prototype.ExecuteCommands = function (command_string)
 	{
         this.ExecuteCommands(command_string);
 	}; 
 
-	acts.InjectJSFunctionObjects = function (code_string)
+	Acts.prototype.InjectJSFunctionObjects = function (code_string)
 	{
         var fn = eval("("+code_string+")");
         var fns = fn(this.fnObj);
@@ -279,10 +279,10 @@ cr.plugins_.Rex_Function = function(runtime)
 
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 
-    exps.Param = function (ret, index)
+    Exps.prototype.Param = function (ret, index)
 	{
         var value = this.fnObj["param"][index];
         if (value == null) 
@@ -296,7 +296,7 @@ cr.plugins_.Rex_Function = function(runtime)
 	    ret.set_any(value);
 	};
     
-    exps.Ret = function (ret, index)
+    Exps.prototype.Ret = function (ret, index)
 	{
         var value = this.fnObj["ret"][index];
         if (value == null) 
@@ -310,17 +310,17 @@ cr.plugins_.Rex_Function = function(runtime)
 	    ret.set_any(value);
 	};  
 
-    exps.Eval = function (ret, code_string)
+    Exps.prototype.Eval = function (ret, code_string)
 	{
 	    ret.set_any( eval( "("+code_string+")" ) );
 	};	
 
-    exps.Result = function (ret)
+    Exps.prototype.Result = function (ret)
 	{
 	    ret.set_any( this.fnObj["result"] );
 	};
     
-    exps.Call = function (ret)
+    Exps.prototype.Call = function (ret)
 	{        
         var args = Array.prototype.slice.call(arguments,1);
 	    ret.set_any( this._ExeCmd(args) );

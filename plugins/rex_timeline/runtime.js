@@ -108,10 +108,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
 
-	cnds.IsRunning = function (timer_name)
+	Cnds.prototype.IsRunning = function (timer_name)
 	{
         var timer = this._GetTimer(timer_name);
 		return (timer)? timer.IsActive(): false;
@@ -119,17 +119,17 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
 
-    acts.PushTimeLine = function (delta_time)
+    Acts.prototype.PushTimeLine = function (delta_time)
 	{
         // push manually
         this.manual_delta_time = delta_time;
         this.manual_push = true;        
 	};   
     
-    acts.Setup = function (fn_objs)
+    Acts.prototype.Setup = function (fn_objs)
 	{
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
@@ -138,7 +138,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             alert ("Timeline should connect to a function object");
 	};      
     
-    acts.CreateTimer = function (timer_name, command)
+    Acts.prototype.CreateTimer = function (timer_name, command)
 	{
         var timer = this._GetTimer(timer_name);
         var timer_struct = this._GetTimerStruct(timer_name);
@@ -154,47 +154,47 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }      
 	}; 
     
-    acts.StartTimer = function (timer_name, delay_time)
+    Acts.prototype.StartTimer = function (timer_name, delay_time)
 	{
         var timer = this._GetTimer(timer_name);
         if (timer)
             timer.Start(delay_time);
 	};
 
-    acts.StartTrgTimer = function (delay_time)
+    Acts.prototype.StartTrgTimer = function (delay_time)
 	{
         var timer = this.timeline.triggered_timer;
         if (timer)
             timer.Start(delay_time);
 	}; 
     
-    acts.PauseTimer = function (timer_name)
+    Acts.prototype.PauseTimer = function (timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         if (timer)
             timer.Suspend();
 	};   
 
-    acts.ResumeTimer = function (timer_name)
+    Acts.prototype.ResumeTimer = function (timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         if (timer)
             timer.Resume();
 	};       
     
-    acts.StopTimer = function (timer_name)
+    Acts.prototype.StopTimer = function (timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         if (timer)
             timer.Remove();
 	};
     
-    acts.CleanTimeLine = function ()
+    Acts.prototype.CleanTimeLine = function ()
 	{
         this.timeline.CleanAll();
 	};
     
-    acts.DeleteTimer = function (timer_name)
+    Acts.prototype.DeleteTimer = function (timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         if (timer)
@@ -204,45 +204,45 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
 	};  
     
-    acts.SetTimerParameter = function (timer_name, index, value)
+    Acts.prototype.SetTimerParameter = function (timer_name, index, value)
 	{
         this._GetTimerStruct(timer_name).param[index] = value;
 	};    
     
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;   
+	function Exps() {};
+	pluginProto.exps = new Exps();   
     
-	exps.TimerRemainder = function (ret, timer_name)
+	Exps.prototype.TimerRemainder = function (ret, timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         var t = (timer)? timer.RemainderTimeGet():0;     
 	    ret.set_float(t);
 	};
     
-	exps.TimerElapsed = function (ret, timer_name)
+	Exps.prototype.TimerElapsed = function (ret, timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         var t = (timer)? timer.ElapsedTimeGet():0;     
 	    ret.set_float(t);
 	}; 
 
-	exps.TimerRemainderPercent = function (ret, timer_name)
+	Exps.prototype.TimerRemainderPercent = function (ret, timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         var t = (timer)? timer.RemainderTimePercentGet():0;     
 	    ret.set_float(t);
 	};
     
-	exps.TimerElapsedPercent = function (ret, timer_name)
+	Exps.prototype.TimerElapsedPercent = function (ret, timer_name)
 	{
         var timer = this._GetTimer(timer_name);
         var t = (timer)? timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(t);
 	};
     
-	exps.TimeLineTime = function (ret)
+	Exps.prototype.TimeLineTime = function (ret)
 	{ 
 	    ret.set_float(this.timeline.ABS_Time);
 	};

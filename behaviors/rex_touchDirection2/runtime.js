@@ -184,35 +184,35 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;    
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();    
     
-	cnds.OnMoveStart = function ()
+	Cnds.prototype.OnMoveStart = function ()
 	{
         return true;
 	};
     
-	cnds.OnMoveStop = function ()
+	Cnds.prototype.OnMoveStop = function ()
 	{
 		return true;
 	}; 
 
- 	cnds.OnMoving = function ()
+ 	Cnds.prototype.OnMoving = function ()
 	{   
         return true;
     }
     
- 	cnds.IsMoving = function ()
+ 	Cnds.prototype.IsMoving = function ()
 	{   
         return (this.is_on_moving);
     }    
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
         if ( (this.activated==0) && 
              this.is_on_moving &&
@@ -225,7 +225,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 		this.activated = s;
 	}; 
 
-	acts.SetProportion = function (s)
+	Acts.prototype.SetProportion = function (s)
 	{
 		this.move_proportion = s;
 	}; 
@@ -233,35 +233,35 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
 
-	exps.X = function (ret)
+	Exps.prototype.X = function (ret)
 	{
         ret.set_float( this.type.GetLayerX(this.inst) );
 	};
 	
-	exps.Y = function (ret)
+	Exps.prototype.Y = function (ret)
 	{
 	    ret.set_float( this.type.GetLayerY(this.inst) );
 	};
 	
-	exps.AbsoluteX = function (ret)
+	Exps.prototype.AbsoluteX = function (ret)
 	{
         ret.set_float( this.type.GetABSX(this.inst) );
 	};
 	
-	exps.AbsoluteY = function (ret)
+	Exps.prototype.AbsoluteY = function (ret)
 	{
         ret.set_float( this.type.GetABSY(this.inst) );
 	};
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	}; 
     
-	exps.Proportion = function (ret)
+	Exps.prototype.Proportion = function (ret)
 	{
 		ret.set_float(this.move_proportion);
 	}; 

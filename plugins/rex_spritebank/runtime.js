@@ -228,35 +228,35 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
     
 	//////////////////////////////////////
 	// Conditions
-	pluginProto.cnds = {};
-	var cnds = pluginProto.cnds;
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
      
 	//////////////////////////////////////
 	// Actions
-	pluginProto.acts = {};
-	var acts = pluginProto.acts;
+	function Acts() {};
+	pluginProto.acts = new Acts();
     
-    acts.CleanBank = function ()
+    Acts.prototype.CleanBank = function ()
 	{
         this._clean_bank();
 	};
     
-    acts.SaveInstances = function (obj_type, is_pick_all)
+    Acts.prototype.SaveInstances = function (obj_type, is_pick_all)
 	{
         this._save_instances(obj_type, is_pick_all);
 	};
 
-    acts.LoadInstances = function ()
+    Acts.prototype.LoadInstances = function ()
 	{  
         this._load_all_instances();
 	};
 
-    acts.StringToBank = function (JSON_string)
+    Acts.prototype.StringToBank = function (JSON_string)
 	{  
         this._JSONString2bank(JSON_string);
 	};  
     
-    acts.ConnectFn = function (fn_objs)
+    Acts.prototype.ConnectFn = function (fn_objs)
 	{  
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
@@ -265,12 +265,12 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
             alert ("Sprite Bank should connect to a function object");
 	};
     
-    acts.AdvSaveInstances = function (obj_type, is_pick_all, cb_cmd)
+    Acts.prototype.AdvSaveInstances = function (obj_type, is_pick_all, cb_cmd)
 	{
         this._save_instances(obj_type, is_pick_all, cb_cmd);
 	};
 
-    acts.AdvLoadInstances = function (obj_type, cb_cmd)
+    Acts.prototype.AdvLoadInstances = function (obj_type, cb_cmd)
 	{
         if (obj_type.is_family)
         {
@@ -288,10 +288,10 @@ cr.plugins_.Rex_SpriteBank = function(runtime)
 	};    
 	//////////////////////////////////////
 	// Expressions
-	pluginProto.exps = {};
-	var exps = pluginProto.exps;
+	function Exps() {};
+	pluginProto.exps = new Exps();
 	
-	exps.BankToString = function (ret)
+	Exps.prototype.BankToString = function (ret)
 	{
         var json_string = this._bank2string();
 		ret.set_string(json_string);

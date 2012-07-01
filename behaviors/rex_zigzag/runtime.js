@@ -235,15 +235,15 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
     
-	cnds.CompareMovSpeed = function (cmp, s)
+	Cnds.prototype.CompareMovSpeed = function (cmp, s)
 	{
 		return cr.do_cmp(this.CmdMove.current_speed, cmp, s);
 	}; 
     
-	cnds.CompareRotSpeed = function (cmp, s)
+	Cnds.prototype.CompareRotSpeed = function (cmp, s)
 	{
 		return cr.do_cmp(this.CmdRotate.current_speed, cmp, s);
 	}; 
@@ -277,37 +277,37 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 		return ret;    
     }
 
-	cnds.IsCmd = function (_cmd)
+	Cnds.prototype.IsCmd = function (_cmd)
 	{
         return _is_in_cmd(this.cur_cmd, _cmd);
 	};     
     
-	cnds.OnCmdQueueFinish = function ()
+	Cnds.prototype.OnCmdQueueFinish = function ()
 	{
 		return (this.is_my_call);
 	};
       
-	cnds.OnCmdStart = function (_cmd)
+	Cnds.prototype.OnCmdStart = function (_cmd)
 	{
 		return (_is_in_cmd(this.cur_cmd, _cmd) && this.is_my_call);
 	};
     
-	cnds.OnCmdFinish = function (_cmd)
+	Cnds.prototype.OnCmdFinish = function (_cmd)
 	{
         return (_is_in_cmd(this.cur_cmd, _cmd) && this.is_my_call);
 	};    
     
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
 
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = s;
 	};  
 
-	acts.Start = function ()
+	Acts.prototype.Start = function ()
 	{
         this.cur_cmd = null;
         this.is_run = true;
@@ -319,70 +319,70 @@ cr.behaviors.Rex_Zigzag = function(runtime)
             this.pos_state.angle = this.inst.angle;
 	};     
     
-	acts.Stop = function ()
+	Acts.prototype.Stop = function ()
 	{
         this.cur_cmd = null;
         this.is_run = false;
 	}; 
     
-	acts.SetMaxMovSpeed = function (s)
+	Acts.prototype.SetMaxMovSpeed = function (s)
 	{
         this.CmdMove.move.max = s;
 	}; 
     
-	acts.SetMovAcceleration = function (s)
+	Acts.prototype.SetMovAcceleration = function (s)
 	{
         this.CmdMove.move.acc = s;
 	};  
     
-	acts.SetMovDeceleration = function (s)
+	Acts.prototype.SetMovDeceleration = function (s)
 	{
         this.CmdMove.move.dec = s;
 	}; 
     
-	acts.SetMaxRotSpeed = function (s)
+	Acts.prototype.SetMaxRotSpeed = function (s)
 	{
         this.CmdRotate.move.max = s;
 	}; 
     
-	acts.SetRotAcceleration = function (s)
+	Acts.prototype.SetRotAcceleration = function (s)
 	{
         this.CmdRotate.move.acc = s;
 	};  
     
-	acts.SetRotDeceleration = function (s)
+	Acts.prototype.SetRotDeceleration = function (s)
 	{
         this.CmdRotate.move.dec = s;
 	};  
     
-	acts.SetRepeatCount = function (s)
+	Acts.prototype.SetRepeatCount = function (s)
 	{
         this.CmdQueue.repeat_count = s;
         this.CmdQueue.repeat_count_save = s;
 	};  
     
-	acts.CleanCmdQueue = function ()
+	Acts.prototype.CleanCmdQueue = function ()
 	{
         this.CmdQueue.CleanAll();
 	};      
     
     var _cmd_Index2NameMap = ["F","B","R","L","W"];  
-	acts.AddCmd = function (_cmd, param)
+	Acts.prototype.AddCmd = function (_cmd, param)
 	{
         this.AddCommand(_cmd_Index2NameMap[_cmd], param);
 	}; 
 
-	acts.AddCmdString = function (cmd_string)
+	Acts.prototype.AddCmdString = function (cmd_string)
 	{
         this.AddCommandString(cmd_string);
 	};     
     
-	acts.SetRotatable = function (s)
+	Acts.prototype.SetRotatable = function (s)
 	{
         this.CmdRotate.rotatable = (s==1);
 	};    
     
-	acts.SetMovingAngle = function (s)
+	Acts.prototype.SetMovingAngle = function (s)
 	{
         var _angle = cr.to_clamped_radians(s);
         this.pos_state.angle = _angle;
@@ -393,7 +393,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         }
 	};    
     
-	acts.SetPrecise = function (s)
+	Acts.prototype.SetPrecise = function (s)
 	{
         var precise_mode = (s==1);
         this.CmdMove.precise_mode = precise_mode;
@@ -402,70 +402,70 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int(this.activated);
 	};    
     
-	exps.MovSpeed = function (ret)
+	Exps.prototype.MovSpeed = function (ret)
 	{
 		ret.set_float(this.CmdMove.current_speed);
 	};
     
-	exps.MaxMovSpeed = function (ret)
+	Exps.prototype.MaxMovSpeed = function (ret)
 	{
 		ret.set_float(this.CmdMove.move.max);
 	};  
     
-	exps.MovAcc = function (ret)
+	Exps.prototype.MovAcc = function (ret)
 	{
 		ret.set_float(this.CmdMove.move.acc);
 	}; 
     
-	exps.MovDec = function (ret)
+	Exps.prototype.MovDec = function (ret)
 	{
 		ret.set_float(this.CmdMove.move.dec);
 	};  
     
-	exps.RotSpeed = function (ret)
+	Exps.prototype.RotSpeed = function (ret)
 	{
 		ret.set_float(this.CmdRotate.current_speed);
 	};
     
-	exps.MaxRotSpeed = function (ret)
+	Exps.prototype.MaxRotSpeed = function (ret)
 	{
 		ret.set_float(this.CmdRotate.move.max);
 	};  
     
-	exps.RotAcc = function (ret)
+	Exps.prototype.RotAcc = function (ret)
 	{
 		ret.set_float(this.CmdRotate.move.acc);
 	}; 
     
-	exps.RotDec = function (ret)
+	Exps.prototype.RotDec = function (ret)
 	{
 		ret.set_float(this.CmdRotate.move.dec);
 	};      
     
-	exps.Rotatable = function (ret)
+	Exps.prototype.Rotatable = function (ret)
 	{
 		ret.set_int(this.CmdRotate.rotatable);
 	};    
         
-	exps.RepCnt = function (ret)
+	Exps.prototype.RepCnt = function (ret)
 	{
 		ret.set_int(this.CmdQueue.repeat_count_save);
 	};
         
-	exps.CmdIndex = function (ret)
+	Exps.prototype.CmdIndex = function (ret)
 	{
 		ret.set_int(this.CmdQueue.export_queue_index);
 	};
         
-	exps.MovAngle = function (ret)
+	Exps.prototype.MovAngle = function (ret)
 	{
         var angle;
         if (_is_in_cmd(this.cur_cmd, 2) || _is_in_cmd(this.cur_cmd, 3))
