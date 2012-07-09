@@ -96,6 +96,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return this.board.uid2xyz(uid);
 	};
 	
+	var prop_BLOCKING = -1;
 	instanceProto._get_cost = function(tile_uid)
 	{
 	    var cost;
@@ -196,6 +197,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         else if (!at_chess_xy)  // try to move to this tile
         {
 	        var tile_cost = this._get_cost(tile_uid);
+	        
+	        if (tile_cost == prop_BLOCKING)
+	        {
+	            // is a blocking property tile
+	            return;
+	        }
+	        	        
 	        if (tile_cost == null)
 	        {
 	            // maybe an error?
@@ -299,25 +307,25 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	//////////////////////////////////////
 	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();        
+	pluginProto.cnds = {};
+	var cnds = pluginProto.cnds;        
 
-	Cnds.prototype.OnCostFn = function (name)
+	cnds.OnCostFn = function (name)
 	{
         return (this._cost_fn_name == name);
 	};    
 
-	Cnds.prototype.OnFilterFn = function (name)
+	cnds.OnFilterFn = function (name)
 	{
         return (this._filter_fn_name == name);
 	}; 	
 	
 	//////////////////////////////////////
 	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
     
-    Acts.prototype.Setup = function (board_objs, group_objs)
+    acts.Setup = function (board_objs, group_objs)
 	{
         var board = board_objs.instances[0];
         if (board.check_name == "BOARD")
@@ -332,17 +340,19 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             alert ("SLG movement should connect to a instance group object");            
 	};   
     
-    Acts.prototype.SetCost = function (cost_value)
+    acts.SetCost = function (cost_value)
 	{
+	    if ((cost_value < 0) && (cost_value != prop_BLOCKING))
+	        cost_value = 0;
         this._cost_value = cost_value;           
 	}; 
     
-    Acts.prototype.AppendFilter = function (filter_uid)
+    acts.AppendFilter = function (filter_uid)
 	{
         this._filter_uid_list.push(filter_uid);
 	}; 	   
 	 
-	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
+	acts.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
 	{	        	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
@@ -377,7 +387,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		this._filter_uid_list.length = 0;
 	};  
 		
-	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
+	acts.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
 	{        
 	    var chess_uid = _get_uid(chess_objs);
 	    var tile_uid = _get_uid(tile_objs);
@@ -392,17 +402,21 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
 	//////////////////////////////////////
 	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
+	pluginProto.exps = {};
+	var exps = pluginProto.exps;
 	
-	Exps.prototype.ChessUID = function (ret)
+	exps.ChessUID = function (ret)
 	{
 	    ret.set_int(this.exp_ChessUID);
 	};
 	
-    Exps.prototype.TileUID = function (ret)
+    exps.TileUID = function (ret)
     {
         ret.set_int(this.exp_TileUID);
     };	
-    
+	
+    exps.BLOCKING = function (ret)
+    {
+        ret.set_int(prop_BLOCKING);
+    };	
 }());

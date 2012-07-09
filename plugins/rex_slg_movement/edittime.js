@@ -76,6 +76,9 @@ AddExpression(1, ef_return_number,
 AddExpression(2, ef_return_number,
               "Get UID of tile", "Request", "TileUID",
               "Get UID of tile.");
+AddExpression(3, ef_return_number,
+              "Blocking property used in cost function", "Cost", "BLOCKING",
+              "Blocking property used in cost function.");              
               
 ACESDone();
 
