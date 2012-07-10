@@ -58,6 +58,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._is_cost_fn = null;
         this._tiles = {};
         this._tile2cost = {};
+        this._neighbors_init();
         this._chess_xyz = null;
         this._dist_tile_uid = null;
         this._hit_dist_tile = false;   
@@ -117,19 +118,32 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return cost; 
 	};
 	
-	instanceProto._get_neighbors = function(_x,_y)
+	instanceProto._neighbors_init = function()
 	{
-	    var neighbors;
         if (this.is_tetragon_grid)
         {
-            neighbors= [{dir:0, x:_x+1, y:_y}, {dir:1, x:_x, y:_y+1},
-                        {dir:2, x:_x-1, y:_y}, {dir:3, x:_x, y:_y-1}];
+            this._neighbors = [{dir:0, x:0, y:0}, {dir:1, x:0, y:0},
+                               {dir:2, x:0, y:0}, {dir:3, x:0, y:0}];
         }
         else
         {
-            // TODO
+            this._neighbors = [{dir:0, x:0, y:0}, {dir:1, x:0, y:0},
+                               {dir:2, x:0, y:0}, {dir:3, x:0, y:0},
+                               {dir:4, x:0, y:0}, {dir:5, x:0, y:0}];
         }
-        return neighbors;
+	};	
+	
+	instanceProto._get_neighbors = function(_x,_y)
+	{
+	    var dir;
+	    var layout = this.board.layout;
+	    var neighbors_cnt = this._neighbors.length;	    
+        for (dir=0; dir<neighbors_cnt; dir++)
+        {
+            this._neighbors[dir].x = layout.GetNeighborLX(_x,_y, dir);
+            this._neighbors[dir].y = layout.GetNeighborLY(_x,_y, dir);
+        }
+        return this._neighbors;
 	};	
 	
 	instanceProto._get_pre_tile = function(pre_tiles, pre_dir)
@@ -275,23 +289,20 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
       	    // get next moveable tiles
       	    else if (remain > 0)
 	        {
-                if (this.is_tetragon_grid)
+ 	            neighbors = this._get_neighbors(tile_xyz.x, tile_xyz.y);
+	            var neighbors_cnt = neighbors.length;
+	            var i, neighbor_xy;
+	            for(i=0;i<neighbors_cnt;i++)
 	            {
-	                neighbors = this._get_neighbors(tile_xyz.x, tile_xyz.y);
-	                var neighbors_cnt = neighbors.length;
-	                var i, neighbor_xy;
-	                for(i=0;i<neighbors_cnt;i++)
-	                {
-    	                neighbor_xy = neighbors[i];
-	                    next_tile_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
-	                    if ((next_tile_uid != null) && (pre_tile_uid != next_tile_uid))
-                        {
-                            tile_obj = {remain_moving_points:remain, 
-                                        tile_uid:next_tile_uid, 
-                                        pre_tile_uid:tile_uid, direction:neighbor_xy.dir};
-                            tile_queue.push(tile_obj);
-                        }              
-	                }
+    	            neighbor_xy = neighbors[i];
+	                next_tile_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
+	                if ((next_tile_uid != null) && (pre_tile_uid != next_tile_uid))
+                    {
+                        tile_obj = {remain_moving_points:remain, 
+                                    tile_uid:next_tile_uid, 
+                                    pre_tile_uid:tile_uid, direction:neighbor_xy.dir};
+                        tile_queue.push(tile_obj);
+                    }
 	            }
                 
                 continue;
