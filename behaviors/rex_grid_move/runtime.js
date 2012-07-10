@@ -149,8 +149,8 @@ cr.behaviors.Rex_GridMove = function(runtime)
             this.board.move_item(this.inst, target_x, target_y, target_z);
             // set moveTo
             var layout = this.board.layout;
-            this._cmd_move_to._set_target_pos(layout.GetX(target_x, target_y), 
-                                              layout.GetY(target_x, target_y));
+            this._cmd_move_to._set_target_pos(layout.GetX(target_x, target_y, target_z), 
+                                              layout.GetY(target_x, target_y, target_z));
             this._is_moving_request_accepted = true;           
             this.is_my_call = true;                          
             this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted, this.inst);                                           
@@ -170,37 +170,37 @@ cr.behaviors.Rex_GridMove = function(runtime)
     };
 	//////////////////////////////////////
 	// Conditions
-	function Cnds() {};
-	behaviorProto.cnds = new Cnds();
+	behaviorProto.cnds = {};
+	var cnds = behaviorProto.cnds;
 
-	Cnds.prototype.OnHitTarget = function ()
+	cnds.OnHitTarget = function ()
 	{
 		return (this._cmd_move_to.is_my_call);
 	};
 	
-    Cnds.prototype.OnMoving = function ()
+    cnds.OnMoving = function ()
 	{
 		return (this._cmd_move_to.is_my_call);
 	};
     
-	Cnds.prototype.IsMoving = function ()
+	cnds.IsMoving = function ()
 	{
 		return (this._cmd_move_to.is_moving);
 	};
 	
-    Cnds.prototype.OnMovingRequestAccepted = function ()
+    cnds.OnMovingRequestAccepted = function ()
 	{
 		return (this.is_my_call);
 	};	
-    Cnds.prototype.OnMovingRequestRejected = function ()
+    cnds.OnMovingRequestRejected = function ()
 	{
 		return (this.is_my_call);
 	};
-    Cnds.prototype.IsMovingRequestAccepted = function ()
+    cnds.IsMovingRequestAccepted = function ()
 	{
 		return (this.is_my_call && this._is_moving_request_accepted);
 	};
-    Cnds.prototype.TestMoveToOffset = function (dx, dy)
+    cnds.TestMoveToOffset = function (dx, dy)
 	{
 		var _xyz = this._xyz_get();
 		if (_xyz == null)
@@ -209,7 +209,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         var can_move = this._test_move_to(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
 		return (can_move==1);
 	};
-    Cnds.prototype.TestMoveToNeighbor = function (dir)
+    cnds.TestMoveToNeighbor = function (dir)
 	{
 		var _xyz = this._xyz_get();
 		if (_xyz == null)
@@ -223,37 +223,37 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	};			
 	//////////////////////////////////////
 	// Actions
-	function Acts() {};
-	behaviorProto.acts = new Acts();
+	behaviorProto.acts = {};
+	var acts = behaviorProto.acts;
     
-	Acts.prototype.SetActivated = function (s)
+	acts.SetActivated = function (s)
 	{
 		this._cmd_move_to.activated = (s==1);
 	};
 
-	Acts.prototype.SetMaxSpeed = function (s)
+	acts.SetMaxSpeed = function (s)
 	{
 		this._cmd_move_to.move.max = s;
         this._cmd_move_to._set_current_speed(null);
 	};      
     
-	Acts.prototype.SetAcceleration = function (a)
+	acts.SetAcceleration = function (a)
 	{
 		this._cmd_move_to.move.acc = a;
         this._cmd_move_to._set_current_speed(null);
 	};
 	
-	Acts.prototype.SetDeceleration = function (a)
+	acts.SetDeceleration = function (a)
 	{
 		this._cmd_move_to.move.dec = a;
 	};
     
-	Acts.prototype.SetCurrentSpeed = function (s)
+	acts.SetCurrentSpeed = function (s)
 	{
         this._cmd_move_to._set_current_speed(s);
 	}; 
 	
-	Acts.prototype.MoveToNeighbor = function (dir)
+	acts.MoveToNeighbor = function (dir)
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
@@ -268,7 +268,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         					 _xyz.z);
 	};
 	
-	Acts.prototype.MoveToOffset = function (dx, dy)
+	acts.MoveToOffset = function (dx, dy)
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
@@ -280,62 +280,62 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
 	//////////////////////////////////////
 	// Expressions
-	function Exps() {};
-	behaviorProto.exps = new Exps();
+	behaviorProto.exps = {};
+	var exps = behaviorProto.exps;
     
-	Exps.prototype.Activated = function (ret)
+	exps.Activated = function (ret)
 	{
 		ret.set_int((this._cmd_move_to.activated)? 1:0);
 	};    
     
-	Exps.prototype.Speed = function (ret)
+	exps.Speed = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.current_speed);
 	};
     
-	Exps.prototype.MaxSpeed = function (ret)
+	exps.MaxSpeed = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.move.max);
 	}; 
 
-	Exps.prototype.Acc = function (ret)
+	exps.Acc = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.move.acc);
 	};  
 
- 	Exps.prototype.Dec = function (ret)
+ 	exps.Dec = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.move.dec);
 	}; 
 
-	Exps.prototype.TargetX = function (ret)
+	exps.TargetX = function (ret)
 	{
         var x = (this._cmd_move_to.is_moving)? this.target.x:0;
 		ret.set_float(x);
 	};  
 
- 	Exps.prototype.TargetY = function (ret)
+ 	exps.TargetY = function (ret)
 	{
         var y = (this._cmd_move_to.is_moving)? this.target.y:0;
 		ret.set_float(y);
 	};     
 
- 	Exps.prototype.BlockerUID = function (ret)
+ 	exps.BlockerUID = function (ret)
 	{
         ret.set_int(this.exp_BlockerUID);		
 	}; 
     
- 	Exps.prototype.Direction = function (ret)
+ 	exps.Direction = function (ret)
 	{
         ret.set_int(this.exp_Direction);		
 	};
     
- 	Exps.prototype.DestinationLX = function (ret)
+ 	exps.DestinationLX = function (ret)
 	{
         ret.set_int(this.exp_DestinationLX);		
 	};    
     
- 	Exps.prototype.DestinationLY = function (ret)
+ 	exps.DestinationLY = function (ret)
 	{
         ret.set_int(this.exp_DestinationLY);		
 	};  	

@@ -49,17 +49,17 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.height = this.properties[3];
 	};
    
-	instanceProto.GetX = function(logic_x, logic_y)
+	instanceProto.GetX = function(logic_x, logic_y, logic_z)
 	{
         return (logic_x*this.width)+((logic_y%2)*this.half_width)+this.PositionOX;
 	};
-	instanceProto.GetY = function(logic_x, logic_y)
+	instanceProto.GetY = function(logic_x, logic_y, logic_z)
 	{
         return (logic_y*this.height)+this.PositionOY;
 	};   
-	instanceProto.CreateItem = function(obj_type,x,y,layer)
+	instanceProto.CreateItem = function(obj_type,x,y,z,layer)
 	{
-        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );        
+        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y,z),this.GetY(x,y,z) );        
 	}; 	
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
@@ -87,17 +87,17 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	};	
 	//////////////////////////////////////
 	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();    
+	pluginProto.cnds = {};
+	var cnds = pluginProto.cnds;    
     
 	//////////////////////////////////////
 	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
 
 	//////////////////////////////////////
 	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
+	pluginProto.exps = {};
+	var exps = pluginProto.exps;
 
 }());

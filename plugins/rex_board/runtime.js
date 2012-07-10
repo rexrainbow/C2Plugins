@@ -121,10 +121,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
     };    
-	instanceProto.CreateItem = function(obj_type,x,y,_layer)
+	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
 	{
         var layer = this._get_layer(_layer);
-        var inst = this.layout.CreateItem(obj_type,x,y,layer);
+        var inst = this.layout.CreateItem(obj_type,x,y,z,layer);
 
         // Pick just this instance
         var sol = inst.type.getCurrentSol();
@@ -202,7 +202,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
              ((z != 0) && (!this.is_inside_board(x,y,0)))   )
             return;
             
-        var obj = this.CreateItem(obj_type,x,y,_layer);
+        var obj = this.CreateItem(obj_type,x,y,z,_layer);
 	    this.add_item(obj,x,y,z);  
 	    return obj;
 	};	
@@ -279,22 +279,22 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};	
 	//////////////////////////////////////
 	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();        
+	pluginProto.cnds = {};
+	var cnds = pluginProto.cnds;        
 	  
-	Cnds.prototype.IsEmpty = function (_x,_y,_z)
+	cnds.IsEmpty = function (_x,_y,_z)
 	{
 		return (this.board[_x][_y][_z] == null);
 	}; 
 	
-	Cnds.prototype.OnCollided = function (objA, objB)
+	cnds.OnCollided = function (objA, objB)
 	{
 	    this._overlap_test(objA, objB);
 		// We've aleady run the event by now.
 		return false;
 	};
 	
-	Cnds.prototype.IsOverlapping = function (objA, objB)
+	cnds.IsOverlapping = function (objA, objB)
 	{
 	    this._overlap_test(objA, objB);
 		// We've aleady run the event by now.
@@ -302,27 +302,27 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};	 		
 	//////////////////////////////////////
 	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
 	
-	Acts.prototype.ResetBoard = function (x_max,y_max,z_max)
+	acts.ResetBoard = function (x_max,y_max,z_max)
 	{
 		this.reset_board(x_max-1, y_max-1, z_max-1);
 	};
 		
-	Acts.prototype.AddTile = function (objs,x,y)
+	acts.AddTile = function (objs,x,y)
 	{
         var inst = objs.getFirstPicked();
 	    this.add_item(inst,x,y,0);
 	};
 	
-	Acts.prototype.AddChess = function (objs,x,y,z)
+	acts.AddChess = function (objs,x,y,z)
 	{
         var inst = objs.getFirstPicked();
 	    this.add_item(inst,x,y,z);
 	};		
     
-    Acts.prototype.SetupLayout = function (layout_objs)
+    acts.SetupLayout = function (layout_objs)
 	{   
         var layout = layout_objs.instances[0];
         if (layout.check_name == "LAYOUT")
@@ -331,22 +331,22 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("SLG board should connect to a layout object");
 	};  
 		
-	Acts.prototype.CreateTile = function (_obj_type,x,y,_layer)
+	acts.CreateTile = function (_obj_type,x,y,_layer)
 	{
 	    this.CreateChess(_obj_type,x,y,0,_layer);
 	};
 	
-	Acts.prototype.CreateChess = function (_obj_type,x,y,z,_layer)
+	acts.CreateChess = function (_obj_type,x,y,z,_layer)
 	{ 
 	    this.CreateChess(_obj_type,x,y,z,_layer);        
 	};	
 	
-	Acts.prototype.RemoveChess = function (objs)
+	acts.RemoveChess = function (objs)
 	{
 	    this.remove_item(_get_uid(objs));
 	}; 
 	
-	Acts.prototype.MoveChess = function (chess_objs, tile_objs)
+	acts.MoveChess = function (chess_objs, tile_objs)
 	{	
         var chess_uid = _get_uid(chess_objs);
         var tile_uid = _get_uid(tile_objs);
@@ -358,7 +358,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.move_item(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z);    
 	};
 	
-	Acts.prototype.MoveChess2Index = function (chess_objs, x, y, z)
+	acts.MoveChess2Index = function (chess_objs, x, y, z)
 	{	
         var chess_uid = _get_uid(chess_objs);
 	    if ((chess_uid == null) || (!this.is_inside_board(x,y,z)))
@@ -369,31 +369,31 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};    
 	//////////////////////////////////////
 	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
+	pluginProto.exps = {};
+	var exps = pluginProto.exps;
 	
-	Exps.prototype.UID2LX = function (ret, uid)
+	exps.UID2LX = function (ret, uid)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var x = (_xyz==null)? (-1):_xyz.x;
 		ret.set_int(x);
 	};	
 	
-	Exps.prototype.UID2LY = function (ret, uid)
+	exps.UID2LY = function (ret, uid)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var y = (_xyz==null)? (-1):_xyz.y;
 		ret.set_int(y);
 	};
 	
-	Exps.prototype.UID2LZ = function (ret, uid)
+	exps.UID2LZ = function (ret, uid)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var z = (_xyz==null)? (-1):_xyz.z;
 		ret.set_int(z);
 	};
 	
-	Exps.prototype.LXYZ2UID = function (ret,_x,_y,_z)
+	exps.LXYZ2UID = function (ret,_x,_y,_z)
 	{
         var uid = this.xyz2uid(_x,_y,_z);
         if (uid == null)
@@ -401,7 +401,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    ret.set_int(uid);
 	}; 	
     
-	Exps.prototype.LZ2UID = function (ret,uid,_z)
+	exps.LZ2UID = function (ret,uid,_z)
 	{
 	    var ret_uid;
         var _xyz = this.uid2xyz(uid);
@@ -416,27 +416,27 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    ret.set_int(ret_uid);
 	}; 	
     
-	Exps.prototype.LXY2PX = function (ret,logic_x,logic_y)
+	exps.LXY2PX = function (ret,logic_x,logic_y)
 	{
         var px;
         if (this.layout != null)
-            px = this.layout.GetX(logic_x,logic_y);
+            px = this.layout.GetX(logic_x,logic_y,0);
         else
             px = (-1);
 	    ret.set_float(px);
 	};
     
-	Exps.prototype.LXY2PY = function (ret,logic_x,logic_y)
+	exps.LXY2PY = function (ret,logic_x,logic_y)
 	{
         var py;
         if (this.layout != null)
-            py = this.layout.GetY(logic_x,logic_y);
+            py = this.layout.GetY(logic_x,logic_y,0);
         else
             py = (-1);
 	    ret.set_float(py);
 	};
     
-	Exps.prototype.UID2PX = function (ret,uid)
+	exps.UID2PX = function (ret,uid)
 	{
         var px;
         var _xyz = this.uid2xyz(uid);
@@ -447,7 +447,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    ret.set_float(px);
 	};
     
-	Exps.prototype.UID2PY = function (ret,uid)
+	exps.UID2PY = function (ret,uid)
 	{  
         var py;
         var _xyz = this.uid2xyz(uid);
@@ -458,7 +458,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    ret.set_float(py);
 	};  
     
-	Exps.prototype.UID2LA = function (ret, uid_o, uid_to)
+	exps.UID2LA = function (ret, uid_o, uid_to)
 	{
         var angle;
         var xyz_o = this.uid2xyz(uid_o);
@@ -478,5 +478,24 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
 	    ret.set_float(angle);
 	};  
+	
+	exps.LXYZ2PX = function (ret,logic_x,logic_y,logic_z)
+	{
+        var px;
+        if (this.layout != null)
+            px = this.layout.GetX(logic_x,logic_y,logic_z);
+        else
+            px = (-1);
+	    ret.set_float(px);
+	};
     
+	exps.LXYZ2PY = function (ret,logic_x,logic_y,logic_z)
+	{
+        var py;
+        if (this.layout != null)
+            py = this.layout.GetY(logic_x,logic_y,logic_z);
+        else
+            py = (-1);
+	    ret.set_float(py);
+	};
 }());

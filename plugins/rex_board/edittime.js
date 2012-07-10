@@ -145,7 +145,19 @@ AddNumberParam("FaceTo", "The UID of instance to face.", 0);
 AddExpression(10, ef_return_number | ef_variadic_parameters,
               "Get Logic angle by UID", "Chess", "UID2LA",
               "Get Logic angle by UID, in degree. (-1) is invalid angle.");              
-              
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);   
+AddNumberParam("Z", "The logic Z.", 0);     
+AddExpression(11, ef_return_number | ef_variadic_parameters,
+              "Get X co-ordinate by logic index", "Physical", "LXYZ2PX",
+              "Get physical X co-ordinate by logic X,Y,Z index.");
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0); 
+AddNumberParam("Z", "The logic Z.", 0);                              
+AddExpression(12, ef_return_number | ef_variadic_parameters,
+              "Get Y co-ordinate by logic index", "Physical", "LXYZ2PY",
+              "Get physical Y co-ordinate by logic X,Y,Z index."); 
+                            
 ACESDone();
 
 // Property grid properties for this plugin

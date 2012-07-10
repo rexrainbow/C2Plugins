@@ -59,21 +59,21 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         this.height = height;
         this.half_height = height/2;        
 	};     
-	instanceProto.GetX = function(logic_x, logic_y)
+	instanceProto.GetX = function(logic_x, logic_y, logic_z)
 	{
         var x = (this.is_isometric)? ((logic_x - logic_y)*this.half_width):
                                      (logic_x*this.width);
         return x+this.PositionOX;
 	};
-	instanceProto.GetY = function(logic_x, logic_y)
+	instanceProto.GetY = function(logic_x, logic_y, logic_z)
 	{
         var y = (this.is_isometric)? ((logic_x + logic_y)*this.half_height):
                                      (logic_y*this.height);
         return y+this.PositionOY;
 	};   
-	instanceProto.CreateItem = function(obj_type,x,y,layer,offset_x,offset_y)
+	instanceProto.CreateItem = function(obj_type,x,y,z,layer)
 	{
-        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );        
+        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y,z),this.GetY(x,y,z) );        
 	};
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
@@ -91,31 +91,31 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	};
 	//////////////////////////////////////
 	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();    
+	pluginProto.cnds = {};
+	var cnds = pluginProto.cnds;    
     
 	//////////////////////////////////////
 	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
+	pluginProto.acts = {};
+	var acts = pluginProto.acts;
     
-    Acts.prototype.SetOrientation = function (orientation)
+    acts.SetOrientation = function (orientation)
     {        
         this.is_isometric = (orientation == 1);
 	};
-    Acts.prototype.SetCellSize = function (width, height)
+    acts.SetCellSize = function (width, height)
     {        
         this.SetWidth(width);
         this.SetHeight(height);
 	};
-    Acts.prototype.SetOffset = function (x, y)
+    acts.SetOffset = function (x, y)
     {        
         this.PositionOX = x;
         this.PositionOY = y;
 	};    
 	//////////////////////////////////////
 	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
+	pluginProto.exps = {};
+	var exps = pluginProto.exps;
 
 }());
