@@ -57,6 +57,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._filter_uid_list = [];
         this._is_cost_fn = null;
         this._tiles = {};
+        this._tile2cost = {};
         this._chess_xyz = null;
         this._dist_tile_uid = null;
         this._hit_dist_tile = false;   
@@ -102,13 +103,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    var cost;
 	    if (this._is_cost_fn)
 	    {
+            cost = this._tile2cost[tile_uid];
+            if (cost != null)
+                return cost;            
 	        this.exp_TileUID = tile_uid;
 	        this._cost_value = 0;
 	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
 	        cost = this._cost_value;
+            this._tile2cost[tile_uid] = cost;
 	    }
 	    else
-	        cost = this._cost_fn_name;
+	        cost = this._cost_fn_name;        
 	    return cost; 
 	};
 	
@@ -180,126 +185,136 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return path_tiles.reverse();
 	};
 	
-	instanceProto._get_moveable_tile = function(tile_uid, moving_points, pre_tile_uid, direction)
+    instanceProto._get_moveable_tile_setup = function(cost)
+    {
+	    this._cost_fn_name = cost;
+	    this._is_cost_fn = (typeof cost == "string");        
+	    this._skip_first = true;        
+        this._hit_dist_tile = false;          
+        var uid;
+        for (uid in this._tiles)
+	        delete this._tiles[uid];
+        for (uid in this._tile2cost)
+            delete this._tile2cost[uid];
+    };
+    
+	instanceProto._get_moveable_tile = function(start_tile_uid, moving_points, cost)
 	{
-	    if (tile_uid == null)
-	        return;
-
-	    var tile_xyz = this.uid2xyz(tile_uid);
-	    var at_chess_xy = ((tile_xyz.x==this._chess_xyz.x) && (tile_xyz.y==this._chess_xyz.y));
-	    var remain;
-
-        if (this._skip_first)  // start from chess's tile
+        //debugger;
+        if (start_tile_uid == null)
+            return;        
+	    this._get_moveable_tile_setup(cost);
+        var tile_uid, tile_xyz, at_chess_xy, tile_cost, node, remain_cost, next_tile_uid, neighbors, pre_tile_uid, direction, remain;
+        var tile_obj = {remain_moving_points:moving_points, 
+                        tile_uid:start_tile_uid, 
+                        pre_tile_uid:null, direction:null};
+        var tile_queue = [tile_obj];
+        
+        while (tile_queue.length>0)
         {
-            remain = moving_points;
-            this._skip_first = false;
-        }
-        else if (!at_chess_xy)  // try to move to this tile
-        {
-	        var tile_cost = this._get_cost(tile_uid);
+            tile_obj = tile_queue.shift();
+            tile_uid = tile_obj.tile_uid;
+            pre_tile_uid = tile_obj.pre_tile_uid;
+            direction = tile_obj.direction;
+            remain = tile_obj.remain_moving_points;
+                
+            tile_xyz = this.uid2xyz(tile_uid);
+            at_chess_xy = ((tile_xyz.x==this._chess_xyz.x) && (tile_xyz.y==this._chess_xyz.y));
+            if (this._skip_first)  // start from chess's tile
+                this._skip_first = false;
+            else if (!at_chess_xy)  // try to move to this tile
+            {
+                tile_cost = this._get_cost(tile_uid);
+	            if (tile_cost == prop_BLOCKING)  // is a blocking property tile
+	                continue;
+	            else if (tile_cost == null)  // maybe an error?
+	                continue;
+                remain -= tile_cost;
 	        
-	        if (tile_cost == prop_BLOCKING)
-	        {
-	            // is a blocking property tile
-	            return;
-	        }
-	        	        
-	        if (tile_cost == null)
-	        {
-	            // maybe an error?
-	            return;
-	        }
-	            
-	        remain = moving_points - tile_cost;
-	        
-	        if (remain >= 0)  // can move to this tile
-	        {
-	            //console.log(pre_tile_uid+"->"+tile_uid+":remain="+remain);
-	            var node = this._tiles[tile_uid];
-	            if (node == null)
+                if (remain >= 0)  // can move to this tile
 	            {
-	                //console.log("Create:["+tile_uid+"]="+pre_tile_uid);
-	                node = {cost:remain, pre_tile:[ {uid:pre_tile_uid, dir:direction} ] };	
-	                this._tiles[tile_uid] = node;                
-	            }
-	            else
-	            {
-	                var remain_cost = node.cost;
-	                if (remain > remain_cost)  // move to the same tile and pay less cost
+	                //console.log(pre_tile_uid+"->"+tile_uid+":remain="+remain);
+	                node = this._tiles[tile_uid];
+	                if (node == null)
 	                {
-	                    //console.log("Reset:["+tile_uid+"]="+pre_tile_uid);
-                        node.cost = remain;
-	                    node.pre_tile.length = 1;
-	                    node.pre_tile[0] = {uid:pre_tile_uid, dir:direction};
+    	                //console.log("Create:["+tile_uid+"]="+pre_tile_uid);
+	                    node = {cost:remain, pre_tile:[ {uid:pre_tile_uid, dir:direction} ] };	
+	                    this._tiles[tile_uid] = node;                
 	                }
-	                else if (remain == remain_cost)  // move to the same tile and pay the same cost
+	                else
 	                {
-	                    //console.log("Push:["+tile_uid+"]+="+pre_tile_uid);
-	                    node.pre_tile.push({uid:pre_tile_uid, dir:direction});
-	                    return;   // leave
-	                }   
-	                else  // move to the same tile but pay more cost
-	                    return;
-	            }
-	        }         
-      	}
-      	else  // at_chess_xy && !this._skip_first : go back to chess's tile
-      	{
-      	    return;
-      	}
-
-      	// arrive distance tile
-      	if ((tile_uid == this._dist_tile_uid) && (remain >= 0))
-        {
-      	    this._hit_dist_tile = true;
-      	    return;
-      	}
-      	// get next moveable tiles
-      	else if (remain > 0)
-	    {
-	        var next_tile_uid;
-	        if (this.is_tetragon_grid)
+	                    remain_cost = node.cost;
+	                    if (remain > remain_cost)  // move to the same tile and pay less cost
+	                    {
+	                        //console.log("Reset:["+tile_uid+"]="+pre_tile_uid);
+                            node.cost = remain;
+	                        node.pre_tile.length = 1;
+	                        node.pre_tile[0] = {uid:pre_tile_uid, dir:direction};
+	                    }
+	                    else if (remain == remain_cost)  // move to the same tile and pay the same cost
+	                    {
+	                        //console.log("Push:["+tile_uid+"]+="+pre_tile_uid);
+	                        node.pre_tile.push({uid:pre_tile_uid, dir:direction});
+	                        continue;   // leave
+	                    }   
+	                    else  // move to the same tile but pay more cost
+	                        continue;
+	                }
+	            }                 
+            }
+            else
+                continue;
+                
+      	    // arrive distance tile
+      	    if ((tile_uid == this._dist_tile_uid) && (remain >= 0))
+            {
+                //console.log("Hit target "+tile_uid);
+      	        this._hit_dist_tile = true;
+      	        return;
+      	    }
+      	    // get next moveable tiles
+      	    else if (remain > 0)
 	        {
-	            var neighbors = this._get_neighbors(tile_xyz.x, tile_xyz.y);
-	            var neighbors_cnt = neighbors.length;
-	            var i, neighbor_xy;
-	            for(i=0;i<neighbors_cnt;i++)
+                if (this.is_tetragon_grid)
 	            {
-	                neighbor_xy = neighbors[i];
-	                next_tile_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
-	                if (pre_tile_uid != next_tile_uid)
-	                    this._get_moveable_tile(next_tile_uid, remain, tile_uid, neighbor_xy.dir);	                
+	                neighbors = this._get_neighbors(tile_xyz.x, tile_xyz.y);
+	                var neighbors_cnt = neighbors.length;
+	                var i, neighbor_xy;
+	                for(i=0;i<neighbors_cnt;i++)
+	                {
+    	                neighbor_xy = neighbors[i];
+	                    next_tile_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
+	                    if ((next_tile_uid != null) && (pre_tile_uid != next_tile_uid))
+                        {
+                            tile_obj = {remain_moving_points:remain, 
+                                        tile_uid:next_tile_uid, 
+                                        pre_tile_uid:tile_uid, direction:neighbor_xy.dir};
+                            tile_queue.push(tile_obj);
+                        }              
+	                }
 	            }
-	        }
-	    }
+                
+                continue;
+    	    }
+              
+        }
 	};
 	
 	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
-	    //this.exp_ChessUID = chess_uid;
-	    this._skip_first = true;
-	    this._cost_fn_name = cost;
-	    this._is_cost_fn = (typeof cost == "string");
-	    this._tiles = {};
 	    this._chess_xyz = this.uid2xyz(chess_uid);
 	    this._dist_tile_uid = null;
 	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_tile(start_tile_uid, moving_points, null, null);
+	    this._get_moveable_tile(start_tile_uid, moving_points, cost);
 	    return this._tiles;
 	};
 	
 	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost)
 	{
-	    //this.exp_ChessUID = chess_uid;
-	    this._skip_first = true;
-	    this._cost_fn_name = cost;
-	    this._is_cost_fn = (typeof cost == "string");
-	    this._tiles = {};
 	    this._chess_xyz = this.uid2xyz(chess_uid);
 	    this._dist_tile_uid = end_tile_uid;
-	    this._hit_dist_tile = false;
 	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_tile(start_tile_uid, moving_points, null, null);
+	    this._get_moveable_tile(start_tile_uid, moving_points, cost);
 	    var path_tiles = (this._hit_dist_tile)? 
 	                      this.get_path_tiles(this._tiles, start_tile_uid, end_tile_uid): null;
 	    return path_tiles;
