@@ -60,7 +60,6 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._tile2cost = {};
         this._neighbors_init();
         this._chess_xyz = null;
-        this._dist_tile_uid = null;
         this._hit_dist_tile = false;   
 	};
 
@@ -212,12 +211,15 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             delete this._tile2cost[uid];
     };
     
-	instanceProto._get_moveable_tile = function(start_tile_uid, moving_points, cost)
+	instanceProto._get_moveable_tile = function(start_tile_uid, end_tile_uid, moving_points, cost)
 	{
         //debugger;
+	    this._get_moveable_tile_setup(cost);        
         if (start_tile_uid == null)
             return;        
-	    this._get_moveable_tile_setup(cost);
+        if ((end_tile_uid != null) && (this._get_cost(end_tile_uid) == prop_BLOCKING))
+            return;    
+            
         var tile_uid, tile_xyz, at_chess_xy, tile_cost, node, remain_cost, next_tile_uid, neighbors, pre_tile_uid, direction, remain;
         var tile_obj = {remain_moving_points:moving_points, 
                         tile_uid:start_tile_uid, 
@@ -240,8 +242,6 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             {
                 tile_cost = this._get_cost(tile_uid);
 	            if (tile_cost == prop_BLOCKING)  // is a blocking property tile
-	                continue;
-	            else if (tile_cost == null)  // maybe an error?
 	                continue;
                 remain -= tile_cost;
 	        
@@ -280,7 +280,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                 continue;
                 
       	    // arrive distance tile
-      	    if ((tile_uid == this._dist_tile_uid) && (remain >= 0))
+      	    if ((tile_uid == end_tile_uid) && (remain >= 0))
             {
                 //console.log("Hit target "+tile_uid);
       	        this._hit_dist_tile = true;
@@ -314,18 +314,16 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
 	    this._chess_xyz = this.uid2xyz(chess_uid);
-	    this._dist_tile_uid = null;
 	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_tile(start_tile_uid, moving_points, cost);
+	    this._get_moveable_tile(start_tile_uid, null, moving_points, cost);
 	    return this._tiles;
 	};
 	
 	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost)
 	{
 	    this._chess_xyz = this.uid2xyz(chess_uid);
-	    this._dist_tile_uid = end_tile_uid;
 	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_tile(start_tile_uid, moving_points, cost);
+	    this._get_moveable_tile(start_tile_uid, end_tile_uid, moving_points, cost);
 	    var path_tiles = (this._hit_dist_tile)? 
 	                      this.get_path_tiles(this._tiles, start_tile_uid, end_tile_uid): null;
 	    return path_tiles;
