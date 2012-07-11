@@ -310,14 +310,12 @@ cr.behaviors.Rex_GridMove = function(runtime)
 
 	exps.TargetX = function (ret)
 	{
-        var x = (this._cmd_move_to.is_moving)? this.target.x:0;
-		ret.set_float(x);
+		ret.set_float(this._cmd_move_to.target.x);
 	};  
 
  	exps.TargetY = function (ret)
 	{
-        var y = (this._cmd_move_to.is_moving)? this.target.y:0;
-		ret.set_float(y);
+		ret.set_float(this._cmd_move_to.target.y);
 	};     
 
  	exps.BlockerUID = function (ret)
