@@ -28,12 +28,16 @@ AddCondition(3, cf_looping | cf_not_invertible, "For each friend", "Friend list"
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Name","User name.","");
-AddAction(1,0,"Get user data","User data",
-          "Get user data <b>{0}</b>",
-          "Get user data.","GetUserData");
+AddAction(1,0,"Get user's data","User data",
+          "Get user's data <b>{0}</b>",
+          "Get user's data.","GetUserData");
 AddAction(2,0,"Clean all users data","Clean",
           "Clean all users data",
           "Clean all users data.","CleanUserData");  	  
+AddStringParam("Name","User name.","");
+AddAction(3,0,"Get user's and friend's data","User data",
+          "Get user's and friend's data <b>{0}</b>",
+          "Get user's and friend's data.","GetUserFriendData");		 
                     
 //////////////////////////////////////////////////////////////
 // Expressions
