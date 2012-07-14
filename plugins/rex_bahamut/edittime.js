@@ -21,8 +21,10 @@ AddCondition(1,cf_trigger,"On user data received","User data","On user data rece
              "Triggered when receives user's data.","OnGetUserData");
 AddCondition(2,cf_trigger,"On user data received failed","User data","On user data received failed",
              "Triggered when receives user's data failed.","OnGetUserDataFailed");
-
-                          
+AddStringParam("Name","User name.","");
+AddCondition(3, cf_looping | cf_not_invertible, "For each friend", "Friend list", 
+             "For each friend of <i>{0}</i>", "Repeat the event for each friend.", "ForEachFriend");
+			 
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Name","User name.","");
@@ -31,11 +33,11 @@ AddAction(1,0,"Get user data","User data",
           "Get user data.","GetUserData");
 AddAction(2,0,"Clean all users data","Clean",
           "Clean all users data",
-          "Clean all users data.","CleanUserData");          
+          "Clean all users data.","CleanUserData");  	  
                     
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1,ef_return_string,"Get user name","User data","Name","Get user name.");
+AddExpression(1,ef_return_string,"Get current user name","User data","CurUserName","Get current user name.");
 AddExpression(2,ef_return_number,"Get user's STR","User data","STR","Get user's STR.");
 AddExpression(3,ef_return_number,"Get user's DEX","User data","DEX","Get user's DEX.");
 AddExpression(4,ef_return_number,"Get user's INT","User data","INT","Get user's INT.");
@@ -44,6 +46,8 @@ AddExpression(6,ef_return_number,"Get user's VIT","User data","VIT","Get user's 
 AddExpression(7,ef_return_number,"Get user's AGI","User data","AGI","Get user's AGI.");
 AddExpression(8,ef_return_number,"Get user's MND","User data","MND","Get user's MND.");
 AddExpression(9,ef_return_string,"Get url of user image","User data","ImageURL","Get url of user image.");
+AddExpression(10, ef_return_string, "Current friend name", "Friend list", "CurFriendName", "Get the current friend name in For each friend event.");
+AddExpression(11, ef_return_string, "Current friend nickname", "Friend list", "CurFriendNickname", "Get the current friend nickname in For each friend event.");
 
 
 ACESDone();
