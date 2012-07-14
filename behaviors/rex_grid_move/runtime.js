@@ -170,37 +170,37 @@ cr.behaviors.Rex_GridMove = function(runtime)
     };
 	//////////////////////////////////////
 	// Conditions
-	behaviorProto.cnds = {};
-	var cnds = behaviorProto.cnds;
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
 
-	cnds.OnHitTarget = function ()
+	Cnds.prototype.OnHitTarget = function ()
 	{
 		return (this._cmd_move_to.is_my_call);
 	};
 	
-    cnds.OnMoving = function ()
+    Cnds.prototype.OnMoving = function ()
 	{
 		return (this._cmd_move_to.is_my_call);
 	};
     
-	cnds.IsMoving = function ()
+	Cnds.prototype.IsMoving = function ()
 	{
 		return (this._cmd_move_to.is_moving);
 	};
 	
-    cnds.OnMovingRequestAccepted = function ()
+    Cnds.prototype.OnMovingRequestAccepted = function ()
 	{
 		return (this.is_my_call);
 	};	
-    cnds.OnMovingRequestRejected = function ()
+    Cnds.prototype.OnMovingRequestRejected = function ()
 	{
 		return (this.is_my_call);
 	};
-    cnds.IsMovingRequestAccepted = function ()
+    Cnds.prototype.IsMovingRequestAccepted = function ()
 	{
 		return (this.is_my_call && this._is_moving_request_accepted);
 	};
-    cnds.TestMoveToOffset = function (dx, dy)
+    Cnds.prototype.TestMoveToOffset = function (dx, dy)
 	{
 		var _xyz = this._xyz_get();
 		if (_xyz == null)
@@ -209,7 +209,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         var can_move = this._test_move_to(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
 		return (can_move==1);
 	};
-    cnds.TestMoveToNeighbor = function (dir)
+    Cnds.prototype.TestMoveToNeighbor = function (dir)
 	{
 		var _xyz = this._xyz_get();
 		if (_xyz == null)
@@ -223,37 +223,37 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	};			
 	//////////////////////////////////////
 	// Actions
-	behaviorProto.acts = {};
-	var acts = behaviorProto.acts;
+	function Acts() {};
+	behaviorProto.acts = new Acts();
     
-	acts.SetActivated = function (s)
+	Acts.prototype.SetActivated = function (s)
 	{
 		this._cmd_move_to.activated = (s==1);
 	};
 
-	acts.SetMaxSpeed = function (s)
+	Acts.prototype.SetMaxSpeed = function (s)
 	{
 		this._cmd_move_to.move.max = s;
         this._cmd_move_to._set_current_speed(null);
 	};      
     
-	acts.SetAcceleration = function (a)
+	Acts.prototype.SetAcceleration = function (a)
 	{
 		this._cmd_move_to.move.acc = a;
         this._cmd_move_to._set_current_speed(null);
 	};
 	
-	acts.SetDeceleration = function (a)
+	Acts.prototype.SetDeceleration = function (a)
 	{
 		this._cmd_move_to.move.dec = a;
 	};
     
-	acts.SetCurrentSpeed = function (s)
+	Acts.prototype.SetCurrentSpeed = function (s)
 	{
         this._cmd_move_to._set_current_speed(s);
 	}; 
 	
-	acts.MoveToNeighbor = function (dir)
+	Acts.prototype.MoveToNeighbor = function (dir)
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
@@ -268,7 +268,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         					 _xyz.z);
 	};
 	
-	acts.MoveToOffset = function (dx, dy)
+	Acts.prototype.MoveToOffset = function (dx, dy)
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
@@ -280,60 +280,60 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
 	//////////////////////////////////////
 	// Expressions
-	behaviorProto.exps = {};
-	var exps = behaviorProto.exps;
+	function Exps() {};
+	behaviorProto.exps = new Exps();
     
-	exps.Activated = function (ret)
+	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int((this._cmd_move_to.activated)? 1:0);
 	};    
     
-	exps.Speed = function (ret)
+	Exps.prototype.Speed = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.current_speed);
 	};
     
-	exps.MaxSpeed = function (ret)
+	Exps.prototype.MaxSpeed = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.move.max);
 	}; 
 
-	exps.Acc = function (ret)
+	Exps.prototype.Acc = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.move.acc);
 	};  
 
- 	exps.Dec = function (ret)
+ 	Exps.prototype.Dec = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.move.dec);
 	}; 
 
-	exps.TargetX = function (ret)
+	Exps.prototype.TargetX = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.target.x);
 	};  
 
- 	exps.TargetY = function (ret)
+ 	Exps.prototype.TargetY = function (ret)
 	{
 		ret.set_float(this._cmd_move_to.target.y);
 	};     
 
- 	exps.BlockerUID = function (ret)
+ 	Exps.prototype.BlockerUID = function (ret)
 	{
         ret.set_int(this.exp_BlockerUID);		
 	}; 
     
- 	exps.Direction = function (ret)
+ 	Exps.prototype.Direction = function (ret)
 	{
         ret.set_int(this.exp_Direction);		
 	};
     
- 	exps.DestinationLX = function (ret)
+ 	Exps.prototype.DestinationLX = function (ret)
 	{
         ret.set_int(this.exp_DestinationLX);		
 	};    
     
- 	exps.DestinationLY = function (ret)
+ 	Exps.prototype.DestinationLY = function (ret)
 	{
         ret.set_int(this.exp_DestinationLY);		
 	};  	
