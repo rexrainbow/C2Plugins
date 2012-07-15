@@ -18,7 +18,7 @@ cr.plugins_.Rex_TextPlus = function(runtime)
 	pluginProto.onCreate = function ()
 	{
 		// Override the 'set width' action
-		pluginProto.Acts.prototype.SetWidth = function (w)
+		pluginProto.acts.SetWidth = function (w)
 		{
 			if (this.width !== w)
 			{
