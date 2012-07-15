@@ -261,13 +261,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	    for (name in this._user_data)
 	        delete this._user_data[name];
 	};
-	
-	Acts.prototype.GetUserFriendData = function(user_name)
-	{       
-	    this.GetUserData(user_name, this.GetFriendsData, null);
-	};	
-	
-	
+
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
