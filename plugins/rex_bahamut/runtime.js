@@ -70,7 +70,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	    start_index += key.length;
 	    var end_index = content.indexOf("<", start_index);
 	    var value_string = content.substring(start_index, end_index);
-	    return parseInt(value_string);
+	    return parseFloat(value_string);
 	};
 	
     var _get_friend_list = function(content)
@@ -282,49 +282,63 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].STR);         
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].STR;
+		ret.set_float(val);         
 	}; 
 
 	Exps.prototype.DEX = function(ret, user_name)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].DEX);           
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].DEX;
+		ret.set_float(val);     		
 	}; 	
 	
 	Exps.prototype.INT = function(ret, user_name)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].INT);         
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].INT;
+		ret.set_float(val);		
 	}; 
 
 	Exps.prototype.LUK = function(ret, user_name)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].LUK);      
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].LUK;
+		ret.set_float(val);			
 	}; 	
 	
 	Exps.prototype.VIT = function(ret, user_name)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].VIT);           
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].VIT;
+		ret.set_float(val);	        
 	}; 	
 	
 	Exps.prototype.AGI = function(ret, user_name)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].AGI);           
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].AGI;
+		ret.set_float(val);	      
 	}; 
 
 	Exps.prototype.MND = function(ret, user_name)
 	{   
 	    if (user_name == null)
 	       user_name = this._current_user_name;
-		ret.set_int(this._user_data[user_name].MND);          
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].MND;
+		ret.set_float(val);	      
 	};
 
 	Exps.prototype.ImageURL = function(ret, user_name)
