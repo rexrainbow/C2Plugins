@@ -17,9 +17,13 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1,cf_trigger,"On user data received","User data","On user data received",
+AddStringParam("Tag","Tag.","");
+AddCondition(1,cf_trigger,"On user data received",
+             "User data","On user data received, tag: <b>{0}</b>",
              "Triggered when receives user's data.","OnGetUserData");
-AddCondition(2,cf_trigger,"On user data received failed","User data","On user data received failed",
+AddStringParam("Tag","Tag.","");             
+AddCondition(2,cf_trigger,"On user data received failed","User data",
+             "On user data received failed, tag: <b>{0}</b>",
              "Triggered when receives user's data failed.","OnGetUserDataFailed");
 AddStringParam("Name","User name.","");
 AddCondition(3, cf_looping | cf_not_invertible, "For each friend", "Friend list", 
@@ -28,8 +32,13 @@ AddCondition(3, cf_looping | cf_not_invertible, "For each friend", "Friend list"
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Name","User name.","");
+AddComboParamOption("user data and friend list");
+AddComboParamOption("user data");
+AddComboParamOption("friend list");
+AddComboParam("Data", "Select which kind of data to be fetch", 0);
+AddStringParam("Tag","Tag for received callback.","");
 AddAction(1,0,"Get user's data","User data",
-          "Get user's data <b>{0}</b>",
+          "Get <b>{0}</b> <b>{1}</b>, tag to <b>{2}</b>",
           "Get user's data.","GetUserData");
 AddAction(2,0,"Clean all users data","Clean",
           "Clean all users data",

@@ -45,6 +45,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this._user_data = {};
+	    this._tag = "";
 	    this._current_user_name = "";
 		this.exp_CurFriendName = "";
 		this.exp_CurFriendNickname = "";
@@ -104,118 +105,118 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 		return nickname
 	};	
 	
-	var _on_ajax_complete = function(inst, user_name, job_cnt, error_cnt, cb_success, cb_error)
+	var _on_ajax_complete = function(inst, tag, user_name, job_cnt, error_cnt, cb_success, cb_error)
 	{
         inst._current_user_name = user_name;		
 		if (error_cnt > 0)
 		{
+		    inst._tag = tag;
 			inst.runtime.trigger(cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetUserDataFailed, inst);
 			if (cb_error != null)
 				cb_error.apply(inst, [user_name]);
 		}
 		else if (job_cnt == 0)
 		{
+		    inst._tag = tag;
 			inst.runtime.trigger(cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetUserData, inst); 
 			if (cb_success != null)
 				cb_success.apply(inst, [user_name]);
 		}
 	};
 
-	instanceProto.GetUserData = function(user_name, cb_success, cb_error)
+	instanceProto.GetUserData = function(user_name, data_type, tag, cb_success, cb_error)
 	{
+		var pick_user_data = (data_type == 0) || (data_type == 1);
+		var pick_friend_list = (data_type == 0) || (data_type == 2);	
 	    var job_cnt = 0;
 		var error_cnt = 0;
 	    this._current_user_name = user_name;	    
 	    var inst = this;
 		
-        jQuery.ajax({
-            "url": "http://home.gamer.com.tw/homeindex.php?owner="+user_name,
-            "type": 'GET',
-            "success": function(res) {
-                var content = res.responseText;
-                content = content.replace(/\r\n/g, "\n");
-                var usr_name = user_name;
-                inst._current_user_name = user_name;
-                if (_is_vaild_html(content))
-                {
-                    if (inst._user_data[usr_name] == null)
-                        inst._user_data[usr_name] = {}; 
-                    var user_data = inst._user_data[usr_name];         
-                    user_data.STR = _get_user_property(content, "STR");
-                    user_data.DEX = _get_user_property(content, "DEX");
-                    user_data.INT = _get_user_property(content, "INT");
-                    user_data.LUK = _get_user_property(content, "LUK");
-                    user_data.VIT = _get_user_property(content, "VIT");
-                    user_data.AGI = _get_user_property(content, "AGI");
-                    user_data.MND = _get_user_property(content, "MND");
-					job_cnt -= 1;
-                }
-                else
-				    error_cnt += 1;
-            },
-            "error": function()
-			{
-			    error_cnt += 1;
-			},
-			"complete": function()
-			{
-                _on_ajax_complete(inst, user_name, job_cnt, error_cnt, cb_success, cb_error);
-			}
-        });  
-        job_cnt += 1;
+		if (pick_user_data)
+		{
+            jQuery.ajax({
+                 "url": "http://home.gamer.com.tw/homeindex.php?owner="+user_name,
+                "type": 'GET',
+                "success": function(res) {
+                    var content = res.responseText;
+                    content = content.replace(/\r\n/g, "\n");
+                    var usr_name = user_name;
+                    inst._current_user_name = user_name;
+                    if (_is_vaild_html(content))
+                    {
+                        if (inst._user_data[usr_name] == null)
+                            inst._user_data[usr_name] = {}; 
+                        var user_data = inst._user_data[usr_name];         
+                        user_data.STR = _get_user_property(content, "STR");
+                        user_data.DEX = _get_user_property(content, "DEX");
+                        user_data.INT = _get_user_property(content, "INT");
+                        user_data.LUK = _get_user_property(content, "LUK");
+                        user_data.VIT = _get_user_property(content, "VIT");
+                        user_data.AGI = _get_user_property(content, "AGI");
+                        user_data.MND = _get_user_property(content, "MND");
+					    job_cnt -= 1;
+                    }
+                    else
+				        error_cnt += 1;
+                },
+                "error": function()
+			    {
+			        error_cnt += 1;
+			    },
+			    "complete": function()
+			    {
+                    _on_ajax_complete(inst, tag, user_name, job_cnt, error_cnt, cb_success, cb_error);
+			    }
+            });  
+            job_cnt += 1;
+		}
 
-        jQuery.ajax({
-            "url": "http://home.gamer.com.tw/friend.php?owner="+user_name,
-            "type": 'GET',
-            "success": function(res) {
-                var content = res.responseText;
-                content = content.replace(/\r\n/g, "\n");
-                var usr_name = user_name;
-                inst._current_user_name = user_name;
-                if (_is_vaild_html(content))
-                {
-                    if (inst._user_data[usr_name] == null)
-                        inst._user_data[usr_name] = {}; 
-				    inst._user_data[usr_name].friend_list = _get_friend_list(content);
-                    job_cnt -= 1;					
-                }
-                else
-                    error_cnt += 1;
-            },
-            "error": function()
-			{
-			    error_cnt += 1;
-			},
-			"complete": function()
-			{
-			    _on_ajax_complete(inst, user_name, job_cnt, error_cnt, cb_success, cb_error);
-			}
-        });	
-        job_cnt += 1;	
-	};
-	
-	instanceProto.GetFriendsData = function(user_name)
-	{
-	    var friend_list = this._user_data[user_name].friend_list;
-        var friend_cnt=friend_list.length;
-		var i, friend_name;
-		for (i=0; i<friend_cnt; i++)
-		    this.GetUserData(friend_list[i][0]);
-
+		if  (pick_friend_list)
+		{
+            jQuery.ajax({
+                "url": "http://home.gamer.com.tw/friend.php?owner="+user_name,
+                "type": 'GET',
+                "success": function(res) {
+                    var content = res.responseText;
+                    content = content.replace(/\r\n/g, "\n");
+                    var usr_name = user_name;
+                    inst._current_user_name = user_name;
+                    if (_is_vaild_html(content))
+                    {
+                        if (inst._user_data[usr_name] == null)
+                            inst._user_data[usr_name] = {}; 
+				        inst._user_data[usr_name].friend_list = _get_friend_list(content);
+                        job_cnt -= 1;					
+                    }
+                    else
+                        error_cnt += 1;
+                },
+                "error": function()
+			    {
+			        error_cnt += 1;
+			    },
+			    "complete": function()
+			    {
+			        _on_ajax_complete(inst, tag, user_name, job_cnt, error_cnt, cb_success, cb_error);
+			    }
+            });	
+            job_cnt += 1;	
+		}
 	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds(); 
 
-	Cnds.prototype.OnGetUserData = function()
+	Cnds.prototype.OnGetUserData = function(tag)
 	{    
-		return true;
+		return (this._tag == tag);
 	};
 	
 	Cnds.prototype.OnGetUserDataFailed = function()
 	{
-		return true;
+		return (this._tag == tag);
 	}; 
 
 	Cnds.prototype.ForEachFriend = function (user_name)
@@ -250,9 +251,9 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-	Acts.prototype.GetUserData = function(user_name)
+	Acts.prototype.GetUserData = function(user_name, data_type, tag)
 	{       
-	    this.GetUserData(user_name);
+	    this.GetUserData(user_name, data_type, tag);
 	};  
 	
 	Acts.prototype.CleanUserData = function()
