@@ -97,6 +97,14 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             
         // 2. get the max z-order inst
         cnt = this._behavior_insts.length;
+		
+		if (cnt == 0)  // no inst match
+		{
+            // recover to select_all_save
+            sol.select_all = select_all_save;
+            return false;  // get drag inst 
+		}
+		
         var target_inst = this._behavior_insts[0];
         for (i=1; i<cnt; i++ )
         {

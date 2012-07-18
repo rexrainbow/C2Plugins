@@ -203,7 +203,7 @@ cr.behaviors.Rex_DragDrop = function(runtime)
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
             
             
-        // 1. get all valid behavior instances            
+        // 1. get all valid behavior instances       		
         var ovl_insts = sol.getObjects();
         var behavior_insts;
         var i, cnt;
@@ -224,6 +224,14 @@ cr.behaviors.Rex_DragDrop = function(runtime)
             
         // 2. get the max z-order inst
         cnt = behavior_insts.length;
+				
+		if (cnt == 0)  // no inst match
+		{
+            // recover to select_all_save
+            sol.select_all = select_all_save;
+		    return false;
+	    }
+		
         var target_inst = behavior_insts[0];
         for (i=1; i<cnt; i++ )
         {
@@ -241,8 +249,7 @@ cr.behaviors.Rex_DragDrop = function(runtime)
         this.runtime.trigger(cr.behaviors.Rex_DragDrop.prototype.cnds.OnDragStart, target_inst.inst);     
 
         // recover to select_all_save
-        sol.select_all = select_all_save;
-        
+        sol.select_all = select_all_save;        
         return true;  // get drag inst
 	}; 
         
