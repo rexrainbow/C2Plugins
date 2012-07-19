@@ -107,6 +107,7 @@ ACESDone();
 
 var property_list = [  
     new cr.Property(ept_text, 'Channel', 'http://bottleneck.herokuapp.com/lobby', 'The URL of lobby channel.'),
+    new cr.Property(ept_text, 'Name', 'Chat', 'Name of this game.'), 
     ];
 
 function CreateIDEObjectType()

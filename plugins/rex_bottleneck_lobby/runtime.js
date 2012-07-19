@@ -43,7 +43,7 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.channel_url = this.properties[0];
-        this.game_name = "Chat"; //this.properties[1];        
+        this.game_name = this.properties[1];        
         this.socket = new cr.plugins_.Rex_Bottleneck_Lobby.SocketIOKlass(this);
         this._branch = this.CreateBranch(this, this.on_message);
         this.gamerooms_list = new cr.plugins_.Rex_Bottleneck_Lobby.AvaiableRoomList();
