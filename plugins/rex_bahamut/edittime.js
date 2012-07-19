@@ -36,6 +36,14 @@ AddStringParam("Tag","Tag.","");
 AddCondition(5,cf_trigger,"On friend list received failed","Friend list",
              "On friend list received failed, tag: <b>{0}</b>",
              "Triggered when receives friend list failed.","OnGetFriendListFailed");
+AddStringParam("Tag","Tag.","");
+AddCondition(6,cf_trigger,"On game card received","Game card",
+             "On game card received, tag: <b>{0}</b>",
+             "Triggered when receives game card.","OnGetGameCard");
+AddStringParam("Tag","Tag.","");             
+AddCondition(7,cf_trigger,"On game card received failed","Game card",
+             "On game card received failed, tag: <b>{0}</b>",
+             "Triggered when receives game card failed.","OnGetGameCardFailed");             
                           	 
 //////////////////////////////////////////////////////////////
 // Actions     
@@ -51,7 +59,12 @@ AddStringParam("Name","User name.","");
 AddStringParam("Tag","Tag for received callback.","");
 AddAction(4,0,"Get friend list","Friend list",
           "Get <b>{0}</b> friend list, tag to <b>{1}</b>",
-          "Get friend list.","GetFriendList");                    
+          "Get friend list.","GetFriendList");     
+AddStringParam("Name","User name.","");
+AddStringParam("Tag","Tag for received callback.","");
+AddAction(5,0,"Get game card","Game card",
+          "Get <b>{0}</b> game card, tag to <b>{1}</b>",
+          "Get game card.","GetGameCard");                          
                     
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -67,6 +80,7 @@ AddExpression(9,ef_return_string | ef_variadic_parameters,"Get url of user image
 AddExpression(10, ef_return_string, "Current friend name", "Friend list", "CurFriendName", "Get the current friend name in For each friend event.");
 AddExpression(11, ef_return_string, "Current friend nickname", "Friend list", "CurFriendNickname", "Get the current friend nickname in For each friend event.");
 AddExpression(12,ef_return_string | ef_variadic_parameters,"Get url of user game card","User data","GameCardURL","Get url of user game card.");
+AddExpression(13,ef_return_string | ef_variadic_parameters,"Get user's nickname","Game card","Nickname","Get user's nickname.");
 
 
 ACESDone();
