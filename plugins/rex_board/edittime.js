@@ -157,7 +157,17 @@ AddNumberParam("Z", "The logic Z.", 0);
 AddExpression(12, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by logic index", "Physical", "LXYZ2PY",
               "Get physical Y co-ordinate by logic X,Y,Z index."); 
-                            
+AddNumberParam("UID", "The UID of instance.", 0);              
+AddExpression(13, ef_return_number | ef_variadic_parameters, 
+              "Get z count at select chess by UID", "Chess", "UID2ZCnt", 
+              "Get z count at select chess by UID.");
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);                              
+AddExpression(14, ef_return_number | ef_variadic_parameters,
+              "Get z count at logic index", "Physical", "LXY2ZCnt",
+              "Get z count at logic X,Y index."); 
+
+                         
 ACESDone();
 
 // Property grid properties for this plugin

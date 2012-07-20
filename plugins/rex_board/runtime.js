@@ -185,6 +185,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 	    return (this.is_inside_board(x, y))? this.board[x][y]:null;
 	};
+
+	instanceProto.xy2zcnt = function(x, y)
+	{
+	    var zcnt=0;
+	    var z_hash = this.xy2zhash(x, y);
+	    if (z_hash != null)
+	    {
+	        var z;
+	        for (z in z_hash)
+	            zcnt += 1;
+	    }
+	    return zcnt;
+	};
 		
 	instanceProto.uid2xyz = function(uid)
 	{
@@ -498,4 +511,26 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             py = (-1);
 	    ret.set_float(py);
 	};
+	    
+	Exps.prototype.UID2ZCnt = function (ret,uid)
+	{  
+        var cnt;
+        var _xyz = this.uid2xyz(uid);
+        if ((this.layout != null) && (_xyz != null))        
+            cnt = this.xy2zcnt(_xyz.x, _xyz.y);
+        else
+            cnt = 0;
+	    ret.set_int(cnt);
+	}; 
+	    
+	Exps.prototype.LXY2ZCnt = function (ret,logic_x,logic_y)
+	{  
+        var cnt;
+        if (this.layout != null)        
+            cnt = this.xy2zcnt(logic_x,logic_y);
+        else
+            cnt = 0;
+	    ret.set_int(cnt);
+	};
+	
 }());
