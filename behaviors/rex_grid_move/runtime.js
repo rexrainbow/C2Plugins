@@ -92,11 +92,13 @@ cr.behaviors.Rex_GridMove = function(runtime)
         return null;	
 	};
 	
-    behinstProto._xyz_get = function ()
+    behinstProto._xyz_get = function (uid)
     {
+	    if (uid == null)
+		    uid = this.inst.uid;
 	    var board = this._board_get();
 		if (board != null)
-		    return board.uid2xyz(this.inst.uid);
+		    return board.uid2xyz(uid);
 	    else
             return null;
     };
@@ -180,7 +182,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
     Cnds.prototype.OnMoving = function ()
 	{
-		return (this._cmd_move_to.is_my_call);
+		return false;
 	};
     
 	Cnds.prototype.IsMoving = function ()
@@ -277,6 +279,24 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		if (_xyz != null)
 		    this._move_to_target(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
 	};    
+	
+	Acts.prototype.MoveToTargetChess = function (objtype)
+	{
+	    if ((!this._cmd_move_to.activated) || (!objtype))
+	        return;
+					
+	    var inst = objtype.getFirstPicked();
+		if (inst == null)
+		    return;
+	    var target_xyz = this._xyz_get(inst.uid);
+		if (target_xyz == null)
+		    return;
+			
+		var _xyz = this._xyz_get();
+		if (_xyz != null)
+		    this._move_to_target(target_xyz.x, target_xyz.y, _xyz.z);	    
+	};   	
+	
 	
 	//////////////////////////////////////
 	// Expressions
@@ -414,9 +434,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
         } 
 
 		this.inst.set_bbox_changed();
-        this.is_my_call = true;
-        this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMoving, this.inst);
-        this.is_my_call = false;
+        //this.is_my_call = true;
+        //this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMoving, this.inst);
+        //this.is_my_call = false;
 	};
 	
 	CmdMoveToProto._set_current_speed = function(speed)

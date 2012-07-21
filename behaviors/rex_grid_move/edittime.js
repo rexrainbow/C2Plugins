@@ -18,7 +18,7 @@ AddCondition(0, cf_trigger, "On hit target position", "",
              "On {my} hit target", 
 			 "Triggered when hit target position.", 
 			 "OnHitTarget");
-AddCondition(2,	cf_trigger, "On moving", "", "On {my} moving", 
+AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", 
              "Triggered when object moving.", "OnMoving");                          
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Test if object is moving.", "IsMoving");  
 AddCondition(4,	cf_trigger, "On moving accepted", "Request", 
@@ -97,6 +97,10 @@ AddAction(9, 0, "Move to neighbor", "Request: Hexagon grid", "{my} move to <i>{0
 AddNumberParam("Direction", "The direction of neighbor.", 0);		  
 AddAction(10, 0, "Move to neighbor", "Request", "{my} move to direction <i>{0}</i>", 
           "Move to neighbor.", "MoveToNeighbor"); 
+		  
+AddObjectParam("Target", "Target object.");
+AddAction(11, 0, "Move to target", "Request", "{my} move to <i>{0}</i>", 
+          "Move to target chess/tile.", "MoveToTargetChess"); 		  
 		  
 //////////////////////////////////////////////////////////////
 // Expressions
