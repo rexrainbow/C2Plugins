@@ -8,6 +8,8 @@
 
 2. API of instance group object
    for manipulating instance group object in other plugins
+- group.Clean()
+  :: clean this group.   
 - group.GetSet()
   :: get uid in a hash table of this group.
 - group.GetList()
