@@ -199,6 +199,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    return zcnt;
 	};
 		
+	instanceProto.lz2uid = function(uid, lz)
+	{
+	    var o_xyz = this.uid2xyz(uid);
+		if (o_xyz == null)
+		    return null;
+		if (o_xyz.z == lz)
+		    return uid;
+	    
+		return this.xyz2uid(o_xyz.x, o_xyz.y, lz);
+	};
+	
 	instanceProto.uid2xyz = function(uid)
 	{
 	    return this.items[uid];
@@ -416,16 +427,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     
 	Exps.prototype.LZ2UID = function (ret,uid,_z)
 	{
-	    var ret_uid;
-        var _xyz = this.uid2xyz(uid);
-        if (_xyz != null)
-        {
-            ret_uid = this.xyz2uid(_xyz.x, _xyz.y, _z);
-            if (ret_uid == null)
-                ret_uid = -1;
-        }
-        else
-            ret_uid = -1;
+	    var ret_uid = this.lz2uid(uid,_z);
+		if (ret_uid == null)
+		    ret_uid = (-1);
 	    ret.set_int(ret_uid);
 	}; 	
     
