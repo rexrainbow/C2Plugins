@@ -45,7 +45,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.activated = this.properties[0];
+        this.activated = (this.properties[0] == 1);
         this.move = {max:this.properties[1],
                      acc:this.properties[2],
                      dec:this.properties[3]};
@@ -68,7 +68,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
             this.is_hit_target = false;
         }
         
-        if ( (this.activated == 0) || (!this.is_moving) ) 
+        if ( (!this.activated) || (!this.is_moving) ) 
         {
             return;
         }
@@ -113,9 +113,10 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         } 
 
 		this.inst.set_bbox_changed();
-        this.is_my_call = true;
-        this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnMoving, this.inst);
-        this.is_my_call = false;
+	    // deprecated
+        //this.is_my_call = true;
+        //this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnMoving, this.inst);
+        //this.is_my_call = false;
 	}; 
     
 	behinstProto.SetCurrentSpeed = function(speed)
@@ -158,14 +159,14 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 		return cr.do_cmp(this.current_speed, cmp, s);
 	};   
 
-    Cnds.prototype.OnMoving = function ()
+    Cnds.prototype.OnMoving = function ()  // deprecated
 	{
-		return (this.is_my_call);
+		return false;
 	};
     
 	Cnds.prototype.IsMoving = function ()
 	{
-		return (this.is_moving);
+		return (this.activated && this.is_moving);
 	};
     
 	//////////////////////////////////////
@@ -175,7 +176,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s == 1);
 	};  
 
 	Acts.prototype.SetMaxSpeed = function (s)
@@ -220,7 +221,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
     
 	Exps.prototype.Activated = function (ret)
 	{
-		ret.set_int(this.activated);
+		ret.set_int((this.activated)? 1:0);
 	};    
     
 	Exps.prototype.Speed = function (ret)

@@ -24,7 +24,7 @@ AddCondition(1, 0, "Compare speed", "Speed",
              "{my} speed {0} {1}", 
              "Compare the current speed of the object.", 
              "CompareSpeed");
-AddCondition(2,	cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");                          
+AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");                          
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");                
 
 
