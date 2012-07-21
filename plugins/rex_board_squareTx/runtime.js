@@ -89,6 +89,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 				          0;       
         return (y+dy);
 	};
+	instanceProto.GetDirCount = function()
+	{  
+        return 4;						 
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

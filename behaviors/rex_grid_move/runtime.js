@@ -10,6 +10,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 {
 	this.runtime = runtime;
 };
+cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
 (function ()
 {
@@ -54,12 +55,24 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.exp_BlockerUID = (-1);
         this.exp_Direction = (-1);
         this.exp_DestinationLX = (-1);
-        this.exp_DestinationLY = (-1);        
+        this.exp_DestinationLY = (-1);
+		this._wander = {range_x:this.properties[4],
+		                range_y:this.properties[5]};
+        this._dir_sequence = [];						
+        this.force_move = (this.properties[6] == 1);
 	};       
 
     behinstProto.tick = function ()
 	{
 	    this._cmd_move_to.tick();
+	};
+	
+    var _dir_sequence_init = function (arr, dir_count)
+	{
+		var i;
+		arr.length = 0;
+		for (i=0; i<dir_count; i++)
+		    arr.push(i);
 	};
 	
 	behinstProto._board_get = function ()
@@ -83,8 +96,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
             {
                 _xyz = obj.uid2xyz(this.inst.uid)
                 if (_xyz != null)
-                {
+                { 
                     this.board = obj;
+					_dir_sequence_init(this._dir_sequence, obj.layout.GetDirCount());
+					this._wander.init_xyz = _xyz;
                     return this.board;
                 }
             }
@@ -116,6 +131,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
         
         if (!this.board.is_inside_board(target_x, target_y))  // tile does not exist
             return null;        
+
+		if (this.force_move)
+		    return 1; // can move to target
             
         var _target_uid = this.board.xyz2uid(target_x, target_y, target_z);
         if (_target_uid == null)  // no overlap at the same z
@@ -169,7 +187,24 @@ cr.behaviors.Rex_GridMove = function(runtime)
         {
             this._is_moving_request_accepted = false;
         }
+		return (can_move == 1);
     };
+	
+	var _shuffle = function (arr)
+	{
+        var i = arr.length, j, temp, random_value;
+		var random_gen = cr.behaviors.Rex_GridMove._random_gen;
+        if ( i == 0 ) return;
+        while ( --i ) 
+        {
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
+            j = Math.floor( random_value * (i+1) );
+            temp = arr[i]; 
+            arr[i] = arr[j]; 
+            arr[j] = temp;
+        }
+    };	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -297,7 +332,60 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		    this._move_to_target(target_xyz.x, target_xyz.y, _xyz.z);	    
 	};   	
 	
+	Acts.prototype.Wander = function ()
+	{
+	    if (!this._cmd_move_to.activated)
+	        return;
+	        
+		var _xyz = this._xyz_get();
+		if (_xyz == null)
+		    return;
+		
+		var _board = this._board_get();
+		var init_lx = this._wander.init_xyz.x;
+		var init_ly = this._wander.init_xyz.y;
+		var range_x = this._wander.range_x;
+		var range_y = this._wander.range_y;		
+		_shuffle(this._dir_sequence);
+		var i, dir, dir_count=this._dir_sequence.length;
+		var target_lx, target_ly, can_move;
+		for (i=0; i<dir_count; i++)
+		{
+		    dir = this._dir_sequence[i];
+		    target_lx = _board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
+		    target_ly = _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir);	
+            if ((Math.abs(target_lx-init_lx) > range_x) || 
+			    (Math.abs(target_ly-init_ly) > range_y))
+				continue;
+		    can_move = this._move_to_target(target_lx, target_ly, _xyz.z);	    
+			if (can_move)
+			    break;
+	    }	
+	};
 	
+    Acts.prototype.SetWanderRangeX = function (range_x)
+	{
+	    if (range_x < 0)
+		    range_x = 0;
+        this._wander.range_x = range_x;
+	};   
+	
+    Acts.prototype.SetWanderRangeY = function (range_y)
+	{
+	    if (range_y < 0)
+		    range_y = 0;
+        this._wander.range_y = range_y;
+	}; 
+	
+	
+    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
+	{
+        var random_gen = random_gen_objs.instances[0];
+        if (random_gen.check_name == "RANDOM")
+            cr.behaviors.Rex_GridMove._random_gen = random_gen;        
+        else
+            alert ("[Grid move] This object is not a random generator object.");
+	}; 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

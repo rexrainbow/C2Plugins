@@ -45,8 +45,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    this.exp_ChessUID =0;
 	    this.exp_TileUID =0;	   
 	    
-	    this.is_tetragon_grid = (this.properties[0]==0);
-	    this.path_mode = this.properties[1];
+	    this.path_mode = this.properties[0];
 	                     
         this.board = null; 
         this.group = null;
@@ -58,7 +57,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._is_cost_fn = null;
         this._tiles = {};
         this._tile2cost = {};
-        this._neighbors_init();
+		this._neighbors = [];  // call this._neighbors_init at action:Setup
+
         this._chess_xyz = null;
         this._hit_dist_tile = false;   
 	};
@@ -123,23 +123,19 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return cost; 
 	};
 	
-	instanceProto._neighbors_init = function()
+	instanceProto._neighbors_init = function(dir_count)
 	{
-        if (this.is_tetragon_grid)
-        {
-            this._neighbors = [{dir:0, x:0, y:0}, {dir:1, x:0, y:0},
-                               {dir:2, x:0, y:0}, {dir:3, x:0, y:0}];
-        }
-        else
-        {
-            this._neighbors = [{dir:0, x:0, y:0}, {dir:1, x:0, y:0},
-                               {dir:2, x:0, y:0}, {dir:3, x:0, y:0},
-                               {dir:4, x:0, y:0}, {dir:5, x:0, y:0}];
-        }
+	    var i;
+		for (i=0; i<dir_count; i++)
+		{
+		    this._neighbors.push({dir:i, x:0, y:0});
+		}
 	};	
 	
 	instanceProto._get_neighbors = function(_x,_y)
 	{
+	    if (this._neighbors.length == 0)
+	        this._neighbors_init(this.board.layout.GetDirCount());
 	    var dir;
 	    var layout = this.board.layout;
 	    var neighbors_cnt = this._neighbors.length;	    
@@ -361,7 +357,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         if (board.check_name == "BOARD")
             this.board = board;        
         else
-            alert ("SLG movement should connect to a board object");
+            alert ("SLG movement should connect to a board object");		
             
         var group = group_objs.instances[0];
         if (group.check_name == "INSTGROUP")

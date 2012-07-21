@@ -96,12 +96,24 @@ AddAction(9, 0, "Move to neighbor", "Request: Hexagon grid", "{my} move to <i>{0
           "Move to neighbor.", "MoveToNeighbor"); 
 AddNumberParam("Direction", "The direction of neighbor.", 0);		  
 AddAction(10, 0, "Move to neighbor", "Request", "{my} move to direction <i>{0}</i>", 
-          "Move to neighbor.", "MoveToNeighbor"); 
-		  
+          "Move to neighbor.", "MoveToNeighbor"); 		  
 AddObjectParam("Target", "Target object.");
 AddAction(11, 0, "Move to target", "Request", "{my} move to <i>{0}</i>", 
-          "Move to target chess/tile.", "MoveToTargetChess"); 		  
-		  
+          "Move to target chess/tile.", "MoveToTargetChess");
+AddAction(12, 0, "Wander", "Wander", 
+          "Wander", "Random moving in the boundary.", "Wander");
+AddNumberParam("Wander range x", "Wander range x, in logic unit", 1);
+AddAction(13, 0, "Set wander range x", "Wander", 
+          "Set {my} wander range x to <i>{0}</i>", 
+          "Set the object's wander range x.", "SetWanderRangeX"); 
+AddNumberParam("Wander range y", "Wander range y, in logic unit", 1);
+AddAction(14, 0, "Set wander range y", "Wander", 
+          "Set {my} wander range y to <i>{0}</i>", 
+          "Set the object's wander range y.", "SetWanderRangeY"); 		  
+AddObjectParam("Random generator", "Random generator object");
+AddAction(15, 0, "Set random generator", "Wander", 
+          "Set random generator object to <i>{0}</i>", 
+          "Set random generator object.", "SetRandomGenerator"); 		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
@@ -136,7 +148,12 @@ var property_list = [
 	new cr.Property(ept_float, "Acceleration", 0, 
                     "Acceleration, in pixel per second per second."),
 	new cr.Property(ept_float, "Deceleration", 0, 
-                    "Deceleration, in pixel per second per second."),    
+                    "Deceleration, in pixel per second per second."),  
+	new cr.Property(ept_integer, "Wander range x", 1, 
+                    "Random moving in the boundary."),
+	new cr.Property(ept_integer, "Wander range y", 1, 
+                    "Random moving in the boundary."), 	
+    new cr.Property(ept_combo, "Force move", "No", "Enable if you wish to ignore solid checking.", "No|Yes"), 					
 	];
 	
 // Called by IDE when a new behavior type is to be created
