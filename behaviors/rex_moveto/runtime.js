@@ -66,6 +66,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
             this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnHitTarget, this.inst); 
             this.is_my_call = false;
             this.is_hit_target = false;
+            this.is_moving = false;			
         }
         
         if ( (!this.activated) || (!this.is_moving) ) 
@@ -98,8 +99,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 
         // is hit to target at next tick?
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
-        {
-            this.is_moving = false;
+        {            
             this.inst.x = this.target.x;
             this.inst.y = this.target.y;
             this.SetCurrentSpeed(0);
