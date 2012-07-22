@@ -61,7 +61,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		                range_y:this.properties[5]};
         this._dir_sequence = [];						
         this.force_move = (this.properties[6] == 1);
-        this._colliding_checking_info = {};
+        this._colliding_xyz = {};
+        this._colliding_zhash2uids = {};
 	};       
 
     behinstProto.tick = function ()
@@ -210,15 +211,17 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
     behinstProto._colliding_checking = function (target_x, target_y, target_z)
     {
-        this._colliding_checking_info.target_x = target_x;
-        this._colliding_checking_info.target_y = target_y;
-        this._colliding_checking_info.target_z = target_z;
+        this._colliding_xyz.x = target_x;
+        this._colliding_xyz.y = target_y;
+        this._colliding_xyz.z = target_z;
         this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnCollidedBegin, this.inst);    
     };    
 
-    var _zhash2uids = function (z_hash)
-    {
-        var z, target_uids = {};
+    behinstProto._zhash2uids = function (z_hash)
+    {   
+        var z, target_uids = this._colliding_zhash2uids;
+        for (z in target_uids)
+            delete target_uids[z];
         for (z in z_hash)
             target_uids[z_hash[z]] = true;
         return target_uids;
@@ -226,8 +229,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     
 	behinstProto._collide_test = function(objtype, group_name)
 	{
-        var target_uids = _zhash2uids(this.board.xy2zhash(this._colliding_checking_info.target_x, 
-                                                          this._colliding_checking_info.target_y));
+        var target_uids = this._zhash2uids(this.board.xy2zhash(this._colliding_xyz.x, 
+                                                               this._colliding_xyz.y));
         
         var _sol = objtype.getCurrentSol();
         var select_all_save = _sol.select_all;

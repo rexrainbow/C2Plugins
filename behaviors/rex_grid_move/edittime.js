@@ -52,7 +52,7 @@ AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid", "{my} can move
 AddObjectParam("Chess", "Chess object.");     
 AddStringParam("Group", "Put result in this group", '""');        
 AddCondition(11, cf_trigger, "On colliding begin", "Collisions", 
-            "On {my} colliding begin with <i>{0}</i>, put collided result into group <i>{1}</i>", 
+            "On {my} colliding begin with <i>{0}</i>, put collided result to group <i>{1}</i>", 
             "Triggered when this chess collides begin with another chess.", "OnCollidedBegin");
 //////////////////////////////////////////////////////////////
 // Actions
