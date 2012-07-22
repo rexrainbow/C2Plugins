@@ -49,6 +49,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	                     
         this.board = null; 
         this.group = null;
+        this.random_gen = null;
         this._skip_first = null;
         this._cost_fn_name = null;
         this._filter_fn_name = null;
@@ -158,7 +159,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	        switch (this.path_mode)
 	        {
 	        case 0:  
-	            var i = Math.floor(Math.random()*pre_tiles_cnt);
+                var random_value = (this.random_gen == null)?
+			                        Math.random(): this.random_gen.random();
+	            var i = Math.floor(random_value*pre_tiles_cnt);
 	            pre_tile = pre_tiles[i];
 	            break;
 	        case 1:  
@@ -432,7 +435,15 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         else
             this.group.GetGroup(group_name).Clean();	  
 	};	  	
-    
+	
+    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
+	{
+        var random_gen = random_gen_objs.instances[0];
+        if (random_gen.check_name == "RANDOM")
+            this.random_gen = random_gen;        
+        else
+            alert ("[slg movement] This object is not a random generator object.");
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

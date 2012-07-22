@@ -68,6 +68,10 @@ AddAction(5, 0, "Get moving path by UID", "Request: Moving path",
 AddNumberParam("UID", "Filter result", 0);
 AddAction(6, 0, "Append filter result", "Filter", "Append filter result to UID:<i>{0}</i>", 
           "Append filter result in UID.", "AppendFilter");
+AddObjectParam("Random generator", "Random generator object");
+AddAction(11, 0, "Set random generator", "Setup", 
+          "Set random generator object to <i>{0}</i>", 
+          "Set random generator object.", "SetRandomGenerator");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
