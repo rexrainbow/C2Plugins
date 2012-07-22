@@ -29,6 +29,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
 	behtypeProto.onCreate = function()
 	{
+        this.group = null;    
 	};
 
 	/////////////////////////////////////
@@ -60,6 +61,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		                range_y:this.properties[5]};
         this._dir_sequence = [];						
         this.force_move = (this.properties[6] == 1);
+        this._colliding_checking_info = {};
 	};       
 
     behinstProto.tick = function ()
@@ -205,6 +207,46 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             arr[j] = temp;
         }
     };	
+
+    behinstProto._colliding_checking = function (target_x, target_y, target_z)
+    {
+        this._colliding_checking_info.target_x = target_x;
+        this._colliding_checking_info.target_y = target_y;
+        this._colliding_checking_info.target_z = target_z;
+        this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnCollidedBegin, this.inst);    
+    };    
+
+    var _zhash2uids = function (z_hash)
+    {
+        var z, target_uids = {};
+        for (z in z_hash)
+            target_uids[z_hash[z]] = true;
+        return target_uids;
+    };
+    
+	behinstProto._collide_test = function(objtype, group_name)
+	{
+        var target_uids = _zhash2uids(this.board.xy2zhash(this._colliding_checking_info.target_x, 
+                                                          this._colliding_checking_info.target_y));
+        
+        var _sol = objtype.getCurrentSol();
+        var select_all_save = _sol.select_all;
+        _sol.select_all = true;         
+	    var test_insts = _sol.getObjects(); 
+        var test_insts_cnt = test_insts.length;     
+        var i, test_uid;
+
+        var result_group = this.type.group.GetGroup(group_name);
+        result_group.Clean();
+        for (i=0; i<test_insts_cnt; i++)
+        {
+            test_uid = test_insts[i].uid;
+            if (test_uid in target_uids)
+                result_group.AddUID(test_uid);
+        }
+        _sol.select_all = select_all_save;
+        return (result_group.GetList().length != 0);
+	};	   
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -252,12 +294,18 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		if (_xyz == null)
 		    return false;
 
-        var _board = this._board_get();
-        var can_move = this._test_move_to(_board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
-		                                  _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
+        var _layout = this._board_get().layout;
+        var can_move = this._test_move_to(_layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
+		                                  _layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
 							              _xyz.z);	    
 		return (can_move==1);			 
-	};			
+	};	
+	
+	Cnds.prototype.OnCollidedBegin = function (objtype, group_name)
+	{
+		return this._collide_test(objtype, group_name);
+	};
+	    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -299,10 +347,13 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    var _xyz = this._xyz_get();
         if (_xyz == null)
             return;
-        var _board = this._board_get();		        
-        this._move_to_target(_board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
-                             _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
-        					 _xyz.z);
+            
+        var _layout = this._board_get().layout;	
+        var tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
+        var ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
+        var tz = _xyz.z;
+        this._colliding_checking(tx, ty, tz);        
+        this._move_to_target(tx, ty, tz);
 	};
 	
 	Acts.prototype.MoveToOffset = function (dx, dy)
@@ -312,7 +363,13 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	        
 		var _xyz = this._xyz_get();
 		if (_xyz != null)
-		    this._move_to_target(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
+        {
+            var tx = _xyz.x+dx;
+            var ty = _xyz.y+dy;
+            var tz = _xyz.z;
+            this._colliding_checking(tx, ty, tz);  
+		    this._move_to_target(tx, ty, tz);	    
+        }
 	};    
 	
 	Acts.prototype.MoveToTargetChess = function (objtype)
@@ -329,7 +386,13 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 			
 		var _xyz = this._xyz_get();
 		if (_xyz != null)
-		    this._move_to_target(target_xyz.x, target_xyz.y, _xyz.z);	    
+        {
+            var tx = target_xyz.x;
+            var ty = target_xyz.y;
+            var tz = _xyz.z;
+            this._colliding_checking(tx, ty, tz);  
+		    this._move_to_target(tx, ty, tz);	             
+        }
 	};   	
 	
 	Acts.prototype.Wander = function ()
@@ -341,7 +404,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		if (_xyz == null)
 		    return;
 		
-		var _board = this._board_get();
+		var _layout = this._board_get().layout;
 		var init_lx = this._wander.init_xyz.x;
 		var init_ly = this._wander.init_xyz.y;
 		var range_x = this._wander.range_x;
@@ -352,8 +415,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		for (i=0; i<dir_count; i++)
 		{
 		    dir = this._dir_sequence[i];
-		    target_lx = _board.layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
-		    target_ly = _board.layout.GetNeighborLY(_xyz.x, _xyz.y, dir);	
+		    target_lx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
+		    target_ly = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);	
             if ((Math.abs(target_lx-init_lx) > range_x) || 
 			    (Math.abs(target_ly-init_ly) > range_y))
 				continue;
@@ -377,7 +440,6 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this._wander.range_y = range_y;
 	}; 
 	
-	
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
         var random_gen = random_gen_objs.instances[0];
@@ -386,6 +448,15 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         else
             alert ("[Grid move] This object is not a random generator object.");
 	}; 
+    
+    Acts.prototype.SetInstanceGroup = function (group_objs)
+	{
+        var group = group_objs.instances[0];
+        if (group.check_name == "INSTGROUP")
+            this.type.group = group;        
+        else
+            alert ("[Grid move] This object is not a instance group object.");            
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

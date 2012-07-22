@@ -49,7 +49,11 @@ AddComboParamOption("Up-right");
 AddComboParam("Direction", "Moving direction.", 0);             
 AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid", "{my} can move to <i>{0}</i>", 
              "Test if object can move to neighbor.", "TestMoveToNeighbor");                     
-
+AddObjectParam("Chess", "Chess object.");     
+AddStringParam("Group", "Put result in this group", '""');        
+AddCondition(11, cf_trigger, "On colliding begin", "Collisions", 
+            "On {my} colliding begin with <i>{0}</i>, put collided result into group <i>{1}</i>", 
+            "Triggered when this chess collides begin with another chess.", "OnCollidedBegin");
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -113,7 +117,12 @@ AddAction(14, 0, "Set wander range y", "Wander",
 AddObjectParam("Random generator", "Random generator object");
 AddAction(15, 0, "Set random generator", "Wander", 
           "Set random generator object to <i>{0}</i>", 
-          "Set random generator object.", "SetRandomGenerator"); 		  
+          "Set random generator object.", "SetRandomGenerator");
+          
+AddObjectParam("Group", "Instance group object");
+AddAction(20, 0, "Set instance group ", "Collisions", 
+          "Set instance group object to <i>{0}</i>", 
+          "Set instance group object.", "SetInstanceGroup");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
