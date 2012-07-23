@@ -106,19 +106,21 @@ AddAction(11, 0, "Move to target", "Request", "{my} move to <i>{0}</i>",
           "Move to target chess/tile.", "MoveToTargetChess");
 AddAction(12, 0, "Wander", "Wander", 
           "Wander", "Random moving in the boundary.", "Wander");
-AddNumberParam("Wander range x", "Wander range x, in logic unit", 1);
-AddAction(13, 0, "Set wander range x", "Wander", 
+AddNumberParam("Range x", "Wander range x, in logic unit", 1);
+AddAction(13, 0, "Set range x", "Wander", 
           "Set {my} wander range x to <i>{0}</i>", 
           "Set the object's wander range x.", "SetWanderRangeX"); 
-AddNumberParam("Wander range y", "Wander range y, in logic unit", 1);
-AddAction(14, 0, "Set wander range y", "Wander", 
+AddNumberParam("Range y", "Wander range y, in logic unit", 1);
+AddAction(14, 0, "Set range y", "Wander", 
           "Set {my} wander range y to <i>{0}</i>", 
           "Set the object's wander range y.", "SetWanderRangeY"); 		  
 AddObjectParam("Random generator", "Random generator object");
 AddAction(15, 0, "Set random generator", "Wander", 
           "Set random generator object to <i>{0}</i>", 
           "Set random generator object.", "SetRandomGenerator");
-          
+AddAction(16, 0, "Reset center position", "Wander", 
+          "Reset wander center position to current logic position", 
+          "Reset wander center position to current logic position.", "ResetWanderCenter");   
 AddObjectParam("Group", "Instance group object");
 AddAction(20, 0, "Set instance group ", "Collisions", 
           "Set instance group object to <i>{0}</i>", 

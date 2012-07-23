@@ -451,6 +451,16 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         else
             alert ("[Grid move] This object is not a random generator object.");
 	}; 
+	
+    Acts.prototype.ResetWanderCenter = function ()
+	{
+        var _xyz = this._xyz_get();
+		if (_xyz == null)
+		    return;        
+	    this._wander.init_xyz.x = _xyz.x;
+        this._wander.init_xyz.y = _xyz.y;
+        this._wander.init_xyz.z = _xyz.z;       
+	};  
     
     Acts.prototype.SetInstanceGroup = function (group_objs)
 	{
