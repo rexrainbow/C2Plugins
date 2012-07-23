@@ -57,6 +57,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.exp_Direction = (-1);
         this.exp_DestinationLX = (-1);
         this.exp_DestinationLY = (-1);
+        this.exp_DestinationLZ = (-1);      
 		this._wander = {range_x:this.properties[4],
 		                range_y:this.properties[5]};
         this._dir_sequence = [];						
@@ -126,12 +127,25 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         return (inst.extra != null) && (inst.extra.solidEnabled);
     };
 
+    behinstProto.target2dir = function (target_x, target_y, target_z)
+    {
+        var my_xyz = this._xyz_get();
+        var target_xyz = {x:target_x, y:target_y, z:target_z};
+        return this._board_get().layout.XYZ2Dir(my_xyz, target_xyz);
+    };
+    
+    behinstProto.set_move_target = function (target_x, target_y, target_z, dir)
+    {
+        this.exp_DestinationLX = target_x;
+        this.exp_DestinationLY = target_y;
+        this.exp_DestinationLZ = target_z; 
+        this.exp_Direction = dir; 
+    };
+    
     behinstProto._test_move_to = function (target_x, target_y, target_z)
     {
         this.exp_BlockerUID = (-1);
-        this.exp_DestinationLX = target_x;
-        this.exp_DestinationLY = target_y;
-        
+      
         if (!this.board.is_inside_board(target_x, target_y))  // tile does not exist
             return null;        
 
@@ -249,7 +263,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         }
         _sol.select_all = select_all_save;
         return (result_group.GetList().length != 0);
-	};	   
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -288,7 +302,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		if (_xyz == null)
 		    return false;
 
-        var can_move = this._test_move_to(_xyz.x+dx, _xyz.y+dy, _xyz.z);	    
+        var tx = _xyz.x+dx;
+        var ty = _xyz.y+dy;
+        var tz = _xyz.z;
+        var dir = this.target2dir(tx, ty, tz);
+        this.set_move_target(tx, ty, tz, dir);
+        var can_move = this._test_move_to(tx, ty, tz);	    
 		return (can_move==1);
 	};
     Cnds.prototype.TestMoveToNeighbor = function (dir)
@@ -298,9 +317,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		    return false;
 
         var _layout = this._board_get().layout;
-        var can_move = this._test_move_to(_layout.GetNeighborLX(_xyz.x, _xyz.y, dir), 
-		                                  _layout.GetNeighborLY(_xyz.x, _xyz.y, dir),
-							              _xyz.z);	    
+        var tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
+        var ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
+        var tz = _xyz.z;
+        this.set_move_target(tx, ty, tz, dir);
+        var can_move = this._test_move_to(tx, ty, tz);	    
 		return (can_move==1);			 
 	};	
 	
@@ -345,8 +366,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
-	        
-        this.exp_Direction = dir;	    
+    
 	    var _xyz = this._xyz_get();
         if (_xyz == null)
             return;
@@ -355,6 +375,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         var tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
         var ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
         var tz = _xyz.z;
+        this.set_move_target(tx, ty, tz, dir);
         this._colliding_checking(tx, ty, tz);        
         this._move_to_target(tx, ty, tz);
 	};
@@ -370,6 +391,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             var tx = _xyz.x+dx;
             var ty = _xyz.y+dy;
             var tz = _xyz.z;
+            var dir = this.target2dir(tx, ty, tz);
+            this.set_move_target(tx, ty, tz, dir);
             this._colliding_checking(tx, ty, tz);  
 		    this._move_to_target(tx, ty, tz);	    
         }
@@ -393,6 +416,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             var tx = target_xyz.x;
             var ty = target_xyz.y;
             var tz = _xyz.z;
+            var dir = this.target2dir(tx, ty, tz);
+            this.set_move_target(tx, ty, tz, dir);
             this._colliding_checking(tx, ty, tz);  
 		    this._move_to_target(tx, ty, tz);	             
         }
@@ -517,7 +542,10 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     
  	Exps.prototype.Direction = function (ret)
 	{
-        ret.set_int(this.exp_Direction);		
+	    var dir = this.exp_Direction;
+	    if (dir == null)
+	        dir = (-1);
+        ret.set_int(dir);		
 	};
     
  	Exps.prototype.DestinationLX = function (ret)
@@ -529,6 +557,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
         ret.set_int(this.exp_DestinationLY);		
 	};  	
+    
+ 	Exps.prototype.DestinationLZ = function (ret)
+	{
+        ret.set_int(this.exp_DestinationLZ);		
+	};  	
+	
 }());
 
 (function ()

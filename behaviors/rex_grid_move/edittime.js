@@ -149,7 +149,9 @@ AddExpression(10, ef_return_number, "Get logic X of destination", "Request", "De
               "Get logic X of destination X when moving request.");  
 AddExpression(11, ef_return_number, "Get logic Y of destination", "Request", "DestinationLY", 
               "Get logic Y of destination when moving request.");  
-              
+AddExpression(12, ef_return_number, "Get logic Z of destination", "Request", "DestinationLZ", 
+              "Get logic Z of destination when moving request.");  
+                          
 ACESDone();
 
 // Property grid properties for this plugin
