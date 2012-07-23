@@ -89,6 +89,76 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{  
         return 6;						 
 	};
+	
+	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
+	{  
+	    var dx = xyz_to.x - xyz_o.x;
+	    var dy = xyz_to.y - xyz_o.y;	    
+	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
+	    if (vmax != 0)
+	    {
+	        dx = dx/vmax;
+	        dy = dy/vmax;
+	    }
+
+	    
+	    var angle;
+	    if ((xyz_o.y%2) == 1)
+	    {
+	        angle = ((dx==1) && (dy==0))?    0:
+	                ((dx==1) && (dy==1))?   60:
+                    ((dx==0) && (dy==1))?  120:
+	                ((dx==-1) && (dy==0))? 280:
+                    ((dx==0) && (dy==-1))? 240:
+	                ((dx==1) && (dy==-1))? 300: 
+	                (-1); //fixme
+	    }		 
+	    else
+	    {
+	        angle = ((dx==1) && (dy==0))?     0:
+	                ((dx==0) && (dy==1))?    60:
+                    ((dx==-1) && (dy==1))?  120:
+	                ((dx==-1) && (dy==0))?  280:
+                    ((dx==-1) && (dy==-1))? 240:
+	                ((dx==0) && (dy==-1))?  300:
+	                (-1); //fixme
+	    }
+        return angle;				 
+	};
+	instanceProto.XYZ2Dir = function(xyz_o, xyz_to)
+	{  
+	    var dx = xyz_to.x - xyz_o.x;
+	    var dy = xyz_to.y - xyz_o.y;	    
+	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
+	    if (vmax != 0)
+	    {
+	        dx = dx/vmax;
+	        dy = dy/vmax;
+	    }
+	    
+	    var dir;
+	    if ((xyz_o.y%2) == 1)
+	    {
+	        dir = ((dx==1) && (dy==0))?   0:
+	              ((dx==1) && (dy==1))?   1:
+                  ((dx==0) && (dy==1))?   2:
+	              ((dx==-1) && (dy==0))?  3:
+                  ((dx==0) && (dy==-1))?  4:
+	              ((dx==1) && (dy==-1))?  5: 
+	              null;  //fixme
+	    }		 
+	    else
+	    {
+	        dir = ((dx==1) && (dy==0))?   0:
+	              ((dx==0) && (dy==1))?   1:
+                  ((dx==-1) && (dy==1))?  2:
+	              ((dx==-1) && (dy==0))?  3:
+                  ((dx==-1) && (dy==-1))? 4:
+	              ((dx==0) && (dy==-1))?  5: 
+	              null;	 //fixme
+	    }
+	    return dir;
+	};		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

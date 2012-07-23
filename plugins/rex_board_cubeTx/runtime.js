@@ -95,6 +95,14 @@ cr.plugins_.Rex_SLGCubeTx = function(runtime)
 	{  
         return 4;						 
 	};
+	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
+	{  
+        return null;				 
+	};
+	instanceProto.XYZ2Dir = function(xyz_o, xyz_to)
+	{  
+        return null;				 
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

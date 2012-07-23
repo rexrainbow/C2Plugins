@@ -93,6 +93,29 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	{  
         return 4;						 
 	};
+	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
+	{  
+	    var dx = xyz_to.x - xyz_o.x;
+	    var dy = xyz_to.y - xyz_o.y;
+	    var angle;
+        if (dy == 0)
+            angle = (dx>0)? 0: 180;
+        else if (dx == 0)
+            angle = (dy>0)? 90: 270;
+        else
+            angle = cr.to_clamped_degrees(Math.atan2(dy,dx));	
+        return angle;				 
+	};
+	instanceProto.XYZ2Dir = function(xyz_o, xyz_to)
+	{  
+	    var angle = this.XYZ2LA(xyz_o, xyz_to);
+	    var dir = (angle==0)?   0:
+	              (angle==90)?  1:
+	              (angle==180)? 2:
+	              (angle==270)? 3: 
+	              null;  //fixme
+        return dir;				 
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
