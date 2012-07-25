@@ -40,7 +40,7 @@ AddCondition(6, 0, "Is at cool down", "State",
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddNumberParam("Time", "Cooldown interval, in seconds", 0.1);
 AddAction(0, 0, "Setup cooldown", "Setup", 
-          "Get timer {my} from <i>{0}</i>, cooldown interval to <i>{1}</i>", 
+          "{my} get timer from <i>{0}</i>, cooldown interval to <i>{1}</i>", 
           "Setup cooldown.", "Setup");
 AddAction(1, 0, "Request a call", "Call", 
           "Request {my} a call", 
@@ -50,16 +50,18 @@ AddAction(2, 0, "Set Cooldown interval", "Setup",
           "Set cooldown interval to <i>{0}</i>", 
           "Set cooldown interval.", "SetCDInterval");
 AddAction(3, 0, "Pause cooldown", "Control", 
-          "Pause cooldown {my}", 
+          "{my} pause cooldown", 
           "Pause cooldown.", "Pause"); 
 AddAction(4, 0, "Resume cooldown", "Control", 
-          "Resume cooldown {my}", 
+          "{my} resume cooldown", 
           "Resume cooldown.", "Resume");
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the cooldown behavior.",1);
 AddAction(5, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's cooldown behavior.", "SetActivated");
-          
+AddAction(6, 0, "Cancel cooldown", "Control", 
+          "{my} cancel cooldown", 
+          "Cancel cooldown.", "Cancel"); 
 
 //////////////////////////////////////////////////////////////
 // Expressions

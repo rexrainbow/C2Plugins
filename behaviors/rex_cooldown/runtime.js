@@ -192,6 +192,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 		this.activated = s;
 	};      
 
+    Acts.prototype.Cancel = function ()
+	{
+        if (this.timer)
+            this.timer.Remove();
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
