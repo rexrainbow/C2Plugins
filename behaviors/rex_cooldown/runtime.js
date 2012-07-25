@@ -78,6 +78,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     behinstProto._on_cooldown_finished = function()
     {    
         this.is_my_call = true;
+        this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCD, this.inst); 
         this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCDFinished, this.inst); 
         this.is_my_call = false;
     };
