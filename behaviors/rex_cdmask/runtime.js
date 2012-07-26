@@ -62,7 +62,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
     
 	behinstProto.tick = function ()
 	{
-        this._bind_canvas_to_inst();
+        this._pin_canvas_to_inst();
 	};
 	
 	behinstProto._create_canvas = function ()
@@ -76,13 +76,17 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	    var _x = this.inst.x;
 	    var _y = this.inst.y;	         
         this.canvas_inst = this.runtime.createInstance(canvas_type,_layer,_x,_y);
-        this._bind_canvas_to_inst();
+        this.canvas_inst.angle = 0;
+        this.canvas_inst.width = this.inst.width;
+        this.canvas_inst.height = this.inst.height;    
+        this.canvas_inst.canvas.width=this.canvas_inst.width;
+		this.canvas_inst.canvas.height=this.canvas_inst.height;            
+        this._pin_canvas_to_inst();
         this.canvas_inst.hotspotX = this.inst.hotspotX;
         this.canvas_inst.hotspotY = this.inst.hotspotY;
-        this.canvas_inst.ctx.clearRect(0,0,this.canvas_inst.width,this.canvas_inst.height);
 	};
        
-	behinstProto._bind_canvas_to_inst = function ()
+	behinstProto._pin_canvas_to_inst = function ()
 	{
         if (this.canvas_inst == null)
             return;
@@ -99,25 +103,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
             this.canvas_inst.y = this.inst.y;
             this._inst_info.y = this.inst.y;
             reflash = true;
-        }     
-        if (this._inst_info.angle != this.inst.angle)
-        {
-            this.canvas_inst.angle = this.inst.angle;
-            this._inst_info.angle = this.inst.angle;
-            reflash = true;
-        }  
-        if (this._inst_info.width != this.inst.width)
-        {
-            this.canvas_inst.width = this.inst.width;
-            this._inst_info.width = this.inst.width;
-            reflash = true;
-        }
-        if (this._inst_info.height != this.inst.height)
-        {
-            this.canvas_inst.height = this.inst.height;
-            this._inst_info.height = this.inst.height;
-            reflash = true;
-        } 
+        }   
         if (reflash)
             this.canvas_inst.runtime.redraw = true; 
 	};

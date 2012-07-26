@@ -88,6 +88,4 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
-	if (this.properties["Pixels per step"] < 1)
-		this.properties["Pixels per step"] = 1;
 }
