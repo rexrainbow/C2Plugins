@@ -13,7 +13,8 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(1, 0, "Pick canvas", "SOL", 
+             "Pick canvas", "Pick canvas to SOL.", "PickCanvas");
              
 //////////////////////////////////////////////////////////////
 // Actions
@@ -27,7 +28,9 @@ AddAction(1, 0, "Set percentage", "Mask",
           "Set cool down percentage.", "SetCoolDownPercentage"); 
 AddStringParam("Color", "Use color name, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" ", "\"black\"");
 AddAction(2, 0, "Set mask color", "Mask", "Set mask color to <i>{0}</i>", "Set mask color.", "SetMaskColor");
-                   
+AddAction(3, 0, "Pick canvas", "SOL", 
+          "Pick canvas", 
+          "Pick canvas to SOL.", "PickCanvas");                 
  
 
 //////////////////////////////////////////////////////////////

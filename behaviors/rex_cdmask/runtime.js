@@ -48,6 +48,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	    this.mask_color = this.properties[0];
 	    this.is_circle = (this.properties[1] == 1);
 	    this.canvas_inst = null;
+        this._inst_info = {};
 	};  
     
 	behinstProto.onDestroy = function()
@@ -58,8 +59,10 @@ cr.behaviors.Rex_cdmask = function(runtime)
             this.canvas_inst = null;
         }
 	};  
+    
 	behinstProto.tick = function ()
 	{
+        this._bind_canvas_to_inst();
 	};
 	
 	behinstProto._create_canvas = function ()
@@ -68,21 +71,61 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	        return;
 	        
 	    var canvas_type = this.type.canvas_type;
+        assert2(canvas_type, "[CD mask] you need pass a canvas object.");   
 	    var _layer = this.runtime.getLayerByNumber(this.inst.layer.index);
 	    var _x = this.inst.x;
-	    var _y = this.inst.y;	    
+	    var _y = this.inst.y;	         
         this.canvas_inst = this.runtime.createInstance(canvas_type,_layer,_x,_y);
-        this.canvas_inst.width = this.inst.width;
-        this.canvas_inst.height = this.inst.height;
+        this._bind_canvas_to_inst();
         this.canvas_inst.hotspotX = this.inst.hotspotX;
         this.canvas_inst.hotspotY = this.inst.hotspotY;
         this.canvas_inst.ctx.clearRect(0,0,this.canvas_inst.width,this.canvas_inst.height);
-        this.canvas_inst.runtime.redraw = true; 
 	};
-	
+       
+	behinstProto._bind_canvas_to_inst = function ()
+	{
+        if (this.canvas_inst == null)
+            return;
+            
+        var reflash = false;     
+        if (this._inst_info.x != this.inst.x)
+        {
+            this.canvas_inst.x = this.inst.x;
+            this._inst_info.x = this.inst.x;
+            reflash = true;
+        }
+        if (this._inst_info.y != this.inst.y)
+        {
+            this.canvas_inst.y = this.inst.y;
+            this._inst_info.y = this.inst.y;
+            reflash = true;
+        }     
+        if (this._inst_info.angle != this.inst.angle)
+        {
+            this.canvas_inst.angle = this.inst.angle;
+            this._inst_info.angle = this.inst.angle;
+            reflash = true;
+        }  
+        if (this._inst_info.width != this.inst.width)
+        {
+            this.canvas_inst.width = this.inst.width;
+            this._inst_info.width = this.inst.width;
+            reflash = true;
+        }
+        if (this._inst_info.height != this.inst.height)
+        {
+            this.canvas_inst.height = this.inst.height;
+            this._inst_info.height = this.inst.height;
+            reflash = true;
+        } 
+        if (reflash)
+            this.canvas_inst.runtime.redraw = true; 
+	};
+    
     var start_radians = cr.to_radians(-90);
 	behinstProto._cd_mask = function (percentage)
 	{
+	    this._create_canvas();    
 	    if (percentage > 1)
 	        percentage = 1;	      
 	    var inst = this.canvas_inst;
@@ -126,12 +169,24 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	    inst.runtime.redraw = true;    
 	};	
 	
-	
+	behinstProto._pick_canvas_inst = function ()
+	{
+        this._create_canvas();
+        var canvas_type = this.type.canvas_type;
+        var sol = canvas_type.getCurrentSol();  
+        sol.instances.push(this.canvas_inst);   
+        sol.select_all = false; 
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
-
+	  
+	Cnds.prototype.PickCanvas = function ()
+	{
+        this._pick_canvas_inst(); 
+		return true;
+	};	 
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -144,7 +199,6 @@ cr.behaviors.Rex_cdmask = function(runtime)
 
 	Acts.prototype.SetCoolDownPercentage = function(percentage)
 	{
-	    this._create_canvas();
 	    this._cd_mask(percentage);
 	};
 
@@ -152,6 +206,13 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	{
 	    this.mask_color = color;
 	};  
+
+	Acts.prototype.PickCanvas = function()
+	{
+        this._pick_canvas_inst();      
+	};    
+    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
