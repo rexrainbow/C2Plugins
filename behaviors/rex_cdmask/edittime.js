@@ -6,7 +6,7 @@
 		"description":	"Cool down mask.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Mask",
+		"category":		"Effect",
 		"flags":		0
 	};
 };
