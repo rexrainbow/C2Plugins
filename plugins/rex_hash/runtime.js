@@ -231,6 +231,14 @@ cr.plugins_.Rex_Hash = function(runtime)
             val = default_value;        
 		ret.set_any(val);
 	};
+	Exps.prototype.AtKeys = function (ret, key_string)
+	{     
+        var keys = (arguments.length > 2)?
+                   Array.prototype.slice.call(arguments,1):
+                   [key_string];
+        var val = this._get_data(keys);      
+		ret.set_any(val);
+	};    
     
 	Exps.prototype.Entry = function (ret, key_name)
 	{       
