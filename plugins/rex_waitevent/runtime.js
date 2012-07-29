@@ -43,6 +43,7 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	{
 	    this.events = {};
 		this._current_finished_event_name = "";
+        this._current_finished_tag = "";
 	};   
 	
 	var is_hash_empty = function(hash_obj)
@@ -61,14 +62,14 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();      
 
-	Cnds.prototype.OnAllEventsFinished = function()
+	Cnds.prototype.OnAllEventsFinished = function(tag)
 	{    
-		return true;
+		return (this._current_finished_tag == tag);
 	};
 
-	Cnds.prototype.OnAnyEventFinished = function()
+	Cnds.prototype.OnAnyEventFinished = function(tag)
 	{    
-		return true;
+		return (this._current_finished_tag == tag);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -91,6 +92,7 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 		this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAnyEventFinished, this); 
 		if (is_hash_empty(this.events[tag]))
 		{
+            this._current_finished_tag = tag;
 		    this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAllEventsFinished, this); 
 			delete this.events[tag];
         }
