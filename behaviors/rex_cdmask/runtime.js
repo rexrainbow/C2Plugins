@@ -47,6 +47,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	{        
 	    this.mask_color = this.properties[0];
 	    this.is_circle = (this.properties[1] == 1);
+        this.is_back = (this.properties[2] == 1);
 	    this.canvas_inst = null;
         this._inst_info = {};
 	};  
@@ -84,6 +85,15 @@ cr.behaviors.Rex_cdmask = function(runtime)
         this._pin_canvas_to_inst();
         this.canvas_inst.hotspotX = this.inst.hotspotX;
         this.canvas_inst.hotspotY = this.inst.hotspotY;
+        
+        if (this.is_back)
+        {
+            // move mask down at z index
+            var layer_insts = _layer.instances;
+            layer_insts.pop();
+            var inst_index = layer_insts.indexOf(this.inst);
+            layer_insts.splice(inst_index, 0, this.canvas_inst);
+        }
 	};
        
 	behinstProto._pin_canvas_to_inst = function ()

@@ -43,7 +43,8 @@ ACESDone();
 var property_list = [           
     new cr.Property(ept_text, "Color", "black", 
                    "Use color name, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" "),	       
-    new cr.Property(ept_combo, "Shape", "Rectangle", "Mask shape.", "Rectangle|Circle"),                                   
+    new cr.Property(ept_combo, "Shape", "Rectangle", "Mask shape.", "Rectangle|Circle"),    
+    new cr.Property(ept_combo, "Z order", "Front", "Z order of mask.", "Front|Back"),    
 	];
 	
 // Called by IDE when a new behavior type is to be created
