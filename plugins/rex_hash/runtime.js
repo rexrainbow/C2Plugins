@@ -212,9 +212,7 @@ cr.plugins_.Rex_Hash = function(runtime)
     
 	Exps.prototype.Hash = function (ret, key_string, default_value)
 	{   
-        var keys = (arguments.length > 2)?
-                   Array.prototype.slice.call(arguments,1):
-                   key_string.split(".");
+        var keys = key_string.split(".");
         var val = this._get_data(keys);
         if ((typeof val != "number") && (typeof val != "string"))
             val = default_value;
@@ -223,9 +221,7 @@ cr.plugins_.Rex_Hash = function(runtime)
     
 	Exps.prototype.At = function (ret, key_string, default_value)
 	{     
-        var keys = (arguments.length > 2)?
-                   Array.prototype.slice.call(arguments,1):
-                   key_string.split(".");
+        var keys = key_string.split(".");
         var val = this._get_data(keys);
         if ((typeof val != "number") && (typeof val != "string"))
             val = default_value;        
