@@ -46,7 +46,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.onCreate = function()
 	{    
         this.typing_timer = null;
-        this.typing_speed = 0;      
+        this.typing_speed = 0; 
+        this.content = "";        
 	};
 
 	behinstProto.onDestroy = function()
@@ -140,8 +141,9 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
-		        
-        this._start_typing(param.toString(), speed);
+		
+        this.content = param.toString();
+        this._start_typing(this.content, speed);
 	};
 
 	Acts.prototype.SetTypingSpeed = function(speed)
@@ -154,9 +156,14 @@ cr.behaviors.Rex_text_typing = function(runtime)
         }
 	};
     
-	Acts.prototype.StopTyping = function()
+	Acts.prototype.StopTyping = function(is_show_all)
 	{
         this.typing_timer_remove();   
+        if (is_show_all)
+        {
+            this.SetText(this.content);
+            this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
+        }
 	};    
 	//////////////////////////////////////
 	// Expressions

@@ -60,7 +60,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	};    
 	
 	behinstProto.tick = function ()
-	{  
+	{  	    
         if ((this.lastwidth == this.inst.width) &&
             (this.lastheight == this.inst.height) &&
             (!this.text_changed) )
@@ -112,7 +112,9 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{
         var inst = this.inst;              
         this.SetText(this.content_raw);
-        inst.draw(this.runtime.overlay_ctx);                      // call this function to get lines
+        var ctx = (this.runtime.enableWebGL)? 
+                  this.runtime.overlay_ctx:this.runtime.ctx;
+        inst.draw(ctx);                      // call this function to get lines
 	    this.total_lines = inst.lines.length;
 	    this.visible_lines = Math.floor(inst.height/inst.pxHeight);
         if ((inst.height%inst.pxHeight) == 0)
@@ -130,7 +132,11 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	// Conditions
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
-
+	  
+	Cnds.prototype.IsLastPage = function ()
+	{
+		return (this.start_line_index + this.visible_lines >= this.total_lines);
+	};	 
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -143,6 +149,11 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         return param.toString();    
     };
     
+	Acts.prototype.ForceUpdate = function()
+	{   
+        this.tick();
+	};    
+	
 	Acts.prototype.SetContent = function(param)
 	{   
         this.content_raw = _param2string(param);
@@ -167,15 +178,26 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.SetText(this._get_visible_lines(line_index));
 	}; 
 
-	Acts.prototype.ScrollToNext = function()
+	Acts.prototype.NextLine = function()
 	{   
         this.SetText(this._get_visible_lines(this.start_line_index+1));
 	}; 
 
-	Acts.prototype.ScrollToPrevious = function()
+	Acts.prototype.PreviousLine = function()
 	{   
         this.SetText(this._get_visible_lines(this.start_line_index-1));
-	};     
+	};   
+
+	Acts.prototype.NextPage = function()
+	{   
+        this.SetText(this._get_visible_lines(this.start_line_index+this.visible_lines));
+	}; 
+
+	Acts.prototype.PreviousPage = function()
+	{   
+        this.SetText(this._get_visible_lines(this.start_line_index-this.visible_lines));
+	};   
+	  
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
