@@ -84,10 +84,18 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	behinstProto._start_typing = function (text, speed)
 	{
-        this.typing_timer = this._get_timer();
-        this.typing_speed = speed;
-        this.typing_timer.SetCallbackArgs([1]);
-        this.typing_timer.Start(0);
+        if (speed != 0)
+        {
+            this.typing_timer = this._get_timer();
+            this.typing_speed = speed;
+            this.typing_timer.SetCallbackArgs([1]);
+            this.typing_timer.Start(0);
+        }
+        else
+        {
+            this.SetText(this.content);
+            this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
+        }
     };
     
 	behinstProto.text_typing_handler = function(text_index)
