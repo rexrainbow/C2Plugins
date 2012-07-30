@@ -48,10 +48,14 @@ AddAction(9, 0, "Previous page", "Page scrolling",
           "Scroll content to previous page.", "PreviousPage");            
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_string, "Get text", "Text", "Text", "Get the object's text.");
+AddExpression(0, ef_return_string, "Get text", "Text", "Text", "Get text.");
 AddExpression(1, ef_return_number, "Get total lines count", "Lines count", "TotalCnt", "Get total lines count of content.");
 AddExpression(2, ef_return_number, "Get visible lines count", "Lines count", "VisibleCnt", "Get visible lines count of content.");
 AddExpression(3, ef_return_number, "Get current lines index", "Lines index", "CurrIndex", "Get current lines index.");
+AddExpression(4, ef_return_number, "Get current last lines index", "Lines index", "CurrLastIndex", "Get current last lines index.");
+AddNumberParam("Line index", "Start line index (0-based).", 0);
+AddNumberParam("Line index", "End line index (0-based).", 0);
+AddExpression(5, ef_return_string, "Get text by line index", "Text", "Lines", "Get text by line index.");
 
 
 ACESDone();

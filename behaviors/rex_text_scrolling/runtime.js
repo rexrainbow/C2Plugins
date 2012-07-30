@@ -90,7 +90,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     
 	behinstProto._get_visible_lines = function (start_line_index)
 	{
-        this.start_line_index = cr.clamp(start_line_index, 0, this._last_start_line());
+        this.start_line_index = (start_line_index < 0)? 0:start_line_index;
         var end_index = this.start_line_index + this.visible_lines;
         if (end_index > this.total_lines)
             end_index = this.total_lines;
@@ -216,5 +216,29 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	Exps.prototype.CurrIndex = function(ret)
 	{
 		ret.set_int(this.start_line_index);
-	};	    
+	};
+
+	Exps.prototype.CurrLastIndex = function(ret)
+	{
+        var cur_last = this.start_line_index + this.visible_lines-1;
+        var last_index = this.total_lines -1;
+        if (cur_last > last_index)
+            cur_last = last_index;
+		ret.set_int(cur_last);
+	};    
+    
+
+	Exps.prototype.Lines = function(ret, start, end)
+	{
+        var i,text = "";
+        if (start < 0)
+            start = 0;
+        var last_index = this.total_lines -1;
+        if (end > last_index)
+            end = last_index;
+        for (i=start; i<=end; i++)
+            text += this.content_lines[i];    
+		ret.set_string(text);
+	};
+    
 }());
