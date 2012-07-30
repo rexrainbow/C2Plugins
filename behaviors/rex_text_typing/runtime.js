@@ -86,18 +86,18 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
         this.typing_timer = this._get_timer();
         this.typing_speed = speed;
-        this.typing_timer.SetCallbackArgs([text, 1]);
+        this.typing_timer.SetCallbackArgs([1]);
         this.typing_timer.Start(0);
     };
     
-	behinstProto.text_typing_handler = function(text_buffer, text_index)
+	behinstProto.text_typing_handler = function(text_index)
 	{  
-        this.SetText(text_buffer.slice(0, text_index));
+        this.SetText(this.content.slice(0, text_index));
         this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);       
         text_index += 1;        
-        if (text_index <= text_buffer.length)
+        if (text_index <= this.content.length)
         {
-            this.typing_timer.SetCallbackArgs([text_buffer, text_index]);
+            this.typing_timer.SetCallbackArgs([text_index]);
             this.typing_timer.Restart(this.typing_speed);
         }
         else

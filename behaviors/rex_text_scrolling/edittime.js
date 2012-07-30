@@ -18,9 +18,6 @@ AddCondition(1, 0, "Last page", "Page",
              
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(0, 0, "Force update", "Content", 
-          "{my} Force update", 
-          "Force update.", "ForceUpdate");
 AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
 AddAction(1, 0, "Set content", "Content", 
           "{my} Set content to <i>{0}</i>", 
@@ -33,7 +30,7 @@ AddAnyTypeParam("Text", "Enter the text to append to the object's content.", "\"
 AddAction(3, 0, "Append content", "Content", 
           "{my} Append <i>{0}</i>", 
           "Add text to the end of the existing content.", "AppendContent");          
-AddNumberParam("Line index", "Scroll content.", 1);
+AddNumberParam("Line index", "Scroll the first line to index (0-based).", 0);
 AddAction(4, 0, "Scroll by line index", "Line scrolling", 
           "{my} Scroll content by line index to <i>{0}</i>", 
           "Scroll content by line index.", "ScrollByIndex");

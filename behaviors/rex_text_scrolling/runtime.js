@@ -148,16 +148,11 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
         return param.toString();    
     };
-    
-	Acts.prototype.ForceUpdate = function()
-	{   
-        this.tick();
-	};    
-	
+ 
 	Acts.prototype.SetContent = function(param)
 	{   
         this.content_raw = _param2string(param);
-        this.text_changed = true;
+        this.SetContent();
 	};
 
 	Acts.prototype.ScrollByPercent = function(percent)
