@@ -54,6 +54,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this.current_speed = 0;       
         this.remain_distance = 0;
         this.is_hit_target = false;
+        this._pre_pos = {x:0,y:0};
         
         this.is_my_call = false;
 	};
@@ -76,7 +77,10 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 		var dt = this.runtime.getDt(this.inst);
         if (dt==0)   // can not move if dt == 0
             return;
-		
+        
+        if ((this._pre_pos.x != this.inst.x) || (this._pre_pos.y != this.inst.y))
+		    this._reset_current_pos();    // reset this.remain_distance
+		    
         // assign speed
         var is_slow_down = false;
         if (this.move.dec != 0)
@@ -113,6 +117,9 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         } 
 
 		this.inst.set_bbox_changed();
+		this._pre_pos.x = this.inst.x;
+		this._pre_pos.y = this.inst.y;
+		
 	    // deprecated
         //this.is_my_call = true;
         //this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnMoving, this.inst);
@@ -132,16 +139,23 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         }
 	};  
     
-	behinstProto.SetTargetPos = function (_x, _y)
+	behinstProto._reset_current_pos = function ()
 	{
-        var dx = _x - this.inst.x;
-        var dy = _y - this.inst.y;
-        
-        this.is_moving = true;         
-		this.target.x = _x;
-        this.target.y = _y; 
+        var dx = this.target.x - this.inst.x;
+        var dy = this.target.y - this.inst.y;
+
         this.target.angle = Math.atan2(dy, dx);
         this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
+		this._pre_pos.x = this.inst.x;
+		this._pre_pos.y = this.inst.y;        
+	};
+	
+	behinstProto.SetTargetPos = function (_x, _y)
+	{
+        this.is_moving = true;         
+		this.target.x = _x;
+        this.target.y = _y;         	    
+        this._reset_current_pos();
         this.SetCurrentSpeed(null);
 	};
 	//////////////////////////////////////
