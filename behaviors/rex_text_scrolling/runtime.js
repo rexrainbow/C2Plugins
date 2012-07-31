@@ -114,6 +114,9 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.SetText(this.content_raw);
         var ctx = (this.runtime.enableWebGL)? 
                   this.runtime.overlay_ctx:this.runtime.ctx;
+        // work around
+        if (ctx == null)
+            ctx = (this.runtime.ctx != null)? this.runtime.ctx:this.runtime.overlay_ctx;
         inst.draw(ctx);                      // call this function to get lines
 	    this.total_lines = inst.lines.length;
 	    this.visible_lines = Math.floor(inst.height/inst.pxHeight);
