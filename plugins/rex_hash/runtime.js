@@ -74,19 +74,23 @@ cr.plugins_.Rex_Hash = function(runtime)
         this._current_entry = _entry;
 	};
     
-	instanceProto._set_current_entey = function (key_string)
+	instanceProto._set_current_entey = function (key)
 	{        
-        if (key_string != "")
+        if (key != "")
         {
-            var keys = key_string.split(".");      
+            var keys = key.split(".");      
 		    this._set_entry_byKeys(keys);
         }
-        else
+        else  // is root
             this._current_entry = this._my_hash;
 	};
     
 	instanceProto._get_data = function(keys)
 	{           
+	    // is root
+	    if ((keys.length == 1) && keys[0] == "")
+	        return this._my_hash;
+	        
         var key_len = keys.length;
         var i;
         var _entry = this._my_hash;
@@ -102,14 +106,27 @@ cr.plugins_.Rex_Hash = function(runtime)
         return _entry;        
 	}; 
 	
+	var get_item_counts = function (hash_obj)
+	{
+	    if (hash_obj == null)
+	        return (-1);
+	    else if ((typeof hash_obj == "number") || (typeof hash_obj == "string"))
+	        return 0;
+	        
+	    var key,cnt=0;
+	    for (key in hash_obj)
+	        cnt += 1;
+	    return cnt;
+	}
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 
-	Cnds.prototype.ForEachKey = function (key_string)
+	Cnds.prototype.ForEachKey = function (key)
 	{
-        this._set_current_entey(key_string);
+        this._set_current_entey(key);
         var current_event = this.runtime.getCurrentEventStack().current_event;
 
         var key, value;
@@ -131,11 +148,11 @@ cr.plugins_.Rex_Hash = function(runtime)
 		return false;
 	}; 
 
-	Cnds.prototype.KeyExists = function (key_string)
+	Cnds.prototype.KeyExists = function (key)
 	{
-	    if (key_string == "")
+	    if (key == "")
             return false;
-        var data = this._get_data(key_string.split("."));		    
+        var data = this._get_data(key.split("."));		    
         return (data != null);
 	}; 	
 	
@@ -144,20 +161,20 @@ cr.plugins_.Rex_Hash = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-	Acts.prototype.SetByKeyString = function (key_string, val)
+	Acts.prototype.SetByKeyString = function (key, val)
 	{        
-        if (key_string != "")
+        if (key != "")
         {
-		    var keys = key_string.split(".");             
+		    var keys = key.split(".");             
             var last_key = keys.splice(keys.length-1, 1);      
             this._set_entry_byKeys(keys);
             this._current_entry[last_key] = val;
         }
 	};
 
-	Acts.prototype.SetCurHashEntey = function (key_string)
+	Acts.prototype.SetCurHashEntey = function (key)
 	{        
-        this._set_current_entey(key_string);
+        this._set_current_entey(key);
 	};
 
 	Acts.prototype.SetValueInCurHashEntey = function (key_name, val)
@@ -178,18 +195,18 @@ cr.plugins_.Rex_Hash = function(runtime)
         this._my_hash = JSON.parse(JSON_string);
 	};  
     
-    Acts.prototype.RemoveByKeyString = function (key_string)
+    Acts.prototype.RemoveByKeyString = function (key)
 	{  
-        if (key_string != "")
+        if (key != "")
         {
-		    var keys = key_string.split(".");             
+		    var keys = key.split(".");             
             var last_key = keys.splice(keys.length-1, 1);      
             this._set_entry_byKeys(keys);
             delete this._current_entry[last_key];
         }
 	};  
     
-    Acts.prototype.PickKeysToArray = function (key_string, array_objs)
+    Acts.prototype.PickKeysToArray = function (key, array_objs)
 	{  
         var array_obj = array_objs.getFirstPicked();
         if (array_obj.arr == null)
@@ -199,7 +216,7 @@ cr.plugins_.Rex_Hash = function(runtime)
         }
         cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [0,1,1]);
         
-        this._set_current_entey(key_string);
+        this._set_current_entey(key);
         var key;
 		for (key in this._current_entry)
             cr.plugins_.Arr.prototype.acts.Push.apply(array_obj, [0,key,0]); 
@@ -227,11 +244,11 @@ cr.plugins_.Rex_Hash = function(runtime)
             val = default_value;        
 		ret.set_any(val);
 	};
-	Exps.prototype.AtKeys = function (ret, key_string)
+	Exps.prototype.AtKeys = function (ret, key)
 	{     
         var keys = (arguments.length > 2)?
                    Array.prototype.slice.call(arguments,1):
-                   [key_string];
+                   [key];
         var val = this._get_data(keys);      
 		ret.set_any(val);
 	};    
@@ -255,5 +272,23 @@ cr.plugins_.Rex_Hash = function(runtime)
 	Exps.prototype.CurValue = function (ret)
 	{
 		ret.set_any(this.exp_CurValue);
-	};    
+	};
+    
+	Exps.prototype.ItemCnt = function (ret, key_string)
+	{
+        var keys = key_string.split(".");	 
+        var cnt = get_item_counts(this._get_data(keys));
+		ret.set_int(cnt);
+	};	
+    
+	Exps.prototype.Keys2ItemCnt = function (ret, key)
+	{
+        var keys = (arguments.length > 2)?
+                   Array.prototype.slice.call(arguments,1):
+                   [key];   
+        var cnt = get_item_counts(this._get_data(keys));
+		ret.set_int(cnt);
+	};		
+	
+	    
 }());

@@ -55,23 +55,30 @@ AddAction(7, 0, "Pick keys", "Keys",
          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddStringParam("Key string", "The key string of the hash to get.", '""');
+AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "Hash", "Get value from the hash by key string. Add second parameter to return default value when got invalid value.");
-AddStringParam("Key name", "The key string of the hash value to get.", '""');
+AddStringParam("Key", "The key string of the hash value to get.", '""');
 AddExpression(1, ef_return_any | ef_variadic_parameters, 
               "Get value from current entry", "Entry", "Entry", 
               "Get value from current entry.");              
 AddExpression(2, ef_return_string, "Transfer hash to string", 
               "JSON", "HashTableToString", "Transfer hash table to JSON string.");
-AddStringParam("Key string", "The key string of the hash to get.", '""');
+AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "At", "Get value from the hash by key string. Add second parameter to return default value when got invalid value.");
 AddExpression(4, ef_return_string, "Current key", "For Each", "CurKey", "Get the current key in a For Each loop.");
 AddExpression(5, ef_return_any, "Current value", "For Each", "CurValue", "Get the current value in a For Each loop.");
-AddStringParam("Key string", "The key string of the hash to get.", '""');
+AddAnyTypeParam("Key", "The key of the hash to get.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "AtKeys", "Get value from the hash by keys, each parameter is a key.");
+AddStringParam("Key", "The key of the hash to get.", '""');
+AddExpression(7, ef_return_number, "Get items count", "Items", "ItemCnt", 
+              "Get item count. 0 means the item is number or string type, (-1) means the item does not exist.");              
+AddAnyTypeParam("Key", "The key of the hash to get.", '""');
+AddExpression(8, ef_return_number | ef_variadic_parameters, "Get items count by keys", "Items", "Keys2ItemCnt", 
+              "Get item count by keys, each parameter is a key. 0 means the item is number or string type, (-1) means the item does not exist.");
+
 
 ACESDone();
 
