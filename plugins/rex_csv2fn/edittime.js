@@ -19,18 +19,14 @@
 
 //////////////////////////////////////////////////////////////
 // Actions     
-AddObjectParam("CSV", "CSV object");
 AddObjectParam("Function", "Function object");
 AddAction(0, 0, "Setup", "Setup", 
-          "Get csv from <i>{0}</i>, callback to <i>{1}</i>", 
+          "Get callback to <i>{0}</i>", 
           "Setup.", "Setup");
-AddStringParam("Page name", 'Page name of csv, default page name is "_"', '"_"');
-AddComboParamOption("raw");
-AddComboParamOption("eval");
-AddComboParam("Mode", "Bypass parameters or using eval", "eval");
+AddStringParam("Commands", "Commands in CSV format", "");
 AddAction(1, 0, "Run commands", "Run", 
-          "Run commands from page <i>{0}</i> with <i>{1}</i> mode", 
-          "Run commands.", "RunCmds");   
+          "Run commands <i>{0}</i>", 
+          "Run commands.", "RunCmds");
 //////////////////////////////////////////////////////////////
 // Expressions
 
