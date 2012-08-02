@@ -89,9 +89,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this._scenario.load(csv_string);
 	};
     
-    Acts.prototype.Start = function (offset)
+    Acts.prototype.Start = function (offset, tag)
 	{  
-        this._scenario.start(offset);    
+        this._scenario.start(offset, tag);    
 	};
     
     Acts.prototype.Pause = function ()
@@ -123,8 +123,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
     Acts.prototype.Continue = function ()
 	{
         this._scenario.run_pendding_handler("wait");
-	};     
+	};
     
+    Acts.prototype.GoToTag = function (tag)
+	{
+        this._scenario.goto_tag(tag);
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -137,7 +141,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     cr.plugins_.Rex_Scenario.ScenarioKlass = function(plugin)
     {
         this.plugin = plugin;        
-        this._cmd_queue = new CmdQueueKlass();        
+        this.cmd_table = new CmdQueueKlass();        
         // default is the same as worksheet        
         this.timer = null;           
         this.pre_abs_time = 0;
@@ -145,6 +149,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
         // for other commands   
         this._extra_cmd_handlers = {"wait":new CmdWAITKlass(this),
 		                            "time stamp":new CmdTIMESTAMPKlass(this),
+									"exit":new CmdEXITKlass(this),
+									"tag":new CmdTAGKlass(this),
                                     };
         this.pendding_handler = new PenddingHandlerKlass();                                    
     };
@@ -153,8 +159,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     // export methods
     ScenarioKlassProto.load = function (csv_string)
     {
-        this._cmd_queue.reset(CSVToArray(csv_string));
-        var queue = this._cmd_queue.queue;
+        this.cmd_table.reset(CSVToArray(csv_string));
+        var queue = this.cmd_table.queue;
         // check vaild
         var i, cmd;        
         var cnt = queue.length;
@@ -194,13 +200,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
         
     };
     
-    ScenarioKlassProto.start = function (offset)
+    ScenarioKlassProto.start = function (offset, tag)
     {      
-        this.pre_abs_time = 0;
+        this._reset_abs_time();
         this.offset = offset;
         if (this.timer == null)
             this.timer = this.plugin.timeline.CreateTimer(this, this._execute_fn);       
-        this._cmd_queue.reset();
+        this.cmd_table.reset();
+		if (tag != "")
+		    this.goto_tag(tag);
         this._run_next_cmd();
     };
     
@@ -208,15 +216,24 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {      
         this.pendding_handler.run(name, args);
     };    
-
+    
+    ScenarioKlassProto.goto_tag = function (tag)
+    {      
+        this._extra_cmd_handlers["tag"].goto_tag(tag);
+    };    
+	
     // internal methods
+    ScenarioKlassProto._reset_abs_time = function ()
+    {      
+		this.pre_abs_time = 0;
+    };
+	
     ScenarioKlassProto._run_next_cmd = function ()
     {      
-        var cmd_pack = this._cmd_queue.get();
-        if ((cmd_pack == null) && (this._cmd_queue.queue != null))
+        var cmd_pack = this.cmd_table.get();
+        if ((cmd_pack == null) && (this.cmd_table.queue != null))
         {
-            var inst = this.plugin;
-            inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnCompleted, inst);
+            this._exit();
             return;
         }
         var cmd = cmd_pack[0];
@@ -225,6 +242,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else  // might be other command
             this._extra_cmd_handlers[cmd.toLowerCase()].on_executing(cmd_pack);
     }; 
+	
+    ScenarioKlassProto._exit = function ()
+    {      
+		this.pendding_handler.clean();
+        var inst = this.plugin;
+        inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnCompleted, inst);
+    };	
     
 	ScenarioKlassProto._on_delay_execution_command = function(cmd_pack)
 	{
@@ -326,7 +350,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdWAITKlassProto.on_pendding_handler = function()
     {
 	    this.scenario.pendding_handler.clean();
-        this.scenario.pre_abs_time = 0;
+        this.scenario._reset_abs_time();
         this.scenario._run_next_cmd();
     };    
 	
@@ -344,7 +368,45 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.scenario._run_next_cmd();
     };
     CmdTIMESTAMPKlassProto.on_pendding_handler = function() {}; 	
-    
+	
+    // extra command : EXIT
+    var CmdEXITKlass = function(scenario)
+    {
+        this.scenario = scenario;
+    };
+    var CmdEXITKlassProto = CmdEXITKlass.prototype;    
+    CmdEXITKlassProto.on_parsing = function(index, cmd_pack) {};
+    CmdEXITKlassProto.on_executing = function(cmd_pack)
+    {
+        this.scenario._exit();
+    };
+    CmdEXITKlassProto.on_pendding_handler = function() {}; 	
+
+    // extra command : TAG
+    var CmdTAGKlass = function(scenario)
+    {
+        this.scenario = scenario;
+		this.tag2index = {};
+    };
+    var CmdTAGKlassProto = CmdTAGKlass.prototype;    
+    CmdTAGKlassProto.on_parsing = function(index, cmd_pack) 
+	{
+	    this.tag2index[cmd_pack[1]] = index;
+	};
+    CmdTAGKlassProto.on_executing = function(cmd_pack)
+    {
+	    this.scenario._reset_abs_time();
+        this.scenario._run_next_cmd();
+    };
+    CmdTAGKlassProto.on_pendding_handler = function() {}; 	
+	CmdTAGKlassProto.goto_tag = function(tag) 
+	{
+	    var index = this.tag2index[tag];
+		if (index ==null)
+		    return;
+        this.scenario.cmd_table.get(index);
+	}; 
+  	
     // template
     //var CmdHandlerKlass = function(scenario) {};
     //var CmdHandlerKlassProto = CmdHandlerKlass.prototype;    
