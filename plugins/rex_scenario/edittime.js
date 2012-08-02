@@ -50,7 +50,7 @@ AddAction(7, 0, "Set time offset", "Setting",
           "Set offset to <i>{1}</i>", 
           "Set time offset.", "SetOffset");   
 AddAction(20, 0, "Continue", "Response - Wait", 
-          "Continue scenario", 
+          "Continue scenario (response of wait command)", 
           "Continue scenario, response of wait command.", "Continue");           
 //////////////////////////////////////////////////////////////
 // Expressions

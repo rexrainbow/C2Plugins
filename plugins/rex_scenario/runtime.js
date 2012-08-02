@@ -144,9 +144,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.offset = 0;  
         // for other commands   
         this._extra_cmd_handlers = {"wait":new CmdWAITKlass(this),
+		                            "time stamp":new CmdTIMESTAMPKlass(this),
                                     };
-        this._pendding_handlers = {name:null,
-                                   thisArg:null};                                    
+        this.pendding_handler = new PenddingHandlerKlass();                                    
     };
     var ScenarioKlassProto = cr.plugins_.Rex_Scenario.ScenarioKlass.prototype;
     
@@ -206,13 +206,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     ScenarioKlassProto.run_pendding_handler = function (name, args)
     {      
-        if (this._pendding_handlers.name != name)
-            return;
-        if (args == null)
-            args = [];
-        var thisArg = this._pendding_handlers.thisArg;
-        var callback = thisArg.on_pendding_handler;
-        callback.apply(thisArg, args);
+        this.pendding_handler.run(name, args);
     };    
 
     // internal methods
@@ -264,13 +258,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
         var cb_obj = this.plugin.callback;
         cb_obj.CallFn.apply(cb_obj, arguments);       
         this._run_next_cmd();
-	};     
-    
-    ScenarioKlassProto._add_pending_handler = function(name, thisArg)
-	{
-        this._pendding_handlers.name = name;
-        this._pendding_handlers.thisArg = thisArg;
-	};    
+	};
+	
     // CmdQueueKlass
     var CmdQueueKlass = function(queue)
     {
@@ -294,8 +283,36 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.current_index = index;
         return cmd;
     };
-    
-    // WAIT
+	
+    //PenddingHandlerKlass
+    var PenddingHandlerKlass = function()
+    {
+        this.name = null;
+        this.thisArg = null;
+    };
+    var PenddingHandlerKlassProto = PenddingHandlerKlass.prototype; 
+
+    PenddingHandlerKlassProto.add = function (name, thisArg)
+	{
+        this.name = name;
+        this.thisArg = thisArg;
+	}; 
+    PenddingHandlerKlassProto.clean = function()
+	{
+        this.name = null;
+        this.thisArg = null;
+	}; 
+    PenddingHandlerKlassProto.run = function (name, args)
+    {      
+        if (this.name != name)
+            return;
+        if (args == null)
+            args = [];
+        var callback = this.thisArg.on_pendding_handler;
+        callback.apply(this.thisArg, args);
+    };    	
+	
+    // extra command : WAIT
     var CmdWAITKlass = function(scenario)
     {
         this.scenario = scenario;
@@ -304,20 +321,36 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdWAITKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdWAITKlassProto.on_executing = function(cmd_pack)
     {
-        this.scenario._add_pending_handler("wait", this);
+        this.scenario.pendding_handler.add("wait", this);
     };
     CmdWAITKlassProto.on_pendding_handler = function()
     {
+	    this.scenario.pendding_handler.clean();
         this.scenario.pre_abs_time = 0;
         this.scenario._run_next_cmd();
     };    
+	
+    // extra command : TIMESTAMP
+    var CmdTIMESTAMPKlass = function(scenario)
+    {
+        this.scenario = scenario;
+    };
+    var CmdTIMESTAMPKlassProto = CmdTIMESTAMPKlass.prototype;    
+    CmdTIMESTAMPKlassProto.on_parsing = function(index, cmd_pack) {};
+    CmdTIMESTAMPKlassProto.on_executing = function(cmd_pack)
+    {
+	    var mode = cmd_pack[1].toLowerCase().substring(0, 4);
+		this.scenario.plugin.is_accT_mode = (mode == "acc");
+        this.scenario._run_next_cmd();
+    };
+    CmdTIMESTAMPKlassProto.on_pendding_handler = function() {}; 	
     
     // template
-    var CmdHandlerKlass = function(scenario) {};
-    var CmdHandlerKlassProto = CmdHandlerKlass.prototype;    
-    CmdHandlerKlassProto.on_parsing = function(index, cmd_pack) {};
-    CmdHandlerKlassProto.on_executing = function(cmd_pack) {};
-    CmdHandlerKlassProto.on_pendding_handler = function() {};
+    //var CmdHandlerKlass = function(scenario) {};
+    //var CmdHandlerKlassProto = CmdHandlerKlass.prototype;    
+    //CmdHandlerKlassProto.on_parsing = function(index, cmd_pack) {};
+    //CmdHandlerKlassProto.on_executing = function(cmd_pack) {};
+    //CmdHandlerKlassProto.on_pendding_handler = function() {};
     
     
     // copy from    
