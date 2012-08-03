@@ -128,7 +128,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	Cnds.prototype.IsTextTyping = function ()
 	{ 
-        return this.typing_timer.IsActive();
+        return (this.typing_timer)? this.typing_timer.IsActive():false;
 	}; 
     
 	//////////////////////////////////////
