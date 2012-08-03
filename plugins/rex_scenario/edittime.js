@@ -34,7 +34,7 @@ AddAction(2, 0, "Load commands", "Run",
           "Load commands.", "LoadCmds");
 AddNumberParam("Offset", "Time offset at start", 0);
 AddStringParam("Tag", 'Tag in csv table. "" is start from 1st command.', "");
-AddAction(3, 0, "Start scenario", "Control", 
+AddAction(3, 0, "Start scenario", "Flow control", 
           "Start scenario with offset to <i>{0}</i>, tag to <i>{1}</i>", 
           "Start scenario.", "Start");     
 AddAction(4, 0, "Pause scenario", "Control", 
@@ -53,13 +53,15 @@ AddAction(7, 0, "Set time offset", "Setting",
 AddAction(20, 0, "Continue", "Response - Wait", 
           "Continue scenario (response of wait command)", 
           "Continue scenario, response of wait command.", "Continue");  
-//AddStringParam("Tag", "Tag in csv table", "");
-//AddAction(21, 0, "Goto tag", "Flow control", 
-//          "Goto tag <i>{0}</i>", 
-//          "Set current table index to tag.", "GoToTag");		  
+AddStringParam("Tag", "Tag in csv table", "");
+AddAction(21, 0, "Goto tag", "Flow control", 
+          "Goto tag <i>{0}</i>", 
+          "Set current table index to tag.", "GoToTag");		  
 //////////////////////////////////////////////////////////////
 // Expressions
-
+AddExpression(2, ef_return_string, "Get last tag", 
+              "Tag", "LastTag", 
+              "Get last tag."); 
 
 ACESDone();
 

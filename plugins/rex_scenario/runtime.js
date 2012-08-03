@@ -127,13 +127,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Acts.prototype.GoToTag = function (tag)
 	{
-        this._scenario.goto_tag(tag);
+        this._scenario.start(null, tag);    
 	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
+	Exps.prototype.LastTag = function(ret)
+	{
+		ret.set_string(this._scenario.get_last_tag());
+	};
 }());
 
 (function ()
@@ -197,18 +201,20 @@ cr.plugins_.Rex_Scenario = function(runtime)
             if (isNaN(cmd) || (cmd == ""))  // might be other command
                 this._extra_cmd_handlers[cmd].on_parsing(i, cmd_pack);
         }
-        
     };
     
     ScenarioKlassProto.start = function (offset, tag)
     {      
         this._reset_abs_time();
-        this.offset = offset;
+		if (offset != null)
+            this.offset = offset;
         if (this.timer == null)
-            this.timer = this.plugin.timeline.CreateTimer(this, this._execute_fn);       
+            this.timer = this.plugin.timeline.CreateTimer(this, this._execute_fn);
+        else
+            this.timer.Remove();  // stop timer
         this.cmd_table.reset();
 		if (tag != "")
-		    this.goto_tag(tag);
+		    this._extra_cmd_handlers["tag"].goto_tag(tag);
         this._run_next_cmd();
     };
     
@@ -216,12 +222,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {      
         this.pendding_handler.run(name, args);
     };    
-    
-    ScenarioKlassProto.goto_tag = function (tag)
+
+    ScenarioKlassProto.get_last_tag = function ()
     {      
-        this._extra_cmd_handlers["tag"].goto_tag(tag);
-    };    
-	
+        return this._extra_cmd_handlers["tag"].last_tag;
+    };    	
     // internal methods
     ScenarioKlassProto._reset_abs_time = function ()
     {      
@@ -387,6 +392,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this.scenario = scenario;
 		this.tag2index = {};
+		this.last_tag = "";
     };
     var CmdTAGKlassProto = CmdTAGKlass.prototype;    
     CmdTAGKlassProto.on_parsing = function(index, cmd_pack) 
@@ -394,7 +400,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	    this.tag2index[cmd_pack[1]] = index;
 	};
     CmdTAGKlassProto.on_executing = function(cmd_pack)
-    {
+    {	    
+	    this.last_tag = cmd_pack[1];
 	    this.scenario._reset_abs_time();
         this.scenario._run_next_cmd();
     };
