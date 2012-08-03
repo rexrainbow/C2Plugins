@@ -41,7 +41,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
 	instanceProto.onCreate = function()
 	{     
-        this.update_with_game_time = this.properties[0];
+        this.update_with_game_time = (this.properties[0] == 1);
         
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
@@ -59,11 +59,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     instanceProto.tick = function()
     {
-        if (this.update_with_game_time==1)
+        if (this.update_with_game_time)
         {
             this.timeline.Dispatch(this.runtime.dt);
         }
-        else if (this.manual_push)  // this.update_with_game_time==0
+        else if (this.manual_push)  // !this.update_with_game_time
         {
             this.timeline.Dispatch(this.manual_delta_time);
             this.manual_push = false;
@@ -208,7 +208,17 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         this._GetTimerStruct(timer_name).param[index] = value;
 	};    
-    
+
+    Acts.prototype.PauseTimeLine = function ()
+	{     
+	    this.update_with_game_time = false;
+	};   
+
+    Acts.prototype.ResumeTimeLine = function ()
+	{     
+	    this.update_with_game_time = true;
+	};   	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

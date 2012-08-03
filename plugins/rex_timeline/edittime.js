@@ -68,8 +68,12 @@ AddAnyTypeParam("Value", "Value of paramete", 0);
 AddAction(10, 0, "Set a parameter", "Timer", 
           "Set timer <i>{0}</i> 's parameter[<i>{1}</i>] to <i>{2}</i>",
           "Set a parameter pass into timer.", "SetTimerParameter");
-          
-
+AddAction(20, 0, "Pause timeline", "TimeLine", 
+          "Pause timeline", 
+          "Pause timeline, it will pause all timers registed on it.", "PauseTimeLine");
+AddAction(21, 0, "Resume timeline", "TimeLine", 
+          "Resume timeline", 
+          "Resume timeline, it will resume all timers registed on it.", "ResumeTimeLine");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "Timer's name.", '""');  
