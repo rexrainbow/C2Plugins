@@ -162,7 +162,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     // export methods
     ScenarioKlassProto.load = function (csv_string)
-    {
+    {        
+	
         this.cmd_table.reset(CSVToArray(csv_string));
         var queue = this.cmd_table.queue;
         // check vaild
@@ -184,14 +185,31 @@ cr.plugins_.Rex_Scenario = function(runtime)
             }
         }        
    
+        // remove invalid commands
         cnt = invalid_cmd_indexs.length;
-        if (cnt != 0)    // remove invalid commands
+        if (cnt != 0)
         {   
             invalid_cmd_indexs.reverse(); 
             for (i=0;i<cnt;i++)
                 queue.splice(invalid_cmd_indexs[i],1);
         }
-        
+
+		// remove empty cell
+        cnt = queue.length;
+		var cell_cnt = queue[0].length;
+        var cmd_pack, j;
+        for (i=0;i<cnt;i++)
+        {
+            cmd_pack = queue[i];
+            for(j=0;j<cell_cnt;j++)
+			{
+			    if (cmd_pack[j] == "")
+				    break;
+			}
+			if (j<cell_cnt)
+			    cmd_pack.splice(j, cell_cnt-j)
+        }
+		
         cnt = queue.length;
         var cmd_pack;
         for (i=0;i<cnt;i++)
