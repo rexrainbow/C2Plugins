@@ -29,7 +29,7 @@ AddAction(1, 0, "Setup", "Setup",
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
 AddStringParam("Commands", "Commands in CSV format", "");
-AddAction(2, 0, "Load commands", "Run", 
+AddAction(2, 0, "Load commands", "Load", 
           "Load commands <i>{0}</i>", 
           "Load commands.", "LoadCmds");
 AddNumberParam("Offset", "Time offset at start", 0);

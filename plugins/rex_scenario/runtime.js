@@ -61,8 +61,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 
 	Cnds.prototype.IsRunning = function ()
 	{
-        var timer = this._scenario.timer;
-		return ((timer)? timer.IsActive():false);
+		return this._scenario.is_running;
 	};    
 	//////////////////////////////////////
 	// Actions
@@ -147,6 +146,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.plugin = plugin;        
         this.cmd_table = new CmdQueueKlass();        
         // default is the same as worksheet        
+		this.is_running = false;
         this.timer = null;           
         this.pre_abs_time = 0;
         this.offset = 0;  
@@ -222,7 +222,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     
     ScenarioKlassProto.start = function (offset, tag)
-    {      
+    {
+	    this.is_running = true;
         this._reset_abs_time();
 		if (offset != null)
             this.offset = offset;
@@ -268,6 +269,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	
     ScenarioKlassProto._exit = function ()
     {      
+        this.is_running = false;
 		this.pendding_handler.clean();
         var inst = this.plugin;
         inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnCompleted, inst);
