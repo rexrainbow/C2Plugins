@@ -183,15 +183,15 @@ cr.behaviors.Rex_Shell = function(runtime)
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 
-    Exps.prototype.Mem = function (ret, index)
+    Exps.prototype.Mem = function (ret, index, uid)
 	{
-        var value = this.fsm["Mem"][index];
+	    var inst = (uid == null)? this:this.uid2inst[uid];
+        var value = inst.shell_obj["Mem"][index];
         if (value == null) 
         {
             value = 0;
             if (this.is_debug_mode) 
                 alert ("Can not find index in memory '" + index + "'");
-                
         }
 	    ret.set_any(value);
 	};	
