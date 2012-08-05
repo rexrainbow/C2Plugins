@@ -323,7 +323,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this._overlap_test(objA, objB);
 		// We've aleady run the event by now.
 		return false;
-	};	 		
+	};	
+	  
+	Cnds.prototype.IsInBoard = function (physical_x,physical_y)
+	{
+	    var lx = this.layout.PXY2LX(physical_x,physical_y);
+		var ly = this.layout.PXY2LY(physical_x,physical_y);
+		return ((lx>=0) && (ly>=0) && (lx<=this.x_max) && (ly<=this.y_max));
+	}; 
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -529,5 +537,20 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             cnt = 0;
 	    ret.set_int(cnt);
 	};
-	
+	    
+	Exps.prototype.PXY2LX = function (ret,physical_x,physical_y)
+	{  
+	    var lx = this.layout.PXY2LX(physical_x,physical_y);
+		if ((lx<0) || (lx>this.x_max))
+		    lx = -1;
+	    ret.set_int(lx);
+	};	
+	    
+	Exps.prototype.PXY2LY = function (ret,physical_x,physical_y)
+	{  
+	    var ly = this.layout.PXY2LY(physical_x,physical_y);
+		if ((ly<0) || (ly>this.y_max))
+		    ly = -1;		
+	    ret.set_int(ly);
+	};		
 }());

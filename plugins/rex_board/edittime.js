@@ -29,7 +29,10 @@ AddObjectParam("Chess", "Chess object A.");
 AddObjectParam("Chess", "Chess object B.");             
 AddCondition(7, 0, "Is overlapping", "Collisions", 
             "Is <i>{0}</i> overlapping with <i>{1}</i>", "Test if the object is overlapping another object.", "IsOverlapping");
-
+AddNumberParam("X", "The Physical X.", 0);
+AddNumberParam("Y", "The Physical Y.", 0);
+AddCondition(8, 0, "Point is in board", "Board", 
+             "Point (<i>{0}</i>,<i>{1}</i>) is in board", "Testing if point is in board.", "IsInBoard");
              
 //////////////////////////////////////////////////////////////
 // Actions   
@@ -164,9 +167,19 @@ AddExpression(13, ef_return_number | ef_variadic_parameters,
 AddNumberParam("X", "The logic X.", 0);
 AddNumberParam("Y", "The logic Y.", 0);                              
 AddExpression(14, ef_return_number | ef_variadic_parameters,
-              "Get z count at logic index", "Physical", "LXY2ZCnt",
+              "Get z count at logic index", "Logic", "LXY2ZCnt",
               "Get z count at logic X,Y index."); 
-
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0);       
+AddExpression(15, ef_return_number | ef_variadic_parameters,
+              "Get logic X by physical co-ordinate", "Logic", "PXY2LX",
+              "Get logic X by physical X,Y co-ordinate.");
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0);                             
+AddExpression(16, ef_return_number | ef_variadic_parameters,
+              "Get logic Y by physical co-ordinate", "Logic", "PXY2LY",
+              "Get logic Y by physical X,Y co-ordinate."); 
+			  
                          
 ACESDone();
 

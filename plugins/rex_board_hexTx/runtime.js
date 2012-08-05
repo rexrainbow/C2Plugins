@@ -57,6 +57,16 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
         return (logic_y*this.height)+this.PositionOY;
 	};   
+	instanceProto.PXY2LX = function(physical_x,physical_y)
+	{
+	    var ly = this.PXY2LY(physical_x,physical_y);
+		var lx = Math.round((physical_x - this.PositionOX - ((ly%2)*this.half_width))/this.width);
+		return lx;
+	};
+	instanceProto.PXY2LY = function(physical_x,physical_y)
+	{
+	    return Math.round((physical_y-this.PositionOY)/this.height);
+	};	
 	instanceProto.CreateItem = function(obj_type,x,y,z,layer)
 	{
         return this.runtime.createInstance(obj_type, layer,this.GetX(x,y,z),this.GetY(x,y,z) );        
