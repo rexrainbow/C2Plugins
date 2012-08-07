@@ -232,9 +232,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else
             this.timer.Remove();  // stop timer
         this.cmd_table.reset();
+		var valid_tag = true;
 		if (tag != "")
-		    this._extra_cmd_handlers["tag"].goto_tag(tag);
-        this._run_next_cmd();
+		    valid_tag = this._extra_cmd_handlers["tag"].goto_tag(tag);
+		if (valid_tag)
+            this._run_next_cmd();
     };
     
     ScenarioKlassProto.run_pendding_handler = function (name, args)
@@ -429,9 +431,10 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	CmdTAGKlassProto.goto_tag = function(tag) 
 	{
 	    var index = this.tag2index[tag];
-		if (index ==null)
-		    return;
-        this.scenario.cmd_table.get(index);
+		var valid_tag = (index != null);
+		if (valid_tag)
+		    this.scenario.cmd_table.get(index);
+		return valid_tag
 	}; 
   	
     // template
