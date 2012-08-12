@@ -56,13 +56,23 @@ AddAction(20, 0, "Continue", "Response - Wait",
 AddStringParam("Tag", "Tag in csv table", "");
 AddAction(21, 0, "Goto tag", "Flow control", 
           "Goto tag <i>{0}</i>", 
-          "Set current table index to tag.", "GoToTag");		  
+          "Set current table index to tag.", "GoToTag");		
+AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of memory", 0);
+AddAction(31, 0, "Set value", "Memory", 
+          "Set Mem[<i>{0}</i>] to <i>{1}</i>", 
+          "Set the value stored in memory.", 
+          "SetMemory");		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_string, "Get last tag", 
               "Tag", "LastTag", 
               "Get last tag."); 
-
+AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
+AddExpression(3, ef_return_any | ef_variadic_parameters, 
+              "Get memory", "Memory", "Mem", 
+              "Get the value from memory by index.");
+			  
 ACESDone();
 
 // Property grid properties for this plugin

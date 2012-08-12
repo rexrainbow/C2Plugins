@@ -128,6 +128,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	{
         this._scenario.start(null, tag);    
 	};     
+        
+	Acts.prototype.SetMemory = function (index, value)
+	{
+        this._scenario["Mem"][index] = value;
+	};
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -156,7 +162,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
 									"exit":new CmdEXITKlass(this),
 									"tag":new CmdTAGKlass(this),
                                     };
-        this.pendding_handler = new PenddingHandlerKlass();                                    
+        this.pendding_handler = new PenddingHandlerKlass();
+		// variablies pool
+		this["Mem"] = {};
     };
     var ScenarioKlassProto = cr.plugins_.Rex_Scenario.ScenarioKlass.prototype;
     
@@ -297,7 +305,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
         {
             param = fn_pack[i];
             if (param != "")
-                param = eval("("+fn_pack[i]+")");
+			{
+			    var code_string = "function(scenario)\
+				{\
+				    var MEM = scenario.Mem;\
+				    return "+fn_pack[i]+"\
+				}";
+				var fn = eval("("+code_string+")");
+                param = fn(this);
+		    }
             fn_pack[i] = param;
         }
         this.timer.SetCallbackArgs(fn_pack);
