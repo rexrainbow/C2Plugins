@@ -60,7 +60,7 @@ AddAction(21, 0, "Goto tag", "Flow control",
 AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of memory", 0);
 AddAction(31, 0, "Set value", "Memory", 
-          "Set Mem[<i>{0}</i>] to <i>{1}</i>", 
+          "Set MEM[<i>{0}</i>] to <i>{1}</i>", 
           "Set the value stored in memory.", 
           "SetMemory");		  
 //////////////////////////////////////////////////////////////
