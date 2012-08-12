@@ -83,7 +83,9 @@ AddExpression(23, ef_return_number,
               "Get instance UID", "Callback", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
 AddExpression(24, ef_return_number, 
               "Get frame number", "Callback", "Frame", "Get frame number.");                
-
+AddExpression(25, ef_return_string, 
+              "Get tileset name", "Map", "TilesetName", "Get tileset name.");
+			  
 ACESDone();
 
 // Property grid properties for this plugin

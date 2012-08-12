@@ -49,6 +49,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_TotalHeight = 0; 
         this.exp_IsIsometric = 0;         
         this.exp_TileID = (-1);
+		this.exp_TilesetName = "";
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
@@ -135,6 +136,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
+				this.exp_TilesetName = tileset_obj.name;
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
@@ -324,7 +326,12 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	Exps.prototype.Frame = function (ret)
 	{   
 	    ret.set_int(this.exp_TileID-1);
-	};     
+	};  
+	Exps.prototype.TilesetName = function (ret)
+	{     
+	    ret.set_string(this.exp_TilesetName );
+	};
+	
 }());
 
 (function ()
