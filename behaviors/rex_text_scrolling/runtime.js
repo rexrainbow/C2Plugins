@@ -108,15 +108,31 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	        this.content_lines.push(lines[i].text);
 	};	
 
+    behinstProto._get_webgl_ctx = function ()
+	{
+        var inst = this.inst;            
+        var ctx = inst.myctx;
+		if (!ctx)
+		{
+			inst.mycanvas = document.createElement("canvas");
+            var scaledwidth = Math.ceil(inst.layer.getScale()*inst.width);
+            var scaledheight = Math.ceil(inst.layer.getAngle()*inst.height);
+			inst.mycanvas.width = scaledwidth;
+			inst.mycanvas.height = scaledheight;
+			inst.lastwidth = scaledwidth;
+			inst.lastheight = scaledheight;
+			inst.myctx = inst.mycanvas.getContext("2d");
+            ctx = inst.myctx;
+		}
+        return ctx;
+	};
+    
 	behinstProto.SetContent = function ()
 	{
         var inst = this.inst;              
         this.SetText(this.content_raw);
         var ctx = (this.runtime.enableWebGL)? 
-                  this.runtime.overlay_ctx:this.runtime.ctx;
-        // work around
-        if (ctx == null)
-            ctx = (this.runtime.ctx != null)? this.runtime.ctx:this.runtime.overlay_ctx;
+                  this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
 	    this.total_lines = inst.lines.length;
 	    this.visible_lines = Math.floor(inst.height/inst.pxHeight);
