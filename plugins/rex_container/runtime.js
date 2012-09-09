@@ -57,31 +57,24 @@ cr.plugins_.Rex_Container = function(runtime)
         if (!(uid in this.type.uid2container))
             return;
 
-        delete this.insts_group[inst.type.name][uid];                
-        delete this.type.uid2container[uid];       
+        var type_name = inst.type.name;
+        delete this.insts_group[type_name][uid];                
+        delete this.type.uid2container[uid];
 	};    
     
 	instanceProto.onDestroy = function ()
-	{
-	    //debugger; 
+	{		
         var uid2container = this.type.uid2container;
         var type_name,_container,uid,inst;
-        var clear_flag = false;
         for (type_name in this.insts_group)
         {
             _container = this.insts_group[type_name];
             for(uid in _container)
-            {
-                inst = _container[uid];         
-                this.runtime.DestroyInstance(inst);
-                delete _container[uid];                
+            {            
                 delete uid2container[uid];
-                clear_flag = true;
-            }            
+            }
         }  
-		this.runtime.removeDestroyCallback(this.myDestroyCallback);        
-        if (clear_flag)
-            this.runtime.ClearDeathRow();		
+		this.runtime.removeDestroyCallback(this.myDestroyCallback);        	
 	};
 	
 	instanceProto.draw = function(ctx)
@@ -92,19 +85,20 @@ cr.plugins_.Rex_Container = function(runtime)
 	{
 	};
     
-	instanceProto.add_insts = function(insts)
+	instanceProto.add_insts = function (insts)
 	{
         var type_name=insts[0].type.name;
         if (this.insts_group[type_name]==null)
             this.insts_group[type_name] = {};
         var _container = this.insts_group[type_name];
-        var inst,i,cnt=insts.length;
+        var inst,uid,i,cnt=insts.length;
         var uid2container = this.type.uid2container;
         for (i=0;i<cnt;i++)
         {
             inst = insts[i];
-            uid2container[inst.uid] = this;
-            _container[inst.uid] = inst;
+            uid = inst.uid;
+            uid2container[uid] = this;
+            _container[uid] = inst;
         }
 	};
     
@@ -124,6 +118,26 @@ cr.plugins_.Rex_Container = function(runtime)
 	    this.add_insts([inst]);
 	    return inst;
 	};    
+
+	instanceProto.remove_insts = function (insts)
+	{
+        var type_name=insts[0].type.name;
+        if (this.insts_group[type_name]==null)
+            this.insts_group[type_name] = {};
+        var _container = this.insts_group[type_name];
+        var inst,uid,i,cnt=insts.length;
+        var uid2container = this.type.uid2container;
+        for (i=0;i<cnt;i++)
+        {
+            inst = insts[i];
+            uid = inst.uid;
+            if (uid in uid2container)
+            {
+                delete uid2container[uid];
+                delete _container[uid];
+            }
+        }
+	}; 
     
     instanceProto._pick_insts = function (objtype)
 	{
@@ -165,7 +179,24 @@ cr.plugins_.Rex_Container = function(runtime)
                 sol.instances.push(inst);
             }
         }
-	}; 	      
+	}; 	
+	
+	instanceProto._destory_all_insts = function ()
+	{
+        var uid2container = this.type.uid2container;
+        var type_name,_container,uid,inst;
+        for (type_name in this.insts_group)
+        {
+            _container = this.insts_group[type_name];
+            for(uid in _container)
+            {
+                inst = _container[uid];   			
+                delete _container[uid];                
+                delete uid2container[uid];			      
+                this.runtime.DestroyInstance(inst);
+            }
+        }         	
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -217,9 +248,9 @@ cr.plugins_.Rex_Container = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 		
-	Acts.prototype.AddInsts = function (objs)
+	Acts.prototype.AddInsts = function (objtype)
 	{
-        var insts = objs.getCurrentSol().getObjects();
+        var insts = objtype.getCurrentSol().getObjects();
         if (insts.length==0)
             return;
 	    this.add_insts(insts);
@@ -239,8 +270,20 @@ cr.plugins_.Rex_Container = function(runtime)
 	{
         this.create_insts(obj_type,x,y,_layer);
 	};
-
-    
+	
+	Acts.prototype.RemoveInsts = function (objtype)
+	{
+        var insts = objtype.getCurrentSol().getObjects();
+        if (insts.length==0)
+            return;
+	    this.remove_insts(insts);
+	};
+ 	
+	Acts.prototype.ContainerDestroy = function ()
+	{
+	    this._destory_all_insts();
+		this.runtime.DestroyInstance(this);
+	};   
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -10,7 +10,7 @@
 		"category":		"Data & Storage",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
-		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces
+		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces
 	};
 };
 
@@ -23,18 +23,23 @@ AddCondition(11, cf_not_invertible, "Pick all instances", "SOL: instances",
              "Pick all instances in this container", "Pick all instances in this container.", "PickAllInsts");                      
 AddObjectParam("Instance", "Instance under container");
 AddCondition(21, cf_static | cf_not_invertible, "Pick container", "SOL: container", 
-          "Pick container with <i>{0}</i>", "Pick container.", "PickContainer");   
+          "Pick container from <i>{0}</i>", "Pick container from instance.", "PickContainer");   
 ////////////////////////////////////////
 // Actions
 AddObjectParam("Instances", "Add instances into container.");          
 AddAction(3, 0, "Add instances", "Add/Remove", "Add instances <i>{0}</i>", 
-          "Add instances.", "AddInsts");          
+          "Add instances.", "AddInsts");             
 AddObjectParam("Instances", "Add instances into container.");       
 AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
           "Create and Add instances.", "CreateInsts");            
+AddObjectParam("Instances", "Remove instances from container.");          
+AddAction(5, 0, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
+          "Remove instances.", "RemoveInsts"); 
+AddAction(9, 0, "Destroy container", "Destroy", "Destroy container and instances in this contaner", 
+          "Destroy container and instances in this contaner.", "ContainerDestroy"); 		  
 AddObjectParam("Object", "Object for picking");
 AddAction(10, 0, "Pick instances", "SOL: instances", 
           "Pick <i>{0}</i>", "Pick instances.", "PickInsts");
@@ -177,6 +182,8 @@ IDEInstance.prototype.OnRendererInit = function(renderer)
 // Called to draw self in the editor
 IDEInstance.prototype.Draw = function(renderer)
 {
+    var quad = this.instance.GetBoundingQuad();
+    renderer.Fill(quad, cr.RGB(255, 130, 122));
 }
 
 IDEInstance.prototype.OnRendererReleased = function(renderer)
