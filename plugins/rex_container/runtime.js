@@ -9,7 +9,9 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 cr.plugins_.Rex_Container = function(runtime)
 {
 	this.runtime = runtime;
+	this.tag2container = {};
 };
+cr.plugins_.Rex_Container.tag2container = {};
 
 (function ()
 {
@@ -42,13 +44,16 @@ cr.plugins_.Rex_Container = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+	    this.check_name = "CONTAINER";
         this.insts_group = {};
 		this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
 										})(this); 
-        this.runtime.addDestroyCallback(this.myDestroyCallback);
+        this.runtime.addDestroyCallback(this.myDestroyCallback); 
+		this.tag = this.properties[1];
+		cr.plugins_.Rex_Container.tag2container[this.tag] = this;
 	};
 	
 	instanceProto.onInstanceDestroyed = function (inst)
@@ -64,6 +69,7 @@ cr.plugins_.Rex_Container = function(runtime)
     
 	instanceProto.onDestroy = function ()
 	{		
+	    delete cr.plugins_.Rex_Container.tag2container[this.tag];
         var uid2container = this.type.uid2container;
         var type_name,_container,uid,inst;
         for (type_name in this.insts_group)
@@ -289,5 +295,9 @@ cr.plugins_.Rex_Container = function(runtime)
 	function Exps() {};
 	
 	pluginProto.exps = new Exps();
-
+	
+	Exps.prototype.Tag = function (ret)
+	{
+		ret.set_string(this.tag);
+	};
 }());

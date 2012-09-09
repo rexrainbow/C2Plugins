@@ -24,6 +24,7 @@ AddCondition(11, cf_not_invertible, "Pick all instances", "SOL: instances",
 AddObjectParam("Instance", "Instance under container");
 AddCondition(21, cf_static | cf_not_invertible, "Pick container", "SOL: container", 
           "Pick container from <i>{0}</i>", "Pick container from instance.", "PickContainer");   
+		  
 ////////////////////////////////////////
 // Actions
 AddObjectParam("Instances", "Add instances into container.");          
@@ -47,13 +48,15 @@ AddAction(11, 0, "Pick all instances", "SOL: instances",
           "Pick all instances in this container", "Pick all instances in this container.", "PickAllInsts");          
 ////////////////////////////////////////
 // Expressions
+AddExpression(3, ef_return_string, "Get tag", "Tag", "Tag", "Get tag.");
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
-                    "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),            
+                    "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),        
+    new cr.Property(ept_text, "Tag", "", "Tag for adding sprite into container at layout editor."),					
 	];
 	
 // Called by IDE when a new object type is to be created
