@@ -38,8 +38,7 @@ AddCondition(8, 0, "Point is in board", "Board",
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
 AddNumberParam("Y", "Initial number of elements on the Y axis. 0 is unchanged.", 0);
-AddAnyTypeParam("Z", "Initial number of elements on the Z axis. 0 is unchanged.", 0);
-AddAction(0, 0, "Reset board", "Board", "Reset board with width to <i>{0}</i>, height to <i>{1}</i>, depth to <i>{2}</i>", 
+AddAction(0, 0, "Reset board", "Board", "Reset board with width to <i>{0}</i>, height to <i>{1}</i>", 
           "Reset board to empty.", "ResetBoard"); 
 AddObjectParam("Tile", "Tile object.");         
 AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
@@ -179,6 +178,11 @@ AddNumberParam("Y", "The physical Y.", 0);
 AddExpression(16, ef_return_number | ef_variadic_parameters,
               "Get logic Y by physical co-ordinate", "Logic", "PXY2LY",
               "Get logic Y by physical X,Y co-ordinate."); 
+AddNumberParam("UID", "The UID of instance.", 0);
+AddAnyTypeParam("Direction", "The direction.", 0);            
+AddExpression(17, ef_return_number | ef_variadic_parameters,
+              "Get neighbor UID by UID and direction", "Chess", "DIR2UID",
+              "Get neighbor UID by UID and direction.");
 			  
                          
 ACESDone();

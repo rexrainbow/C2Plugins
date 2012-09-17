@@ -210,6 +210,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		return this.xyz2uid(o_xyz.x, o_xyz.y, lz);
 	};
 	
+	instanceProto.dir2uid = function(uid, dir, tz)
+	{
+	    var o_xyz = this.uid2xyz(uid);
+		if (o_xyz == null)
+		    return null;
+	    var tx = this.layout.GetNeighborLX(o_xyz.x, o_xyz.y, dir);
+		var ty = this.layout.GetNeighborLX(o_xyz.x, o_xyz.y, dir);
+	    if (tz == null)
+		    tz = o_xyz.z;
+		return this.xyz2uid(tx, ty, tz);
+	};	
+	
 	instanceProto.uid2xyz = function(uid)
 	{
 	    return this.items[uid];
@@ -337,9 +349,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 	
-	Acts.prototype.ResetBoard = function (x_max,y_max,z_max)
+	Acts.prototype.ResetBoard = function (x_max,y_max)
 	{
-		this.reset_board(x_max-1, y_max-1, z_max-1);
+		this.reset_board(x_max-1, y_max-1);
 	};
 		
 	Acts.prototype.AddTile = function (objs,x,y)
@@ -552,5 +564,13 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		if ((ly<0) || (ly>this.y_max))
 		    ly = -1;		
 	    ret.set_int(ly);
-	};		
+	};
+    
+	Exps.prototype.DIR2UID = function (ret,uid,dir,lz)
+	{
+	    var ret_uid = this.dir2uid(uid,dir,lz);
+		if (ret_uid == null)
+		    ret_uid = (-1);
+	    ret.set_int(ret_uid);
+	}; 	
 }());
