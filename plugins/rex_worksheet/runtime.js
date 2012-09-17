@@ -118,7 +118,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             
             var next_abs_time = this.current_cmd.time + this.offset;
             this.timer.Start(next_abs_time - this.pre_abs_time);
-            this.pre_abs_time = next_abs_time
+            this.pre_abs_time = next_abs_time;
         }
         else
         {
