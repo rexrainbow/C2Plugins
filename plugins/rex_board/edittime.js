@@ -33,6 +33,10 @@ AddNumberParam("X", "The Physical X.", 0);
 AddNumberParam("Y", "The Physical Y.", 0);
 AddCondition(8, 0, "Point is in board", "Board", 
              "Point (<i>{0}</i>,<i>{1}</i>) is in board", "Testing if point is in board.", "IsInBoard");
+AddNumberParam("UID of chess", "UID of chess A.", 0);
+AddNumberParam("UID of chess", "UID of chess B.", 0);
+AddCondition(9, 0, "Are neighbor (UID)", "Board", 
+             "Are <i>{0}</i> and <i>{1}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
              
 //////////////////////////////////////////////////////////////
 // Actions   
@@ -98,7 +102,11 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(14, 0, "Create chess", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>", 
           "Create chess on the board.", "CreateChess");  
-       
+AddNumberParam("UID of chess", "UID of chess A.", 0);
+AddNumberParam("UID of chess", "UID of chess B.", 0);
+AddAction(15, 0, "Swap chess by UID", "Logic: Swap", "Swap chess UID <i>{0}</i> with chess UID <i>{1}</i>", 
+          "Swap two chess by UID.", "SwapChess");
+                
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of instance.", 0);
@@ -182,8 +190,7 @@ AddNumberParam("UID", "The UID of instance.", 0);
 AddAnyTypeParam("Direction", "The direction.", 0);            
 AddExpression(17, ef_return_number | ef_variadic_parameters,
               "Get neighbor UID by UID and direction", "Chess", "DIR2UID",
-              "Get neighbor UID by UID and direction.");
-			  
+              "Get neighbor UID by UID and direction.");        
                          
 ACESDone();
 

@@ -313,6 +313,40 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }
         }
 	};	
+    
+	instanceProto.are_neighbor = function (uidA, uidB)
+	{
+        var xyzA=this.uid2xyz(uidA);
+        var xyzB=this.uid2xyz(uidB);
+        if ((xyzA == null) || (xyzB == null))
+            return false;
+        var dir,dir_cnt=this.layout.GetDirCount();
+        var _are_neighbor = false;
+        for(dir=0;dir<dir_cnt;dir++)
+        {
+            if ((this.layout.GetNeighborLX(xyzA.x,xyzA.y,dir) == xyzB.x) &&
+                (this.layout.GetNeighborLY(xyzA.x,xyzA.y,dir) == xyzB.y)    )
+            {
+                _are_neighbor = true;
+                break;
+            }
+        }
+        return _are_neighbor;
+	};
+		
+	instanceProto.SwapChess = function (uidA, uidB)
+	{	
+        var xyzA=this.uid2xyz(uidA);
+        var xyzB=this.uid2xyz(uidB);
+        if ((xyzA == null) || (xyzB == null))
+            return false;
+            
+	    this.remove_item(uidA);   
+	    this.remove_item(uidB);   
+        this.add_item(uidA, xyzB.x, xyzB.y, xyzB.z);        
+        this.add_item(uidB, xyzA.x, xyzA.y, xyzA.z);   
+	};	
+	 			
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -343,6 +377,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		var ly = this.layout.PXY2LY(physical_x,physical_y);
 		return ((lx>=0) && (ly>=0) && (lx<=this.x_max) && (ly<=this.y_max));
 	}; 
+	
+	Cnds.prototype.AreNeighbor = function (uidA, uidB)
+	{
+		return this.are_neighbor(uidA, uidB);
+	};	
+	
 	
 	//////////////////////////////////////
 	// Actions
@@ -410,7 +450,13 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
 	    this.remove_item(chess_uid);   
         this.add_item(chess_uid, x, y, z);        
-	};    
+	};   
+	
+	Acts.prototype.SwapChess = function (uidA, uidB)
+	{	
+        this.SwapChess(uidA, uidB);
+	};	
+	 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -572,5 +618,6 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		if (ret_uid == null)
 		    ret_uid = (-1);
 	    ret.set_int(ret_uid);
-	}; 	
+	};
+    		 	
 }());

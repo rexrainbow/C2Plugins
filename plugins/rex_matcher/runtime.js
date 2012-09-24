@@ -95,7 +95,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var s = this._symbol_cache[x];
 	    return (s==null)? s:s[y];
 	};
-	instanceProto._get_match_tiles = function(group_name)
+	instanceProto._get_match_tiles = function(group_name,is_2d_pattern)
 	{
         this._group_name = group_name;
         this._clean_symbol_cache();
@@ -108,7 +108,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
                 this._fill_symbol_cache(x,y);
         }
         this._has_matched_pattern = false;
-        this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchPattern, this);
+        var trg = (!is_2d_pattern)? cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchPattern:
+                                    cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchPattern2D;        
+        this.runtime.trigger(trg, this);
         if (!this._has_matched_pattern)
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnNoMatchPattern, this);
 	};
@@ -242,31 +244,55 @@ cr.plugins_.Rex_Matcher = function(runtime)
         }        
 	};
 	
-	var matched2uid = function(matched_tiles)
+	instanceProto._pattern_search_2d = function(pattern)
 	{
-	    var cnt=matched_tiles.length;
-	    var matched_uid=[];
-	    var i;  	    
-	    for(i=0;i<cnt;i++)
+	    debugger;
+        pattern = csv2array(pattern);
+        this._tiles_groups.length = 0;
+        var x,y,i,j,c,s,is_matched,matched_tiles=[];
+	    var x_max=this.board.x_max;
+	    var y_max=this.board.y_max;
+        var pattern_row=pattern.length,pattern_col;
+	    for(y=0;y<=y_max;y++)
 	    {
-	        matched_tiles[i].dirty = true;
-	        matched_uid.push(matched_tiles[i].uid);
-	    }
-	    return matched_uid;
-	};	
-	//////////////////////////////////////
-	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();    
+	        for(x=0;x<=x_max;x++)
+	        {
+	            is_matched = true;
+	            matched_tiles.length=0;
 
-	Cnds.prototype.OnGetSymbol = function ()
-	{
-        return true;
+	            for(i=0;i<pattern_row;i++)
+	            {
+	                pattern_col = pattern[i].length;
+	                for(j=0;j<pattern_col;j++)
+	                {
+	                    s = this._symbol_at(x+j,y+i);
+	                    if (s==null)
+	                    {
+	                        is_matched = false;
+	                        break;
+	                    }	                   
+	                    c = pattern[j][i];
+	                    if (c=="")
+	                    {
+	                        continue;
+	                    }
+	                    else if (s.symbol!=c)
+	                    {
+	                        is_matched = false;
+	                        break;
+	                    }   
+	                }
+                    matched_tiles.push(s);
+	            }
+	            if (is_matched)                
+	                this._tiles_groups.push(matched2uid(matched_tiles));   
+	        }
+	    }      
+        return this._tiles_groups;
 	};
 	
-	Cnds.prototype.OnMatchPattern = function (pattern)
+	instanceProto._on_match_pattern = function (tiles_groups)
 	{       
-        var tiles_groups = this._pattern_search(pattern);        
         var i,cnt=tiles_groups.length;
         var runtime = this.runtime;
         var current_event = runtime.getCurrentEventStack().current_event;
@@ -279,13 +305,57 @@ cr.plugins_.Rex_Matcher = function(runtime)
             runtime.popSol(current_event.solModifiers);        
         }
         this._has_matched_pattern |= (cnt>0);
+	};	
+	
+	var matched2uid = function(matched_tiles)
+	{
+	    var cnt=matched_tiles.length;
+	    var matched_uid=[];
+	    var i;  	    
+	    for(i=0;i<cnt;i++)
+	    {
+	        matched_tiles[i].dirty = true;
+	        matched_uid.push(matched_tiles[i].uid);
+	    }
+	    return matched_uid;
+	};	
+	
+	var csv2array = function(csv_string)
+	{
+        var arr = csv_string.split("\n");
+        var i,arr_cnt=arr.length;
+        for (i=0;i<arr_cnt;i++)
+            arr[i]=arr[i].split(",");	
+        return arr;    
+	};
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();    
+
+	Cnds.prototype.OnGetSymbol = function ()
+	{
+        return true;
+	};
+	
+	Cnds.prototype.OnMatchPattern = function (pattern)
+	{       
+        var tiles_groups = this._pattern_search(pattern);	    
+        this._on_match_pattern(tiles_groups);
         return false;
 	};
 	
 	Cnds.prototype.OnNoMatchPattern = function ()
 	{
         return true;
-	};	
+	};
+	
+	Cnds.prototype.OnMatchPattern2D = function (pattern)
+	{       
+        var tiles_groups = this._pattern_search_2d(pattern);	    
+        this._on_match_pattern(tiles_groups);
+        return false;
+	};		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -308,12 +378,17 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	Acts.prototype.GetMatchTiles = function (group_name)	
 	{
         assert2(this.board, "Matcher should connect to a board object");
-        this._get_match_tiles(group_name);
+        this._get_match_tiles(group_name,false);
 	};
     Acts.prototype.SetSymbol = function (symbol_value)
 	{
         this._symbol_value = symbol_value;
-	};     
+	};
+	Acts.prototype.GetMatchTiles2D = function (group_name)	
+	{
+        assert2(this.board, "Matcher should connect to a board object");
+        this._get_match_tiles(group_name,true);
+	};	     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

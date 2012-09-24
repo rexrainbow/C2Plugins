@@ -23,6 +23,9 @@ AddCondition(2, cf_trigger, "On matching pattern", "Patern",
              "On matching pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles" when matching pattern.', "OnMatchPattern");    
 AddCondition(3, cf_trigger, "On no matching pattern", "Patern", 
              "On no matching pattern", 'Trigger by "Action:Get matching tiles" when no matching pattern.', "OnNoMatchPattern");    
+AddStringParam("Pattern", "Pattern.", '""');
+AddCondition(4, cf_trigger, "On matching 2D pattern", "Patern", 
+             "On matching 2D pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles with 2d pattern" when matching pattern.', "OnMatchPattern2D");    
              
 //////////////////////////////////////////////////////////////
 // Actions     
@@ -38,7 +41,10 @@ AddAction(2, 0, "Get matching tiles", "Request: Matching tiles",
 AddStringParam("Symbols", "Symbol", "");
 AddAction(3, 0, "Set symbols", "Request: Symbol", "Set symbol to <i>{0}</i>", 
           'Set symbol. Used in "Condition: On get symbol function".', "SetSymbol");          
-                   
+AddStringParam("Group", "Put result in this group", '""');
+AddAction(4, 0, "Get matching tiles with 2d pattern", "Request: Matching tiles (2d pattern)", 
+          "Get matching tiles to group <i>{0}</i> with 2d pattern", 
+          "Get matching tiles with 2d pattern.", "GetMatchTiles2D");             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,
@@ -55,7 +61,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Axis", "All(Square/Hex)", "The axis to get symbol.", "All(Square/Hex)|Horizontal(Square)|Vertical(Square)"),   
+    new cr.Property(ept_combo, "Axis", "All(Square/Hex)", "The axis to get symbol for 1d pattern matching.", "All(Square/Hex)|Horizontal(Square)|Vertical(Square)"),   
 	];
 	
 // Called by IDE when a new object type is to be created
