@@ -246,7 +246,6 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	
 	instanceProto._pattern_search_2d = function(pattern)
 	{
-	    debugger;
         pattern = csv2array(pattern);
         this._tiles_groups.length = 0;
         var x,y,i,j,c,s,is_matched,matched_tiles=[];
@@ -271,7 +270,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }	                   
-	                    c = pattern[j][i];
+	                    c = pattern[i][j];
 	                    if (c=="")
 	                    {
 	                        continue;
@@ -281,9 +280,12 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }   
+	                    matched_tiles.push(s);
 	                }
-                    matched_tiles.push(s);
+	                if (!is_matched)
+	                    break;
 	            }
+	            
 	            if (is_matched)                
 	                this._tiles_groups.push(matched2uid(matched_tiles));   
 	        }
