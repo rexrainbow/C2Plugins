@@ -39,7 +39,15 @@ AddAction(3, 0, "Set wrapping", "Properties",
 AddNumberParam("Line height", "Offset to the default line height, in pixels. 0 is default line height", 0);      
 AddAction(4, 0, "Set line height", "Properties", 
           "Set line height to <i>{0}</i>", 
-          "Set line height.", "SetLineHeight"); 
+          "Set line height.", "SetLineHeight");
+AddNumberParam("Wrapping", "Wrap text. 0=Word, 1=Character", 0);    
+AddAction(5, 0, "Set wrapping", "Properties", 
+          "Set wrapping to <i>{0}</i>", 
+          "Set wrapping.", "SetWrapping");
+AddStringParam("Font face", "The new font face name to set.", "\"Arial\"");
+AddNumberParam("Style", "0=normal, 1=bold, 2=italic, 3=bold and italic", 0);
+AddAction(6, 0, "Set font face", "Appearance", "Set font face to <i>{0}</i> (<i>{1}</i>)", "Set the font face used to display text.", "SetFontFace");
+                      
 //////////////////////////////////////////////////////////////
 // Expressions
 

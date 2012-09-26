@@ -80,7 +80,24 @@ cr.behaviors.Rex_text_properties = function(runtime)
         this.inst.line_height_offset = line_height_offset;
 	};	
 	
-	    
+	Acts.prototype.SetFontFace = function (face_, style_)
+	{
+		var newstyle = "";
+		
+		switch (style_) {
+		case 1: newstyle = "bold"; break;
+		case 2: newstyle = "italic"; break;
+		case 3: newstyle = "bold italic"; break;
+		}
+		
+		var inst = this.inst;
+		if (face_ === inst.facename && newstyle === inst.fontstyle)
+			return;		// no change
+			
+		inst.facename = face_;
+		inst.fontstyle = newstyle;
+		inst.updateFont();
+	};  
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
