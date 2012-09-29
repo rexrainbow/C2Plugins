@@ -143,13 +143,14 @@ cr.plugins_.Rex_Container.tag2container = {};
         var _container = this.insts_group[type_name];
         var inst,uid,i,cnt=insts.length;
         var uid2container = this.type.uid2container;
+		var is_world = insts[0].type.plugin.is_world;
         for (i=0;i<cnt;i++)
         {
             inst = insts[i];
             uid = inst.uid;
             uid2container[uid] = this;
             _container[uid] = inst;
-            if (this.pin_mode != 0)
+            if (is_world && (this.pin_mode != 0))
                 this.pin_inst(inst);
         }
 	};
