@@ -52,8 +52,14 @@ cr.plugins_.Rex_Container.tag2container = {};
 											};
 										})(this); 
         this.runtime.addDestroyCallback(this.myDestroyCallback); 
-		this.tag = this.properties[1];
+        this.pin_mode = this.properties[0];
+		this.tag = this.properties[2];
 		cr.plugins_.Rex_Container.tag2container[this.tag] = this;
+        if (this.pin_mode != 0)
+        {
+            this.pin_status = {};
+            this.runtime.tick2Me(this);            
+        }
 	};
 	
 	instanceProto.onInstanceDestroyed = function (inst)
@@ -65,6 +71,8 @@ cr.plugins_.Rex_Container.tag2container = {};
         var type_name = inst.type.name;
         delete this.insts_group[type_name][uid];                
         delete this.type.uid2container[uid];
+        if ((this.pin_mode != 0) && (this.pin_status[uid] != null))
+            delete this.pin_status[uid];
 	};    
     
 	instanceProto.onDestroy = function ()
@@ -82,6 +90,42 @@ cr.plugins_.Rex_Container.tag2container = {};
         }  
 		this.runtime.removeDestroyCallback(this.myDestroyCallback);        	
 	};
+    
+	instanceProto.tick2 = function ()
+	{
+	    if (this.pin_mode == 0)
+	        return;
+	        				
+	    var uid,status,pin_inst,a,new_x,new_y,new_angle;
+	    for (uid in this.pin_status)
+	    {
+	        status = this.pin_status[uid];
+            pin_inst = status.pin_inst;	 
+            if ((this.pin_mode == 1) || (this.pin_mode == 2))
+			{
+			    a = this.angle + status.delta_angle;				
+                new_x = this.x + (status.delta_dist*Math.cos(a));
+                new_y = this.y + (status.delta_dist*Math.sin(a));
+			}
+            if ((this.pin_mode == 1) || (this.pin_mode == 3))
+			{
+			    new_angle = status.sub_start_angle + (this.angle - status.main_start_angle);
+			}
+            
+            if (((new_x != null) && (new_y != null)) && 
+			    ((new_x != pin_inst.x) || (new_y != pin_inst.y)))
+            {
+			    pin_inst.x = new_x;
+			    pin_inst.y = new_y;
+			    pin_inst.set_bbox_changed();
+            }
+			if ((new_angle != null) && (new_angle != pin_inst.angle))
+			{
+			    pin_inst.angle = new_angle;
+			    pin_inst.set_bbox_changed();
+			}
+	    }      
+	};    
 	
 	instanceProto.draw = function(ctx)
 	{
@@ -105,8 +149,20 @@ cr.plugins_.Rex_Container.tag2container = {};
             uid = inst.uid;
             uid2container[uid] = this;
             _container[uid] = inst;
+            if (this.pin_mode != 0)
+                this.pin_inst(inst);
         }
 	};
+
+	instanceProto.pin_inst = function (inst)
+	{
+        this.pin_status[inst.uid] = {pin_inst:inst,
+                                     delta_angle:cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
+                                     delta_dist:cr.distanceTo(this.x, this.y, inst.x, inst.y),
+									 main_start_angle:this.angle,
+									 sub_start_angle:inst.angle,
+                                    };
+	};	
     
 	instanceProto.create_insts = function (obj_type,x,y,_layer)
 	{

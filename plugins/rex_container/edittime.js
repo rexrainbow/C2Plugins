@@ -54,6 +54,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Pin mode", "None", "Moving instances like pin behavior.", 
+                    "None|Position & angle|Position only|Angle only"),
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
                     "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),        
     new cr.Property(ept_text, "Tag", "", "Tag for adding sprite into container at layout editor."),					
