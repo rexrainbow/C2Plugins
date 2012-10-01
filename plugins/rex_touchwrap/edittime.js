@@ -16,9 +16,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On touch start", "Touch", "On touch start", "Triggered when a touch input begins.", "OnTouchStart");
-AddCondition(1, cf_trigger, "On touch end", "Touch", "On touch end", "Triggered when a touch input ends.", "OnTouchEnd");
-AddCondition(2, 0,			"Is in touch", "Touch", "Is in touch", "True if between a touch start and touch end.", "IsInTouch");
+AddCondition(0, cf_trigger, "On any touch start", "Touch", "On any touch start", "Triggered when any touch input begins.", "OnTouchStart");
+AddCondition(1, cf_trigger, "On any touch end", "Touch", "On any touch end", "Triggered when any touch input ends.", "OnTouchEnd");
+AddCondition(2, 0,			"Is in touch", "Touch", "Is in touch", "True if any touch is currently in contact with the device.", "IsInTouch");
 
 AddObjectParam("Object", "Choose the object to check for touch.");
 AddCondition(3,	cf_trigger, "On touched object", "Touch", "On touched {0}", "Triggered when an object is touched.", "OnTouchObject");
@@ -26,17 +26,50 @@ AddCondition(3,	cf_trigger, "On touched object", "Touch", "On touched {0}", "Tri
 AddObjectParam("Object", "Choose the object to check for being touched.");
 AddCondition(4, 0,			"Is touching object", "Touch", "Is touching {0}", "Test if in a touch and the touch point is over an object.", "IsTouchingObject");
 
-AddCondition(5, 0,			"Device orientation supported", "Orientation & motion", "Device orientation is supported", "True if the device supports orientation detection.", "OrientationSupported");
+AddCondition(5, cf_deprecated,			"Device orientation supported", "Orientation & motion", "Device orientation is supported", "True if the device supports orientation detection.", "OrientationSupported");
 
-AddCondition(6, 0,			"Device motion supported", "Orientation & motion", "Device motion is supported", "True if the device supports motion detection.", "MotionSupported");
+AddCondition(6, cf_deprecated,			"Device motion supported", "Orientation & motion", "Device motion is supported", "True if the device supports motion detection.", "MotionSupported");
+
+AddNumberParam("Touch index", "The zero-based index of the touch to test the speed for.  0 is the first touch.");
+AddCmpParam("Comparison", "How to compare the touch speed.");
+AddNumberParam("Speed", "Speed to compare to, in absolute pixels per second.");
+AddCondition(7, 0,			"Compare touch speed", "Touch", "Touch <b>{0}</b> speed {1} <b>{2}</b>", "Compare the speed of a touch, e.g. to detect a swipe.", "CompareTouchSpeed");
+
+AddComboParamOption("Alpha");
+AddComboParamOption("Beta");
+AddComboParamOption("Gamma");
+AddComboParam("Orientation", "Choose the orientation to compare (alpha = compass direction, beta = front-to-back tilt, gamma = left-to-right tilt).");
+AddCmpParam("Comparison", "How to compare the orientation.");
+AddNumberParam("Angle", "The orientation to compare to, in degrees.")
+AddCondition(8, 0,			"Compare orientation", "Orientation & motion", "<b>{0}</b> orientation {1} <b>{2}</b>", "Compare the current orientation (or tilt) of the device.", "CompareOrientation");
+
+AddComboParamOption("X (with gravity)");
+AddComboParamOption("Y (with gravity)");
+AddComboParamOption("Z (with gravity)");
+AddComboParamOption("X (without gravity)");
+AddComboParamOption("Y (without gravity)");
+AddComboParamOption("Z (without gravity)");
+AddComboParam("Axis", "Choose the axis to compare acceleration for, and whether the measurement should include the force of gravity.");
+AddCmpParam("Comparison", "How to compare the acceleration.");
+AddNumberParam("Acceleration", "The acceleration to compare to, in m/s^2.");
+AddCondition(9, 0,			"Compare acceleration", "Orientation & motion", "{0} acceleration {1} <b>{2}</b>", "Compare the acceleration of the device along an axis.", "CompareAcceleration");
+
+AddNumberParam("Touch number", "Enter a zero-based index of the touch to test, e.g. 0 for first touch, 1 for second, etc.");
+AddCondition(10, cf_trigger, "On Nth touch start", "Touch", "On touch {0} start", "Triggered when a particular touch input begins.", "OnNthTouchStart");
+
+AddNumberParam("Touch number", "Enter a zero-based index of the touch to test, e.g. 0 for first touch, 1 for second, etc.");
+AddCondition(11, cf_trigger, "On Nth touch end", "Touch", "On touch {0} end", "Triggered when a particular touch input ends.", "OnNthTouchEnd");
+
+AddNumberParam("Touch number", "Enter a zero-based index of the touch to test, e.g. 0 for first touch, 1 for second, etc.");
+AddCondition(12, 0,			"Has Nth touch", "Touch", "Has touch {0}", "True if a particular touch is currently in contact with the device.", "HasNthTouch");
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number | ef_variadic_parameters, "Touch X position", "Touch", "X", "Get the touch X co-ordinate in the layout.");
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Touch Y position", "Touch", "Y", "Get the touch Y co-ordinate in the layout.");
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Touch X position", "Touch", "X", "Get the primary touch X co-ordinate in the layout.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Touch Y position", "Touch", "Y", "Get the primary touch Y co-ordinate in the layout.");
 
-AddExpression(2, ef_return_number, "Absolute touch X", "Touch", "AbsoluteX", "Get the touch X co-ordinate on the canvas.");
-AddExpression(3, ef_return_number, "Absolute touch Y", "Touch", "AbsoluteY", "Get the touch Y co-ordinate on the canvas.");
+AddExpression(2, ef_return_number, "Absolute touch X", "Touch", "AbsoluteX", "Get the primary touch X co-ordinate on the canvas.");
+AddExpression(3, ef_return_number, "Absolute touch Y", "Touch", "AbsoluteY", "Get the primary touch Y co-ordinate on the canvas.");
 
 AddExpression(4, ef_return_number, "Orientation alpha", "Orientation & motion", "Alpha", "The device compass direction, in degrees.");
 AddExpression(5, ef_return_number, "Orientation beta", "Orientation & motion", "Beta", "The device front-to-back tilt, in degrees (front is positive).");
@@ -49,6 +82,24 @@ AddExpression(9, ef_return_number, "Z acceleration with gravity", "Orientation &
 AddExpression(10, ef_return_number, "X acceleration", "Orientation & motion", "AccelerationX", "The device X acceleration without gravity (if supported), in m/s^2.");
 AddExpression(11, ef_return_number, "Y acceleration", "Orientation & motion", "AccelerationY", "The device Y acceleration without gravity (if supported), in m/s^2.");
 AddExpression(12, ef_return_number, "Z acceleration", "Orientation & motion", "AccelerationZ", "The device Z acceleration without gravity (if supported), in m/s^2.");
+
+AddExpression(13, ef_return_number, "", "Touch", "TouchCount", "Get the number of current touches.");
+
+AddNumberParam("Index", "Zero-based index of the touch to get.");
+AddExpression(14, ef_return_number | ef_variadic_parameters, "", "Touch", "XAt", "Get a touch X co-ordinate in the layout from a zero-based index of the touch.");
+AddNumberParam("Index", "Zero-based index of the touch to get.");
+AddExpression(15, ef_return_number | ef_variadic_parameters, "", "Touch", "YAt", "Get a touch Y co-ordinate in the layout from a zero-based index of the touch.");
+
+AddNumberParam("Index", "Zero-based index of the touch to get.");
+AddExpression(16, ef_return_number, "", "Touch", "AbsoluteXAt", "Get a touch X co-ordinate on the canvas from a zero-based index of the touch.");
+AddNumberParam("Index", "Zero-based index of the touch to get.");
+AddExpression(17, ef_return_number, "", "Touch", "AbsoluteYAt", "Get a touch Y co-ordinate on the canvas from a zero-based index of the touch.");
+
+AddNumberParam("Index", "Zero-based index of the touch to get.");
+AddExpression(18, ef_return_number, "", "Touch", "SpeedAt", "Get the speed of a touch, in absolute (screen) pixels per second.");
+
+AddNumberParam("Index", "Zero-based index of the touch to get.");
+AddExpression(19, ef_return_number, "", "Touch", "AngleAt", "Get the angle of motion of a touch, in degrees.");
 
 ACESDone();
 

@@ -47,20 +47,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	var dummyoffset = {left: 0, top: 0};
 
-	instanceProto.saveTouches = function (t)
+	instanceProto.findTouch = function (id)
 	{
-		if (!t)
-			return;
-
-		this.touches.length = 0;
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
-		
-		var i, len, touch;
-		for (i = 0, len = t.length; i < len; i++)
+		var i, len;
+		for (i = 0, len = this.touches.length; i < len; i++)
 		{
-			touch = t[i];
-			this.touches.push({ x: touch.pageX - offset.left, y: touch.pageY - offset.top });
+			if (this.touches[i]["id"] === id)
+				return i;
 		}
+		
+		return -1;
 	};
 	
 	var appmobi_accx = 0;
@@ -84,9 +80,29 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		pg_accy = evt.y;
 		pg_accz = evt.z;
 	};
+	
+	var theInstance = null;
+	
+	window["C2_Motion_DCSide"] = function (a, b, g, gx, gy, gz, x, y, z)
+	{
+		if (!theInstance)
+			return;
+			
+		theInstance.orient_alpha = a;
+		theInstance.orient_beta = b;
+		theInstance.orient_gamma = g;
+		theInstance.acc_g_x = gx;
+		theInstance.acc_g_y = gy;
+		theInstance.acc_g_z = gz;
+		theInstance.acc_x = x;
+		theInstance.acc_y = y;
+		theInstance.acc_z = z;
+	};
 
 	instanceProto.onCreate = function()
 	{
+		theInstance = this;
+		
 		this.orient_alpha = 0;
 		this.orient_beta = 0;
 		this.orient_gamma = 0;
@@ -100,6 +116,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.curTouchX = 0;
 		this.curTouchY = 0;
+        this.trigger_index = 0;
 		this.mouseXcanvas = 0;				// mouse position relative to canvas
 		this.mouseYcanvas = 0;        
 		
@@ -112,73 +129,89 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			elem = window["Canvas"];
 		else if (this.runtime.isCocoonJs)
 			elem = window;
+			
+		var self = this;
 	
 		elem.addEventListener("touchstart",
-			(function (self) {
-				return function(info) {
-					self.onTouchStart(info);
-				};
-			})(this),
+			function(info) {
+				self.onTouchStart(info);
+			},
 			false
 		);
 		
 		elem.addEventListener("touchmove",
-			(function (self) {
-				return function(info) {
-					self.onTouchMove(info);
-				};
-			})(this),
+			function(info) {
+				self.onTouchMove(info);
+			},
 			false
 		);
 		
 		elem.addEventListener("touchend",
-			(function (self) {
-				return function(info) {
-					self.onTouchEnd(info);
-				};
-			})(this),
+			function(info) {
+				self.onTouchEnd(info);
+			},
 			false
 		);
 		
-		if (this.runtime.overlay_canvas && !this.runtime.isPhoneGap)
+		// Treat touch cancellation the same as a touch end
+		elem.addEventListener("touchcancel",
+			function(info) {
+				self.onTouchEnd(info);
+			},
+			false
+		);
+		
+		if (window.navigator["msPointerEnabled"])
 		{
-			this.runtime.overlay_canvas.addEventListener("touchstart",
-				(function (self) {
-					return function(info) {
-						self.onTouchStart(info);
-					};
-				})(this),
+			elem.addEventListener("MSPointerDown",
+				function(info) {
+					self.onPointerStart(info);
+				},
 				false
 			);
 			
-			this.runtime.overlay_canvas.addEventListener("touchmove",
-				(function (self) {
-					return function(info) {
-						self.onTouchMove(info);
-					};
-				})(this),
+			elem.addEventListener("MSPointerMove",
+				function(info) {
+					self.onPointerMove(info);
+				},
 				false
 			);
 			
-			this.runtime.overlay_canvas.addEventListener("touchend",
-				(function (self) {
-					return function(info) {
-						self.onTouchEnd(info);
-					};
-				})(this),
+			elem.addEventListener("MSPointerUp",
+				function(info) {
+					self.onPointerEnd(info);
+				},
 				false
 			);
+			
+			// Treat pointer cancellation the same as a touch end
+			elem.addEventListener("MSPointerCancel",
+				function(info) {
+					self.onPointerEnd(info);
+				},
+				false
+			);
+			
+			if (this.runtime.canvas)
+			{
+				this.runtime.canvas.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+				document.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+			}
 		}
 		
-		window.addEventListener("deviceorientation", (function (self) { return function (eventData) {
+		window.addEventListener("deviceorientation", function (eventData) {
 		
 			self.orient_alpha = eventData["alpha"] || 0;
 			self.orient_beta = eventData["beta"] || 0;
 			self.orient_gamma = eventData["gamma"] || 0;
 		
-		}; })(this), false);
+		}, false);
 		
-		window.addEventListener("devicemotion", (function (self) { return function (eventData) {
+		window.addEventListener("devicemotion", function (eventData) {
 		
 			if (eventData["accelerationIncludingGravity"])
 			{
@@ -194,32 +227,26 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				self.acc_z = eventData["acceleration"]["z"];
 			}
 			
-		}; })(this), false);
+		}, false);
 		
 		if (this.useMouseInput && !this.runtime.isDomFree)
 		{
 			jQuery(document).mousemove(
-				(function (self) {
-					return function(info) {
-						self.onMouseMove(info);
-					};
-				})(this)
+				function(info) {
+					self.onMouseMove(info);
+				}
 			);
 			
 			jQuery(document).mousedown(
-				(function (self) {
-					return function(info) {
-						self.onMouseDown(info);
-					};
-				})(this)
+				function(info) {
+					self.onMouseDown(info);
+				}
 			);
 			
 			jQuery(document).mouseup(
-				(function (self) {
-					return function(info) {
-						self.onMouseUp(info);
-					};
-				})(this)
+				function(info) {
+					self.onMouseUp(info);
+				}
 			);
 		}
 		
@@ -233,15 +260,133 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (this.runtime.isPhoneGap)
 		{
 			navigator["accelerometer"]["watchAcceleration"](PhoneGapGetAcceleration, null, { "frequency": 40 });
-		}        
+		}
+		
+		this.runtime.tick2Me(this);
+	};
+	
+	instanceProto.onPointerMove = function (info)
+	{
+		// Ignore mouse events
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
+			return;
+		
+		if (info.preventDefault)
+			info.preventDefault();
+		
+		var i = this.findTouch(info["pointerId"]);
+		var nowtime = cr.performance_now();
+		
+		if (i >= 0)
+		{
+			var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+			var t = this.touches[i];
+			
+			// Ignore events <2ms after the last event - seems events sometimes double-fire
+			// very close which throws off speed measurements
+			if (nowtime - t.time < 2)
+				return;
+			
+			t.lasttime = t.time;
+			t.lastx = t.x;
+			t.lasty = t.y;
+			t.time = nowtime;
+			t.x = info.pageX - offset.left;
+			t.y = info.pageY - offset.top;
+		}
+	};
+
+	instanceProto.onPointerStart = function (info)
+	{
+		// Ignore mouse events
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
+			return;
+			
+		if (info.preventDefault)
+			info.preventDefault();
+		
+		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var touchx = info.pageX - offset.left;
+		var touchy = info.pageY - offset.top;
+		var nowtime = cr.performance_now();
+		
+		this.trigger_index = this.touches.length;
+		
+		this.touches.push({ time: nowtime,
+							x: touchx,
+							y: touchy,
+							lasttime: nowtime,
+							lastx: touchx,
+							lasty: touchy,
+							"id": info["pointerId"],
+							startindex: this.trigger_index
+						});
+		
+		// Trigger OnNthTouchStart then OnTouchStart
+		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchStart, this);
+		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchStart, this);
+		
+		// Trigger OnTouchObject for each touch started event		
+		this.curTouchX = touchx;
+		this.curTouchY = touchy;
+		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
+	};
+
+	instanceProto.onPointerEnd = function (info)
+	{
+		// Ignore mouse events
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
+			return;
+			
+		if (info.preventDefault)
+			info.preventDefault();
+			
+		var i = this.findTouch(info["pointerId"]);
+		this.trigger_index = (i >= 0 ? this.touches[i].startindex : -1);
+		
+		// Trigger OnNthTouchEnd & OnTouchEnd
+		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
+		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+		
+		// Remove touch
+		if (i >= 0)
+		{
+			this.touches.splice(i, 1);
+		}
 	};
 
 	instanceProto.onTouchMove = function (info)
 	{
 		if (info.preventDefault)
 			info.preventDefault();
+		
+		var nowtime = cr.performance_now();
+		
+		var i, len, t, u;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
 			
-		this.saveTouches(info.touches);
+			var j = this.findTouch(t["identifier"]);
+			
+			if (j >= 0)
+			{
+				var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+				u = this.touches[j];
+				
+				// Ignore events <2ms after the last event - seems events sometimes double-fire
+				// very close which throws off speed measurements
+				if (nowtime - u.time < 2)
+					continue;
+				
+				u.lasttime = u.time;
+				u.lastx = u.x;
+				u.lasty = u.y;
+				u.time = nowtime;
+				u.x = t.pageX - offset.left;
+				u.y = t.pageY - offset.top;
+			}
+		}
 	};
 
 	instanceProto.onTouchStart = function (info)
@@ -250,60 +395,108 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info.preventDefault)
 			info.preventDefault();
 			
-		this.saveTouches(info.touches);
-		
-		// Trigger OnTouchStart
-		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchStart, this);  
-        var i, cnt=this._plugins_hook.length;        
-        for (i=0;i<cnt;i++)
-            this._plugins_hook[i].OnTouchStart();
-		
-		// Trigger OnTouchObject for each touch started event
 		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var nowtime = cr.performance_now();
 		
-		if (info.changedTouches)
+		var i, len, t;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
-			var i, len;
-			for (i = 0, len = info.changedTouches.length; i < len; i++)
-			{
-				var touch = info.changedTouches[i];
-				
-				this.curTouchX = touch.pageX - offset.left;
-				this.curTouchY = touch.pageY - offset.top;
-				this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
-			}
+			t = info.changedTouches[i];
+			
+			var touchx = t.pageX - offset.left;
+			var touchy = t.pageY - offset.top;
+			
+			this.trigger_index = this.touches.length;
+			
+			this.touches.push({ time: nowtime,
+								x: touchx,
+								y: touchy,
+								lasttime: nowtime,
+								lastx: touchx,
+								lasty: touchy,
+								"id": t["identifier"],
+								startindex: this.trigger_index
+							});
+			
+			// Trigger OnNthTouchStart then OnTouchStart
+			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchStart, this);
+			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchStart, this);
+			
+			// Trigger OnTouchObject for each touch started event		
+			this.curTouchX = touchx;
+			this.curTouchY = touchy;
+			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
 		}
 	};
 
 	instanceProto.onTouchEnd = function (info)
 	{
-	    this.touchDown = false;	
+	    this.touchDown = false;
 		if (info.preventDefault)
 			info.preventDefault();
 		
-		// Trigger OnTouchEnd
-		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
-        var i, cnt=this._plugins_hook.length;        
-        for (i=0;i<cnt;i++)
-            this._plugins_hook[i].OnTouchEnd();
-		
-		// Save touches after, so OnTouchEnd can access the x and y of the touch
-		// work around: skip save 0
-		//this.saveTouches(info.touches);
+		var i, len, t;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			
+			var j = this.findTouch(t["identifier"]);
+			this.trigger_index = (j >= 0 ? this.touches[j].startindex : -1);
+			
+			// Trigger OnNthTouchEnd & OnTouchEnd
+			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
+			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+			
+			// Remove touch
+			if (j >= 0)
+			{
+				this.touches.splice(j, 1);
+			}
+		}
+	};
+	
+	instanceProto.getAlpha = function ()
+	{
+		if (this.runtime.isAppMobi && this.orient_alpha === 0 && appmobi_accz !== 0)
+			return appmobi_accz * 90;
+		else if (this.runtime.isPhoneGap  && this.orient_alpha === 0 && pg_accz !== 0)
+			return pg_accz * 90;
+		else
+			return this.orient_alpha;
+	};
+	
+	instanceProto.getBeta = function ()
+	{
+		if (this.runtime.isAppMobi && this.orient_beta === 0 && appmobi_accy !== 0)
+			return appmobi_accy * -90;
+		else if (this.runtime.isPhoneGap  && this.orient_beta === 0 && pg_accy !== 0)
+			return pg_accy * -90;
+		else
+			return this.orient_beta;
+	};
+	
+	instanceProto.getGamma = function ()
+	{
+		if (this.runtime.isAppMobi && this.orient_gamma === 0 && appmobi_accx !== 0)
+			return appmobi_accx * 90;
+		else if (this.runtime.isPhoneGap  && this.orient_gamma === 0 && pg_accx !== 0)
+			return pg_accx * 90;
+		else
+			return this.orient_gamma;
 	};
 	
 	var noop_func = function(){};
 
 	instanceProto.onMouseDown = function(info)
-	{	
-        this._is_mouse_mode = true;
-		this.mouseDown = true;		
+	{
+	    this._is_mouse_mode = true;
+		this.mouseDown = true;
 		if (info.preventDefault)
 			info.preventDefault();
 		
 		// Send a fake touch start event
-		var t = { pageX: info.pageX, pageY: info.pageY };
-		var fakeinfo = { touches: [t], changedTouches: [t], preventDefault: noop_func };
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
+		var fakeinfo = { changedTouches: [t] };
 		this.onTouchStart(fakeinfo);
 	};
 	
@@ -312,12 +505,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info.preventDefault)
 			info.preventDefault();
 		
-		//if (!this.mouseDown)
-		//	return;
+		if (!this.mouseDown)
+			return;
 			
 		// Send a fake touch move event
-		var t = { pageX: info.pageX, pageY: info.pageY };
-		var fakeinfo = { touches: [t], preventDefault: noop_func };
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
+		var fakeinfo = { changedTouches: [t] };
 		this.onTouchMove(fakeinfo);
 	};
 
@@ -328,10 +521,25 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			info.preventDefault();
 		
 		// Send a fake touch end event
-		var fakeinfo = { touches: [], preventDefault: noop_func };
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
+		var fakeinfo = { changedTouches: [t] };
 		this.onTouchEnd(fakeinfo);
 	};
-    
+	
+	instanceProto.tick2 = function()
+	{
+		var i, len, t;
+		var nowtime = cr.performance_now();
+		
+		for (i = 0, len = this.touches.length; i < len; i++)
+		{
+			// Update speed for touches which haven't moved for 50ms
+			t = this.touches[i];
+			
+			if (t.time <= nowtime - 50)
+				t.lasttime = nowtime;
+		}
+	};
     
     // wrapper --------
     instanceProto.HookMe = function (obj)
@@ -399,7 +607,25 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		else
 			return false;
 	};  
-	
+    
+	instanceProto.CompareTouchSpeed = function (index, cmp, s)
+	{
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return false;
+		
+		var t = this.touches[index];
+		var dist = cr.distanceTo(t.x, t.y, t.lastx, t.lasty);
+		var timediff = (t.time - t.lasttime) / 1000;
+		var speed = 0;
+		
+		if (timediff > 0)
+			speed = dist / timediff;
+			
+		return cr.do_cmp(speed, cmp, s);
+	};
+
 	instanceProto.OrientationSupported = function ()
 	{
 		return typeof window["DeviceOrientationEvent"] !== "undefined";
@@ -409,10 +635,62 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	{
 		return typeof window["DeviceMotionEvent"] !== "undefined";
 	};    
-
+	
+	instanceProto.CompareOrientation = function (orientation_, cmp_, angle_)
+	{
+		var v = 0;
+		
+		if (orientation_ === 0)
+			v = this.getAlpha();
+		else if (orientation_ === 1)
+			v = this.getBeta();
+		else
+			v = this.getGamma();
+			
+		return cr.do_cmp(v, cmp_, angle_);
+	};
+	
+	instanceProto.CompareAcceleration = function (acceleration_, cmp_, angle_)
+	{
+		var v = 0;
+		
+		if (acceleration_ === 0)
+			v = this.acc_g_x;
+		else if (acceleration_ === 1)
+			v = this.acc_g_y;
+		else if (acceleration_ === 2)
+			v = this.acc_g_z;
+		else if (acceleration_ === 3)
+			v = this.acc_x;
+		else if (acceleration_ === 4)
+			v = this.acc_y;
+		else if (acceleration_ === 5)
+			v = this.acc_z;
+		
+		return cr.do_cmp(v, cmp_, angle_);
+	};
+	
+	instanceProto.OnNthTouchStart = function (touch_)
+	{
+		touch_ = Math.floor(touch_);
+		return touch_ === this.trigger_index;
+	};
+	
+	instanceProto.OnNthTouchEnd = function (touch_)
+	{
+		touch_ = Math.floor(touch_);
+		return touch_ === this.trigger_index;
+	};
+	
+	instanceProto.HasNthTouch = function (touch_)
+	{
+		touch_ = Math.floor(touch_);
+		return this.touches.length >= touch_ + 1;
+	};
+	
 	instanceProto.GetX = function (layerparam)
 	{
-        var ret;
+	    var ret;
 		if (this.touches.length)
 		{
 			var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
@@ -440,11 +718,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				// use given layer param
 				if (cr.is_number(layerparam))
 					layer = this.runtime.getLayerByNumber(layerparam);
-				else if (cr.is_string(layerparam))
+				else
 					layer = this.runtime.getLayerByName(layerparam);
-                else 
-					layer = layerparam;
-                    
+					
 				if (layer)
 					ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true);
 				else
@@ -456,7 +732,51 @@ cr.plugins_.rex_TouchWrap = function(runtime)
         
         return ret;
 	};    
-
+	
+	instanceProto.GetXAt = function (index, layerparam)
+	{
+	    var ret;
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return 0;
+		
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = this.runtime.running_layout.scale;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = this.runtime.running_layout.angle;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true);
+			else
+				ret = 0;
+		}
+		return ret;
+	};	
+	
 	instanceProto.GetY = function (layerparam)
 	{
         var ret;
@@ -487,11 +807,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				// use given layer param
 				if (cr.is_number(layerparam))
 					layer = this.runtime.getLayerByNumber(layerparam);
-				else if (cr.is_string(layerparam))
+				else
 					layer = this.runtime.getLayerByName(layerparam);
-                else 
-					layer = layerparam;
-                    
+					
 				if (layer)
 					ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false);
 				else
@@ -499,11 +817,54 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 		}
 		else
-		    ret = 0;
+			ret = 0;
         
         return ret;
 	}; 
-
+	
+	instanceProto.GetYAt = function (index, layerparam)
+	{
+	    var ret;
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return 0;
+		
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxY = layer.parallaxY;
+			oldAngle = layer.angle;
+			layer.scale = this.runtime.running_layout.scale;
+			layer.zoomRate = 1.0;
+			layer.parallaxY = 1.0;
+			layer.angle = this.runtime.running_layout.angle;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxY = oldParallaxY;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			else
+				ret.set_float(0);
+		}
+	};
+	
     instanceProto.GetAbsoluteX = function ()
 	{
         var ret;
@@ -513,6 +874,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			ret = 0;
         
         return ret;
+	};
+	
+	instanceProto.GetAbsoluteXAt = function (index)
+	{
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return 0;
+
+		return this.touches[index].x;
 	};
 	
 	instanceProto.GetAbsoluteY = function ()
@@ -525,7 +896,44 @@ cr.plugins_.rex_TouchWrap = function(runtime)
             
         return ret;
 	};
-    
+	
+	instanceProto.GetAbsoluteYAt = function (index)
+	{
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return 0;
+
+		return this.touches[index].y;
+	};
+	
+	instanceProto.GetSpeedAt = function (index)
+	{
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return 0;
+
+		var t = this.touches[index];
+		var dist = cr.distanceTo(t.x, t.y, t.lastx, t.lasty);
+		var timediff = (t.time - t.lasttime) / 1000;
+
+        var ret = (timediff === 0)? 0: (dist / timediff);
+		return ret;
+	};
+	
+	instanceProto.GetAngleAt = function (index)
+	{
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+			return 0;
+		
+		var t = this.touches[index];
+		var ret = cr.to_degrees(cr.angleTo(t.lastx, t.lasty, t.x, t.y));
+		return ret;
+	};
+	
 	instanceProto.GetAlpha = function ()
 	{
         var ret;
@@ -626,6 +1034,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		return this.IsTouchingObject(type);
 	};
 	
+	Cnds.prototype.CompareTouchSpeed = function (index, cmp, s)
+	{
+		return this.CompareTouchSpeed(index, cmp, s);
+	};
+	
 	Cnds.prototype.OrientationSupported = function ()
 	{
 		return this.OrientationSupported();
@@ -635,21 +1048,60 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	{
 		return this.MotionSupported();
 	};
-
+	
+	Cnds.prototype.CompareOrientation = function (orientation_, cmp_, angle_)
+	{
+		return this.CompareOrientation(orientation_, cmp_, angle_);
+	};
+	
+	Cnds.prototype.CompareAcceleration = function (acceleration_, cmp_, angle_)
+	{
+		return this.CompareAcceleration(acceleration_, cmp_, angle_);
+	};
+	
+	Cnds.prototype.OnNthTouchStart = function (touch_)
+	{
+		return this.OnNthTouchStart(touch_);
+	};
+	
+	Cnds.prototype.OnNthTouchEnd = function (touch_)
+	{
+		return this.OnNthTouchEnd(touch_);
+	};
+	
+	Cnds.prototype.HasNthTouch = function (touch_)
+	{
+		return this.HasNthTouch(touch_);
+	};
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
-	// TODO: multitouch support
+	Exps.prototype.TouchCount = function (ret)
+	{
+		ret.set_int(this.touches.length);
+	};
+	
 	Exps.prototype.X = function (ret, layerparam)
 	{
 		ret.set_float(this.GetX(layerparam));
 	};
 	
+	Exps.prototype.XAt = function (ret, index, layerparam)
+	{
+		ret.set_float(this.GetXAt(index, layerparam));
+	};	
+	
 	Exps.prototype.Y = function (ret, layerparam)
 	{
 		ret.set_float(this.GetY(layerparam));
+	};
+	
+	Exps.prototype.YAt = function (ret, index, layerparam)
+	{
+		ret.set_float(this.GetYAt(index, layerparam));
 	};
 	
 	Exps.prototype.AbsoluteX = function (ret)
@@ -657,9 +1109,29 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		ret.set_float(this.GetAbsoluteX());
 	};
 	
+	Exps.prototype.AbsoluteXAt = function (ret, index)
+	{
+		ret.set_float(this.GetAbsoluteXAt(index));
+	};
+	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
         ret.set_float(this.GetAbsoluteY());
+	};
+	
+	Exps.prototype.AbsoluteYAt = function (ret, index)
+	{
+		ret.set_float(this.GetAbsoluteYAt(index));
+	};
+	
+	Exps.prototype.SpeedAt = function (ret, index)
+	{
+		ret.set_float(this.GetSpeedAt(index));
+	};
+	
+	Exps.prototype.AngleAt = function (ret, index)
+	{
+		ret.set_float(this.GetAngleAt(index));
 	};
 	
 	Exps.prototype.Alpha = function (ret)
@@ -679,7 +1151,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	Exps.prototype.AccelerationXWithG = function (ret)
 	{
-		ret.set_float(this.acc_g_x);
+		ret.set_float(this.GetAccelerationXWithG());
 	};
 	
 	Exps.prototype.AccelerationYWithG = function (ret)
