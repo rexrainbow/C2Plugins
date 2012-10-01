@@ -715,11 +715,13 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 			else
 			{
-				// use given layer param
-				if (cr.is_number(layerparam))
-					layer = this.runtime.getLayerByNumber(layerparam);
-				else
-					layer = this.runtime.getLayerByName(layerparam);
+			    // use given layer param
+			    if (cr.is_number(layerparam))
+				    layer = this.runtime.getLayerByNumber(layerparam);
+			    else if (cr.is_string(layerparam))
+				    layer = this.runtime.getLayerByName(layerparam);
+		        else 
+			        layer = layerparam;
 					
 				if (layer)
 					ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true);
@@ -755,7 +757,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			layer.zoomRate = 1.0;
 			layer.parallaxX = 1.0;
 			layer.angle = this.runtime.running_layout.angle;
-			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true);
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
 			layer.parallaxX = oldParallaxX;
@@ -766,8 +768,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// use given layer param
 			if (cr.is_number(layerparam))
 				layer = this.runtime.getLayerByNumber(layerparam);
-			else
+			else if (cr.is_string(layerparam))
 				layer = this.runtime.getLayerByName(layerparam);
+		    else 
+			    layer = layerparam;
 				
 			if (layer)
 				ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true);
@@ -804,11 +808,13 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 			else
 			{
-				// use given layer param
-				if (cr.is_number(layerparam))
-					layer = this.runtime.getLayerByNumber(layerparam);
-				else
-					layer = this.runtime.getLayerByName(layerparam);
+			    // use given layer param
+			    if (cr.is_number(layerparam))
+				    layer = this.runtime.getLayerByNumber(layerparam);
+			    else if (cr.is_string(layerparam))
+				    layer = this.runtime.getLayerByName(layerparam);
+		        else 
+			        layer = layerparam;
 					
 				if (layer)
 					ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false);
@@ -844,7 +850,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			layer.zoomRate = 1.0;
 			layer.parallaxY = 1.0;
 			layer.angle = this.runtime.running_layout.angle;
-			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false);
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
 			layer.parallaxY = oldParallaxY;
@@ -855,13 +861,15 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// use given layer param
 			if (cr.is_number(layerparam))
 				layer = this.runtime.getLayerByNumber(layerparam);
-			else
+			else if (cr.is_string(layerparam))
 				layer = this.runtime.getLayerByName(layerparam);
+		    else 
+			    layer = layerparam;
 				
 			if (layer)
 				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
 			else
-				ret.set_float(0);
+				ret = 0;
 		}
 	};
 	
