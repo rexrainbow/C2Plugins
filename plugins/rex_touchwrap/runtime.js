@@ -386,7 +386,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				u.x = t.pageX - offset.left;
 				u.y = t.pageY - offset.top;
 			}
-		}
+		}	
 	};
 
 	instanceProto.onTouchStart = function (info)
@@ -426,7 +426,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.curTouchX = touchx;
 			this.curTouchY = touchy;
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
-		}
+		}		
 	};
 
 	instanceProto.onTouchEnd = function (info)
@@ -501,17 +501,20 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	};
 	
 	instanceProto.onMouseMove = function(info)
-	{
+	{	
 		if (info.preventDefault)
 			info.preventDefault();
-		
-		if (!this.mouseDown)
-			return;
+			
+		//if (!this.mouseDown)
+		//	return;
 			
 		// Send a fake touch move event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
 		var fakeinfo = { changedTouches: [t] };
-		this.onTouchMove(fakeinfo);
+		if (this.touches.length==0)
+		    this.onTouchStart(fakeinfo);
+		else
+		    this.onTouchMove(fakeinfo);
 	};
 
 	instanceProto.onMouseUp = function(info)
