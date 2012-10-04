@@ -53,13 +53,13 @@ cr.behaviors.Rex_container_tag = function(runtime)
 
 	behinstProto.set_tag = function (tag)
 	{
-	    this.tag = tag
+	    this.tag = tag;
 	    if (cr.plugins_.Rex_Container == null)
 		    return;
 		var container = cr.plugins_.Rex_Container.tag2container[tag];
 		if (container == null)
 		    return;
-	    container.add_insts([this.inst])
+	    container.add_insts([this.inst]);
 	};  	
 	//////////////////////////////////////
 	// Conditions
