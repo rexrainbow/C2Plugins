@@ -9,7 +9,6 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 cr.plugins_.Rex_Container = function(runtime)
 {
 	this.runtime = runtime;
-	this.tag2container = {};
 };
 cr.plugins_.Rex_Container.tag2container = {};
 
