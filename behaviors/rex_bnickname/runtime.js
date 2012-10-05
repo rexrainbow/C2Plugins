@@ -27,8 +27,7 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	var behtypeProto = behaviorProto.Type.prototype;
 
 	behtypeProto.onCreate = function()
-	{     
-	    this.nickname = null;
+	{
 	};
     
 	/////////////////////////////////////
@@ -45,8 +44,7 @@ cr.behaviors.Rex_bNickname = function(runtime)
 
 	behinstProto.onCreate = function()
 	{     
-	    if (this.type.nickname == null)
-            this.set_nickname(this.properties[0]); 
+	    this.set_nickname(this.properties[0]); 
 	};
 
 	behinstProto.tick = function ()
@@ -55,7 +53,7 @@ cr.behaviors.Rex_bNickname = function(runtime)
 
 	behinstProto.set_nickname = function (nickname)
 	{
-	    this.type.nickname = nickname;
+	    this.nickname = nickname;
 	    if (cr.plugins_.Rex_Nickname == null)
 		    return;
 		cr.plugins_.Rex_Nickname.nickname2objtype[nickname] = this.inst.type;
@@ -69,11 +67,7 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
-
-	Acts.prototype.SetNickname = function (nickname)
-	{
-		this.set_nickname(nickname); 
-	}; 			
+			
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -81,7 +75,7 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	
 	Exps.prototype.Nickname = function (ret)
 	{
-		ret.set_string(this.type.nickname);
+		ret.set_string(this.nickname);
 	};			
 			
 }());

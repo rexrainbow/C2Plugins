@@ -6,7 +6,7 @@
 		"description":	"Assign a nickname to this object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Nickname",
+		"category":		"General",
 		"flags":		bf_onlyone
 	};
 };
@@ -16,9 +16,6 @@
 	  			 		 
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Nickname", "Nickname of object.", '""');
-AddAction(3, 0, "Set nickname", "Nickname", "Set {my} nickname to <i>{0}</i>",
-         "Set nickname.", "SetNickname");
 
 //////////////////////////////////////////////////////////////
 // Expressions
