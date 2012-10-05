@@ -69,12 +69,37 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 	instanceProto.drawGL = function(glw)
 	{
 	};
+	
+    instanceProto.PickAll = function (nickname, family_objtype)
+	{
+	    if (!family_objtype.is_family)
+		    return;
+	    var objtype = this.nickname2objtype[nickname];
+        if (objtype == null)
+            return;
+        if (family_objtype.members.indexOf(objtype) == -1)
+            return;           
+        var sol = objtype.getCurrentSol();    
+        var sol_save = sol.select_all;   
+        sol.select_all = true;
+        var all_insts = sol.getObjects();
+        var sol_family = family_objtype.getCurrentSol();  
+        sol_family.instances = all_insts.slice();
+        sol_family.select_all = false; 
+        sol.select_all = sol_save;  
+	};	
     
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 
+	Cnds.prototype.PickAll = function (nickname, family_objtype)
+	{
+	    this.PickAll(nickname, family_objtype);
+		return true;
+	};
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -85,10 +110,25 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
         this.nickname2objtype[nickname] = objtype;
 	};
 	
-	Acts.prototype.CreateInsts = function (nickname,x,y,_layer)
+	Acts.prototype.CreateInsts = function (nickname,x,y,_layer, family_objtype)
 	{
-        this.create_insts(nickname,x,y,_layer);
-	};
+        var inst = this.create_insts(nickname,x,y,_layer);
+        if (family_objtype == null)
+            return;
+        var objtype = this.nickname2objtype[nickname];
+        if (family_objtype.members.indexOf(objtype) == -1)
+            return; 
+        var sol_family = family_objtype.getCurrentSol();  
+        sol_family.instances.length = 1;
+        sol_family.instances[0] = inst;
+        sol_family.select_all = false; 
+	};	
+
+    Acts.prototype.PickAll = function (nickname, family_objtype)
+	{
+	    this.PickAll(nickname, family_objtype);    
+	}; 
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

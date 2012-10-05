@@ -16,7 +16,10 @@
 
 ////////////////////////////////////////
 // Conditions        
-  
+AddStringParam("Nickname", "Nickname of object.", '""');
+AddObjectParam("Object", "Object.");
+AddCondition(10, 0, "Pick all instances", "SOL", "Pick all <i>{0}</i> instances into family <i>{1}</i>", "Pick all instances.", "PickAll");
+
 ////////////////////////////////////////
 // Actions
 AddStringParam("Nickname", "Nickname of object.", '""');
@@ -28,7 +31,19 @@ AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(2, 0, "Create instance", "Create", "Create <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
-          "Create instance by nickname.", "CreateInsts");              
+          "Create instance by nickname.", "CreateInsts");  
+AddStringParam("Nickname", "Nickname of object.", '""');   
+AddNumberParam("X", "X co-ordinate.", 0);
+AddNumberParam("Y", "Y co-ordinate.", 0);
+AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddObjectParam("Family", "Family object for SOL.");
+AddAction(3, 0, "Create instance into family", "Create", "Create <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>, then put into family <i>{4}</i>", 
+          "Create instance by nicknamem then put into family.", "CreateInsts");            
+AddStringParam("Nickname", "Nickname of object.", '""');  
+AddObjectParam("Family", "Family object for SOL."); 
+AddAction(10, 0, "Pick all instances", "SOL", 
+          "Pick all <i>{0}</i> instances into family <i>{1}</i>", 
+          "Pick all.", "PickAll");	 		  
 ////////////////////////////////////////
 // Expressions
 
