@@ -40,7 +40,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.touchDown = false;
         this.check_name = "TOUCHWRAP";
 		this._is_mouse_mode = false;
-        this._plugins_hook = [];
+        this._plugins_hook = [];		
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
@@ -117,8 +117,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.curTouchX = 0;
 		this.curTouchY = 0;
         this.trigger_index = 0;
-		this.mouseXcanvas = 0;				// mouse position relative to canvas
-		this.mouseYcanvas = 0;        
 		
 		this.useMouseInput = (this.properties[0] !== 0);
 		
@@ -355,6 +353,43 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		}
 	};
 
+	instanceProto._fake_info_get = function (x,y)
+	{	
+		var t = { pageX: x, pageY: y, "identifier": -1 };
+		var fakeinfo = { changedTouches: [t] };
+		return fakeinfo;
+	};
+	
+	instanceProto._push_touch_info = function (info)
+	{
+		if (info.preventDefault)
+			info.preventDefault();
+			
+		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var nowtime = cr.performance_now();
+		
+		var i, len, t;
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			
+			var touchx = t.pageX - offset.left;
+			var touchy = t.pageY - offset.top;
+			
+			this.trigger_index = this.touches.length;
+			
+			this.touches.push({ time: nowtime,
+								x: touchx,
+								y: touchy,
+								lasttime: nowtime,
+								lastx: touchx,
+								lasty: touchy,
+								"id": t["identifier"],
+								startindex: this.trigger_index
+							});						
+		}		
+	};
+	
 	instanceProto.onTouchMove = function (info)
 	{
 		if (info.preventDefault)
@@ -385,7 +420,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				u.time = nowtime;
 				u.x = t.pageX - offset.left;
 				u.y = t.pageY - offset.top;
-			}
+			}	
 		}	
 	};
 
@@ -452,7 +487,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			{
 				this.touches.splice(j, 1);
 			}
-		}
+		}	
+		
+		// fix: keep the latest touch position
+		this.touches.length = 0;
+		this._push_touch_info(info);
 	};
 	
 	instanceProto.getAlpha = function ()
@@ -511,8 +550,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Send a fake touch move event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
 		var fakeinfo = { changedTouches: [t] };
+		
+		// fix: push the lastest info
 		if (this.touches.length==0)
-		    this.onTouchStart(fakeinfo);
+		    this._push_touch_info(fakeinfo);
 		else
 		    this.onTouchMove(fakeinfo);
 	};
