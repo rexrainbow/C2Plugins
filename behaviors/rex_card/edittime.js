@@ -39,6 +39,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Face", "Back", "Set initial face.", "Back|Front"),
 	new cr.Property(ept_integer, "Back", 0, "Frame index of back face."),	
     new cr.Property(ept_integer, "Front", 1, "Frame index of front face."),		
 	];

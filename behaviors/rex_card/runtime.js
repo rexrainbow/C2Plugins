@@ -42,13 +42,19 @@ cr.behaviors.Rex_Card = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
 	behinstProto.onCreate = function()
-	{     
-		this.card_back = this.properties[0]; 	
-	    this.card_front = this.properties[1];
+	{       
+        this.init_face = this.properties[0];    
+		this.card_back = this.properties[1]; 	
+	    this.card_front = this.properties[2];
 	};
 
 	behinstProto.tick = function ()
 	{
+        if (this.init_face != (-1))
+        {
+            this.trun_face(this.init_face==0);
+            this.init_face = (-1);
+        }
 	};  
 
 	behinstProto.trun_face = function(is_back_face)
