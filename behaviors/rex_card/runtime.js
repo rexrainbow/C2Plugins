@@ -61,6 +61,7 @@ cr.behaviors.Rex_Card = function(runtime)
 	{
 	    var frame_index = (is_back_face)? this.card_back:this.card_front;
 	    cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(this.inst, [frame_index]);
+        this.init_face = (-1);
 	};	
 	//////////////////////////////////////
 	// Conditions
