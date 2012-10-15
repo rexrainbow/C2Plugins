@@ -19,14 +19,17 @@
 AddCondition(1, cf_trigger, "On get symbol", "Symbol", 
              "On get symbol", 'Trigger by "Action:Get matching tiles" to get symbol.', "OnGetSymbol");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_trigger, "On matching pattern", "Patern", 
-             "On matching pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles" when matching pattern.', "OnMatchPattern");    
+AddCondition(2, cf_trigger, "On matching 1d pattern", "Patern", 
+             "On matching 1d pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles" when 1d matching pattern.', "OnMatchPattern");    
 AddCondition(3, cf_trigger, "On no matching pattern", "Patern", 
              "On no matching pattern", 'Trigger by "Action:Get matching tiles" when no matching pattern.', "OnNoMatchPattern");    
 AddStringParam("Pattern", "Pattern.", '""');
 AddCondition(4, cf_trigger, "On matching 2D pattern", "Patern", 
              "On matching 2D pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles with 2d pattern" when matching pattern.', "OnMatchPattern2D");    
-             
+AddNumberParam("Count", "Continuous symbols count.", 3);
+AddCondition(5, cf_trigger, "On matching N symbols", "Patern", 
+             "On matching <i>{0}</i> continuous symbols", 
+             'Trigger by "Action:Get matching tiles" when matching N continuous symbol.', "OnMatchPattern");    
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Board", "Board object");

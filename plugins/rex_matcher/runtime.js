@@ -127,10 +127,16 @@ cr.plugins_.Rex_Matcher = function(runtime)
         // filled this._tiles_groups
         return this._tiles_groups;
 	};
+    String.prototype.repeat = function( num )
+    {
+        return new Array( num + 1 ).join( this );
+    };
+    
 	instanceProto._pattern_search_square = function(pattern)
-	{	    
+	{
+        var is_matchN_mode = (typeof(pattern) == "number");        
 	    var x,y,i,c,s,is_matched,matched_tiles=[];
-	    var pattern_length=pattern.length;
+	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;
 	    var x_max=this.board.x_max;
 	    var y_max=this.board.y_max;
 	    if ((this._pattern_axis==0) || (this._pattern_axis==1))  // Horizontal
@@ -144,6 +150,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                
 	                is_matched = true;
 	                matched_tiles.length=0;
+                    if (is_matchN_mode)
+                        pattern = null;                    
 	                for(i=0;i<pattern_length;i++)
 	                {
 	                    s = this._symbol_at(x+i,y);
@@ -152,6 +160,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }
+                        else if (is_matchN_mode && (pattern==null))
+                        {
+                            pattern = s.symbol.repeat(pattern_length);
+                        }
 	                    c = pattern.charAt(i);
 	                    if (s.symbol!=c)
 	                    {
@@ -176,6 +188,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                
 	                is_matched = true;
 	                matched_tiles.length=0;
+                    if (is_matchN_mode)
+                        pattern = null;                     
 	                for(i=0;i<pattern_length;i++)
 	                {
 	                    s = this._symbol_at(x,y+i);
@@ -184,6 +198,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }
+                        else if (is_matchN_mode && (pattern==null))
+                        {
+                            pattern = s.symbol.repeat(pattern_length);
+                        }                        
 	                    c = pattern.charAt(i);
 	                    if (s.symbol!=c)
 	                    {
@@ -200,8 +218,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};
 	instanceProto._pattern_search_hex = function(pattern)
 	{	  
+        var is_matchN_mode = (typeof(pattern) == "number");   
         var dir,x,y,i,c,s,is_matched,matched_tiles=[];
-	    var pattern_length=pattern.length;        
+	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;      
 	    var x_max=this.board.x_max;
 	    var y_max=this.board.y_max;       
         var get_neighbor_x = this.board.layout.GetNeighborLX;
@@ -215,6 +234,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	            {
 	                is_matched = true;
 	                matched_tiles.length=0;
+                    if (is_matchN_mode)
+                        pattern = null;                    
 	                cur_x = x;
 	                cur_y = y;
 	                for(i=0;i<pattern_length;i++)
@@ -225,6 +246,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }
+                        else if (is_matchN_mode && (pattern==null))
+                        {
+                            pattern = s.symbol.repeat(pattern_length);
+                        }                          
 	                    c = pattern.charAt(i);
 	                    if (s.symbol!=c)
 	                    {
@@ -357,7 +382,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         var tiles_groups = this._pattern_search_2d(pattern);	    
         this._on_match_pattern(tiles_groups);
         return false;
-	};		
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
