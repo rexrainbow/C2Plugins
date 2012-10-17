@@ -66,11 +66,13 @@ cr.plugins_.Rex_Video = function(runtime)
         this.elem.preload = ["auto","metadata","none"][this.properties[6]];
         this.elem.loop = (this.properties[7]==1);  
         this.elem.muted = (this.properties[8]==1);
+        this.elem.id = this.properties[9];
       
         jQuery(this.elem).appendTo(this.runtime.canvasdiv ? this.runtime.canvasdiv : "body");
         
         this._pre_ended = false;
-
+        this._checked_is_playing = false;
+							
 		this.updatePosition();
 		
 		this.runtime.tickMe(this);
@@ -89,6 +91,7 @@ cr.plugins_.Rex_Video = function(runtime)
 	{
 		this.updatePosition();
         this.check_ended();
+        this.check_playing();
 	};
 	
 	instanceProto.updatePosition = function ()
@@ -136,10 +139,23 @@ cr.plugins_.Rex_Video = function(runtime)
 	instanceProto.check_ended = function ()
 	{
         if (!this._pre_ended && this.elem.ended)
+        {
+            this._checked_is_playing = false;
             this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnEnded, this);
+		}
             
         this._pre_ended = this.elem.ended;
 	};    
+	
+	instanceProto.check_playing = function(){
+		
+		if((!this._checked_is_playing) && 
+		   (this.elem.currentTime != this.elem.initialTime))
+		{
+			this._checked_is_playing = true;
+			this.runtime.trigger(cr.plugins_.Rex_Video.prototype.cnds.OnPlay, this);				
+		}
+	}
 
 	//////////////////////////////////////
 	// Conditions
@@ -155,6 +171,11 @@ cr.plugins_.Rex_Video = function(runtime)
 	{
 		return this.elem.ended;
 	};
+	
+	Cnds.prototype.OnPlay = function ()
+	{
+		return true;
+	};	
     
 	//////////////////////////////////////
 	// Actions
@@ -171,8 +192,16 @@ cr.plugins_.Rex_Video = function(runtime)
 		this.elem.play();
 	};  
 
+	Acts.prototype.Stop = function ()
+	{
+		this.elem.pause();
+		this.elem.initialTime = 0;
+		this.elem.currentTime = 0;
+		this._checked_is_playing = false;
+	};  
 	Acts.prototype.Pause = function ()
 	{
+		this._checked_is_playing = false;
 		this.elem.pause();
 	}; 
 
@@ -205,6 +234,11 @@ cr.plugins_.Rex_Video = function(runtime)
 	{
 		this.elem.autoplay = (is_enable==1);
 	};    
+	
+	Acts.prototype.SetVisible = function (vis)
+	{		
+		this.visible = (vis !== 0);
+	};
    
 	//////////////////////////////////////
 	// Expressions
@@ -234,5 +268,15 @@ cr.plugins_.Rex_Video = function(runtime)
 	Exps.prototype.ReadyState = function (ret)
 	{
 		ret.set_int(this.elem.readyState);
-	};       
+	};  
+	     
+	Exps.prototype.SourceHeight = function (ret)
+	{
+		ret.set_float(this.elem.videoHeight);
+	};  
+		
+	Exps.prototype.SourceWidth = function (ret)
+	{
+		ret.set_float(this.elem.videoWidth);
+	};  	
 }());

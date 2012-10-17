@@ -5,7 +5,7 @@
 		"id":			"Rex_Video",
 		"version":		"1.0",  
 		"description":	"Play video.",
-		"author":		"Rex.Rainbow",
+		"author":		"Rex.Rainbow, JP Deblonde",
 		"help url":		"",
 		"category":		"Media",
 		"type":			"world",			// appears in layout
@@ -20,6 +20,8 @@ AddCondition(0, cf_trigger, "On play ended", "Control", "On ended",
              "Triggered when video play ended.", "OnEnded");
 AddCondition(1, 0, "Is play ended", "Control", "Is ended", 
              "Is video play ended.", "IsEnded");            
+AddCondition(2, cf_trigger, "On play", "Control", "On play", 
+             "Triggered when video starts playing.", "OnPlay");
 
 ////////////////////////////////////////
 // Actions
@@ -48,6 +50,13 @@ AddComboParamOption("Enable");
 AddComboParam("Autoplay", "Enable autoplay.",1);
 AddAction(8, 0, "Enable autoplay", "Setting", "Set autoplay to <i>{0}</i>", "Enable autoplay of video.", "SetAutoplay"); 
 
+AddAction(9, 0, "Stop", "Control", "Stop video", "Stop video.", "Stop");
+
+AddComboParamOption("Invisible");
+AddComboParamOption("Visible");
+AddComboParam("Visibility", "Choose whether to hide or show the button.");
+AddAction(10, 0, "Set visible", "Appearance", "Set <b>{0}</b>", "Hide or show the video.", "SetVisible");
+
 ////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current time", "State", "CurrentTime", "Get current video time.");
@@ -56,6 +65,8 @@ AddExpression(2, ef_return_number, "Is muted", "State", "IsMuted", "Is video mut
 AddExpression(3, ef_return_number, "Get volume", "State", "Volume", "Get video volume.");
 AddExpression(4, ef_return_number, "Get ready state", "State", "ReadyState", 
               "Get ready state. 0=uninitialized, 1=loading, 2=loaded, 3=interactive, 4=complete.");
+AddExpression(5, ef_return_number, "Get width", "Properties", "SourceWidth", "Get source video width.");			  
+AddExpression(6, ef_return_number, "Get height", "Properties", "SourceHeight", "Get source video height.");			  
 
 ACESDone();
 
@@ -76,6 +87,8 @@ var property_list = [
                     "The video will start over again, every time it is finished.", "No|Yes"),      
     new cr.Property(ept_combo,"Muted", "No", 
                     "The audio output of the video should be muted.", "No|Yes"),   
+    new cr.Property(ept_text, "ID (optional)", "", 
+                    "An ID for the control allowing it to be styled with CSS from the page HTML.")                    
 ];
 	
 // Called by IDE when a new object type is to be created
