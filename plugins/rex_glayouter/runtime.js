@@ -326,6 +326,8 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	
 	instanceProto.get_centerX = function (inst)
 	{
+        if (inst == null)
+            inst = this;
 	    inst.update_bbox();
 	    var bbox = inst.bbox;
 	    return (bbox.right+bbox.left)/2;            
@@ -333,6 +335,8 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 		
 	instanceProto.get_centerY = function (inst)
 	{
+        if (inst == null)
+            inst = this;    
 	    inst.update_bbox();
 	    var bbox = inst.bbox;
 	    return (bbox.top+bbox.bottom)/2;            
