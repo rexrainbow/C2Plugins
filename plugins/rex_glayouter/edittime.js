@@ -40,7 +40,9 @@ AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i>
           "Create and Add instances.", "CreateInsts");            
 AddObjectParam("Instances", "Remove instances from layouter.");          
 AddAction(5, cf_deprecated, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
-          "Remove instances.", "RemoveInsts"); 		  
+          "Remove instances.", "RemoveInsts"); 	
+AddAction(6, 0, "Force layout", "Layout", "Force layout instances", 
+          "Force layout instances.", "ForceLayout");          
 AddObjectParam("Object", "Object for picking");
 AddAction(10, 0, "Pick instances", "SOL: instances", 
           "Pick <i>{0}</i>", "Pick instances.", "PickInsts");

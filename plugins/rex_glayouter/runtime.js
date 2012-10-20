@@ -162,9 +162,7 @@ cr.plugins_.Rex_Layouter.tag2container = {};
         if (is_world)
             this.sprites.push.apply(this.sprites, insts);
             
-        var j, handler_cnt = this.handlers.length;
-        for (j=0;j<handler_cnt;j++)
-            this.handlers[j].on_add_insts(insts);            
+        this._do_layout(insts, true);           
 	};
 
 	instanceProto.pin_inst = function (inst)
@@ -213,9 +211,7 @@ cr.plugins_.Rex_Layouter.tag2container = {};
             cr.arrayFindRemove(this.sprites, inst);                                        
         }
         
-        var j, handler_cnt = this.handlers.length;
-        for (j=0;j<handler_cnt;j++)
-            this.handlers[j].on_remove_insts(insts);        
+        this._do_layout(insts, false);      
 	}; 
     
     instanceProto._pick_insts = function (objtype)
@@ -288,8 +284,20 @@ cr.plugins_.Rex_Layouter.tag2container = {};
             if (behavior_inst.check_name == "LAYOUTER")
                 this.handlers.push(behavior_inst);
         }
-	};   
-	
+	};
+    
+	instanceProto._do_layout = function (insts, is_add_mode)
+	{
+        var j, handler_cnt = this.handlers.length;
+        for (j=0;j<handler_cnt;j++)
+        {
+            if (is_add_mode)
+                this.handlers[j].on_add_insts(insts); 
+            else
+                this.handlers[j].on_remove_insts(insts); 
+        }           
+	}; 
+    
 	instanceProto.layout_inst = function (inst, params)
 	{
 	    params.inst = inst;
@@ -418,6 +426,12 @@ cr.plugins_.Rex_Layouter.tag2container = {};
             return;
 	    this.remove_insts(insts);
 	};
+	
+	Acts.prototype.ForceLayout = function ()
+	{
+        this._do_layout([], true);
+	};    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
