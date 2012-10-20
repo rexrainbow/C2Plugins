@@ -45,23 +45,18 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	behinstProto.onCreate = function()
 	{
 	    this.check_name = "LAYOUTER";
-	    this.start_angle = this.properties[0];
-	    this.cyclic_angle = this.properties[1];
+        this.mode = this.properties[0];
+	    this.start_angle = this.properties[1];
+	    this.cyclic_angle = this.properties[2];
+        
+        // implement handlers
+        this.on_add_insts = this._on_update;
+        this.on_remove_insts = this._on_update;        
 	};
 
 	behinstProto.tick = function ()
 	{
 	};  
-
-	behinstProto.on_add_insts = function (insts)
-	{	
-	    this._on_update();
-	};
-
-	behinstProto.on_remove_insts = function (insts)
-	{
-	    this._on_update();	    
-	}; 
 
 	behinstProto._on_update = function ()
 	{
@@ -69,16 +64,17 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	    var OX = layouter.get_centerX(layouter); 
 	    var OY = layouter.get_centerY(layouter); 
 	    var OA = cr.to_clamped_degrees(layouter.angle);
-	    var sprites = layouter.sprites;
+	    var sprites = layouter.sprites;  
 	    var i, cnt = sprites.length, params;
-	    var a, r = Math.min(layouter.width, layouter.height)/2;
+	    var a, r = Math.min(layouter.width, layouter.height)/2;        
 	    var start_angle = cr.to_clamped_radians(OA + this.start_angle);
 	    var cyclic_angle = (Math.abs(this.cyclic_angle) == 360)? 
                            (2*Math.PI): cr.to_radians(this.cyclic_angle);
-	    var is_anti_clockwise = (this.cyclic_angle < 0);
+	    var is_anti_clockwise = (this.cyclic_angle < 0);        
+        var delta_angle = (this.mode == 1)?  cyclic_angle:(cyclic_angle/cnt);    
 	    for (i=0;i<cnt;i++)
 	    {
-	        a = (cyclic_angle*i)/cnt;
+	        a = delta_angle*i;
 	        if (is_anti_clockwise)
 	            a = (-1)*a;
 	        a += start_angle;
@@ -97,7 +93,21 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
-		
+    
+	Acts.prototype.SetMode = function (m)
+	{
+		this.mode = m;
+	}; 
+    
+	Acts.prototype.SetStartAngle = function (a)
+	{
+		this.start_angle = a;
+	};	
+    
+	Acts.prototype.SetDeltaAngle = function (a)
+	{
+        this.cyclic_angle = a;
+	};       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -16,8 +16,23 @@
 	  			 		 
 //////////////////////////////////////////////////////////////
 // Actions
-
-
+AddComboParamOption("Average");
+AddComboParamOption("Fix");
+AddComboParam("Mode", "Mode of delta angle.",0);
+AddAction(0, 0, "Set mode", "Mode", 
+          "Set {my} mode to <i>{0}</i>", 
+          "Mode of delta angle.", "SetMode");         
+AddNumberParam("Start angle", "Start angle, in degree.");
+AddAction(2, 0, "Set start angle", "Angle", 
+          "Set {my} start angle to <i>{0}</i>", 
+          "Set the start angle.", 
+          "SetStartAngle");
+AddNumberParam("Delta angle", "Amount of dleta angle clockwise from start, in degrees.");
+AddAction(3, 0, "Set delta angle", "Angle", 
+          "Set {my} delta angle to <i>{0}</i>", 
+          "Set amount of delta angle clockwise from start, in degrees. Negative is anti-clockwise.", 
+          "SetDeltaAngle");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 
@@ -26,8 +41,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [ 
+    new cr.Property(ept_combo, "Mode", "Average", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix angle.", "Average|Fix"),
     new cr.Property(ept_float, "Start angle", 0, "Start angle of first instance, in degree."),
-    new cr.Property(ept_float, "Cyclic angle", 360, "Cyclic angle from start angle, in degree. Negative is anti-clockwise."),
+    new cr.Property(ept_float, "Delta angle", 360, "Range angle or fix angle depend on mode, in degree. Negative is anti-clockwise."),
 	];
 	
 // Called by IDE when a new behavior type is to be created
