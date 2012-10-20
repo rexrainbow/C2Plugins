@@ -279,7 +279,14 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 		return this._pop_one_instance(name, index, objtype, is_pop);     
 	};	 
-		
+	  
+	Cnds.prototype.IsSubset = function (subset_name, main_name)
+	{
+        debugger;
+        var main_group = this.GetGroup(main_name);
+        var subset_group = this.GetGroup(subset_name);
+		return main_group.IsSubset(subset_group);     
+	};			
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -610,6 +617,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         for (i=0; i<remove_len; i++)
             this.RemoveUID(remove_uids[i]);
 	};	
+    
+	GroupKlassProto.IsSubset = function(subset_group)
+	{
+        var subset_uids = subset_group._set;
+        var uid;     
+        var is_subset = true;        
+        for (uid in subset_uids)        
+        {
+            if (!(uid in this._set))
+            {
+                is_subset = false;
+                break;
+            }
+        }
+        return is_subset;
+	};    
 	
 	GroupKlassProto.GetSet = function()
 	{

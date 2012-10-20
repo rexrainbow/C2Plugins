@@ -45,7 +45,10 @@ AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
 AddCondition(6, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
              "Get or pop one instance from group.", "PopInstance");             
-
+AddStringParam("Subset", "Group name.", '""'); 
+AddStringParam("Main set", "Group name.", '""'); 
+AddCondition(7, 0, "Is a subset", "Group: Set operation", "<i>{0}</i> is a subset of <i>{1}</i>", 
+             "Test if group is a subset of another group.", "IsSubset");    
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Name", "Group name.", '""');
