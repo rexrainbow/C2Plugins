@@ -468,9 +468,11 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	
 	Exps.prototype.InstAngle = function (ret)
 	{
-	    var val=this.layout_inst_params.angle;
+	    var val = this.layout_inst_params.angle;
 	    if (val == null)
 	        val = this.layout_inst_params.inst.angle;
+	    else
+		    val = cr.to_degrees(val);
 		ret.set_float(val);
 	};
 	
