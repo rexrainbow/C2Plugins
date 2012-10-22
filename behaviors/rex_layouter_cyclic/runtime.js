@@ -47,7 +47,8 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	    this.check_name = "LAYOUTER";
         this.mode = this.properties[0];
 	    this.start_angle = this.properties[1];
-	    this.cyclic_angle = this.properties[2];
+	    this.range_angle = this.properties[2]; // in degree
+	    this.delta_angle = this.properties[3]; // in degree
         
         // implement handlers
         this.on_add_insts = this._on_update;
@@ -67,22 +68,28 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	    var sprites = layouter.sprites;  
 	    var i, cnt = sprites.length, params;
 	    var a, r = Math.min(layouter.width, layouter.height)/2;        
-	    var start_angle = cr.to_clamped_radians(OA + this.start_angle);
-	    var cyclic_angle = (Math.abs(this.cyclic_angle) == 360)? 
-                           (2*Math.PI): cr.to_radians(this.cyclic_angle);
-	    var is_anti_clockwise = (this.cyclic_angle < 0);        
-        var delta_angle = (this.mode == 1)?  cyclic_angle:(cyclic_angle/cnt);    
+	    var start_angle = cr.to_clamped_radians(OA + this.start_angle);  // in rad
+	    var delta_angle;  // in rad
+        if (this.mode == 0)  // average mode
+        {
+	        var range_angle = (Math.abs(this.range_angle) == 360)? 
+                              (2*Math.PI): cr.to_radians(this.range_angle);  // in rad
+            delta_angle = range_angle/cnt;  // in rad
+            this.delta_angle = this.range_angle/cnt;  // in degree
+        }
+        else  // fix mode
+        {
+            delta_angle = cr.to_radians(this.delta_angle);  // in rad
+            this.range_angle = this.delta_angle * cnt;  // in degree
+        }
 	    for (i=0;i<cnt;i++)
 	    {
-	        a = delta_angle*i;
-	        if (is_anti_clockwise)
-	            a = (-1)*a;
-	        a += start_angle;
+	        a = start_angle + (delta_angle*i);  // in rad
 	        params = {x:OX + (r*Math.cos(a)),
 	                  y:OY + (r*Math.sin(a)),
 	                  angle:cr.to_degrees(a)}
 	        layouter.layout_inst(sprites[i], params);
-	    }	    
+	    }
 	}; 	 	
 	//////////////////////////////////////
 	// Conditions
@@ -96,18 +103,23 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
     
 	Acts.prototype.SetMode = function (m)
 	{
-		this.mode = m;
+		this.mode = m;		
 	}; 
     
 	Acts.prototype.SetStartAngle = function (a)
 	{
 		this.start_angle = a;
 	};	
-    
+	
+	Acts.prototype.SetRangeAngle = function (a)
+	{
+        this.range_angle = a;
+	};     
 	Acts.prototype.SetDeltaAngle = function (a)
 	{
-        this.cyclic_angle = a;
-	};       
+        this.delta_angle = a;
+	}; 
+	      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

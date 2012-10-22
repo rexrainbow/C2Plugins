@@ -26,9 +26,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [ 
-new cr.Property(ept_combo, "Mode", "Average", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix angle, Compact mode: layout instances compactly.", "Average|Fix|Compact"),
+new cr.Property(ept_combo, "Mode", "Fix", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix angle.", "Average|Fix"),
     new cr.Property(ept_combo, "Direction", "Left to right", "Direction from start to end.", "Left to right|Right to left|Top to bottom|Bottom to top"),
-    new cr.Property(ept_combo, "Alignment", "Start", "Alignment. It only uses in Fix or Compact mode.", "Center|Start|End"),        
+    new cr.Property(ept_combo, "Alignment", "Start", "Alignment. It only uses in Fix or Compact mode.", "Start|Center|End"),        
     new cr.Property(ept_float, "Delta distance", 40, "Delta distance of each instance, in pixel. It only uses in Fix mode."),
 	];
 	
