@@ -288,6 +288,9 @@ cr.plugins_.Rex_Layouter.tag2container = {};
     
 	instanceProto._do_layout = function (insts, is_add_mode)
 	{
+	    if (this.sprites.length == 0)
+	        return;
+	        
         var j, handler_cnt = this.handlers.length;
         for (j=0;j<handler_cnt;j++)
         {
@@ -432,7 +435,7 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	};
 	
 	Acts.prototype.ForceLayout = function ()
-	{
+	{	
         this._do_layout([], true);
 	};    
     
