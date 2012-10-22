@@ -87,7 +87,7 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	        a = start_angle + (delta_angle*i);  // in rad
 	        params = {x:OX + (r*Math.cos(a)),
 	                  y:OY + (r*Math.sin(a)),
-	                  angle:cr.to_degrees(a)}
+	                  angle:a};
 	        layouter.layout_inst(sprites[i], params);
 	    }
 	}; 	 	

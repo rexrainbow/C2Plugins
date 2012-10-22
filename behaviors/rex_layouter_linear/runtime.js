@@ -161,7 +161,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	    {
 	        params = {x:start_x + (dx*i),
 	                  y:start_y + (dy*i),
-	                  angle:inst_angle};
+	                  angle:a};
 	        layouter.layout_inst(sprites[i], params);
 	    }        
 	};
