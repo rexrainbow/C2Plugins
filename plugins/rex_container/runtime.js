@@ -224,6 +224,7 @@ cr.plugins_.Rex_Container.tag2container = {};
 	instanceProto._pick_all_insts = function ()
 	{
 	    var type_name, _container, uid, inst, objtype, sol;
+	    var has_inst = false;
         for (type_name in this.insts_group)
         {
             _container = this.insts_group[type_name];
@@ -239,8 +240,10 @@ cr.plugins_.Rex_Container.tag2container = {};
                     sol.instances.length = 0;
                 }
                 sol.instances.push(inst);
+                has_inst = true;
             }
         }
+        return has_inst;
 	}; 	
 	
 	instanceProto._destory_all_insts = function ()
@@ -302,8 +305,7 @@ cr.plugins_.Rex_Container.tag2container = {};
 
 	Cnds.prototype.PickAllInsts = function ()
 	{
-	    this._pick_all_insts();
-	    return true;
+	    return this._pick_all_insts();
 	};	
 	//////////////////////////////////////
 	// Actions
