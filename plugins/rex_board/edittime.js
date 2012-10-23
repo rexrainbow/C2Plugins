@@ -37,7 +37,10 @@ AddNumberParam("UID of chess", "UID of chess A.", 0);
 AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddCondition(9, 0, "Are neighbor (UID)", "Board", 
              "Are <i>{0}</i> and <i>{1}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
-             
+AddCondition(10, cf_not_invertible, "Pick all chess", "SOL", 
+             "Pick all chess on the board", "Pick all chess on the board.", "PickAllInsts");                      
+
+        
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -106,7 +109,8 @@ AddNumberParam("UID of chess", "UID of chess A.", 0);
 AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddAction(15, 0, "Swap chess by UID", "Logic: Swap", "Swap chess UID <i>{0}</i> with chess UID <i>{1}</i>", 
           "Swap two chess by UID.", "SwapChess");
-                
+AddAction(16, 0, "Pick all chess", "SOL", 
+          "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess");                  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of instance.", 0);

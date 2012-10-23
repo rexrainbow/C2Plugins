@@ -120,7 +120,31 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return (typeof layerparam == "number")?
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
-    };    
+    };
+    
+	instanceProto._pick_all_insts = function ()
+	{	    
+	    var uid, inst, objtype, sol;
+	    var insts=this._insts;
+	    var objtype_name={};	
+	    var has_inst = false;    
+	    for (uid in insts)
+	    {
+	        inst = insts[uid];
+	        objtype = inst.type; 
+	        sol = objtype.getCurrentSol();
+	        if (!(objtype.name in objtype_name))
+	        {
+	            sol.select_all = false;
+	            sol.instances.length = 0;
+	            objtype_name[objtype.name] = true;
+	        }
+	        sol.instances.push(inst);  
+	         has_inst = true;
+	    }
+	    return  has_inst;
+	};
+	        
 	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
 	{
         var layer = this._get_layer(_layer);
@@ -382,7 +406,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 		return this.are_neighbor(uidA, uidB);
 	};	
-	
+
+	Cnds.prototype.PickAllInsts = function ()
+	{
+	    return this._pick_all_insts();
+	};
 	
 	//////////////////////////////////////
 	// Actions
@@ -439,6 +467,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         var chess_xyz = this.uid2xyz(chess_uid);
         var tile_xyz = this.uid2xyz(tile_uid);
+	    if ((chess_xyz == null) || (tile_xyz == null))
+	        return;          
         this.move_item(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z);    
 	};
 	
@@ -456,7 +486,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{	
         this.SwapChess(uidA, uidB);
 	};	
-	 
+	
+	Acts.prototype.PickAllChess = function ()
+	{	
+        this._pick_all_insts();
+	};		 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -548,10 +582,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var xyz_to = this.uid2xyz(uid_to);
         if ((xyz_o == null) || (xyz_to == null))
             angle = (-1);
-        else        
+        else  
+        {      
             angle = this.layout.XYZ2LA(xyz_o, xyz_to);
-        if (angle == null)
-            angle = (-1);
+            if (angle == null)
+                angle = (-1);
+        }
 	    ret.set_float(angle);
 	};  
 	
