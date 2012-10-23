@@ -18,22 +18,22 @@
 // Actions
 AddComboParamOption("Average");
 AddComboParamOption("Fix");
-AddComboParam("Mode", "Mode of delta angle.",0);
+AddComboParam("Mode", "Mode of layout.",0);
 AddAction(0, 0, "Set mode", "Mode", 
           "Set {my} mode to <i>{0}</i>", 
-          "Mode of delta angle.", "SetMode");         
+          "Set mode of layout.", "SetMode");         
 AddNumberParam("Start angle", "Start angle, in degree.");
 AddAction(2, 0, "Set start angle", "Angle", 
           "Set {my} start angle to <i>{0}</i>", 
           "Set the start angle.", 
           "SetStartAngle");
 AddNumberParam("Range angle", "Amount of Range angle clockwise from start, in degrees.");
-AddAction(3, 0, "Set range angle", "Angle", 
+AddAction(3, 0, "Set range angle", "Average mode", 
           "Set {my} range angle to <i>{0}</i>", 
           "Set amount of range angle clockwise from start, in degrees. Negative is anti-clockwise.", 
           "SetRangeAngle");          
 AddNumberParam("Delta angle", "Amount of dleta angle clockwise from start, in degrees.");
-AddAction(4, 0, "Set delta angle", "Angle", 
+AddAction(4, 0, "Set delta angle", "Fix mode", 
           "Set {my} delta angle to <i>{0}</i>", 
           "Set amount of delta angle clockwise from start, in degrees. Negative is anti-clockwise.", 
           "SetDeltaAngle");

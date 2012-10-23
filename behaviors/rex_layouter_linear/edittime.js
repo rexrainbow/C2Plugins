@@ -16,8 +16,32 @@
 	  			 		 
 //////////////////////////////////////////////////////////////
 // Actions
-
-
+AddComboParamOption("Average");
+AddComboParamOption("Fix");
+AddComboParam("Mode", "Mode of layout.",0);
+AddAction(0, 0, "Set mode", "Mode", 
+          "Set {my} mode to <i>{0}</i>", 
+          "Ser mode of layout.", "SetMode"); 
+AddComboParamOption("Left to right");
+AddComboParamOption("Right to left");
+AddComboParamOption("Top to bottom");
+AddComboParamOption("Bottom to top");
+AddComboParam("Direction", "Direction of layout instances.",0);
+AddAction(1, 0, "Set direction", "Mode", 
+          "Set {my} direction to <i>{0}</i>", 
+          "Set direction of layout instances.", "SetDirection");
+AddComboParamOption("Start");
+AddComboParamOption("Center");
+AddComboParamOption("End");
+AddComboParam("Alignment", "Alignment of layout instances.",0);
+AddAction(2, 0, "Set alignment", "Mode", 
+          "Set {my} alignment to <i>{0}</i>", 
+          "Set alignment of instances. It only uses in Fix mode.", "SetAlignment");
+AddNumberParam("Delta distance", "Delta distance of each instance, in pixel.");
+AddAction(3, 0, "Set delta distance", "Fix mode", 
+          "Set {my} delta distance to <i>{0}</i>", 
+          "Set delta distance of each instance, in pixel. It only uses in Fix mode.", "SetDeltaDist");
+                
 //////////////////////////////////////////////////////////////
 // Expressions
 
@@ -28,7 +52,7 @@ ACESDone();
 var property_list = [ 
 new cr.Property(ept_combo, "Mode", "Fix", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix angle.", "Average|Fix"),
     new cr.Property(ept_combo, "Direction", "Left to right", "Direction from start to end.", "Left to right|Right to left|Top to bottom|Bottom to top"),
-    new cr.Property(ept_combo, "Alignment", "Start", "Alignment. It only uses in Fix or Compact mode.", "Start|Center|End"),        
+    new cr.Property(ept_combo, "Alignment", "Start", "Alignment. It only uses in Fix mode.", "Start|Center|End"),        
     new cr.Property(ept_float, "Delta distance", 40, "Delta distance of each instance, in pixel. It only uses in Fix mode."),
 	];
 	

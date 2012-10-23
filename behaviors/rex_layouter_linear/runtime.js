@@ -112,6 +112,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         var seg = (cnt==1)? 1: (cnt-1);
         var dx = (this._points.end.x - this._points.start.x)/seg;
         var dy = (this._points.end.y - this._points.start.y)/seg;
+        this.delta_distance = Math.sqrt((dx*dx) + (dy*dy));
         var start_x = this._points.start.x;
         var start_y = this._points.start.y;
         var inst_angle = cr.to_degrees(a);
@@ -175,6 +176,26 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
+    
+	Acts.prototype.SetMode = function (m)
+	{
+		this.mode = m;		
+	}; 
+    
+	Acts.prototype.SetDirection = function (m)
+	{
+		this.direction = m;		
+	};	
+    
+	Acts.prototype.SetAlignment = function (m)
+	{
+		this.alignment = m;		
+	};	
+    
+	Acts.prototype.SetDeltaDist = function (dist)
+	{
+		this.delta_distance = dist;		
+	};		
 		
 	//////////////////////////////////////
 	// Expressions
