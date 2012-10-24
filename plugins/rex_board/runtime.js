@@ -240,7 +240,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		if (o_xyz == null)
 		    return null;
 	    var tx = this.layout.GetNeighborLX(o_xyz.x, o_xyz.y, dir);
-		var ty = this.layout.GetNeighborLX(o_xyz.x, o_xyz.y, dir);
+		var ty = this.layout.GetNeighborLY(o_xyz.x, o_xyz.y, dir);
 	    if (tz == null)
 		    tz = o_xyz.z;
 		return this.xyz2uid(tx, ty, tz);
