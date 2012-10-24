@@ -28,8 +28,15 @@ AddCondition(3, cf_looping | cf_not_invertible, "For each row", "For each row", 
 AddStringParam("Row", "The row index.", '""');
 AddCondition(4, cf_looping | cf_not_invertible, "For each col in row", "For each row", 
              "For each col in a row <i>{0}</i>", "Repeat the event for each column in a row.", "ForEachColInRow");             
-             
-
+AddAnyTypeParam("Data", "Data to compare.", 0);
+AddStringParam("Col", "The col index.", '""');
+AddCondition(5, 0, "Data in col", "In", 
+             "<i>{0}</i> in col <i>{1}</i>", "Testing if data in col.", "IsDataInCol");
+AddAnyTypeParam("Data", "Data to compare.", 0);
+AddStringParam("Row", "The row index.", '""');
+AddCondition(6, 0, "Data in row", "In", 
+             "<i>{0}</i> in row <i>{1}</i>", "Testing if data in row.", "IsDataInRow");
+			 
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("CSV string", "The csv string for loading.", '""');

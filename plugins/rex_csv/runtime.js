@@ -158,7 +158,45 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
         this.current_table.ForEachColInRow(row);
 		return false;
-	}; 	 
+	}; 	
+
+	Cnds.prototype.IsDataInCol = function (data, col_name)
+	{
+	    debugger;
+	    var table = this.current_table._table;
+		if (!(col_name in table))
+		    return false;
+	    var col_data = table[col_name], row_name;
+		var matched = false;
+		for (row_name in col_data)
+		{
+		    if (col_data[row_name] == data)
+			{
+			    matched = true;
+				break;
+			}
+		}
+		return matched;
+	}; 
+
+	Cnds.prototype.IsDataInRow = function (data, row_name)
+	{
+	    var table = this.current_table._table;
+	    var cols = this.current_table.keys;
+		if (!(row_name in table[cols[0]]))
+		    return false;
+	    var col_name;
+		var matched = false;
+		for (col_name in table)
+		{
+		    if (table[col_name][row_name] == data)
+			{
+			    matched = true;
+				break;
+			}
+		}
+		return matched;
+	}; 	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -299,8 +337,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.plugin = plugin;
         this.is_debug_mode = is_debug_mode;    
 		this._table = {};
-        this.keys = [];
-        this.items = [];
+        this.keys = [];    // col name
+        this.items = [];   // row name
         this.forCol = "";
         this.forRow = "";        
     };
