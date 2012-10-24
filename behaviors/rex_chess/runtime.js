@@ -73,9 +73,7 @@ cr.behaviors.Rex_chess = function(runtime)
                 _xyz = obj.uid2xyz(this.inst.uid)
                 if (_xyz != null)
                 { 
-                    this.board = obj;
-					_dir_sequence_init(this._dir_sequence, obj.layout.GetDirCount());
-					this._wander.init_xyz = _xyz;
+                    this.board = obj;					
                     return this.board;
                 }
             }
@@ -239,10 +237,10 @@ cr.behaviors.Rex_chess = function(runtime)
 	        ret_uid = (-1);
 	    else
 	    {
-	        ret_uid = board.uid2xyz(this.inst.uid);
+	        ret_uid = board.lz2uid(this.inst.uid, lz);
 	        if (ret_uid == null)
 	            ret_uid = (-1);
-	    }
+	    }		
 	    ret.set_int(ret_uid);
 	}; 	
 	
@@ -269,7 +267,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	    else
 	    {
 	        var _xyz = board.uid2xyz(this.inst.uid);
-	        py = board.layout.GetX(_xyz.x,_xyz.y,_xyz.z);
+	        py = board.layout.GetY(_xyz.x,_xyz.y,_xyz.z);
 	    }
 	    ret.set_float(py);
 	};
