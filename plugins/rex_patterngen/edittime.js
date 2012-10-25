@@ -22,7 +22,7 @@
 AddComboParamOption("Shuffe");
 AddComboParamOption("Random");
 AddComboParam("Mode", "Mode of pattern generator.",0);
-AddAction(1, 0, "Set mode", "Mode", "Set {my} mode to <i>{0}</i>", 
+AddAction(1, 0, "Set mode", "Mode", "Set mode to <i>{0}</i>", 
           "Set mode of pattern generator.", "SetMode");  
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddNumberParam("Count", "Count.", 1);
