@@ -137,7 +137,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    var pattern;
 	    if (this.restart_gen_flg)
 	        this.start_gen();
-	    if (this.mode == 0) // shuffe mode
+	    if (this.mode == 0) // shuffle mode
 	    {
 	        this._reset_pat_rank(this._shadow_patterns);
 	        pattern = this._get_rand_pattern(this._pat_rank);

@@ -4,7 +4,7 @@
 		"name":			"Pattern gen",
 		"id":			"Rex_PatternGen",
 		"version":		"0.1",   		
-		"description":	"Generate patterns with shuffe or random mode.",
+		"description":	"Generate patterns with shuffle or random mode.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"General",
@@ -19,7 +19,7 @@
 
 //////////////////////////////////////////////////////////////
 // Actions  
-AddComboParamOption("Shuffe");
+AddComboParamOption("Shuffle");
 AddComboParamOption("Random");
 AddComboParam("Mode", "Mode of pattern generator.",0);
 AddAction(1, 0, "Set mode", "Mode", "Set mode to <i>{0}</i>", 
@@ -52,7 +52,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Mode", "Shuffe", "Generater mode.", "Shuffe|Random"),
+    new cr.Property(ept_combo, "Mode", "shuffle", "Generater mode.", "Shuffle|Random"),
     new cr.Property(ept_text, "Patterns", "", 
                    'Set patterns. ex:"{"A":10,"B":20}".'),	
 	];
