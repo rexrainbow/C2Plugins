@@ -16,27 +16,27 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(6, cf_trigger, "On LEFT key pressed", "Pressd", "On LEFT pressed", 
-             "Triggered when LEFT key is pressed.", "OnLEFTKey");
-AddCondition(7, cf_trigger, "On RIGHT key pressed", "Pressd", "On RIGHT pressed", 
-             "Triggered when RIGHT key is pressed.", "OnRIGHTKey");
+AddCondition(6, cf_trigger, "On Left arrow pressed", "Pressd", "On Left arrow pressed", 
+             "Triggered when Left arrow is pressed.", "OnLEFTPressed");
+AddCondition(7, cf_trigger, "On Right arrow pressed", "Pressd", "On Right arrow pressed", 
+             "Triggered when Right arrow is pressed.", "OnRIGHTPressed");
 AddCondition(8, cf_trigger, "On any key pressed", "Pressd", "On any key pressed", 
-             "Triggered when any key is pressed.", "OnAnyKey");
+             "Triggered when any arrow is pressed.", "OnAnyPressed");
 
-AddCondition(15, 0,	"LEFT Key is down", "Is down", "LEFT is down", 
-             "Test if LEFT key is currently held down by alpha direction.", "IsLEFTDown");
-AddCondition(16, 0,	"RIGHT Key is down", "Is down", "RIGHT is down", 
-             "Test if RIGHT key is currently held down by alpha direction.", "IsRIGHTDown");
+AddCondition(15, 0,	"Left arrow is down", "Is down", "Left arrow is down", 
+             "Return true if Left arrow is currently held down by alpha direction.", "IsLEFTDown");
+AddCondition(16, 0,	"Right arrow is down", "Is down", "RIGHT is down", 
+             "Return true if Right arrow is currently held down by alpha direction.", "IsRIGHTDown");
 
-AddCondition(25, cf_trigger, "On LEFT key released", "Released", "On LEFT released", 
-             "Triggered when LEFT key is released by alpha direction.", "OnLEFTKeyReleased");
-AddCondition(26, cf_trigger, "On RIGHT key released", "Released", "On RIGHT released", 
-             "Triggered when RIGHT key is released by alpha direction.", "OnRIGHTKeyReleased");
+AddCondition(25, cf_trigger, "On Left arrow released", "Released", "On Left arrow released", 
+             "Triggered when Left arrow is released by alpha direction.", "OnLEFTReleased");
+AddCondition(26, cf_trigger, "On Right arrow released", "Released", "On Right arrow released", 
+             "Triggered when Right arrow is released by alpha direction.", "OnRIGHTReleased");
              
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(2, 0, "Calibration", "calibration", "Calibration zero degree to current direction", 
-          "Calibration zero degree to current direction.", "Calibration");
+AddAction(2, 0, "Calibration", "calibration", "Set ZERO angle to current degree", 
+          "Set ZERO angle to current degree.", "Calibration");
 AddNumberParam("Sensitivity angle", "Sensitivity angle.");          
 AddAction(3, 0, "Set sensitivity angle", "Sensitivity", "Set sensitivity angle to <i>{0}</i>", 
           "Set sensitivity angle of turning direction detection.", "SetSensitivity");

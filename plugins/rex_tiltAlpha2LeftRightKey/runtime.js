@@ -113,18 +113,18 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
             return;
 
         if (this.key_status == 1)  // release right key
-            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnRIGHTKeyReleased, this);        
+            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnRIGHTReleased, this);        
         else if (this.key_status == 2)  // release left key
-            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnLEFTKeyReleased, this);   
+            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnLEFTReleased, this);   
         
         
         if (current_key_status == 1)  // press right key
-            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnRIGHTKey, this);  
+            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnRIGHTPressed, this);  
         else if (current_key_status == 2)  // press left key
-            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnLEFTKey, this);            
+            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnLEFTPressed, this);            
         
         if (current_key_status != 0)
-            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnAnyKey, this);     
+            this.runtime.trigger(cr.plugins_.Rex_TiltAlpha2LeftRightKey.prototype.cnds.OnAnyPressed, this);     
         
         this.key_status = current_key_status;
 	}; 
@@ -143,25 +143,25 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
         return (this.key_status == 1);
 	};     
   
-	Cnds.prototype.OnLEFTKey = function()
+	Cnds.prototype.OnLEFTPressed = function()
 	{
         return true;    
 	};
-	Cnds.prototype.OnRIGHTKey = function()
+	Cnds.prototype.OnRIGHTPressed = function()
 	{
         return true;    
 	}; 	
 
-	Cnds.prototype.OnAnyKey = function()
+	Cnds.prototype.OnAnyPressed = function()
 	{
         return true;    
 	};	
 
-	Cnds.prototype.OnLEFTKeyReleased = function()
+	Cnds.prototype.OnLEFTReleased = function()
 	{
         return true;    
 	};
-	Cnds.prototype.OnRIGHTKeyReleased = function()
+	Cnds.prototype.OnRIGHTReleased = function()
 	{
         return true;    
 	};    

@@ -53,6 +53,7 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         this.degree_diffLR = 0;
         this.keyUD = 0; // 0=no key, 1=up key, 2=down key 
         this.keyLR = 0; // 0=no key, 1=left key, 2=right key 
+        this.is_any_pressed = false;
 	};
 
 	instanceProto.TouchWrapGet = function ()
@@ -162,6 +163,7 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
           
         var orientation = orientation_get();
         var dir = this._directions; //0=UD, 1=LR, 2=4dir, 3=8dir
+        this.is_any_pressed = false;
         // key UD
         if ((dir==0) || (dir==2) || (dir==3))
             this._update_keyUD(orientation);
@@ -179,18 +181,25 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
             current_keyUD = (this.degree_diffUD>0)? 1:2; // 1=up, 2=bottom
         else  // no key
             current_keyUD = 0;
-        if (current_keyUD != this.keyUD)
-        {
-            if (this.keyUD == 1)  // release up key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnUPKeyReleased, this);        
-            else if (this.keyUD == 2)  // release bottom key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnDOWNKeyReleased, this);   
-            if (current_keyUD == 1)  // press up key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnUPKey, this);        
-            else if (current_keyUD == 2)  // press bottom key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnDOWNKey, this); 
-            this.keyUD = current_keyUD;
-        }  
+        
+        if (current_keyUD == this.keyUD)
+            return;
+            
+        // release
+        if (this.keyUD == 1)  // release up key
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnUPReleased, this);        
+        else if (this.keyUD == 2)  // release bottom key
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnDOWNReleased, this);
+               
+        // press    
+        if (current_keyUD == 1)  // press up key
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnUPPressed, this);       
+        else if (current_keyUD == 2)  // press bottom key
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnDOWNPressed, this); 
+        if (current_keyUD != 0)
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnAnyPressed, this);  
+            
+        this.keyUD = current_keyUD;
 	};	
 	instanceProto._update_keyLR = function (orientation)
 	{
@@ -200,19 +209,26 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         if (Math.abs(this.degree_diffLR) >= this._sensitivity)
             current_keyLR = (this.degree_diffLR>0)? 1:2; // 1=left, 2=right
         else  // no key
-            current_keyLR = 0;           
-        if (current_keyLR != this.keyLR)
-        {
-            if (this.keyLR == 1)  // release left key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnLEFTKeyReleased, this);        
-            else if (this.keyLR == 2)  // release right key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnRIGHTKeyReleased, this);   
-            if (current_keyLR == 1)  // press left key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnLEFTKey, this);        
-            else if (current_keyLR == 2)  // press right key
-                this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnRIGHTKey, this); 
-            this.keyLR = current_keyLR;
-        }  
+            current_keyLR = 0;  
+            
+        if (current_keyLR == this.keyLR)
+            return;
+        
+        // release
+        if (this.keyLR == 1)  // release left key
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnLEFTReleased, this);        
+        else if (this.keyLR == 2)  // release right key
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnRIGHTReleased, this);   
+        
+        // pressed
+        if (current_keyLR == 1)  // press left key                
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnLEFTPressed, this);        
+        else if (current_keyLR == 2)  // press right key              
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnRIGHTPressed, this); 
+        if (current_keyLR != 0)
+            this.runtime.trigger(cr.plugins_.Rex_Tilt2ArrowKey.prototype.cnds.OnAnyPressed, this);   
+             
+        this.keyLR = current_keyLR; 
 	};	
 		
 	//////////////////////////////////////
@@ -237,41 +253,49 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         return (this.keyLR == 2)
 	};    
     
-	Cnds.prototype.OnUPKey = function()
+	Cnds.prototype.OnUPPressed = function()
 	{
         return true;
 	};
-	Cnds.prototype.OnDOWNKey = function()
+	Cnds.prototype.OnDOWNPressed = function()
 	{
         return true;    
 	};    
-	Cnds.prototype.OnLEFTKey = function()
+	Cnds.prototype.OnLEFTPressed = function()
 	{
         return true;    
 	};
-	Cnds.prototype.OnRIGHTKey = function()
+	Cnds.prototype.OnRIGHTPressed = function()
 	{
         return true;    
 	};      
 	
-	Cnds.prototype.OnAnyKey = function()
+	Cnds.prototype.OnAnyPressed = function()
 	{
-        return true;    
+	    var ret;
+	    if (!this.is_any_pressed)
+	    {
+	        this.is_any_pressed = true;
+	        ret = true;
+	    }
+	    else
+	        ret = false;
+        return ret;    
 	};
 	
-	Cnds.prototype.OnUPKeyReleased = function()
+	Cnds.prototype.OnUPReleased = function()
 	{
         return true;
 	};
-	Cnds.prototype.OnDOWNKeyReleased = function()
+	Cnds.prototype.OnDOWNReleased = function()
 	{
         return true;    
 	};  
-	Cnds.prototype.OnLEFTKeyReleased = function()
+	Cnds.prototype.OnLEFTReleased = function()
 	{
         return true;    
 	};
-	Cnds.prototype.OnRIGHTKeyReleased = function()
+	Cnds.prototype.OnRIGHTReleased = function()
 	{
         return true;    
 	};   
