@@ -113,4 +113,8 @@ cr.plugins_.Rex_WindowOrientation = function(runtime)
 	        _orientation = 0;
 		ret.set_int(_orientation);
 	};
+	Exps.prototype.IsLandspcape = function (ret)
+	{
+		ret.set_int(is_landspcape()? 1:0);
+	};    
 }());

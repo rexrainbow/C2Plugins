@@ -33,6 +33,7 @@ AddCondition(6, 0, "Is portrait view", "Orientation", "Is portrait view",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Orientation", "Orientation", "Orientation", "Get orientation value of window.");
+AddExpression(2, ef_return_number, "Is landspcape", "Orientation", "IsLandspcape", "Retrun 1 if current view is landspcape.");
 
 ACESDone();
 
