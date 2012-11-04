@@ -52,6 +52,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 		this.pre_y = 0;           
         this.is_on_moving = false;  
         this.keyMap = [false, false, false, false];
+        this.pre_key_id = 0;
         this.diff_x = 0;
         this.diff_y = 0;
         
@@ -104,6 +105,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
                 this.keyMap[i] = false;
             }
         }
+        this.pre_key_id = 0;
     };
     
 	instanceProto.get_touch_x = function ()
@@ -191,6 +193,9 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     var _keyid_list = [RIGHTKEY,DOWNKEY,LEFTKEY,UPKEY];       
     instanceProto._keydown = function(key_id)
     {
+        if (this.pre_key_id == key_id)
+            return;
+            
         var i;
         for (i=0; i<4; i++)
         {
@@ -211,6 +216,8 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         }         
         if (pressed_any_key)
             this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnAnyKey, this);
+        
+        this.pre_key_id = key_id;
     };
 	//////////////////////////////////////
 	// Conditions
