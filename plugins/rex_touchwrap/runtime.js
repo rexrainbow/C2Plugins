@@ -118,9 +118,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.curTouchX = 0;
 		this.curTouchY = 0;
 		
-		this.trigger_index = 0;
-		this.mouseXcanvas = 0;				// mouse position relative to canvas
-		this.mouseYcanvas = 0;        
+		this.trigger_index = 0;     
 		
 		this.useMouseInput = (this.properties[0] !== 0);
 		
@@ -455,7 +453,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onTouchStart = function (info)
 	{
-	    this.touchDown = true;
 		if (info.preventDefault)
 			info.preventDefault();
 			
@@ -463,7 +460,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		var i, len, t;
-        var i, cnt=this._plugins_hook.length;
+        var i, cnt=this._plugins_hook.length;     
+        var touch_mouse_start = (this._is_mouse_mode)? this.mouseDown : true;        
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -492,14 +490,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.curTouchY = touchy;
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
             
-            for (i=0;i<cnt;i++)
-                this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
+            if (touch_mouse_start)
+            {
+                for (i=0;i<cnt;i++)
+                    this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
+            }
 		}		
 	};
 
 	instanceProto.onTouchEnd = function (info)
 	{
-	    this.touchDown = false;
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -569,11 +569,13 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Send a fake touch start event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
 		var fakeinfo = { changedTouches: [t] };
+        this.touches.length = 0;
 		this.onTouchStart(fakeinfo);
 	};
 	
 	instanceProto.onMouseMove = function(info)
 	{	
+        this._is_mouse_mode = true;
 		if (info.preventDefault)
 			info.preventDefault();
 			
