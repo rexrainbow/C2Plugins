@@ -52,6 +52,8 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 		this.pre_y = 0;           
         this.is_on_moving = false;  
         this.keyMap = [false, false, false, false];
+        this.diff_x = 0;
+        this.diff_y = 0;
         
         this.press_handlers =   [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTKey,
                                  cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNKey,
@@ -79,15 +81,19 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         }
 	}; 
     
-    instanceProto.OnTouchStart = function ()
+    instanceProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
     {
+        if (_NthTouch != 0)
+            return;
         this.is_on_moving = true;
-        this.pre_x = this.get_touch_x();
-        this.pre_y = this.get_touch_y(); 
+        this.pre_x = _TouchX;
+        this.pre_y = _TouchY; 
     };
     
-    instanceProto.OnTouchEnd = function ()
+    instanceProto.OnTouchEnd = function (_NthTouch)
     {
+        if (_NthTouch != 0)
+            return;    
         this.is_on_moving = false;
         var i;
         for (i=0; i<4; i++)
@@ -132,14 +138,21 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     var LEFTKEY = 0x4;
     var UPKEY = 0x8;
 	instanceProto._touch_arrow = function ()
-	{
+	{    
         if ((this.touchwrap == null) || (!this.is_on_moving))
+        {
+            this.diff_x = 0;
+            this.diff_y = 0;        
             return;
+        }
         
         var cur_x = this.get_touch_x();
         var cur_y = this.get_touch_y();
         var dx = cur_x - this.pre_x;
         var dy = cur_y - this.pre_y;
+        this.diff_x = dx;
+        this.diff_y = dy;        
+        
         if ( Math.sqrt(dx*dx + dy*dy) >= this._sensitivity )
         {
             var angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
@@ -221,44 +234,44 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         return this.keyMap[0];
 	};    
     
-	Cnds.prototype.OnUPKey = function()
+	Cnds.prototype.OnUPPressed = function()
 	{
         return true;
 	};
-	Cnds.prototype.OnDOWNKey = function()
+	Cnds.prototype.OnDOWNPressed = function()
 	{
         return true;    
 	};    
-	Cnds.prototype.OnLEFTKey = function()
+	Cnds.prototype.OnLEFTPressed = function()
 	{
         return true;    
 	};
-	Cnds.prototype.OnRIGHTKey = function()
+	Cnds.prototype.OnRIGHTPressed = function()
 	{
         return true;    
 	};      
-	
-	Cnds.prototype.OnAnyKey = function()
+
+	Cnds.prototype.OnAnyPressed = function()
 	{
         return true;    
 	};
 	
-	Cnds.prototype.OnUPKeyReleased = function()
+	Cnds.prototype.OnUPReleased = function()
 	{
         return true;
 	};
-	Cnds.prototype.OnDOWNKeyReleased = function()
+	Cnds.prototype.OnDOWNReleased = function()
 	{
         return true;    
 	};  
-	Cnds.prototype.OnLEFTKeyReleased = function()
+	Cnds.prototype.OnLEFTReleased = function()
 	{
         return true;    
 	};
-	Cnds.prototype.OnRIGHTKeyReleased = function()
+	Cnds.prototype.OnRIGHTReleased = function()
 	{
         return true;    
-	};   
+	};     
     
 	//////////////////////////////////////
 	// Actions
@@ -269,5 +282,13 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-
+    
+	Exps.prototype.DistX = function (ret)
+	{
+		ret.set_float(this.diff_x);
+	};
+	Exps.prototype.DistY = function (ret)
+	{
+		ret.set_float(this.diff_y);
+	};
 }());

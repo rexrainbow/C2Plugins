@@ -1,10 +1,10 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"ArrowKey",
+		"name":			"Dragging to ArrowKey",
 		"id":			"Rex_ArrowKey",
 		"version":		"0.1",   		
-		"description":	"Get arrow key event from keyboard or touch/mouse input.",
+		"description":	"Get arrow key event from dragging input.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Input",
@@ -16,27 +16,42 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On UP key pressed", "Pressd", "On UP pressed", "Triggered when UP key is pressed.", "OnUPKey");
-AddCondition(2, cf_trigger, "On DOWN key pressed", "Pressd", "On DOWN pressed", "Triggered when DOWN key is pressed.", "OnDOWNKey");
-AddCondition(3, cf_trigger, "On LEFT key pressed", "Pressd", "On LEFT pressed", "Triggered when LEFT key is pressed.", "OnLEFTKey");
-AddCondition(4, cf_trigger, "On RIGHT key pressed", "Pressd", "On RIGHT pressed", "Triggered when RIGHT key is pressed.", "OnRIGHTKey");
-AddCondition(5, cf_trigger, "On any key pressed", "Pressd", "On any key pressed", "Triggered when any keyboard key is pressed.", "OnAnyKey");
+AddCondition(1, cf_trigger, "On Up arrow pressed", "Pressd", "On Up arrow pressed", 
+             "Triggered when Up arrow is pressed.", "OnUPPressed");
+AddCondition(2, cf_trigger, "On Down arrow pressed", "Pressd", "On Down arrow pressed", 
+             "Triggered when Down arrow is pressed.", "OnDOWNPressed");
+AddCondition(3, cf_trigger, "On Left arrow pressed", "Pressd", "On Left arrow pressed", 
+             "Triggered when Left arrow is pressed.", "OnLEFTPressed");
+AddCondition(4, cf_trigger, "On Right arrow pressed", "Pressd", "On Right arrow pressed", 
+             "Triggered when Right arrow is pressed.", "OnRIGHTPressed");
+AddCondition(5, cf_trigger, "On any arrow pressed", "Pressd", "On any arrow pressed", 
+             "Triggered when any arrow is pressed.", "OnAnyPressed");
 
-AddCondition(11,	0,	"UP Key is down",	"Is down", "UP is down", "Test if UP key is currently held down.", "IsUPDown");
-AddCondition(12,	0,	"DOWN Key is down",	"Is down", "DOWN is down", "Test if DOWN key is currently held down.", "IsDOWNDown");
-AddCondition(13,	0,	"LEFT Key is down",	"Is down", "LEFT is down", "Test if LEFT key is currently held down.", "IsLEFTDown");
-AddCondition(14,	0,	"RIGHT Key is down",	"Is down", "RIGHT is down", "Test if RIGHT key is currently held down.", "IsRIGHTDown");
+AddCondition(11, 0,	"Up arrow is down",	"Is down", "Up arrow is down", 
+             "Return true if Up arrow is currently held down.", "IsUPDown");
+AddCondition(12, 0,	"Down arrow is down", "Is down", "Down arrow is down", 
+             "Return true if Down arrow is currently held down.", "IsDOWNDown");
+AddCondition(13, 0,	"Left arrow is down", "Is down", "Left arrow is down", 
+             "Return true if Left arrow is currently held down.", "IsLEFTDown");
+AddCondition(14, 0,	"Right arrow is down", "Is down", "Right arrow is down", 
+             "Return true if Right arrow is currently held down.", "IsRIGHTDown");
 
-AddCondition(21,	cf_trigger,	"On UP key released",	"Released", "On UP released", "Triggered when UP key is released.", "OnUPKeyReleased");
-AddCondition(22,	cf_trigger,	"On DOWN key released",	"Released", "On DOWN released", "Triggered when DOWN key is released.", "OnDOWNKeyReleased");
-AddCondition(23,	cf_trigger,	"On LEFT key released",	"Released", "On LEFT released", "Triggered when LEFT key is released.", "OnLEFTKeyReleased");
-AddCondition(24,	cf_trigger,	"On RIGHT key released",	"Released", "On RIGHT released", "Triggered when RIGHT key is released.", "OnRIGHTKeyReleased");
+AddCondition(21, cf_trigger, "On Up arrow released", "Released", "On Up arrow released", 
+             "Triggered when Up arrow is released.", "OnUPReleased");
+AddCondition(22, cf_trigger, "On Down arrow released", "Released", "On Down arrow released", 
+             "Triggered when Down arrow is released.", "OnDOWNReleased");
+AddCondition(23, cf_trigger, "On Left arrow released", "Released", "On Left arrow released", 
+             "Triggered when Left arrow is released.", "OnLEFTReleased");
+AddCondition(24, cf_trigger, "On Right arrow released", "Released", "On Right arrow released", 
+             "Triggered when Right arrow is released.", "OnRIGHTReleased");
 
 //////////////////////////////////////////////////////////////
 // Actions
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(3, ef_return_number, "Distance of dragging at X coordinate", "Distance", "DistX", "Distance of dragging at X coordinate.");
+AddExpression(4, ef_return_number, "Distance of dragging at Y coordinate", "Distance", "DistY", "Distance of dragging at Y coordinate.");
 
 
 ACESDone();
