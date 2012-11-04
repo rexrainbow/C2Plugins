@@ -47,8 +47,9 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
         this.setup_stage = true;
         this.touchwrap = null;
         this.degree_ZERO = 0;
-        this.degree_diff = 0;
+        this.degree_diff = 0;   
         this.key_status = 0;  // 0=no key, 1=right key, 2=left key 
+        this.pre_orientation = 0;             
 	};
 
 	instanceProto.TouchWrapGet = function ()
@@ -72,7 +73,15 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
         this._setup();
         this._turn_key_detection();
     };
-
+    
+	var orientation_get = function()
+	{
+	    var ret = window["orientation"];
+	    if (ret == null)
+	        ret = 0;
+	    return ret;
+	};
+    
 	instanceProto._setup = function ()
 	{
         if (!this.setup_stage)
@@ -102,6 +111,12 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
         if (this.touchwrap == null)
             return;
             
+        var orientation = orientation_get();
+        if (this.pre_orientation != orientation)
+        {
+            this._degree_ZERO_set();
+            this.pre_orientation = orientation;
+        }
         this.degree_diff = this._diff_angle_get();
         var current_key_status;
         if (Math.abs(this.degree_diff) >= this._sensitivity)
