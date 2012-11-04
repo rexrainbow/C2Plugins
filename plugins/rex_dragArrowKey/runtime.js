@@ -55,14 +55,14 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this.diff_x = 0;
         this.diff_y = 0;
         
-        this.press_handlers =   [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTKey,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNKey,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnLEFTKey,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnUPKey            ];   
-        this.release_handlers = [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTKeyReleased,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNKeyReleased,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnLEFTKeyReleased,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnUPKeyReleased    ];
+        this.press_handlers =   [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTPresse,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNPresse,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnLEFTPresse,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnUPPressed     ];   
+        this.release_handlers = [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTReleased,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNReleased,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnLEFTReleased,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnUPReleased    ];
 	};
 
 	instanceProto.TouchWrapGet = function ()
