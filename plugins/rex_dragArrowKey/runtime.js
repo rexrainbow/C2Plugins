@@ -96,16 +96,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         if (_NthTouch != 0)
             return;    
         this.is_on_moving = false;
-        var i;
-        for (i=0; i<4; i++)
-        {
-            if (this.keyMap[i])
-            {
-                this.runtime.trigger(this.release_handlers[i], this);
-                this.keyMap[i] = false;
-            }
-        }
-        this.pre_key_id = 0;
+        this._keydown(0);
     };
     
 	instanceProto.get_touch_x = function ()
