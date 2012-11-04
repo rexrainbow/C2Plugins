@@ -53,6 +53,7 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         this.degree_diffLR = 0;
         this.keyUD = 0; // 0=no key, 1=up key, 2=down key 
         this.keyLR = 0; // 0=no key, 1=left key, 2=right key 
+        this.pre_orientation = 0;
         this.is_any_pressed = false;
 	};
 
@@ -84,7 +85,7 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
 	    if (ret == null)
 	        ret = 0;
 	    return ret;
-	}
+	};
 	
 	instanceProto._setup = function ()
 	{
@@ -162,6 +163,11 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
             return;
           
         var orientation = orientation_get();
+        if (this.pre_orientation != orientation)
+        {
+            this._degree_ZERO_set();
+            this.pre_orientation = orientation;
+        }
         var dir = this._directions; //0=UD, 1=LR, 2=4dir, 3=8dir
         this.is_any_pressed = false;
         // key UD
