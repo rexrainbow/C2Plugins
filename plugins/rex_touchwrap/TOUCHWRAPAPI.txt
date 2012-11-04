@@ -2,8 +2,8 @@
    for exporting to other plugins/behaviors
 - touchwrap.HookMe(obj)  
   :: hook plugins to get triggers. Plugins need to implement
-     - OnTouchStart()
-     - OnTouchEnd()
+     - OnTouchStart(NthTouch, TouchX, TouchY)
+     - OnTouchEnd(NthTouch)
 - touchwrap.UseMouseInput()
   :: is using mouse input     
 - touchwrap.IsInTouch()

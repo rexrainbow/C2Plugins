@@ -40,7 +40,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.touchDown = false;
         this.check_name = "TOUCHWRAP";
 		this._is_mouse_mode = false;
-        this._plugins_hook = [];		
+        this._plugins_hook = [];
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
@@ -102,6 +102,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	instanceProto.onCreate = function()
 	{
 		theInstance = this;
+		this.isWindows8 = !!(typeof window["c2isWindows8"] !== "undefined" && window["c2isWindows8"]);
 		
 		this.orient_alpha = 0;
 		this.orient_beta = 0;
@@ -116,7 +117,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.curTouchX = 0;
 		this.curTouchY = 0;
-        this.trigger_index = 0;
+		
+		this.trigger_index = 0;
+		this.mouseXcanvas = 0;				// mouse position relative to canvas
+		this.mouseYcanvas = 0;        
 		
 		this.useMouseInput = (this.properties[0] !== 0);
 		
@@ -129,35 +133,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			elem = window;
 			
 		var self = this;
-	
-		elem.addEventListener("touchstart",
-			function(info) {
-				self.onTouchStart(info);
-			},
-			false
-		);
-		
-		elem.addEventListener("touchmove",
-			function(info) {
-				self.onTouchMove(info);
-			},
-			false
-		);
-		
-		elem.addEventListener("touchend",
-			function(info) {
-				self.onTouchEnd(info);
-			},
-			false
-		);
-		
-		// Treat touch cancellation the same as a touch end
-		elem.addEventListener("touchcancel",
-			function(info) {
-				self.onTouchEnd(info);
-			},
-			false
-		);
 		
 		if (window.navigator["msPointerEnabled"])
 		{
@@ -200,32 +175,115 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				}, false);
 			}
 		}
+		else
+		{
+			elem.addEventListener("touchstart",
+				function(info) {
+					self.onTouchStart(info);
+				},
+				false
+			);
+			
+			elem.addEventListener("touchmove",
+				function(info) {
+					self.onTouchMove(info);
+				},
+				false
+			);
+			
+			elem.addEventListener("touchend",
+				function(info) {
+					self.onTouchEnd(info);
+				},
+				false
+			);
+			
+			// Treat touch cancellation the same as a touch end
+			elem.addEventListener("touchcancel",
+				function(info) {
+					self.onTouchEnd(info);
+				},
+				false
+			);
+		}
 		
-		window.addEventListener("deviceorientation", function (eventData) {
-		
-			self.orient_alpha = eventData["alpha"] || 0;
-			self.orient_beta = eventData["beta"] || 0;
-			self.orient_gamma = eventData["gamma"] || 0;
-		
-		}, false);
-		
-		window.addEventListener("devicemotion", function (eventData) {
-		
-			if (eventData["accelerationIncludingGravity"])
+		if (this.isWindows8)
+		{
+			var win8accelerometerFn = function(e) {
+					var reading = e["reading"];
+					self.acc_x = reading["accelerationX"];
+					self.acc_y = reading["accelerationY"];
+					self.acc_z = reading["accelerationZ"];
+				};
+				
+			var win8inclinometerFn = function(e) {
+					var reading = e["reading"];
+					self.orient_alpha = reading["yawDegrees"];
+					self.orient_beta = reading["pitchDegrees"];
+					self.orient_gamma = reading["rollDegrees"];
+				};
+				
+			var accelerometer = Windows["Devices"]["Sensors"]["Accelerometer"]["getDefault"]();
+			
+            if (accelerometer)
 			{
-				self.acc_g_x = eventData["accelerationIncludingGravity"]["x"];
-				self.acc_g_y = eventData["accelerationIncludingGravity"]["y"];
-				self.acc_g_z = eventData["accelerationIncludingGravity"]["z"];
+                accelerometer["reportInterval"] = Math.max(accelerometer["minimumReportInterval"], 16);
+				accelerometer.addEventListener("readingchanged", win8accelerometerFn);
+            }
+			
+			var inclinometer = Windows["Devices"]["Sensors"]["Inclinometer"]["getDefault"]();
+			
+			if (inclinometer)
+			{
+				inclinometer["reportInterval"] = Math.max(inclinometer["minimumReportInterval"], 16);
+				inclinometer.addEventListener("readingchanged", win8inclinometerFn);
 			}
 			
-			if (eventData["acceleration"])
-			{
-				self.acc_x = eventData["acceleration"]["x"];
-				self.acc_y = eventData["acceleration"]["y"];
-				self.acc_z = eventData["acceleration"]["z"];
-			}
+			document.addEventListener("visibilitychange", function(e) {
+				if (document["hidden"] || document["msHidden"])
+				{
+					if (accelerometer)
+						accelerometer.removeEventListener("readingchanged", win8accelerometerFn);
+					if (inclinometer)
+						inclinometer.removeEventListener("readingchanged", win8inclinometerFn);
+				}
+				else
+				{
+					if (accelerometer)
+						accelerometer.addEventListener("readingchanged", win8accelerometerFn);
+					if (inclinometer)
+						inclinometer.addEventListener("readingchanged", win8inclinometerFn);
+				}
+			}, false);
+		}
+		else
+		{
+			window.addEventListener("deviceorientation", function (eventData) {
 			
-		}, false);
+				self.orient_alpha = eventData["alpha"] || 0;
+				self.orient_beta = eventData["beta"] || 0;
+				self.orient_gamma = eventData["gamma"] || 0;
+			
+			}, false);
+			
+			window.addEventListener("devicemotion", function (eventData) {
+			
+				if (eventData["accelerationIncludingGravity"])
+				{
+					self.acc_g_x = eventData["accelerationIncludingGravity"]["x"];
+					self.acc_g_y = eventData["accelerationIncludingGravity"]["y"];
+					self.acc_g_z = eventData["accelerationIncludingGravity"]["z"];
+				}
+				
+				if (eventData["acceleration"])
+				{
+					self.acc_x = eventData["acceleration"]["x"];
+					self.acc_y = eventData["acceleration"]["y"];
+					self.acc_z = eventData["acceleration"]["z"];
+				}
+				
+			}, false);
+		}
 		
 		if (this.useMouseInput && !this.runtime.isDomFree)
 		{
@@ -328,6 +386,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.curTouchX = touchx;
 		this.curTouchY = touchy;
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
+        
+        var i, cnt=this._plugins_hook.length;
+        for (i=0;i<cnt;i++)
+            this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
 	};
 
 	instanceProto.onPointerEnd = function (info)
@@ -345,6 +407,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Trigger OnNthTouchEnd & OnTouchEnd
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+        
+        var i, cnt=this._plugins_hook.length;
+        for (i=0;i<cnt;i++)
+            this._plugins_hook[i].OnTouchEnd(this.trigger_index);        
 		
 		// Remove touch
 		if (i >= 0)
@@ -353,43 +419,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		}
 	};
 
-	instanceProto._fake_info_get = function (x,y)
-	{	
-		var t = { pageX: x, pageY: y, "identifier": -1 };
-		var fakeinfo = { changedTouches: [t] };
-		return fakeinfo;
-	};
-	
-	instanceProto._push_touch_info = function (info)
-	{
-		if (info.preventDefault)
-			info.preventDefault();
-			
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
-		var nowtime = cr.performance_now();
-		
-		var i, len, t;
-		for (i = 0, len = info.changedTouches.length; i < len; i++)
-		{
-			t = info.changedTouches[i];
-			
-			var touchx = t.pageX - offset.left;
-			var touchy = t.pageY - offset.top;
-			
-			this.trigger_index = this.touches.length;
-			
-			this.touches.push({ time: nowtime,
-								x: touchx,
-								y: touchy,
-								lasttime: nowtime,
-								lastx: touchx,
-								lasty: touchy,
-								"id": t["identifier"],
-								startindex: this.trigger_index
-							});						
-		}		
-	};
-	
 	instanceProto.onTouchMove = function (info)
 	{
 		if (info.preventDefault)
@@ -420,7 +449,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				u.time = nowtime;
 				u.x = t.pageX - offset.left;
 				u.y = t.pageY - offset.top;
-			}	
+			}
 		}	
 	};
 
@@ -434,6 +463,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		var i, len, t;
+        var i, cnt=this._plugins_hook.length;
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -456,11 +486,14 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// Trigger OnNthTouchStart then OnTouchStart
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchStart, this);
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchStart, this);
-			
+            
 			// Trigger OnTouchObject for each touch started event		
 			this.curTouchX = touchx;
 			this.curTouchY = touchy;
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
+            
+            for (i=0;i<cnt;i++)
+                this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
 		}		
 	};
 
@@ -471,6 +504,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			info.preventDefault();
 		
 		var i, len, t;
+        var i, cnt=this._plugins_hook.length;
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -481,17 +515,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// Trigger OnNthTouchEnd & OnTouchEnd
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+            
+            for (i=0;i<cnt;i++)
+                this._plugins_hook[i].OnTouchEnd(this.trigger_index);
 			
 			// Remove touch
 			if (j >= 0)
 			{
 				this.touches.splice(j, 1);
 			}
-		}	
-		
-		// fix: keep the latest touch position
-		this.touches.length = 0;
-		this._push_touch_info(info);
+		}
 	};
 	
 	instanceProto.getAlpha = function ()
@@ -550,10 +583,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Send a fake touch move event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
 		var fakeinfo = { changedTouches: [t] };
-		
-		// fix: push the lastest info
 		if (this.touches.length==0)
-		    this._push_touch_info(fakeinfo);
+		    this.onTouchStart(fakeinfo);
 		else
 		    this.onTouchMove(fakeinfo);
 	};
