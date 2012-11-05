@@ -110,7 +110,17 @@ cr.plugins_.Rex_CSV = function(runtime)
         }
         this.atPage = this.current_page_name;  
         return this.current_table.GetRowCnt();   
-	};    
+	}; 
+
+	instanceProto.TableToString = function (page)
+	{
+        if (page != null)
+        {
+            this.TurnPage(page);
+        }
+        return this.current_table.ToString();   
+	}; 	
+	   
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -307,9 +317,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 		ret.set_string(this.forPage);
 	};
 	
-	Exps.prototype.TableToString = function (ret)
+	Exps.prototype.TableToString = function (ret, page)
 	{ 
-		ret.set_string(this.current_table.ToString());
+		ret.set_string(this.TableToString());
 	};    
 	
 	Exps.prototype.ColCnt = function (ret, page)
