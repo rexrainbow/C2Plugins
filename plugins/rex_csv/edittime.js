@@ -58,7 +58,7 @@ AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(6, 0, "Load table from JSON string", "JSON", "Load table form JSON string <i>{0}</i>",
+AddAction(6, 0, "Load one table", "JSON", "Load table form JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");  
 AddStringParam("Col index", "Column index.", '""');
 AddAction(7, 0, "Append a column", "Append/Remove", "Append column <i>{0}</i>",
@@ -76,7 +76,9 @@ AddAction(10, 0, "Remove a row", "Append/Remove", "Remove row <i>{0}</i>",
 AddStringParam("Delimiter", "Set delimiter for splitting items.", ",");
 AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
          "Set delimiter for splitting items.", "SetDelimiter");
-
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(12, 0, "Load all tables", "JSON", "Load all tables form JSON string <i>{0}</i>",
+         "Load all tables from JSON string.", "StringToAllTables");  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Col", "The column index.", '""');
@@ -93,6 +95,7 @@ AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "TableToSt
 AddExpression(9, ef_return_number | ef_variadic_parameters, "Get col count", "Table: Count", "ColCnt", "Get column count.");
 AddExpression(10, ef_return_number | ef_variadic_parameters, "Get row count", "Table: Count", "RowCnt", "Get row count.");
 AddExpression(11, ef_return_string, "Get delimiter", "Delimiter", "Delimiter", "Get delimiter.");
+AddExpression(12, ef_return_string, "Transfer all tables to string", "JSON", "AllTalbesToString", "Transfer all tables to a JSON string.");
 
 ACESDone();
 

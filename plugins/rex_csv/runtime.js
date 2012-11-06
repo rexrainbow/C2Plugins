@@ -224,53 +224,64 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Acts.prototype.Clear = function ()
 	{
-		this.current_table.Clear();
+		 this.current_table.Clear();
 	};    
     
 	Acts.prototype.ConvertType = function (row, to_type)
 	{
-        this.current_table.ConvertType(row, to_type);
+         this.current_table.ConvertType(row, to_type);
 	};   
     
 	Acts.prototype.TurnPage = function (page)
 	{
-        this.TurnPage(page);
+         this.TurnPage(page);
 	};
     
 	Acts.prototype.StringToPage = function (JSON_string)
 	{
-       this.current_table.JSONString2Page(JSON_string);
+        this.current_table.JSONString2Page(JSON_string);
 	};    
     
 	Acts.prototype.StringToPage = function (JSON_string)
 	{
-       this.current_table.JSONString2Page(JSON_string);
+        this.current_table.JSONString2Page(JSON_string);
 	};   
     
 	Acts.prototype.AppendCol = function (col)
 	{
-       this.current_table.AppendCol(col);
+        this.current_table.AppendCol(col);
 	}; 
     
 	Acts.prototype.AppendRow = function (row, init_value)
 	{
-       this.current_table.AppendRow(row, init_value);
+        this.current_table.AppendRow(row, init_value);
 	}; 
     
 	Acts.prototype.RemoveCol = function (col)
 	{
-       this.current_table.RemoveCol(col);
+        this.current_table.RemoveCol(col);
 	}; 
     
 	Acts.prototype.RemoveRow = function (row)
 	{
-       this.current_table.RemoveRow(row);
+        this.current_table.RemoveRow(row);
 	};     
     
 	Acts.prototype.SetDelimiter = function (s)
 	{
-       this.strDelimiter = s;
-	};      
+        this.strDelimiter = s;
+	}; 
+
+	Acts.prototype.StringToAllTables = function (JSON_string)
+	{   
+	    var page;
+	    var tables=JSON.parse(JSON_string);
+	    for (page in tables)
+	    {
+	        this.TurnPage(page);
+	        this.current_table.JSONString2Page(tables[page]);
+	    }
+	}; 	     
     
 	//////////////////////////////////////
 	// Expressions
@@ -319,7 +330,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	
 	Exps.prototype.TableToString = function (ret, page)
 	{ 
-		ret.set_string(this.TableToString());
+		ret.set_string(this.TableToString(page));
 	};    
 	
 	Exps.prototype.ColCnt = function (ret, page)
@@ -336,7 +347,14 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{ 
 		ret.set_string(this.strDelimiter);
 	}; 
-    
+	
+	Exps.prototype.AllTalbesToString = function (ret)
+	{ 
+	    var page, table2string={};
+	    for (page in this._tables)	    
+	        table2string[page] = this.TableToString(page);        
+		ret.set_string(JSON.stringify(table2string));
+	};     
 }());
 
 
