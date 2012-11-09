@@ -49,6 +49,7 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	                      set_any: function(value){this.value=value;},
 	                      set_int: function(value){this.value=value;},	                      
 	                     };
+		this._tmp_params = [];
 	};
 	
 	instanceProto._setup = function ()
@@ -275,11 +276,10 @@ cr.plugins_.Rex_FnExt = function(runtime)
         if (this.callback == null)
             this._setup();
 	    var i, len=arguments.length;
-		var param_=[];
-		param_.length = len - 2;
+		this._tmp_params.length = len - 2;
 		for (i=2; i<len; i++)
-		    param_[i-2] = arguments[i];
-		var val = this.CallFunction(name_, param_);
+		    this._tmp_params[i-2] = arguments[i];
+		var val = this.CallFunction(name_, this._tmp_params);
 		if (val == null)
 		    val = 0;
 		ret.set_any(val);
@@ -323,7 +323,7 @@ cr.plugins_.Rex_FnExt = function(runtime)
     {          
         if (typeof(_name) == "object") // [name, param0, param1, ...]
         {
-            this["params"] = _name;       
+			cr.shallowAssignArray(this["params"], _name);
             this["_name"] = this["params"].shift();
         }
         else if (typeof(_params) != "object")  // name, param0, param1,...
@@ -337,7 +337,7 @@ cr.plugins_.Rex_FnExt = function(runtime)
         else // name, [param0, param1, ...]
         {
             this["_name"] = _name;
-            this["params"] = _params;
+			cr.shallowAssignArray(this["params"], _params);
         }                
     };
 }());
