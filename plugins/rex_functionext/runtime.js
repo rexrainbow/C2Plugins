@@ -159,7 +159,9 @@ cr.plugins_.Rex_FnExt = function(runtime)
     };
   
     instanceProto._call_C2function = function (_name, _params)
-    {                         
+    {            
+        if (this.callback == null)
+            this._setup(); 		
         this._call_fn.call(this.callback, _name, _params);
         this._get_ret.call(this.callback, this._fake_ret);
         return this._fake_ret.value;
@@ -224,38 +226,28 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	
 	Acts.prototype.CreateJSFunctionObject = function (name, code_string)
 	{
-	    if (this.callback == null)
-            this._setup(); 
         var fn = eval("("+code_string+")");
         this.fnObj["InjectJS"](name, fn);
 	};
 
 	Acts.prototype.InjectJSFunctionObjects = function (code_string)
-	{
-        if (this.callback == null)
-            this._setup(); 	    
+	{ 	    
         var fn = eval("("+code_string+")");
         fn(this.fnObj);
 	};
 	
 	Acts.prototype.RunCSVCommands = function (csv_string)
 	{
-        if (this.callback == null)
-            this._setup(); 	    
         this._run_csv_cmds(csv_string);
 	}; 
 	
 	Acts.prototype.RunJSONCommands = function (JSON_string)
-	{
-        if (this.callback == null)
-            this._setup(); 	    
+	{   
         this._run_json_cmds(JSON_string);
 	};
 	
 	Acts.prototype.CallFunction = function (name_, params_)
 	{
-        if (this.callback == null)
-            this._setup();	
 	    this.CallFunction(name_, params_);
 	};
 	//////////////////////////////////////
@@ -273,8 +265,6 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	
 	Exps.prototype.Call = function (ret, name_)
 	{
-        if (this.callback == null)
-            this._setup();
 	    var i, len=arguments.length;
 		this._tmp_params.length = len - 2;
 		for (i=2; i<len; i++)
