@@ -267,8 +267,8 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	{
 	    var i, len=arguments.length;
 		this._tmp_params.length = len - 2;
-		for (i=2; i<len; i++)
-		    this._tmp_params[i-2] = arguments[i];
+		for (i=0; i<len; i++)
+		    this._tmp_params[i] = arguments[i+2];
 		var val = this.CallFunction(name_, this._tmp_params);
 		if (val == null)
 		    val = 0;
@@ -321,8 +321,8 @@ cr.plugins_.Rex_FnExt = function(runtime)
             this["_name"] = arguments[0];
             this["params"].length = arguments.length -1;
             var i, len=arguments.length;
-            for (i=1; i<len; i++)
-                this["params"][i-1] = arguments[i];
+            for (i=0; i<len; i++)
+                this["params"][i] = arguments[i+1];
         }
         else // name, [param0, param1, ...]
         {
