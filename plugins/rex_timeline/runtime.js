@@ -51,10 +51,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.manual_push = false;
         this.manual_delta_time = 0;
         
-        // timers
-        this.callback = null;        
+        // timers    
         this.timers = {}; 
-        
+		this.exp_triggered_timer_name = "";
+		
+		// function callback
+        this.callback = null;
+		this.callback_type = 0;
+	    this._call_fn = null;
 	};
     
     instanceProto.tick = function()
@@ -72,8 +76,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     instanceProto._timer_handle = function(timer_struct)
     {
-        this.callback.AddParams(timer_struct.param);
-        this.callback.ExecuteCommands(timer_struct.command);
+	    this.exp_triggered_timer_name = timer_struct.name;
+		this.RunCallback(timer_struct.command, timer_struct.params);
     };
     
     // export: get new timer instance
@@ -83,29 +87,88 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     };
     
     instanceProto._GetTimerStruct = function(timer_name)
-    {
+    {	    
         if (this.timers[timer_name] == null)
         {
-            this.timers[timer_name] = {timer:null, 
-                                       command:"", 
-                                       param:{}     };
+		    
+            this.timers[timer_name] = {name:timer_name,
+			                           timer:null, 
+                                       command:""};
+            if (this.callback_type == 1)
+			    this.timers[timer_name].params = {};
+		    else  // this.callback_type == 2 || this.callback_type == 3
+			    this.timers[timer_name].params = [];
         }
         return this.timers[timer_name];
     };    
     
     instanceProto._GetTimer = function(timer_name)
     {
-        var timer; 
-        if (timer_name==null)
-            timer = this.timeline.triggered_timer;
-        else
-        {
-            var timer_struct = this.timers[timer_name];
-            timer = (timer_struct)? timer_struct.timer : null;
-        }
+	    var timer_struct = this.timers[timer_name];
+        var timer = (timer_struct)? timer_struct.timer : null;
         return timer;
     };    
-    
+
+	instanceProto._setup_callback = function ()
+	{
+	    if (this.callback != null)
+		    return;
+
+        var plugins = this.runtime.types;
+        assert2(plugins.Function || plugins.Rex_FnExt, "Function extension or official function was not found.");
+		
+		// try to get callback from function extension
+		if (plugins.Rex_FnExt != null)
+		{
+            this._call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+            var name, plugin;
+            for (name in plugins)
+            {
+                plugin = plugins[name];
+                if (plugin.plugin.acts.CallFunction == this._call_fn)
+                {
+                    this.callback = plugin.instances[0];
+				    this.callback_type = 3;
+                    return;
+                }                                          
+            }
+		}
+		else    // try to get callback from official function	
+		{	
+            this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+            var name, plugin;
+            for (name in plugins)
+            {
+                plugin = plugins[name];
+                if (plugin.plugin.acts.CallFunction == this._call_fn)
+                {
+                    this.callback = plugin.instances[0];
+				    this.callback_type = 2;
+                    return;
+                }                                          
+            }
+		}
+	};   
+
+    instanceProto.RunCallback = function(name, params)
+    {
+	    if (this.callback_type == 0)
+	        this._setup_callback();
+		assert2((this.callback_type != 0), "Timeline: Can not find callback oject.");
+		
+	    switch (this.callback_type)
+		{
+		case 1:  // rex_function
+		    this.callback.CallFn(name, params);
+			break;
+	    case 2:  // function
+            this._call_fn.call(this.callback, name, params);
+			break;
+		case 3:  // rex_functionext
+		    this.callback.CallFunction(name, params);
+			break;
+		}
+    };	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -133,7 +196,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
+		{
             this.callback = callback;        
+			this.callback_type = 1;
+	    }
         else
             alert ("Timeline should connect to a function object");
 	};      
@@ -144,14 +210,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         var timer_struct = this._GetTimerStruct(timer_name);
         timer_struct.command = command;
         if (timer)  // timer exist
-        {
             timer.Remove();
-        }
         else      // create new timer instance
-        {
-            timer_struct.timer = this.CreateTimer(this, this._timer_handle, 
-                                                  [timer_struct]);   
-        }      
+            timer_struct.timer = this.CreateTimer(this, this._timer_handle,[timer_struct]);       
 	}; 
     
     Acts.prototype.StartTimer = function (timer_name, delay_time)
@@ -163,7 +224,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     Acts.prototype.StartTrgTimer = function (delay_time)
 	{
-        var timer = this.timeline.triggered_timer;
+	    var timer_name = this.exp_triggered_timer_name;
+		var timer = this._GetTimer(timer_name);
         if (timer)
             timer.Start(delay_time);
 	}; 
@@ -206,7 +268,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     Acts.prototype.SetTimerParameter = function (timer_name, index, value)
 	{
-        this._GetTimerStruct(timer_name).param[index] = value;
+        this._GetTimerStruct(timer_name).params[index] = value;
 	};    
 
     Acts.prototype.PauseTimeLine = function ()
@@ -218,7 +280,50 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{     
 	    this.update_with_game_time = true;
 	};   	
+    
+    Acts.prototype.CreateTimer2 = function (timer_name, callback_name, callback_params)
+	{
+        var timer = this._GetTimer(timer_name);
+        var timer_struct = this._GetTimerStruct(timer_name);
+        timer_struct.command = callback_name;
+        cr.shallowAssignArray(timer_struct.params, callback_params);
+        if (timer)  // timer exist
+            timer.Remove();
+        else      // create new timer instance
+            timer_struct.timer = this.CreateTimer(this, this._timer_handle, [timer_struct]);       
+	};
+    
+    Acts.prototype.SetTimerParameters = function (timer_name, callback_params)
+	{
+	    var timer = this._GetTimer(timer_name);
+		if (timer)
+		{
+		    var timer_struct = this._GetTimerStruct(timer_name);
+			cr.shallowAssignArray(timer_struct.params, callback_params);
+		}
+	};	
+   
+    Acts.prototype.SetTrgTimerParameters = function (callback_params)
+	{
+	    var timer_name = this.exp_triggered_timer_name;
+	    var timer = this._GetTimer(timer_name);
+		if (timer)
+		{
+		    var timer_struct = this._GetTimerStruct(timer_name);
+			cr.shallowAssignArray(timer_struct.params, callback_params);
+		}
+	};	
 	
+    Acts.prototype.DeleteTrgTimer = function ()
+	{
+	    var timer_name = this.exp_triggered_timer_name;
+        var timer = this._GetTimer(timer_name);		
+        if (timer)
+        {
+            timer.Remove();
+            delete this.timers[timer_name];
+        }		
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -257,6 +362,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	    ret.set_float(this.timeline.ABS_Time);
 	};
     
+	Exps.prototype.TriggeredTimerName = function (ret)
+	{ 
+	    ret.set_string(this.exp_triggered_timer_name);
+	};    
 }());
 
 

@@ -23,9 +23,9 @@ AddCondition(1, 0, "Is running", "Control", "Is running",
              
 //////////////////////////////////////////////////////////////
 // Actions     
-AddObjectParam("Timeline", "Timeline object for getting timer");
+AddObjectParam("Timeline", "Timeline object to get timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(1, 0, "Setup", "Setup", 
+AddAction(1, 0, "Setup", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
 AddStringParam("Commands", "Commands in CSV format", "");
@@ -62,7 +62,12 @@ AddAnyTypeParam("Value", "Value of memory", 0);
 AddAction(31, 0, "Set value", "Memory", 
           "Set MEM[<i>{0}</i>] to <i>{1}</i>", 
           "Set the value stored in memory.", 
-          "SetMemory");		  
+          "SetMemory");	
+
+AddObjectParam("Timeline", "Timeline object to get timer");
+AddAction(41, 0, "Setup", "Setup", 
+          "Get timer from <i>{0}</i>", 
+          "Setup.", "Setup2");		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_string, "Get last tag", 

@@ -45,10 +45,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.is_accT_mode = (this.properties[1] == 0);
         this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);        
         this.timeline = null;
-        this.callback = null;       
+        this.callback = null;   
+        this.callback_type = 0;		
 	};
-
-    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -78,7 +77,10 @@ cr.plugins_.Rex_Scenario = function(runtime)
         
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
+		{
             this.callback = callback;        
+			this.callback_type = 1;	
+	    }
         else
             alert ("Worksheet should connect to a function object");
 	};  
@@ -133,6 +135,16 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	{
         this._scenario["Mem"][index] = value;
 	};
+    
+    Acts.prototype.Setup2 = function (timeline_objs)
+	{  
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.timeline = timeline;        
+        else
+            alert ("Worksheet should connect to a timeline object");
+	};
+	
 	
 	//////////////////////////////////////
 	// Expressions
@@ -298,33 +310,38 @@ cr.plugins_.Rex_Scenario = function(runtime)
             deltaT = cmd;
              
         // get function  name and parameters
-        var fn_pack = cmd_pack.slice(1);
+		var fn_name=cmd_pack[1];
+		var fn_params=[];
+		fn_params.length = cmd_pack.length - 2;
         // eval parameters
-        var param_cnt = fn_pack.length, i, param;
-        for (i=1;i<param_cnt;i++)
+        var param_cnt=fn_params.length, i, param;
+        for (i=0;i<param_cnt;i++)
         {
-            param = fn_pack[i];
+            param = cmd_pack[i+2];
             if (param != "")
 			{
 			    var code_string = "function(scenario)\
 				{\
 				    var MEM = scenario.Mem;\
-				    return "+fn_pack[i]+"\
+				    return "+param+"\
 				}";
 				var fn = eval("("+code_string+")");
                 param = fn(this);
 		    }
-            fn_pack[i] = param;
+            fn_params[i] = param;
         }
-        this.timer.SetCallbackArgs(fn_pack);
+        this.timer.SetCallbackArgs([fn_name, fn_params]);
         this.timer.Start(deltaT);
 	};  
     
-	ScenarioKlassProto._execute_fn = function()
+	ScenarioKlassProto._execute_fn = function(name, params)
 	{
-        var cb_obj = this.plugin.callback;
-        cb_obj.CallFn.apply(cb_obj, arguments);       
-        this._run_next_cmd();
+	    var plugin = this.plugin;
+	    if (plugin.callback_type == 1)    // compatible to rex_function
+		    plugin.callback.CallFn(name, params);
+		else
+			plugin.timeline.RunCallback(name, params);
+		this._run_next_cmd();
 	};
 	
     // CmdQueueKlass

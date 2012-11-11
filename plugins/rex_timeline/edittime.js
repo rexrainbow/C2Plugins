@@ -25,22 +25,26 @@ AddNumberParam("Time", "Delta-time in seconds", 0);
 AddAction(0, 0, "Push timeline forward", "TimeLine", 
           "Push timeline forward with delta-time to <i>{0}</i>", 
           "Push timeline forward with delta-time.", "PushTimeLine");
+// 	af_deprecated	  
 AddObjectParam("Function", "Function object for timer's callback");
-AddAction(1, 0, "Setup timer", "Setup", 
+AddAction(1, 0, "Setup timer", "Z: Deprecated", 
           "Set timer's callback to <i>{0}</i>", 
           "Setup timer.", "Setup");
+		  
+// 	af_deprecated	  
 AddStringParam("Timer", "Timer's name", '""');
 AddStringParam("Commands", "Execute commands when timer's time-out", '""');
-AddAction(2, 0, "Create timer", "Timer", 
+AddAction(2, 0, "Create timer", "Z: Deprecated", 
           "Create timer <i>{0}</i> with callback <i>{1}</i>", 
           "Create timer.", "CreateTimer");
+		  
 AddStringParam("Name", "Timer's name.", '""');      
 AddNumberParam("Time", "Time-out in seconds", 0);
 AddAction(3, 0, "Start timer", "Timer: Control", 
           "Start timer <i>{0}</i>, time-out is <i>{1}</i> seconds", 
           "Start timer.", "StartTimer");
 AddNumberParam("Time", "Time-out in seconds", 0);
-AddAction(4, 0, "Start triggered timer", "Timer: Control", 
+AddAction(4, 0, "Start triggered timer", "Timer: Triggered timer", 
           "Start triggered timer, time-out is <i>{0}</i> seconds", 
           "Start triggered timer.", "StartTrgTimer");
 AddStringParam("Name", "Timer's name.", '""');      
@@ -62,18 +66,40 @@ AddStringParam("Name", "Timer's name.", '""');
 AddAction(9, 0, "Delete timer", "Timer", 
           "Delete timer <i>{0}</i>", 
           "Delete timer.", "DeleteTimer"); 
+
+// 	af_deprecated	  
 AddStringParam("Name", "Timer's name.", '""');          
 AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0);
-AddAction(10, 0, "Set a parameter", "Timer", 
+AddAction(10, 0, "Set a parameter", "Z: Deprecated", 
           "Set timer <i>{0}</i> 's parameter[<i>{1}</i>] to <i>{2}</i>",
-          "Set a parameter pass into timer.", "SetTimerParameter");
+          "Set a parameter pass into callback.", "SetTimerParameter");
+		  
 AddAction(20, 0, "Pause timeline", "TimeLine", 
           "Pause timeline", 
           "Pause timeline, it will pause all timers registed on it.", "PauseTimeLine");
 AddAction(21, 0, "Resume timeline", "TimeLine", 
           "Resume timeline", 
           "Resume timeline, it will resume all timers registed on it.", "ResumeTimeLine");
+		  
+// for official function plugin		  
+AddStringParam("Timer", "Timer's name", '""');
+AddStringParam("Name", "The name of the callback.", "\"\"");
+AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
+AddAction(30, 0, "Create timer", "Timer", "Create timer <i>{0}</i> with callback <i>{1}</i> (<i>{...}</i>)", "Create timer.", "CreateTimer2");
+AddStringParam("Name", "Timer's name.", '""');          
+AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
+AddAction(31, 0, "Set parameters", "Timer", 
+          "Set timer <i>{0}</i> 's parameters to (<i>{...}</i>)",
+          "Set parameters passed into callback.", "SetTimerParameters");          
+AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
+AddAction(32, 0, "Set parameters", "Timer: Triggered timer", 
+          "Set triggered timer's parameters to (<i>{...}</i>)",
+          "Set triggered timer's parameters passed into callback.", "SetTrgTimerParameters");		      
+AddAction(33, 0, "Delete triggered timer", "Timer: Triggered timer", 
+          "Delete triggered timer", 
+          "Delete triggered timer.", "DeleteTrgTimer"); 
+		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "Timer's name.", '""');  
@@ -95,7 +121,9 @@ AddExpression(3, ef_return_number | ef_variadic_parameters, "Get elapsed time pe
 AddExpression(4, ef_return_number, "Get current time of timeline", 
               "TimeLine", "TimeLineTime", 
               "Get current time of timeline.");              
-              
+AddExpression(5, ef_return_string, "Get triggered timer's name", 
+              "Timer", "TriggeredTimerName", 
+              "Get triggered timer's name.");            
 
 
 ACESDone();
