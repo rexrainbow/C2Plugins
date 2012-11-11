@@ -28,7 +28,7 @@ AddCondition(2,0,"Key exists","Key","Key {0} exists","Check if a key exists in h
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
 AddAction(1, 0, "Set value by key string", "Value", 
-          "Set value at <i>{0}</i> to <i>{1}</i>",
+          "Set key <i>{0}</i> to <i>{1}</i>",
          "Set value by a key string.", "SetByKeyString");
 AddStringParam("Key string", "The key string of the hash entry to get.", '""');
 AddAction(2, 0, "Set current entry", "Entry", "Get hash table entry from <i>{0}</i>",
@@ -37,8 +37,8 @@ AddStringParam("Key name", "The key of the hash value to set.", '""');
 AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
 AddAction(3, 0, "Set value at current entry", "Entry", "Set value at <i>{0}</i> to <i>{1}</i> in current entry",
          "Set value at current entry.", "SetValueInCurHashEntey");
-AddAction(4, 0, "Clean all", "Hash table", "Clean all entries",
-         "Clean all entries.", "CleanAll"); 
+AddAction(4, 0, "Clean all", "Hash table", "Clean table",
+         "Clean table.", "CleanAll"); 
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(5, 0, "Load hash table from JSON string", "JSON", 
           "Load hash table from JSON string <i>{0}</i>",
@@ -78,6 +78,8 @@ AddExpression(7, ef_return_number, "Get items count", "Items", "ItemCnt",
 AddAnyTypeParam("Key", "The key of the hash to get.", '""');
 AddExpression(8, ef_return_number | ef_variadic_parameters, "Get items count by keys", "Items", "Keys2ItemCnt", 
               "Get item count by keys, each parameter is a key. 0 means the item is number or string type, (-1) means the item does not exist.");
+AddExpression(9, ef_return_string | ef_variadic_parameters, "Transfer hash table to string", 
+              "JSON", "ToString", "Create a hash table and transfer it to JSON string. If there has no parameter, transfer current hash table to JSON string.");			  
 
 
 ACESDone();

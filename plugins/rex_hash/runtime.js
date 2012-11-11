@@ -41,17 +41,21 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.exp_CurKey = "";
-        this.exp_CurValue = 0;
-        this._clean_all();  
+	    this._my_hash = {};
         var init_data = this.properties[0];
         if (init_data != "")
             this._my_hash = JSON.parse(init_data);
+		this._current_entry = this._my_hash;			
+			
+        this.exp_CurKey = "";
+        this.exp_CurValue = 0; 			
 	};
     
 	instanceProto._clean_all = function()
 	{
-		this._my_hash = {};
+	    var key;
+		for (key in this._my_hash)
+		    delete this._my_hash[key];
         this._current_entry = this._my_hash;
 	};    
         
@@ -289,6 +293,20 @@ cr.plugins_.Rex_Hash = function(runtime)
         var cnt = get_item_counts(this._get_data(keys));
 		ret.set_int(cnt);
 	};		
+    
+	Exps.prototype.ToString = function (ret)
+	{
+	    var table;
+	    if (arguments.length == 1)  // no parameter
+		    table = this._my_hash;
+		else
+		{
+		    var i, cnt=arguments.length;
+			table = {};
+			for(i=1; i<cnt; i=i+2)
+			    table[arguments[i]]=arguments[i+1];
+	    }
+		ret.set_string(JSON.stringify(table));
+	};		
 	
-	    
 }());
