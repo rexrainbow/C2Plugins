@@ -52,7 +52,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Mode", "shuffle", "Generater mode.", "Shuffle|Random"),
+    new cr.Property(ept_combo, "Mode", "Shuffle", "Generater mode.", "Shuffle|Random"),
     new cr.Property(ept_text, "Patterns", "", 
                    'Set patterns. ex:"{"A":10,"B":20}".'),	
 	];
