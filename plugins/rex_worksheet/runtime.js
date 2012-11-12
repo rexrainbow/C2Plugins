@@ -42,7 +42,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
         this.timeline = null;
-        this.callback = null;        
+        this.callback = null; 		
         this.timer = null; 
         this.instructions = [];
         this.offset = 0;
@@ -67,8 +67,23 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
     
 	instanceProto.Run = function()
 	{
-        this.callback.ExecuteCommands(this.current_cmd.fn_args);        
+	    var cur_cmd=this.current_cmd;
+	    if (this.callback_type == 1)    // compatible to rex_function
+		    this.callback.CallFn(cur_cmd.cb_name, cur_cmd.cb_params);
+		else
+			this.timeline.RunCallback(cur_cmd.cb_name, cur_cmd.cb_params);	    
         this._start_cmd();
+        
+        var cur_cmd=this.current_cmd;
+        var has_rex_function = (this.callback != null);
+        if (has_rex_function)
+		    this.callback.CallFn(name, params);
+        else    // run official function
+        {
+            var has_fnobj = this.timeline.RunCallback(name, params, true);
+            assert2(has_fnobj, "Worksheet: Can not find callback oject.");
+        }
+        this._start_cmd();        
 	};   
     
     var _INSTRUCTION_SORT = function(instA, instB)
@@ -97,8 +112,12 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
                 continue;
                 
             // output
-            instructions.push({time:parseFloat(line.slice(0,comma_index)),
-                               fn_args:line.slice(comma_index+1)});                               
+			var params = CSVToArray(line)[0];
+			var delay_time = parseFloat(params.shift());
+			var name = params.shift();
+            instructions.push({time:delay_time,
+			                   cb_name:name,
+							   cb_params:params});                  
         }
         
         instructions.sort(_INSTRUCTION_SORT);
@@ -125,7 +144,94 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_WorkSheet.prototype.cnds.OnCompleted, this);
         }
 	};
+	
+    // copy from    
+    // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
     
+    // This will parse a delimited string into an array of
+    // arrays. The default delimiter is the comma, but this
+    // can be overriden in the second argument.
+    var CSVToArray = function ( strData, strDelimiter ){
+        // Check to see if the delimiter is defined. If not,
+        // then default to comma.
+        strDelimiter = (strDelimiter || ",");
+
+        // Create a regular expression to parse the CSV values.
+        var objPattern = new RegExp(
+                (
+                        // Delimiters.
+                        "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
+
+                        // Quoted fields.
+                        "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
+
+                        // Standard fields.
+                        "([^\"\\" + strDelimiter + "\\r\\n]*))"
+                ),
+                "gi"
+                );
+
+
+        // Create an array to hold our data. Give the array
+        // a default empty first row.
+        var arrData = [[]];
+
+        // Create an array to hold our individual pattern
+        // matching groups.
+        var arrMatches = null;
+
+
+        // Keep looping over the regular expression matches
+        // until we can no longer find a match.
+        while (arrMatches = objPattern.exec( strData )){
+
+                // Get the delimiter that was found.
+                var strMatchedDelimiter = arrMatches[ 1 ];
+
+                // Check to see if the given delimiter has a length
+                // (is not the start of string) and if it matches
+                // field delimiter. If id does not, then we know
+                // that this delimiter is a row delimiter.
+                if (
+                        strMatchedDelimiter.length &&
+                        (strMatchedDelimiter != strDelimiter)
+                        ){
+
+                        // Since we have reached a new row of data,
+                        // add an empty row to our data array.
+                        arrData.push( [] );
+
+                }
+
+
+                // Now that we have our delimiter out of the way,
+                // let's check to see which kind of value we
+                // captured (quoted or unquoted).
+                if (arrMatches[ 2 ]){
+
+                        // We found a quoted value. When we capture
+                        // this value, unescape any double quotes.
+                        var strMatchedValue = arrMatches[ 2 ].replace(
+                                new RegExp( "\"\"", "g" ),
+                                "\""
+                                );
+
+                } else {
+
+                        // We found a non-quoted value.
+                        var strMatchedValue = arrMatches[ 3 ];
+
+                }
+
+
+                // Now that we have our value string, let's add
+                // it to the data array.
+                arrData[ arrData.length - 1 ].push( strMatchedValue );
+        }
+
+        // Return the parsed data.
+        return( arrData );
+    };            
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

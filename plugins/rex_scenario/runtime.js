@@ -45,8 +45,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.is_accT_mode = (this.properties[1] == 0);
         this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);        
         this.timeline = null;
-        this.callback = null;   
-        this.callback_type = 0;		
+        this.callback = null;
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -77,10 +76,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
-		{
             this.callback = callback;        
-			this.callback_type = 1;	
-	    }
         else
             alert ("Worksheet should connect to a function object");
 	};  
@@ -337,10 +333,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	ScenarioKlassProto._execute_fn = function(name, params)
 	{
 	    var plugin = this.plugin;
-	    if (plugin.callback_type == 1)    // compatible to rex_function
-		    plugin.callback.CallFn(name, params);
-		else
-			plugin.timeline.RunCallback(name, params);
+        var has_rex_function = (plugin.callback != null);
+        if (has_rex_function)
+            plugin.callback.CallFn(name, params);
+        else    // run official function
+        {
+            var has_fnobj = plugin.timeline.RunCallback(name, params, true);     
+            assert2(has_fnobj, "Scenario: Can not find callback oject.");
+        }
+        
 		this._run_next_cmd();
 	};
 	

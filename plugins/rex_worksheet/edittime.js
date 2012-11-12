@@ -25,7 +25,7 @@ AddCondition(1, 0, "Is worksheet running", "Control", "Is running",
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(0, 0, "Setup work sheet", "Setup", 
+AddAction(0, 0, "Setup work sheet", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup work sheet.", "Setup");
 AddStringParam("Instructions", "Instructions in work sheet", '""');
@@ -45,8 +45,13 @@ AddAction(4, 0, "Stop work sheet", "Control",
 AddNumberParam("Offset", "Time offset at start", 0);     
 AddAction(5, 0, "Set time offset", "Setting", 
           "Set offset to <i>{1}</i>", 
-          "Set time offset.", "SetOffset");           
-
+          "Set time offset.", "SetOffset");
+		  
+AddObjectParam("Timeline", "Timeline object for getting timer");
+AddAction(10, 0, "Setup work sheet", "Setup", 
+          "Get timer from <i>{0}</i>", 
+          "Setup work sheet.", "Setup2");
+		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get offset", "Setting", "Offset", "Get offset time.");

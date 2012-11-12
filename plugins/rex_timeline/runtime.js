@@ -55,9 +55,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.timers = {}; 
 		this.exp_triggered_timer_name = "";
 		
-		// function callback
-        this.callback = null;
-		this.callback_type = 0;
+        // callback:
+        
+		// rex_function
+        this.my_callback = null;        
+        // rex_functionext or function
+        this._official_fnobj = null;
+        this._official_fnobj_state = 0;  // 0=unknow, 1=not avaiable, 2=rex_functionext, 3=function
 	    this._call_fn = null;
 	};
     
@@ -77,7 +81,16 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     instanceProto._timer_handle = function(timer_struct)
     {
 	    this.exp_triggered_timer_name = timer_struct.name;
-		this.RunCallback(timer_struct.command, timer_struct.params);
+        var name = timer_struct.command;
+        var params = timer_struct.params;  
+        var has_rex_function = (this.my_callback != null);
+        if (has_rex_function)
+            this.my_callback.CallFn(name, params);
+        else    // run official function
+        {
+            var has_fnobj = this.RunCallback(name, params, true);            
+            assert2(has_fnobj, "Timeline: Can not find callback oject.");
+        }
     };
     
     // export: get new timer instance
@@ -94,9 +107,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             this.timers[timer_name] = {name:timer_name,
 			                           timer:null, 
                                        command:""};
-            if (this.callback_type == 1)
+            if (this.my_callback != null)
 			    this.timers[timer_name].params = {};
-		    else  // this.callback_type == 2 || this.callback_type == 3
+		    else
 			    this.timers[timer_name].params = [];
         }
         return this.timers[timer_name];
@@ -109,31 +122,32 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         return timer;
     };    
 
-	instanceProto._setup_callback = function ()
+	instanceProto._setup_callback = function (raise_assert_when_not_fnobj_avaiable)
 	{
-	    if (this.callback != null)
-		    return;
-
         var plugins = this.runtime.types;
-        assert2(plugins.Function || plugins.Rex_FnExt, "Function extension or official function was not found.");
+        
+        if (raise_assert_when_not_fnobj_avaiable)
+            assert2(plugins.Function || plugins.Rex_FnExt, "Function extension or official function was not found.");
 		
+        var name, plugin;
 		// try to get callback from function extension
 		if (plugins.Rex_FnExt != null)
 		{
             this._call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
-            var name, plugin;
             for (name in plugins)
             {
                 plugin = plugins[name];
                 if (plugin.plugin.acts.CallFunction == this._call_fn)
                 {
-                    this.callback = plugin.instances[0];
-				    this.callback_type = 3;
+                    this._official_fnobj = plugin.instances[0];
+				    this._official_fnobj_state = 2;
                     return;
                 }                                          
             }
 		}
-		else    // try to get callback from official function	
+        
+        // try to get callback from official function
+		if (plugins.Function != null)    
 		{	
             this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
             var name, plugin;
@@ -142,32 +156,32 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                 plugin = plugins[name];
                 if (plugin.plugin.acts.CallFunction == this._call_fn)
                 {
-                    this.callback = plugin.instances[0];
-				    this.callback_type = 2;
+                    this._official_fnobj = plugin.instances[0];
+				    this._official_fnobj_state = 3;
                     return;
                 }                                          
             }
 		}
+        
+        this._official_fnobj_state = 1;  // function object is not avaiable
 	};   
 
-    instanceProto.RunCallback = function(name, params)
+    instanceProto.RunCallback = function(name, params, raise_assert_when_not_fnobj_avaiable)
     {
-	    if (this.callback_type == 0)
-	        this._setup_callback();
-		assert2((this.callback_type != 0), "Timeline: Can not find callback oject.");
-		
-	    switch (this.callback_type)
+	    if (this._official_fnobj_state == 0)
+	        this._setup_callback(raise_assert_when_not_fnobj_avaiable);
+        
+	    switch (this._official_fnobj_state)
 		{
-		case 1:  // rex_function
-		    this.callback.CallFn(name, params);
+		case 2:  // rex_functionext
+		    this._official_fnobj.CallFunction(name, params);
 			break;
-	    case 2:  // function
-            this._call_fn.call(this.callback, name, params);
+	    case 3:  // function
+            this._call_fn.call(this._official_fnobj, name, params);
 			break;
-		case 3:  // rex_functionext
-		    this.callback.CallFunction(name, params);
-			break;
-		}
+		}      
+
+        return (this._official_fnobj_state != 1);  
     };	
 	//////////////////////////////////////
 	// Conditions
@@ -196,10 +210,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
-		{
-            this.callback = callback;        
-			this.callback_type = 1;
-	    }
+            this.my_callback = callback;        
+
         else
             alert ("Timeline should connect to a function object");
 	};      
