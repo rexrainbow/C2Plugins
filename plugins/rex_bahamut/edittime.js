@@ -4,7 +4,7 @@
 		"name":			"Bahamut",
 		"id":			"Rex_Bahamut",
 		"version":		"0.1",   		
-		"description":	"Get user data from Bahamut website.",
+		"description":	"Get user data from Bahamut website. http://www.gamer.com.tw/",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Web",
