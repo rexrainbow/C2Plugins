@@ -43,7 +43,12 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
 	{
         this._directions = this.properties[0];
         this.runtime.tickMe(this);
-     
+		this.myDestroyCallback = (function (self) {
+											return function(inst) {
+												self.onInstanceDestroyed(inst);
+											};
+										})(this); 
+        this.runtime.addDestroyCallback(this.myDestroyCallback); 
         this.setup_stage = true;
         // touch   
         this.touchwrap = null;
@@ -62,7 +67,16 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
                                  cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnLEFTReleased,
                                  cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnUPReleased    ];
 	};
-
+	
+	instanceProto.onInstanceDestroyed = function (inst)
+	{
+        for(i=0; i<4; i++)
+        {
+            if (this.keyMap[i].inst == inst)
+                this.keyMap[i].inst = null;
+        }
+	};  
+	
 	instanceProto.TouchWrapGet = function ()
 	{  
         var plugins = this.runtime.types;
