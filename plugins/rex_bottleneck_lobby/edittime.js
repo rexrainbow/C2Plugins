@@ -38,7 +38,7 @@ AddCondition(9,cf_trigger,"On start of layout","Start layout","On start of layou
              'Triggered when all users are prepared by passing "Action:Start of layout".',"OnStartOfLayout");
 AddCondition(10,cf_trigger,"On avaiable","Gameroom","On gameroom avaiable",
              'Triggered when gameroom avaiable',"OnGameroomAvaiable");
- AddCondition(11,cf_trigger,"On unavaiable.","Gameroom","On gameroom unavaiable",
+AddCondition(11,cf_trigger,"On unavaiable.","Gameroom","On gameroom unavaiable",
              'Triggered when gameroom unavaiable.',"OnGameroomUnavaiable");
 AddCondition(12, cf_looping | cf_not_invertible, "For each avaiable gameroom", "For Each", 
              "For each avaiable gameroom", "Repeat the event for each avaiable gameroom.", "ForEachGameroom");
