@@ -29,7 +29,8 @@ cr.behaviors.Rex_Timer = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.timeline = null;    
-        this.callback = null;        
+        this.callback = null; 
+        this.callback_type = 0;		
 	};
 
 	/////////////////////////////////////
@@ -48,7 +49,7 @@ cr.behaviors.Rex_Timer = function(runtime)
 	{        
         this.timer = null;    
         this.command = ""; 
-        this.param = {};     
+        this.params = null     
 	};
     
 	behinstProto.onDestroy = function()
@@ -72,8 +73,10 @@ cr.behaviors.Rex_Timer = function(runtime)
 	    sol.instances.length = 1;        
         sol.instances[0] = this.inst;
         // call function object
-        this.type.callback.AddParams(this.param);
-        this.type.callback.ExecuteCommands(this.command);        
+		if (this.type.callback_type == 1)
+		    this.type.callback.CallFn(this.command, this.params);     			
+		else
+		    this.type.timeline.RunCallback(this.command, this.params);
     };
 
 	//////////////////////////////////////
@@ -95,7 +98,10 @@ cr.behaviors.Rex_Timer = function(runtime)
 	{
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
+		{
             this.type.timeline = timeline;        
+			this.type.callback_type = 1;		
+	    }
         else
             alert ("Timer behavior should connect to a timeline object");          
         
@@ -109,6 +115,8 @@ cr.behaviors.Rex_Timer = function(runtime)
     Acts.prototype.Create = function (command)
 	{
         this.command = command;
+		if (this.params == null)
+		    this.params = {};
         if (this.timer)  // timer exist
             this.timer.Remove();
         else            // create new timer instance
@@ -141,9 +149,40 @@ cr.behaviors.Rex_Timer = function(runtime)
     
     Acts.prototype.SetParameter = function (index, value)
 	{
-        this.param[index] = value;
+	    if (this.params == null)
+		    this.params = {index:value};
+	    else
+            this.params[index] = value;
 	};    
 
+    Acts.prototype.Setup2 = function (timeline_objs)
+	{
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.type.timeline = timeline;        
+        else
+            alert ("Timer behavior should connect to a timeline object");          
+	};
+
+    Acts.prototype.Create2 = function (callback_name, callback_params)
+	{
+        this.command = command;
+		if (this.params == null)
+		    this.params = [];
+		cr.shallowAssignArray(this.params, callback_params);
+		
+        if (this.timer)  // timer exist
+            this.timer.Remove();
+        else            // create new timer instance
+            this.timer = this.type.timeline.CreateTimer(this, this._timer_handle);   
+	}; 	
+	
+    Acts.prototype.SetParameters = function (callback_params)
+	{
+		if (this.params == null)
+		    this.params = [];
+		cr.shallowAssignArray(this.params, callback_params);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
