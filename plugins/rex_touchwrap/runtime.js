@@ -631,7 +631,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.IsInTouch = function ()
 	{
-		return this.touchDown;
+		return (this._is_mouse_mode)? this.mouseDown : this.touches.length;
 	};    
     
 	instanceProto.OnTouchObject = function (type)
