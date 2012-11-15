@@ -6,7 +6,7 @@
 		"description":	"A switch for toggling between on and off",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Varaible",
+		"category":		"Variable",
 		"flags":		0
 	};
 };

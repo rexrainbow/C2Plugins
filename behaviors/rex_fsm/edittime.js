@@ -6,7 +6,7 @@
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Varaible",
+		"category":		"Variable",
 		"flags":		0
 	};
 };
