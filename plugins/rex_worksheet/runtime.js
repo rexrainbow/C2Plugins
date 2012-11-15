@@ -67,14 +67,8 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
     
 	instanceProto.Run = function()
 	{
-	    var cur_cmd=this.current_cmd;
-	    if (this.callback_type == 1)    // compatible to rex_function
-		    this.callback.CallFn(cur_cmd.cb_name, cur_cmd.cb_params);
-		else
-			this.timeline.RunCallback(cur_cmd.cb_name, cur_cmd.cb_params);	    
-        this._start_cmd();
-        
-        var cur_cmd=this.current_cmd;
+	    var cur_cmd = this.current_cmd;
+        var name = cur_cmd.cb_name, params = cur_cmd.cb_params;
         var has_rex_function = (this.callback != null);
         if (has_rex_function)
 		    this.callback.CallFn(name, params);
@@ -295,6 +289,14 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.offset = offset;
 	}; 
     
+    Acts.prototype.Setup2 = function (timeline_objs)
+	{  
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.timeline = timeline;        
+        else
+            alert ("Worksheet should connect to a timeline object");
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
