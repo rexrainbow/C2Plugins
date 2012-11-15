@@ -120,6 +120,13 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
     
     instanceProto._update_is_in_touch = function()
     {
+        if (!this.touchwrap.IsInTouch())
+        {
+            var i;
+            for (i=0; i<4; i++)
+                this.keyMap[i].is_in_touch = false;
+            return;
+        }
         var touchs = this.touchwrap.touches, tx, ty;    
         var i, px, py, inst, keyMap;    
         var j, lenj = touchs.length;        
