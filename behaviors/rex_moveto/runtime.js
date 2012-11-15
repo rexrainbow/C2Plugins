@@ -226,8 +226,21 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 			return;
 		var inst = objtype.getFirstPicked();
         if (inst != null)
-            this.SetTargetPos(inst.x, inst.y)
+            this.SetTargetPos(inst.x, inst.y);
 	};
+    
+ 	Acts.prototype.SetTargetPosByDeltaXY = function (dx, dy)
+	{
+        this.SetTargetPos(this.inst.x + dx, this.inst.y + dy);
+	};    
+    
+ 	Acts.prototype.SetTargetPosByDistanceAngle = function (distance, angle)
+	{
+        var a = cr.to_clamped_radians(angle);
+        var dx = distance*Math.cos(a);
+        var dy = distance*Math.sin(a);
+        this.SetTargetPos(this.inst.x + dx, this.inst.y + dy);
+	};      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

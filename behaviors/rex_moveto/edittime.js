@@ -52,8 +52,8 @@ AddAction(3, 0, "Set deceleration", "Speed",
           "Set {my} deceleration to <i>{0}</i>", 
           "Set the object's deceleration.", "SetDeceleration");
 
-AddNumberParam("X", "The X co-ordinate in the layout to move toward.");
-AddNumberParam("Y", "The Y co-ordinate in the layout to move toward.");
+AddNumberParam("X", "The X co-ordinate to move toward.");
+AddNumberParam("Y", "The Y co-ordinate to move toward.");
 AddAction(4, 0, "Set target position", "Position", 
           "Set {my} target position to (<i>{0}</i>, <i>{1}</i>)", 
           "Set target position to move toward.", 
@@ -70,6 +70,19 @@ AddAction(6, 0, "Set target position to object", "Position",
           "Set target position to move toward.", 
           "SetTargetPosOnObject");  
   
+AddNumberParam("dX", "The delta X to move toward, in pixel.");
+AddNumberParam("dY", "The delta Y to move toward, in pixel.");
+AddAction(7, 0, "Set target position by delta XY", "Position", 
+          "Set {my} target position by (delta <i>{0}</i>, delta <i>{1}</i>)", 
+          "Set target position to move toward by deltaX and deltaY.", 
+          "SetTargetPosByDeltaXY");  
+          
+AddNumberParam("Distance", "The destance to move toward, in pixel.");          
+AddNumberParam("Angle", "The angle of moving destance to move toward, in degree.");
+AddAction(8, 0, "Set target position by distance-angle", "Position", 
+          "Set {my} target position by distance to <i>{0}</i>, angle to <i>{1}</i>)", 
+          "Set target position to move toward by distance-angle.", 
+          "SetTargetPosByDistanceAngle");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
