@@ -52,8 +52,10 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	};   
     
-    behtypeProto.OnTouchStart = function ()
+    behtypeProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
     {
+        if (_NthTouch != 0)
+            return;        
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
             
@@ -64,12 +66,12 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         for (i=0; i<cnt; i++ )
         {
             inst = insts[i].behavior_insts[this.behavior_index];            
-            inst.onMovingStart(this.GetABSX(), this.GetABSY());
+            inst.onMovingStart(_TouchX, _TouchY);
         }
     };
     
-    behtypeProto.OnTouchEnd = function ()
-    {
+    behtypeProto.OnTouchEnd = function (_NthTouch)
+    {        
     };
 
     // export     
@@ -129,15 +131,23 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         {
             return;        
         }
-        
-        // this.activated == 1 && this.is_on_moving        
+             
+        // this.activated == 1 && this.is_on_moving 
+        if ( this.type._is_release() )
+        {
+            this.is_on_moving = false;
+            this._dir = null;
+            this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoveStop, inst);
+            return;
+        }
+                       
         var inst = this.inst;
         var cur_x = this.type.GetABSX();
         var cur_y = this.type.GetABSY();
         var dx = cur_x - this.pre_x;
         var dy = cur_y - this.pre_y;             
         if ( (dx!=0) || (dy!=0) )
-        {
+        {               
             switch (this.move_axis)
             {
                 case 1:    // Horizontal
@@ -161,16 +171,11 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
             }
             inst.set_bbox_changed();
             this.pre_x = cur_x;
-            this.pre_y = cur_y;                    
+            this.pre_y = cur_y;              
         }
-        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoving, inst);
+        //this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoving, inst);
                                 
-        if ( this.type._is_release() )
-        {
-            this.is_on_moving = false;
-            this._dir = null;
-            this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoveStop, inst); 
-        }
+
 	};  
 
 	behinstProto.onMovingStart = function(x, y)

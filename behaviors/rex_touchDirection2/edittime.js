@@ -1,9 +1,9 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Touch direction2",
+		"name":			"Dragging vetctor",
 		"id":			"Rex_TouchDirection2",
-		"description":	"Move sprite with mouse or touch moving",
+		"description":	"Move sprite with mouse or touch dragging",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Movements",
@@ -26,7 +26,7 @@ AddAction(1, 0, "Set proportion", "", "Set {my} proportion to <i>{0}</i>",
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0,	cf_trigger, "On move start", "", "On {my} move start", "Triggered when object move start.", "OnMoveStart");
-AddCondition(1,	cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");             
+AddCondition(1,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");             
 AddCondition(2,	cf_trigger, "On move stop", "", "On {my} move stop", "Triggered when object move stop.", "OnMoveStop"); 
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");
 
