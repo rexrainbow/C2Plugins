@@ -25,19 +25,20 @@ AddAction(1, 0, "Set proportion", "", "Set {my} proportion to <i>{0}</i>",
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On move start", "", "On {my} move start", "Triggered when object move start.", "OnMoveStart");
+AddCondition(0,	cf_trigger, "On moving start", "", "On {my} moving start", "Triggered when object moving start.", "OnMovingStart");
 AddCondition(1,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");             
-AddCondition(2,	cf_trigger, "On move stop", "", "On {my} move stop", "Triggered when object move stop.", "OnMoveStop"); 
+AddCondition(2,	cf_trigger, "On moving stop", "", "On {my} moving stop", "Triggered when object moving stop.", "OnMovingStop"); 
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number | ef_variadic_parameters, "Mouse X position", "Position", "X", "Get the mouse cursor X co-ordinate in the layout.");
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", "Position", "Y", "Get the mouse cursor Y co-ordinate in the layout.");
-AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
-AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Get mouse X position", "Position", "X", "Get the mouse cursor X co-ordinate in the layout.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Get mouse Y position", "Position", "Y", "Get the mouse cursor Y co-ordinate in the layout.");
+AddExpression(2, ef_return_number, "Get absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
+AddExpression(3, ef_return_number, "Get absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
 AddExpression(5, ef_return_number, "Get Proportion", "", "Proportion", "The Proportion setting.");
+AddExpression(10, ef_return_number, "Get speed", "Position", "Speed", "Get the speed of a touch, pixels per second.");
 
 
 ACESDone();

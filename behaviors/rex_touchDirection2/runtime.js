@@ -95,10 +95,15 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         return this.touchwrap.GetY(inst.layer);
 	};  
     
-	behtypeProto._is_release = function()
+	behtypeProto.IsRelease = function()
 	{
         return (!this.touchwrap.IsInTouch());
 	};    
+    
+	behtypeProto.GetSpeed = function()
+	{
+        return this.touchwrap.GetSpeedAt(0);
+	};      
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -133,7 +138,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         }
              
         // this.activated == 1 && this.is_on_moving 
-        if ( this.type._is_release() )
+        if ( this.type.IsRelease() )
         {
             this.is_on_moving = false;
             this._dir = null;
@@ -192,12 +197,12 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();    
     
-	Cnds.prototype.OnMoveStart = function ()
+	Cnds.prototype.OnMovingStart = function ()
 	{
         return true;
 	};
     
-	Cnds.prototype.OnMoveStop = function ()
+	Cnds.prototype.OnMovingStop = function ()
 	{
 		return true;
 	}; 
@@ -271,4 +276,9 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 		ret.set_float(this.move_proportion);
 	}; 
     
+	Exps.prototype.Speed = function (ret)
+	{
+        var spd = (this.type.IsRelease())? 0 : this.type.GetSpeed();
+		ret.set_float(spd);
+	};     
 }());
