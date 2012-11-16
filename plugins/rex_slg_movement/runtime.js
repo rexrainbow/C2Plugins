@@ -42,8 +42,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-	    this.exp_ChessUID =0;
-	    this.exp_TileUID =0;	   
+	    this.exp_ChessUID = -1;
+	    this.exp_TileUID = -1;
+        this.exp_TileX = -1;        
+        this.exp_TileY = -1;         
 	    
 	    this.path_mode = this.properties[0];
 	                     
@@ -105,7 +107,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	};	
 	
 	var prop_BLOCKING = -1;
-	instanceProto._get_cost = function(tile_uid)
+	instanceProto._get_cost = function(tile_uid, tile_x, tile_y)
 	{
 	    var cost;
 	    if (this._is_cost_fn)
@@ -114,7 +116,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             if (cost != null)
                 return cost;            
 	        this.exp_TileUID = tile_uid;
-	        this._cost_value = 0;
+	        this.exp_TileX = tile_x;
+	        this.exp_TileY = tile_y;              
+	        this._cost_value = prop_BLOCKING;
 	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
 	        cost = this._cost_value;
             this._tile2cost[tile_uid] = cost;
@@ -219,13 +223,19 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	instanceProto._get_moveable_tile = function(start_tile_uid, end_tile_uid, moving_points, cost)
 	{
         //debugger;
+        var tile_xyz;
 	    this._get_moveable_tile_setup(cost);        
         if (start_tile_uid == null)
-            return;        
-        if ((end_tile_uid != null) && (this._get_cost(end_tile_uid) == prop_BLOCKING))
-            return;    
-            
-        var tile_uid, tile_xyz, at_chess_xy, tile_cost, node, remain_cost, next_tile_uid, neighbors, pre_tile_uid, direction, remain;
+            return; 
+        
+        if (end_tile_uid != null)
+        {
+            tile_xyz = this.uid2xyz(end_tile_uid);
+            if (this._get_cost(end_tile_uid, tile_xyz.x, tile_xyz.y) == prop_BLOCKING)
+                return;
+        }
+
+        var tile_uid, at_chess_xy, tile_cost, node, remain_cost, next_tile_uid, neighbors, pre_tile_uid, direction, remain;
         var tile_obj = {remain_moving_points:moving_points, 
                         tile_uid:start_tile_uid, 
                         pre_tile_uid:null, direction:null};
@@ -245,7 +255,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                 this._skip_first = false;
             else if (!at_chess_xy)  // try to move to this tile
             {
-                tile_cost = this._get_cost(tile_uid);
+                tile_cost = this._get_cost(tile_uid, tile_xyz.x, tile_xyz.y);
 	            if (tile_cost == prop_BLOCKING)  // is a blocking property tile
 	                continue;
                 remain -= tile_cost;
@@ -463,4 +473,14 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     {
         ret.set_int(prop_BLOCKING);
     };	
+    	
+    Exps.prototype.TileX = function (ret)
+    {
+        ret.set_int(this.exp_TileX);
+    };
+    	
+    Exps.prototype.TileY = function (ret)
+    {
+        ret.set_int(this.exp_TileY);
+    };    
 }());

@@ -78,12 +78,17 @@ AddExpression(1, ef_return_number,
               "Get UID of selected chess", "Request", "ChessUID", 
               "Get UID of selected chess.");
 AddExpression(2, ef_return_number,
-              "Get UID of tile", "Request", "TileUID",
-              "Get UID of tile.");
+              "Get UID of target tile", "Request", "TileUID",
+              "Get UID of target tile.");
 AddExpression(3, ef_return_number,
               "Blocking property used in cost function", "Cost", "BLOCKING",
               "Blocking property used in cost function.");              
-              
+AddExpression(4, ef_return_number,
+              "Get logic X of target tile", "Request", "TileX",
+              "Get logic X of target tile.");
+AddExpression(5, ef_return_number,
+              "Get logic Y of target tile", "Request", "TileY",
+              "Get logic Y of target tile."); 
 ACESDone();
 
 // Property grid properties for this plugin
