@@ -172,10 +172,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	Cnds.prototype.IsDataInCol = function (data, col_name)
 	{
-	    debugger;
+		if (!(this.current_table.keys.indexOf(col_name) != (-1)))
+		    return false;    
 	    var table = this.current_table._table;
-		if (!(col_name in table))
-		    return false;
 	    var col_data = table[col_name], row_name;
 		var matched = false;
 		for (row_name in col_data)
@@ -191,10 +190,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	Cnds.prototype.IsDataInRow = function (data, row_name)
 	{
+		if (!(this.current_table.items.indexOf(row_name) != (-1)))
+		    return false;    
 	    var table = this.current_table._table;
-	    var cols = this.current_table.keys;
-		if (!(row_name in table[cols[0]]))
-		    return false;
 	    var col_name;
 		var matched = false;
 		for (col_name in table)
@@ -206,7 +204,17 @@ cr.plugins_.Rex_CSV = function(runtime)
 			}
 		}
 		return matched;
-	}; 	
+	}; 
+
+	Cnds.prototype.IsKeyInCol = function (key)
+	{
+        return (this.current_table.keys.indexOf(key) != (-1));     
+	};
+
+	Cnds.prototype.IsKeyInRow = function (key)
+	{
+        return (this.current_table.items.indexOf(key) != (-1));
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -281,7 +289,17 @@ cr.plugins_.Rex_CSV = function(runtime)
 	        this.TurnPage(page);
 	        this.current_table.JSONString2Page(tables[page]);
 	    }
-	}; 	     
+	};
+    
+	Acts.prototype.SortCol = function (col_index, is_increasing)
+	{
+        this.current_table.SortCol(col_index, is_increasing);
+	};
+    
+	Acts.prototype.SortRow = function (row_index, is_increasing)
+	{
+        this.current_table.SortRow(row_index, is_increasing);
+	};     
     
 	//////////////////////////////////////
 	// Expressions
@@ -675,6 +693,43 @@ cr.plugins_.Rex_CSV = function(runtime)
     {
         return this.items.length;
     };
+    
+    var _sort_table = null;
+    var _sort_col_name = "";
+    var _sort_row_name = "";
+    var _sort_is_increasing = true;
+    var _col_sort = function(row0, row1)
+    {        
+        var item0 = _sort_table[_sort_col_name][row0];
+        var item1 = _sort_table[_sort_col_name][row1];
+        return (item0 > item1) ? (_sort_is_increasing? 1:-1):
+               (item0 < item1) ? (_sort_is_increasing? -1:1):
+                                 0;
+    }  
+    var _row_sort = function(col0, col1)
+    {        
+        var item0 = _sort_table[col0][_sort_row_name];
+        var item1 = _sort_table[col1][_sort_row_name]; 
+        return (item0 > item1) ? (_sort_is_increasing? 1:-1):
+               (item0 < item1) ? (_sort_is_increasing? -1:1):
+                                 0;
+    }
+    CSVKlassProto.SortCol = function (col_index, is_increasing)
+    {
+        _sort_table = this._table;
+        _sort_col_name = col_index;
+        _sort_is_increasing = (is_increasing == 0);
+        this.items.sort(_col_sort);
+    };
+	    
+    CSVKlassProto.SortRow = function (row_index, is_increasing)
+    {
+        _sort_table = this._table;
+        _sort_row_name = row_index;
+        _sort_is_increasing = (is_increasing == 0);      
+        this.keys.sort(_row_sort); 
+    };    
+    
     
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm

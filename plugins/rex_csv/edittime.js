@@ -31,12 +31,17 @@ AddCondition(4, cf_looping | cf_not_invertible, "For each col in row", "For each
 AddAnyTypeParam("Data", "Data to compare.", 0);
 AddStringParam("Col", "The col index.", '""');
 AddCondition(5, 0, "Data in col", "In", 
-             "<i>{0}</i> in col <i>{1}</i>", "Testing if data in col.", "IsDataInCol");
+             "Data <i>{0}</i> in col <i>{1}</i>", "Return true if data in col.", "IsDataInCol");
 AddAnyTypeParam("Data", "Data to compare.", 0);
 AddStringParam("Row", "The row index.", '""');
 AddCondition(6, 0, "Data in row", "In", 
-             "<i>{0}</i> in row <i>{1}</i>", "Testing if data in row.", "IsDataInRow");
-			 
+             "Data <i>{0}</i> in row <i>{1}</i>", "Return true if data in row.", "IsDataInRow");
+AddStringParam("Key", "The col index.", '""');
+AddCondition(7, 0, "Key in col", "In", 
+             "Key <i>{0}</i> in col", "Return true if key in col.", "IsKeyInCol");
+AddStringParam("Key", "The row index.", '""');
+AddCondition(8, 0, "Key in row", "In", 
+             "Key <i>{0}</i> in row", "Return true if key in row.", "IsKeyInRow"); 
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("CSV string", "The csv string for loading.", '""');
@@ -78,7 +83,20 @@ AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
          "Set delimiter for splitting items.", "SetDelimiter");
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(12, 0, "Load all tables", "JSON", "Load all tables form JSON string <i>{0}</i>",
-         "Load all tables from JSON string.", "StringToAllTables");  
+         "Load all tables from JSON string.", "StringToAllTables"); 
+AddStringParam("Col index", "Col index.", '""');
+AddComboParamOption("Increasing");
+AddComboParamOption("Decreasing");
+AddComboParam("Order", "Sorting order of item.", 0); 
+AddAction(13, 0, "Sort items in col", "Sort", "Sort items in col <i>{0}</i> , by <i>{1}</i> order",
+         "Sort items in col.", "SortCol");
+AddStringParam("Row index", "Row index.", '""');
+AddComboParamOption("Increasing");
+AddComboParamOption("Decreasing");
+AddComboParam("Order", "Sorting order of item.", 0); 
+AddAction(14, 0, "Sort items in row", "Sort", "Sort items in row <i>{0}</i> , by <i>{1}</i> order",
+         "Sort items in row.", "SortRow");  
+       
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Col", "The column index.", '""');
