@@ -492,9 +492,8 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	CSVKlassProto.SetEntry = function (col, row, val)
 	{
-        if ( (this._table[col] == null) ||
-             (this._table[col][row] == null) )
-            return;
+        assert2((this._table[col]!=null) && (this._table[col][row] != null), 
+                 "[CSV]SetEntry: " + col + " , " + row  + " not found.");
             
         this._table[col][row] = val;        
 	};    
@@ -716,6 +715,7 @@ cr.plugins_.Rex_CSV = function(runtime)
     }
     CSVKlassProto.SortCol = function (col_index, is_increasing)
     {
+        assert2(this.keys.indexOf(col_index) != (-1), "[CSV]SortCol: " + col_index + " not in col");
         _sort_table = this._table;
         _sort_col_name = col_index;
         _sort_is_increasing = (is_increasing == 0);
@@ -724,6 +724,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	    
     CSVKlassProto.SortRow = function (row_index, is_increasing)
     {
+        assert2(this.items.indexOf(row_index) != (-1), "[CSV]SortRow: " + row_index + " not in row");
         _sort_table = this._table;
         _sort_row_name = row_index;
         _sort_is_increasing = (is_increasing == 0);      
