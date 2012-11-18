@@ -7,7 +7,7 @@
 		"description":	"Create sprites according to tmx string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"General",
+		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
