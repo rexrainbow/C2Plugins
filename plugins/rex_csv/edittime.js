@@ -66,7 +66,8 @@ AddStringParam("JSON string", "JSON string.", '""');
 AddAction(6, 0, "Load one table", "JSON", "Load table form JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");  
 AddStringParam("Col index", "Column index.", '""');
-AddAction(7, 0, "Append a column", "Append/Remove", "Append column <i>{0}</i>",
+AddAnyTypeParam("Value", "The initial value.", '""');
+AddAction(7, 0, "Append a column", "Append/Remove", "Append column <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a column.", "AppendCol");
 AddStringParam("Row index", "Row index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
