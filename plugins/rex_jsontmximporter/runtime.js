@@ -409,6 +409,9 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     var _get_tiles = function(dict_obj, xml_tiles)
     {
         dict_obj = dict_obj["tile"];
+        if (dict_obj == null)
+            return {};
+            
         var id, tiles = {};  
         if (dict_obj.length)
         {
