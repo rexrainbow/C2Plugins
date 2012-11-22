@@ -291,14 +291,14 @@ cr.plugins_.Rex_CSV = function(runtime)
 	    }
 	};
     
-	Acts.prototype.SortCol = function (col_index, is_increasing)
+	Acts.prototype.SortCol = function (col, is_increasing)
 	{
-        this.current_table.SortCol(col_index, is_increasing);
+        this.current_table.SortCol(col, is_increasing);
 	};
     
-	Acts.prototype.SortRow = function (row_index, is_increasing)
+	Acts.prototype.SortRow = function (row, is_increasing)
 	{
-        this.current_table.SortRow(row_index, is_increasing);
+        this.current_table.SortRow(row, is_increasing);
 	}; 
     
 	//////////////////////////////////////
@@ -468,13 +468,17 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 	    var entry;
 	    entry = this._table[col];
-	    assert2((entry!=null), "Can not find col index '" +col+"' in table.");
 	    if (entry == null)
+        {
+            console.log("[CSV] Expression:At - Can not find col index '" +col+"' in table.");
 	        return 0;
+        }
 	    entry = entry[row];
-	    assert2((entry!=null), "Can not find row index '" +row+"' in table.");
 	    if (entry == null)
+        {
+            console.log("[CSV] Expression:At - Can not find row index " +row+" in table.");
 	        return 0;	 
+        }
         return entry;   
 	};
     
@@ -482,13 +486,17 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 	    var entry;
 	    entry = this._table[col];
-	    assert2((entry!=null), "Can not find col index '" +col+"' in table.");
 	    if (entry == null)
+        {
+            console.log("[CSV] Action:SetEntry - Can not find col index " +col+" in table.");
 	        return;
+        }
 	    entry = entry[row];
-	    assert2((entry!=null), "Can not find row index '" +row+"' in table.");
 	    if (entry == null)
+        {
+            console.log("[CSV] Action:SetEntry - Can not find row index " +row+" in table.");
 	        return;	    
+        }
         this._table[col][row] = val;        
 	};
     
@@ -579,7 +587,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             delete table[keys[i]][row];        
         }   
         this.items.splice(row_index, 1);
-	}; 
+	};
     
 	CSVKlassProto.ForEachCol = function ()
 	{   
@@ -604,9 +612,11 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.ForEachRowInCol = function (col)
 	{
         var has_col_index = (this.keys.indexOf(col)!=(-1));
-        assert2(has_col_index, "[CSV]SortCol: " + col + " not in col");
         if (!has_col_index)
+        {
+            console.log("[CSV] Condition:For each row in col - Can not find col index " + col+" in table.");
             return;	    
+        }
             
         // current_entry is valid
         var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
@@ -650,9 +660,11 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.ForEachColInRow = function (row)
 	{
         var has_row_index = (this.items.indexOf(row)!=(-1));
-        assert2(has_row_index, "[CSV]SortRow: " + row + " not in row");
         if (!has_row_index)
+        {
+            console.log("[CSV] Condition:For each row in col - Can not find row index "+row+" in table.");
             return; 	    
+        }
             
         // current_entry is valid
         var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
@@ -703,26 +715,30 @@ cr.plugins_.Rex_CSV = function(runtime)
                (item0 < item1) ? (_sort_is_increasing? -1:1):
                                  0;
     };
-    CSVKlassProto.SortCol = function (col_index, is_increasing)
+    CSVKlassProto.SortCol = function (col, is_increasing)
     {
-        var has_col_index = (this.keys.indexOf(col_index)!=(-1));
-        assert2(has_col_index, "[CSV]SortCol: " + col_index + " not in col");
+        var has_col_index = (this.keys.indexOf(col)!=(-1));
         if (!has_col_index)
+        {
+            console.log("[CSV] Action:Sort Col - Can not find col index " + col+" in table.");
             return;
+        }
         _sort_table = this._table;
-        _sort_col_name = col_index;
+        _sort_col_name = col;
         _sort_is_increasing = (is_increasing == 0);
         this.items.sort(_col_sort);
     };
 	    
-    CSVKlassProto.SortRow = function (row_index, is_increasing)
+    CSVKlassProto.SortRow = function (row, is_increasing)
     {
-        var has_row_index = (this.items.indexOf(row_index)!=(-1));
-        assert2(has_row_index, "[CSV]SortRow: " + row_index + " not in row");
+        var has_row_index = (this.items.indexOf(row)!=(-1));
         if (!has_row_index)
+        {
+            console.log("[CSV] Action:Sort Row - Can not find row index "+row+" in table.");
             return;        
+        }
         _sort_table = this._table;
-        _sort_row_name = row_index;
+        _sort_row_name = row;
         _sort_is_increasing = (is_increasing == 0);      
         this.keys.sort(_row_sort); 
     };    
