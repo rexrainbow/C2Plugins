@@ -33,7 +33,7 @@ AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMo
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", 
+AddAction(0, 0, "Set activated", "Active", 
           "Set {my} activated to <i>{0}</i>", 
           "Enable the object's MoveTo behavior.", "SetActivated");
 
