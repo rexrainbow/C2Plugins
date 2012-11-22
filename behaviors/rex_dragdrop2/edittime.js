@@ -26,7 +26,7 @@ AddAction(1, 0, "Force to drop", "", "Force {my} to drop",
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0,	cf_trigger, "On drag start", "", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
-AddCondition(1,	cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
+AddCondition(1,	cf_deprecated | cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
 AddCondition(2,	cf_trigger, "On drop", "", "On {my} drop", "Triggered when object drop.", "OnDrop"); 
 AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.", "IsDragging");
 

@@ -53,12 +53,14 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	};  
     
-    behtypeProto.OnTouchStart = function ()
+    behtypeProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
     {
-        this.DragDetecting(this.GetABSX(), this.GetABSY());
+        if (_NthTouch != 0)
+            return;    
+        this.DragDetecting(_TouchX, _TouchY);
     };
     
-    behtypeProto.OnTouchEnd = function ()
+    behtypeProto.OnTouchEnd = function (_NthTouch)
     {
     };
     
@@ -180,8 +182,13 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{        
         if ( (this.activated == 0) ||
              (!this.drag_info.is_on_drag)      )
+            return;
+        
+        if ( this.type._is_release() )
         {
-            return;        
+            this.drag_info.is_on_drag = false;
+            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, inst); 
+            return;
         }
         
         // this.activated == 1 && this.is_on_drag        
@@ -211,13 +218,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             this.drag_info.pre_x = cur_x;
             this.drag_info.pre_y = cur_y;                    
         }
-        this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragging, inst);
+        //this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragging, inst);
                                 
-        if ( this.type._is_release() )
-        {
-            this.drag_info.is_on_drag = false;
-            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, inst); 
-        }
+
 	};    
 
 	//////////////////////////////////////
