@@ -64,6 +64,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.force_move = (this.properties[6] == 1);
         this._colliding_xyz = {};
         this._colliding_zhash2uids = {};
+        this._target_uid = null;
+        this._z_saved = null;
 	};       
 
     behinstProto.tick = function ()
@@ -148,11 +150,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
       
         if (!this.board.is_inside_board(target_x, target_y))  // tile does not exist
             return null;        
-
+        var _target_uid = this.board.xyz2uid(target_x, target_y, target_z);
+        this._target_uid = _target_uid;  // pass _target_uid out
+        
 		if (this.force_move)
 		    return 1; // can move to target
-            
-        var _target_uid = this.board.xyz2uid(target_x, target_y, target_z);
+
         if (_target_uid == null)  // no overlap at the same z
         {
             // find out if neighbors have solid property
@@ -178,12 +181,45 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         }
     };
     behinstProto._move_to_target = function (target_x, target_y, target_z)
-    {
+    {        
         var can_move = this._test_move_to(target_x, target_y, target_z);
-        if (can_move == 1)
+        if (can_move == 1)  // can move to neighbor
         {
-            // can move to neighbor
-            this.board.move_item(this.inst, target_x, target_y, target_z);
+            var z_index;
+            
+            if (this.force_move)
+            {
+                if ((this._z_saved != null) &&     // slink
+                    (this.board.xyz2uid(target_x, target_y, this._z_saved) == null))
+                {
+                    z_index = this._z_saved;
+                    this._z_saved = null;                  
+                }
+                else
+                {
+                    if (this._target_uid == null)
+                        z_index = target_z;
+                    else  // overlap with other chess -> change my z index to avoid overlapping
+                    {
+                        if (this._z_saved == null)
+                        {
+                            this._z_saved = target_z;
+                            z_index = "#" + this.inst.uid.toString();
+                        }
+                        else
+                            z_index += "#";
+                        while (this.board.xyz2uid(target_x, target_y, z_index) != null)
+                            z_index += "#";
+                    }
+                }
+                
+            }
+            else  // normal mode
+                z_index = target_z;
+            
+
+            this.board.move_item(this.inst, target_x, target_y, z_index);
+                
             // set moveTo
             var layout = this.board.layout;
             this._cmd_move_to._set_target_pos(layout.GetX(target_x, target_y, target_z), 
@@ -191,7 +227,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             this._is_moving_request_accepted = true;           
             this.is_my_call = true;                          
             this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted, this.inst);                                           
-            this.is_my_call = false; 
+            this.is_my_call = false;         
         } 
         else if (can_move == (-1))
         {
@@ -640,9 +676,6 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         } 
 
 		this.inst.set_bbox_changed();
-        //this.is_my_call = true;
-        //this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMoving, this.inst);
-        //this.is_my_call = false;
 	};
 	
 	CmdMoveToProto._set_current_speed = function(speed)

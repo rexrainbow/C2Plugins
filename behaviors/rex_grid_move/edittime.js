@@ -166,7 +166,8 @@ var property_list = [
                     "Random moving in the boundary."),
 	new cr.Property(ept_integer, "Wander range y", 1, 
                     "Random moving in the boundary."), 	
-    new cr.Property(ept_combo, "Force move", "No", "Enable if you wish to ignore solid checking.", "No|Yes"), 					
+    new cr.Property(ept_combo, "Force move", "No", 
+                    "Enable if you wish to ignore solid checking. It will change z index when logical overlapping.", "No|Yes"), 					
 	];
 	
 // Called by IDE when a new behavior type is to be created
