@@ -41,6 +41,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	instanceProto.onCreate = function()
 	{   
+	    this.isInPreview = (typeof cr_is_preview !== "undefined");  
         this.strDelimiter = this.properties[0];
         this._tables = {};
         this.current_page_name = null;
@@ -468,13 +469,13 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 	    var entry;
 	    entry = this._table[col];
-	    if (entry == null)
+	    if ((entry == null) && this.plugin.isInPreview)
         {
             console.log("[CSV] Expression:At - Can not find col index '" +col+"' in table.");
 	        return 0;
         }
 	    entry = entry[row];
-	    if (entry == null)
+	    if ((entry == null) && this.plugin.isInPreview)
         {
             console.log("[CSV] Expression:At - Can not find row index " +row+" in table.");
 	        return 0;	 
@@ -486,13 +487,13 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 	    var entry;
 	    entry = this._table[col];
-	    if (entry == null)
+	    if ((entry == null) && this.plugin.isInPreview)
         {
             console.log("[CSV] Action:SetEntry - Can not find col index " +col+" in table.");
 	        return;
         }
 	    entry = entry[row];
-	    if (entry == null)
+	    if ((entry == null) && this.plugin.isInPreview)
         {
             console.log("[CSV] Action:SetEntry - Can not find row index " +row+" in table.");
 	        return;	    
@@ -612,7 +613,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.ForEachRowInCol = function (col)
 	{
         var has_col_index = (this.keys.indexOf(col)!=(-1));
-        if (!has_col_index)
+        if ((!has_col_index) && this.plugin.isInPreview)
         {
             console.log("[CSV] Condition:For each row in col - Can not find col index " + col+" in table.");
             return;	    
@@ -660,7 +661,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.ForEachColInRow = function (row)
 	{
         var has_row_index = (this.items.indexOf(row)!=(-1));
-        if (!has_row_index)
+        if ((!has_row_index) && this.plugin.isInPreview)
         {
             console.log("[CSV] Condition:For each row in col - Can not find row index "+row+" in table.");
             return; 	    
@@ -718,7 +719,7 @@ cr.plugins_.Rex_CSV = function(runtime)
     CSVKlassProto.SortCol = function (col, is_increasing)
     {
         var has_col_index = (this.keys.indexOf(col)!=(-1));
-        if (!has_col_index)
+        if ((!has_col_index) && this.plugin.isInPreview)
         {
             console.log("[CSV] Action:Sort Col - Can not find col index " + col+" in table.");
             return;
@@ -732,7 +733,7 @@ cr.plugins_.Rex_CSV = function(runtime)
     CSVKlassProto.SortRow = function (row, is_increasing)
     {
         var has_row_index = (this.items.indexOf(row)!=(-1));
-        if (!has_row_index)
+        if ((!has_row_index) && this.plugin.isInPreview)
         {
             console.log("[CSV] Action:Sort Row - Can not find row index "+row+" in table.");
             return;        

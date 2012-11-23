@@ -46,8 +46,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.board = [];
 	    this.reset_board(this.properties[0]-1,
 	                     this.properties[1]-1);
-	                     
         this.layout = null;
+        this._kicked_chess_inst = null;
         
 		// Need to know if pinned object gets destroyed
 		this.myDestroyCallback = (function (self) {
@@ -142,9 +142,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	        sol.instances.push(inst);  
 	         has_inst = true;
 	    }
-	    return  has_inst;
+	    return has_inst;
 	};
-	        
+   
 	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
 	{
         var layer = this._get_layer(_layer);
@@ -167,7 +167,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         var is_inst = (typeof(inst) != "number");
         var uid = (is_inst)? inst.uid:inst;
-        this.remove_item(this.xyz2uid(_x,_y,_z));
+        this.remove_item(this.xyz2uid(_x,_y,_z), true);
 	    this.board[_x][_y][_z] = uid;
 	    this.items[uid] = {x:_x, y:_y, z:_z};
         
@@ -177,7 +177,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnCollided, this);                                           
 	};
     
-	instanceProto.remove_item = function(uid)
+	instanceProto.remove_item = function(uid, kicking_notify)
 	{        
         if (uid == null)
             return;
@@ -185,9 +185,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var _xyz = this.uid2xyz(uid);
         if (_xyz == null)
             return;
-
+                    
+        if (kicking_notify)
+        {
+            this._kicked_chess_inst = this._insts[uid];
+            this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnChessKicked, this); 
+        }
+        
         delete this.items[uid];
-        delete this.board[_xyz.x][_xyz.y][_xyz.z];
+        delete this.board[_xyz.x][_xyz.y][_xyz.z];        
         delete this._insts[uid];
 	};
 	instanceProto.move_item = function(chess_inst, target_x, target_y, target_z)
@@ -411,6 +417,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 	    return this._pick_all_insts();
 	};
+
+	Cnds.prototype.OnChessKicked = function (chess_obj)
+	{
+	    if (this._kicked_chess_inst.type != chess_obj)	    
+	        return false;	    
+	    var sol = chess_obj.getCurrentSol();
+	    sol.instances.length = 1;
+	    sol.instances[0] = this._kicked_chess_inst;
+	    sol.select_all = false;
+	    return true;
+	};	
+	
 	
 	//////////////////////////////////////
 	// Actions
@@ -478,7 +496,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    if ((chess_uid == null) || (!this.is_inside_board(x,y,z)))
 	        return;  
 
-	    this.remove_item(chess_uid);   
+	    this.remove_item(chess_uid, true);   
         this.add_item(chess_uid, x, y, z);        
 	};   
 	

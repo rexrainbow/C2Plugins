@@ -527,26 +527,19 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
 	GroupKlassProto.Copy = function(group)
 	{
-		this._set = hash_copy(group._set);
-        this._list.length =0;
-        var uid;
-        for (uid in this._set)
-            this._list.push(parseInt(uid));
-	};
-    
-    var hash_copy = function (obj_in, obj_src)
-    {
-        var obj_out = (obj_src == null)? {}:obj_src;
-        var key;
-        for (key in obj_in)
-            obj_out[key] = obj_in[key];
-            
-        return obj_out;
-    };      
+        var key, hash_obj;
+        hash_obj = this._set;
+        for (key in hash_obj)
+            delete this._set[key];
+        hash_obj = group._set;
+        for (key in hash_obj)
+            this._set[key] = hash_obj[key];
+		cr.shallowAssignArray(this._list, group._list);
+	};   
 	
 	GroupKlassProto.SetByUIDList = function(uid_list)
 	{
-	    this._list = uid_list;
+	    cr.shallowAssignArray(this._list, uid_list);
 	    var list_len = uid_list.length;
 	    var i;
 	    this._set = {};

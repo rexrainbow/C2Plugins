@@ -63,7 +63,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		this._neighbors = [];  // call this._neighbors_init at action:Setup
 
         this._chess_xyz = null;
-        this._hit_dist_tile = false;   
+        this._hit_dist_tile = false; 
 	};
 
 	instanceProto.is_inside_board = function (x,y,z)
@@ -391,7 +391,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._filter_uid_list.push(filter_uid);
 	}; 	   
 	 
-	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter, group_name)
+	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
 	{	        	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
@@ -400,30 +400,21 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    
 	    this.exp_ChessUID = chess_uid;
 		var tiles_uids = this.get_moveable_area(chess_uid, moving_points, cost);
-	    var uid;
-	    var avaiable_uids = [];  
-        this._filter_fn_name = filter;
+	    var uid, _xyz;
+	    this._filter_uid_list.length = 0;	    
+        this._filter_fn_name = filter_name;
 	    for(uid in tiles_uids)
 		{
 		    this.exp_TileUID = parseInt(uid);
-	        if (filter != "")
-	        {
-	            this._filter_uid_list.length = 0;
+            _xyz = this.uid2xyz(this.exp_TileUID);
+	        this.exp_TileX = _xyz.x;
+	        this.exp_TileY = _xyz.y;             
+	        if (filter_name != "")
 	            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
-	        }
 	        else
-	        {
-		        this._filter_uid_list.length = 1;  
-	            this._filter_uid_list[0] = uid;
-	        }
-	        
-            var i;
-	        var len = this._filter_uid_list.length;
-	        for (i=0; i<len; i++)
-	            avaiable_uids.push(this._filter_uid_list[i]);
+	            this._filter_uid_list.push(uid);
 		}
-		this.group.GetGroup(group_name).SetByUIDList(avaiable_uids);
-		this._filter_uid_list.length = 0;
+		this.group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);
 	};  
 		
 	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	

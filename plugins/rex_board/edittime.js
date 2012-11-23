@@ -38,8 +38,11 @@ AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddCondition(9, 0, "Are neighbor (UID)", "Board", 
              "Are <i>{0}</i> and <i>{1}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
 AddCondition(10, cf_not_invertible, "Pick all chess", "SOL", 
-             "Pick all chess on the board", "Pick all chess on the board.", "PickAllInsts");                      
-
+             "Pick all chess on the board", "Pick all chess on the board.", "PickAllInsts");  
+AddObjectParam("Chess", "Kicked chess object.");
+AddCondition(11, cf_trigger, "On chess kicked", "Kick", 
+            "On <i>{0}</i> kicked", "Triggered when chess kicked by 'action:Add chess' or 'action:Move chess'.", "OnChessKicked");
+            
         
 //////////////////////////////////////////////////////////////
 // Actions   
@@ -195,7 +198,7 @@ AddAnyTypeParam("Direction", "The direction.", 0);
 AddExpression(17, ef_return_number | ef_variadic_parameters,
               "Get neighbor UID by UID and direction", "Chess", "DIR2UID",
               "Get neighbor UID by UID and direction.");        
-                         
+                                
 ACESDone();
 
 // Property grid properties for this plugin
