@@ -541,8 +541,10 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 	    cr.shallowAssignArray(this._list, uid_list);
 	    var list_len = uid_list.length;
-	    var i;
-	    this._set = {};
+	    var i, hash_obj;
+        hash_obj = this._set;
+        for (key in hash_obj)
+            delete this._set[key];
 	    for (i=0; i<list_len; i++)
 	        this._set[uid_list[i]] = true;
 	};
