@@ -341,7 +341,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var xml_obj=  new XMLParser(tmx_string, isIE);
         this.map = _get_map(xml_obj);
         this.tilesets = _get_tilesets(xml_obj);
-        this.layers = _get_layers(xml_obj);        
+        this.layers = _get_layers(xml_obj);
+        this.objectgroups = _get_objectgroups(xml_obj);
     };
     var TMXKlassProto = cr.plugins_.Rex_TMXImporter.TMXKlass.prototype;
 
@@ -399,7 +400,6 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     };
     var _get_tiles = function(xml_obj, xml_tiles)
     {
-   
         var tiles = {};  
         var id;
         var xml_tile = xml_tiles.get_next_node();    
@@ -424,13 +424,13 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var layers = [];
         var layer;
         var xml_layers = xml_obj.get_nodes("//layer");
-        var xml_tayer = xml_layers.get_next_node(); 
-        while (xml_tayer != null)
+        var xml_layer = xml_layers.get_next_node(); 
+        while (xml_layer != null)
         {
-            layer = _get_layer(xml_obj, xml_tayer);
+            layer = _get_layer(xml_obj, xml_layer);
             if (layer != null)
                 layers.push(layer);
-            xml_tayer = xml_layers.get_next_node();
+            xml_layer = xml_layers.get_next_node();
         }  
         return layers;
     };    
@@ -461,6 +461,59 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         if (compression != "")
             alert ("TMXImporter could not support any decompression");             
         return data;
+    };
+    var _get_objectgroups = function (xml_obj)
+    {
+
+        var objectgroups = [];
+        var objectgroup;
+        var xml_objectgroups = xml_obj.get_nodes("//objectgroup");
+        var xml_objectgroup = xml_objectgroups.get_next_node(); 
+        while (xml_objectgroup != null)
+        {
+            objectgroup = _get_objectgroup(xml_obj, xml_objectgroup);
+            objectgroups.push(objectgroup);
+            xml_objectgroup = xml_objectgroups.get_next_node();
+        }  
+        return objectgroups;
+    };
+    var _get_objectgroup = function (xml_obj, xml_objectgroup)
+    {
+        var objectgroup = {};    
+       
+        objectgroup.name = xml_obj.get_string_value("@name", xml_objectgroup);
+        objectgroup.width = xml_obj.get_number_value("@width", xml_objectgroup);
+        objectgroup.height = xml_obj.get_number_value("@height", xml_objectgroup);       
+        var xml_objects = xml_obj.get_nodes("./object", xml_objectgroup);
+        objectgroup.objects = _get_objects(xml_obj, xml_objects);        
+        return objectgroup;
+    };
+    var _get_objects = function(xml_obj, xml_objects)
+    {
+        var objects = [];  
+        var object;
+        var xml_object = xml_objects.get_next_node();    
+     
+        while (xml_object != null)
+        {
+            object = _get_object(xml_obj, xml_object); 
+            objects.push(object);
+            xml_object = xml_objects.get_next_node();    
+        }        
+        return objects;
+    };   
+    var _get_object = function(xml_obj, xml_object)
+    {    
+        var object = {};
+        object.name = xml_obj.get_string_value("@name", xml_object);
+        object.type = xml_obj.get_string_value("@type", xml_object); 
+        object.x = xml_obj.get_number_value("@x", xml_object);
+        object.y = xml_obj.get_number_value("@y", xml_object);          
+        object.width = xml_obj.get_number_value("@width", xml_object);
+        object.height = xml_obj.get_number_value("@height", xml_object);
+        var xml_properties = xml_obj.get_nodes("./properties/property", xml_object);
+        object.properties = _get_properties(xml_obj, xml_properties);
+        return object;
     };
     
     // xpath: text() has 4096 limitation
