@@ -38,12 +38,23 @@ AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddCondition(9, 0, "Are neighbor (UID)", "Board", 
              "Are <i>{0}</i> and <i>{1}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
 AddCondition(10, cf_not_invertible, "Pick all chess", "SOL", 
-             "Pick all chess on the board", "Pick all chess on the board.", "PickAllInsts");  
+             "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess");  
 AddObjectParam("Chess", "Kicked chess object.");
 AddCondition(11, cf_trigger, "On chess kicked", "Kick", 
             "On <i>{0}</i> kicked", "Triggered when chess kicked by 'action:Add chess' or 'action:Move chess'.", "OnChessKicked");
-            
-        
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
+AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
+AddCondition(12, cf_not_invertible, "Pick chess at Logic X,Y", "SOL: chess", 
+             "Pick <i>{0}</i> at [<i>{1}</i>,<i>{2}</i>]", "Pick chess at Logic X,Y.", "PickChessAtLXY");           
+AddObjectParam("Chess", "Chess object.");
+AddObjectParam("Tile", "Tile object.");
+AddCondition(13, cf_not_invertible, "Pick chess above tile", "SOL: chess", 
+             "Pick <i>{0}</i> above <i>{1}</i>", "Pick chess above tile.", "PickChessAboveTile"); 
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("Tile UID", "Tile UID.", 0);
+AddCondition(14, cf_not_invertible, "Pick chess above tile UID", "SOL: chess", 
+             "Pick <i>{0}</i> above tile UID: <i>{1}</i>", "Pick chess above tile UID.", "PickChessAboveTileUID");           
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -113,7 +124,21 @@ AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddAction(15, 0, "Swap chess by UID", "Logic: Swap", "Swap chess UID <i>{0}</i> with chess UID <i>{1}</i>", 
           "Swap two chess by UID.", "SwapChess");
 AddAction(16, 0, "Pick all chess", "SOL", 
-          "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess");                  
+          "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess"); 
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
+AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
+AddAction(17, 0, "Pick chess at Logic X,Y", "SOL: chess", 
+          "Pick <i>{0}</i> at [<i>{1}</i>,<i>{2}</i>]", "Pick chess at Logic X,Y.", "PickChessAtLXY");           
+AddObjectParam("Chess", "Chess object.");
+AddObjectParam("Tile", "Tile object.");
+AddAction(18, 0, "Pick chess above tile", "SOL: chess", 
+          "Pick <i>{0}</i> above <i>{1}</i>", "Pick chess above tile.", "PickChessAboveTile"); 
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("Tile UID", "Tile UID.", 0);
+AddAction(19, 0, "Pick chess above tile UID", "SOL: chess", 
+          "Pick <i>{0}</i> above tile UID: <i>{1}</i>", "Pick chess above tile UID.", "PickChessAboveTileUID");  
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of instance.", 0);
