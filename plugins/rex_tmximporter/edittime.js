@@ -18,7 +18,8 @@
 // Conditions
 AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless", 
              "On each tile cell", "Triggered when retrieving each avaiable tile cell.", "OnEachTileCell");
-            
+AddCondition(2, cf_trigger, "On each object", "Callback: Create tiless", 
+             "On each object", "Triggered when retrieving each avaiable object on 'object layer'.", "OnEachObject");
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
@@ -53,39 +54,63 @@ AddExpression(6, ef_return_number,
 AddExpression(7, ef_return_number, 
               "Get orientation", "Map", "IsIsometric", "Get orientation. 1=Isometric, 0=Orthogonal");               
 AddExpression(11, ef_return_number, 
-              "Get tile id", "Callback", "TileID", "Get tile id.");           
+              "Get tile id", "Tile: Layer", "TileID", "Get tile id.");           
 AddExpression(12, ef_return_number, 
-              "Get logic X index", "Callback", "LogicX", "Get logic X index of created instance.");
+              "Get logic X index", "Tile: Layer", "LogicX", "Get logic X index of created instance.");
 AddExpression(13, ef_return_number, 
-              "Get logic Y index", "Callback", "LogicY", "Get logic Y index of created instance.");
+              "Get logic Y index", "Tile: Layer", "LogicY", "Get logic Y index of created instance.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(14, ef_return_any | ef_variadic_parameters, 
-              "Get layer properties", "Callback", "LayerProp", "Get layer properties of created instance. Add second parameters to set default value.");
+              "Get layer properties", "Tile: Layer", "LayerProp", "Get layer properties of created instance. Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(15, ef_return_any | ef_variadic_parameters,
-              "Get tileset properties", "Callback", "TilesetProp", "Get tileset properties of created instance.  Add second parameters to set default value.");
+              "Get tileset properties", "Tile: Tileset", "TilesetProp", "Get tileset properties of created instance.  Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(16, ef_return_any | ef_variadic_parameters,
-              "Get tile properties", "Callback", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
+              "Get tile properties", "Tile: Tileset", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
 AddExpression(17, ef_return_number, 
-              "Get physical X index", "Callback", "PhysicalX", "Get physical X index (in pixel) of created instance.");
+              "Get physical X index", "Tile: Layer", "PhysicalX", "Get physical X index (in pixel) of created instance.");
 AddExpression(18, ef_return_number, 
-              "Get physical Y index", "Callback", "PhysicalY", "Get logic Y index (in pixel) of created instance.");
+              "Get physical Y index", "Tile: Layer", "PhysicalY", "Get logic Y index (in pixel) of created instance.");
 AddExpression(19, ef_return_string, 
-              "Get layer name", "Callback", "LayerName", "Get layer name of created instance.");
+              "Get layer name", "Tile: Layer", "LayerName", "Get layer name of created instance.");
 AddExpression(20, ef_return_number, 
-              "Get layer opacity", "Callback", "LayerOpacity", "Get layer opacity of created instance.");
+              "Get layer opacity", "Tile: Layer", "LayerOpacity", "Get layer opacity of created instance.");
 AddExpression(21, ef_return_number, 
-              "Get mirrored", "Callback", "IsMirrored", "Get mirrored of created instance.");
+              "Get mirrored", "Tile: Layer", "IsMirrored", "Get mirrored of created instance.");
 AddExpression(22, ef_return_number, 
-              "Get flipped", "Callback", "IsFlipped", "Get flipped of created instance.");
+              "Get flipped", "Tile: Layer", "IsFlipped", "Get flipped of created instance.");
 AddExpression(23, ef_return_number, 
-              "Get instance UID", "Callback", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
+              "Get instance UID", "Tile: Layer", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
 AddExpression(24, ef_return_number, 
-              "Get frame number", "Callback", "Frame", "Get frame number.");                
+              "Get frame number", "Tile: Layer", "Frame", "Get frame number.");                
 AddExpression(25, ef_return_string, 
               "Get tileset name", "Map", "TilesetName", "Get tileset name.");
-			  
+              
+              
+AddExpression(40, ef_return_string, 
+              "Get object group name", "Object: Object group", "ObjGroupName", "Get object group name.");
+AddExpression(41, ef_return_number, 
+              "Get area width of object group", "Object: Object group", "ObjGroupWidth", "Get area width of object group.");
+AddExpression(42, ef_return_number, 
+              "Get area height of object group", "Object: Object group", "ObjGroupHeight", "Get area height of object group.");
+AddExpression(50, ef_return_string, 
+              "Get object name", "Object: Object", "ObjectName", "Get object name.");
+AddExpression(51, ef_return_string, 
+              "Get object type", "Object: Object", "ObjectType", "Get object type.");              
+AddExpression(52, ef_return_number, 
+              "Get area width of object", "Object: Object", "ObjectWidth", "Get area width of object.");
+AddExpression(53, ef_return_number, 
+              "Get area height of object", "Object: Object", "ObjectHeight", "Get area height of object.");
+AddExpression(54, ef_return_number, 
+              "Get logical X index of object", "Object: Object", "ObjectX", "Get logical X index of object.");
+AddExpression(55, ef_return_number, 
+              "Get logical Y index of object", "Object: Object", "ObjectY", "Get logical Y index of object.");
+AddStringParam("Name", "Property name.", '""');
+AddExpression(56, ef_return_any | ef_variadic_parameters,
+              "Get object properties", "Object: Object", "ObjectProp", "Get object properties.  Add second parameters to set default value.");
+
+              
 ACESDone();
 
 // Property grid properties for this plugin

@@ -41,6 +41,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        // tiles
         this.exp_MapWidth = 0;
         this.exp_MapHeight = 0;  
         this.exp_TileWidth = 0;
@@ -62,6 +63,21 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_layer_properties = {};
         this.exp_tileset_properties = {};        
         this.exp_tile_properties = {};
+        
+        // objects
+		this.exp_ObjGroupName = "";        
+        this.exp_ObjGroupWidth = 0;
+        this.exp_ObjGroupHeight = 0;  
+		this.exp_ObjectName = "";  
+		this.exp_ObjectType = "";         
+        this.exp_ObjectWidth = 0;
+        this.exp_ObjectHeight = 0; 
+        this.exp_ObjectX = 0;
+        this.exp_ObjectY = 0; 
+        this.exp_object_properties = {};        
+        
+
+        
         
         this._tmx_obj = null;  
         this._obj_type = null;
@@ -90,8 +106,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var layers_cnt = layers.length;
         this._obj_type = obj_type;
         var i;
+        // tiles
         for(i=0; i<layers_cnt; i++)
-           this._create_layer_objects(layers[i]);           
+           this._create_layer_objects(layers[i]); 
+        // objects
+        this._retrieve_objects();
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
@@ -185,7 +204,35 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		// not in trigger: apply immediately
 		if (!inst.inAnimTrigger)
 			inst.doChangeAnimFrame();
-	};            
+	};    
+    instanceProto._retrieve_objects = function()
+    {
+        debugger;
+        var obj_groups = this._tmx_obj.objectgroups;
+        var i, group, group_cnt=obj_groups.length;
+        var j, obj, objs, obj_cnt;
+        for (i=0; i<group_cnt; i++)
+        {
+            group = obj_groups[i];
+            this.exp_ObjGroupName = group.name;
+            this.exp_ObjGroupWidth = group.width;
+            this.exp_ObjGroupHeight = group.height;            
+            objs = group.objects;
+            obj_cnt = objs.length;
+            for (j=0; j<obj_cnt; j++)
+            {
+                obj = objs[j];
+                this.exp_ObjectName = obj.name;
+                this.exp_ObjectType = obj.type;
+                this.exp_ObjectWidth = obj.width / this.exp_TileWidth;
+                this.exp_ObjectHeight = obj.height / this.exp_TileHeight;
+                this.exp_ObjectX = obj.x / this.exp_TileWidth;
+                this.exp_ObjectY = obj.y / this.exp_TileHeight;
+                this.exp_object_properties = obj.properties;
+                this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnEachObject, this); 
+            }
+        }
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -202,6 +249,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         }
 		return true;
 	};	
+	Cnds.prototype.OnEachObject = function ()
+	{
+		return true;
+	};    
     
 	//////////////////////////////////////
 	// Actions
@@ -234,6 +285,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
+    // tiles
 	Exps.prototype.MapWidth = function (ret)
 	{   
 	    ret.set_int(this.exp_MapWidth);
@@ -329,9 +381,54 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};  
 	Exps.prototype.TilesetName = function (ret)
 	{     
-	    ret.set_string(this.exp_TilesetName );
+	    ret.set_string(this.exp_TilesetName);
 	};
-	
+    
+    // objects
+	Exps.prototype.ObjGroupName = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjGroupName);
+	};    
+	Exps.prototype.ObjGroupWidth = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjGroupWidth);
+	};
+	Exps.prototype.ObjGroupHeight = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjGroupHeight);
+	};  
+	Exps.prototype.ObjectName = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjectName);
+	};  
+	Exps.prototype.ObjectType = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjectType);
+	};     
+	Exps.prototype.ObjectWidth = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectWidth);
+	};
+	Exps.prototype.ObjectHeight = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectHeight);
+	};
+	Exps.prototype.ObjectX = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectX);
+	};
+	Exps.prototype.ObjectY = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectY);
+	};
+	Exps.prototype.ObjectProp = function (ret, name, default_value)
+	{       
+        var value = this.exp_object_properties[name];
+        if (value == null)
+            value = default_value;        
+	    ret.set_any(value);
+	}; 
+    
 }());
 
 (function ()
