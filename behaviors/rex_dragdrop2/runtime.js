@@ -174,20 +174,19 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	behinstProto.onCreate = function()
 	{   
-        this.activated = this.properties[0];  
+        this.activated = (this.properties[0]==1);  
         this.move_axis = this.properties[1];  
 	};
 
 	behinstProto.tick = function ()
-	{        
-        if ( (this.activated == 0) ||
-             (!this.drag_info.is_on_drag)      )
+	{  
+        if (!(this.activated && this.drag_info.is_on_drag))
             return;
         
         if ( this.type._is_release() )
         {
             this.drag_info.is_on_drag = false;
-            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, inst); 
+            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.inst); 
             return;
         }
         
@@ -218,7 +217,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             this.drag_info.pre_x = cur_x;
             this.drag_info.pre_y = cur_y;                    
         }
-        //this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragging, inst);
+        //this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragging, this.inst);
                                 
 
 	};    
@@ -245,7 +244,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
  	Cnds.prototype.IsDragging = function ()
 	{   
-        return (this.is_on_drag);
+        return this.drag_info.is_on_drag;
     }    
     
 	//////////////////////////////////////
@@ -255,7 +254,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s==1);
 	};  
 
 	Acts.prototype.ForceDropp = function ()
@@ -293,6 +292,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
 	Exps.prototype.Activated = function (ret)
 	{
-		ret.set_int(this.activated);
+		ret.set_int((this.activated)? 1:0);
 	};    
 }());
