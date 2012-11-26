@@ -388,7 +388,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
     Acts.prototype.AppendFilter = function (filter_uid)
 	{
-        this._filter_uid_list.push(filter_uid);
+        if (this._filter_uid_list.indexOf(filter_uid) != (-1))
+            this._filter_uid_list.push(filter_uid);
 	}; 	   
 	 
 	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
