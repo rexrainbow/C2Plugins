@@ -388,7 +388,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
     Acts.prototype.AppendFilter = function (filter_uid)
 	{
-        if (this._filter_uid_list.indexOf(filter_uid) != (-1))
+        if (this._filter_uid_list.indexOf(filter_uid) == (-1))
             this._filter_uid_list.push(filter_uid);
 	}; 	   
 	 
