@@ -182,14 +182,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         var layer = this._get_layer(_layer);
         var inst = this.layout.CreateItem(obj_type,x,y,z,layer);
-
+        if (!inst)
+            return;
+        
+		this.runtime.isInOnDestroy++;
+		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
+		this.runtime.isInOnDestroy--;
+        
         // Pick just this instance
-        var sol = inst.type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;   
+        obj_type.getCurrentSol().pick_one(inst);
 
-        return inst;        
+        return inst;
 	};
 		
 	instanceProto.SwapChess = function (uidA, uidB)
@@ -278,9 +281,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
              ((z != 0) && (!this.is_inside_board(x,y,0)))   )
             return;
             
-        var obj = this.CreateItem(obj_type,x,y,z,_layer);
-	    this.add_item(obj,x,y,z);  
-	    return obj;
+        var inst = this.CreateItem(obj_type,x,y,z,_layer);
+		if (inst != null)
+	        this.add_item(inst,x,y,z);  
+	    return inst;
 	};	
 
 	instanceProto._overlap_test = function(_objA, _objB)
