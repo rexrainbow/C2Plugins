@@ -72,8 +72,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		this.exp_ObjectType = "";         
         this.exp_ObjectWidth = 0;
         this.exp_ObjectHeight = 0; 
-        this.exp_ObjectX = 0;
-        this.exp_ObjectY = 0; 
+        this.exp_ObjectLX = 0;
+        this.exp_ObjectLY = 0; 
+        this.exp_ObjectPX = 0;
+        this.exp_ObjectPY = 0;         
         this.exp_object_properties = {};        
         
 
@@ -207,10 +209,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};    
     instanceProto._retrieve_objects = function()
     {
-        debugger;
         var obj_groups = this._tmx_obj.objectgroups;
         var i, group, group_cnt=obj_groups.length;
         var j, obj, objs, obj_cnt;
+        var x,y;
         for (i=0; i<group_cnt; i++)
         {
             group = obj_groups[i];
@@ -226,8 +228,12 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_ObjectType = obj.type;
                 this.exp_ObjectWidth = obj.width / this.exp_TileWidth;
                 this.exp_ObjectHeight = obj.height / this.exp_TileHeight;
-                this.exp_ObjectX = obj.x / this.exp_TileWidth;
-                this.exp_ObjectY = obj.y / this.exp_TileHeight;
+                x = obj.x / this.exp_TileWidth;
+                y = obj.y / this.exp_TileHeight;
+                this.exp_ObjectLX = x;
+                this.exp_ObjectLY = y;                
+                this.exp_ObjectPX = this.layout.GetX(x,y);
+                this.exp_ObjectPY = this.layout.GetY(x,y);                
                 this.exp_object_properties = obj.properties;
                 this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnEachObject, this); 
             }
@@ -415,12 +421,20 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};
 	Exps.prototype.ObjectX = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectX);
+	    ret.set_int(this.exp_ObjectLX);
 	};
 	Exps.prototype.ObjectY = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectY);
+	    ret.set_int(this.exp_ObjectLY);
 	};
+	Exps.prototype.ObjectPX = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectPX);
+	};
+	Exps.prototype.ObjectPY = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectPY);
+	};	
 	Exps.prototype.ObjectProp = function (ret, name, default_value)
 	{       
         var value = this.exp_object_properties[name];
@@ -428,7 +442,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             value = default_value;        
 	    ret.set_any(value);
 	}; 
-    
+	
 }());
 
 (function ()

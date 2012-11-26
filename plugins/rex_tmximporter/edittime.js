@@ -69,9 +69,9 @@ AddStringParam("Name", "Property name.", '""');
 AddExpression(16, ef_return_any | ef_variadic_parameters,
               "Get tile properties", "Tile: Tileset", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
 AddExpression(17, ef_return_number, 
-              "Get physical X index", "Tile: Layer", "PhysicalX", "Get physical X index (in pixel) of created instance.");
+              "Get physical X position", "Tile: Layer", "PhysicalX", "Get physical X position (in pixel) of created instance.");
 AddExpression(18, ef_return_number, 
-              "Get physical Y index", "Tile: Layer", "PhysicalY", "Get logic Y index (in pixel) of created instance.");
+              "Get physical Y position", "Tile: Layer", "PhysicalY", "Get logic Y position (in pixel) of created instance.");
 AddExpression(19, ef_return_string, 
               "Get layer name", "Tile: Layer", "LayerName", "Get layer name of created instance.");
 AddExpression(20, ef_return_number, 
@@ -109,6 +109,10 @@ AddExpression(55, ef_return_number,
 AddStringParam("Name", "Property name.", '""');
 AddExpression(56, ef_return_any | ef_variadic_parameters,
               "Get object properties", "Object: Object", "ObjectProp", "Get object properties.  Add second parameters to set default value.");
+AddExpression(57, ef_return_number, 
+              "Get physical X position of object", "Object: Object", "ObjectPX", "Get physical X position (in pixel) of object.");
+AddExpression(58, ef_return_number, 
+              "Get physical Y position of object", "Object: Object", "ObjectPY", "Get physical Y position (in pixel) of object.");
 
               
 ACESDone();
