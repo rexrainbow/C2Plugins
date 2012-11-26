@@ -41,6 +41,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        // tiles
         this.exp_MapWidth = 0;
         this.exp_MapHeight = 0;  
         this.exp_TileWidth = 0;
@@ -62,6 +63,23 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_layer_properties = {};
         this.exp_tileset_properties = {};        
         this.exp_tile_properties = {};
+        
+        // objects
+		this.exp_ObjGroupName = "";        
+        this.exp_ObjGroupWidth = 0;
+        this.exp_ObjGroupHeight = 0;  
+		this.exp_ObjectName = "";  
+		this.exp_ObjectType = "";         
+        this.exp_ObjectWidth = 0;
+        this.exp_ObjectHeight = 0; 
+        this.exp_ObjectLX = 0;
+        this.exp_ObjectLY = 0; 
+        this.exp_ObjectPX = 0;
+        this.exp_ObjectPY = 0;         
+        this.exp_object_properties = {};        
+        
+
+        
         
         this._tmx_obj = null;  
         this._obj_type = null;
@@ -90,8 +108,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         var layers_cnt = layers.length;
         this._obj_type = obj_type;
         var i;
+        // tiles
         for(i=0; i<layers_cnt; i++)
-           this._create_layer_objects(layers[i]);           
+           this._create_layer_objects(layers[i]); 
+        // objects
+        this._retrieve_objects();
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
@@ -185,7 +206,39 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 		// not in trigger: apply immediately
 		if (!inst.inAnimTrigger)
 			inst.doChangeAnimFrame();
-	};            
+	};    
+    instanceProto._retrieve_objects = function()
+    {
+        var obj_groups = this._tmx_obj.objectgroups;
+        var i, group, group_cnt=obj_groups.length;
+        var j, obj, objs, obj_cnt;
+        var x,y;
+        for (i=0; i<group_cnt; i++)
+        {
+            group = obj_groups[i];
+            this.exp_ObjGroupName = group.name;
+            this.exp_ObjGroupWidth = group.width;
+            this.exp_ObjGroupHeight = group.height;            
+            objs = group.objects;
+            obj_cnt = objs.length;
+            for (j=0; j<obj_cnt; j++)
+            {
+                obj = objs[j];
+                this.exp_ObjectName = obj.name;
+                this.exp_ObjectType = obj.type;
+                this.exp_ObjectWidth = obj.width / this.exp_TileWidth;
+                this.exp_ObjectHeight = obj.height / this.exp_TileHeight;
+                x = obj.x / this.exp_TileWidth;
+                y = obj.y / this.exp_TileHeight;
+                this.exp_ObjectLX = x;
+                this.exp_ObjectLY = y;                
+                this.exp_ObjectPX = this.layout.GetX(x,y);
+                this.exp_ObjectPY = this.layout.GetY(x,y);                
+                this.exp_object_properties = obj.properties;
+                this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnEachObject, this); 
+            }
+        }
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -202,6 +255,10 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         }
 		return true;
 	};	
+	Cnds.prototype.OnEachObject = function ()
+	{
+		return true;
+	};    
     
 	//////////////////////////////////////
 	// Actions
@@ -234,6 +291,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
+    // tiles
 	Exps.prototype.MapWidth = function (ret)
 	{   
 	    ret.set_int(this.exp_MapWidth);
@@ -329,8 +387,61 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	};  
 	Exps.prototype.TilesetName = function (ret)
 	{     
-	    ret.set_string(this.exp_TilesetName );
+	    ret.set_string(this.exp_TilesetName);
 	};
+    
+    // objects
+	Exps.prototype.ObjGroupName = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjGroupName);
+	};    
+	Exps.prototype.ObjGroupWidth = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjGroupWidth);
+	};
+	Exps.prototype.ObjGroupHeight = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjGroupHeight);
+	};  
+	Exps.prototype.ObjectName = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjectName);
+	};  
+	Exps.prototype.ObjectType = function (ret)
+	{     
+	    ret.set_string(this.exp_ObjectType);
+	};     
+	Exps.prototype.ObjectWidth = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectWidth);
+	};
+	Exps.prototype.ObjectHeight = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectHeight);
+	};
+	Exps.prototype.ObjectX = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectLX);
+	};
+	Exps.prototype.ObjectY = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectLY);
+	};
+	Exps.prototype.ObjectPX = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectPX);
+	};
+	Exps.prototype.ObjectPY = function (ret)
+	{     
+	    ret.set_int(this.exp_ObjectPY);
+	};	
+	Exps.prototype.ObjectProp = function (ret, name, default_value)
+	{       
+        var value = this.exp_object_properties[name];
+        if (value == null)
+            value = default_value;        
+	    ret.set_any(value);
+	}; 
 	
 }());
 
@@ -342,6 +453,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.map = _get_map(dict_obj);
         this.tilesets = _get_tilesets(dict_obj);
         this.layers = _get_layers(dict_obj);
+        this.objectgroups = _get_objectgroups(dict_obj);       
     };
     var TMXKlassProto = cr.plugins_.Rex_JSONTMXImporter.TMXKlass.prototype;
 
@@ -486,6 +598,71 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             alert ("TMXImporter could not support any decompression");             
         return data;
     };
+    var _get_objectgroups = function (dict_obj)
+    {
+        dict_obj = dict_obj["map"]["objectgroup"];
+        if (dict_obj == null)
+            return [];        
+        var objectgroup, objectgroups = [];        
+        if (dict_obj.length)
+        {
+            var objectgroups_cnt = dict_obj.length;
+            var i;
+            for (i=0; i<objectgroups_cnt; i++)
+            {
+                objectgroup = _get_objectgroup(dict_obj[i]);
+                objectgroups.push(objectgroup);
+            }
+        }
+        else
+        {
+            objectgroup = _get_objectgroup(dict_obj);
+            objectgroups.push(objectgroup);
+        }
+        return objectgroups;
+    };
+    var _get_objectgroup = function (dict_obj)
+    {
+        var objectgroup = {};    
+        objectgroup.name = _get_string_value(dict_obj, "@name");
+        objectgroup.width = _get_number_value(dict_obj, "@width");
+        objectgroup.height = _get_number_value(dict_obj, "@height");       
+        objectgroup.objects = _get_objects(dict_obj);    
+        return objectgroup;
+    };
+    var _get_objects = function(dict_obj)
+    {
+        dict_obj = dict_obj["object"];
+        var object, objects = [];        
+        if (dict_obj.length)
+        {
+            var objects_cnt = dict_obj.length;
+            var i;
+            for (i=0; i<objects_cnt; i++)
+            {
+                object = _get_object(dict_obj[i]);
+                objects.push(object);
+            }
+        }
+        else
+        {
+            object = _get_object(dict_obj);
+            objects.push(object);
+        }
+        return objects;
+    };   
+    var _get_object = function(dict_obj)
+    {    
+        var object = {};
+        object.name = _get_string_value(dict_obj, "@name");
+        object.type = _get_string_value(dict_obj, "@type"); 
+        object.x = _get_number_value(dict_obj, "@x");
+        object.y = _get_number_value(dict_obj, "@y");          
+        object.width = _get_number_value(dict_obj, "@width");
+        object.height = _get_number_value(dict_obj, "@height");
+        object.properties = _get_properties(dict_obj);
+        return object;
+    };    
 
     var _get_properties = function (dict_obj)
     {  
