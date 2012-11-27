@@ -354,6 +354,9 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             is_valid = (_gid != 0);
             if (is_valid)  
             {         
+                this.exp_LayerName = layer.name;        
+                this.exp_layer_properties = layer.properties;
+                this.exp_LayerOpacity = layer.opacity;            
                 this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);       
                 // prepare expressions
                 x = data_index%layer.width;
