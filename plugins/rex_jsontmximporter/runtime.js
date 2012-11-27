@@ -78,7 +78,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_ObjectPY = 0;         
         this.exp_object_properties = {};        
         
-
+        // duration
+        this.exp_RetrievingPercent = 0;      
         
         
         this._tmx_obj = null;  
@@ -86,6 +87,9 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.layout = new cr.plugins_.Rex_JSONTMXImporter.LayoutKlass(this, this.properties[0], this.properties[1],
                                                                   0,0,0);
         this._created_inst = null;
+        
+        // duration
+        this._duration_reset();     
 	};
 	instanceProto.ImportTMX = function(JSON_string)
 	{
@@ -113,6 +117,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
            this._create_layer_objects(layers[i]); 
         // objects
         this._retrieve_objects();
+        this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnRetrieveFinished, this);
 	};
 	instanceProto._layout_set = function(tmx_obj)
 	{
@@ -145,11 +150,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 // get tile id
                 _gid = data[i];
                 i++;
-                this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);
-                if (this.exp_TileID == 0)
+                if (_gid == 0)
                     continue;
-  
+                
                 // prepare expressions
+                this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);  
                 this.exp_LogicX = x;
                 this.exp_LogicY = y;
                 this.exp_PhysicalX = this.layout.GetX(x,y);
@@ -239,6 +244,213 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             }
         }
     };
+    
+    // duration mode
+    instanceProto._duration_start = function(tile_objtype)
+    {
+        this._duration_reset();       
+        this._duration_info.total_objects_count = _get_tiles_cnt(this._tmx_obj) + _get_objects_cnt(this._tmx_obj);
+        this._layout_set(this._tmx_obj);
+        this._obj_type = tile_objtype;        
+        this.runtime.tickMe(this);
+        this.tick();
+    }; 
+    instanceProto._duration_reset = function()
+    {
+        this._duration_info = {working_time:(1/60)*1000*0.5,
+                               state:0, // 0=idle, 1=retrieve tile layer, 2=retrieve object layer
+                               goto_next_state:false,
+                               total_objects_count:0,
+                               current_objects_count:0,
+                               tile_layer:{layer_index:0,data_index:0},
+                               object_layer:{group_index:0,object_index:0},
+                               };
+    }; 
+    instanceProto.tick = function()
+    {        
+        var process_percent;
+        var start_time = Date.now();
+        var working_time = this._duration_info.working_time;
+        // fix working_time
+        while ((Date.now() - start_time) <= working_time)
+        {
+            this.exp_RetrievingPercent = this._retrieve_one_tile_prepare();
+            this._retrieve_one_tile_callevent();
+            if (this.exp_RetrievingPercent == 1)
+                break;
+            else if (this._duration_info.goto_next_state)
+            {
+                this._duration_info.state += 1;                
+                this._duration_info.goto_next_state = false;
+            }
+        }
+		this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnRetrieveDurationTick, this); 
+		if (this.exp_RetrievingPercent == 1)
+		    this._duration_finished();   
+    };    
+    instanceProto._duration_finished = function()
+    {
+        this._duration_info.state = 0;
+        this.runtime.untickMe(this);
+        this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnRetrieveFinished, this);
+    };
+    
+    var _get_tiles_cnt = function(tmx_obj)
+    {
+        var layers = tmx_obj.layers;
+        var i, layers_cnt = layers.length;
+        var tile_cnt, total_tiles_cnt=0;
+        for(i=0; i<layers_cnt; i++)
+           total_tiles_cnt += layers[i].data.length;
+        return total_tiles_cnt;
+    };     
+    var _get_objects_cnt = function(tmx_obj)
+    {
+        var obj_groups = tmx_obj.objectgroups;
+        var i, group_cnt=obj_groups.length;
+        var obj_cnt, total_objects_cnt=0;
+        for (i=0; i<group_cnt; i++)        
+            total_objects_cnt += obj_groups[i].objects.length; 
+        return total_objects_cnt;
+    };          
+    instanceProto._retrieve_one_tile_prepare = function()
+    {
+        var unit_cnt;
+        if (this._duration_info.state == 1)
+            unit_cnt = this._retrieve_one_tile();
+        else
+            unit_cnt = this._retrieve_one_object(); 
+            
+        this._duration_info.current_objects_count += unit_cnt;
+        return (this._duration_info.current_objects_count/this._duration_info.total_objects_count);   
+    };
+    
+    instanceProto._retrieve_one_tile = function()
+    {   
+        var unit_cnt=0;
+        var layer_index,data_index,layers,layer,c2_layer,_gid,x,y;
+        var tileset_obj,tile_obj;
+        var is_valid = false;
+        while (!is_valid)
+        {
+            layer_index = this._duration_info.tile_layer.layer_index;
+            data_index = this._duration_info.tile_layer.data_index;
+
+            layers = this._tmx_obj.layers;
+            if (layers.length == 0)
+            {
+                this._duration_info.goto_next_state = true;  // tile layer retrieve finished
+                return 0;
+            }
+            
+            layer = layers[layer_index];
+            c2_layer =  this._get_layer(layer.name);
+            if ((c2_layer == null) && (this._obj_type != null))
+                alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
+            // get tile id
+            unit_cnt += 1;
+            _gid = layer.data[data_index];            
+            is_valid = (_gid != 0);
+            if (is_valid)  
+            {         
+                this.exp_LayerName = layer.name;        
+                this.exp_layer_properties = layer.properties;
+                this.exp_LayerOpacity = layer.opacity;            
+                this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);       
+                // prepare expressions
+                x = data_index%layer.width;
+                y = (data_index-x)/layer.height;
+                this.exp_LogicX = x;
+                this.exp_LogicY = y;
+                this.exp_PhysicalX = this.layout.GetX(x,y);
+                this.exp_PhysicalY = this.layout.GetY(x,y);
+                this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
+                this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
+		        this.exp_TilesetName = tileset_obj.name;
+                this.exp_tileset_properties = tileset_obj.properties;
+                tile_obj = tileset_obj.tiles[this.exp_TileID];
+                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
+                   
+                if (this._obj_type != null)
+                    this._created_inst = this._create_instance(x,y,c2_layer); 
+                else
+                    this._created_inst = null;   
+            }     
+            
+            // update index
+            if (data_index == (layer.data.length-1))  // the last data index
+            {
+                if (layer_index != (layers.length-1))  // not the last layer
+                {
+                    this._duration_info.tile_layer.layer_index += 1;
+                    this._duration_info.tile_layer.data_index = 0;  // start from 0                    
+                }
+                else
+                {
+                    this._duration_info.goto_next_state = true;  // tile layer retrieve finished
+                    break;
+                }
+            }
+            else
+                this._duration_info.tile_layer.data_index += 1;    
+        }   
+        return unit_cnt;
+    }; 
+    
+    instanceProto._retrieve_one_object = function()
+    {
+        var group_index = this._duration_info.object_layer.group_index;
+        var object_index = this._duration_info.object_layer.object_index;
+        
+        var objectgroups = this._tmx_obj.objectgroups;
+        if (objectgroups.length == 0)
+        {
+            this._duration_info.goto_next_state = true;
+            return 0;
+        }
+        var group = objectgroups[group_index];
+        this.exp_ObjGroupName = group.name;
+        this.exp_ObjGroupWidth = group.width;
+        this.exp_ObjGroupHeight = group.height; 
+        var obj = group.objects[object_index];
+        this.exp_ObjectName = obj.name;
+        this.exp_ObjectType = obj.type;
+        this.exp_ObjectWidth = obj.width / this.exp_TileWidth;
+        this.exp_ObjectHeight = obj.height / this.exp_TileHeight;
+        x = obj.x / this.exp_TileWidth;
+        y = obj.y / this.exp_TileHeight;
+        this.exp_ObjectLX = x;
+        this.exp_ObjectLY = y;                
+        this.exp_ObjectPX = this.layout.GetX(x,y);
+        this.exp_ObjectPY = this.layout.GetY(x,y);                
+        this.exp_object_properties = obj.properties;
+        
+        // update index
+        if (object_index == (group.objects.length-1))  // the last object index
+        {
+            if (group_index != objectgroups.length-1)  // not the last object group
+            {
+                this._duration_info.object_layer.group_index += 1;
+                this._duration_info.object_layer.object_index = 0;  // start from 0
+            }
+            else
+            {
+                this._duration_info.goto_next_state = true;  // objects layer retrieve finished
+            }
+        }
+        else
+            this._duration_info.object_layer.object_index += 1;
+            
+        return 1;
+    };    
+    instanceProto._retrieve_one_tile_callevent = function()
+    {
+        if (this._duration_info.state == 1)
+            this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnEachTileCell, this); 
+        else
+            this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnEachObject, this); 
+    };  
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -259,7 +471,14 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	{
 		return true;
 	};    
-    
+	Cnds.prototype.OnRetrieveFinished = function ()
+	{
+		return true;
+	};
+	Cnds.prototype.OnRetrieveDurationTick = function ()
+	{
+		return true;
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -285,7 +504,15 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     Acts.prototype.RetrieveTileArray = function ()
 	{	  
         this.RetrieveTileArray();
+	}; 
+    Acts.prototype.CreateTilesDuration = function (obj_type)
+	{
+	    this._duration_start(obj_type);
 	};    
+    Acts.prototype.RetrieveTileArrayDuration = function ()
+	{
+	    this._duration_start();	    
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -442,7 +669,12 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             value = default_value;        
 	    ret.set_any(value);
 	}; 
-	
+
+    // duration
+	Exps.prototype.RetrievingPercent = function (ret)
+	{     
+	    ret.set_float(this.exp_RetrievingPercent);
+	};		
 }());
 
 (function ()

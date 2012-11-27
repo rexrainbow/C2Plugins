@@ -44,10 +44,10 @@ AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance positi
 
 // duration mode         
 AddObjectParam("Tile", "Tile object.");
-AddAction(20, 0, "Create tiles on a duration", "Duration", "Create tiles <i>{0}</i> on a duration",
-         'Retrieve tile array and creating tiles on a duration. It will trigger "Condition:On each tile cell".', "CreateTilesDuration");
-AddAction(21, 0, "Retrieve tile array on a duration", "Duration", "Retrieve tile array on a duration",
-         'Retrieve tile array on a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
+AddAction(20, 0, "Create tiles in a duration", "Duration", "Create tiles <i>{0}</i> in a duration",
+         'Retrieve tile array and creating tiles in a duration. It will trigger "Condition:On each tile cell".', "CreateTilesDuration");
+AddAction(21, 0, "Retrieve tile array in a duration", "Duration", "Retrieve tile array in a duration",
+         'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
          
 //////////////////////////////////////////////////////////////
 // Expressions

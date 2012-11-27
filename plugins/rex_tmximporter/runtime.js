@@ -277,17 +277,16 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             this.exp_RetrievingPercent = this._retrieve_one_tile_prepare();
             this._retrieve_one_tile_callevent();
             if (this.exp_RetrievingPercent == 1)
-            {
-                this._duration_finished();
                 break;
-            }
-            if (this._duration_info.goto_next_state)
+            else if (this._duration_info.goto_next_state)
             {
                 this._duration_info.state += 1;                
                 this._duration_info.goto_next_state = false;
             }
         }
-        this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnRetrieveDurationTick, this); 
+		this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnRetrieveDurationTick, this); 
+		if (this.exp_RetrievingPercent == 1)
+		    this._duration_finished();   
     };    
     instanceProto._duration_finished = function()
     {

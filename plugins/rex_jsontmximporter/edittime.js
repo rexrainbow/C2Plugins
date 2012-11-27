@@ -20,6 +20,11 @@ AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless",
              "On each tile cell", "Triggered when retrieving each avaiable tile cell.", "OnEachTileCell");
 AddCondition(2, cf_trigger, "On each object", "Callback: Create tiless", 
              "On each object", "Triggered when retrieving each avaiable object on 'object layer'.", "OnEachObject");
+// duration             
+AddCondition(20, cf_trigger, "On retrieve finished", "Duration", 
+             "On retrieve finished", "Triggered when retrieving finish.", "OnRetrieveFinished");   
+AddCondition(21, cf_trigger, "On retrieve duration", "Duration", 
+             "On retrieve duration", "Triggered during retrieving duration tick.", "OnRetrieveDurationTick"); 
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
@@ -36,6 +41,13 @@ AddNumberParam("X", "X co-ordinate of instance at Logic(0,0).", 0);
 AddNumberParam("Y", "Y co-ordinate of instance at Logic(0,0).", 0);       
 AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance position of (0,0) to (<i>{0}</i>,<i>{1}</i>)",
          "Set instance position of (0,0).", "SetOPosition");
+
+// duration mode              
+AddObjectParam("Tile", "Tile object.");
+AddAction(20, 0, "Create tiles in a duration", "Duration", "Create tiles <i>{0}</i> in a duration",
+         'Retrieve tile array and creating tiles in a duration. It will trigger "Condition:On each tile cell".', "CreateTilesDuration");
+AddAction(21, 0, "Retrieve tile array in a duration", "Duration", "Retrieve tile array in a duration",
+         'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");           
          
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -87,7 +99,7 @@ AddExpression(24, ef_return_number,
 AddExpression(25, ef_return_string, 
               "Get tileset name", "Map", "TilesetName", "Get tileset name.");
               
-              
+// objects
 AddExpression(40, ef_return_string, 
               "Get object group name", "Object: Object group", "ObjGroupName", "Get object group name.");
 AddExpression(41, ef_return_number, 
@@ -114,7 +126,10 @@ AddExpression(57, ef_return_number,
 AddExpression(58, ef_return_number, 
               "Get physical Y position of object", "Object: Object", "ObjectPY", "Get physical Y position (in pixel) of object.");
 
-              
+// duration
+AddExpression(70, ef_return_number, 
+              "Get percent of retrieving process", "Duration", "RetrievingPercent", "Get percent of retrieving process.");  
+                         
 ACESDone();
 
 // Property grid properties for this plugin
