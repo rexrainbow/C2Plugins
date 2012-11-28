@@ -21,10 +21,10 @@ AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless",
 AddCondition(2, cf_trigger, "On each object", "Callback: Create tiless", 
              "On each object", "Triggered when retrieving each avaiable object on 'object layer'.", "OnEachObject");
 // duration             
-AddCondition(20, cf_trigger, "On retrieve finished", "Duration", 
-             "On retrieve finished", "Triggered when retrieving finish.", "OnRetrieveFinished");   
-AddCondition(21, cf_trigger, "On retrieve duration", "Duration", 
-             "On retrieve duration", "Triggered during retrieving duration tick.", "OnRetrieveDurationTick"); 
+AddCondition(20, cf_trigger, "On retrieving finished", "Duration", 
+             "On retrieving finished", "Triggered when retrieving finished.", "OnRetrieveFinished");   
+AddCondition(21, cf_trigger, "On retrieving duration", "Duration", 
+             "On retrieving duration", "Triggered during retrieving duration tick.", "OnRetrieveDurationTick"); 
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
