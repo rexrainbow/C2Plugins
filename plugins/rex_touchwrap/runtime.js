@@ -387,7 +387,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
         
         var i, cnt=this._plugins_hook.length;
         for (i=0;i<cnt;i++)
-            this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
+		{
+			if (this._plugins_hook[i].OnTouchStart)
+                this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
+	    }
 	};
 
 	instanceProto.onPointerEnd = function (info)
@@ -408,7 +411,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
         
         var i, cnt=this._plugins_hook.length;
         for (i=0;i<cnt;i++)
-            this._plugins_hook[i].OnTouchEnd(this.trigger_index);        
+		{
+		    if (this._plugins_hook[i].OnTouchEnd)
+                this._plugins_hook[i].OnTouchEnd(this.trigger_index);        
+		}
 		
 		// Remove touch
 		if (i >= 0)
@@ -460,8 +466,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		var i, len, t;
-        var i, cnt=this._plugins_hook.length;     
-        var touch_mouse_start = (this._is_mouse_mode)? this.mouseDown : true;        
+        var cnt=this._plugins_hook.length;        
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -490,14 +495,45 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.curTouchY = touchy;
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
             
-            if (touch_mouse_start)
-            {
-                for (i=0;i<cnt;i++)
+            for (i=0;i<cnt;i++)
+			{
+				if (this._plugins_hook[i].OnTouchStart)
                     this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
-            }
+			}
 		}		
 	};
 
+	instanceProto._fake_onTouchStart = function (info)
+	{
+		if (info.preventDefault)
+			info.preventDefault();
+			
+		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var nowtime = cr.performance_now();
+		
+		var i, len, t;
+        var cnt=this._plugins_hook.length;         
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			
+			var touchx = t.pageX - offset.left;
+			var touchy = t.pageY - offset.top;
+			
+			this.trigger_index = this.touches.length;
+			
+			this.touches.push({ time: nowtime,
+								x: touchx,
+								y: touchy,
+								lasttime: nowtime,
+								lastx: touchx,
+								lasty: touchy,
+								"id": t["identifier"],
+								startindex: this.trigger_index
+							});
+		}		
+	};
+	
 	instanceProto.onTouchEnd = function (info)
 	{
 		if (info.preventDefault)
@@ -517,7 +553,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
             
             for (i=0;i<cnt;i++)
-                this._plugins_hook[i].OnTouchEnd(this.trigger_index);
+			{
+			    if (this._plugins_hook[i].OnTouchEnd)
+                    this._plugins_hook[i].OnTouchEnd(this.trigger_index);
+			}
 			
 			// Remove touch
 			if (j >= 0)
@@ -586,7 +625,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
 		var fakeinfo = { changedTouches: [t] };
 		if (this.touches.length==0)
-		    this.onTouchStart(fakeinfo);
+		    this._fake_onTouchStart(fakeinfo);
 		else
 		    this.onTouchMove(fakeinfo);
 	};
@@ -601,6 +640,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
 		var fakeinfo = { changedTouches: [t] };
 		this.onTouchEnd(fakeinfo);
+		this._fake_onTouchStart(fakeinfo);
 	};
 	
 	instanceProto.tick2 = function()
