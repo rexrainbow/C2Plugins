@@ -944,10 +944,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			    layer = layerparam;
 				
 			if (layer)
-				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+				ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false);
 			else
 				ret = 0;
 		}
+        
+        return ret;		
 	};
 	
     instanceProto.GetAbsoluteX = function ()
