@@ -61,7 +61,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     behtypeProto.OnTouchEnd = function (_NthTouch)
     {
         if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
+            return;
 			
 	    var sol = this.objtype.getCurrentSol();
         var select_all_save = sol.select_all;	
@@ -72,9 +72,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         {
 		    inst = insts[i];
             behavior_inst = inst.behavior_insts[this.behavior_index];
-			if ((behavior_inst.drag_info.touch_src == _NthTouch) && behavior_inst.drag_info.is_on_drag)
+			if ((behavior_inst.drag_info.touch_src == _NthTouch) && behavior_inst.drag_info.is_on_dragged)
             {
-			    behavior_inst.drag_info.is_on_drag = false;
+			    behavior_inst.drag_info.is_on_dragged = false;
 				this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, inst); 
 			}
         }	
@@ -110,7 +110,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         {
 		    inst = ovl_insts[i];
             behavior_inst = inst.behavior_insts[this.behavior_index];
-            if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_drag))
+            if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_dragged))
                 this._behavior_insts.push(behavior_inst);
         }
             
@@ -130,10 +130,10 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                 target_inst_behavior = behavior_inst;
         }
 		inst = target_inst_behavior.inst;
-        target_inst_behavior.drag_info.is_on_drag = true;	
+        target_inst_behavior.drag_info.is_on_dragged = true;	
 		target_inst_behavior.drag_info.touch_src = touch_src;
-        target_inst_behavior.drag_info.drag_dx = inst.x - this.GetLayerX(inst);
-        target_inst_behavior.drag_info.drag_dy = inst.y - this.GetLayerY(inst);
+        target_inst_behavior.drag_info.drag_dx = inst.x - target_inst_behavior.GetX();
+        target_inst_behavior.drag_info.drag_dy = inst.y - target_inst_behavior.GetY();
         this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, target_inst_behavior.inst);     
 
         // recover to select_all_save
@@ -142,27 +142,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         
         return true;  // get drag inst  
 	}; 
-        
-    // export     
-	behtypeProto.GetABSX = function ()
-	{
-        return this.touchwrap.GetAbsoluteX();
-	};  
-
-	behtypeProto.GetABSY = function ()
-	{
-        return this.touchwrap.GetAbsoluteY();
-	};     
-        
-	behtypeProto.GetLayerX = function(inst)
-	{
-        return this.touchwrap.GetX(inst.layer);
-	};
-    
-	behtypeProto.GetLayerY = function(inst)
-	{
-        return this.touchwrap.GetY(inst.layer);
-	};   
+         
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -178,7 +158,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                           pre_y:null,
                           drag_dx:0,
                           drag_dy:0,
-                          is_on_drag:false};                       
+                          is_on_dragged:false};                       
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -191,13 +171,13 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	behinstProto.tick = function ()
 	{  
-        if (!(this.activated && this.drag_info.is_on_drag))
+        if (!(this.activated && this.drag_info.is_on_dragged))
             return;
         
-        // this.activated == 1 && this.is_on_drag        
+        // this.activated == 1 && this.is_on_dragged        
         var inst = this.inst;
-        var cur_x = this.type.GetLayerX(inst);
-        var cur_y = this.type.GetLayerY(inst);
+        var cur_x = this.GetX();
+        var cur_y = this.GetY();
         var is_moved = (this.drag_info.pre_x != cur_x) ||
                        (this.drag_info.pre_y != cur_y);      
         if ( is_moved )
@@ -222,10 +202,48 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             this.drag_info.pre_y = cur_y;                    
         }
         //this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragging, this.inst);
-                                
+	};   
+	 
+    // export     
+	behinstProto.GetABSX = function ()
+	{
+	    var ret;
+	    if (this.drag_info.is_on_dragged)
+	        ret = this.type.touchwrap.GetAbsoluteXAt(this.drag_info.touch_src);
+	    else
+	        ret = this.type.touchwrap.GetAbsoluteX();
+        return ret;
+	};  
 
-	};    
-
+	behinstProto.GetABSY = function ()
+	{
+	    var ret;
+	    if (this.drag_info.is_on_dragged)
+	        ret = this.type.touchwrap.GetAbsoluteYAt(this.drag_info.touch_src);
+	    else
+	        ret = this.type.touchwrap.GetAbsoluteY();
+        return ret;
+	};     
+        
+	behinstProto.GetX = function()
+	{
+	    var ret;
+	    if (this.drag_info.is_on_dragged)
+	        ret = this.type.touchwrap.GetXAt(this.drag_info.touch_src, this.inst.layer);
+	    else
+	        ret = this.type.touchwrap.GetX(this.inst.layer);	    
+        return ret;
+	};
+    
+	behinstProto.GetY = function()
+	{
+	    var ret;
+	    if (this.drag_info.is_on_dragged)
+	        ret = this.type.touchwrap.GetYAt(this.drag_info.touch_src, this.inst.layer);
+	    else
+	        ret = this.type.touchwrap.GetY(this.inst.layer);	    
+        return ret;
+	};  
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -248,7 +266,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
  	Cnds.prototype.IsDragging = function ()
 	{   
-        return this.drag_info.is_on_drag;
+        return this.drag_info.is_on_dragged;
     }    
     
 	//////////////////////////////////////
@@ -263,9 +281,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Acts.prototype.ForceDropp = function ()
 	{
-        if (this.drag_info.is_on_drag)
+        if (this.drag_info.is_on_dragged)
         {
-		    this.drag_info.is_on_drag = false;            
+		    this.drag_info.is_on_dragged = false;            
             this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.inst); 
         }
 	};      
@@ -276,22 +294,22 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Exps.prototype.X = function (ret)
 	{
-        ret.set_float( this.type.GetLayerX(this.inst) );
+        ret.set_float( this.GetX() );
 	};
 	
 	Exps.prototype.Y = function (ret)
 	{
-	    ret.set_float( this.type.GetLayerY(this.inst) );
+	    ret.set_float( this.GetY() );
 	};
 	
 	Exps.prototype.AbsoluteX = function (ret)
 	{
-        ret.set_float( this.type.GetABSX(this.inst) );
+        ret.set_float( this.GetABSX() );
 	};
 	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
-        ret.set_float( this.type.GetABSY(this.inst) );
+        ret.set_float( this.GetABSY() );
 	};
     
 	Exps.prototype.Activated = function (ret)
