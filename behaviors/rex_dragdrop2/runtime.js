@@ -55,17 +55,34 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
     behtypeProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
     {
-        if (_NthTouch != 0)
-            return;    
-        this.DragDetecting(_TouchX, _TouchY);
+        this.DragDetecting(_TouchX, _TouchY, _NthTouch);
     };
     
     behtypeProto.OnTouchEnd = function (_NthTouch)
     {
+        if (this.behavior_index == null )
+            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
+			
+	    var sol = this.objtype.getCurrentSol();
+        var select_all_save = sol.select_all;	
+		sol.select_all = true;
+		var insts = sol.getObjects();
+        var i, cnt=insts.length, inst, behavior_inst;
+        for (i=0; i<cnt; i++ )
+        {
+		    inst = insts[i];
+            behavior_inst = inst.behavior_insts[this.behavior_index];
+			if ((behavior_inst.drag_info.touch_src == _NthTouch) && behavior_inst.drag_info.is_on_drag)
+            {
+			    behavior_inst.drag_info.is_on_drag = false;
+				this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, inst); 
+			}
+        }	
+		sol.select_all = select_all_save;     
     };
     
     // drag detecting
-	behtypeProto.DragDetecting = function(x, y)
+	behtypeProto.DragDetecting = function(x, y, touch_src)
 	{
         var sol = this.objtype.getCurrentSol(); 
         var select_all_save = sol.select_all;
@@ -86,40 +103,38 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             
         // 1. get all valid behavior instances            
         var ovl_insts = sol.getObjects();
-        var i, cnt;
-        var inst;            
+        var i, cnt, inst, behavior_inst;          
         cnt = ovl_insts.length;   
         this._behavior_insts.length = 0;          
         for (i=0; i<cnt; i++ )
         {
-            inst = ovl_insts[i].behavior_insts[this.behavior_index];
-            if (inst.activated)
-                this._behavior_insts.push(inst);
+		    inst = ovl_insts[i];
+            behavior_inst = inst.behavior_insts[this.behavior_index];
+            if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_drag))
+                this._behavior_insts.push(behavior_inst);
         }
             
         // 2. get the max z-order inst
         cnt = this._behavior_insts.length;
-		
 		if (cnt == 0)  // no inst match
 		{
             // recover to select_all_save
             sol.select_all = select_all_save;
             return false;  // get drag inst 
 		}
-		
-        var target_inst = this._behavior_insts[0];
+        var target_inst_behavior = this._behavior_insts[0];
         for (i=1; i<cnt; i++ )
         {
-            inst = this._behavior_insts[i];
-            if ( inst.inst.zindex > target_inst.inst.zindex )
-                target_inst = inst;
+            behavior_inst = this._behavior_insts[i];
+            if ( behavior_inst.inst.zindex > target_inst_behavior.inst.zindex )
+                target_inst_behavior = behavior_inst;
         }
-        target_inst.drag_info.is_on_drag = true;
-        var inst_x = target_inst.inst.x;
-        var inst_y = target_inst.inst.y;
-        target_inst.drag_info.drag_dx = inst_x - x;
-        target_inst.drag_info.drag_dy = inst_y - y;
-        this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, target_inst.inst);     
+		inst = target_inst_behavior.inst;
+        target_inst_behavior.drag_info.is_on_drag = true;	
+		target_inst_behavior.drag_info.touch_src = touch_src;
+        target_inst_behavior.drag_info.drag_dx = inst.x - this.GetLayerX(inst);
+        target_inst_behavior.drag_info.drag_dy = inst.y - this.GetLayerY(inst);
+        this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, target_inst_behavior.inst);     
 
         // recover to select_all_save
         sol.select_all = select_all_save;
@@ -147,12 +162,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	behtypeProto.GetLayerY = function(inst)
 	{
         return this.touchwrap.GetY(inst.layer);
-	};  
-        
-	behtypeProto._is_release = function()
-	{
-        return (!this.touchwrap.IsInTouch());
-	};    
+	};   
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -163,8 +173,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		this.runtime = type.runtime;
         
         type.TouchWrapGet();            
-        this.drag_info = {pre_x:this.type.GetLayerX(inst),
-                          pre_y:this.type.GetLayerY(inst),
+        this.drag_info = {touch_src:-1,
+		                  pre_x:null,
+                          pre_y:null,
                           drag_dx:0,
                           drag_dy:0,
                           is_on_drag:false};                       
@@ -183,20 +194,13 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         if (!(this.activated && this.drag_info.is_on_drag))
             return;
         
-        if ( this.type._is_release() )
-        {
-            this.drag_info.is_on_drag = false;
-            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.inst); 
-            return;
-        }
-        
         // this.activated == 1 && this.is_on_drag        
         var inst = this.inst;
         var cur_x = this.type.GetLayerX(inst);
         var cur_y = this.type.GetLayerY(inst);
-        var is_mouse_moved = (this.drag_info.pre_x != cur_x) ||
-                             (this.drag_info.pre_y != cur_y);      
-        if ( is_mouse_moved )
+        var is_moved = (this.drag_info.pre_x != cur_x) ||
+                       (this.drag_info.pre_y != cur_y);      
+        if ( is_moved )
         {
             var drag_x = cur_x + this.drag_info.drag_dx;
             var drag_y = cur_y + this.drag_info.drag_dy;
