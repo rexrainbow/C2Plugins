@@ -49,7 +49,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         // touch   
         this.touchwrap = null;
 		this.pre_x = 0;
-		this.pre_y = 0;           
+		this.pre_y = 0;
         this.is_on_moving = false;  
         this.keyMap = [false, false, false, false];
         this.pre_key_id = 0;
@@ -85,10 +85,10 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     instanceProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
     {
         if (_NthTouch != 0)
-            return;
+            return;    
         this.is_on_moving = true;
-        this.pre_x = _TouchX;
-        this.pre_y = _TouchY; 
+        this.pre_x = this.get_touch_x();
+        this.pre_y = this.get_touch_y(); 
     };
     
     instanceProto.OnTouchEnd = function (_NthTouch)
@@ -101,12 +101,12 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     
 	instanceProto.get_touch_x = function ()
 	{
-        return this.touchwrap.GetAbsoluteX();
+        return this.touchwrap.GetAbsoluteXAt(0);
 	};  
 
 	instanceProto.get_touch_y = function ()
 	{
-        return this.touchwrap.GetAbsoluteY();
+        return this.touchwrap.GetAbsoluteYAt(0);
 	};
     
     instanceProto.tick = function()
