@@ -49,6 +49,7 @@ AddStringParam("Subset", "Group name.", '""');
 AddStringParam("Main set", "Group name.", '""'); 
 AddCondition(7, 0, "Is a subset", "Group: Set operation", "<i>{0}</i> is a subset of <i>{1}</i>", 
              "Test if group is a subset of another group.", "IsSubset");    
+             
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Name", "Group name.", '""');
@@ -71,11 +72,11 @@ AddAction(5, 0, "Destroy group", "Group", "Destroy group <i>{0}</i>",
 AddObjectParam("Instances", "Instances to be added into group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(6, 0, "Add instances", "Instance: Add", "Add <i>{0}</i> into group <i>{1}</i>", 
-          "Add instances into group.", "PushInsts");
+          "Add instances into group.", "AddInsts");
 AddNumberParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddAction(7, 0, "Add instances by UID", "Instance: Add", "Add instance UID:<i>{0}</i> into group <i>{1}</i>", 
-          "Add instances into group by UID.", "PushInst");          
+          "Add instances into group by UID.", "AddInstByUID");          
 AddObjectParam("Instances", "Instances to be removed from group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(8, 0, "Remove instances", "Instance: Reomve", "Remove <i>{0}</i> from group <i>{1}</i>", 
@@ -151,7 +152,33 @@ AddAction(22, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2
 AddObjectParam("Random generator", "Random generator object");
 AddAction(23, 0, "Set random generator", "Setup", 
           "Set random generator object to <i>{0}</i>", 
-          "Set random generator object.", "SetRandomGenerator"); 
+          "Set random generator object.", "SetRandomGenerator");
+AddComboParamOption("back");
+AddComboParamOption("front");
+AddComboParam("Where", "Whether to insert at the beginning or the end of the group.");          
+AddObjectParam("Instances", "Instances to be added into group.");
+AddStringParam("Name", "Group name.", '""');
+AddAction(24, 0, "Push instances", "List: Push & Insert", "Push <i>{0}</i> <i>{1}</i> into group <i>{2}</i>", 
+          "Push instances into group.", "PushInsts");
+AddComboParamOption("back");
+AddComboParamOption("front");
+AddComboParam("Where", "Whether to insert at the beginning or the end of the group.");            
+AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddStringParam("Name", "Group name.", '""');
+AddAction(25, 0, "Push instance by UID", "List: Push & Insert", "Push <i>{0}</i> instance UID:<i>{1}</i> into group <i>{2}</i>", 
+          "Push instances into group.", "PushInstByUID");       
+AddObjectParam("Instances", "Instances to be added into group.");
+AddStringParam("Name", "Group name.", '""');
+AddNumberParam("Index", "The zero-based index to insert to.");
+AddAction(26, 0, "Insert instances", "List: Push & Insert", "Insert <i>{0}</i> into group <i>{1}</i> at index <i>{2}</i>", 
+          "Insert instances into group.", "InsertInsts");          
+AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddStringParam("Name", "Group name.", '""');
+AddNumberParam("Index", "The zero-based index to insert to.");
+AddAction(27, 0, "Insert instance by UID", "List: Push & Insert", "Insert instance UID:<i>{0}</i> into group <i>{1}</i> at index <i>{2}</i>", 
+          "Insert instances into group.", "InsertInstByUID");
+      
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
