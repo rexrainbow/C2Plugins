@@ -6,7 +6,7 @@
 		"description":	"Card.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"General",
+		"category":		"Object",
 		"flags":		bf_onlyone
 	};
 };
