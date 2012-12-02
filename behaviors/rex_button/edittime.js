@@ -17,16 +17,27 @@
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
+AddAction(0, 0, "Set activated", "Activated", "Set {my} activated to <i>{0}</i>", 
           "Enable clicking.", "SetActivated");
-AddAction(1, 0, "Cancel click detecting", "", "Cancel {my} click detecting", 
-          "Cancel click detecting.", "CancelClickDetecting");  
-          
+AddAction(1, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} click detecting", 
+          "Cancel click detecting at click detecting state.", "CancelClickDetecting");  
+AddAnyTypeParam("Normal", 'Frame index (number) or animation name (string) at normal state, "" is ignored.', '""');
+AddAnyTypeParam("Click", 'Frame index (number) or animation name (string) at click state, "" is ignored.', '""');
+AddAnyTypeParam("Inactive", 'Frame index (number) or animation name (string) at inactive state, "" is ignored.', '""');
+AddAnyTypeParam("Rolling-in", 'Frame index (number) or animation name (string) at rolling-un state, "" is ignored.', '""');
+AddAction(2, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, inactive: <i>{2}</i>, rolling-in: <i>{3}</i>", 
+          "Set display of states.", "SetDisplay");
+AddAction(3, 0, "Back to normal state", "Clicked state", "Back {my} to normal state", 
+          "Back to normal state after clicked.", "BackNormalState");           
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1,	cf_trigger, "On clicking", "Click", "On {my} click", "Triggered when clicking detected.", "OnClick");
 AddCondition(2,	cf_trigger, "On click cancel", "Click", "On {my} click cancel", "Triggered when clicking canceled.", "OnClickCancel");
-AddCondition(3,	cf_trigger, "On click detecting start", "Click", "On {my} detecting start", "Triggered when clicking  detecting start.", "OnClickStart");
+AddCondition(3,	cf_trigger, "On click detecting start", "Click", "On {my} detecting start", "Triggered when clicking detecting start.", "OnClickStart");
+AddCondition(4,	cf_trigger, "On activated", "Button", "On {my} activated", "Triggered when button activated.", "OnActivated");
+AddCondition(5,	cf_trigger, "On inactivated", "Button", "On {my} inactivated", "Triggered when button inactivated.", "OnInactivated");
+AddCondition(6,	cf_trigger, "On rolling in", "Rolling over", "On {my} rolling in", "Triggered when rolling-in.", "OnRollingIn");
+AddCondition(7,	cf_trigger, "On rolling out", "Rolling over", "On {my} rolling out", "Triggered when rolling-out.", "OnRollingOut");
 
 //////////////////////////////////////////////////////////////
 // Expressions
