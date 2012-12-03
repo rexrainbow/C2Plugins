@@ -14,21 +14,18 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddComboParamOption("No");
-AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "Activated", "Set {my} activated to <i>{0}</i>", 
-          "Enable clicking.", "SetActivated");
-AddAction(1, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} click detecting", 
-          "Cancel click detecting at click detecting state.", "CancelClickDetecting");  
+AddAction(1, 0, "Goto Active state", "Request", "{my} goto Active state", 
+          "Goto Active state.", "GotoActive");   
+AddAction(2, 0, "Goto Inactive state", "Request", "{my} goto Inactive state", 
+          "Goto Inactive state.", "GotoInactive");                       
 AddAnyTypeParam("Normal", 'Frame index (number) or animation name (string) at normal state, "" is ignored.', '""');
 AddAnyTypeParam("Click", 'Frame index (number) or animation name (string) at click state, "" is ignored.', '""');
 AddAnyTypeParam("Inactive", 'Frame index (number) or animation name (string) at inactive state, "" is ignored.', '""');
 AddAnyTypeParam("Rolling-in", 'Frame index (number) or animation name (string) at rolling-un state, "" is ignored.', '""');
-AddAction(2, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, inactive: <i>{2}</i>, rolling-in: <i>{3}</i>", 
-          "Set display of states.", "SetDisplay");
-AddAction(3, 0, "Back to normal state", "Clicked state", "Back {my} to normal state", 
-          "Back to normal state after clicked.", "BackNormalState");           
+AddAction(3, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, inactive: <i>{2}</i>, rolling-in: <i>{3}</i>", 
+          "Set display of states.", "SetDisplay");        
+AddAction(4, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} click detecting", 
+          "Cancel click detecting at click detecting state.", "GotoActive");   
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1,	cf_trigger, "On clicking", "Click", "On {my} click", "Triggered when clicking detected.", "OnClick");
@@ -41,7 +38,8 @@ AddCondition(7,	cf_trigger, "On rolling out", "Rolling over", "On {my} rolling o
 
 //////////////////////////////////////////////////////////////
 // Expressions
-
+AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current button state.");
+AddExpression(1, ef_return_string, "Previous state", "State", "PreState", "Get previous button state.");
 
 ACESDone();
 
@@ -49,6 +47,7 @@ ACESDone();
 var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
 	new cr.Property(ept_combo, "Click mode", "Released", "Clicking when touch released or pressed.", "Released|Pressed"),    
+	new cr.Property(ept_combo, "Activated after Clicked", "Yes", "Auto back to Active state after Click state.", "No|Yes"),
     ];
 	
 // Called by IDE when a new behavior type is to be created
