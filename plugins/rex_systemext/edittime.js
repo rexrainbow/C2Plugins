@@ -17,22 +17,31 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddObjectParam("Object", "Object for picking");
-AddCondition(0, 0, "Pick all instances", "SOL", "Pick all <i>{0}</i> instances", "Pick all instances.", "PickAll");
-
+AddCondition(0, cf_deprecated, "Pick all instances", "SOL", 
+             "Pick all <i>{0}</i> instances", 
+             "Pick all instances.", "PickAll");
+AddObjectParam("Object", "Object for picking");
+AddNumberParam("UID", "UID of object", 0);
+AddComboParamOption("Current picked instances");
+AddComboParamOption("All instances");
+AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
+AddCondition(1, 0, "Pick inverse", "SOL", 
+             "Pick <i>{0}</i> inverse instances by UID to <i>{1}</i>, form <i>{2}</i>", 
+             "Pick inverse instances.", "PickInverse");  
 //////////////////////////////////////////////////////////////
 // Actions
 // SOL
 AddObjectParam("Object", "Object for picking");
 AddAction(0, 0, "Pick all instances", "SOL", 
           "Pick all <i>{0}</i> instances", 
-          "Pick all.", "PickAll");
+          "Pick all instances.", "PickAll");
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(1, 0, "Pick by UID", "SOL", 
-          "Pick <i>{0}</i> instance by UID = <i>{1}</i>, form <i>{2}</i>", 
+          "Pick <i>{0}</i> instance by UID to <i>{1}</i>, form <i>{2}</i>", 
           "Pick instance by UID.", "PickByUID");          
 AddObjectParam("Object", "Object for picking");
 AddComboParamOption("uid");
@@ -48,7 +57,7 @@ AddAnyTypeParam("Value", "The target compare value", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(2, 0, "Pick by property", "SOL", 
+AddAction(2, cf_deprecated, "Pick by property", "SOL", 
           "Pick <i>{0}</i> instances by comparing <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
           "Pick instances by property comparing.", "PickByPropCmp");
 AddStringParam("Group", "Group name", '""');          
@@ -66,7 +75,14 @@ AddNumberParam("UID", "UID of object", 0);
 AddAction(5, 0, "Quick picking by UID", "SOL", 
           "Quick picking <i>{0}</i> instance by UID = <i>{1}</i>", 
           "Quick picking instance by UID.", "QuickPickByUID");                    
-          
+AddObjectParam("Object", "Object for picking");
+AddNumberParam("UID", "UID of object", 0);
+AddComboParamOption("Current picked instances");
+AddComboParamOption("All instances");
+AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
+AddAction(6, 0, "Pick inverse", "SOL", 
+          "Pick <i>{0}</i> inverse instances by UID to <i>{1}</i>, form <i>{2}</i>", 
+          "Pick inverse instances.", "PickInverse");  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam('""', "Code string.", '""');

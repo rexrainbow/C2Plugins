@@ -32,19 +32,14 @@ cr.plugins_.Rex_SysExt.get_inst = function (type_name, uid)
 };
 cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 {
-    var inst = this.get_inst(objtype.name, uid);	    
-    var sol = objtype.getCurrentSol();  	    
-    if (inst!=null)
-    {
-        sol.instances.length = 1;
-        sol.instances[0] = inst;
-    }
-    else
+    var inst = this.get_inst(objtype.name, uid);
+    var is_find = (inst!=null);
+    var sol = objtype.getCurrentSol(); 
+    if (!is_find)
     {
         var insts = sol.getObjects();
         var insts_length = insts.length;
         var i, inst;
-        var is_find = false;
         
         for (i=0; i < insts_length; i++)
         {
@@ -55,11 +50,14 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
                 break;
             }
         }
-        
-        sol.instances.length = 0;   // clear contents
-        if (is_find)
-            sol.instances.push(inst);
-    } 
+    }
+    if (is_find)
+    {
+        sol.pick_one(inst);
+        objtype.applySolToContainer();
+    }      
+    else
+        sol.instances.length = 0;    
     sol.select_all = false;
 };
 
@@ -93,8 +91,54 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 
 	instanceProto.onCreate = function()
 	{
+        this.tmp_insts = [];
 	};
-    
+    instanceProto._pick_all = function (objtype)
+	{
+        if (!objtype)
+            return false;
+		if (!objtype.instances.length)
+			return false;            
+
+        // Get the current sol and reset the select_all flag
+        var sol = objtype.getCurrentSol();
+        sol.select_all = true;
+		objtype.applySolToContainer();
+        return true;
+	}; 
+    instanceProto._pick_inverse = function (objtype, uid, is_pick_all)
+	{
+        if (!objtype)
+            return false;
+		if (!objtype.instances.length)
+			return false;
+                    
+        var sol = objtype.getCurrentSol();  
+        if (is_pick_all==1)
+            sol.select_all = true;  
+            
+        cr.shallowAssignArray(sol.instances, sol.getObjects());
+        var insts = sol.instances;        
+        var insts_length = insts.length;
+        var i, inst;
+        var index = -1;
+
+        for (i=0; i < insts_length; i++)
+        {
+            inst = insts[i];
+            if (inst.uid == uid)
+            {
+                index = i;
+                break;
+            }
+        }
+        
+        if (index != -1)
+            cr.arrayRemove(insts, index);
+        sol.select_all = false; 
+        objtype.applySolToContainer();
+        return (sol.instances.length != 0);        
+	};     
     instanceProto._get_layer = function(layerparam)
     {
         return (typeof layerparam == "number")?
@@ -140,11 +184,13 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 
 	Cnds.prototype.PickAll = function (objtype)
 	{
-        var sol = objtype.getCurrentSol();        
-        sol.select_all = true;
-		return true;
+		return this._pick_all(objtype);;
 	};
-    
+ 
+	Cnds.prototype.PickInverse = function (objtype, uid, is_pick_all)
+	{
+        return this._pick_inverse(objtype, uid, is_pick_all);
+	};     
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -152,16 +198,16 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 
     Acts.prototype.PickAll = function (objtype)
 	{
-        var sol = objtype.getCurrentSol();        
-        sol.select_all = true;
+        this._pick_all(objtype);
 	}; 
     
     Acts.prototype.PickByUID = function (objtype, uid, is_pick_all)
 	{
-        var sol = objtype.getCurrentSol();  	    
-	    var inst = cr.plugins_.Rex_SysExt.get_inst(objtype.name, uid);
-	    if (inst!=null)
-	    
+        if (!objtype)
+            return;
+		if (!objtype.instances.length)
+			return;
+       
         var sol = objtype.getCurrentSol();  
         if (is_pick_all==1)
             sol.select_all = true;  
@@ -181,20 +227,34 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
             }
         }
         
-        sol.instances.length = 0;   // clear contents
         if (is_find)
-            sol.instances.push(inst);
+        {
+            sol.pick_one(inst);
+            objtype.applySolToContainer();
+        }
+        else
+            sol.instances.length = 0;
             
         sol.select_all = false;
 	}; 
     
     Acts.prototype.QuickPickByUID = function (objtype, uid)
 	{	    
+        if (!objtype)
+            return;
+		if (!objtype.instances.length)
+			return;
+            
 	    cr.plugins_.Rex_SysExt.pick_inst(objtype, uid);
 	};    
         
     Acts.prototype.PickByPropCmp = function (objtype, prop_index, cmp, value, is_pick_all)
 	{
+        if (!objtype)
+            return;
+		if (!objtype.instances.length)
+			return;
+            
         var sol = objtype.getCurrentSol();  
         if (is_pick_all==1)
             sol.select_all = true;  
@@ -202,19 +262,15 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
         var insts = sol.getObjects();
         var insts_length = insts.length;
         var i, inst;
-        var is_find = false;
-        var find_insts = [];
+        this.tmp_insts.length = 0;
 
         for (i=0; i < insts_length; i++)
         {
             inst = insts[i];
             if (cr.do_cmp(GetInstPropertyValue(inst, prop_index), cmp, value))
-            {
-                find_insts.push(inst);
-            }
+                this.tmp_insts.push(inst);
         }
-        sol.instances = find_insts;
-            
+        cr.shallowAssignArray(sol.instances, this.tmp_insts);
         sol.select_all = false;
 	};  
 
@@ -266,7 +322,12 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 			layer.visible = is_visible;
 			this.runtime.redraw = true;
 		}
-    };    
+    }; 
+
+    Acts.prototype.PickInverse = function (objtype, uid, is_pick_all)
+	{
+        this._pick_inverse(objtype, uid, is_pick_all);
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
