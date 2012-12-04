@@ -3,9 +3,9 @@
 	return {
 		"name":			"Card",
 		"id":			"Rex_Card",
-		"description":	"Card.",
+		"description":	"Assinig face of card by frame index.",
 		"author":		"Rex.Rainbow",
-		"help url":		"Assinig face of card to frame index.",
+		"help url":		"",
 		"category":		"Object",
 		"flags":		bf_onlyone
 	};
