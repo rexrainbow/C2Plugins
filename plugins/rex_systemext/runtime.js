@@ -115,9 +115,11 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
                     
         var sol = objtype.getCurrentSol();  
         if (is_pick_all==1)
+        {
             sol.select_all = true;  
-            
-        cr.shallowAssignArray(sol.instances, sol.getObjects());
+            cr.shallowAssignArray(sol.instances, sol.getObjects());
+        }
+
         var insts = sol.instances;        
         var insts_length = insts.length;
         var i, inst;
