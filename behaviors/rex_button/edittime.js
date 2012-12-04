@@ -14,18 +14,18 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(1, 0, "Goto Active state", "Request", "{my} goto Active state", 
-          "Goto Active state.", "GotoActive");   
-AddAction(2, 0, "Goto Inactive state", "Request", "{my} goto Inactive state", 
-          "Goto Inactive state.", "GotoInactive");                       
+AddAction(1, 0, "Goto ACTIVE state", "Request", "{my} goto ACTIVE state", 
+          "Goto ACTIVE state.", "GotoACTIVE");   
+AddAction(2, 0, "Goto INACTIVE state", "Request", "{my} goto INACTIVE state", 
+          "Goto INACTIVE state.", "GotoINACTIVE");                       
 AddAnyTypeParam("Normal", 'Frame index (number) or animation name (string) at normal state, "" is ignored.', '""');
 AddAnyTypeParam("Click", 'Frame index (number) or animation name (string) at click state, "" is ignored.', '""');
-AddAnyTypeParam("Inactive", 'Frame index (number) or animation name (string) at inactive state, "" is ignored.', '""');
+AddAnyTypeParam("INACTIVE", 'Frame index (number) or animation name (string) at INACTIVE state, "" is ignored.', '""');
 AddAnyTypeParam("Rolling-in", 'Frame index (number) or animation name (string) at rolling-un state, "" is ignored.', '""');
-AddAction(3, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, inactive: <i>{2}</i>, rolling-in: <i>{3}</i>", 
+AddAction(3, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, INACTIVE: <i>{2}</i>, rolling-in: <i>{3}</i>", 
           "Set display of states.", "SetDisplay");        
 AddAction(4, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} click detecting", 
-          "Cancel click detecting at click detecting state.", "GotoActive");   
+          "Cancel click detecting at click detecting state.", "GotoACTIVE");   
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1,	cf_trigger, "On clicking", "Click", "On {my} click", "Triggered when clicking detected.", "OnClick");
