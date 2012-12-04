@@ -28,7 +28,7 @@ AddAction(4, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} 
           "Cancel click detecting at click detecting state.", "GotoACTIVE");   
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1,	cf_trigger, "On clicking", "Click", "On {my} click", "Triggered when clicking detected.", "OnClick");
+AddCondition(1,	cf_trigger, "On clicked", "Click", "On {my} clicked", "Triggered when clicked.", "OnClick");
 AddCondition(2,	cf_trigger, "On click cancel", "Click", "On {my} click cancel", "Triggered when clicking canceled.", "OnClickCancel");
 AddCondition(3,	cf_trigger, "On click detecting start", "Click", "On {my} detecting start", "Triggered when clicking detecting start.", "OnClickStart");
 AddCondition(4,	cf_trigger, "On activated", "Button", "On {my} activated", "Triggered when button activated.", "OnActivated");
