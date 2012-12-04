@@ -45,9 +45,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this goto ACTIVE state at the start of the layout.", "No|Yes"),
 	new cr.Property(ept_combo, "Click mode", "Released", "Clicking when touch released or pressed.", "Released|Pressed"),    
-	new cr.Property(ept_combo, "Activated after Clicked", "Yes", "Auto back to Active state after Click state.", "No|Yes"),
+	new cr.Property(ept_combo, "Activated after Clicked", "Yes", "Auto back to Active state after CLICKED state.", "No|Yes"),
     ];
 	
 // Called by IDE when a new behavior type is to be created
