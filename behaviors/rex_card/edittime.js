@@ -5,7 +5,7 @@
 		"id":			"Rex_Card",
 		"description":	"Card.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"Assinig face of card to frame index.",
 		"category":		"Object",
 		"flags":		bf_onlyone
 	};

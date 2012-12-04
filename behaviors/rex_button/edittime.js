@@ -4,7 +4,7 @@
 		"name":			"Button",
 		"id":			"Rex_Button2",
 		"version":		"0.1",        
-		"description":	"",
+		"description":	'Get click event from "touch end".',
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Object",
