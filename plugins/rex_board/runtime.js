@@ -391,11 +391,32 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var sol = chess_type.getCurrentSol();
         sol.instances.length = 0;
         sol.select_all = false;
+        var is_family = chess_type.is_family;
+        var members,member_cnt,i;
+        if (is_family)
+        {
+            members = chess_type.members;
+            member_cnt = members.length;
+        }
         for (z_index in z_hash)
         {
             inst = this.uid2inst(z_hash[z_index]);
-            if (inst.type == chess_type)
-                sol.instances.push(inst); 
+            if (is_family)
+            {
+                for (i=0; i<member_cnt; i++)
+                {
+                    if (inst.type == members[i])
+                    {
+                        sol.instances.push(inst); 
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if (inst.type == chess_type)
+                    sol.instances.push(inst); 
+            }
         }
         return (sol.instances.length != 0);
 	};
@@ -446,9 +467,30 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Cnds.prototype.OnChessKicked = function (chess_type)
 	{
         if (!chess_type)
-            return false;    
-	    if (this._kicked_chess_inst.type != chess_type)	    
-	        return false;
+            return false;   
+        if (chess_type.is_family)
+        {
+            var members = chess_type.members;
+            var member_cnt = members.length;
+            var i,member, is_found=false;
+            for (i=0; i<member_cnt; i++)
+            {
+                member = members[i];
+                if (this._kicked_chess_inst.type == member)
+                {
+                    is_found = true;
+                    break;
+                }
+            }
+            if (!is_found)
+                return false;
+        }
+        else
+        {
+	        if (this._kicked_chess_inst.type != chess_type)	    
+	            return false;
+        }
+
         chess_type.getCurrentSol().pick_one(this._kicked_chess_inst);
 	    return true;
 	};	
