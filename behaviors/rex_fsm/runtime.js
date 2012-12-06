@@ -33,7 +33,6 @@ cr.behaviors.Rex_FSM = function(runtime)
         this.exit_action = {};
         this.enter_action = {};        
         this.fn_obj = null;
-        this.csv_obj = null;
         this.adapter = new cr.behaviors.Rex_FSM.FSMAdapterKlass(this);
 	};
 
@@ -52,7 +51,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 	behinstProto.onCreate = function()
 	{      
 	    this.is_debug_mode = this.properties[0];  
-        this.activated = (this.properties[1]==1);
+        this.activated = this.properties[1];
 		var previous_state = "Off";		
 		var current_state = this.properties[2];		
         current_state = (current_state!="")? current_state:"Off";	           
@@ -71,7 +70,8 @@ cr.behaviors.Rex_FSM = function(runtime)
                                                      previous_state, current_state,
                                                      mem); 
         this.is_echo = false;
-        this.is_my_call = false;                                                     
+        this.is_my_call = false; 
+        this.next_state = null;                                                   
 	};  
     
 	behinstProto.tick = function ()
@@ -211,7 +211,17 @@ cr.behaviors.Rex_FSM = function(runtime)
 
         // Return the parsed data.
         return( arrData );
-    };        
+    };     
+    
+    behinstProto.get_next_state = function()
+    {
+        this.next_state = null;
+        this.is_echo = false;
+        this.is_my_call = true;
+        this.runtime.trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnLogic,this.inst);
+        this.is_my_call = false;
+        return this.next_state;
+    };   
 
 	//////////////////////////////////////
 	// Conditions
@@ -248,7 +258,23 @@ cr.behaviors.Rex_FSM = function(runtime)
         this.is_echo |= is_my_call;
 		return is_my_call;
 	};	
-    
+	Cnds.prototype.OnStateChanging = function ()
+	{
+		return true;
+	};     
+	Cnds.prototype.OnLogic = function (name)
+	{
+        this.is_echo = true;
+		return (this.is_my_call && (this.fsm["CurState"] == name));
+	}; 
+	Cnds.prototype.IsCurState = function (name)
+	{
+		return (this.fsm["CurState"] == name);
+	};
+	Cnds.prototype.CmpMemValue = function (index, cmp, val)
+	{
+		return cr.do_cmp(this.fsm["Mem"][index], cmp, val);
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -257,7 +283,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 	Acts.prototype.SetActivated = function (s)
 	{
 		this.activated = (s==1);
-	};      
+	};     
     
 	Acts.prototype.CleanMemory = function ()
 	{
@@ -313,16 +339,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         else
             alert ("Can not connect to a function object");
 	};    
-    
-    Acts.prototype.ConnectCSV = function (csv_objs)
-	{  
-        var csv_obj = csv_objs.instances[0];
-        if (csv_obj.check_name == "CSV")
-            this.type.csv_obj = csv_obj.adapter;        
-        else
-            alert ("Can not connect to a csv object");
-	};   
-    
+
     Acts.prototype.CSV2Action = function (csv_string)
 	{
         if (csv_string == "")
@@ -391,9 +408,13 @@ cr.behaviors.Rex_FSM = function(runtime)
 	Acts.prototype.InjectJSFunctionObjects = function (code_string)
 	{
         var fn = eval("("+code_string+")");
-        fn(this.type.adapter, this.type.fn_obj, this.type.csv_obj);
+        fn(this.type.adapter, this.type.fn_obj);
 	};    
-    
+
+	Acts.prototype.NextStateSet = function (state)
+	{
+        this.next_state = state;
+	};      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -409,12 +430,12 @@ cr.behaviors.Rex_FSM = function(runtime)
 	    ret.set_string(this.fsm["PreState"]);
 	};
 	
-    Exps.prototype.Mem = function (ret, index)
+    Exps.prototype.Mem = function (ret, index, default_value)
 	{
         var value = this.fsm["Mem"][index];
         if (value == null) 
         {
-            value = 0;
+            value = default_value;
             if (this.is_debug_mode) 
                 alert ("Can not find index in memory '" + index + "'");
                 
@@ -426,11 +447,11 @@ cr.behaviors.Rex_FSM = function(runtime)
 (function ()
 {
     cr.behaviors.Rex_FSM.FSMKlass = function(plugin, 
-                                             previous_state, current_state,
-                                             mem)
+                                            previous_state, current_state,
+                                            mem)
     {
         this["_plugin"] = plugin;
-        this["_type"] = plugin.type; 
+        this["_type"] = plugin.type;
         this["inst"] = plugin.inst;
         
         this["PreState"] = previous_state;
@@ -443,29 +464,40 @@ cr.behaviors.Rex_FSM = function(runtime)
     {
         if (new_state == null)
         {
-            var fn = this["_type"].logic[this["CurState"]];
-            if (fn == null)
-                return;
-        
-            // fn != null        
-            new_state = fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            // try to get next state from event sheet first
+            new_state = this["_plugin"].get_next_state();
+            
+            // no transfer logic defined in event sheet
+            if (!this["_plugin"].is_echo)
+            {
+                var fn = this["_type"].logic[this["CurState"]];
+                if (fn == null)
+                    return;
+                // fn != null      
+                new_state = fn(this, this["_type"].fn_obj);            
+            }
+                 
             if (new_state == null)
                 return;
         }
             
-        // new_state != null
+        // new_state != null: state transfer
         this["PreState"] = this["CurState"];
         this["CurState"] = new_state;
                 
         var pre_state = this["PreState"];
         var cur_state = this["CurState"];
         
+        // trigger OnStateChanging first
+        this["_plugin"].runtime.trigger(
+            cr.behaviors.Rex_FSM.prototype.cnds.OnStateChanging, this["inst"]);  
+                        
         // try to run transfer_action
         var is_echo = this._run_transfer_action(pre_state, cur_state);
         if (is_echo)
             return;
          
-        // (fn == null) && (this["_plugin"].is_echo==false)
+        // no transfer_action found
         this._run_exit_action(pre_state);
         this._run_enter_action(cur_state);
     };
@@ -476,7 +508,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         var fn = this["_type"].transfer_action[name];
         if (fn != null)
         {
-            fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            fn(this, this["_type"].fn_obj);
         }        
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
@@ -491,7 +523,7 @@ cr.behaviors.Rex_FSM = function(runtime)
     {
         var fn = this["_type"].exit_action[pre_state];
         if (fn != null)
-             fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+             fn(this, this["_type"].fn_obj);
         
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
@@ -512,7 +544,7 @@ cr.behaviors.Rex_FSM = function(runtime)
     {
         var fn = this["_type"].enter_action[cur_state];
         if (fn != null)
-            fn(this, this["_type"].fn_obj, this["_type"].csv_obj);
+            fn(this, this["_type"].fn_obj);
 
         this["_plugin"].is_echo = false;
         this["_plugin"].is_my_call = true;
@@ -532,7 +564,7 @@ cr.behaviors.Rex_FSM = function(runtime)
     // adapter for exporting to javascript
     cr.behaviors.Rex_FSM.FSMAdapterKlass = function(type)
     {
-        this["_type"] = type; 
+        this["_type"] = type;
     };
     var FSMAdapterKlassProto = cr.behaviors.Rex_FSM.FSMAdapterKlass.prototype;
     
