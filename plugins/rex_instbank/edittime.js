@@ -47,8 +47,8 @@ AddAction(3, 0, "Load bank from JSON string", "Bank", "Load bank from JSON strin
          "Load bank from JSON string.", "StringToBank");
 AddAnyTypeParam("Index", "Index of info, can be number of string", "0");
 AddAnyTypeParam("Value", "Value of info", 0);
-AddAction(4, 0, "Set info", "Save", 
-          "Set info[<i>{0}</i>] to <i>{1}</i>", 'Set custom info for instances saving. Used under "Condition:On saving"', "SetInfo"); 
+AddAction(4, 0, "Save info", "Save", 
+          "Save custom info[<i>{0}</i>] to <i>{1}</i>", 'Save custom info. Used under "Condition:On saving"', "SaveInfo"); 
 AddObjectParam("Object", "Object for picking");          
 AddNumberParam("UID", "UID of object", 0);
 AddAction(5, 0, "Pick by saved UID", "Load instance", 
@@ -59,8 +59,8 @@ AddAction(5, 0, "Pick by saved UID", "Load instance",
 // Expressions
 AddExpression(0, ef_return_string, "Transfer bank to string", "Bank", "BankToString", "Transfer current bank to JSON string.");
 AddAnyTypeParam("0", "The index of info to get, can be number of string.", "0");
-AddExpression(1, ef_return_any | ef_variadic_parameters, "Get info", "Load", "Info", 
-             'Get custom info for instances loading. Used under "Condition:On loading"');
+AddExpression(1, ef_return_any | ef_variadic_parameters, "Get info", "Load", "SavedInfo", 
+             'Get saved custom info for instances loading. Used under "Condition:On loading"');
 
 ACESDone();
 

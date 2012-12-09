@@ -362,7 +362,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         this._JSONString2bank(JSON_string);
 	};  
 
-    Acts.prototype.SetInfo = function (index, value)
+    Acts.prototype.SaveInfo = function (index, value)
 	{  
         this._info[index] = value;
 	};
@@ -384,7 +384,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 		ret.set_string(json_string);
 	}; 
 
-    Exps.prototype.Info = function (ret, index, default_value)
+    Exps.prototype.SavedInfo = function (ret, index, default_value)
 	{
         var val = this._info[index];
         if (val == null)
