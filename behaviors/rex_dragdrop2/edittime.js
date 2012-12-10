@@ -25,10 +25,11 @@ AddAction(1, 0, "Force to drop", "", "Force {my} to drop",
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On drag start", "", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
+AddCondition(0,	cf_trigger, "On dragging start", "", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
 AddCondition(1,	cf_deprecated | cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
-AddCondition(2,	cf_trigger, "On drop", "", "On {my} drop", "Triggered when object drop.", "OnDrop"); 
+AddCondition(2,	cf_trigger, "On dropped", "", "On {my} drop", "Triggered when object drop.", "OnDrop"); 
 AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.", "IsDragging");
+AddCondition(4,	cf_trigger, "On dragging then moved", "", "On {my} dragging then moved", "Triggered when object dragging then moved.", "OnDragMove"); 
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -37,7 +38,8 @@ AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", 
 AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
 AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
-
+AddExpression(5, ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's dragging start position.");
+AddExpression(6, ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's dragging start position.");
 
 ACESDone();
 

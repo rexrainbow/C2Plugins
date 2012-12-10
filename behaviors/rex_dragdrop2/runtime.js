@@ -130,10 +130,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                 target_inst_behavior = behavior_inst;
         }
 		inst = target_inst_behavior.inst;
-        target_inst_behavior.drag_info.is_on_dragged = true;	
-		target_inst_behavior.drag_info.touch_src = touch_src;
-        target_inst_behavior.drag_info.drag_dx = inst.x - target_inst_behavior.GetX();
-        target_inst_behavior.drag_info.drag_dy = inst.y - target_inst_behavior.GetY();
+        var cur_x=target_inst_behavior.GetX(), cur_y=target_inst_behavior.GetY();
+        var drag_info=target_inst_behavior.drag_info;
+        drag_info.is_on_dragged = true;	
+		drag_info.touch_src = touch_src;
+        drag_info.drag_dx = inst.x - cur_x;
+        drag_info.drag_dy = inst.y - cur_y;
+        drag_info.pre_x = cur_x;
+        drag_info.pre_y = cur_y;          
+        drag_info.start_x = inst.x;
+        drag_info.start_y = inst.y;   
+        drag_info.is_moved = false;
         this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, target_inst_behavior.inst);     
 
         // recover to select_all_save
@@ -158,7 +165,10 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                           pre_y:null,
                           drag_dx:0,
                           drag_dy:0,
-                          is_on_dragged:false};                       
+                          is_on_dragged:false,
+                          start_x:null,
+                          start_y:null,                          
+                          is_moved:false};                       
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -175,15 +185,16 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             return;
         
         // this.activated == 1 && this.is_on_dragged        
-        var inst = this.inst;
-        var cur_x = this.GetX();
-        var cur_y = this.GetY();
-        var is_moved = (this.drag_info.pre_x != cur_x) ||
-                       (this.drag_info.pre_y != cur_y);      
+        var inst=this.inst;
+        var drag_info=this.drag_info;
+        var cur_x=this.GetX();
+        var cur_y=this.GetY();
+        var is_moved = (drag_info.pre_x != cur_x) ||
+                       (drag_info.pre_y != cur_y);      
         if ( is_moved )
         {
-            var drag_x = cur_x + this.drag_info.drag_dx;
-            var drag_y = cur_y + this.drag_info.drag_dy;
+            var drag_x = cur_x + drag_info.drag_dx;
+            var drag_y = cur_y + drag_info.drag_dy;
             switch (this.move_axis)
             {
                 case 1:
@@ -198,10 +209,15 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                     break;
             }
             inst.set_bbox_changed();
-            this.drag_info.pre_x = cur_x;
-            this.drag_info.pre_y = cur_y;                    
+            drag_info.pre_x = cur_x;
+            drag_info.pre_y = cur_y;                    
         }
-        //this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragging, this.inst);
+        if ( (!drag_info.is_moved) &&
+             ((cur_x != drag_info.start_x) || (cur_y != drag_info.start_y)) )
+        {
+            drag_info.is_moved = true;
+            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragMove, this.inst);
+        }
 	};   
 	 
     // export     
@@ -262,13 +278,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
  	Cnds.prototype.OnDragging = function ()
 	{   
         return true;
-    }
+    };
     
  	Cnds.prototype.IsDragging = function ()
 	{   
         return this.drag_info.is_on_dragged;
-    }    
-    
+    };   
+
+ 	Cnds.prototype.OnDragMove = function ()
+	{   
+        return true;
+    };    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -315,5 +335,15 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int((this.activated)? 1:0);
+	};  
+
+	Exps.prototype.StartX = function (ret)
+	{
+        ret.set_float( this.drag_info.start_x );
+	};
+	
+	Exps.prototype.StartY = function (ret)
+	{
+	    ret.set_float( this.drag_info.start_y );
 	};    
 }());
