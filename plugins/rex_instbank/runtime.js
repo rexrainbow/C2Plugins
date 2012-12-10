@@ -55,7 +55,16 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         hash_clean(this._banks); 
         this._z_sorting.Clean();
 	};   
-
+  
+    // save    
+    instanceProto._on_saving = function(inst)
+    {
+        this._target_inst = inst;
+        hash_clean(this._info);        
+        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnSave, this);
+        return hash_copy(this._info);
+    }; 
+    
     instanceProto._get_sprite_save_obj = function(uid)
     {
         var save_obj = this._bank[uid];
@@ -68,20 +77,30 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
             save_obj = null;
         return save_obj;
     }; 
-    
-    instanceProto._on_saving = function(inst)
+
+    instanceProto._save_world_inst = function(inst, save_obj)
     {
-        this._target_inst = inst;
-        hash_clean(this._info);        
-        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnSave, this);
-        return hash_copy(this._info);
-    }; 
-    instanceProto._on_loading = function(inst, custom_data)
-    {
-        hash_copy(custom_data, hash_clean(this._info));
-        this._target_inst = inst;       
-        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnLoad, this);
-    }; 
+        save_obj["x"] = inst.x;
+        save_obj["y"] = inst.y;
+        save_obj["width"] = inst.width;
+        save_obj["height"] = inst.height;
+        save_obj["angle"] = inst.angle;
+        save_obj["opacity"] = inst.opacity;
+        save_obj["visible"] = inst.visible;        
+        save_obj["inst_vars"] = inst.instance_vars.slice();
+        save_obj["layer"] = inst.layer.index;
+        save_obj["z_order"] = inst.layer.instances.indexOf(inst);
+        
+        var cur_frame = inst.cur_frame;
+        if (cur_frame != null)
+            save_obj["cur_frame"] = cur_frame;       
+        var cur_anim_speed = inst.cur_anim_speed;
+        if (cur_anim_speed != null)
+            save_obj["cur_anim_speed"] = cur_anim_speed;                       
+        var cur_anim_name = inst.cur_animation.name; // save inst.cur_animation.name for restoring animation
+        if (cur_anim_name != null)
+            save_obj["cur_anim_name"] = cur_anim_name;
+    };     
     
     instanceProto._save_instance = function(inst, save_container_insts)
 	{
@@ -90,21 +109,14 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
             return;
         save_obj["create_me"] = true;
         save_obj["saveduid"] = inst.uid;
-        
-        // sprite
-        save_obj["x"] = inst.x;
-        save_obj["y"] = inst.y;
-        save_obj["width"] = inst.width;
-        save_obj["height"] = inst.height;
-        save_obj["angle"] = inst.angle;
-        save_obj["opacity"] = inst.opacity;
-        save_obj["visible"] = inst.visible;  
-        save_obj["cur_frame"] = inst.cur_frame;     
-        save_obj["cur_anim_speed"] = inst.cur_anim_speed;         
-        save_obj["inst_vars"] = inst.instance_vars.slice();
-        save_obj["layer"] = inst.layer.index;
-        save_obj["z_order"] = inst.layer.instances.indexOf(inst);
-        save_obj["cur_anim_name"] = inst.cur_animation.name; // save inst.cur_animation.name for restoring animation
+
+        if (inst.type.plugin.is_world)
+            this._save_world_inst(inst, save_obj);
+        else if (cr.plugins_.Arr && (inst instanceof cr.plugins_.Arr.prototype.Instance))
+        {
+            // array
+        }
+
 
         // general
         save_obj["type"] = inst.type.name;        
@@ -150,18 +162,28 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         
         sol.select_all = select_all_save;
 	};      
+    // save
 
-    instanceProto._filled_instance = function(inst, save_obj)
-	{  
-        if ((inst == null) || (save_obj == null))
-            return;
-            
-        this._saveduid2inst_map[save_obj["saveduid"]] = inst;
-        // sprite    
-        inst.cur_anim_speed = save_obj["cur_anim_speed"];  
-        cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [save_obj["cur_frame"]]);
-        cr.plugins_.Sprite.prototype.acts.SetAnim.apply(inst, [save_obj["cur_anim_name"], 1]);
-        
+    // load
+    instanceProto._on_loading = function(inst, custom_data)
+    {
+        hash_copy(custom_data, hash_clean(this._info));
+        this._target_inst = inst;       
+        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnLoad, this);
+    }; 
+    
+    instanceProto._filled_world_inst = function(inst, save_obj)
+    {
+        var cur_anim_speed = save_obj["cur_anim_speed"];
+        if (cur_anim_speed != null)
+            inst.cur_anim_speed = cur_anim_speed;  
+        var cur_frame = save_obj["cur_frame"];
+        if (cur_frame != null)
+            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [cur_frame]); 
+        var cur_anim_name = save_obj["cur_anim_name"];
+        if (cur_anim_name != null)
+            cr.plugins_.Sprite.prototype.acts.SetAnim.apply(inst, [cur_anim_name, 1]);   
+
         // after set anim frame
         inst.x = save_obj["x"];
         inst.y = save_obj["y"];
@@ -169,7 +191,18 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         inst.height = save_obj["height"];  
         inst.angle = save_obj["angle"];
         inst.opacity = save_obj["opacity"];        
-        inst.visible = save_obj["visible"];
+        inst.visible = save_obj["visible"];            
+    };
+    
+    instanceProto._filled_instance = function(inst, save_obj)
+	{  
+        if ((inst == null) || (save_obj == null))
+            return;
+            
+        this._saveduid2inst_map[save_obj["saveduid"]] = inst;
+
+        if (inst.type.plugin.is_world)
+            this._filled_world_inst(inst, save_obj);
 
         // general        
         cr.shallowAssignArray(inst.instance_vars, save_obj["inst_vars"]);
@@ -196,6 +229,15 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 		}
 	};       
     
+    instanceProto._callevent_on_created = function(inst)
+	{   
+        var objtype = inst.type;
+        this._pick_one(objtype, inst);
+        this.runtime.isInOnDestroy++;
+		this.runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
+		this.runtime.isInOnDestroy--;
+	};
+    
     instanceProto._create_instance = function(save_obj)
 	{  
         if (!save_obj["create_me"])
@@ -205,19 +247,22 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         var sol = _objtype.getCurrentSol();
         var select_all_save = sol.select_all;  
 	    var _layer = this.runtime.getLayerByNumber(save_obj["layer"]);        
-        
-        // sprite
+
         var inst = this.runtime.createInstance(
                        _objtype, 
                        _layer, 
                        save_obj["x"], 
                        save_obj["y"]);
+        if (!inst)
+            return null;                       
         
         this._filled_instance(inst, save_obj);
 
         // container has been created but not filled
         this._filled_sibling(inst, save_obj);
-        
+
+        this._callevent_on_created(inst);
+		
         sol.select_all = select_all_save;
         
         return inst;
@@ -230,7 +275,9 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         for (uid in this._bank)
             this._create_instance(this._bank[uid]);
         this._z_sorting.Sorting();
+        hash_clean(this._saveduid2inst_map);
 	};
+    // load
  
     instanceProto._bank2string = function()
 	{
