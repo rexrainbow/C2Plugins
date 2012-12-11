@@ -41,31 +41,141 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this._z_sorting = new cr.plugins_.Rex_InstanceBank.ZSortingKlass(this);
-        this._bank = {};  
-        this._saveduid2inst_map = {};        
+        this.bank = new cr.plugins_.Rex_InstanceBank.InstBankKlass(this);    
         this._target_inst = null;
         this._info = {};
-        
-        this._clean_bank();         
+	};
+	
+	// handlers
+    instanceProto.OnSaving = function(inst, ret_info)
+    {     
+        this._target_inst = inst;
+        this._info = ret_info;
+        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnSave, this);
+    }; 	
+    instanceProto.OnLoading = function(inst, info)
+    {
+        this._target_inst = inst;
+        this._info = info;    
+        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnLoad, this);
+    };     
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
+    
+	Cnds.prototype.OnSave = function (obj_type)
+	{
+		if (!obj_type)
+			return;    
+	    return this.bank.SOLPickOne(obj_type, this._target_inst);
+	};
+    
+	Cnds.prototype.OnLoad = function (obj_type)
+	{
+		if (!obj_type)
+			return;      
+		return this.bank.SOLPickOne(obj_type, this._target_inst);
+	}; 
+     
+	Cnds.prototype.PickBySavedUID = function (obj_type, saved_uid)
+	{
+		if (!obj_type)
+			return;      
+		return this.bank.SOLPickBySavedUID(obj_type, saved_uid);
+	};  
+    
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+	pluginProto.acts = new Acts();
+    
+    Acts.prototype.CleanBank = function ()
+	{
+        this.bank.CleanBank();
+	};
+    
+    Acts.prototype.SaveInstances = function (obj_type, is_pick_all)
+	{
+		if (!obj_type)
+			return;      
+        this.bank.SaveInstances(obj_type, is_pick_all);
 	};
 
-	instanceProto._clean_bank = function()
+    Acts.prototype.LoadInstances = function ()
+	{  
+        this.bank.LoadAllInstances();
+	};
+
+    Acts.prototype.StringToBank = function (JSON_string)
+	{  
+        this.bank.JSON2Bank(JSON_string);
+	};  
+
+    Acts.prototype.SaveInfo = function (index, value)
+	{  
+        this._info[index] = value;
+	};
+    
+	Acts.prototype.PickBySavedUID = function (obj_type, saved_uid)
+	{
+		if (!obj_type)
+			return;      
+		this.bank.SOLPickBySavedUID(obj_type, saved_uid);
+	};  
+	
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+	pluginProto.exps = new Exps();
+	
+	Exps.prototype.BankToString = function (ret)
+	{
+        var json_string = this.bank.ToString();
+		ret.set_string(json_string);
+	}; 
+
+    Exps.prototype.SavedInfo = function (ret, index, default_value)
+	{
+        var val = this.bank._info[index];
+        if (val == null)
+            val = default_value;
+	    ret.set_any(val);
+	};    
+}());
+
+(function ()
+{
+    cr.plugins_.Rex_InstanceBank.InstBankKlass = function(plugin)
+    {
+        this.plugin = plugin;  
+        this.has_on_saving_handler = (plugin.OnSaving != null);
+        this.has_on_loading_handler = (plugin.OnLoading != null);
+        this._z_sorting = new ZSortingKlass(plugin);     
+        this._bank = {};  
+        this._saveduid2inst_map = {};
+        this._info = {};
+        
+        this.CleanBank();   
+                                      
+    };
+    var InstBankKlassProto = cr.plugins_.Rex_InstanceBank.InstBankKlass.prototype;  
+
+	InstBankKlassProto.CleanBank = function()
 	{
         hash_clean(this._banks); 
         this._z_sorting.Clean();
-	};   
+	};     
   
     // save    
-    instanceProto._on_saving = function(inst)
+    InstBankKlassProto._on_saving = function(inst)
     {
         this._target_inst = inst;
-        hash_clean(this._info);        
-        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnSave, this);
+        hash_clean(this._info);
+        this.plugin.OnSaving(inst, this._info);
         return hash_copy(this._info);
     }; 
-    
-    instanceProto._get_sprite_save_obj = function(uid)
+    InstBankKlassProto._get_save_obj = function(uid)
     {
         var save_obj = this._bank[uid];
         if (save_obj == null)
@@ -77,8 +187,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
             save_obj = null;
         return save_obj;
     }; 
-
-    instanceProto._save_world_inst = function(inst, save_obj)
+    InstBankKlassProto._save_world_inst = function(inst, save_obj)
     {
         if (cr.plugins_.Sprite && (inst instanceof cr.plugins_.Sprite.prototype.Instance))
         {
@@ -105,19 +214,34 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         save_obj["layer"] = inst.layer.index;
         save_obj["z_order"] = inst.layer.instances.indexOf(inst);
     };     
-    instanceProto._save_array_inst = function(inst, save_obj)
+    InstBankKlassProto._save_array_inst = function(inst, save_obj)
     {
         save_obj["plugin"] = "Array";
         save_obj["content"] = inst.getAsJSON();
     };
-    instanceProto._save_dictionary_inst = function(inst, save_obj)
+    InstBankKlassProto._save_dictionary_inst = function(inst, save_obj)
     {
         save_obj["plugin"] = "Dictionary";
         save_obj["content"] = JSON.stringify({"c2dictionary":true, "data":inst.dictionary})
     };
-    instanceProto._save_instance = function(inst, save_container_insts)
+    InstBankKlassProto._save_sibling = function(inst, save_obj)
+    {
+        if (!inst.is_contained)
+            return;
+            
+        save_obj["container_insts"] = {};
+        var i, cnt=inst.siblings.length, s, sibling_save_obj;
+        for (i=0; i<cnt; i++)
+	    {
+		    s = inst.siblings[i];
+            save_obj["container_insts"][s.type.name] = s.uid;            
+            sibling_save_obj = this.SaveInstance(s, true);
+            sibling_save_obj["create_me"] = false;   // container object will be created automatically
+		}
+    }; 
+    InstBankKlassProto.SaveInstance = function(inst, ignored_container_insts)
 	{
-        var save_obj = this._get_sprite_save_obj(inst.uid);
+        var save_obj = this._get_save_obj(inst.uid);
         if (save_obj == null)
             return;
         save_obj["create_me"] = true;
@@ -133,32 +257,15 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         // general
         save_obj["type"] = inst.type.name;        
         save_obj["inst_vars"] = inst.instance_vars.slice();        
-        save_obj["custom_data"] = this._on_saving(inst);        
+        save_obj["custom_data"] = (this.has_on_saving_handler)? this._on_saving(inst):{};
         
         // container 
-        if (save_container_insts)
+        if (!ignored_container_insts)
             this._save_sibling(inst, save_obj);     
 
         return  save_obj;          
 	};
-    
-    instanceProto._save_sibling = function(inst, save_obj)
-    {
-        if (!inst.is_contained)
-            return;
-            
-        save_obj["container_insts"] = {};
-        var i, cnt=inst.siblings.length, s, sibling_save_obj;
-        for (i=0; i<cnt; i++)
-	    {
-		    s = inst.siblings[i];
-            save_obj["container_insts"][s.type.name] = s.uid;            
-            sibling_save_obj = this._save_instance(s, false);
-            sibling_save_obj["create_me"] = false;   // container object will be created automatically
-		}
-    }; 
-    
-    instanceProto._save_instances = function(obj_type, is_pick_all)
+    InstBankKlassProto.SaveInstances = function(obj_type, is_pick_all)
 	{   
         var sol = obj_type.getCurrentSol();
         var select_all_save = sol.select_all;  
@@ -170,21 +277,19 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         var i;
 
         for (i=0; i < insts_length; i++)
-            this._save_instance(insts[i], true);
+            this.SaveInstance(insts[i]);
         
         sol.select_all = select_all_save;
 	};      
     // save
 
     // load
-    instanceProto._on_loading = function(inst, custom_data)
+    InstBankKlassProto._on_loading = function(inst, custom_data)
     {
-        hash_copy(custom_data, hash_clean(this._info));
-        this._target_inst = inst;       
-        this.runtime.trigger(cr.plugins_.Rex_InstanceBank.prototype.cnds.OnLoad, this);
+        hash_copy(custom_data, hash_clean(this._info));      
+        this.plugin.OnLoading(inst, this._info);
     }; 
-    
-    instanceProto._filled_world_inst = function(inst, save_obj)
+    InstBankKlassProto._filled_world_inst = function(inst, save_obj)
     {
         if (save_obj["plugin"] == "Sprite")
         {
@@ -205,17 +310,16 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         inst.opacity = save_obj["opacity"];        
         inst.visible = save_obj["visible"];            
     };
-    
-    instanceProto._filled_array_inst = function(inst, save_obj)
+    InstBankKlassProto._filled_array_inst = function(inst, save_obj)
     {
         cr.plugins_.Arr.prototype.acts.JSONLoad.apply(inst, [save_obj["content"]]);          
     };
-    instanceProto._filled_dictionary_inst = function(inst, save_obj)
+    InstBankKlassProto._filled_dictionary_inst = function(inst, save_obj)
     {
         cr.plugins_.Dictionary.prototype.acts.JSONLoad.apply(inst, [save_obj["content"]]);          
     };    
     
-    instanceProto._filled_instance = function(inst, save_obj)
+    InstBankKlassProto._filled_instance = function(inst, save_obj)
 	{  
         if ((inst == null) || (save_obj == null))
             return;
@@ -231,15 +335,15 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
             
         // general        
         cr.shallowAssignArray(inst.instance_vars, save_obj["inst_vars"]);
-        this._on_loading(inst, save_obj["custom_data"]);
+        if (this.has_on_loading_handler)        
+            this._on_loading(inst, save_obj["custom_data"]);
         
         // z sort
-        this._z_sorting.add_layer(this.runtime.getLayerByNumber(save_obj["layer"]));
+        this._z_sorting.add_layer(this.plugin.runtime.getLayerByNumber(save_obj["layer"]));
         this._z_sorting.uid2Zinidex(inst.uid, save_obj["z_order"]);
         
 	};    
-
-    instanceProto._filled_sibling = function(inst, save_obj)
+    InstBankKlassProto._filled_sibling = function(inst, save_obj)
 	{   
         var container_insts=save_obj["container_insts"];
         if ((container_insts == null) || (!inst.is_contained))
@@ -253,27 +357,27 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
             this._filled_instance(s, this._bank[sibling_uid]);
 		}
 	};       
-    
-    instanceProto._callevent_on_created = function(inst)
+    InstBankKlassProto._callevent_on_created = function(inst)
 	{   
         var objtype = inst.type;
-        this._pick_one(objtype, inst);
-        this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
+        this.SOLPickOne(objtype, inst);
+        var runtime = this.plugin.runtime;
+        runtime.isInOnDestroy++;
+		runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
+		runtime.isInOnDestroy--;
 	};
-    
-    instanceProto._create_instance = function(save_obj)
+    InstBankKlassProto.CreateInstance = function(save_obj)
 	{  
-        if (!save_obj["create_me"])
+        if ((save_obj == null) || (!save_obj["create_me"]))
             return null;
             
-        var _objtype = this.runtime.types[save_obj["type"]];
+        var runtime = this.plugin.runtime;
+        var _objtype = runtime.types[save_obj["type"]];
         var sol = _objtype.getCurrentSol();
         var select_all_save = sol.select_all;  
-	    var _layer = this.runtime.getLayerByNumber(save_obj["layer"]);        
+	    var _layer = runtime.getLayerByNumber(save_obj["layer"]);        
 
-        var inst = this.runtime.createInstance(
+        var inst = runtime.createInstance(
                        _objtype, 
                        _layer, 
                        save_obj["x"], 
@@ -292,29 +396,27 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         
         return inst;
 	};     
-
-    instanceProto._load_all_instances = function()
+    InstBankKlassProto.LoadAllInstances = function()
 	{
         hash_clean(this._saveduid2inst_map); 
         var uid, save_obj;
         for (uid in this._bank)
-            this._create_instance(this._bank[uid]);
+            this.CreateInstance(this._bank[uid]);
         this._z_sorting.Sorting();
         hash_clean(this._saveduid2inst_map);
 	};
     // load
  
-    instanceProto._bank2string = function()
+    InstBankKlassProto.ToString = function()
 	{
         return JSON.stringify(this._bank);
 	};
-    
-    instanceProto._JSONString2bank = function(JSON_string)
+    InstBankKlassProto.JSON2Bank = function(JSON_string)
 	{
         this._bank = JSON.parse(JSON_string);
 	};
     
-    instanceProto._pick_one = function(obj_type, inst)
+    InstBankKlassProto.SOLPickOne = function(obj_type, inst)
 	{
         if ((!obj_type) || (!inst))
             return false;   
@@ -356,13 +458,16 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 	    return true;
 	};
     
-    instanceProto._saveduid2inst = function (obj_type, saved_uid)
+    InstBankKlassProto.SavedUID2Inst = function (saved_uid)
     {
         var inst = this._saveduid2inst_map[saved_uid];
         if (inst == null)
-            inst = this._create_instance(this._bank[saved_uid]);
-        
-        return this._pick_one(obj_type, inst);
+            inst = this.CreateInstance(this._bank[saved_uid]);        
+        return inst;
+    };
+    InstBankKlassProto.SOLPickBySavedUID = function (obj_type, saved_uid)
+    {
+        return this.SOLPickOne(obj_type, this.SavedUID2Inst(saved_uid));
     };
     
     var hash_copy = function (obj_in, obj_src)
@@ -380,99 +485,15 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         for (key in obj_in)
             delete obj_in[key];
         return obj_in;
-    };        
-	//////////////////////////////////////
-	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();
+    };   
     
-	Cnds.prototype.OnSave = function (obj_type)
-	{
-		if (!obj_type)
-			return;    
-	    return this._pick_one(obj_type, this._target_inst);
-	};
     
-	Cnds.prototype.OnLoad = function (obj_type)
-	{
-		if (!obj_type)
-			return;      
-		return this._pick_one(obj_type, this._target_inst);
-	}; 
-     
-	Cnds.prototype.PickBySavedUID = function (obj_type, saved_uid)
-	{
-		if (!obj_type)
-			return;      
-		return this._saveduid2inst(obj_type, saved_uid);
-	};  
-    
-	//////////////////////////////////////
-	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
-    
-    Acts.prototype.CleanBank = function ()
-	{
-        this._clean_bank();
-	};
-    
-    Acts.prototype.SaveInstances = function (obj_type, is_pick_all)
-	{
-		if (!obj_type)
-			return;      
-        this._save_instances(obj_type, is_pick_all);
-	};
-
-    Acts.prototype.LoadInstances = function ()
-	{  
-        this._load_all_instances();
-	};
-
-    Acts.prototype.StringToBank = function (JSON_string)
-	{  
-        this._JSONString2bank(JSON_string);
-	};  
-
-    Acts.prototype.SaveInfo = function (index, value)
-	{  
-        this._info[index] = value;
-	};
-    
-	Acts.prototype.PickBySavedUID = function (obj_type, saved_uid)
-	{
-		if (!obj_type)
-			return;      
-		this._saveduid2inst(obj_type, saved_uid);
-	};  
-	//////////////////////////////////////
-	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
-	
-	Exps.prototype.BankToString = function (ret)
-	{
-        var json_string = this._bank2string();
-		ret.set_string(json_string);
-	}; 
-
-    Exps.prototype.SavedInfo = function (ret, index, default_value)
-	{
-        var val = this._info[index];
-        if (val == null)
-            val = default_value;
-	    ret.set_any(val);
-	};    
-}());
-
-(function ()
-{
-    cr.plugins_.Rex_InstanceBank.ZSortingKlass = function(plugin)
+    var ZSortingKlass = function(plugin)
     {
         this.plugin = plugin;
         this.Clean();      
     };
-    var ZSortingKlassProto = cr.plugins_.Rex_InstanceBank.ZSortingKlass.prototype;
+    var ZSortingKlassProto = ZSortingKlass.prototype;
     
     ZSortingKlassProto.Clean = function()
     {
