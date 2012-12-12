@@ -46,7 +46,7 @@ cr.plugins_.Rex_ChessBank = function(runtime)
                             board:[],
                             x_max:0,
                             y_max:0,
-                            chess_cnt:0;
+                            chess_cnt:0
                             };		
         this._target_inst = null;
         this._info = {};
@@ -113,11 +113,11 @@ cr.plugins_.Rex_ChessBank = function(runtime)
         this.runtime.trigger(cr.plugins_.Rex_ChessBank.prototype.cnds.OnLoad, this);
     }; 
 
-    instanceProto._save_chess = function(board, save_type)
+    instanceProto._save_chess = function(board_obj, save_type)
     {
-        var x_max=board.x_max, y_max=board.y_max, board_array=this.saved_board.board;
+        var x_max=board_obj.x_max, y_max=board_obj.y_max, board_array=this.saved_board.board;
         var x,y,z,zhash, uid;
-        this.reset_board_array(x_max, y_max, board.board, save_type);		
+        this.reset_board_array(x_max, y_max, board_obj.board, save_type);		
         // save tiles	
 	    if ((save_type == 0) || (save_type == 2))
 		{
@@ -128,7 +128,7 @@ cr.plugins_.Rex_ChessBank = function(runtime)
 				    uid = board_array[x][y][0];
 					if (uid == null)
 					    continue;
-					bank.SaveInstance(board.uid2inst(uid));
+					this.bank.SaveInstance(board_obj.uid2inst(uid));
 				}
 			}
 		}
@@ -147,22 +147,22 @@ cr.plugins_.Rex_ChessBank = function(runtime)
 				        uid = board_array[x][y][z];
 					    if (uid == null)
 					        continue;
-					    bank.SaveInstance(board.uid2inst(uid));
+					    this.bank.SaveInstance(board_obj.uid2inst(uid));
 					}
 				}
 			}		
 		}		
     };     
-    instanceProto._load_chess = function(board)
+    instanceProto._load_chess_handler = function(board_obj)
     {     
         var save_type=this.saved_board.save_type;
         var x_max=this.saved_board.x_max;
         var y_max=this.saved_board.y_max;
         var board_array=this.saved_board.board;
-        var x,y,z,zhash, uid;		
-        // save tiles
-	    if ((save_type == 0) || (save_type == 2))
-		{
+        var x,y,z,zhash, uid, inst;		
+
+	    if ((save_type == 0) || (save_type == 2)) // save tiles
+		{		    
 		    for (y=0; y<=y_max; y++)
 			{
 			    for (x=0; x<=x_max; x++)
@@ -170,12 +170,13 @@ cr.plugins_.Rex_ChessBank = function(runtime)
 				    uid = board_array[x][y][0];
 					if (uid == null)
 					    continue;
-                    bank.CreateInstance(bank.UID2SaveObj(uid));
+                    inst = this.bank.CreateInstance(uid);
+                    board_obj.add_item(inst,x,y,0);  
 				}
 			}
 		}
-		// save chess
-		if ((save_type == 1) || (save_type == 2))
+		
+		if ((save_type == 1) || (save_type == 2))  // save chess
 		{
 		    for (y=0; y<=y_max; y++)
 			{
@@ -189,7 +190,8 @@ cr.plugins_.Rex_ChessBank = function(runtime)
 				        uid = board_array[x][y][z];
 					    if (uid == null)
 					        continue;
-					    bank.CreateInstance(bank.UID2SaveObj(uid));
+					    inst = this.bank.CreateInstance(uid);
+					    board_obj.add_item(inst,x,y,z);  
 					}
 				}
 			}		
@@ -197,12 +199,12 @@ cr.plugins_.Rex_ChessBank = function(runtime)
     };  
     instanceProto._to_string = function()
     {     
-        return JSON.stringify({"board":this.board_array,
-		                       "bank:":this.bank.ContentGet()
+        return JSON.stringify({"board":this.saved_board,
+		                       "bank":this.bank.ContentGet()
                                });
     };  
     instanceProto._string2bank = function(JSON_string)
-    {     
+    {
         var o = JSON.parse(JSON_string);       
 		this.bank.ContentSet(o["bank"]);        
         var board = o["board"];
@@ -223,7 +225,7 @@ cr.plugins_.Rex_ChessBank = function(runtime)
 	Cnds.prototype.OnLoad = function (obj_type)
 	{
 		if (!obj_type)
-			return;      
+			return;
 		return this.bank.SOLPickOne(obj_type, this._target_inst);
 	}; 
      
@@ -242,26 +244,28 @@ cr.plugins_.Rex_ChessBank = function(runtime)
     Acts.prototype.CleanBank = function ()
 	{
 	    this.instbank_get();
+	    this.bank.CleanBank();
+	    this.reset_board_array(0,0);
 	};
     
-    Acts.prototype.SaveInstances = function (board_obj, save_type)
+    Acts.prototype.SaveInstances = function (board_objs, save_type)
 	{
         this.instbank_get();	    
-		if (!board_obj)
+		if (!board_objs)
 			return;   
-        var board = board_obj.instances[0];	
-        this._save_chess(board, save_type);
+        var board_obj = board_objs.instances[0];	
+        this._save_chess(board_obj, save_type);
 	};
 
-    Acts.prototype.LoadInstances = function (board_obj)
+    Acts.prototype.LoadInstances = function (board_objs)
 	{  
         this.instbank_get();
-		if (!board_obj)
+		if (!board_objs)
 			return;   
-	    var board = board_obj.instances[0];	
-        this.bank.LoadAllInstances(this._load_chess,
+	    var board_obj = board_objs.instances[0];	
+        this.bank.LoadAllInstances(this._load_chess_handler,
                                    this,
-                                   [board]);
+                                   [board_obj]);
 	};
 
     Acts.prototype.StringToBank = function (JSON_string)
@@ -283,7 +287,14 @@ cr.plugins_.Rex_ChessBank = function(runtime)
 			return;      
 		this.bank.SOLPickBySavedUID(obj_type, saved_uid);
 	};  
-	
+
+    Acts.prototype.ResetBoard = function (board_objs)
+	{  
+		if (!board_objs)
+			return;   
+	    var board_obj = board_objs.instances[0];	
+        board_obj.reset_board(this.saved_board.x_max, this.saved_board.y_max);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

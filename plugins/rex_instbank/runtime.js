@@ -353,7 +353,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 	    {
 			s = inst.siblings[i];
             sibling_uid = container_insts[s.type.name];
-            this._filled_instance(s, this._bank[sibling_uid]);
+            this._filled_instance(s, this.UID2SaveObj(sibling_uid));
 		}
 	};       
     InstBankKlassProto._callevent_on_created = function(inst)
@@ -365,8 +365,10 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 		runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
 		runtime.isInOnDestroy--;
 	};
-    InstBankKlassProto.CreateInstance = function(save_obj)
+    InstBankKlassProto.CreateInstance = function(save_obj)  // save_obj or saved_uid
 	{  
+	    if (typeof(save_obj) != "object")
+	        save_obj = this.UID2SaveObj(save_obj);
         if ((save_obj == null) || (!save_obj["create_me"]))
             return null;
             
@@ -409,7 +411,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 	{
         var uid, save_obj;
         for (uid in this._bank)
-            this.CreateInstance(this.UID2SaveObj(uid));
+            this.CreateInstance(uid);
 	};
     InstBankKlassProto.LoadAllInstances = function(handler, thisArg, params)
 	{
@@ -489,7 +491,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
     {
         var inst = this._saveduid2inst_map[saved_uid];
         if (inst == null)
-            inst = this.CreateInstance(this._bank[saved_uid]);        
+            inst = this.CreateInstance(saved_uid);        
         return inst;
     };
     InstBankKlassProto.SOLPickBySavedUID = function (obj_type, saved_uid)

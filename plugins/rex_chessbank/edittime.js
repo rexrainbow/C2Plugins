@@ -39,8 +39,8 @@ AddComboParamOption("Chess");
 AddComboParamOption("Tiles and Chess");
 AddComboParam("Target", "Save tiles, or chess, or both", 2);
 AddAction(1, 0, "Save chess", "Save chess", 
-          "Save <i>{1}</i> on <i>{0}</i>", 
-          "Save chess on board.", "SaveInstances");
+          "Save <i>{1}</i> on <i>{0}</i> into bank", 
+          "Save chess into bank.", "SaveInstances");
 AddObjectParam("Board", "The board object for saving");          
 AddAction(2, 0, "Load all chess", "Load chess", 
           "Load all saved chess to <i>{0}</i>", 
@@ -57,7 +57,10 @@ AddNumberParam("UID", "UID of object", 0);
 AddAction(5, 0, "Pick by saved UID", "Load instance", 
           "Pick <i>{0}</i> by saved UID to <i>{1}</i>", 
           "Pick instance by saved UID.", "PickBySavedUID");      
-
+AddObjectParam("Board", "The board object for saving");          
+AddAction(6, 0, "Reset board to empty", "Board", 
+          "Reset <i>{0}</i> to empty", 
+          "Reset board to empty.", "ResetBoard");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Transfer bank to string", "Bank", "BankToString", "Transfer current bank to JSON string.");
