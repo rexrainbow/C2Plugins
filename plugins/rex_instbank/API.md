@@ -4,10 +4,14 @@
   * get an instance bank
     * plugin.OnSaving(inst, ret_info) : handler of saving instance
     * plugin.OnLoading(inst, info) : handler of loading instance
-  
+	
+* content = bank.ContentGet()
+  * Get content of instance bank.
+    * Content is a hash table with {saved_uid : save_obj}. 
+	
 * save_obj = bank.SaveInstance(inst)
   * Transfer an instance into a hash object.
-    * save_obj is a hash table object. 
+    * save_obj is a hash table object stored in content.
     * inst is an C2 instance.   
 
 * inst = bank.CreateInstance(save_obj)

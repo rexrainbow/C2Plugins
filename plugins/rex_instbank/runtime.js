@@ -164,7 +164,6 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 	InstBankKlassProto.CleanBank = function()
 	{
         hash_clean(this._banks); 
-        this._z_sorting.Clean();
 	};     
   
     // save    
@@ -395,15 +394,31 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         sol.select_all = select_all_save;
         
         return inst;
-	};     
-    InstBankKlassProto.LoadAllInstances = function()
+	};  
+    InstBankKlassProto.LoadAllInstancesPrelude = function()
 	{
+        this._z_sorting.Clean();
         hash_clean(this._saveduid2inst_map); 
+	};    
+    InstBankKlassProto.LoadAllInstancesEpilogue = function()
+	{
+        this._z_sorting.Sorting();
+        hash_clean(this._saveduid2inst_map); 
+	};      
+    InstBankKlassProto._load_all_instances_handler = function()
+	{
         var uid, save_obj;
         for (uid in this._bank)
-            this.CreateInstance(this._bank[uid]);
-        this._z_sorting.Sorting();
-        hash_clean(this._saveduid2inst_map);
+            this.CreateInstance(this.UID2SaveObj(uid));
+	};
+    InstBankKlassProto.LoadAllInstances = function(handler, thisArg, params)
+	{
+        this.LoadAllInstancesPrelude();
+        if (handler == null)  // default handler  
+            this._load_all_instances_handler();
+        else
+            handler.apply(thisArg, params);
+        this.LoadAllInstancesEpilogue();
 	};
     // load
  
@@ -415,7 +430,19 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 	{
         this._bank = JSON.parse(JSON_string);
 	};
-    
+    InstBankKlassProto.ContentGet = function()
+	{
+        return this._bank;
+	};	
+    InstBankKlassProto.ContentSet = function(content)
+	{
+		hash_copy(content, hash_clean(this._bank));
+	};
+    InstBankKlassProto.UID2SaveObj = function(uid)
+	{
+        return this._bank[uid];
+	};	    
+	
     InstBankKlassProto.SOLPickOne = function(obj_type, inst)
 	{
         if ((!obj_type) || (!inst))
