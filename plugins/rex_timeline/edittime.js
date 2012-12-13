@@ -27,14 +27,14 @@ AddAction(0, 0, "Push timeline forward", "TimeLine",
           "Push timeline forward with delta-time.", "PushTimeLine");
 // 	af_deprecated	  
 AddObjectParam("Function", "Function object for timer's callback");
-AddAction(1, 0, "Setup timer", "Z: Deprecated", 
+AddAction(1, af_deprecated, "Setup timer", "Z: Deprecated", 
           "Set timer's callback to <i>{0}</i>", 
           "Setup timer.", "Setup");
 		  
 // 	af_deprecated	  
 AddStringParam("Timer", "Timer's name", '""');
 AddStringParam("Commands", "Execute commands when timer's time-out", '""');
-AddAction(2, 0, "Create timer", "Z: Deprecated", 
+AddAction(2, af_deprecated, "Create timer", "Z: Deprecated", 
           "Create timer <i>{0}</i> with callback <i>{1}</i>", 
           "Create timer.", "CreateTimer");
 		  
@@ -71,7 +71,7 @@ AddAction(9, 0, "Delete timer", "Timer",
 AddStringParam("Name", "Timer's name.", '""');          
 AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0);
-AddAction(10, 0, "Set a parameter", "Z: Deprecated", 
+AddAction(10, af_deprecated, "Set a parameter", "Z: Deprecated", 
           "Set timer <i>{0}</i> 's parameter[<i>{1}</i>] to <i>{2}</i>",
           "Set a parameter pass into callback.", "SetTimerParameter");
 		  

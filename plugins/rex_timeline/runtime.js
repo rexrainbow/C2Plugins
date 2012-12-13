@@ -124,14 +124,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
 	instanceProto._setup_callback = function (raise_assert_when_not_fnobj_avaiable)
 	{
-        var plugins = this.runtime.types;
-        
         if (raise_assert_when_not_fnobj_avaiable)
-            assert2(plugins.Function || plugins.Rex_FnExt, "Function extension or official function was not found.");
-		
+            assert2(cr.plugins_.Rex_FnExt || cr.plugins_.Function, "Function extension or official function was not found.");
+
+        var plugins = this.runtime.types;			
         var name, plugin;
 		// try to get callback from function extension
-		if (plugins.Rex_FnExt != null)
+		if (cr.plugins_.Rex_FnExt != null)
 		{
             this._call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
             for (name in plugins)
@@ -147,7 +146,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		}
         
         // try to get callback from official function
-		if (plugins.Function != null)    
+		if (cr.plugins_.Function != null)    
 		{	
             this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
             var name, plugin;
