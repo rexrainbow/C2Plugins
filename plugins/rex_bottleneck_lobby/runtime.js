@@ -378,7 +378,8 @@ cr.plugins_.Rex_Bottleneck_Lobby = function(runtime)
         this.user_name = login_info["user_name"];
         this.host = host;                  
         var socket = window["io"]["connect"](host, { 
-                                             "transports":['xhr-polling'] 
+                                             "transports":['xhr-polling'],
+											 'sync disconnect on unload' : true
                                              });
         
 		var instance = this;
