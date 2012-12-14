@@ -79,7 +79,7 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 	    
 	    if (this._opactiy_save != this.opacity)
 	    {
-	        var opacity_ = cr.clamp(this.opacity / 100, 0, 1);
+	        var opacity_ = cr.clamp(this.opacity, 0, 1);
 	        this.layer.opacity = opacity_;
 	        this.runtime.redraw = true;
 	        this._opactiy_save = opacity_; 
