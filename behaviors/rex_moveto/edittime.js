@@ -26,14 +26,19 @@ AddCondition(1, 0, "Compare speed", "Speed",
              "CompareSpeed");
 AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");                          
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");                
-
+AddCmpParam("Comparison", "Choose the way to compare the current moving angle.");
+AddNumberParam("Angle", "The moving angle, in pixel per second, to compare the current moving angle to.");
+AddCondition(4, 0, "Compare moving angle", "Moving angle", 
+             "{my} moving angle {0} {1}", 
+             "Compare the current moving angle of the object.", 
+             "CompareMovingAngle");
 
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "Active", 
+AddAction(0, 0, "Set activated", "", 
           "Set {my} activated to <i>{0}</i>", 
           "Enable the object's MoveTo behavior.", "SetActivated");
 
@@ -99,7 +104,9 @@ AddExpression(5, ef_return_number, "Get target position X", "Target", "TargetX",
               "The X co-ordinate of target position to move toward.");
 AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY", 
               "The Y co-ordinate of target position to move toward.");              
-
+AddExpression(7, ef_return_number, "Get current moving angle", "Current", "MovingAngle", 
+              "Get current moving angle, in degree. Retrun (-1) when object is not moving.");     
+              
          
 ACESDone();
 
