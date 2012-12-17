@@ -55,7 +55,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
         this.exp_PhysicalY = (-1);        
-        this.exp_InstUID = (-1);        
+        this.exp_InstUID = (-1);
+        this.exp_Frame = (-1);        
         this.exp_IsMirrored = 0;
         this.exp_IsFlipped = 0;        
         this.exp_LayerName = "";  
@@ -165,6 +166,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 				this.exp_TilesetName = tileset_obj.name;
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
+                this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
                 this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
                    
                 if (this._obj_type != null)
@@ -180,7 +182,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	instanceProto._create_instance = function(x,y,c2_layer)
 	{  
         var inst = this.layout.CreateItem(this._obj_type,x,y,c2_layer);
-        this._set_anim_frame(inst, this.exp_TileID-1);
+        cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [this.exp_TileID-1]);
         inst.opacity = this.exp_LayerOpacity;
         if (this.exp_IsMirrored ==1)
             inst.width = -inst.width;
@@ -195,23 +197,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         return (typeof layerparam == "number")?
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
-    };   
-    // copy from sprite plugin
-	instanceProto._set_anim_frame = function (inst, framenumber)
-	{
-		inst.changeAnimFrame = framenumber;
-		
-		// start ticking if not already
-		if (!inst.isTicking)
-		{
-			inst.runtime.tickMe(inst);
-			inst.isTicking = true;
-		}
-		
-		// not in trigger: apply immediately
-		if (!inst.inAnimTrigger)
-			inst.doChangeAnimFrame();
-	};    
+    };       
     instanceProto._retrieve_objects = function()
     {
         var obj_groups = this._tmx_obj.objectgroups;
@@ -370,6 +356,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		        this.exp_TilesetName = tileset_obj.name;
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
+                this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
                 this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
                    
                 if (this._obj_type != null)
@@ -610,7 +597,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	}; 
 	Exps.prototype.Frame = function (ret)
 	{   
-	    ret.set_int(this.exp_TileID-1);
+	    ret.set_int(this.exp_Frame);
 	};  
 	Exps.prototype.TilesetName = function (ret)
 	{     
@@ -693,7 +680,6 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     {
         var tilesets_cnt = this.tilesets.length;
         var i, tileset;
-        var image_index = {};
         for (i=tilesets_cnt-1; i>=0; i--)
         {
             tileset = this.tilesets[i];
