@@ -113,10 +113,9 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	behinstProto._set_source = function(is_source)
 	{        
         this.is_source = is_source;
-        var uid = this.inst.uid;
         if (is_source)        
             this._source_append();     
-        else if (uid in this.sources)
+        else
             this._source_remove();
                                 
 	};
