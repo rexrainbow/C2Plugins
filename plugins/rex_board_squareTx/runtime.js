@@ -43,12 +43,19 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	{        
         this.check_name = "LAYOUT";
         this.is_isometric = (this.properties[0]==1);
-        this.PositionOX = this.properties[1];
-        this.PositionOY = this.properties[2];
+        this.SetPOX(this.properties[1]);
+        this.SetPOY(this.properties[2]);
         this.SetWidth(this.properties[3]);
         this.SetHeight(this.properties[4]);
 	};
-   
+	instanceProto.SetPOX = function(pox)
+	{
+        this.PositionOX = pox;       
+	}; 
+	instanceProto.SetPOY = function(poy)
+	{
+        this.PositionOY = poy;
+	}; 
 	instanceProto.SetWidth = function(width)
 	{
         this.width = width;
@@ -164,8 +171,8 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	};
     Acts.prototype.SetOffset = function (x, y)
     {        
-        this.PositionOX = x;
-        this.PositionOY = y;
+        this.SetPOX(x);
+        this.SetPOY(y);
 	};    
 	//////////////////////////////////////
 	// Expressions

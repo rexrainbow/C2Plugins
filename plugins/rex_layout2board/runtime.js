@@ -47,38 +47,41 @@ cr.plugins_.Rex_layout2board = function(runtime)
 	};
     
     instanceProto.board_setup = function(board, instances)
-    {
-        var board_info = this.boards[board.uid];
-        var i, cnt=instances.length, chess; 
-        var pxmax=null, pymax=null;
-        
-        board_info.px0 = null;
-        board_info.py0 = null;
-        for (i=0; i<cnt; i++)
+    {      
+        var board_layout = board.layout;
+        assert2(board_layout, "[Layout to Board] please add squareTx or hexTx plugin into project.");
+        var board_info = this.boards[board.uid];        
+        var i, cnt=instances.length, chess;
+        // assume OXY is at first instance
+        chess = instances[0];
+        board_layout.SetPOX(chess.x);
+        board_layout.SetPOY(chess.y);
+        board_layout.SetWidth(this.cell_width);
+        board_layout.SetHeight(this.cell_height);
+        var lxmin=0, lymin=0, lxmax=0, lymax=0;
+        var lx,ly;
+        for (i=1; i<cnt; i++)
         {
             chess = instances[i];
-            if ((board_info.px0 == null) || (chess.x < board_info.px0))
-                board_info.px0 = chess.x;
-            if ((board_info.py0 == null) || (chess.y < board_info.py0))
-                board_info.py0 = chess.y;  
-            if ((pxmax==null) || (chess.x > pxmax))
-                pxmax = chess.x;
-            if ((pymax==null) || (chess.y > pymax))
-                pymax = chess.y;                   
+            lx = board_layout.PXY2LX(chess.x, chess.y);
+            ly = board_layout.PXY2LY(chess.x, chess.y);
+            if (lxmin > lx)
+                lxmin = lx;
+            if (lymin > ly)
+                lymin = ly; 
+            if (lxmax < lx)
+                lxmax = lx;
+            if (lymax < ly)
+                lymax = ly;                        
         }
-            
-        board.reset_board(Math.ceil((pxmax-board_info.px0)/this.cell_width)+1, 
-                          Math.ceil((pymax-board_info.py0)/this.cell_height)+1);
-        var board_layout = board.layout;
-        if (cr.plugins_.Rex_SLGSquareTx && 
-           (board_layout instanceof cr.plugins_.Rex_SLGSquareTx.prototype.Instance))
-        {
-            board_layout.is_isometric = false;
-            board_layout.PositionOX = board_info.px0;
-            board_layout.PositionOY = board_info.py0;
-        }
-        else
-            alert("[Layout to Board] only support square borad, please add a SquareTx plugin into project.");
+        // offset logic position
+        board_info.px0 = board_layout.GetX(lxmin, lymin);
+        board_info.py0 = board_layout.GetY(lxmin, lymin);      
+        lxmax -= lxmin;
+        lymax -= lymin;
+        board.reset_board(lxmax+1, lymax+1);
+        board_layout.SetPOX(board_info.px0);
+        board_layout.SetPOY(board_info.py0);
     };
 
 	//////////////////////////////////////
@@ -97,6 +100,9 @@ cr.plugins_.Rex_layout2board = function(runtime)
 			return;    
             
         var instances = chess_objs.getCurrentSol().getObjects();
+        if (instances.length == 0)
+            return;
+            
         var board = board_objs.getFirstPicked();        
         if (!(board.uid in this.boards))
             this.boards[board.uid] = {px0:null, py0:null};        
@@ -104,12 +110,13 @@ cr.plugins_.Rex_layout2board = function(runtime)
             this.board_setup(board, instances);
         var i, cnt=instances.length, chess; 
         var lx, ly;       
-        var board_info = this.boards[board.uid];               
+        var board_info = this.boards[board.uid];
+        var board_layout = board.layout;
         for (i=0; i<cnt; i++)
         {
             chess = instances[i];
-            lx = Math.ceil((chess.x - board_info.px0)/this.cell_width);
-            ly = Math.ceil((chess.y - board_info.py0)/this.cell_height);
+            lx = board_layout.PXY2LX(chess.x, chess.y);
+            ly = board_layout.PXY2LY(chess.x, chess.y); 
             board.add_item(chess, lx, ly, lz);
         }
 	};

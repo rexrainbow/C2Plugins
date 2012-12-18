@@ -42,13 +42,28 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.check_name = "LAYOUT";
-        this.PositionOX = this.properties[0];
-        this.PositionOY = this.properties[1];
-        this.width = this.properties[2];
-        this.half_width = this.width/2;
-        this.height = this.properties[3];
+        this.SetPOX(this.properties[0]);
+        this.SetPOY(this.properties[1]);
+        this.SetWidth(this.properties[2]);
+        this.SetHeight(this.properties[3]);
 	};
-   
+	instanceProto.SetPOX = function(pox)
+	{
+        this.PositionOX = pox;       
+	}; 
+	instanceProto.SetPOY = function(poy)
+	{
+        this.PositionOY = poy;
+	};   
+	instanceProto.SetWidth = function(width)
+	{
+        this.width = width;
+        this.half_width = width/2;        
+	}; 
+	instanceProto.SetHeight = function(height)
+	{
+        this.height = height;        
+	};   
 	instanceProto.GetX = function(logic_x, logic_y, logic_z)
 	{
         return (logic_x*this.width)+((logic_y%2)*this.half_width)+this.PositionOX;
@@ -178,7 +193,17 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-
+	
+    Acts.prototype.SetCellSize = function (width, height)
+    {        
+        this.SetWidth(width);
+        this.SetHeight(height);
+	};
+    Acts.prototype.SetOffset = function (x, y)
+    {        
+        this.SetPOX(x);
+        this.SetPOY(y);
+	}; 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

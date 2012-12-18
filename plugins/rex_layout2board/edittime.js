@@ -4,7 +4,7 @@
 		"name":			"Layout to Board",
 		"id":			"Rex_layout2board",
 		"version":		"0.1",   		
-		"description":	"Put layout's instances into square grid board.",
+		"description":	"Put layout's instances into board.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Board",
