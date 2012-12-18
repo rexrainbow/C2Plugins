@@ -4,7 +4,7 @@
 		"name":			"Matcher",
 		"id":			"Rex_Matcher",
 		"version":		"0.1",   		
-		"description":	"Logic of matched game",
+		"description":	"Logic of matched game. Could be used in square or hex board.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Game logic",
@@ -47,7 +47,26 @@ AddAction(3, 0, "Set symbols", "Request: Symbol", "Set symbol to <i>{0}</i>",
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(4, 0, "Get matching tiles with 2d pattern", "Request: Matching tiles (2d pattern)", 
           "Get matching tiles to group <i>{0}</i> with 2d pattern", 
-          "Get matching tiles with 2d pattern.", "GetMatchTiles2D");             
+          "Get matching tiles with 2d pattern.", "GetMatchTiles2D");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Horizontal", "Horizontal axis.",1);
+AddAction(10, 0, "Compare at horizontal axis", "Square board", 
+          "Compare at horizontal axis to <i>{0}</i>", 
+          "Enable the Comparing at horizontal axis.", "SetHorizontalAxisEnable");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Vertical", "Vertical axis.",1);
+AddAction(11, 0, "Compare at vertical axis", "Square board", 
+          "Compare at vertical axis to <i>{0}</i>", 
+          "Enable the Comparing at vertical axis.", "SetVerticalAxisEnable"); 
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Isometric", "Isometric axis.",1);
+AddAction(12, 0, "Compare at isometric axis", "Square board", 
+          "Compare at isometric axis to <i>{0}</i>", 
+          "Enable the Comparing at isometric axis.", "SetIsometricAxisEnable");   
+                  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,
@@ -64,7 +83,11 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Axis", "All(Square/Hex)", "The axis to get symbol for 1d pattern matching.", "All(Square/Hex)|Horizontal(Square)|Vertical(Square)"),   
+    new cr.Property(ept_section, "Axis of square board", "",	
+                    "The axis to get symbol for 1d pattern matching on square board. Ignored it when using hex board"),
+    new cr.Property(ept_combo, "Horizontal", "No", "Compare at horizontal axis", "No|Yes"),   
+    new cr.Property(ept_combo, "Vertical", "No", "Compare at vertical axis", "No|Yes"),   
+    new cr.Property(ept_combo, "Isometric", "No", "Compare at isometric axis", "No|Yes"),         
 	];
 	
 // Called by IDE when a new object type is to be created

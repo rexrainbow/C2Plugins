@@ -38,7 +38,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
-
+  
 	instanceProto.onCreate = function()
 	{
         this.board = null; 
@@ -53,7 +53,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._tiles_groups = [];
         this._has_matched_pattern = false;
         
-        this._pattern_axis = this.properties[0];    
+        this._square_modes = [(this.properties[0] == 1),  // horizontal
+                              (this.properties[1] == 1),  // vertical
+                              (this.properties[2] == 1),  // isometric-0
+                              (this.properties[2] == 1),  // isometric-1
+                              ];  
 	};
     
     instanceProto._clean_symbol_cache = function ()
@@ -139,22 +143,40 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;
 	    var x_max=this.board.x_max;
 	    var y_max=this.board.y_max;
-	    if ((this._pattern_axis==0) || (this._pattern_axis==1))  // Horizontal
-	    {	        
+	    var m, mode_cnt=this._square_modes.length;
+	    for (m=0; m<mode_cnt; m++)
+	    {
+	        if (!this._square_modes[m])
+	            continue;
+	            
 	        for(y=0;y<=y_max;y++)
 	        {
 	            for(x=0;x<=x_max;x++)
 	            {
-	                if ((x_max-x+1) < pattern_length)
-	                    break;
-	                
 	                is_matched = true;
 	                matched_tiles.length=0;
                     if (is_matchN_mode)
-                        pattern = null;                    
+                        pattern = null;
 	                for(i=0;i<pattern_length;i++)
 	                {
-	                    s = this._symbol_at(x+i,y);
+	                    switch (m)
+	                    {
+	                    case 0:    // horizontal
+	                        s = this._symbol_at(x+i,y);
+	                        break;
+	                    case 1:    // vertical
+	                        s = this._symbol_at(x,y+i);
+	                        break;
+	                    case 2:    // isometric-0
+	                        s = this._symbol_at(x+i,y+i);
+	                        break;
+	                    case 3:    // isometric-1
+	                        s = this._symbol_at(x-i,y+i);
+	                        break;
+	                    default:
+	                        s = null;
+	                        break;
+	                    }
 	                    if (s==null)
 	                    {
 	                        is_matched = false;
@@ -173,48 +195,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
                         matched_tiles.push(s);
 	                }
 	                if (is_matched)                
-	                    this._tiles_groups.push(matched2uid(matched_tiles));   
+	                    this._tiles_groups.push(matched2uid(matched_tiles));            
 	            }
 	        }
-	    }
-	    if ((this._pattern_axis==0) || (this._pattern_axis==2))  // Vertical
-	    {
-	        for(x=0;x<=x_max;x++)
-	        {
-	            for(y=0;y<=y_max;y++)
-	            {
-	                if ((y_max-y+1) < pattern_length)
-	                    break;
-	                
-	                is_matched = true;
-	                matched_tiles.length=0;
-                    if (is_matchN_mode)
-                        pattern = null;                     
-	                for(i=0;i<pattern_length;i++)
-	                {
-	                    s = this._symbol_at(x,y+i);
-	                    if (s==null)
-	                    {
-	                        is_matched = false;
-	                        break;
-	                    }
-                        else if (is_matchN_mode && (pattern==null))
-                        {
-                            pattern = s.symbol.repeat(pattern_length);
-                        }                        
-	                    c = pattern.charAt(i);
-	                    if (s.symbol!=c)
-	                    {
-	                        is_matched = false;
-	                        break;
-	                    }
-                        matched_tiles.push(s);
-	                }
-	                if (is_matched)                
-	                    this._tiles_groups.push(matched2uid(matched_tiles));                
-	            }
-	        }	        
-	    }
+	    }         	            
 	};
 	instanceProto._pattern_search_hex = function(pattern)
 	{	  
@@ -415,7 +399,20 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{
         assert2(this.board, "Matcher should connect to a board object");
         this._get_match_tiles(group_name,true);
+	};	
+	Acts.prototype.SetHorizontalAxisEnable = function (enable)	
+	{
+        this._square_modes[0] = (enable==1);
+	};		
+	Acts.prototype.SetVerticalAxisEnable = function (enable)	
+	{
+        this._square_modes[1] = (enable==1);
 	};	     
+	Acts.prototype.SetIsometricAxisEnable = function (enable)	
+	{	     
+        this._square_modes[2] = (enable==1);
+        this._square_modes[3] = (enable==1);        
+	};	 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
