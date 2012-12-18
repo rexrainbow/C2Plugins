@@ -85,9 +85,9 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_section, "Axis of square board", "",	
                     "The axis to get symbol for 1d pattern matching on square board. Ignored it when using hex board"),
-    new cr.Property(ept_combo, "Horizontal", "No", "Compare at horizontal axis", "No|Yes"),   
-    new cr.Property(ept_combo, "Vertical", "No", "Compare at vertical axis", "No|Yes"),   
-    new cr.Property(ept_combo, "Isometric", "No", "Compare at isometric axis", "No|Yes"),         
+    new cr.Property(ept_combo, "Horizontal", "Yes", "Compare at horizontal axis", "No|Yes"),   
+    new cr.Property(ept_combo, "Vertical", "Yes", "Compare at vertical axis", "No|Yes"),   
+    new cr.Property(ept_combo, "Isometric", "Yes", "Compare at isometric axis", "No|Yes"),         
 	];
 	
 // Called by IDE when a new object type is to be created
