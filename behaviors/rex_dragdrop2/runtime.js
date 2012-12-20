@@ -137,9 +137,11 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         drag_info.drag_dx = inst.x - cur_x;
         drag_info.drag_dy = inst.y - cur_y;
         drag_info.pre_x = cur_x;
-        drag_info.pre_y = cur_y;          
-        drag_info.start_x = inst.x;
-        drag_info.start_y = inst.y;   
+        drag_info.pre_y = cur_y;     
+        drag_info.drag_start_x = cur_x;
+        drag_info.drag_start_y = cur_y;         
+        drag_info.inst_start_x = inst.x;
+        drag_info.inst_start_y = inst.y;   
         drag_info.is_moved = false;
         this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, target_inst_behavior.inst);     
 
@@ -161,13 +163,15 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         
         type.TouchWrapGet();            
         this.drag_info = {touch_src:-1,
-		                  pre_x:null,
-                          pre_y:null,
+		                  pre_x:0,
+                          pre_y:0,
                           drag_dx:0,
                           drag_dy:0,
                           is_on_dragged:false,
-                          start_x:null,
-                          start_y:null,                          
+                          drag_start_x:0,
+                          drag_start_y:0,                           
+                          inst_start_x:0,
+                          inst_start_y:0,                          
                           is_moved:false};                       
 	};
 
@@ -213,11 +217,13 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             drag_info.pre_y = cur_y;                    
         }
         if ( (!drag_info.is_moved) &&
-             ((cur_x != drag_info.start_x) || (cur_y != drag_info.start_y)) )
+             ((cur_x != drag_info.drag_start_x) || (cur_y != drag_info.drag_start_y)) )
         {
             drag_info.is_moved = true;
-            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragMove, this.inst);
+            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragMoveStart, this.inst);
         }
+        if ( is_moved )
+            this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragMove, this.inst);
 	};   
 	 
     // export     
@@ -285,10 +291,16 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         return this.drag_info.is_on_dragged;
     };   
 
+ 	Cnds.prototype.OnDragMoveStart = function ()
+	{   
+        return true;
+    }; 
+
  	Cnds.prototype.OnDragMove = function ()
 	{   
         return true;
-    };    
+    };     
+       
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -339,11 +351,22 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Exps.prototype.StartX = function (ret)
 	{
-        ret.set_float( this.drag_info.start_x );
+        ret.set_float( this.drag_info.inst_start_x );
 	};
 	
 	Exps.prototype.StartY = function (ret)
 	{
-	    ret.set_float( this.drag_info.start_y );
-	};    
+	    ret.set_float( this.drag_info.inst_start_y );
+	}; 
+
+	Exps.prototype.DragStartX = function (ret)
+	{
+        ret.set_float( this.drag_info.drag_start_x );
+	};
+	
+	Exps.prototype.DragStartY = function (ret)
+	{
+	    ret.set_float( this.drag_info.drag_start_y );
+	}; 
+    
 }());

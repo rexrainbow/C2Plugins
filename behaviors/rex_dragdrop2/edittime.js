@@ -29,7 +29,8 @@ AddCondition(0,	cf_trigger, "On dragging start", "", "On {my} drag start", "Trig
 AddCondition(1,	cf_deprecated | cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
 AddCondition(2,	cf_trigger, "On dropped", "", "On {my} drop", "Triggered when object drop.", "OnDrop"); 
 AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.", "IsDragging");
-AddCondition(4,	cf_trigger, "On dragging then moved", "", "On {my} dragging then moved", "Triggered when object dragging then moved.", "OnDragMove"); 
+AddCondition(4,	cf_trigger, "On dragging moving start", "", "On {my} dragging moving start", "Triggered when object dragging moving start.", "OnDragMoveStart"); 
+AddCondition(5,	cf_trigger, "On dragging moving", "", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -40,6 +41,8 @@ AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", 
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
 AddExpression(5, ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's dragging start position.");
 AddExpression(6, ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's dragging start position.");
+AddExpression(7, ef_return_number, "X co-ordinate of dragging start position", "Start", "DragStartX", "Get X co-ordinate of dragging start position.");
+AddExpression(8, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");
 
 ACESDone();
 
