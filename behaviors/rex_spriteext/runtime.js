@@ -87,6 +87,7 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 
 	Acts.prototype.SetVisible = function (s)
 	{
+	    
         var visible = this.inst.visible
         if ( (visible && (s==1)) ||
              (!visible && (s==0))   )
@@ -97,29 +98,31 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 
 	Acts.prototype.SetMirrored = function (s)
 	{
-        var width = this.inst.width;
-        if ( ((width >= 0) && (s==0)) ||
-             ((width <  0) && (s==1))    )
-            return;
-            
-		this.inst.width = -width;
-        this.runtime.redraw = true;
+	    if (s == 2)
+	        s = (this.inst.width >= 0)? 0:1;
+	    else
+	        s = (s==1)? 0:1;
+	    // s: 0=mirrored , 1=not mirrored
+	    cr.plugins_.Sprite.prototype.acts.SetMirrored.call(this.inst, s);
 	};
 
-	Acts.prototype.SetFlipped = function (s)
+	Acts.prototype.SetFlipped = function (f)
 	{
-        var height = this.inst.height;
-        if ( ((height >= 0) && (s==0)) ||
-             ((height <  0) && (s==1))    )
-            return;
-            
-		this.inst.height = -height;
-        this.runtime.redraw = true;
+	    if (f == 2)
+	        f = (this.inst.height >= 0)? 0:1;
+	    else
+	        f = (f==1)? 0:1;    
+	    // f: 0=flipped , 1=not flipped
+	    cr.plugins_.Sprite.prototype.acts.SetFlipped.call(this.inst, f);
 	};
     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-    
+	
+	Exps.prototype.imageUrl = function (ret)
+	{
+		ret.set_string(this.inst.curFrame.getDataUri());
+	};
 }());

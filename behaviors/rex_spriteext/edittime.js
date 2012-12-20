@@ -37,6 +37,8 @@ AddCondition(2, cf_trigger, "On destroying", "Constructor & destructor",
              "On destroying", "Triggered when instance destroying.", "OnDestroying");  
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(2, ef_return_string, "get image url", "canvas", "imageUrl", "This returns a temporary url to the image on the canvas.");
+
 
 ACESDone();
 
