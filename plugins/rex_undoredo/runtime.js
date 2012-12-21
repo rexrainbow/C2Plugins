@@ -76,7 +76,46 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
             this._current_index -= 1;
         }          
 	};
-
+    
+    
+    var steps_handler = function(plugin)
+    {
+        this.plugin = plugin;
+    };
+    var steps_handlerProto = steps_handler.prototype;
+    // undo
+	steps_handlerProto.CanUndo = function()
+	{
+	    return (this.plugin._current_index >= 0);
+	};
+	steps_handlerProto.Undo = function()
+	{	    
+	    if (!this.CanUndo())
+	        return 0;
+	    
+	    var plugin = this.plugin;
+	    var val = plugin._recorder[plugin._current_index];
+	    plugin._current_index -=1;
+	    return val;
+	};
+	// redo
+	steps_handlerProto.CanRedo = function()
+	{
+	    var plugin = this.plugin;
+	    return (plugin._current_index < (plugin._recorder.length-1));
+	};
+	steps_handlerProto.Redo = function()
+	{
+	    if (!this.CanRedo())
+	        return 0;
+	    
+	    var plugin = this.plugin;
+        plugin._current_index +=1;
+	    var val = plugin._recorder[plugin._current_index];
+	    return val;
+	};
+    
+    
     var states_handler = function(plugin)
     {
         this.plugin = plugin;
@@ -110,45 +149,7 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
 	    var plugin = this.plugin;
 	    plugin._current_index +=1 ;
 	    return plugin._recorder[plugin._current_index];
-	};	
-	
-    var steps_handler = function(plugin)
-    {
-        this.plugin = plugin;
-    };
-    var steps_handlerProto = steps_handler.prototype;
-    // undo
-	steps_handlerProto.CanUndo = function()
-	{
-	    return (this.plugin._current_index >= 0);
-	};
-	steps_handlerProto.Undo = function()
-	{	    
-	    if (!this.CanUndo())
-	        return 0;
-	    
-	    var plugin = this.plugin;
-	    var val = plugin._recorder[plugin._current_index];
-	    plugin._current_index -=1;
-	    return val;
-	};
-	// redo
-	steps_handlerProto.CanRedo = function()
-	{
-	    var plugin = this.plugin;
-	    return (plugin._current_index <= (plugin._recorder.length-1));
-	};
-	steps_handlerProto.Redo = function()
-	{
-	    if (!this._can_redo())
-	        return 0;
-	    
-	    var plugin = this.plugin;
-	    var val = plugin._recorder[plugin._current_index];
-	    plugin._current_index +=1 ;
-	    return val;
-	};
-	
+	};		
 	
 	// current step
 	instanceProto._has_steps = function()
@@ -162,7 +163,8 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
 	    
 	    return this._recorder[this._current_index];
 	};
-	
+
+
 	// JSON
 	instanceProto._to_string = function()
 	{
