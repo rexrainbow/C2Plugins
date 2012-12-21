@@ -56,7 +56,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Mode", "Steps", 
-                    "Use steps or states mode. They will have different undo/redo behaviors.", "Steps|states"),
+                    "Use steps or states mode. They will have different undo/redo behaviors.", "Steps|States"),
 	new cr.Property(ept_integer, "Max count", 0, "Max count of steps. 0 is infinite."),
 	];
 	
