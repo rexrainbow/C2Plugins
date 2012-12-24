@@ -29,6 +29,11 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.touchwrap = null;
+        this.GetX = null;
+        this.GetY = null;
+        this.GetAbsoluteX = null;
+        this.GetAbsoluteY = null;
+        this.behavior_index = null;        
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -44,46 +49,16 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.X;
+                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.Y;
+                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteX;
+                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteY;                
                 this.touchwrap.HookMe(this);
                 break;
             }
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	};  
-    
-    behtypeProto.OnTouchStart = function ()
-    {
-    };
-    
-    behtypeProto.OnTouchEnd = function ()
-    {
-    };
-    
-    // export     
-	behtypeProto.GetABSX = function ()
-	{
-        return this.touchwrap.GetAbsoluteX();
-	};  
-
-	behtypeProto.GetABSY = function ()
-	{
-        return this.touchwrap.GetAbsoluteY();
-	};     
-        
-	behtypeProto.GetLayerX = function(inst)
-	{
-        return this.touchwrap.GetX(inst.layer);
-	};
-    
-	behtypeProto.GetLayerY = function(inst)
-	{
-        return this.touchwrap.GetY(inst.layer);
-	};  
-
-	behtypeProto.IsCursorExisted = function()
-	{
-        return (this.touchwrap.UseMouseInput())?  true : this.touchwrap.IsInTouch();
-	};
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -94,8 +69,8 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 		this.runtime = type.runtime;
         
         type.TouchWrapGet();        
-		this.pre_x = type.GetABSX();
-		this.pre_y = type.GetABSY(); 
+		this.pre_x = this.GetX();
+		this.pre_y = this.GetY();
         this.is_moving = false;
 	};
 
@@ -110,31 +85,39 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if (this.activated) {
+        if (this.activated) 
+        {
             var inst = this.inst;        
-            var cursor_x = this.type.GetLayerX(inst);
-            var cursor_y = this.type.GetLayerY(inst);
-            switch (this.move_axis)
+            var cur_x = this.GetX();
+            var cur_y = this.GetY();
+            var is_moving = (this.pre_x != cur_x) ||
+                            (this.pre_x != cur_y);
+            if ( is_moving )
             {
+                switch (this.move_axis)
+                {
                 case 1:
-                    inst.x = cursor_x;
+                    inst.x = cur_x;
                     break;
                 case 2:
-                    inst.y = cursor_y;
+                    inst.y = cur_y;
                     break;
                 default:
-                    inst.x = cursor_x;
-                    inst.y = cursor_y;
+                    inst.x = cur_x;
+                    inst.y = cur_y;
                     break;
+                }
+                inst.set_bbox_changed();
+                this.pre_x = cur_x;
+                this.pre_x = cur_y;
+                // Trigger OnMoving
+                this.runtime.trigger(cr.behaviors.Rex_Cursor2.prototype.cnds.OnMoving, inst);
             }
-            inst.set_bbox_changed();
-            // Trigger OnMoving
-            this.runtime.trigger(cr.behaviors.Rex_Cursor2.prototype.cnds.OnMoving, inst);
         }
         
         if (this.invisible)
         {
-            var visible = this.type.IsCursorExisted();
+            var visible = this.IsCursorExisted();
             if (this.inst.visible != visible)
             {
                 this.inst.visible = visible;
@@ -142,6 +125,40 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
             }
         }
 	};
+  
+	behinstProto.GetABSX = function ()
+	{
+	    var touch_obj = this.type.touchwrap;
+        this.type.GetAbsoluteX.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;
+	};  
+
+	behinstProto.GetABSY = function ()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetAbsoluteY.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;        
+	};     
+        
+	behinstProto.GetX = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetX.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
+        return touch_obj.fake_ret.value;          
+	};
+    
+	behinstProto.GetY = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetY.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
+        return touch_obj.fake_ret.value;         
+	};   
+
+	behinstProto.IsCursorExisted = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        return (touch_obj.UseMouseInput())?  true : touch_obj.IsInTouch();
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -174,22 +191,22 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 
 	Exps.prototype.X = function (ret)
 	{
-        ret.set_float( this.type.GetLayerX(this.inst) );
+        ret.set_float( this.GetX() );
 	};
 	
 	Exps.prototype.Y = function (ret)
 	{
-	    ret.set_float( this.type.GetLayerY(this.inst) );
+	    ret.set_float( this.GetY() );
 	};
 	
 	Exps.prototype.AbsoluteX = function (ret)
 	{
-        ret.set_float( this.type.GetABSX(this.inst) );
+        ret.set_float( this.GetABSX() );
 	};
 	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
-        ret.set_float( this.type.GetABSY(this.inst) );
+        ret.set_float( this.GetABSY() );
 	};
     
 	Exps.prototype.Activated = function (ret)

@@ -29,6 +29,8 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.touchwrap = null;
+        this.GetX = null;
+        this.GetY = null;        
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -44,31 +46,14 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.X;
+                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.Y;                
                 this.touchwrap.HookMe(this);
                 break;
             }
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	}; 
-    
-    behtypeProto.OnTouchStart = function ()
-    {
-    };
-    
-    behtypeProto.OnTouchEnd = function ()
-    {
-    };
-    
-    // export     
-	behtypeProto.GetLayerX = function(inst)
-	{
-        return this.touchwrap.GetX(inst.layer);
-	};
-    
-	behtypeProto.GetLayerY = function(inst)
-	{
-        return this.touchwrap.GetY(inst.layer);
-	};   
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -96,8 +81,8 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
         {
             var inst = this.inst;
             inst.update_bbox();
-	        var lx = this.type.GetLayerX(inst);
-		    var ly = this.type.GetLayerY(inst);
+	        var lx = this.GetX();
+		    var ly = this.GetY();
             this.is_over = (lx != null)? 
                            inst.contains_pt(lx, ly):
                            false;
@@ -114,7 +99,20 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
             }
         }
 	};
+        
+	behinstProto.GetX = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetX.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
+        return touch_obj.fake_ret.value;          
+	};
     
+	behinstProto.GetY = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetY.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
+        return touch_obj.fake_ret.value;         
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
