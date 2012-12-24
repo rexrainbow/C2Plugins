@@ -574,6 +574,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	instanceProto.onMouseDown = function(info)
 	{
 	    this._is_mouse_mode = true;
+		this.mouseDown = true;	    
 		if (info.preventDefault && this.runtime.had_a_click)
 			info.preventDefault();
 		
@@ -582,7 +583,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var fakeinfo = { changedTouches: [t] };
         this.touches.length = 0;
 		this.onTouchStart(fakeinfo);
-		this.mouseDown = true;
 	};
 	
 	instanceProto.onMouseMove = function(info)
@@ -605,6 +605,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onMouseUp = function(info)
 	{
+	    this._is_mouse_mode = true;	    
+		this.mouseDown = false;			    
 		if (info.preventDefault && this.runtime.had_a_click)
 			info.preventDefault();
 			
@@ -614,7 +616,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
 		this.onTouchEnd(fakeinfo);
-		this.mouseDown = false;
 		this._fake_onTouchStart(fakeinfo);
 	};
 	
