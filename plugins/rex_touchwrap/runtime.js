@@ -41,6 +41,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
         this.check_name = "TOUCHWRAP";
 		this._is_mouse_mode = false;
         this._plugins_hook = [];
+	    this.fake_ret = {value:0,
+	                     set_any: function(value){this.value=value;},
+	                     set_int: function(value){this.value=value;},	 
+                         set_float: function(value){this.value=value;},	                          
+	                    };        
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
@@ -82,22 +87,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	};
 	
 	var theInstance = null;
-	
-	window["C2_Motion_DCSide"] = function (a, b, g, gx, gy, gz, x, y, z)
-	{
-		if (!theInstance)
-			return;
-			
-		theInstance.orient_alpha = a;
-		theInstance.orient_beta = b;
-		theInstance.orient_gamma = g;
-		theInstance.acc_g_x = gx;
-		theInstance.acc_g_y = gy;
-		theInstance.acc_g_z = gz;
-		theInstance.acc_x = x;
-		theInstance.acc_y = y;
-		theInstance.acc_z = z;
-	};
 
 	instanceProto.onCreate = function()
 	{
@@ -118,17 +107,22 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.curTouchX = 0;
 		this.curTouchY = 0;
 		
-		this.trigger_index = 0;     
+		this.trigger_index = 0;
+		this.trigger_id = 0;
 		
 		this.useMouseInput = (this.properties[0] !== 0);
 		
 		// Use document touch input for PhoneGap or fullscreen mode
 		var elem = (this.runtime.fullscreen_mode > 0) ? document : this.runtime.canvas;
 		
+		// Use elem2 to attach the up and cancel events to document, since we want to know about
+		// these even if they happen off the main canvas.
+		var elem2 = document;
+		
 		if (this.runtime.isDirectCanvas)
-			elem = window["Canvas"];
+			elem2 = elem = window["Canvas"];
 		else if (this.runtime.isCocoonJs)
-			elem = window;
+			elem2 = elem = window;
 			
 		var self = this;
 		
@@ -148,7 +142,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				false
 			);
 			
-			elem.addEventListener("MSPointerUp",
+			// Always attach up/cancel events to document (note elem2),
+			// otherwise touches dragged off the canvas could get lost
+			elem2.addEventListener("MSPointerUp",
 				function(info) {
 					self.onPointerEnd(info);
 				},
@@ -156,7 +152,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			);
 			
 			// Treat pointer cancellation the same as a touch end
-			elem.addEventListener("MSPointerCancel",
+			elem2.addEventListener("MSPointerCancel",
 				function(info) {
 					self.onPointerEnd(info);
 				},
@@ -189,7 +185,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				false
 			);
 			
-			elem.addEventListener("touchend",
+			// Always attach up/cancel events to document (note elem2),
+			// otherwise touches dragged off the canvas could get lost
+			elem2.addEventListener("touchend",
 				function(info) {
 					self.onTouchEnd(info);
 				},
@@ -197,7 +195,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			);
 			
 			// Treat touch cancellation the same as a touch end
-			elem.addEventListener("touchcancel",
+			elem2.addEventListener("touchcancel",
 				function(info) {
 					self.onTouchEnd(info);
 				},
@@ -365,6 +363,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		this.trigger_index = this.touches.length;
+		this.trigger_id = info["pointerId"];
 		
 		this.touches.push({ time: nowtime,
 							x: touchx,
@@ -386,10 +385,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
         
         var i, cnt=this._plugins_hook.length;
+        var touch_src = info["pointerId"];
         for (i=0;i<cnt;i++)
 		{
 			if (this._plugins_hook[i].OnTouchStart)
-                this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
+                this._plugins_hook[i].OnTouchStart(touch_src, touchx, touchy);
 	    }
 	};
 
@@ -404,16 +404,18 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 		var i = this.findTouch(info["pointerId"]);
 		this.trigger_index = (i >= 0 ? this.touches[i].startindex : -1);
+		this.trigger_id = (i >= 0 ? this.touches[i]["id"] : -1);
 		
 		// Trigger OnNthTouchEnd & OnTouchEnd
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
         
         var i, cnt=this._plugins_hook.length;
+        var touch_src = info["pointerId"];
         for (i=0;i<cnt;i++)
 		{
 		    if (this._plugins_hook[i].OnTouchEnd)
-                this._plugins_hook[i].OnTouchEnd(this.trigger_index);        
+                this._plugins_hook[i].OnTouchEnd(touch_src);        
 		}
 		
 		// Remove touch
@@ -454,7 +456,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				u.x = t.pageX - offset.left;
 				u.y = t.pageY - offset.top;
 			}
-		}	
+		}
 	};
 
 	instanceProto.onTouchStart = function (info)
@@ -475,6 +477,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			var touchy = t.pageY - offset.top;
 			
 			this.trigger_index = this.touches.length;
+			this.trigger_id = t["identifier"];
 			
 			this.touches.push({ time: nowtime,
 								x: touchx,
@@ -498,42 +501,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
             for (i=0;i<cnt;i++)
 			{
 				if (this._plugins_hook[i].OnTouchStart)
-                    this._plugins_hook[i].OnTouchStart(this.trigger_index, touchx, touchy);
+                    this._plugins_hook[i].OnTouchStart(this.trigger_id, touchx, touchy);
 			}
 		}		
 	};
 
-	instanceProto._fake_onTouchStart = function (info)
-	{
-		if (info.preventDefault)
-			info.preventDefault();
-			
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
-		var nowtime = cr.performance_now();
-		
-		var i, len, t;
-        var cnt=this._plugins_hook.length;         
-		for (i = 0, len = info.changedTouches.length; i < len; i++)
-		{
-			t = info.changedTouches[i];
-			
-			var touchx = t.pageX - offset.left;
-			var touchy = t.pageY - offset.top;
-			
-			this.trigger_index = this.touches.length;
-			
-			this.touches.push({ time: nowtime,
-								x: touchx,
-								y: touchy,
-								lasttime: nowtime,
-								lastx: touchx,
-								lasty: touchy,
-								"id": t["identifier"],
-								startindex: this.trigger_index
-							});
-		}		
-	};
-	
 	instanceProto.onTouchEnd = function (info)
 	{
 		if (info.preventDefault)
@@ -547,15 +519,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 			var j = this.findTouch(t["identifier"]);
 			this.trigger_index = (j >= 0 ? this.touches[j].startindex : -1);
+			this.trigger_id = (j >= 0 ? this.touches[j]["id"] : -1);
 			
 			// Trigger OnNthTouchEnd & OnTouchEnd
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
-            
+
             for (i=0;i<cnt;i++)
 			{
 			    if (this._plugins_hook[i].OnTouchEnd)
-                    this._plugins_hook[i].OnTouchEnd(this.trigger_index);
+                    this._plugins_hook[i].OnTouchEnd(this.trigger_id);
 			}
 			
 			// Remove touch
@@ -601,28 +574,28 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	instanceProto.onMouseDown = function(info)
 	{
 	    this._is_mouse_mode = true;
-		this.mouseDown = true;
-		if (info.preventDefault)
+		if (info.preventDefault && this.runtime.had_a_click)
 			info.preventDefault();
 		
 		// Send a fake touch start event
-		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
         this.touches.length = 0;
 		this.onTouchStart(fakeinfo);
+		this.mouseDown = true;
 	};
 	
 	instanceProto.onMouseMove = function(info)
-	{	
+	{
         this._is_mouse_mode = true;
-		if (info.preventDefault)
+		if (info.preventDefault && this.runtime.had_a_click)
 			info.preventDefault();
 			
 		//if (!this.mouseDown)
 		//	return;
 			
 		// Send a fake touch move event
-		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
 		if (this.touches.length==0)
 		    this._fake_onTouchStart(fakeinfo);
@@ -632,14 +605,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onMouseUp = function(info)
 	{
-		this.mouseDown = false;
-		if (info.preventDefault)
+		if (info.preventDefault && this.runtime.had_a_click)
 			info.preventDefault();
+			
+		this.runtime.had_a_click = true;
 		
 		// Send a fake touch end event
-		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": -1 };
+		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
 		this.onTouchEnd(fakeinfo);
+		this.mouseDown = false;
 		this._fake_onTouchStart(fakeinfo);
 	};
 	
@@ -657,32 +632,35 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				t.lasttime = nowtime;
 		}
 	};
-    
-    // wrapper --------
-    instanceProto.HookMe = function (obj)
-    {
-        this._plugins_hook.push(obj);
-    };
-    
-    instanceProto.UseMouseInput = function()
-    {
-        return this.useMouseInput;
-    }
 
-	instanceProto.IsInTouch = function ()
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+
+	Cnds.prototype.OnTouchStart = function ()
 	{
-		return (this._is_mouse_mode)? this.mouseDown : this.touches.length;
-	};    
-    
-	instanceProto.OnTouchObject = function (type)
+		return true;
+	};
+	
+	Cnds.prototype.OnTouchEnd = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.IsInTouch = function ()
+	{
+		return this.IsInTouch();
+	};
+	
+	Cnds.prototype.OnTouchObject = function (type)
 	{
 		if (!type)
 			return false;
-            
+			
 		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
-	};  
-
-	instanceProto.IsTouchingObject = function (type)
+	};
+	
+	Cnds.prototype.IsTouchingObject = function (type)
 	{
 		if (!type)
 			return false;
@@ -723,9 +701,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		}
 		else
 			return false;
-	};  
-    
-	instanceProto.CompareTouchSpeed = function (index, cmp, s)
+	};
+	
+	Cnds.prototype.CompareTouchSpeed = function (index, cmp, s)
 	{
 		index = Math.floor(index);
 		
@@ -742,18 +720,18 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 		return cr.do_cmp(speed, cmp, s);
 	};
-
-	instanceProto.OrientationSupported = function ()
+	
+	Cnds.prototype.OrientationSupported = function ()
 	{
 		return typeof window["DeviceOrientationEvent"] !== "undefined";
 	};
 	
-	instanceProto.MotionSupported = function ()
+	Cnds.prototype.MotionSupported = function ()
 	{
 		return typeof window["DeviceMotionEvent"] !== "undefined";
-	};    
+	};
 	
-	instanceProto.CompareOrientation = function (orientation_, cmp_, angle_)
+	Cnds.prototype.CompareOrientation = function (orientation_, cmp_, angle_)
 	{
 		var v = 0;
 		
@@ -767,7 +745,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		return cr.do_cmp(v, cmp_, angle_);
 	};
 	
-	instanceProto.CompareAcceleration = function (acceleration_, cmp_, angle_)
+	Cnds.prototype.CompareAcceleration = function (acceleration_, cmp_, angle_)
 	{
 		var v = 0;
 		
@@ -787,27 +765,37 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		return cr.do_cmp(v, cmp_, angle_);
 	};
 	
-	instanceProto.OnNthTouchStart = function (touch_)
+	Cnds.prototype.OnNthTouchStart = function (touch_)
 	{
 		touch_ = Math.floor(touch_);
 		return touch_ === this.trigger_index;
 	};
 	
-	instanceProto.OnNthTouchEnd = function (touch_)
+	Cnds.prototype.OnNthTouchEnd = function (touch_)
 	{
 		touch_ = Math.floor(touch_);
 		return touch_ === this.trigger_index;
 	};
 	
-	instanceProto.HasNthTouch = function (touch_)
+	Cnds.prototype.HasNthTouch = function (touch_)
 	{
 		touch_ = Math.floor(touch_);
 		return this.touches.length >= touch_ + 1;
 	};
 	
-	instanceProto.GetX = function (layerparam)
+	pluginProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+
+	Exps.prototype.TouchCount = function (ret)
 	{
-	    var ret;
+		ret.set_int(this.touches.length);
+	};
+	
+	Exps.prototype.X = function (ret, layerparam)
+	{
 		if (this.touches.length)
 		{
 			var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
@@ -824,7 +812,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				layer.zoomRate = 1.0;
 				layer.parallaxX = 1.0;
 				layer.angle = this.runtime.running_layout.angle;
-				ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true);
+				ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true));
 				layer.scale = oldScale;
 				layer.zoomRate = oldZoomRate;
 				layer.parallaxX = oldParallaxX;
@@ -832,33 +820,31 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 			else
 			{
-			    // use given layer param
-			    if (cr.is_number(layerparam))
-				    layer = this.runtime.getLayerByNumber(layerparam);
-			    else if (cr.is_string(layerparam))
-				    layer = this.runtime.getLayerByName(layerparam);
-		        else 
-			        layer = layerparam;
+				// use given layer param
+				if (cr.is_number(layerparam))
+					layer = this.runtime.getLayerByNumber(layerparam);
+				else
+					layer = this.runtime.getLayerByName(layerparam);
 					
 				if (layer)
-					ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true);
+					ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true));
 				else
-					ret = 0;
+					ret.set_float(0);
 			}
 		}
 		else
-			ret = 0;
-        
-        return ret;
-	};    
+			ret.set_float(0);
+	};
 	
-	instanceProto.GetXAt = function (index, layerparam)
+	Exps.prototype.XAt = function (ret, index, layerparam)
 	{
-	    var ret;
 		index = Math.floor(index);
 		
 		if (index < 0 || index >= this.touches.length)
-			return 0;
+		{
+			ret.set_float(0);
+			return;
+		}
 		
 		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
 	
@@ -874,7 +860,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			layer.zoomRate = 1.0;
 			layer.parallaxX = 1.0;
 			layer.angle = this.runtime.running_layout.angle;
-			ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true);
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
 			layer.parallaxX = oldParallaxX;
@@ -885,22 +871,65 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// use given layer param
 			if (cr.is_number(layerparam))
 				layer = this.runtime.getLayerByNumber(layerparam);
-			else if (cr.is_string(layerparam))
+			else
 				layer = this.runtime.getLayerByName(layerparam);
-		    else 
-			    layer = layerparam;
 				
 			if (layer)
-				ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true);
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
 			else
-				ret = 0;
+				ret.set_float(0);
 		}
-		return ret;
-	};	
+	};
 	
-	instanceProto.GetY = function (layerparam)
+	Exps.prototype.XForID = function (ret, id, layerparam)
 	{
-        var ret;
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+		
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = this.runtime.running_layout.scale;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = this.runtime.running_layout.angle;
+			ret.set_float(layer.canvasToLayer(touch.x, touch.y, true));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				ret.set_float(layer.canvasToLayer(touch.x, touch.y, true));
+			else
+				ret.set_float(0);
+		}
+	};
+	
+	Exps.prototype.Y = function (ret, layerparam)
+	{
 		if (this.touches.length)
 		{
 			var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
@@ -917,7 +946,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				layer.zoomRate = 1.0;
 				layer.parallaxY = 1.0;
 				layer.angle = this.runtime.running_layout.angle;
-				ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false);
+				ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false));
 				layer.scale = oldScale;
 				layer.zoomRate = oldZoomRate;
 				layer.parallaxY = oldParallaxY;
@@ -925,33 +954,31 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 			else
 			{
-			    // use given layer param
-			    if (cr.is_number(layerparam))
-				    layer = this.runtime.getLayerByNumber(layerparam);
-			    else if (cr.is_string(layerparam))
-				    layer = this.runtime.getLayerByName(layerparam);
-		        else 
-			        layer = layerparam;
+				// use given layer param
+				if (cr.is_number(layerparam))
+					layer = this.runtime.getLayerByNumber(layerparam);
+				else
+					layer = this.runtime.getLayerByName(layerparam);
 					
 				if (layer)
-					ret = layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false);
+					ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false));
 				else
-					ret = 0;
+					ret.set_float(0);
 			}
 		}
 		else
-			ret = 0;
-        
-        return ret;
-	}; 
+			ret.set_float(0);
+	};
 	
-	instanceProto.GetYAt = function (index, layerparam)
+	Exps.prototype.YAt = function (ret, index, layerparam)
 	{
-	    var ret;
 		index = Math.floor(index);
 		
 		if (index < 0 || index >= this.touches.length)
-			return 0;
+		{
+			ret.set_float(0);
+			return;
+		}
 		
 		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
 	
@@ -967,7 +994,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			layer.zoomRate = 1.0;
 			layer.parallaxY = 1.0;
 			layer.angle = this.runtime.running_layout.angle;
-			ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false);
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
 			layer.parallaxY = oldParallaxY;
@@ -978,332 +1005,309 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// use given layer param
 			if (cr.is_number(layerparam))
 				layer = this.runtime.getLayerByNumber(layerparam);
-			else if (cr.is_string(layerparam))
+			else
 				layer = this.runtime.getLayerByName(layerparam);
-		    else 
-			    layer = layerparam;
 				
 			if (layer)
-				ret = layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false);
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
 			else
-				ret = 0;
+				ret.set_float(0);
 		}
-        
-        return ret;		
 	};
 	
-    instanceProto.GetAbsoluteX = function ()
+	Exps.prototype.YForID = function (ret, id, layerparam)
 	{
-        var ret;
-		if (this.touches.length)
-			ret = this.touches[0].x;
-		else
-			ret = 0;
-        
-        return ret;
-	};
-	
-	instanceProto.GetAbsoluteXAt = function (index)
-	{
-		index = Math.floor(index);
+		var index = this.findTouch(id);
 		
-		if (index < 0 || index >= this.touches.length)
-			return 0;
-
-		return this.touches[index].x;
-	};
-	
-	instanceProto.GetAbsoluteY = function ()
-	{
-        var ret;    
-		if (this.touches.length)
-			ret = this.touches[0].y;
-		else
-			ret = 0;
-            
-        return ret;
-	};
-	
-	instanceProto.GetAbsoluteYAt = function (index)
-	{
-		index = Math.floor(index);
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
 		
-		if (index < 0 || index >= this.touches.length)
-			return 0;
-
-		return this.touches[index].y;
-	};
-	
-	instanceProto.GetSpeedAt = function (index)
-	{
-		index = Math.floor(index);
+		var touch = this.touches[index];
 		
-		if (index < 0 || index >= this.touches.length)
-			return 0;
-
-		var t = this.touches[index];
-		var dist = cr.distanceTo(t.x, t.y, t.lastx, t.lasty);
-		var timediff = (t.time - t.lasttime) / 1000;
-
-        var ret = (timediff === 0)? 0: (dist / timediff);
-		return ret;
-	};
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
 	
-	instanceProto.GetAngleAt = function (index)
-	{
-		index = Math.floor(index);
-		
-		if (index < 0 || index >= this.touches.length)
-			return 0;
-		
-		var t = this.touches[index];
-		var ret = cr.to_degrees(cr.angleTo(t.lastx, t.lasty, t.x, t.y));
-		return ret;
-	};
-	
-	instanceProto.GetAlpha = function ()
-	{
-        var ret;
-		if (this.runtime.isAppMobi && this.orient_alpha === 0 && appmobi_accz !== 0)
-			ret = appmobi_accz * 90;
-		else if (this.runtime.isPhoneGap  && this.orient_alpha === 0 && pg_accz !== 0)
-			ret = pg_accz * 90;
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxY = layer.parallaxY;
+			oldAngle = layer.angle;
+			layer.scale = this.runtime.running_layout.scale;
+			layer.zoomRate = 1.0;
+			layer.parallaxY = 1.0;
+			layer.angle = this.runtime.running_layout.angle;
+			ret.set_float(layer.canvasToLayer(touch.x, touch.y, false));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxY = oldParallaxY;
+			layer.angle = oldAngle;
+		}
 		else
-			ret = this.orient_alpha;
-            
-        return ret;
-	};
-	
-	instanceProto.GetBeta = function ()
-	{
-        var ret;
-		if (this.runtime.isAppMobi && this.orient_beta === 0 && appmobi_accy !== 0)
-			ret = appmobi_accy * -90;
-		else if (this.runtime.isPhoneGap  && this.orient_beta === 0 && pg_accy !== 0)
-			ret = pg_accy * -90;
-		else
-			ret = this.orient_beta;
-            
-        return ret;
-	};
-	
-	instanceProto.GetGamma = function ()
-	{
-        var ret;
-		if (this.runtime.isAppMobi && this.orient_gamma === 0 && appmobi_accx !== 0)
-			ret = appmobi_accx * 90;
-		else if (this.runtime.isPhoneGap  && this.orient_gamma === 0 && pg_accx !== 0)
-			ret = pg_accx * 90;
-		else
-			ret = this.orient_gamma;
-            
-        return ret;
-	};
-
-	instanceProto.GetAccelerationXWithG = function ()
-	{
-		return this.acc_g_x;
-	};
-	
-	instanceProto.GetAccelerationYWithG = function ()
-	{
-		return  this.acc_g_y;
-	};
-	
-	instanceProto.GetAccelerationZWithG = function ()
-	{
-		return  this.acc_g_z;
-	};
-	
-	instanceProto.GetAccelerationX = function ()
-	{
-		return  this.acc_x;
-	};
-	
-	instanceProto.GetAccelerationY = function ()
-	{
-		return  this.acc_y;
-	};
-	
-	instanceProto.AccelerationZ = function ()
-	{
-		return  this.acc_z;
-	};    
-    // wrapper --------    
-    
-	//////////////////////////////////////
-	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();
-
-	Cnds.prototype.OnTouchStart = function ()
-	{
-		return true;
-	};
-	
-	Cnds.prototype.OnTouchEnd = function ()
-	{
-		return true;
-	};
-	
-	Cnds.prototype.IsInTouch = function ()
-	{
-		return this.IsInTouch();
-	};
-	
-	Cnds.prototype.OnTouchObject = function (type)
-	{
-		return this.OnTouchObject(type);
-	};
-	
-	Cnds.prototype.IsTouchingObject = function (type)
-	{
-		return this.IsTouchingObject(type);
-	};
-	
-	Cnds.prototype.CompareTouchSpeed = function (index, cmp, s)
-	{
-		return this.CompareTouchSpeed(index, cmp, s);
-	};
-	
-	Cnds.prototype.OrientationSupported = function ()
-	{
-		return this.OrientationSupported();
-	};
-	
-	Cnds.prototype.MotionSupported = function ()
-	{
-		return this.MotionSupported();
-	};
-	
-	Cnds.prototype.CompareOrientation = function (orientation_, cmp_, angle_)
-	{
-		return this.CompareOrientation(orientation_, cmp_, angle_);
-	};
-	
-	Cnds.prototype.CompareAcceleration = function (acceleration_, cmp_, angle_)
-	{
-		return this.CompareAcceleration(acceleration_, cmp_, angle_);
-	};
-	
-	Cnds.prototype.OnNthTouchStart = function (touch_)
-	{
-		return this.OnNthTouchStart(touch_);
-	};
-	
-	Cnds.prototype.OnNthTouchEnd = function (touch_)
-	{
-		return this.OnNthTouchEnd(touch_);
-	};
-	
-	Cnds.prototype.HasNthTouch = function (touch_)
-	{
-		return this.HasNthTouch(touch_);
-	};
-	
-	//////////////////////////////////////
-	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
-
-	Exps.prototype.TouchCount = function (ret)
-	{
-		ret.set_int(this.touches.length);
-	};
-	
-	Exps.prototype.X = function (ret, layerparam)
-	{
-		ret.set_float(this.GetX(layerparam));
-	};
-	
-	Exps.prototype.XAt = function (ret, index, layerparam)
-	{
-		ret.set_float(this.GetXAt(index, layerparam));
-	};	
-	
-	Exps.prototype.Y = function (ret, layerparam)
-	{
-		ret.set_float(this.GetY(layerparam));
-	};
-	
-	Exps.prototype.YAt = function (ret, index, layerparam)
-	{
-		ret.set_float(this.GetYAt(index, layerparam));
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				ret.set_float(layer.canvasToLayer(touch.x, touch.y, false));
+			else
+				ret.set_float(0);
+		}
 	};
 	
 	Exps.prototype.AbsoluteX = function (ret)
 	{
-		ret.set_float(this.GetAbsoluteX());
+		if (this.touches.length)
+			ret.set_float(this.touches[0].x);
+		else
+			ret.set_float(0);
 	};
 	
 	Exps.prototype.AbsoluteXAt = function (ret, index)
 	{
-		ret.set_float(this.GetAbsoluteXAt(index));
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+
+		ret.set_float(this.touches[index].x);
+	};
+	
+	Exps.prototype.AbsoluteXForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+
+		ret.set_float(touch.x);
 	};
 	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
-        ret.set_float(this.GetAbsoluteY());
+		if (this.touches.length)
+			ret.set_float(this.touches[0].y);
+		else
+			ret.set_float(0);
 	};
 	
 	Exps.prototype.AbsoluteYAt = function (ret, index)
 	{
-		ret.set_float(this.GetAbsoluteYAt(index));
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+
+		ret.set_float(this.touches[index].y);
+	};
+	
+	Exps.prototype.AbsoluteYForID = function (ret, index)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+
+		ret.set_float(touch.y);
 	};
 	
 	Exps.prototype.SpeedAt = function (ret, index)
 	{
-		ret.set_float(this.GetSpeedAt(index));
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var t = this.touches[index];
+		var dist = cr.distanceTo(t.x, t.y, t.lastx, t.lasty);
+		var timediff = (t.time - t.lasttime) / 1000;
+		
+		if (timediff === 0)
+			ret.set_float(0);
+		else
+			ret.set_float(dist / timediff);
+	};
+	
+	Exps.prototype.SpeedForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+		
+		var dist = cr.distanceTo(touch.x, touch.y, touch.lastx, touch.lasty);
+		var timediff = (touch.time - touch.lasttime) / 1000;
+		
+		if (timediff === 0)
+			ret.set_float(0);
+		else
+			ret.set_float(dist / timediff);
 	};
 	
 	Exps.prototype.AngleAt = function (ret, index)
 	{
-		ret.set_float(this.GetAngleAt(index));
+		index = Math.floor(index);
+		
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var t = this.touches[index];
+		ret.set_float(cr.to_degrees(cr.angleTo(t.lastx, t.lasty, t.x, t.y)));
+	};
+	
+	Exps.prototype.AngleForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+		
+		ret.set_float(cr.to_degrees(cr.angleTo(touch.lastx, touch.lasty, touch.x, touch.y)));
 	};
 	
 	Exps.prototype.Alpha = function (ret)
 	{
-		ret.set_float(this.GetAlpha());
+		ret.set_float(this.getAlpha());
 	};
 	
 	Exps.prototype.Beta = function (ret)
 	{
-		ret.set_float(this.GetBeta());
+		ret.set_float(this.getBeta());
 	};
 	
 	Exps.prototype.Gamma = function (ret)
 	{
-		ret.set_float(this.GetGamma());
+		ret.set_float(this.getGamma());
 	};
 	
 	Exps.prototype.AccelerationXWithG = function (ret)
 	{
-		ret.set_float(this.GetAccelerationXWithG());
+		ret.set_float(this.acc_g_x);
 	};
 	
 	Exps.prototype.AccelerationYWithG = function (ret)
 	{
-		ret.set_float(this.GetAccelerationYWithG());
+		ret.set_float(this.acc_g_y);
 	};
 	
 	Exps.prototype.AccelerationZWithG = function (ret)
 	{
-		ret.set_float(this.GetAccelerationZWithG());
+		ret.set_float(this.acc_g_z);
 	};
 	
 	Exps.prototype.AccelerationX = function (ret)
 	{
-		ret.set_float(this.GetAccelerationX());
+		ret.set_float(this.acc_x);
 	};
 	
 	Exps.prototype.AccelerationY = function (ret)
 	{
-		ret.set_float(this.GetAccelerationY());
+		ret.set_float(this.acc_y);
 	};
 	
 	Exps.prototype.AccelerationZ = function (ret)
 	{
-		ret.set_float(this.GetAccelerationZ());
+		ret.set_float(this.acc_z);
 	};
 	
+	Exps.prototype.TouchIndex = function (ret)
+	{
+		ret.set_int(this.trigger_index);
+	};
+	
+	Exps.prototype.TouchID = function (ret)
+	{
+		ret.set_float(this.trigger_id);
+	};
+	
+	pluginProto.exps = new Exps();
+	
+    
+    // wrapper --------
+	instanceProto._fake_onTouchStart = function (info)
+	{
+		if (info.preventDefault)
+			info.preventDefault();
+			
+		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var nowtime = cr.performance_now();
+		
+		var i, len, t;
+        var cnt=this._plugins_hook.length;         
+		for (i = 0, len = info.changedTouches.length; i < len; i++)
+		{
+			t = info.changedTouches[i];
+			
+			var touchx = t.pageX - offset.left;
+			var touchy = t.pageY - offset.top;
+			
+			this.trigger_index = this.touches.length;
+			
+			this.touches.push({ time: nowtime,
+								x: touchx,
+								y: touchy,
+								lasttime: nowtime,
+								lastx: touchx,
+								lasty: touchy,
+								"id": t["identifier"],
+								startindex: this.trigger_index
+							});
+		}		
+	};
+
+    instanceProto.HookMe = function (obj)
+    {
+        this._plugins_hook.push(obj);
+    };
+    
+    instanceProto.UseMouseInput = function()
+    {
+        return this.useMouseInput;
+    }
+
+	instanceProto.IsInTouch = function ()
+	{
+		return (this._is_mouse_mode)? this.mouseDown : this.touches.length;
+	};    
+    // wrapper --------    
+    
 }());

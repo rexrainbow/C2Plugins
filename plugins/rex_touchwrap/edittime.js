@@ -101,6 +101,26 @@ AddExpression(18, ef_return_number, "", "Touch", "SpeedAt", "Get the speed of a 
 AddNumberParam("Index", "Zero-based index of the touch to get.");
 AddExpression(19, ef_return_number, "", "Touch", "AngleAt", "Get the angle of motion of a touch, in degrees.");
 
+AddExpression(20, ef_return_number, "", "Touch", "TouchIndex", "Get the index of the current touch.");
+
+AddExpression(21, ef_return_number, "", "Touch", "TouchID", "Get the unique ID of the current touch.");
+
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(22, ef_return_number | ef_variadic_parameters, "", "Touch", "XForID", "Get a touch X co-ordinate in the layout for a touch with a specific ID.");
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(23, ef_return_number | ef_variadic_parameters, "", "Touch", "YForID", "Get a touch Y co-ordinate in the layout for a touch with a specific ID.");
+
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(24, ef_return_number, "", "Touch", "AbsoluteXForID", "Get a touch X co-ordinate on the canvas for a touch with a specific ID.");
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(25, ef_return_number, "", "Touch", "AbsoluteYForID", "Get a touch Y co-ordinate on the canvas for a touch with a specific ID.");
+
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(26, ef_return_number, "", "Touch", "SpeedForID", "Get the speed of a touch with a specific ID, in absolute (screen) pixels per second.");
+
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(27, ef_return_number, "", "Touch", "AngleForID", "Get the angle of motion of a touch with a specific ID, in degrees.");
+
 ACESDone();
 
 // Property grid properties for this plugin
