@@ -29,6 +29,8 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.touchwrap = null;
+        this.GetX = null;
+        this.GetY = null;
         this.behavior_index = null;
 	};
     
@@ -45,6 +47,8 @@ cr.behaviors.Rex_Button2 = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
+                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;                
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -52,12 +56,12 @@ cr.behaviors.Rex_Button2 = function(runtime)
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	};  
     
-    behtypeProto.OnTouchStart = function (touch_src, x, y)
+    behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
         var sol = this.objtype.getCurrentSol(); 
         var select_all_save = sol.select_all;
         sol.select_all = true;
-        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, x, y, false);
+        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, touchX, touchY, false);
         if (overlap_cnt == 0)
         {
             // recover to select_all_save
@@ -106,6 +110,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
         }	
 		sol.select_all = select_all_save;     
     };  
+        
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -206,8 +211,8 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto._is_touch_inside = function ()
 	{
         var touchwrap = this.type.touchwrap;
-        var touch_x = touchwrap.GetXAt(this._touch_src, this.inst.layer);
-        var touch_y = touchwrap.GetYAt(this._touch_src, this.inst.layer);
+        var touch_x = this.GetX();
+        var touch_y = this.GetY();
         this.inst.update_bbox();  
         return this.inst.contains_pt(touch_x, touch_y)
 	};
@@ -290,6 +295,21 @@ cr.behaviors.Rex_Button2 = function(runtime)
         }
 	};  
     
+	behinstProto.GetX = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetX.call(touch_obj, 
+                            touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
+        return touch_obj.fake_ret.value;          
+	};
+    
+	behinstProto.GetY = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetY.call(touch_obj, 
+                            touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
+        return touch_obj.fake_ret.value;         
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

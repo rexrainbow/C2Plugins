@@ -29,6 +29,11 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.touchwrap = null;
+        this.GetX = null;
+        this.GetY = null;
+        this.GetAbsoluteX = null;
+        this.GetAbsoluteY = null;
+        this.GetSpeed = null;                
         this.behavior_index = null;
 	};
     
@@ -45,6 +50,11 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.X;
+                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.Y;
+                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteX;
+                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteY;  
+                this.GetSpeed = cr.plugins_.rex_TouchWrap.prototype.exps.SpeedAt;                
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -52,58 +62,38 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	};   
     
-    behtypeProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
-    {
-        if (_NthTouch != 0)
-            return;        
+    behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
+    {      
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
             
         var insts = this.objtype.instances;
-        var i, cnt = insts.length;
-        var inst;
+        var inst, i, cnt = insts.length;
 
         for (i=0; i<cnt; i++ )
         {
             inst = insts[i].behavior_insts[this.behavior_index];            
-            inst.onMovingStart(_TouchX, _TouchY);
+            inst.on_moving_start();
         }
     };
     
-    behtypeProto.OnTouchEnd = function (_NthTouch)
-    {        
+    behtypeProto.OnTouchEnd = function (touch_src)
+    {       
+        if (this.touchwrap.IsInTouch())
+            return;
+            
+        if (this.behavior_index == null )
+            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
+            
+        var insts = this.objtype.instances;
+        var inst, i, cnt = insts.length;
+
+        for (i=0; i<cnt; i++ )
+        {
+            inst = insts[i].behavior_insts[this.behavior_index];            
+            inst.on_moving_end();
+        }         
     };
-
-    // export     
-	behtypeProto.GetABSX = function ()
-	{
-        return this.touchwrap.GetAbsoluteX();
-	};  
-
-	behtypeProto.GetABSY = function ()
-	{
-        return this.touchwrap.GetAbsoluteY();
-	};     
-        
-	behtypeProto.GetLayerX = function(inst)
-	{
-        return this.touchwrap.GetX(inst.layer);
-	};
-    
-	behtypeProto.GetLayerY = function(inst)
-	{
-        return this.touchwrap.GetY(inst.layer);
-	};  
-    
-	behtypeProto.IsRelease = function()
-	{
-        return (!this.touchwrap.IsInTouch());
-	};    
-    
-	behtypeProto.GetSpeed = function()
-	{
-        return this.touchwrap.GetSpeedAt(0);
-	};      
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -116,7 +106,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         type.TouchWrapGet();         
 		this.pre_x = 0;
 		this.pre_y = 0;           
-        this.is_on_moving = false;
+        this.is_on_drag = false;
         this._dir = null;
 	};
 
@@ -131,24 +121,13 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 
 	behinstProto.tick = function ()
 	{        
-        if ( (this.activated == 0) ||
-             (!this.is_on_moving)      )
-        {
-            return;        
-        }
-             
-        // this.activated == 1 && this.is_on_moving 
-        if ( this.type.IsRelease() )
-        {
-            this.is_on_moving = false;
-            this._dir = null;
-            this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoveStop, inst);
+        if ( (this.activated == 0) || (!this.is_on_drag) )
             return;
-        }
-                       
+             
+        // this.activated == 1 && this.is_on_drag                        
         var inst = this.inst;
-        var cur_x = this.type.GetABSX();
-        var cur_y = this.type.GetABSY();
+        var cur_x = this.GetABSX();
+        var cur_y = this.GetABSY();
         var dx = cur_x - this.pre_x;
         var dy = cur_y - this.pre_y;             
         if ( (dx!=0) || (dy!=0) )
@@ -178,20 +157,57 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
             this.pre_x = cur_x;
             this.pre_y = cur_y;              
         }
-        //this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoving, inst);
-                                
-
 	};  
 
-	behinstProto.onMovingStart = function(x, y)
+	behinstProto.on_moving_start = function()
 	{   
-        this.is_on_moving = true;
-        this.pre_x = x;
-        this.pre_y = y;
-        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMoveStart, this.inst);
+        this.is_on_drag = true;
+        this.pre_x = this.GetABSX();
+        this.pre_y = this.GetABSY();
+        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStart, this.inst);
 	};
-        
 
+	behinstProto.on_moving_end = function()
+	{   
+        this.is_on_drag = false;
+        this._dir = null;
+        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStop, this.inst);
+	};
+	  
+	behinstProto.GetABSX = function ()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetAbsoluteX.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;
+	};  
+
+	behinstProto.GetABSY = function ()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetAbsoluteY.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;        
+	};     
+        
+	behinstProto.GetX = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetX.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;          
+	};
+    
+	behinstProto.GetY = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetY.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;         
+	};   
+    
+	behtypeProto.GetSpeed = function()
+	{
+        var touch_obj = this.type.touchwrap;
+        this.type.GetSpeed.call(touch_obj, touch_obj.fake_ret, 0);
+        return touch_obj.fake_ret.value;     
+	};      
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -214,7 +230,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
     
  	Cnds.prototype.IsMoving = function ()
 	{   
-        return (this.is_on_moving);
+        return (this.is_on_drag);
     }    
     
 	//////////////////////////////////////
@@ -225,7 +241,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	Acts.prototype.SetActivated = function (s)
 	{
         if ( (this.activated==0) && 
-             this.is_on_moving &&
+             this.is_on_drag &&
              (s==1)
            )
         {
@@ -248,22 +264,22 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 
 	Exps.prototype.X = function (ret)
 	{
-        ret.set_float( this.type.GetLayerX(this.inst) );
+        ret.set_float( this.GetX() );
 	};
 	
 	Exps.prototype.Y = function (ret)
 	{
-	    ret.set_float( this.type.GetLayerY(this.inst) );
+	    ret.set_float( this.GetY() );
 	};
 	
 	Exps.prototype.AbsoluteX = function (ret)
 	{
-        ret.set_float( this.type.GetABSX(this.inst) );
+        ret.set_float( this.GetABSX() );
 	};
 	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
-        ret.set_float( this.type.GetABSY(this.inst) );
+        ret.set_float( this.GetABSY() );
 	};
     
 	Exps.prototype.Activated = function (ret)
@@ -278,7 +294,6 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
     
 	Exps.prototype.Speed = function (ret)
 	{
-        var spd = (this.type.IsRelease())? 0 : this.type.GetSpeed();
-		ret.set_float(spd);
+		ret.set_float(this.GetSpeed());
 	};     
 }());
