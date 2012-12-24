@@ -136,10 +136,6 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         this.activated = (this.properties[0]==1);  
         this._directions = this.properties[1]; 
         this._sensitivity = this.properties[2];
-        this._angle_offset = (this.properties[3]==0)? 0:
-                             (this.properties[3]==1)? 180:
-                             (this.properties[3]==2)? 270:
-                                                      90;
 
         this.is_on_dragging = false;         
         this.touch_src = null;
@@ -175,7 +171,6 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         if ( Math.sqrt(dx*dx + dy*dy) >= this._sensitivity )
         {
             var angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
-            angle -= this._angle_offset;
             switch (this._directions)
             {
             case 0:
@@ -249,6 +244,7 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
 	{
 	    this.touch_src = null;
 	    this.is_on_dragging = false;   
+        this._keydown(0);
 	};	
 	behinstProto.GetX = function()
 	{

@@ -56,8 +56,7 @@ ACESDone();
 var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
     new cr.Property(ept_combo, "Directions", "8 directions", "The number of directions of movement available.", "Up & down|Left & right|4 directions|8 directions"),
-    new cr.Property(ept_float, "Sensitivity", 10, "Sensitivity of touch movment, in pixel."),    
-    new cr.Property(ept_combo, "Right direction", "Right", "The absolute direction of relate right direction.", "Right|Left|Up|Down"),    
+    new cr.Property(ept_float, "Sensitivity", 10, "Sensitivity of touch movment, in pixel."), 
     ];
 	
 // Called by IDE when a new behavior type is to be created
