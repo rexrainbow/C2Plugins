@@ -53,7 +53,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
                 break;
             }
         }
-        assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
+        assert2(this.touchwrap, "You need put a Touchwrap object for button behavior");
 	};  
     
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
@@ -354,7 +354,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.GotoActive = function ()
+	Acts.prototype.GotoACTIVE = function ()
 	{		
 	    if (this._state == ACTIVE_STATE)  // state does not change
 	        return;
@@ -363,7 +363,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	    this._goto_active_state();
 	}; 
 	
-	Acts.prototype.GotoInactive = function ()
+	Acts.prototype.GotoINACTIVE = function ()
 	{	
 	    if (this._state == INACTIVE_STATE)  // state does not change
 	        return;
