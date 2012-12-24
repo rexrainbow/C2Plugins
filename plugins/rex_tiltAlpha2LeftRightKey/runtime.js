@@ -46,6 +46,7 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
      
         this.setup_stage = true;
         this.touchwrap = null;
+        this.GetAlpha = null;
         this.degree_ZERO = 0;
         this.degree_diff = 0;   
         this.key_status = 0;  // 0=no key, 1=right key, 2=left key 
@@ -62,6 +63,7 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetAlpha = cr.plugins_.rex_TouchWrap.prototype.exps.Alpha;
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -82,6 +84,13 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
 	    return ret;
 	};
     
+	instanceProto._alpha_get = function ()
+	{
+        var touch_obj = this.touchwrap;
+        this.GetAlpha.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;  
+	};    
+    
 	instanceProto._setup = function ()
 	{
         if (!this.setup_stage)
@@ -92,12 +101,12 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
         if (this.touchwrap == null)
             assert("Tilt to LeftRight: please put touchwrap object into project file.");
         else
-            this.degree_ZERO = this.touchwrap.GetAlpha();
+            this.degree_ZERO = this._alpha_get();
 	};
     
 	instanceProto._diff_angle_get = function ()
 	{
-        var current_angle = this.touchwrap.GetAlpha();
+        var current_angle = this._alpha_get();
         var diff = current_angle - this.degree_ZERO;
         if (diff > 180)
             diff = -360 + diff;
@@ -189,7 +198,7 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
     Acts.prototype.Calibration = function ()
 	{	     
         this._setup();
-        this.degree_ZERO = this.touchwrap.GetAlpha();
+        this.degree_ZERO = this._alpha_get();
 	};
 	
     Acts.prototype.SetSensitivity = function (a)

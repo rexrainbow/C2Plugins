@@ -47,6 +47,8 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
      
         this.setup_stage = true;
         this.touchwrap = null;
+        this.GetBeta = null;
+        this.GetGamma = null;        
         this.degree_ZEROUD = 0;
         this.degree_ZEROLR = 0;
         this.degree_diffUD = 0;
@@ -67,6 +69,8 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetBeta = cr.plugins_.rex_TouchWrap.prototype.exps.Beta;
+                this.GetGamma = cr.plugins_.rex_TouchWrap.prototype.exps.Gamma;                
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -86,7 +90,21 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
 	        ret = 0;
 	    return ret;
 	};
-	
+    
+	instanceProto._beta_get = function ()
+	{
+        var touch_obj = this.touchwrap;
+        this.GetBeta.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;  
+	};  
+    
+	instanceProto._gamma_get = function ()
+	{
+        var touch_obj = this.touchwrap;
+        this.GetGamma.call(touch_obj, touch_obj.fake_ret);
+        return touch_obj.fake_ret.value;  
+	};      
+    
 	instanceProto._setup = function ()
 	{
         if (!this.setup_stage)
@@ -106,12 +124,12 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         if (ZERO_UD == null)
         {
             ZERO_UD = (is_landspcape)?
-                      this.touchwrap.GetGamma():this.touchwrap.GetBeta();  
+                      this._gamma_get():this._beta_get();  
         }
         if (ZERO_LR == null)
         {
             ZERO_LR = (is_landspcape)?
-                      this.touchwrap.GetBeta():this.touchwrap.GetGamma();  
+                      this._beta_get():this._gamma_get();  
         }
         this.degree_ZEROUD = ZERO_UD;               
         this.degree_ZEROLR = ZERO_LR;  
@@ -123,16 +141,16 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         switch (orientation)
         {
         case 0:    // U:b+ , D:b-
-            diff = -this.touchwrap.GetBeta() + this.degree_ZEROUD;  
+            diff = -this._beta_get() + this.degree_ZEROUD;  
             break;
         case 90:   // U:g- , D:g+
-            diff = this.touchwrap.GetGamma() - this.degree_ZEROUD;
+            diff = this._gamma_get() - this.degree_ZEROUD;
             break;
         case 180:  // U:b- , D:b+
-            diff = this.touchwrap.GetBeta() - this.degree_ZEROUD;  
+            diff = this._beta_get() - this.degree_ZEROUD;  
             break;
         case -90:  // U:g+ , D:g-
-            diff = -this.touchwrap.GetGamma() + this.degree_ZEROUD;
+            diff = -this._gamma_get() + this.degree_ZEROUD;
             break;
         }
         return diff;
@@ -143,16 +161,16 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
         switch (orientation)
         {
         case 0:    // L:g+ , R:g-
-            diff = -this.touchwrap.GetGamma() + this.degree_ZEROLR;
+            diff = -this._gamma_get() + this.degree_ZEROLR;
             break;
         case 90:   // L:b+ , R:b-
-            diff = -this.touchwrap.GetBeta() + this.degree_ZEROLR;            
+            diff = -this._beta_get() + this.degree_ZEROLR;            
             break;
         case 180:  // L:g- , R:g+
-            diff = this.touchwrap.GetGamma() - this.degree_ZEROLR;
+            diff = this._gamma_get() - this.degree_ZEROLR;
             break;
         case -90:  // L:b- , R:b+
-            diff = this.touchwrap.GetBeta() - this.degree_ZEROLR;         
+            diff = this._beta_get() - this.degree_ZEROLR;         
             break;
         }
         return diff;
