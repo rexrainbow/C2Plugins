@@ -75,7 +75,18 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 		img.onload = function ()
 		{
 		    var inst = self.inst;
-		    inst.ctx.drawImage(img, 0, 0, img.width, img.height);
+
+			if ((resize_ === 0) && 
+			    ((inst.width != img.width) || (inst.height != img.height)))
+			{
+				inst.width = img.width;
+				inst.height = img.height;
+				inst.set_bbox_changed();
+				inst.canvas.width = inst.width;
+				inst.canvas.height = inst.height;                
+			}
+            
+		    inst.ctx.drawImage(img, 0, 0, inst.width, inst.height);
 			
 			// WebGL renderer: need to create texture (canvas2D just draws with img directly)
 			if (self.runtime.glwrap)
@@ -84,15 +95,6 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 					self.runtime.glwrap.deleteTexture(self.webGL_texture);
 					
 				self.webGL_texture = self.runtime.glwrap.loadTexture(img, false, self.runtime.linearSampling);
-			}
-			
-			// Set size if necessary
-			if ((resize_ === 0) && 
-			    (inst.width != img.width) || (inst.height != img.height))
-			{
-				inst.width = img.width;
-				inst.height = img.height;
-				inst.set_bbox_changed();
 			}
 			
 			self.runtime.redraw = true;
