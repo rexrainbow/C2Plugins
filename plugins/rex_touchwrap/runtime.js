@@ -1120,7 +1120,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		ret.set_float(this.touches[index].y);
 	};
 	
-	Exps.prototype.AbsoluteYForID = function (ret, index)
+	Exps.prototype.AbsoluteYForID = function (ret, id)
 	{
 		var index = this.findTouch(id);
 		

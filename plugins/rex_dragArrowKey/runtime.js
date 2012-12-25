@@ -48,6 +48,9 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this.setup_stage = true;
         // touch   
         this.touchwrap = null;
+        this.GetAbsoluteX = null;
+        this.GetAbsoluteY = null; 
+        this.touch_src = null;        
 		this.pre_x = 0;
 		this.pre_y = 0;
         this.is_on_moving = false;  
@@ -76,37 +79,46 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
+                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteXForID;
+                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteYForID;                
                 this.touchwrap.HookMe(this);
                 break;
             }
         }
 	}; 
     
-    instanceProto.OnTouchStart = function (_NthTouch, _TouchX, _TouchY)
-    {
-        if (_NthTouch != 0)
-            return;    
+    instanceProto.OnTouchStart = function (touch_src, touchX, touchY)
+    { 
         this.is_on_moving = true;
+        this.touch_src = touch_src;    
         this.pre_x = this.get_touch_x();
         this.pre_y = this.get_touch_y(); 
     };
     
-    instanceProto.OnTouchEnd = function (_NthTouch)
-    {
-        if (_NthTouch != 0)
-            return;    
+    instanceProto.OnTouchEnd = function (touch_src)
+    {  
+        if (touch_src != this.touch_src)
+            return;
+            
+        this.touch_src = null; 
         this.is_on_moving = false;
         this._keydown(0);
     };
     
 	instanceProto.get_touch_x = function ()
 	{
-        return this.touchwrap.GetAbsoluteXAt(0);
+        var touch_obj = this.touchwrap;
+        this.GetAbsoluteX.call(touch_obj, 
+                               touch_obj.fake_ret, this.touch_src);
+        return touch_obj.fake_ret.value;
 	};  
 
 	instanceProto.get_touch_y = function ()
 	{
-        return this.touchwrap.GetAbsoluteYAt(0);
+        var touch_obj = this.touchwrap;
+        this.GetAbsoluteY.call(touch_obj, 
+                               touch_obj.fake_ret, this.touch_src);
+        return touch_obj.fake_ret.value;   
 	};
     
     instanceProto.tick = function()
