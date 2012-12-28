@@ -24,18 +24,26 @@ AddAction(0, 0, "Start timer", "Timer", "Start timer <i>{0}</i> ", "Start a time
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Get current year", "Date", "Year", "Get current year from system.");
-AddExpression(1, ef_return_number, "Get current month", "Date", "Month", "Get current month from system.");
-AddExpression(2, ef_return_number, "Get current day number", "Date", "Date", "Get current day number from system.");
-AddExpression(3, ef_return_number, "Get current day name", "Date", "Day", "Get current day name from system.");
-AddExpression(4, ef_return_number, "Get current hours", "Time", "Hours", "Get current hours from system.");
-AddExpression(5, ef_return_number, "Get current minutes", "Time", "Minutes", "Get current minutes from system.");
-AddExpression(6, ef_return_number, "Get current seconds", "Time", "Seconds", "Get current seconds from system.");
-AddExpression(7, ef_return_number, "Get current milliseconds", "Time", "Milliseconds", "Get current milliseconds from system.");
-AddAnyTypeParam("0", "The naem of timer to get.", "0");
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Get current year", "Date", "Year", "Get current year from system.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Get current month", "Date", "Month", "Get current month from system.");
+AddExpression(2, ef_return_number | ef_variadic_parameters, "Get current day number", "Date", "Date", "Get current day number from system.");
+AddExpression(3, ef_return_number | ef_variadic_parameters, "Get current day name", "Date", "Day", "Get current day name from system.");
+AddExpression(4, ef_return_number | ef_variadic_parameters, "Get current hours", "Time", "Hours", "Get current hours from system.");
+AddExpression(5, ef_return_number | ef_variadic_parameters, "Get current minutes", "Time", "Minutes", "Get current minutes from system.");
+AddExpression(6, ef_return_number | ef_variadic_parameters, "Get current seconds", "Time", "Seconds", "Get current seconds from system.");
+AddExpression(7, ef_return_number | ef_variadic_parameters, "Get current milliseconds", "Time", "Milliseconds", "Get current milliseconds from system.");
+AddAnyTypeParam("0", "The name of timer to get.", "0");
 AddExpression(8, ef_return_number | ef_variadic_parameters, "Get escaped ticks", "Timer", "Timer", "Get escaped ticks of timer in milliseconds.");
 AddExpression(9, ef_deprecated | ef_return_number, "Get current ticks", "Timer", "CurTicks", "Get current ticks of timer in milliseconds. (Date.getTime())");
-AddExpression(10, ef_return_number, "Get current unix timestamp", "Date", "UnixTimestamp", "Get current number of milliseconds since the epoch.");
+AddExpression(10, ef_return_number, "Get current unix timestamp", "UnixTimestamp", "UnixTimestamp", "Get current number of milliseconds since the epoch.");
+AddNumberParam("Year", "Year, start with 0.", 0);
+AddNumberParam("Month", "Month, start with 1.", 1);
+AddNumberParam("Day", "Day, start with 1.", 1);
+AddNumberParam("Hours", "Hours, start with 0.", 0);
+AddNumberParam("Minutes", "Minutes, start with 0.", 0);
+AddNumberParam("Seconds", "Seconds, start with 0.", 0);
+AddNumberParam("Milliseconds", "Milliseconds, start with 0.", 0);
+AddExpression(11, ef_return_number, "Convert date to unix timestamp", "UnixTimestamp", "Date2UnixTimestamp", "Convert date to unix timestamp.");
 
 ACESDone();
 
