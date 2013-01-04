@@ -77,7 +77,15 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_ObjectLY = 0; 
         this.exp_ObjectPX = 0;
         this.exp_ObjectPY = 0;         
-        this.exp_object_properties = {}; 
+        this.exp_object_properties = {};
+
+        // for each property
+        this.exp_CurLayerPropName = "";
+        this.exp_CurLayerPropValue ="";
+        this.exp_CurTilesetPropName = "";
+        this.exp_CurTilesetPropValue ="";        
+        this.exp_CurTilePropName = "";
+        this.exp_CurTilePropValue ="";     
         
         // duration
         this.exp_RetrievingPercent = 0;      
@@ -458,6 +466,64 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{
 		return true;
 	};    
+    
+    // for each property
+	Cnds.prototype.ForEachLayerProperty = function ()
+	{   
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+		
+        var key, props = this.exp_layer_properties, value;
+		for (key in props)
+	    {
+            this.exp_CurLayerPropName = key;
+            this.exp_CurLayerPropValue = props[key];
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+		this.exp_CurLayerPropName = "";
+        this.exp_CurLayerPropValue = "";
+		return false;        
+	};   
+	Cnds.prototype.ForEachTilesetProperty = function ()
+	{   
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+		
+        var key, props = this.exp_tileset_properties, value;
+		for (key in props)
+	    {
+            this.exp_CurTilesetPropName = key;
+            this.exp_CurTilesetPropValue = props[key];
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+		this.exp_CurTilesetPropName = "";
+        this.exp_CurTilesetPropValue = "";
+		return false;        
+	};   
+	Cnds.prototype.ForEachTileProperty = function ()
+	{   
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+		
+        var key, props = this.exp_tile_properties, value;
+		for (key in props)
+	    {
+            this.exp_CurTilePropName = key;
+            this.exp_CurTilePropValue = props[key];
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+		this.exp_CurTilePropName = "";
+        this.exp_CurTilePropValue = "";
+		return false;        
+	};      
+    
+    // duration
 	Cnds.prototype.OnRetrieveFinished = function ()
 	{
 		return true;
@@ -656,7 +722,33 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             value = default_value;        
 	    ret.set_any(value);
 	}; 
-
+    
+    // for each property
+	Exps.prototype.CurLayerPropName = function (ret)
+	{
+		ret.set_string(this.exp_CurLayerPropName);
+	};    
+	Exps.prototype.CurLayerPropValue = function (ret)
+	{
+		ret.set_string(this.exp_CurLayerPropValue);
+	};    
+	Exps.prototype.CurTilesetPropName = function (ret)
+	{
+		ret.set_string(this.exp_CurTilesetPropName);
+	};    
+	Exps.prototype.CurTilesetPropValue = function (ret)
+	{
+		ret.set_string(this.exp_CurTilesetPropValue);
+	};     
+	Exps.prototype.CurTilePropName = function (ret)
+	{
+		ret.set_string(this.exp_CurTilePropName);
+	};    
+	Exps.prototype.CurTilePropValue = function (ret)
+	{
+		ret.set_string(this.exp_CurTilePropValue);
+	};    
+    
     // duration
 	Exps.prototype.RetrievingPercent = function (ret)
 	{     
