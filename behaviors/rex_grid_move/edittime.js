@@ -88,7 +88,11 @@ AddAction(5, 0, "Set deceleration", "Speed",
 AddNumberParam("Current speed", "Current speed, in pixel per second.", 400);
 AddAction(6, 0, "Set current speed", "Speed", 
           "Set {my} current speed to <i>{0}</i>", 
-          "Set the object's Current speed.", "SetCurrentSpeed");                     
+          "Set the object's Current speed.", "SetCurrentSpeed");  
+AddNumberParam("Logic X", "The X index (0-based).", 0);
+AddNumberParam("Logic Y", "The Y index (0-based).", 0);
+AddAction(7, 0, "Move to", "Request", "{my} move to [<i>{0}</i>, <i>{1}</i>]", 
+          "Move to target.", "MoveToTarget");             
 AddComboParamOption("Right");
 AddComboParamOption("Down-right");	  
 AddComboParamOption("Down-left");	 

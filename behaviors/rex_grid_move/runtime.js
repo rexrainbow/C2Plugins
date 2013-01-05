@@ -416,22 +416,40 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this._move_to_target(tx, ty, tz);
 	};
 	
+	Acts.prototype.MoveToTarget = function (lx, ly)
+	{
+	    if (!this._cmd_move_to.activated)
+	        return;
+	        
+		var _xyz = this._xyz_get();
+        if (_xyz == null)
+            return;
+            
+		var tx = lx;
+        var ty = ly;
+        var tz = _xyz.z;
+        var dir = this.target2dir(tx, ty, tz);
+        this.set_move_target(tx, ty, tz, dir);
+        this._colliding_checking(tx, ty, tz);  
+		this._move_to_target(tx, ty, tz);	    
+	}; 
+    
 	Acts.prototype.MoveToOffset = function (dx, dy)
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
 	        
 		var _xyz = this._xyz_get();
-		if (_xyz != null)
-        {
-            var tx = _xyz.x+dx;
-            var ty = _xyz.y+dy;
-            var tz = _xyz.z;
-            var dir = this.target2dir(tx, ty, tz);
-            this.set_move_target(tx, ty, tz, dir);
-            this._colliding_checking(tx, ty, tz);  
-		    this._move_to_target(tx, ty, tz);	    
-        }
+        if (_xyz == null)
+            return;
+            
+		var tx = _xyz.x+dx;
+        var ty = _xyz.y+dy;
+        var tz = _xyz.z;
+        var dir = this.target2dir(tx, ty, tz);
+        this.set_move_target(tx, ty, tz, dir);
+        this._colliding_checking(tx, ty, tz);  
+		this._move_to_target(tx, ty, tz);
 	};    
 	
 	Acts.prototype.MoveToTargetChess = function (objtype)
@@ -447,16 +465,16 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		    return;
 			
 		var _xyz = this._xyz_get();
-		if (_xyz != null)
-        {
-            var tx = target_xyz.x;
-            var ty = target_xyz.y;
-            var tz = _xyz.z;
-            var dir = this.target2dir(tx, ty, tz);
-            this.set_move_target(tx, ty, tz, dir);
-            this._colliding_checking(tx, ty, tz);  
-		    this._move_to_target(tx, ty, tz);	             
-        }
+        if (_xyz == null)
+            return;
+            
+		var tx = target_xyz.x;
+        var ty = target_xyz.y;
+        var tz = _xyz.z;
+        var dir = this.target2dir(tx, ty, tz);
+        this.set_move_target(tx, ty, tz, dir);
+        this._colliding_checking(tx, ty, tz);  
+		this._move_to_target(tx, ty, tz);	             
 	};   	
 	
 	Acts.prototype.Wander = function ()
