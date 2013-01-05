@@ -1093,8 +1093,14 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this._xml_nodes = new XMLNodes(null, isIE);
         
 		var xml, tmp;
+        var isWindows8 = !!(typeof window["c2isWindows8"] !== "undefined" && window["c2isWindows8"]);
 		try {
-			if (isIE)
+			if (isWindows8)
+	        {
+	            xml = new Windows["Data"]["Xml"]["Dom"]["XmlDocument"]()
+	            xml["loadXml"](str);
+	        }
+			else if (isIE)
 			{
 				var versions = ["MSXML2.DOMDocument.6.0",
                                 "MSXML2.DOMDocument.3.0",
@@ -1129,8 +1135,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		{
 			this.xmlDoc = xml;
 			
-			if (isIE)
-				this.xmlDoc.setProperty("SelectionLanguage","XPath");
+			if (isIE && !isWindows8)
+				this.xmlDoc["setProperty"]("SelectionLanguage","XPath");
 		}
 	};   
     var XMLParserProto = XMLParser.prototype;
