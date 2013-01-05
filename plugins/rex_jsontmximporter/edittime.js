@@ -20,11 +20,21 @@ AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless",
              "On each tile cell", "Triggered when retrieving each avaiable tile cell.", "OnEachTileCell");
 AddCondition(2, cf_trigger, "On each object", "Callback: Create tiless", 
              "On each object", "Triggered when retrieving each avaiable object on 'object layer'.", "OnEachObject");
+             
+// for each property
+AddCondition(10, cf_looping | cf_not_invertible, "For each layer property", "For each property", "For each layer property", 
+             "Repeat the event for each layer property.", "ForEachLayerProperty"); 
+AddCondition(11, cf_looping | cf_not_invertible, "For each tileset property", "For each property", "For each tileset property", 
+             "Repeat the event for each tileset property.", "ForEachTilesetProperty");  
+AddCondition(12, cf_looping | cf_not_invertible, "For each tile property", "For each property", "For each tile property", 
+             "Repeat the event for each tile property.", "ForEachTileProperty"); 
+             
 // duration             
 AddCondition(20, cf_trigger, "On retrieving finished", "Duration", 
              "On retrieving finished", "Triggered when retrieving finished.", "OnRetrieveFinished");   
 AddCondition(21, cf_trigger, "On retrieving duration", "Duration", 
              "On retrieving duration", "Triggered during retrieving duration tick.", "OnRetrieveDurationTick"); 
+        
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
@@ -42,12 +52,12 @@ AddNumberParam("Y", "Y co-ordinate of instance at Logic(0,0).", 0);
 AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance position of (0,0) to (<i>{0}</i>,<i>{1}</i>)",
          "Set instance position of (0,0).", "SetOPosition");
 
-// duration mode              
+// duration mode         
 AddObjectParam("Tile", "Tile object.");
 AddAction(20, 0, "Create tiles in a duration", "Duration", "Create tiles <i>{0}</i> in a duration",
          'Retrieve tile array and creating tiles in a duration. It will trigger "Condition:On each tile cell".', "CreateTilesDuration");
 AddAction(21, 0, "Retrieve tile array in a duration", "Duration", "Retrieve tile array in a duration",
-         'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");           
+         'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
          
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -98,6 +108,20 @@ AddExpression(24, ef_return_number,
               "Get frame number", "Tile: Layer", "Frame", "Get frame number.");                
 AddExpression(25, ef_return_string, 
               "Get tileset name", "Map", "TilesetName", "Get tileset name.");
+              
+// For each property
+AddExpression(30, ef_return_string, 
+              "Current layer property name", "For Each", "CurLayerPropName", "Get the name of current layer property in a For Each loop."); 
+AddExpression(31, ef_return_string, 
+              "Current layer property value", "For Each", "CurLayerPropValue", "Get the value of current layer property in a For Each loop.");               
+AddExpression(32, ef_return_string, 
+              "Current tileset property name", "For Each", "CurTilesetPropName", "Get the name of current tileset property in a For Each loop."); 
+AddExpression(33, ef_return_string, 
+              "Current tileset property value", "For Each", "CurTilesetPropValue", "Get the value of current tileset property in a For Each loop.");               
+AddExpression(34, ef_return_string, 
+              "Current tile property name", "For Each", "CurTilePropName", "Get the name of current tile property in a For Each loop."); 
+AddExpression(35, ef_return_string, 
+              "Current tile property value", "For Each", "CurTilePropValue", "Get the value of current tile property in a For Each loop."); 
               
 // objects
 AddExpression(40, ef_return_string, 
