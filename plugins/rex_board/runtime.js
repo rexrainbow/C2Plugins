@@ -787,5 +787,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		    ret_uid = (-1);
 	    ret.set_int(ret_uid);
 	};
-    		 	
+    
+	Exps.prototype.BoardWidth = function (ret)
+	{
+	    ret.set_int(this.x_max+1);
+	};   
+    
+	Exps.prototype.BoardHeight = function (ret)
+	{
+	    ret.set_int(this.y_max+1);
+	};       
 }());

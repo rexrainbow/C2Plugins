@@ -223,7 +223,12 @@ AddAnyTypeParam("Direction", "The direction.", 0);
 AddExpression(17, ef_return_number | ef_variadic_parameters,
               "Get neighbor UID by UID and direction", "Chess", "DIR2UID",
               "Get neighbor UID by UID and direction.");        
-                                
+AddExpression(18, ef_return_number,
+              "Get board width", "Board", "BoardWidth",
+              "Get board width.");
+AddExpression(19, ef_return_number,
+              "Get board height", "Board", "BoardHeight",
+              "Get board height.");              
 ACESDone();
 
 // Property grid properties for this plugin
