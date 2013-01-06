@@ -21,44 +21,44 @@ AddCondition(0, 0, "Is timmer running", "Timer", "Is running", "", "IsRunning");
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
 AddAction(0, 0, "Setup timer", "Z: Deprecated", 
-          "Get timer {my} from <i>{0}</i>, callback to <i>{1}</i>", 
+          "{my} get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup timer.", "Setup");
 AddStringParam("Commands", "Execute commands when timer's time-out", '""');
-AddAction(1, 0, "Create timer", "Z: Deprecated", 
-          "Create timer {my} with callback <i>{0}</i>", 
+AddAction(1, 0, "Create timer", "Create", 
+          "Create {my} with callback <i>{0}</i>", 
           "Create timer.", "Create");            
 AddNumberParam("Time", "Time-out in seconds", 0);
 AddAction(2, 0, "Start timer", "Control", 
-          "Start timer {my}, time-out is <i>{0}</i> seconds", 
+          "Start {my}, time-out is <i>{0}</i> seconds", 
           "Start timer.", "Start");   
 AddAction(3, 0, "Pause timer", "Control", 
-          "Pause timer {my}", 
+          "Pause {my}", 
           "Pause timer.", "Pause"); 
 AddAction(4, 0, "Resume timer", "Control", 
-          "Resume timer {my}", 
+          "Resume {my}", 
           "Resume timer.", "Resume");               
 AddAction(5, 0, "Stop timer", "Control", 
-          "Stop timer {my}", 
+          "Stop {my}", 
           "Stop timer.", "Stop"); 
 AddAnyTypeParam("Index", "Index of parameter, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0);
-AddAction(6, 0, "Set a parameter", "Z: Deprecated", 
-          "Set timer {my}'s parameter[<i>{0}</i>] to <i>{1}</i>",
+AddAction(6, 0, "Set a parameter", "Timer", 
+          "Set {my}'s parameter[<i>{0}</i>] to <i>{1}</i>",
           "Set a parameter passed into callback.", "SetParameter");          
 
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(10, 0, "Setup timer", "Setup", 
-          "Get timer {my} from <i>{0}</i>", 
+          "{my} get timer from <i>{0}</i>", 
           "Setup timer.", "Setup2");
-AddStringParam("Name", "The name of the callback.", "\"\"");
-AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
-AddAction(11, 0, "Create timer", "Create", 
-          "Create timer {my} with callback <i>{0}</i> (<i>{...}</i>)", 
-          "Create timer.", "Create2");   
-AddVariadicParams("Parameter {n}", "Parameters list to pass for the callback, which can be accessed with Function.Param({n}).");
-AddAction(12, 0, "Set parameters", "Timer", 
-          "Set timer {my}'s parameters to (<i>{...}</i>)",
-          "Set parameters passed into callback.", "SetParameters");  	 
+//AddStringParam("Name", "The name of the callback.", "\"\"");
+//AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
+//AddAction(11, 0, "Create timer", "Create", 
+//          "Create {my} with callback <i>{0}</i> (<i>{...}</i>)", 
+//          "Create timer.", "Create2");   
+//AddVariadicParams("Parameter {n}", "Parameters list to pass for the callback, which can be accessed with Function.Param({n}).");
+//AddAction(12, 0, "Set parameters", "Timer", 
+//          "Set {my}'s parameters to (<i>{...}</i>)",
+//          "Set parameters passed into callback.", "SetParameters");  	 
 		  
 //////////////////////////////////////////////////////////////
 // Expressions

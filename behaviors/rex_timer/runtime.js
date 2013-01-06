@@ -73,11 +73,15 @@ cr.behaviors.Rex_Timer = function(runtime)
 	    sol.instances.length = 1;        
         sol.instances[0] = this.inst;
         // call function object
-		if (this.type.callback_type == 1)
+		var has_rex_function = (this.type.callback != null);
+		if (has_rex_function)
 		    this.type.callback.CallFn(this.command, this.params);     			
 		else
-		    this.type.timeline.RunCallback(this.command, this.params);
-    };
+		{
+		    var has_fnobj = this.type.timeline.RunCallback(this.command, this.params, true);           
+		    assert2(has_fnobj, "Timer: Can not find callback oject.");
+        }
+    };	
 
 	//////////////////////////////////////
 	// Conditions
@@ -115,8 +119,11 @@ cr.behaviors.Rex_Timer = function(runtime)
     Acts.prototype.Create = function (command)
 	{
         this.command = command;
-		if (this.params == null)
+		var has_rex_function = (this.type.callback != null);
+		if (has_rex_function)
 		    this.params = {};
+	    else
+		    this.params = [];
         if (this.timer)  // timer exist
             this.timer.Remove();
         else            // create new timer instance
@@ -149,10 +156,19 @@ cr.behaviors.Rex_Timer = function(runtime)
     
     Acts.prototype.SetParameter = function (index, value)
 	{
-	    if (this.params == null)
-		    this.params = {index:value};
-	    else
-            this.params[index] = value;
+		var has_rex_function = (this.type.callback != null);
+		if (!has_rex_function && (this.params.length <= index))
+		{
+		    var old_length = this.params.length;
+		    this.params.length = index;
+			if (old_length != index)
+			{
+			    var i, cnt=index;
+			    for (i=old_length; i<cnt; i++)
+			        this.params[i] = 0;
+		    }
+	    }
+		this.params[index] = value;
 	};    
 
     Acts.prototype.Setup2 = function (timeline_objs)
@@ -161,28 +177,28 @@ cr.behaviors.Rex_Timer = function(runtime)
         if (timeline.check_name == "TIMELINE")
             this.type.timeline = timeline;        
         else
-            alert ("Timer behavior should connect to a timeline object");          
+            alert ("Timer behavior should connect to a timeline object");     		
 	};
 
-    Acts.prototype.Create2 = function (callback_name, callback_params)
-	{
-        this.command = command;
-		if (this.params == null)
-		    this.params = [];
-		cr.shallowAssignArray(this.params, callback_params);
-		
-        if (this.timer)  // timer exist
-            this.timer.Remove();
-        else            // create new timer instance
-            this.timer = this.type.timeline.CreateTimer(this, this._timer_handle);   
-	}; 	
-	
-    Acts.prototype.SetParameters = function (callback_params)
-	{
-		if (this.params == null)
-		    this.params = [];
-		cr.shallowAssignArray(this.params, callback_params);
-	};	
+    //Acts.prototype.Create2 = function (callback_name, callback_params)
+	//{
+    //    this.command = command;
+	//	if (this.params == null)
+	//	    this.params = [];
+	//	cr.shallowAssignArray(this.params, callback_params);
+	//	
+    //    if (this.timer)  // timer exist
+    //        this.timer.Remove();
+    //    else            // create new timer instance
+    //        this.timer = this.type.timeline.CreateTimer(this, this._timer_handle);   
+	//}; 	
+	//
+    //Acts.prototype.SetParameters = function (callback_params)
+	//{
+	//	if (this.params == null)
+	//	    this.params = [];
+	//	cr.shallowAssignArray(this.params, callback_params);
+	//};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
