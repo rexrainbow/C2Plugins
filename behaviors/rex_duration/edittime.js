@@ -21,8 +21,8 @@ AddCondition(0, 0, "Is duration running", "Durations", "Is {my} <i>{0}</i> runni
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(0, 0, "Setup", "Setup", 
-          "Get {my} timer from <i>{0}</i>, callback to <i>{1}</i>", 
+AddAction(0, 0, "Setup", "Z: Deprecated", 
+          "{my} get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");          
 AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');
 AddNumberParam("Duration", "Duration time", 1);
@@ -55,7 +55,11 @@ AddAction(8, 0, "Stop all durations", "Control: All",
           "Stop {my} all durations", 
           "Stop all durations.", "StopAll");          
 
-
+AddObjectParam("Timeline", "Timeline object to get timer");
+AddAction(10, 0, "Setup", "Setup", 
+          "{my} get timer from <i>{0}</i>", 
+          "Setup.", "Setup2");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Get remainder duration", 

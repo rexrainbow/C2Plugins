@@ -92,7 +92,14 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    sol.instances.length = 1;        
         sol.instances[0] = this.inst;
         // call function object
-        this.type.callback.ExecuteCommands(callback); 
+		var has_rex_function = (this.type.callback != null);
+		if (has_rex_function)
+		    this.type.callback.CallFn(callback, []);     			
+		else
+		{
+		    var has_fnobj = this.type.timeline.RunCallback(callback, [], true);           
+		    assert2(has_fnobj, "Timer: Can not find callback oject.");
+        }
     };
         
     behinstProto._timer_handle = function(duration_name)
@@ -239,6 +246,15 @@ cr.behaviors.Rex_Duration = function(runtime)
             this._destroy_timer(name);
         }
 	};
+
+    Acts.prototype.Setup2 = function (timeline_objs)
+	{
+        var timeline = timeline_objs.instances[0];
+        if (timeline.check_name == "TIMELINE")
+            this.type.timeline = timeline;        
+        else
+            alert ("Duration behavior should connect to a timeline object");     		
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
