@@ -27,7 +27,9 @@ AddCondition(10, cf_looping | cf_not_invertible, "For each layer property", "For
 AddCondition(11, cf_looping | cf_not_invertible, "For each tileset property", "For each property", "For each tileset property", 
              "Repeat the event for each tileset property.", "ForEachTilesetProperty");  
 AddCondition(12, cf_looping | cf_not_invertible, "For each tile property", "For each property", "For each tile property", 
-             "Repeat the event for each tile property.", "ForEachTileProperty"); 
+             "Repeat the event for each tile property.", "ForEachTileProperty");
+AddCondition(13, cf_looping | cf_not_invertible, "For each map property", "For each property", "For each map property", 
+             "Repeat the event for each map property.", "ForEachMapProperty");               
              
 // duration             
 AddCondition(20, cf_trigger, "On retrieving finished", "Duration", 
@@ -108,7 +110,10 @@ AddExpression(24, ef_return_number,
               "Get frame number", "Tile: Layer", "Frame", "Get frame number.");                
 AddExpression(25, ef_return_string, 
               "Get tileset name", "Map", "TilesetName", "Get tileset name.");
-              
+AddStringParam("Name", "Property name.", '""');
+AddExpression(26, ef_return_any | ef_variadic_parameters, 
+              "Get map properties", "Map", "MapProp", "Get map properties. Add second parameters to set default value.");
+                            
 // For each property
 AddExpression(30, ef_return_string, 
               "Current layer property name", "For Each", "CurLayerPropName", "Get the name of current layer property in a For Each loop."); 
@@ -122,7 +127,11 @@ AddExpression(34, ef_return_string,
               "Current tile property name", "For Each", "CurTilePropName", "Get the name of current tile property in a For Each loop."); 
 AddExpression(35, ef_return_string, 
               "Current tile property value", "For Each", "CurTilePropValue", "Get the value of current tile property in a For Each loop."); 
-              
+AddExpression(36, ef_return_string, 
+              "Current map property name", "For Each", "CurMapPropName", "Get the name of current map property in a For Each loop."); 
+AddExpression(37, ef_return_string, 
+              "Current map property value", "For Each", "CurMapPropValue", "Get the value of current map property in a For Each loop.");               
+                            
 // objects
 AddExpression(40, ef_return_string, 
               "Get object group name", "Object: Object group", "ObjGroupName", "Get object group name.");

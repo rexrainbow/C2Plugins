@@ -60,10 +60,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_IsMirrored = 0;
         this.exp_IsFlipped = 0;        
         this.exp_LayerName = "";  
-        this.exp_LayerOpacity = 1;          
+        this.exp_LayerOpacity = 1;  
+        this.exp_map_properties = {};                
         this.exp_layer_properties = {};
         this.exp_tileset_properties = {};        
-        this.exp_tile_properties = {};
+        this.exp_tile_properties = {};        
         
         // objects
 		this.exp_ObjGroupName = "";        
@@ -86,6 +87,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_CurTilesetPropValue ="";        
         this.exp_CurTilePropName = "";
         this.exp_CurTilePropValue ="";     
+        this.exp_CurMapPropName = "";
+        this.exp_CurMapPropValue ="";        
         
         // duration
         this.exp_RetrievingPercent = 0;      
@@ -113,6 +116,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                                                       this.exp_MapWidth*this.exp_TileWidth;
         this.exp_TotalHeight = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileHeight: 
                                                        this.exp_MapHeight*this.exp_TileHeight;
+        this.exp_map_properties = this._tmx_obj.map.properties;
 	};
 	instanceProto.RetrieveTileArray = function(obj_type)
 	{
@@ -521,7 +525,25 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 		this.exp_CurTilePropName = "";
         this.exp_CurTilePropValue = "";
 		return false;        
-	};      
+	};
+	Cnds.prototype.ForEachMapProperty = function ()
+	{   
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+		
+        var key, props = this.exp_map_properties, value;
+		for (key in props)
+	    {
+            this.exp_CurMapPropName = key;
+            this.exp_CurMapPropValue = props[key];
+		    this.runtime.pushCopySol(current_event.solModifiers);
+			current_event.retrigger();
+			this.runtime.popSol(current_event.solModifiers);
+		}
+
+		this.exp_CurMapPropName = "";
+        this.exp_CurMapPropValue = "";
+		return false;        
+	};	      
     
     // duration
 	Cnds.prototype.OnRetrieveFinished = function ()
@@ -669,6 +691,13 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	{     
 	    ret.set_string(this.exp_TilesetName);
 	};
+	Exps.prototype.MapProp = function (ret, name, default_value)
+	{   
+        var value = this.exp_map_properties[name];
+        if (value == null)
+            value = default_value;
+	    ret.set_any(value);
+	};	
     
     // objects
 	Exps.prototype.ObjGroupName = function (ret)
@@ -748,6 +777,14 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	{
 		ret.set_string(this.exp_CurTilePropValue);
 	};    
+	Exps.prototype.CurMapPropName = function (ret)
+	{
+		ret.set_string(this.exp_CurMapPropName);
+	};    
+	Exps.prototype.CurMapPropValue = function (ret)
+	{
+		ret.set_string(this.exp_CurMapPropValue);
+	};    	
     
     // duration
 	Exps.prototype.RetrievingPercent = function (ret)
@@ -772,7 +809,6 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     {
         var tilesets_cnt = this.tilesets.length;
         var i, tileset;
-        var image_index = {};
         for (i=tilesets_cnt-1; i>=0; i--)
         {
             tileset = this.tilesets[i];
@@ -791,11 +827,15 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         map.height = _get_number_value(dict_obj, "@height");
         map.tilewidth = _get_number_value(dict_obj, "@tilewidth");
         map.tileheight = _get_number_value(dict_obj, "@tileheight");
+        map.properties = _get_properties(dict_obj);
         return map;           
     };
     var _get_tilesets = function (dict_obj)
     {  
         dict_obj = dict_obj["map"]["tileset"];
+        if (dict_obj == null)
+            return {};
+                    
         var tileset, tilesets = [];        
         if (dict_obj.length)
         {
@@ -863,6 +903,9 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     var _get_layers = function (dict_obj)
     {       
         dict_obj = dict_obj["map"]["layer"];
+        if (dict_obj == null)
+            return {};
+                    
         var layer, layers = [];        
         if (dict_obj.length)
         {
