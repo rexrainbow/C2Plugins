@@ -54,6 +54,10 @@ AddStringParam("Group", "Put result in this group", '""');
 AddCondition(11, cf_trigger, "On colliding begin", "Collisions", 
             "On {my} colliding begin with <i>{0}</i>, put collided result to group <i>{1}</i>", 
             "Triggered when this chess collides begin with another chess.", "OnCollidedBegin");
+AddCondition(12, cf_trigger, "On get destination's solid", "Solid", 
+            "On {my} get destination's solid", 
+            "Triggered by plugin to get destination's solid property from event sheet.", "OnGetDestinationSolid");   
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -124,7 +128,18 @@ AddAction(15, 0, "Set random generator", "Wander",
           "Set random generator object.", "SetRandomGenerator");
 AddAction(16, 0, "Reset center position", "Wander", 
           "Reset wander center position to current logic position", 
-          "Reset wander center position to current logic position.", "ResetWanderCenter");   
+          "Reset wander center position to current logic position.", "ResetWanderCenter");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Solid", "Solid property.",0);
+AddAction(17, 0, "Set destination's solid", "Solid", 
+          "{my} set destination's solid to <i>{0}</i>", 
+          "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
+AddNumberParam("Solid", "Solid property. 0=Disable, 1=Enable.", 0);
+AddAction(18, 0, "Set destination's solid by number", "Solid", 
+          "{my} set destination's solid to <i>{0}</i>", 
+          "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
+                          
 AddObjectParam("Group", "Instance group object");
 AddAction(20, 0, "Set instance group ", "Collisions", 
           "Set instance group object to <i>{0}</i>", 

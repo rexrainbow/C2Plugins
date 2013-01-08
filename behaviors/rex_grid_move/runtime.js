@@ -57,7 +57,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.exp_Direction = (-1);
         this.exp_DestinationLX = (-1);
         this.exp_DestinationLY = (-1);
-        this.exp_DestinationLZ = (-1);      
+        this.exp_DestinationLZ = (-1);
+        this.exp_CustomSolid = null;
 		this._wander = {range_x:this.properties[4],
 		                range_y:this.properties[5]};
         this._dir_sequence = [];						
@@ -144,6 +145,20 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.exp_Direction = dir; 
     };
     
+    behinstProto._custom_can_move_to_get = function ()
+    {
+        this.exp_CustomSolid = null;
+        this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnGetDestinationSolid, this.inst);
+        var can_move_to;
+        if (this.exp_CustomSolid == null)
+            can_move_to = null;
+        else if (this.exp_CustomSolid)
+            can_move_to = (-1);
+        else
+            can_move_to = 1;
+        return can_move_to;
+    };    
+    
     behinstProto._test_move_to = function (target_x, target_y, target_z)
     {
         this.exp_BlockerUID = (-1);
@@ -158,6 +173,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
         if (_target_uid == null)  // no overlap at the same z
         {
+            // first, get solid property from event sheet
+            var custom_can_move_to = this._custom_can_move_to_get();
+            if (custom_can_move_to != null)
+                return custom_can_move_to;
+                
             // find out if neighbors have solid property
             var z_hash = this.board.xy2zhash(target_x, target_y);
             var z;
@@ -365,7 +385,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
 		return this._collide_test(objtype, group_name);
 	};
-	    
+	
+    Cnds.prototype.OnGetDestinationSolid = function ()
+	{
+		return true;
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -540,7 +565,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this._wander.init_xyz.y = _xyz.y;
         this._wander.init_xyz.z = _xyz.z;       
 	};  
-    
+	
+    Acts.prototype.SetDestinationSolid = function (is_solid)
+	{
+        this.exp_CustomSolid =  (is_solid > 0);
+	};
+	
     Acts.prototype.SetInstanceGroup = function (group_objs)
 	{
         var group = group_objs.instances[0];
