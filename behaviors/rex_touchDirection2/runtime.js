@@ -35,6 +35,8 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         this.GetAbsoluteY = null;
         this.GetSpeed = null;                
         this.behavior_index = null;
+        
+        this.touch_src = null;
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -50,10 +52,10 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
-                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.X;
-                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.Y;
-                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteX;
-                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteY;  
+                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
+                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;
+                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteXForID;
+                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteYForID;  
                 this.GetSpeed = cr.plugins_.rex_TouchWrap.prototype.exps.SpeedAt;                
                 this.touchwrap.HookMe(this);
                 break;
@@ -64,6 +66,10 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
     
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {      
+	    if (this.touch_src != null)
+		    return;
+			
+        this.touch_src = touch_src;          
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
             
@@ -74,14 +80,14 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         {
             inst = insts[i].behavior_insts[this.behavior_index];            
             inst.on_moving_start();
-        }
+        }      
     };
     
     behtypeProto.OnTouchEnd = function (touch_src)
     {       
-        if (this.touchwrap.IsInTouch())
+        if (this.touch_src != touch_src)
             return;
-            
+                    
         if (this.behavior_index == null )
             this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
             
@@ -92,7 +98,8 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         {
             inst = insts[i].behavior_insts[this.behavior_index];            
             inst.on_moving_end();
-        }         
+        }  
+        this.touch_src = null;               
     };
 	/////////////////////////////////////
 	// Behavior instance class
@@ -114,17 +121,17 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 
 	behinstProto.onCreate = function()
 	{   
-        this.activated = this.properties[0]; 
+        this.activated = (this.properties[0] == 1); 
         this.move_axis = this.properties[1]; 
         this.move_proportion = this.properties[2];
 	};
 
 	behinstProto.tick = function ()
 	{        
-        if ( (this.activated == 0) || (!this.is_on_drag) )
+        if ( (!this.activated) || (!this.is_on_drag) )
             return;
              
-        // this.activated == 1 && this.is_on_drag                        
+        // this.activated && this.is_on_drag                        
         var inst = this.inst;
         var cur_x = this.GetABSX();
         var cur_y = this.GetABSY();
@@ -162,6 +169,7 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	behinstProto.on_moving_start = function()
 	{   
         this.is_on_drag = true;
+        this._dir = null;
         this.pre_x = this.GetABSX();
         this.pre_y = this.GetABSY();
         this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStart, this.inst);
@@ -170,35 +178,36 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	behinstProto.on_moving_end = function()
 	{   
         this.is_on_drag = false;
-        this._dir = null;
         this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStop, this.inst);
 	};
 	  
 	behinstProto.GetABSX = function ()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetAbsoluteX.call(touch_obj, touch_obj.fake_ret);
+        this.type.GetAbsoluteX.call(touch_obj, touch_obj.fake_ret, this.type.touch_src);
         return touch_obj.fake_ret.value;
 	};  
 
 	behinstProto.GetABSY = function ()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetAbsoluteY.call(touch_obj, touch_obj.fake_ret);
+        this.type.GetAbsoluteY.call(touch_obj, touch_obj.fake_ret, this.type.touch_src);
         return touch_obj.fake_ret.value;        
 	};     
         
 	behinstProto.GetX = function()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetX.call(touch_obj, touch_obj.fake_ret);
+        this.type.GetX.call(touch_obj, 
+                            touch_obj.fake_ret, this.type.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;          
 	};
     
 	behinstProto.GetY = function()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetY.call(touch_obj, touch_obj.fake_ret);
+        this.type.GetY.call(touch_obj, 
+                            touch_obj.fake_ret, this.type.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	};   
     
@@ -240,15 +249,15 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-        if ( (this.activated==0) && 
+        if ( (!this.activated) && 
              this.is_on_drag &&
              (s==1)
            )
         {
-            this.pre_x = this.type.GetABSX();
-            this.pre_y = this.type.GetABSY();
+            this.pre_x = this.GetABSX();
+            this.pre_y = this.GetABSY();
         }
-		this.activated = s;
+		this.activated = (s==1);
 	}; 
 
 	Acts.prototype.SetProportion = function (s)
