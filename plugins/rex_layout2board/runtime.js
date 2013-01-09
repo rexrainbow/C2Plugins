@@ -60,11 +60,14 @@ cr.plugins_.Rex_layout2board = function(runtime)
         board_layout.SetHeight(this.cell_height);
         var lxmin=0, lymin=0, lxmax=0, lymax=0;
         var lx,ly;
+        var error;
         for (i=1; i<cnt; i++)
         {
             chess = instances[i];
             lx = board_layout.PXY2LX(chess.x, chess.y);
             ly = board_layout.PXY2LY(chess.x, chess.y);
+            error = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly));
+            assert2(!error, "[Layout to Board] Error! Check the setting of cell width or cell height.");  
             if (lxmin > lx)
                 lxmin = lx;
             if (lymin > ly)
