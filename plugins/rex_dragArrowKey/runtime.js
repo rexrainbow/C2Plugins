@@ -59,9 +59,9 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this.diff_x = 0;
         this.diff_y = 0;
         
-        this.press_handlers =   [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTPresse,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNPresse,
-                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnLEFTPresse,
+        this.press_handlers =   [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTPressed,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNPressed,
+                                 cr.plugins_.Rex_ArrowKey.prototype.cnds.OnLEFTPressed,
                                  cr.plugins_.Rex_ArrowKey.prototype.cnds.OnUPPressed     ];   
         this.release_handlers = [cr.plugins_.Rex_ArrowKey.prototype.cnds.OnRIGHTReleased,
                                  cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDOWNReleased,
