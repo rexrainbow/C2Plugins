@@ -138,7 +138,12 @@ AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Tile UID", "Tile UID.", 0);
 AddAction(19, 0, "Pick chess above tile UID", "SOL: chess", 
           "Pick <i>{0}</i> above tile UID: <i>{1}</i>", "Pick chess above tile UID.", "PickChessAboveTileUID");  
-          
+AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
+AddAction(20, 0, "Set board width", "Board", "Set board width to <i>{0}</i>", 
+          "Set board width.", "SetBoardWidth");
+AddNumberParam("Y", "Initial number of elements on the Y axis. 0 is unchanged.", 0);
+AddAction(21, 0, "Set board height", "Board", "Set board height to <i>{0}</i>", 
+          "Set board height.", "SetBoardHeight");	  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of instance.", 0);

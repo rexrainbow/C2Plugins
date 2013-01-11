@@ -77,18 +77,84 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    if (y_max>=0)    
 	        this.y_max = y_max;
 	    
-		this.board.length = x_max;
+		this.board.length = x_max+1;
 		var x, y;
 		for (x=0;x<=x_max;x++)
 		{
 		    this.board[x] = [];
-		    this.board[x].length = y_max;
+		    this.board[x].length = y_max+1;
 		    for(y=0;y<=y_max;y++)
 		        this.board[x][y] = {};
 		}
 		
 		this.items = {};
         this._insts = {};
+	};
+	
+	instanceProto.set_board_width = function(x_max)
+	{
+	    if (this.x_max == x_max)
+		    return;
+	    else if (this.x_max < x_max)    // extend
+		{
+		    var x, y, y_max=this.y_max;
+			this.board.length = x_max;
+		    for (x=this.x_max+1; x<=x_max; x++)
+		    {
+		        this.board[x] = [];
+		        this.board[x].length = y_max+1;
+		        for(y=0; y<=y_max; y++)
+		            this.board[x][y] = {};
+		    }
+		}
+		else  // (this.x_max > x_max) : collapse
+		{		
+		    var x, y, y_max=this.y_max;
+			var z, z_hash;
+		    for (x=this.x_max; x>x_max; x--)
+		    {
+		        for(y=0; y<=y_max; y++)
+				{
+				    z_hash = this.board[x][y];
+				    for (z in z_hash)
+					    this.remove_item(z_hash[z], true);
+			    }
+		    }		
+			this.board.length = x_max+1;			
+		}
+		this.x_max = x_max;
+	};
+	
+	instanceProto.set_board_height = function(y_max)
+	{
+	    if (this.y_max == y_max)
+		    return;
+	    else if (this.y_max < y_max)    // extend
+		{
+		    var x, y, x_max=this.x_max;
+		    for (x=0; x<=x_max; x++)
+		    {
+		        this.board[x].length = y_max+1;			
+		        for(y=this.y_max+1; y<=y_max; y++)
+		            this.board[x][y] = {};
+		    }
+		}
+		else  // (this.y_max > y_max) : collapse
+		{
+		    var x, y, x_max=this.x_max;
+			var z, z_hash;
+		    for (x=0; x<=x_max; x++)
+		    {	
+		        for(y=this.y_max; y>y_max; y--)
+				{
+				    z_hash = this.board[x][y];
+				    for (z in z_hash)
+					    this.remove_item(z_hash[z], true);
+				}
+		        this.board[x].length = y_max+1;							
+		    }		
+		}
+		this.y_max = y_max;	
 	};
 	
 	instanceProto.is_inside_board = function (x,y,z)
@@ -526,9 +592,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 	
-	Acts.prototype.ResetBoard = function (x_max,y_max)
+	Acts.prototype.ResetBoard = function (width,height)
 	{
-		this.reset_board(x_max-1, y_max-1);
+		this.reset_board(width-1, height-1);
 	};
 		
 	Acts.prototype.AddTile = function (objs,x,y)
@@ -623,6 +689,16 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (_xyz != null)
 	        this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
 	}; 
+	
+	Acts.prototype.SetBoardWidth = function (width)
+	{
+	    this.set_board_width(width-1);
+	};
+		
+	Acts.prototype.SetBoardHeight = function (height)
+	{
+	    this.set_board_height(height-1);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
