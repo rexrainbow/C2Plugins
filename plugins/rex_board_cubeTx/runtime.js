@@ -49,7 +49,22 @@ cr.plugins_.Rex_SLGCubeTx = function(runtime)
         this.SetHeight(this.properties[4]);
         this.deep = this.properties[5];
 	};
-   
+	instanceProto.SetPOX = function(pox)
+	{
+        this.PositionOX = pox;       
+	}; 
+	instanceProto.SetPOY = function(poy)
+	{
+        this.PositionOY = poy;
+	};   
+	instanceProto.GetPOX = function()
+	{
+        return this.PositionOX;       
+	}; 
+	instanceProto.GetPOY = function()
+	{
+        return this.PositionOY;
+	};
 	instanceProto.SetWidth = function(width)
 	{
         this.width = width;

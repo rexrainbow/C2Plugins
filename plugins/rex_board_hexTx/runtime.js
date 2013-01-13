@@ -55,6 +55,14 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
         this.PositionOY = poy;
 	};   
+	instanceProto.GetPOX = function()
+	{
+        return this.PositionOX;       
+	}; 
+	instanceProto.GetPOY = function()
+	{
+        return this.PositionOY;
+	}; 	
 	instanceProto.SetWidth = function(width)
 	{
         this.width = width;

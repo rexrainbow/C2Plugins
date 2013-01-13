@@ -282,6 +282,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         var is_inst = (typeof(inst) != "number");
         var uid = (is_inst)? inst.uid:inst;
+        if (this._insts[uid] != null)  // already on board
+            this.remove_item(uid);
         this.remove_item(this.xyz2uid(_x,_y,_z), true);
 	    this.board[_x][_y][_z] = uid;
 	    this.items[uid] = {x:_x, y:_y, z:_z};

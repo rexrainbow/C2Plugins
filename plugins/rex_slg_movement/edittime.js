@@ -18,10 +18,10 @@
 // Conditions
 AddStringParam("Name", "Cost function name.", '""');
 AddCondition(1, cf_trigger, "On cost", "Cost", 
-             "On cost function <i>{0}</i>", "Cost function.", "OnCostFn");
+             "On cost function <i>{0}</i>", "Cost function to get cost of each tile.", "OnCostFn");
 AddStringParam("Name", "Filter function name.", '""');
 AddCondition(2, cf_trigger, "On filter", "Filter", 
-             "On filter function <i>{0}</i>", "Filter function.", "OnFilterFn");
+             "On filter function <i>{0}</i>", "Filter function to re-assign target instances.", "OnFilterFn");
                  
 //////////////////////////////////////////////////////////////
 // Actions 
