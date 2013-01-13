@@ -874,5 +874,23 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Exps.prototype.BoardHeight = function (ret)
 	{
 	    ret.set_int(this.y_max+1);
-	};       
+	}; 
+
+	Exps.prototype.PXY2NearestPX = function (ret,physical_x,physical_y)
+	{  
+	    var lx = this.layout.PXY2LX(physical_x,physical_y);
+	    var ly = this.layout.PXY2LY(physical_x,physical_y);
+        lx = cr.clamp(Math.round(lx), 0, this.x_max);
+        ly = cr.clamp(Math.round(ly), 0, this.y_max);
+	    ret.set_float(this.layout.GetX(lx,ly,0));
+	};	
+	    
+	Exps.prototype.PXY2NearestPY = function (ret,physical_x,physical_y)
+	{  
+	    var lx = this.layout.PXY2LX(physical_x,physical_y);
+	    var ly = this.layout.PXY2LY(physical_x,physical_y);
+        lx = cr.clamp(Math.round(lx), 0, this.x_max);
+        ly = cr.clamp(Math.round(ly), 0, this.y_max);
+	    ret.set_float(this.layout.GetY(lx,ly,0));
+	};    
 }());

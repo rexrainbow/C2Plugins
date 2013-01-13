@@ -233,7 +233,17 @@ AddExpression(18, ef_return_number,
               "Get board width.");
 AddExpression(19, ef_return_number,
               "Get board height", "Board", "BoardHeight",
-              "Get board height.");              
+              "Get board height."); 
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0); 
+AddExpression(20, ef_return_number,
+              "Get nearest X co-ordinate of cell", "Board", "PXY2NearestPX",
+              "Get nearest X co-ordinate of cell from physical position.");
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0); 
+AddExpression(21, ef_return_number,
+              "Get nearest Y co-ordinate of cell", "Board", "PXY2NearestPY",
+              "Get nearest Y co-ordinate of cell from physical position.");               
 ACESDone();
 
 // Property grid properties for this plugin
