@@ -13,6 +13,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
+AddObjectParam("Board", "Board object");
+AddCondition(4, 0, "On the board", "Board", 
+             "Is {my} on <i>{0}</i>", "Return true if the chess is on the board.", "IsOnTheBoard");                         
 AddObjectParam("Chess", "Chess object B.");             
 AddCondition(6, cf_trigger, "On collision", "Collisions", 
             "On {my} collided with <i>{0}</i>", "Triggered when the object collides with another object.", "OnCollided");
@@ -51,7 +54,7 @@ AddAction(5, 0, "Move chess to xyz", "Logic: Move",
 AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddAction(6, 0, "Swap chess by UID", "Logic: Swap", 
           "Swap {my} with chess UID:<i>{1}</i>", 
-          "Swap two chess by UID.", "SwapChess");                                              
+          "Swap two chess by UID.", "SwapChess");                                                     
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

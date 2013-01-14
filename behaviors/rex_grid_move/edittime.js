@@ -138,12 +138,21 @@ AddAction(17, 0, "Set destination's solid", "Solid",
 AddNumberParam("Solid", "Solid property. 0=Disable, 1=Enable.", 0);
 AddAction(18, 0, "Set destination's solid by number", "Solid", 
           "{my} set destination's solid to <i>{0}</i>", 
-          "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
-                          
+          "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");                            
 AddObjectParam("Group", "Instance group object");
 AddAction(20, 0, "Set instance group ", "Collisions", 
           "Set instance group object to <i>{0}</i>", 
           "Set instance group object.", "SetInstanceGroup");           
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Move-able", "Move-able.",1);
+AddAction(21, 0, "Set destination's move-able", "Solid", 
+          "{my} set destination's move-able to <i>{0}</i>", 
+          "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");
+AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
+AddAction(22, 0, "Set destination's move-able by number", "Solid", 
+          "{my} set destination's move-able to <i>{0}</i>", 
+          "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 

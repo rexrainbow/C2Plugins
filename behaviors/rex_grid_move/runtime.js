@@ -242,8 +242,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
                 
             // set moveTo
             var layout = this.board.layout;
-            this._cmd_move_to._set_target_pos(layout.GetX(target_x, target_y, target_z), 
-                                              layout.GetY(target_x, target_y, target_z));
+            this._cmd_move_to._set_target_pos(layout.LXYZ2PX(target_x, target_y, target_z), 
+                                              layout.LXYZ2PY(target_x, target_y, target_z));
             this._is_moving_request_accepted = true;           
             this.is_my_call = true;                          
             this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted, this.inst);                                           
@@ -518,16 +518,18 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		var range_y = this._wander.range_y;		
 		_shuffle(this._dir_sequence);
 		var i, dir, dir_count=this._dir_sequence.length;
-		var target_lx, target_ly, can_move;
+		var tx, ty, tz, can_move;
 		for (i=0; i<dir_count; i++)
 		{
 		    dir = this._dir_sequence[i];
-		    target_lx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
-		    target_ly = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);	
-            if ((Math.abs(target_lx-init_lx) > range_x) || 
-			    (Math.abs(target_ly-init_ly) > range_y))
+		    tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
+		    ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
+		    tz = _xyz.z;	
+            if ((Math.abs(tx-init_lx) > range_x) || 
+			    (Math.abs(ty-init_ly) > range_y))
 				continue;
-		    can_move = this._move_to_target(target_lx, target_ly, _xyz.z);	    
+	        this.set_move_target(tx, ty, tz, dir);
+		    can_move = this._move_to_target(tx, ty, tz);	    
 			if (can_move)
 			    break;
 	    }	
@@ -570,6 +572,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
         this.exp_CustomSolid =  (is_solid > 0);
 	};
+	
+    Acts.prototype.SetDestinationMoveable = function (is_moveable)
+	{
+        this.exp_CustomSolid =  (!(is_moveable > 0));
+	};	
 	
     Acts.prototype.SetInstanceGroup = function (group_objs)
 	{

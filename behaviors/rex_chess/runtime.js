@@ -102,8 +102,18 @@ cr.behaviors.Rex_chess = function(runtime)
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
 	
+	Cnds.prototype.IsOnTheBoard = function (board_objs)
+	{
+		if (!board_objs)
+			return;
+		return (this._board_get() == board_objs.getFirstPicked());
+	};	
+	
 	Cnds.prototype.OnCollided = function (objB)
 	{
+		if (!objB)
+			return;
+				    
 	    var objA = this.inst.type;
 	    this._overlap_test(objA, objB);
 		// We've aleady run the event by now.
@@ -112,6 +122,9 @@ cr.behaviors.Rex_chess = function(runtime)
 	
 	Cnds.prototype.IsOverlapping = function (objB)
 	{
+		if (!objB)
+			return;
+				    
 	    var objA = this.inst.type;
 	    this._overlap_test(objA, objB);
 		// We've aleady run the event by now.
@@ -133,6 +146,9 @@ cr.behaviors.Rex_chess = function(runtime)
 
 	Acts.prototype.AddChess = function (board_objs, lx, ly, lz)
 	{
+		if (!board_objs)
+			return;
+				    
 	    var chess_uid = this.inst.uid;
 	    if (this.board != null)  // at other board
 	        this.board.remove_item(chess_uid);
@@ -148,11 +164,14 @@ cr.behaviors.Rex_chess = function(runtime)
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
 	        return;
-	    board.remove_item(this.inst.uid);	    
+	    board.remove_item(this.inst.uid);   
 	}; 	
 
 	Acts.prototype.MoveChess = function (tile_objs)
 	{
+		if (!tile_objs)
+			return;
+				    
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
 	        return;
@@ -253,7 +272,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	    else
 	    {
 	        var _xyz = board.uid2xyz(this.inst.uid);
-	        px = board.layout.GetX(_xyz.x,_xyz.y,_xyz.z);
+	        px = board.layout.LXYZ2PX(_xyz.x,_xyz.y,_xyz.z);
 	    }
 	    ret.set_float(px);
 	};
@@ -267,7 +286,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	    else
 	    {
 	        var _xyz = board.uid2xyz(this.inst.uid);
-	        py = board.layout.GetY(_xyz.x,_xyz.y,_xyz.z);
+	        py = board.layout.LXYZ2PY(_xyz.x,_xyz.y,_xyz.z);
 	    }
 	    ret.set_float(py);
 	};
