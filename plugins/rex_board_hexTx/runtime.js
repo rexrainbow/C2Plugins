@@ -72,11 +72,11 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
         this.height = height;        
 	};   
-	instanceProto.GetX = function(logic_x, logic_y, logic_z)
+	instanceProto.LXYZ2PX = function(logic_x, logic_y, logic_z)
 	{
         return (logic_x*this.width)+((logic_y%2)*this.half_width)+this.PositionOX;
 	};
-	instanceProto.GetY = function(logic_x, logic_y, logic_z)
+	instanceProto.LXYZ2PY = function(logic_x, logic_y, logic_z)
 	{
         return (logic_y*this.height)+this.PositionOY;
 	};   
@@ -92,7 +92,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	};	
 	instanceProto.CreateItem = function(obj_type,x,y,z,layer)
 	{
-        return this.runtime.createInstance(obj_type, layer,this.GetX(x,y,z),this.GetY(x,y,z) );        
+        return this.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y,z),this.LXYZ2PY(x,y,z) );        
 	}; 	
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{

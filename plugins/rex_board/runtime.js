@@ -588,7 +588,23 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	        return this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
         else
             return false;
-	};    
+	};  
+	Cnds.prototype.IsOnTheBoard = function (chess_type)
+	{
+        if (!chess_type)
+            return false;       
+        var sol = chess_type.getCurrentSol();
+        var chess_insts = sol.getObjects();
+        var i, cnt=chess_insts.length, uid;
+        for (i=0; i<cnt; i++)
+        {
+            uid = chess_insts[i].uid;
+            if (!(uid in this.items))
+                return false;
+        }
+        return true;
+	};  	
+	  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -747,7 +763,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         var px;
         if (this.layout != null)
-            px = this.layout.GetX(logic_x,logic_y,0);
+            px = this.layout.LXYZ2PX(logic_x,logic_y,0);
         else
             px = (-1);
 	    ret.set_float(px);
@@ -757,7 +773,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         var py;
         if (this.layout != null)
-            py = this.layout.GetY(logic_x,logic_y,0);
+            py = this.layout.LXYZ2PY(logic_x,logic_y,0);
         else
             py = (-1);
 	    ret.set_float(py);
@@ -768,7 +784,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var px;
         var _xyz = this.uid2xyz(uid);
         if ((this.layout != null) && (_xyz != null))           
-            px = this.layout.GetX(_xyz.x,_xyz.y)
+            px = this.layout.LXYZ2PX(_xyz.x,_xyz.y)
         else
             px = (-1);
 	    ret.set_float(px);
@@ -779,7 +795,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var py;
         var _xyz = this.uid2xyz(uid);
         if ((this.layout != null) && (_xyz != null))        
-            py = this.layout.GetY(_xyz.x,_xyz.y)
+            py = this.layout.LXYZ2PY(_xyz.x,_xyz.y)
         else
             py = (-1);
 	    ret.set_float(py);
@@ -805,7 +821,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         var px;
         if (this.layout != null)
-            px = this.layout.GetX(logic_x,logic_y,logic_z);
+            px = this.layout.LXYZ2PX(logic_x,logic_y,logic_z);
         else
             px = (-1);
 	    ret.set_float(px);
@@ -815,7 +831,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         var py;
         if (this.layout != null)
-            py = this.layout.GetY(logic_x,logic_y,logic_z);
+            py = this.layout.LXYZ2PY(logic_x,logic_y,logic_z);
         else
             py = (-1);
 	    ret.set_float(py);
@@ -882,7 +898,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var ly = this.layout.PXY2LY(physical_x,physical_y);
         lx = cr.clamp(Math.round(lx), 0, this.x_max);
         ly = cr.clamp(Math.round(ly), 0, this.y_max);
-	    ret.set_float(this.layout.GetX(lx,ly,0));
+	    ret.set_float(this.layout.LXYZ2PX(lx,ly,0));
 	};	
 	    
 	Exps.prototype.PXY2NearestPY = function (ret,physical_x,physical_y)
@@ -891,6 +907,22 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var ly = this.layout.PXY2LY(physical_x,physical_y);
         lx = cr.clamp(Math.round(lx), 0, this.x_max);
         ly = cr.clamp(Math.round(ly), 0, this.y_max);
-	    ret.set_float(this.layout.GetY(lx,ly,0));
-	};    
+	    ret.set_float(this.layout.LXYZ2PY(lx,ly,0));
+	};
+	
+	Exps.prototype.LogicDistance = function (ret, uid_A, uid_B)
+	{  
+        var xyz_A = this.uid2xyz(uid_A);
+        var xyz_B = this.uid2xyz(uid_B);
+        var distanc;
+        if ((xyz_A == null) || (xyz_B == null))
+            distanc = (-1)
+        else
+        {
+            var dx = xyz_B.x - xyz_A.x;
+            var dy = xyz_B.y - xyz_A.y;
+            distanc = Math.sqrt(dx*dx + dy*dy);
+        }
+	    ret.set_float(distanc);
+	};	    
 }());

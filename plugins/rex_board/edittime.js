@@ -55,6 +55,10 @@ AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Tile UID", "Tile UID.", 0);
 AddCondition(14, cf_not_invertible, "Pick chess above tile UID", "SOL: chess", 
              "Pick <i>{0}</i> above tile UID: <i>{1}</i>", "Pick chess above tile UID.", "PickChessAboveTileUID");           
+AddObjectParam("Chess", "Chess object.");
+AddCondition(15, 0, "On the board", "Board", 
+            "Is <i>{0}</i> on the board", "Return true if the chess is on the board.", "IsOnTheBoard");
+        
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -146,15 +150,15 @@ AddAction(21, 0, "Set board height", "Board", "Set board height to <i>{0}</i>",
           "Set board height.", "SetBoardHeight");	  
 //////////////////////////////////////////////////////////////
 // Expressions
-AddNumberParam("UID", "The UID of instance.", 0);
+AddNumberParam("UID", "The UID of chess.", 0);
 AddExpression(1, ef_return_number | ef_variadic_parameters, 
               "Get X index of selected chess", "Chess", "UID2LX", 
               "Get X index of selected chess by UID.");
-AddNumberParam("UID", "The UID of instance.", 0);              
+AddNumberParam("UID", "The UID of chess.", 0);              
 AddExpression(2, ef_return_number | ef_variadic_parameters, 
               "Get Y index of selected chess", "Chess", "UID2LY", 
               "Get Y index of selected chess by UID.");
-AddNumberParam("UID", "The UID of instance.", 0);              
+AddNumberParam("UID", "The UID of chess.", 0);              
 AddExpression(3, ef_return_any | ef_variadic_parameters, 
               "Get Z index of selected chess", "Chess", "UID2LZ", 
               "Get Z index of selected chess by UID.");
@@ -164,7 +168,7 @@ AddAnyTypeParam("Z", "The logic Z.", 0);
 AddExpression(4, ef_return_number | ef_variadic_parameters,
               "Get UID by XYZ", "Chess", "LXYZ2UID",
               "Get UID by XYZ index.");
-AddNumberParam("UID", "The UID of instance.", 0);
+AddNumberParam("UID", "The UID of chess.", 0);
 AddAnyTypeParam("Z", "The logic Z.", 0);            
 AddExpression(5, ef_return_number | ef_variadic_parameters,
               "Get UID by UID and Z", "Chess", "LZ2UID",
@@ -179,16 +183,16 @@ AddNumberParam("Y", "The logic Y.", 0);
 AddExpression(7, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by logic index", "Physical", "LXY2PY",
               "Get physical Y co-ordinate by logic X,Y index."); 
-AddNumberParam("UID", "The UID of instance.", 0);
+AddNumberParam("UID", "The UID of chess.", 0);
 AddExpression(8, ef_return_number | ef_variadic_parameters,
               "Get X co-ordinate by UID", "Physical", "UID2PX",
               "Get X co-ordinate by UID.");
-AddNumberParam("UID", "The UID of instance.", 0);              
+AddNumberParam("UID", "The UID of chess.", 0);              
 AddExpression(9, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by UID", "Physical", "UID2PY",
               "Get Y co-ordinate by UID.");
-AddNumberParam("Origin", "The UID of instance at origin.", 0);   
-AddNumberParam("FaceTo", "The UID of instance to face.", 0);         
+AddNumberParam("Origin", "The UID of chess at origin.", 0);   
+AddNumberParam("FaceTo", "The UID of chess to face.", 0);         
 AddExpression(10, ef_return_number | ef_variadic_parameters,
               "Get Logic angle by UID", "Chess", "UID2LA",
               "Get Logic angle by UID, in degree. (-1) is invalid angle.");              
@@ -204,7 +208,7 @@ AddNumberParam("Z", "The logic Z.", 0);
 AddExpression(12, ef_return_number | ef_variadic_parameters,
               "Get Y co-ordinate by logic index", "Physical", "LXYZ2PY",
               "Get physical Y co-ordinate by logic X,Y,Z index."); 
-AddNumberParam("UID", "The UID of instance.", 0);              
+AddNumberParam("UID", "The UID of chess.", 0);              
 AddExpression(13, ef_return_number | ef_variadic_parameters, 
               "Get z count at select chess by UID", "Chess", "UID2ZCnt", 
               "Get z count at select chess by UID.");
@@ -223,7 +227,7 @@ AddNumberParam("Y", "The physical Y.", 0);
 AddExpression(16, ef_return_number | ef_variadic_parameters,
               "Get logic Y by physical co-ordinate", "Logic", "PXY2LY",
               "Get logic Y by physical X,Y co-ordinate."); 
-AddNumberParam("UID", "The UID of instance.", 0);
+AddNumberParam("UID", "The UID of chess.", 0);
 AddAnyTypeParam("Direction", "The direction.", 0);            
 AddExpression(17, ef_return_number | ef_variadic_parameters,
               "Get neighbor UID by UID and direction", "Chess", "DIR2UID",
@@ -243,7 +247,13 @@ AddNumberParam("X", "The physical X.", 0);
 AddNumberParam("Y", "The physical Y.", 0); 
 AddExpression(21, ef_return_number,
               "Get nearest Y co-ordinate of cell", "Board", "PXY2NearestPY",
-              "Get nearest Y co-ordinate of cell from physical position.");               
+              "Get nearest Y co-ordinate of cell from physical position."); 
+AddNumberParam("UID", "The UID of chess A.", 0);    
+AddNumberParam("UID", "The UID of chess B.", 0);    
+AddExpression(22, ef_return_number,
+              "Get logic distance of two chess", "Logic", "LogicDistance",
+              "Get logic distance of two chess.");
+              
 ACESDone();
 
 // Property grid properties for this plugin
