@@ -27,6 +27,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 
 	typeProto.onCreate = function()
 	{
+	    this.layout = null;	
 	};
 
 	/////////////////////////////////////
@@ -41,17 +42,11 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-		this.board = {};
-		this.items = {};
-        this._insts = {};
-
-        this.layout = null;	
-		this._kicked_chess_inst = null;	
+	    this.check_name = "BOARD";
         this._pre_x = this.x;
 		this._pre_y = this.y;
-		this.main_board = null;
-		this.POX = (-1);
-		this.POY = (-1);
+         
+		this.ResetBoard();
 		
 		this.myDestroyCallback = (function (self) {
 											return function(inst) {
@@ -61,9 +56,20 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.runtime.addDestroyCallback(this.myDestroyCallback); 
 		this.runtime.tick2Me(this); 
 
+		this._kicked_chess_inst = null;	
         this.exp_EmptyLX = (-1);
         this.exp_EmptyLY = (-1);
 	};
+	
+	instanceProto.ResetBoard = function ()
+	{
+		this.board = {};
+		this.items = {};
+        this._insts = {};
+		this.main_board = null;
+		this.POX = (-1);
+		this.POY = (-1);
+	};	
 	
 	instanceProto.onInstanceDestroyed = function (inst)
 	{
@@ -172,9 +178,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
             //this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnChessKicked, this); 
         }
         
+        var chess_inst = this._insts[uid];
         delete this.items[uid];
         delete this.board[_xyz.x][_xyz.y][_xyz.z];        
-        delete this._insts[uid];		
+        delete this._insts[uid];	
+        
+        delete chess_inst.extra.rex_miniboard_uid;	
 	};
 	instanceProto.add_item = function(inst, _x, _y, _z)
 	{                
@@ -195,7 +204,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
 	{
         var layer = this._get_layer(_layer);
-        var inst = this.layout.CreateItem(obj_type,x,y,z,layer);
+        var inst = this.type.layout.CreateItem(obj_type,x,y,z,layer);
         if (!inst)
             return;
         
@@ -210,18 +219,19 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	};
 	instanceProto.CreateChess = function(obj_type,x,y,z,layer)
 	{
-        if ( (obj_type ==null) || (this.layout == null) )
+        if ( (obj_type ==null) || (this.type.layout == null) )
             return;
 
-	    var pox_save = this.layout.GetPOX();
-		var poy_save = this.layout.GetPOY();
-		this.layout.SetPOX(this.x);
-		this.layout.SetPOY(this.y);
+        var layout = this.type.layout;
+	    var pox_save = layout.GetPOX();
+		var poy_save = layout.GetPOY();
+		layout.SetPOX(this.x);
+		layout.SetPOY(this.y);
         var inst = this.CreateItem(obj_type,x,y,z,layer);
 		if (inst != null)
 	        this.add_item(inst,x,y,z);  
-		this.layout.SetPOX(pox_save);
-		this.layout.SetPOY(poy_save);
+		layout.SetPOX(pox_save);
+		layout.SetPOY(poy_save);
 	    return inst;
 	};
 	instanceProto.IsEmpty = function (board_inst, offset_lx, offset_ly)
@@ -259,8 +269,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 			z = _xyz.z;			
 			board_inst.add_item(insts[uid], x, y, z);
 		}
-		this.x = board_inst.layout.GetX(offset_lx, offset_ly, 0);
-		this.y = board_inst.layout.GetY(offset_lx, offset_ly, 0);
+		this.x = board_inst.layout.LXYZ2PX(offset_lx, offset_ly, 0);
+		this.y = board_inst.layout.LXYZ2PY(offset_lx, offset_ly, 0);
 		this.chess_pos_set();
 		this.main_board = board_inst;
 		this.POX = offset_lx;
@@ -278,7 +288,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 			this.main_board.remove_item(uid);
 		this.main_board = null;
 		this.POX = (-1);
-		this.POY = (-1);        
+		this.POY = (-1);
 	};
     
 	instanceProto._pick_all_insts = function ()
@@ -368,7 +378,15 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         runtime.popSol(current_event.solModifiers);
 		return false;            
 	}; 
-    
+	  
+	Cnds.prototype.IsOnTheBoard = function (board_objs)
+	{
+		if (!board_objs)
+			return; 
+		var board_inst = board_objs.getFirstPicked();
+		return (this.main_board == board_inst);
+	}; 
+	
 	Cnds.prototype.CanFindEmpty = function (board_objs, _start_lx, _start_ly, _range)
 	{	
 		if ((!board_objs) || (_range <0))
@@ -432,6 +450,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.exp_EmptyLY = (-1);
         return false;        
 	};	
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -441,7 +460,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	{   
         var layout = layout_objs.instances[0];
         if (layout.check_name == "LAYOUT")
-            this.layout = layout;        
+            this.type.layout = layout;        
         else
             alert ("Mini board should connect to a layout object");
 	};  
@@ -468,7 +487,13 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	Acts.prototype.PickAllChess = function ()
 	{	
         this._pick_all_insts();
-	};	    
+	};
+	
+	Acts.prototype.ReleaseAllChess = function ()
+	{	
+        this.ResetBoard();
+	};	
+		    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

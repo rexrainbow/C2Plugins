@@ -78,8 +78,8 @@ cr.plugins_.Rex_layout2board = function(runtime)
                 lymax = ly;                        
         }
         // offset logic position
-        board_info.px0 = board_layout.GetX(lxmin, lymin);
-        board_info.py0 = board_layout.GetY(lxmin, lymin);      
+        board_info.px0 = board_layout.LXYZ2PX(lxmin, lymin);
+        board_info.py0 = board_layout.LXYZ2PY(lxmin, lymin);      
         lxmax -= lxmin;
         lymax -= lymin;
         board.reset_board(lxmax+1, lymax+1);

@@ -170,8 +170,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);  
                 this.exp_LogicX = x;
                 this.exp_LogicY = y;
-                this.exp_PhysicalX = this.layout.GetX(x,y);
-                this.exp_PhysicalY = this.layout.GetY(x,y);
+                this.exp_PhysicalX = this.layout.LXYZ2PX(x,y);
+                this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
@@ -235,8 +235,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 y = obj.y / this.exp_TileHeight;
                 this.exp_ObjectLX = x;
                 this.exp_ObjectLY = y;                
-                this.exp_ObjectPX = this.layout.GetX(x,y);
-                this.exp_ObjectPY = this.layout.GetY(x,y);                
+                this.exp_ObjectPX = this.layout.LXYZ2PX(x,y);
+                this.exp_ObjectPY = this.layout.LXYZ2PY(x,y);                
                 this.exp_object_properties = obj.properties;
                 this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnEachObject, this); 
             }
@@ -360,8 +360,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 y = (data_index-x)/layer.height;
                 this.exp_LogicX = x;
                 this.exp_LogicY = y;
-                this.exp_PhysicalX = this.layout.GetX(x,y);
-                this.exp_PhysicalY = this.layout.GetY(x,y);
+                this.exp_PhysicalX = this.layout.LXYZ2PX(x,y);
+                this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
@@ -421,8 +421,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         y = obj.y / this.exp_TileHeight;
         this.exp_ObjectLX = x;
         this.exp_ObjectLY = y;                
-        this.exp_ObjectPX = this.layout.GetX(x,y);
-        this.exp_ObjectPY = this.layout.GetY(x,y);                
+        this.exp_ObjectPX = this.layout.LXYZ2PX(x,y);
+        this.exp_ObjectPY = this.layout.LXYZ2PY(x,y);                
         this.exp_object_properties = obj.properties;
         
         // update index
@@ -1099,13 +1099,13 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.height = height;
         this.half_height = height/2;        
 	};   
-    LayoutKlassProto.GetX = function(logic_x, logic_y)
+    LayoutKlassProto.LXYZ2PX = function(logic_x, logic_y)
 	{
         var x = (this.is_isometric)? ((logic_x - logic_y)*this.half_width):
                                      (logic_x*this.width);
         return x+this.PositionOX;
 	};
-	LayoutKlassProto.GetY = function(logic_x, logic_y)
+	LayoutKlassProto.LXYZ2PY = function(logic_x, logic_y)
 	{
         var y = (this.is_isometric)? ((logic_x + logic_y)*this.half_height):
                                      (logic_y*this.height);
@@ -1113,7 +1113,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	};
     LayoutKlassProto.CreateItem = function(obj_type,x,y,layer)
 	{
-        return this.plugin.runtime.createInstance(obj_type, layer,this.GetX(x,y),this.GetY(x,y) );         
+        return this.plugin.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y),this.LXYZ2PY(x,y) );         
 	}; 
 	
 	

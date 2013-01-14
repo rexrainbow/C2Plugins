@@ -25,7 +25,10 @@ AddCondition(2, cf_not_invertible, "Pick all chess", "SOL",
              "Pick all chess on this mini board", "Pick all chess on this mini board.", "PickAllChess");   
 AddObjectParam("Chess", "Chess under mini board");
 AddCondition(3, cf_static | cf_not_invertible, "Pick mini board", "SOL: mini board", 
-          "Pick mini board from <i>{0}</i>", "Pick mini board from chess.", "PickMiniboard");               
+          "Pick mini board from <i>{0}</i>", "Pick mini board from chess.", "PickMiniboard");
+AddObjectParam("Board", "Board object");
+AddCondition(4, 0, "On the board", "Board", 
+             "Is on <i>{0}</i>", "Return true if the mini board is on the board.", "IsOnTheBoard");                         
 AddObjectParam("Board", "Board object");
 AddNumberParam("Logic X", "The X index of start.", 0);
 AddNumberParam("Logic Y", "The Y index of start.", 0);
@@ -54,7 +57,10 @@ AddAction(3, 0, "Put", "Main board",
 AddAction(4, 0, "Pull out", "Main board", 
              "Pull out from main board", "Pull out from main board.", "PullOutChess");
 AddAction(5, 0, "Pick all chess", "SOL", 
-          "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess");              
+          "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess");
+AddAction(6, 0, "Release all chess", "Release", 
+          "Release all chess", "Release all chess.", "ReleaseAllChess");
+
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number | ef_variadic_parameters,
