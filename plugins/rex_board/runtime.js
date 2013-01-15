@@ -489,7 +489,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return (sol.instances.length != 0);
 	};
 
-
+	instanceProto.point_is_in_board = function (px, py)
+	{
+	    var lx = this.layout.PXY2LX(px, py);
+		var ly = this.layout.PXY2LY(px, py);
+		return ((lx>=0) && (ly>=0) && (lx<=this.x_max) && (ly<=this.y_max));
+	};
 	 			
 	//////////////////////////////////////
 	// Conditions
@@ -515,11 +520,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		return false;
 	};	
 	  
-	Cnds.prototype.IsInBoard = function (physical_x,physical_y)
+	Cnds.prototype.PointIsInBoard = function (physical_x,physical_y)
 	{
-	    var lx = this.layout.PXY2LX(physical_x,physical_y);
-		var ly = this.layout.PXY2LY(physical_x,physical_y);
-		return ((lx>=0) && (ly>=0) && (lx<=this.x_max) && (ly<=this.y_max));
+		return this.point_is_in_board(physical_x,physical_y);
 	}; 
 	
 	Cnds.prototype.AreNeighbor = function (uidA, uidB)

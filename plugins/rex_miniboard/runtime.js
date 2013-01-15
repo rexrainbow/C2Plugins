@@ -499,30 +499,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
 	
-	Exps.prototype.LX = function (ret,_offsetLX)
+	Exps.prototype.LX = function (ret)
 	{
-	    var lx;
-		if (this.main_board == null)
-		    lx = (-1);
-		else
-		{
-		    lx = this.POX;
-		    if (_offsetLX != null)
-			    lx += _offsetLX;
-		}
+	    var lx = (this.main_board == null)? (-1): this.POX;
 	    ret.set_int(lx);
 	};
-	Exps.prototype.LY = function (ret,_offsetLY)
-	{
-	    var ly;
-		if (this.main_board == null)
-		    ly = (-1);
-		else
-		{
-		    ly = this.POY;
-		    if (_offsetLY != null)
-			    ly += _offsetLY;
-		}
+	Exps.prototype.LY = function (ret)
+    {
+	    var ly = (this.main_board == null)? (-1): this.POY;
 	    ret.set_int(ly);
 	};	
 	Exps.prototype.EmptyLX = function (ret)

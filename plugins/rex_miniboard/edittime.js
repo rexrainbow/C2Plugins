@@ -63,12 +63,12 @@ AddAction(6, 0, "Release all chess", "Release",
 
 ////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number | ef_variadic_parameters,
-              "Logic X on main board", "Main board", "LX",
-              "Get logic X on main board. Add second parameter to indicate logic X on mini board.");
-AddExpression(2, ef_return_number | ef_variadic_parameters,
-              "Logic Y on main board", "Main board", "LY",
-              "Get logic Y on main board. Add second parameter to indicate logic X on mini board.");
+AddExpression(1, ef_return_number,
+              "Logic X offset on main board", "Main board", "LX",
+              "Get logic X offset on main board.");
+AddExpression(2, ef_return_number,
+              "Logic Y offset on main board", "Main board", "LY",
+              "Get logic Y offset on main board.");
 AddExpression(10, ef_return_number,
               "Logic X of empty on main board", "Main board: find empty", "EmptyLX",
               "Get logic X of empty on main board. Used under 'Condition:Can find empty logic index'");

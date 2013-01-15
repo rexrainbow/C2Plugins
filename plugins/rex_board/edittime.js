@@ -32,7 +32,7 @@ AddCondition(7, 0, "Is overlapping", "Collisions",
 AddNumberParam("X", "The Physical X.", 0);
 AddNumberParam("Y", "The Physical Y.", 0);
 AddCondition(8, 0, "Point is in board", "Board", 
-             "Point (<i>{0}</i>,<i>{1}</i>) is in board", "Testing if point is in board.", "IsInBoard");
+             "Point (<i>{0}</i>,<i>{1}</i>) is in board", "Testing if point is in board.", "PointIsInBoard");
 AddNumberParam("UID of chess", "UID of chess A.", 0);
 AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddCondition(9, 0, "Are neighbor (UID)", "Board", 
