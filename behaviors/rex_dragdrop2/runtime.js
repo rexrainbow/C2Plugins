@@ -70,11 +70,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     {
         if (this.behavior_index == null )
             return;
-			
-	    var sol = this.objtype.getCurrentSol();
-        var select_all_save = sol.select_all;	
-		sol.select_all = true;
-		var insts = sol.getObjects();
+
+		var insts = this.objtype.instances;
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
         {
@@ -85,8 +82,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 			    behavior_inst.drag_info.is_on_dragged = false;
 				this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, inst); 
 			}
-        }	
-		sol.select_all = select_all_save;     
+        }    
     };
     
     // drag detecting
@@ -137,23 +133,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             if ( behavior_inst.inst.zindex > target_inst_behavior.inst.zindex )
                 target_inst_behavior = behavior_inst;
         }
-        
-		inst = target_inst_behavior.inst;
-        var drag_info=target_inst_behavior.drag_info;        
-        // !! should set these before get touchXY
-        drag_info.is_on_dragged = true;	
-		drag_info.touch_src = touch_src;
-        // !! should set these before get touchXY
-        var cur_x=target_inst_behavior.GetX(), cur_y=target_inst_behavior.GetY();
-        drag_info.drag_dx = inst.x - cur_x;
-        drag_info.drag_dy = inst.y - cur_y;
-        drag_info.pre_x = cur_x;
-        drag_info.pre_y = cur_y;     
-        drag_info.drag_start_x = cur_x;
-        drag_info.drag_start_y = cur_y;         
-        drag_info.inst_start_x = inst.x;
-        drag_info.inst_start_y = inst.y;   
-        drag_info.is_moved = false;
+
+		target_inst_behavior.DragInfoSet(touch_src);
         this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, target_inst_behavior.inst);     
 
         // recover to select_all_save
@@ -173,17 +154,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		this.runtime = type.runtime;
         
         type.TouchWrapGet();            
-        this.drag_info = {touch_src:-1,
-		                  pre_x:0,
-                          pre_y:0,
-                          drag_dx:0,
-                          drag_dy:0,
-                          is_on_dragged:false,
-                          drag_start_x:0,
-                          drag_start_y:0,                           
-                          inst_start_x:0,
-                          inst_start_y:0,                          
-                          is_moved:false};                       
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -192,6 +162,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{   
         this.activated = (this.properties[0]==1);  
         this.move_axis = this.properties[1];  
+        this.drag_info = {touch_src:-1,
+		                  pre_x:0,
+                          pre_y:0,
+                          drag_dx:0,
+                          drag_dy:0,
+                          is_on_dragged:false,
+                          drag_start_x:0,
+                          drag_start_y:0,
+                          inst_start_x:0,
+                          inst_start_y:0,
+                          is_moved:false};        
 	};
 
 	behinstProto.tick = function ()
@@ -280,6 +261,26 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                             touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	};  
+
+	behinstProto.DragInfoSet = function(touch_src)
+	{
+	    var inst = this.inst;
+        var drag_info=this.drag_info;        
+        // !! should set these before get touchXY
+        drag_info.is_on_dragged = true;	
+		drag_info.touch_src = touch_src;
+        // !! should set these before get touchXY
+        var cur_x=this.GetX(), cur_y=this.GetY();
+        drag_info.drag_dx = inst.x - cur_x;
+        drag_info.drag_dy = inst.y - cur_y;
+        drag_info.pre_x = cur_x;
+        drag_info.pre_y = cur_y;     
+        drag_info.drag_start_x = cur_x;
+        drag_info.drag_start_y = cur_y;         
+        drag_info.inst_start_x = inst.x;
+        drag_info.inst_start_y = inst.y;   
+        drag_info.is_moved = false;      
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -325,7 +326,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		this.activated = (s==1);
 	};  
 
-	Acts.prototype.ForceDropp = function ()
+	Acts.prototype.ForceDrop = function ()
 	{
         if (this.drag_info.is_on_dragged)
         {

@@ -17,20 +17,20 @@
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
+AddAction(0, 0, "Set activated", "Actived", "Set {my} activated to <i>{0}</i>", 
           "Enable the object's drag&drop behavior.", "SetActivated");
-AddAction(1, 0, "Force to drop", "", "Force {my} to drop", 
-          "Force the dragged object to drop.", "ForceDropp");          
+AddAction(1, 0, "Force to drop", "Drop", "Force {my} to drop", 
+          "Force the dragged object to drop.", "ForceDrop");          
 
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On dragging start", "", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
-AddCondition(1,	cf_deprecated | cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
-AddCondition(2,	cf_trigger, "On dropped", "", "On {my} drop", "Triggered when object drop.", "OnDrop"); 
-AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.", "IsDragging");
-AddCondition(4,	cf_trigger, "On dragging moving start", "", "On {my} dragging moving start", "Triggered when object dragging moving start.", "OnDragMoveStart"); 
-AddCondition(5,	cf_trigger, "On dragging moving", "", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
+AddCondition(0,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
+AddCondition(1,	cf_deprecated | cf_trigger, "On dragging", "Drag", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
+AddCondition(2,	cf_trigger, "On dropped", "Drop", "On {my} drop", "Triggered when object dropped.", "OnDrop"); 
+AddCondition(3,	0, "Is dragging", "Drag", "Is {my} dragging", "Is object dragging.", "IsDragging");
+AddCondition(4,	cf_trigger, "On dragging moving start", "Dragging moving", "On {my} dragging moving start", "Triggered when object dragging moving start.", "OnDragMoveStart"); 
+AddCondition(5,	cf_trigger, "On dragging moving", "Dragging moving", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
 
 //////////////////////////////////////////////////////////////
 // Expressions

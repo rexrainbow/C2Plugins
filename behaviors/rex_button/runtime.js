@@ -96,10 +96,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
         if (this.behavior_index == null )
             return;
 			
-	    var sol = this.objtype.getCurrentSol();
-        var select_all_save = sol.select_all;	
-		sol.select_all = true;
-		var insts = sol.getObjects();
+		var insts = this.objtype.instances;
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
         {
@@ -107,8 +104,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
             behavior_inst = inst.behavior_insts[this.behavior_index];
 			if ((behavior_inst._touch_src == touch_src) && (behavior_inst._state == CLICK_DETECTING_STATE))
                 behavior_inst.finish_click_detecting();            
-        }	
-		sol.select_all = select_all_save;     
+        }	    
     };  
         
 	/////////////////////////////////////
