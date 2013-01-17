@@ -32,6 +32,10 @@ AddAction(4, 0, "Set position offset", "Position",
           
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Cell width", "Cell", "Width", "Get cell width in pixels.");
+AddExpression(2, ef_return_number, "Cell height", "Cell", "Height", "Get cell height in pixels.");
+AddExpression(3, ef_return_number, "X co-ordinate at (0,0)", "Offset", "POX", "Get physical X co-ordinate at logic (0,0).");
+AddExpression(4, ef_return_number, "Y co-ordinate at (0,0)", "Offset", "POY", "Get physical Y co-ordinate at logic (0,0).");
 
 
 ACESDone();

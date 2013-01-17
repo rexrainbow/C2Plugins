@@ -186,5 +186,21 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-
+	
+	Exps.prototype.Width = function (ret)
+	{
+	    ret.set_float(this.width);
+	};
+	Exps.prototype.Height = function (ret)
+    {
+	    ret.set_float(this.height);
+	};
+	Exps.prototype.POX = function (ret)
+	{
+	    ret.set_float(this.PositionOX);
+	};
+	Exps.prototype.POY = function (ret)
+    {
+	    ret.set_float(this.PositionOY);
+	};	
 }());

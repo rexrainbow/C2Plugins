@@ -36,13 +36,16 @@ AddAction(3, 0, "Set cell size", "Size",
           "Set cell size.", "SetCellSize");
 AddNumberParam("X", "Physical X co-ordinate at logic (0,0).", 0);
 AddNumberParam("Y", "Physical Y co-ordinate at logic (0,0).", 0);
-AddAction(4, 0, "Set position offset", "Position", 
+AddAction(4, 0, "Set position offset", "Offset", 
           "Set offset to (<i>{0}</i>, <i>{1}</i>)", 
           "Set Physical position offset (position of logic (0,0)).", "SetOffset");          
           
 //////////////////////////////////////////////////////////////
 // Expressions
-
+AddExpression(1, ef_return_number, "Cell width", "Cell", "Width", "Get cell width in pixels.");
+AddExpression(2, ef_return_number, "Cell height", "Cell", "Height", "Get cell height in pixels.");
+AddExpression(3, ef_return_number, "X co-ordinate at (0,0)", "Offset", "POX", "Get physical X co-ordinate at logic (0,0).");
+AddExpression(4, ef_return_number, "Y co-ordinate at (0,0)", "Offset", "POY", "Get physical Y co-ordinate at logic (0,0).");
 
 ACESDone();
 
