@@ -83,36 +83,23 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         for (i=0; i<miniboard_cnt; i++)
         {
             miniboard_inst = miniboard_insts[i];
-            chess_insts = miniboard_inst._insts;
-            assert2(chess_insts, "(Mini board) Touch Ctrl behavior only could be used with mini board instance.");
-            for (chess_uid in chess_insts)
-            {
-                chess_inst = chess_insts[chess_uid];
-				tx = chess_inst.layer.canvasToLayer(touchX, touchY, true);
-				ty = chess_inst.layer.canvasToLayer(touchX, touchY, false);                
-                if (chess_inst.contains_pt(tx,ty))
-                {
-                    this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnTouched, miniboard_inst);
-                    this._touched_miniboard_insts.push(miniboard_inst);
-                    break;
-                }
-            }
+			if (miniboard_inst.behavior_insts[this.behavior_index].IsInTouch(touchX, touchY))
+			    this._touched_miniboard_insts.push(miniboard_inst);            
         }
         return this._touched_miniboard_insts;
     };
     
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
+        // 0. find out index of behavior instance
+        if (this.behavior_index == null )
+            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
+			
         var touched_miniboard_insts = this._touched_miniboard_get(touchX, touchY);
         if (touched_miniboard_insts.length == 0)
             return;
         
-        // overlap_cnt > 0
-        // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
-            
-            
+        // overlap_cnt > 0                      
         // 1. get all valid behavior instances
         var i, cnt=touched_miniboard_insts.length, miniboard_inst, behavior_inst;
         this._behavior_insts.length = 0;          
@@ -330,6 +317,28 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         if ((drag_info.mainboard_lx != lx_save) || (drag_info.mainboard_ly != ly_save))
             this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnLogicIndexChanged, inst);         
 	};
+	
+	behinstProto.IsInTouch = function(touchX, touchY)
+	{
+        var miniboard_inst = this.inst;
+        var chess_insts = miniboard_inst.chess_insts;
+        assert2(chess_insts, "(Mini board) Touch Ctrl behavior only could be used with mini board instance.");
+		var chess_uid, chess_inst;
+		var tx, ty
+        for (chess_uid in chess_insts)
+        {
+            chess_inst = chess_insts[chess_uid];
+			chess_inst.update_bbox();
+			tx = chess_inst.layer.canvasToLayer(touchX, touchY, true);
+			ty = chess_inst.layer.canvasToLayer(touchX, touchY, false);                
+            if (chess_inst.contains_pt(tx,ty))
+            {
+                this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnTouched, miniboard_inst);
+                return true;
+            }
+        }
+		return false;
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -359,7 +368,21 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	{
         return this.dragable;
 	};		
-	  
+    
+	Cnds.prototype.IsTouching = function ()
+	{
+		var touch_pts = this.type.touchwrap.touches, touch_pt, tx, ty;
+		var i, cnt=touch_pts.length;
+		for (i=0; i<cnt; i++)
+		{
+		    touch_pt = touch_pts[i];
+			tx = touch_pt.x;
+			ty = touch_pt.y;
+			if (this.IsInTouch(tx, ty))
+			    return true;
+		}
+        return false;
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

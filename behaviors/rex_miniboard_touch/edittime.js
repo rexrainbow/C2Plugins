@@ -17,8 +17,9 @@ AddCondition(1,	cf_trigger, "On touch start", "Touch", "On {my} touch start", "T
 AddCondition(2,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when miniboard drag start.", "OnDragStart");
 AddCondition(3,	cf_trigger, "On dropped", "Drop", "On {my} drop", "Triggered when miniboard dropped.", "OnDrop"); 
 AddCondition(4,	cf_trigger, "On logic index changed", "Drag", "On {my} logic index changed", "Triggered when logic index changed on main board.", "OnLogicIndexChanged");         
-AddCondition(5,	0, "Drag-able", "Drag", "Is {my} drag-able", "Return true if this mini board is drag-able.", "IsDragable");  
-       
+AddCondition(5,	0, "Is drag-able", "Drag", "Is {my} drag-able", "Return true if this mini board is drag-able.", "IsDragable");  
+AddCondition(6,	0, "Is touching", "Touch", "Is {my} touching", "Return true if this mini board is touching.", "IsTouching");  
+ 
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
