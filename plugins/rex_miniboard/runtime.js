@@ -65,7 +65,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	{
 		this.board = {};
 		this.items = {};
-        this._insts = {};
+        this.chess_insts = {};
 		this.main_board = null;
 		this.POX = (-1);
 		this.POY = (-1);
@@ -74,14 +74,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	instanceProto.onInstanceDestroyed = function (inst)
 	{
 	    var uid=inst.uid;		
-		if (this._insts[uid] == null)
+		if (this.chess_insts[uid] == null)
 		    return;
 	    this.remove_item(uid);
 	};    
     
 	instanceProto.onDestroy = function ()
 	{
-		var uid, inst, insts=this._insts;
+		var uid, inst, insts=this.chess_insts;
 		for (uid in insts)
 		    this.runtime.DestroyInstance(insts[uid]);
 		this.runtime.removeDestroyCallback(this.myDestroyCallback);        	    	
@@ -93,7 +93,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		if ((dx == 0) && (dy == 0))
 		    return;
 			
-		var uid, inst, insts=this._insts;
+		var uid, inst, insts=this.chess_insts;
 		for (uid in insts)
 		{
 		    inst = insts[uid];
@@ -174,14 +174,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
                     
         if (kicking_notify)
         {
-            this._kicked_chess_inst = this._insts[uid];
+            this._kicked_chess_inst = this.chess_insts[uid];
             //this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnChessKicked, this); 
         }
         
-        var chess_inst = this._insts[uid];
+        var chess_inst = this.chess_insts[uid];
         delete this.items[uid];
         delete this.board[_xyz.x][_xyz.y][_xyz.z];        
-        delete this._insts[uid];	
+        delete this.chess_insts[uid];	
         
         delete chess_inst.extra.rex_miniboard_uid;	
 	};
@@ -195,7 +195,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.remove_item(this.xyz2uid(_x,_y,_z), true);
 		this._put_chess(_x, _y, _z,uid);
 	    this.items[uid] = {x:_x, y:_y, z:_z};
-        this._insts[uid] = inst;
+        this.chess_insts[uid] = inst;
         
         inst.extra.rex_miniboard_uid = this.uid;
         //this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnCollided, this);                                           
@@ -240,7 +240,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		var board_ymax = board_inst.y_max;
 		var board = board_inst.board;   
 		var _xyz, x, y, z;
-		var uid, insts = this._insts;
+		var uid, insts = this.chess_insts;
 		for (uid in insts)
 		{
 		    _xyz = this.uid2xyz(uid);
@@ -260,7 +260,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		    return;
 			
 		var _xyz, x, y, z;
-		var uid, insts = this._insts;
+		var uid, insts = this.chess_insts;
 		for (uid in insts)
 		{
 		    _xyz = this.uid2xyz(uid);
@@ -283,7 +283,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		    return;
         
 		var _xyz, x, y, z;
-		var uid, insts = this._insts;
+		var uid, insts = this.chess_insts;
 		for (uid in insts)
 			this.main_board.remove_item(uid);
 		this.main_board = null;
@@ -294,7 +294,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	instanceProto._pick_all_insts = function ()
 	{	    
 	    var uid, inst, objtype, sol;
-	    var insts=this._insts;
+	    var insts=this.chess_insts;
 	    var objtype_name={};	
 	    var has_inst = false;    
 	    for (uid in insts)
