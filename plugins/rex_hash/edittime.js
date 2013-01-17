@@ -48,11 +48,19 @@ AddAction(6, 0, "Remove value by key string", "Remove",
           "Remove value at <i>{0}</i>",
           "Remove value by a key string.", "RemoveByKeyString");
 AddStringParam("Key string", "The key string of the hash table.", '""');
-AddObjectParam("Arra", "array object to put result.");      
+AddObjectParam("Arra", "Array instance to put result.");      
 AddAction(7, 0, "Pick keys", "Keys", 
           "Pick keys at <i>{0}</i> into <i>{1}</i>",
           "Pick keys into an array.", "PickKeysToArray");          
-         
+AddObjectParam("Hash table B", "Hash table instance to merge.");  
+AddComboParamOption("Overwrite from hash B");
+AddComboParamOption("Merge new keys from hash table B");
+AddComboParamOption("Clean then copy from hash table B");
+AddComboParam("Mode", "Copy mode.",0);
+AddAction(8, 0, "Copy", "Copy", 
+          "Copy hash table from <i>{0}</i>, <i>{1}</i>",
+          "Copy hash table from other hash table.", "CopyHashTable");   
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key", "The key string of the hash to get.", '""');

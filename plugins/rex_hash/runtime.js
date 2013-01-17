@@ -40,12 +40,13 @@ cr.plugins_.Rex_Hash = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{
-	    this._my_hash = {};
+	{	  
         var init_data = this.properties[0];
         if (init_data != "")
-            this._my_hash = JSON.parse(init_data);
-		this._current_entry = this._my_hash;			
+            this.hashtable = JSON.parse(init_data);
+        else
+            this.hashtable = {};
+		this._current_entry = this.hashtable;			
 			
         this.exp_CurKey = "";
         this.exp_CurValue = 0; 			
@@ -54,16 +55,16 @@ cr.plugins_.Rex_Hash = function(runtime)
 	instanceProto._clean_all = function()
 	{
 	    var key;
-		for (key in this._my_hash)
-		    delete this._my_hash[key];
-        this._current_entry = this._my_hash;
+		for (key in this.hashtable)
+		    delete this.hashtable[key];
+        this._current_entry = this.hashtable;
 	};    
         
 	instanceProto._set_entry_byKeys = function(keys)
 	{
         var key_len = keys.length;
         var i, key;
-        var _entry = this._my_hash;
+        var _entry = this.hashtable;
         for (i=0; i< key_len; i++)
         {
             key = keys[i];
@@ -86,18 +87,18 @@ cr.plugins_.Rex_Hash = function(runtime)
 		    this._set_entry_byKeys(keys);
         }
         else  // is root
-            this._current_entry = this._my_hash;
+            this._current_entry = this.hashtable;
 	};
     
 	instanceProto._get_data = function(keys)
 	{           
 	    // is root
 	    if ((keys.length == 1) && keys[0] == "")
-	        return this._my_hash;
+	        return this.hashtable;
 	        
         var key_len = keys.length;
         var i;
-        var _entry = this._my_hash;
+        var _entry = this.hashtable;
         for (i=0; i< key_len; i++)
         {
              _entry = _entry[keys[i]];
@@ -196,7 +197,10 @@ cr.plugins_.Rex_Hash = function(runtime)
 
     Acts.prototype.StringToHashTable = function (JSON_string)
 	{  
-        this._my_hash = JSON.parse(JSON_string);
+	    if (JSON_string != "")
+	        this.hashtable = JSON.parse(JSON_string);
+	    else
+	        this._clean_all(); 
 	};  
     
     Acts.prototype.RemoveByKeyString = function (key)
@@ -212,19 +216,101 @@ cr.plugins_.Rex_Hash = function(runtime)
     
     Acts.prototype.PickKeysToArray = function (key, array_objs)
 	{  
+	    if (!array_obj)
+	        return;
+	        
         var array_obj = array_objs.getFirstPicked();
-        if (array_obj.arr == null)
-        {
-            alert("Action:Pick keys : it is not an array object.");
-            return;
-        }
+        assert2(array_obj.arr, "[Hash] Action:Pick keys need an array type of parameter.");
         cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [0,1,1]);
         
         this._set_current_entey(key);
         var key;
 		for (key in this._current_entry)
             cr.plugins_.Arr.prototype.acts.Push.apply(array_obj, [0,key,0]); 
-	};     
+	};    
+	
+	var full_keys_get = function (cur_entry, key)
+	{
+	    var full_keys = [];
+	    cr.shallowAssignArray(full_keys, cur_entry);
+	    full_keys.push(key);
+	    return full_keys;
+	};
+    Acts.prototype.CopyHashTable = function (hashtable_objs, conflict_handler_mode)
+	{  
+	    if (!hashtable_objs)
+	        return;
+	        	    
+        var hash_B = hashtable_objs.getFirstPicked();
+        assert2(hash_B.hashtable, "[Hash] Merge : need an hash type of parameter."); 
+        
+		var untraversal_list = [], node;
+		var cur_hash, cur_entry, key_B, value_B, key_A, value_A;
+		
+		// Clean all then deep copy from hash table B
+		if (conflict_handler_mode == 2)
+		{
+		    this._clean_all(); 
+		    conflict_handler_mode = 0;
+		}
+		
+        switch (conflict_handler_mode)
+        {
+        case 0: // Overwrite from hash B
+            untraversal_list.push({table:hash_B.hashtable, 
+                                   entry:[]});
+			while (untraversal_list.length != 0)
+			{
+			    node = untraversal_list.shift();
+			    cur_hash = node.table;
+			    cur_entry = node.entry;
+			    for (key_B in cur_hash)
+				{
+				    value_B = cur_hash[key_B];
+				    if (typeof value_B != "object")
+					{
+                        this._set_entry_byKeys(cur_entry);
+                        this._current_entry[key_B] = value_B;
+					}
+					else
+					{
+					    untraversal_list.push({table:value_B, 
+                                               entry:full_keys_get(cur_entry,key_B)});
+					}
+				}
+			}
+            break;
+        case 1:  // Merge new keys from hash table B
+            untraversal_list.push({table:hash_B.hashtable, 
+                                   entry:[]}); 
+			while (untraversal_list.length != 0)
+			{
+			    node = untraversal_list.shift();
+			    cur_hash = node.table;
+			    cur_entry = node.entry;
+			    for (key_B in cur_hash)
+				{
+				    value_B = cur_hash[key_B];
+				    if (typeof value_B != "object")
+					{
+					    var value_A = this._get_data(full_keys_get(cur_entry,key_B));	
+					    if (value_A == null)
+					    {
+                            this._set_entry_byKeys(cur_entry);
+                            this._current_entry[key_B] = value_B;
+                        }
+					}
+					else
+					{
+					    untraversal_list.push({table:value_B, 
+                                               entry:full_keys_get(cur_entry,key_B)});
+					}
+				}
+			}
+            break;			
+			
+        }
+	}; 	 
     
 	//////////////////////////////////////
 	// Expressions
@@ -264,7 +350,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	Exps.prototype.HashTableToString = function (ret)
 	{
-        var json_string = JSON.stringify(this._my_hash);
+        var json_string = JSON.stringify(this.hashtable);
 		ret.set_string(json_string);
 	};  
 	
@@ -298,7 +384,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{
 	    var table;
 	    if (arguments.length == 1)  // no parameter
-		    table = this._my_hash;
+		    table = this.hashtable;
 		else
 		{
 		    var i, cnt=arguments.length;
