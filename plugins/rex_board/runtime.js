@@ -244,19 +244,36 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    return this._insts[uid];
 	};
     
-	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
+	instanceProto.CreateItem = function(obj,x,y,z,_layer)
 	{
         var layer = this._get_layer(_layer);
-        var inst = this.layout.CreateItem(obj_type,x,y,z,layer);
+        var inst = this.layout.CreateItem(obj,x,y,z,layer);
         if (!inst)
             return;
         
 		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
+		this.runtime.trigger(Object.getPrototypeOf(obj.plugin).cnds.OnCreated, inst);
 		this.runtime.isInOnDestroy--;
-        
+
         // Pick just this instance
-        obj_type.getCurrentSol().pick_one(inst);
+        var sol = obj.getCurrentSol();
+        sol.select_all = false;
+		sol.instances.length = 1;
+		sol.instances[0] = inst;
+		
+		// Siblings aren't in instance lists yet, pick them manually
+		var i, len, s;
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				sol = s.type.getCurrentSol();
+				sol.select_all = false;
+				sol.instances.length = 1;
+				sol.instances[0] = s;
+			}
+		}
 
         return inst;
 	};
