@@ -46,6 +46,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this._pre_x = this.x;
 		this._pre_y = this.y;
          
+        this.last_POX = (-1);
+        this.last_POY = (-1);                
 		this.ResetBoard();
 		
 		this.myDestroyCallback = (function (self) {
@@ -56,7 +58,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.runtime.addDestroyCallback(this.myDestroyCallback); 
 		this.runtime.tick2Me(this); 
 
-		this._kicked_chess_inst = null;	
+		//this._kicked_chess_inst = null;	
+        this.exp_putable = 0;
+        this.exp_RequestLX = (-1);		
+        this.exp_RequestLY = (-1);
+        this.exp_RequestLZ = (-1);   
+        this.exp_RequestChessUID = (-1);     	        
         this.exp_EmptyLX = (-1);
         this.exp_EmptyLY = (-1);
 	};
@@ -172,11 +179,11 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         if (_xyz == null)
             return;
                     
-        if (kicking_notify)
-        {
-            this._kicked_chess_inst = this.chess_insts[uid];
-            //this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnChessKicked, this); 
-        }
+        //if (kicking_notify)
+        //{
+        //    this._kicked_chess_inst = this.chess_insts[uid];
+        //    this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnChessKicked, this); 
+        //}
         
         var chess_inst = this.chess_insts[uid];
         delete this.items[uid];
@@ -274,7 +281,9 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this.chess_pos_set();
 		this.main_board = board_inst;
 		this.POX = offset_lx;
-		this.POY = offset_ly;		
+		this.POY = offset_ly;
+        this.last_POX = offset_lx;
+        this.last_POY = offset_ly;        
 	};
 	
 	instanceProto.PullOutChess = function ()
@@ -312,6 +321,42 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        has_inst = true;
 	    }
 	    return has_inst;
+	};
+	
+	instanceProto.is_put_able = function (board_inst, offset_lx, offset_ly)
+	{
+		var board_xmax = board_inst.x_max;
+		var board_ymax = board_inst.y_max;
+		var board = board_inst.board;   
+		var _xyz, x, y, z;
+		var uid, insts = this.chess_insts;
+		for (uid in insts)
+		{
+		    _xyz = this.uid2xyz(uid);
+			x = _xyz.x+offset_lx;
+			y = _xyz.y+offset_ly;
+			z = _xyz.z;
+        									
+			if ((x < 0) || (x > board_xmax) || 
+			    (y < 0) || (y > board_ymax)    )
+			    return false;
+		    else
+		    {
+                this.exp_RequestLX = _xyz.x+offset_lx;	
+                this.exp_RequestLY = _xyz.y+offset_ly;
+                this.exp_RequestLZ = _xyz.z;
+                this.exp_RequestChessUID = parseInt(uid);
+                this.exp_putable = false;
+                this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPutAbleRequest, this);
+                if (!this.exp_putable)
+                    return false;
+		    }
+		}
+        this.exp_RequestLX = (-1);		
+        this.exp_RequestLY = (-1);
+        this.exp_RequestLZ = (-1);	
+        this.exp_RequestChessUID = (-1);	
+		return true;
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -385,6 +430,18 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 			return; 
 		var board_inst = board_objs.getFirstPicked();
 		return (this.main_board == board_inst);
+	}; 
+	
+	Cnds.prototype.IsPutAble = function (board_objs, offset_lx, offset_ly)
+	{
+		if (!board_objs)
+			return; 
+		return this.is_put_able(board_objs.getFirstPicked(), offset_lx, offset_ly);
+	}; 
+	  
+	Cnds.prototype.OnPutAbleRequest = function ()
+	{
+		return true;
 	}; 
 	
 	Cnds.prototype.CanFindEmpty = function (board_objs, _start_lx, _start_ly, _range)
@@ -493,6 +550,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	{	
         this.ResetBoard();
 	};	
+	
+	Acts.prototype.SetPutAble = function (put_able)
+	{	
+        this.exp_putable = (put_able == 1);
+	};		
+	
 		    
 	//////////////////////////////////////
 	// Expressions
@@ -509,6 +572,34 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    var ly = (this.main_board == null)? (-1): this.POY;
 	    ret.set_int(ly);
 	};	
+	Exps.prototype.LastLX = function (ret)
+	{
+	    ret.set_int(this.last_POX);
+	};
+	Exps.prototype.LastLY = function (ret)
+    {
+	    ret.set_int(this.last_POY);
+	};	
+	Exps.prototype.RequestLX = function (ret)
+	{
+	    ret.set_int(this.exp_RequestLX);
+	};
+	Exps.prototype.RequestLY = function (ret)
+	{
+	    ret.set_int(this.exp_RequestLY);
+	}; 
+	Exps.prototype.RequestLZ = function (ret)
+	{
+	    ret.set_int(this.exp_RequestLZ);
+	};
+	Exps.prototype.RequestChessUID = function (ret)
+	{
+	    ret.set_int(this.exp_RequestChessUID);
+	};	
+	Exps.prototype.EmptyLY = function (ret)
+	{
+	    ret.set_int(this.exp_EmptyLY);
+	}; 
 	Exps.prototype.EmptyLX = function (ret)
 	{
 	    ret.set_int(this.exp_EmptyLX);
