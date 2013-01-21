@@ -17,19 +17,23 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, cf_trigger, "On get symbol", "Symbol", 
-             "On get symbol", 'Trigger by "Action:Get matching tiles" to get symbol.', "OnGetSymbol");
+             "On get symbol", 'Trigger by "Action:Get matched tiles" to get symbol.', "OnGetSymbol");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_trigger, "On matching 1d pattern", "Patern", 
-             "On matching 1d pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles" when 1d matching pattern.', "OnMatchPattern");    
-AddCondition(3, cf_trigger, "On no matching pattern", "Patern", 
-             "On no matching pattern", 'Trigger by "Action:Get matching tiles" when no matching pattern.', "OnNoMatchPattern");    
+AddCondition(2, cf_trigger, "On matched 1d pattern", "1D Patern", 
+             "On matched 1d pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles" when 1d matched pattern.', "OnMatchPattern");    
+AddCondition(3, cf_trigger, "On no matched pattern", "No matched", 
+             "On no matched pattern", 'Trigger by "Action:Get matched tiles" when no matched pattern.', "OnNoMatchPattern");    
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(4, cf_trigger, "On matching 2D pattern", "Patern", 
-             "On matching 2D pattern <i>{0}</i>", 'Trigger by "Action:Get matching tiles with 2d pattern" when matching pattern.', "OnMatchPattern2D");    
+AddCondition(4, cf_trigger, "On matched 2D pattern", "2D Patern", 
+             "On matched 2D pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles with 2d pattern" when matched pattern.', "OnMatchPattern2D");    
 AddNumberParam("Count", "Continuous symbols count.", 3);
-AddCondition(5, cf_trigger, "On matching N symbols", "Patern", 
-             "On matching <i>{0}</i> continuous symbols", 
-             'Trigger by "Action:Get matching tiles" when matching N continuous symbol.', "OnMatchPattern");    
+AddCondition(5, cf_trigger, "On matched N symbols", "1D Patern", 
+             "On matched <i>{0}</i> continuous symbols", 
+             'Trigger by "Action:Get matched tiles" when matched N continuous symbol.', "OnMatchPattern");
+AddStringParam("Template", "Pattern template.", '""');
+AddCondition(6, cf_trigger, "On matched 2D template pattern", "2D Patern", 
+             "On matched 2D template pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles with 2d pattern" when matched pattern.', "OnMatchTemplatePattern2D");			 
+             
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Board", "Board object");
@@ -38,16 +42,16 @@ AddAction(1, 0, "Setup", "Setup",
           "Set board object to <i>{0}</i>, instance group object to <i>{1}</i>", 
           "Set board object and instance group object.", "Setup");         
 AddStringParam("Group", "Put result in this group", '""');
-AddAction(2, 0, "Get matching tiles", "Request: Matching tiles", 
-          "Get matching tiles to group <i>{0}</i>", 
-          "Get matching tiles.", "GetMatchTiles");
+AddAction(2, 0, "Get matched tiles", "Request: matched tiles", 
+          "Get matched tiles to group <i>{0}</i>", 
+          "Get matched tiles.", "GetMatchTiles");
 AddStringParam("Symbols", "Symbol", "");
 AddAction(3, 0, "Set symbols", "Request: Symbol", "Set symbol to <i>{0}</i>", 
           'Set symbol. Used in "Condition: On get symbol function".', "SetSymbol");          
 AddStringParam("Group", "Put result in this group", '""');
-AddAction(4, 0, "Get matching tiles with 2d pattern", "Request: Matching tiles (2d pattern)", 
-          "Get matching tiles to group <i>{0}</i> with 2d pattern", 
-          "Get matching tiles with 2d pattern.", "GetMatchTiles2D");
+AddAction(4, 0, "Get matched tiles with 2d pattern", "Request: matched tiles (2d pattern)", 
+          "Get matched tiles to group <i>{0}</i> with 2d pattern", 
+          "Get matched tiles with 2d pattern.", "GetMatchTiles2D");
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Horizontal", "Horizontal axis.",1);
@@ -84,7 +88,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_section, "Axis of square board", "",	
-                    "The axis to get symbol for 1d pattern matching on square board. Ignored it when using hex board"),
+                    "The axis to get symbol for 1d pattern matched on square board. Ignored it when using hex board"),
     new cr.Property(ept_combo, "Horizontal", "Yes", "Compare at horizontal axis", "No|Yes"),   
     new cr.Property(ept_combo, "Vertical", "Yes", "Compare at vertical axis", "No|Yes"),   
     new cr.Property(ept_combo, "Isometric", "Yes", "Compare at isometric axis", "No|Yes"),         
