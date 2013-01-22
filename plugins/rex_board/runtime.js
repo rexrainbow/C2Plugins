@@ -472,7 +472,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (z_hash == null)
             return false;
             
-        var inst, z_index;
+        var inst, z_index, type_name;
         var sol = chess_type.getCurrentSol();
         sol.instances.length = 0;
         sol.select_all = false;
@@ -486,11 +486,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         for (z_index in z_hash)
         {
             inst = this.uid2inst(z_hash[z_index]);
+            type_name = inst.type.name;
             if (is_family)
             {
                 for (i=0; i<member_cnt; i++)
                 {
-                    if (inst.type == members[i])
+                    if (type_name == members[i].name)
                     {
                         sol.instances.push(inst); 
                         break;
@@ -499,9 +500,59 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }
             else
             {
-                if (inst.type == chess_type)
+                if (type_name == chess_type.name)
                     sol.instances.push(inst); 
             }
+        }
+        return (sol.instances.length != 0);
+	};
+	instanceProto._pick_chess_on_tiles = function (chess_type, tiles)
+	{	    
+        var inst, z_hash, z_index;
+        var sol = chess_type.getCurrentSol();
+        sol.instances.length = 0;
+        sol.select_all = false;
+        var is_family = chess_type.is_family;
+        var members, member_cnt, i;
+        if (is_family)
+        {
+            members = chess_type.members;
+            member_cnt = members.length;
+        }
+        
+        var tiles_cnt = tiles.length;
+        var t, _xyz;
+        for (t=0; t<tiles_cnt; t++)
+        {
+            _xyz = this.uid2xyz(tiles[t].uid);
+            if (_xyz == null)
+                continue;
+                
+            z_hash = this.xy2zhash(_xyz.x, _xyz.y);
+            if (z_hash == null)
+                continue;
+                
+            for (z_index in z_hash)
+            {
+                inst = this.uid2inst(z_hash[z_index]);
+                if (is_family)
+                {
+                    for (i=0; i<member_cnt; i++)
+                    {
+                        if (inst.type == members[i])
+                        {
+                            sol.instances.push(inst); 
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (inst.type == chess_type)
+                        sol.instances.push(inst); 
+                }
+            }
+        
         }
         return (sol.instances.length != 0);
 	};
@@ -589,15 +640,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return false;       
         return this._pick_chess_on_LXY(chess_type, lx, ly);            
 	};
-	Cnds.prototype.PickChessAboveTile = function (chess_type, tile_obj)
+	Cnds.prototype.PickChessAboveTile = function (chess_type, tile_type)
 	{
-        if (!chess_type)
+        if ((!chess_type) || (!tile_type))
             return false;       
-        var _xyz = this.uid2xyz(_get_uid(tile_obj));
-        if (_xyz != null)
-	        return this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
-        else
-            return false;
+        var tiles = tile_type.getCurrentSol().getObjects();
+        return this._pick_chess_on_tiles(chess_type, tiles);
 	};
 	Cnds.prototype.PickChessAboveTileUID = function (chess_type, tile_uid)
 	{
@@ -666,9 +714,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.CreateChess(_obj_type,x,y,z,_layer);        
 	};	
 	
-	Acts.prototype.RemoveChess = function (objs)
+	Acts.prototype.RemoveChess = function (chess_type)
 	{
-	    this.remove_item(_get_uid(objs));
+        if (!chess_type)
+            return;  
+        var chess = chess_type.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+        for (i=0; i<chess_cnt; i++)        
+	        this.remove_item(chess[i].uid);
 	}; 
 	
 	Acts.prototype.MoveChess = function (chess_type, tile_objs)
@@ -711,13 +764,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return;       
         this._pick_chess_on_LXY(chess_type, lx, ly);            
 	};
-	Acts.prototype.PickChessAboveTile = function (chess_type, tile_obj)
+	Acts.prototype.PickChessAboveTile = function (chess_type, tile_type)
 	{
-        if (!chess_type)
-            return;       
-        var _xyz = this.uid2xyz(_get_uid(tile_obj));
-        if (_xyz != null)
-	        this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
+        if ((!chess_type) || (!tile_type))
+            return false;       
+        var tiles = tile_type.getCurrentSol().getObjects();
+        this._pick_chess_on_tiles(chess_type, tiles);
 	};
 	Acts.prototype.PickChessAboveTileUID = function (chess_type, tile_uid)
 	{
