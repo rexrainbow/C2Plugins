@@ -14,13 +14,13 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On hit target position", "", 
+AddCondition(0, cf_trigger, "On hit target position", "Hit target", 
              "On {my} hit target", 
 			 "Triggered when hit target position.", 
 			 "OnHitTarget");
-AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", 
+AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "Move", "On {my} moving", 
              "Triggered when object moving.", "OnMoving");                          
-AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Test if object is moving.", "IsMoving");  
+AddCondition(3,	0, "Is moving", "Move", "Is {my} moving", "Test if object is moving.", "IsMoving");  
 AddCondition(4,	cf_trigger, "On moving accepted", "Request", 
              "On {my} moving request accepted", "Triggered when moving request accepted.", "OnMovingRequestAccepted");                
 AddCondition(5,	cf_trigger, "On moving rejected", "Request", 
@@ -57,7 +57,7 @@ AddCondition(11, cf_trigger, "On colliding begin", "Collisions",
 AddCondition(12, cf_trigger, "On get destination's solid", "Solid", 
             "On {my} get destination's solid", 
             "Triggered by plugin to get destination's solid property from event sheet.", "OnGetDestinationSolid");   
-             
+         
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -132,11 +132,11 @@ AddAction(16, 0, "Reset center position", "Wander",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Solid", "Solid property.",0);
-AddAction(17, 0, "Set destination's solid", "Solid", 
+AddAction(17, 0, "Set solid", "Solid", 
           "{my} set destination's solid to <i>{0}</i>", 
           "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
 AddNumberParam("Solid", "Solid property. 0=Disable, 1=Enable.", 0);
-AddAction(18, 0, "Set destination's solid by number", "Solid", 
+AddAction(18, 0, "Set solid by number", "Solid", 
           "{my} set destination's solid to <i>{0}</i>", 
           "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");                            
 AddObjectParam("Group", "Instance group object");
@@ -146,11 +146,11 @@ AddAction(20, 0, "Set instance group ", "Collisions",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Move-able", "Move-able.",1);
-AddAction(21, 0, "Set destination's move-able", "Solid", 
+AddAction(21, 0, "Set move-able", "Solid", 
           "{my} set destination's move-able to <i>{0}</i>", 
           "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");
 AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
-AddAction(22, 0, "Set destination's move-able by number", "Solid", 
+AddAction(22, 0, "Set move-able by number", "Solid", 
           "{my} set destination's move-able to <i>{0}</i>", 
           "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");          
 //////////////////////////////////////////////////////////////

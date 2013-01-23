@@ -11,6 +11,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	this.runtime = runtime;
 };
 cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
+// TODO
 
 (function ()
 {
@@ -29,7 +30,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
 	behtypeProto.onCreate = function()
 	{
-        this.group = null;    
+        this.group = null;  
 	};
 
 	/////////////////////////////////////
@@ -40,7 +41,6 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		this.behavior = type.behavior;
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
-        
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -68,7 +68,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this._target_uid = null;
         this._z_saved = null;
 	};       
-
+	
     behinstProto.tick = function ()
 	{
 	    this._cmd_move_to.tick();
@@ -242,8 +242,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
                 
             // set moveTo
             var layout = this.board.layout;
-            this._cmd_move_to._set_target_pos(layout.LXYZ2PX(target_x, target_y, target_z), 
-                                              layout.LXYZ2PY(target_x, target_y, target_z));
+            this._cmd_move_to.set_target_pos(layout.LXYZ2PX(target_x, target_y, target_z), 
+                                             layout.LXYZ2PY(target_x, target_y, target_z));
             this._is_moving_request_accepted = true;           
             this.is_my_call = true;                          
             this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted, this.inst);                                           
@@ -320,6 +320,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         _sol.select_all = select_all_save;
         return (result_group.GetList().length != 0);
 	};
+
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -390,7 +391,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
 		return true;
 	};
-    
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -679,7 +680,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     CmdMoveToProto.tick = function ()
 	{
         if (this.is_hit_target)
-        {
+        {        
+            this.is_moving = false;             
             this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnHitTarget, this.inst); 
             this.is_my_call = false;
@@ -716,8 +718,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
         // is hit to target at next tick?
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
-        {
-            this.is_moving = false;
+        {            
             this.inst.x = this.target.x;
             this.inst.y = this.target.y;
             this._set_current_speed(0);
@@ -746,7 +747,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         }
 	};  
     
-	CmdMoveToProto._set_target_pos = function (_x, _y)
+	CmdMoveToProto.set_target_pos = function (_x, _y)
 	{
         var dx = _x - this.inst.x;
         var dy = _y - this.inst.y;
@@ -758,4 +759,4 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
         this._set_current_speed(null);
 	}; 
-}());    
+}());  
