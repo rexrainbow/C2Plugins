@@ -236,7 +236,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 	    full_keys.push(key);
 	    return full_keys;
 	};
-    Acts.prototype.CopyHashTable = function (hashtable_objs, conflict_handler_mode)
+    Acts.prototype.MergeTwoHashTable = function (hashtable_objs, conflict_handler_mode)
 	{  
 	    if (!hashtable_objs)
 	        return;

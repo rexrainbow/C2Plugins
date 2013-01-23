@@ -56,10 +56,10 @@ AddObjectParam("Hash table B", "Hash table instance to merge.");
 AddComboParamOption("Overwrite from hash B");
 AddComboParamOption("Merge new keys from hash table B");
 AddComboParamOption("Clean then copy from hash table B");
-AddComboParam("Mode", "Copy mode.",0);
-AddAction(8, 0, "Copy", "Copy", 
-          "Copy hash table from <i>{0}</i>, <i>{1}</i>",
-          "Copy hash table from other hash table.", "CopyHashTable");   
+AddComboParam("Mode", "Merge mode.",0);
+AddAction(8, 0, "Merge", "Merge", 
+          "Merge hash table with <i>{0}</i>, <i>{1}</i>",
+          "Merge hash table with other hash table.", "MergeTwoHashTable");   
           
 //////////////////////////////////////////////////////////////
 // Expressions
