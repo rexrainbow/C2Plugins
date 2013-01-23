@@ -468,7 +468,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		var i, len, t;
-        var cnt=this._plugins_hook.length;        
+        var cnt=this._plugins_hook.length, hooki;        
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -498,10 +498,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.curTouchY = touchy;
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
             
-            for (i=0;i<cnt;i++)
+            for (hooki=0; hooki<cnt; hooki++)
 			{
-				if (this._plugins_hook[i].OnTouchStart)
-                    this._plugins_hook[i].OnTouchStart(this.trigger_id, touchx, touchy);
+				if (this._plugins_hook[hooki].OnTouchStart)
+                    this._plugins_hook[hooki].OnTouchStart(this.trigger_id, touchx, touchy);
 			}
 		}		
 	};
@@ -512,7 +512,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			info.preventDefault();
 		
 		var i, len, t;
-        var i, cnt=this._plugins_hook.length;
+        var i, cnt=this._plugins_hook.length, hooki;
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -525,10 +525,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
 
-            for (i=0;i<cnt;i++)
+            for (hooki=0; hooki<cnt; hooki++)
 			{
-			    if (this._plugins_hook[i].OnTouchEnd)
-                    this._plugins_hook[i].OnTouchEnd(this.trigger_id);
+			    if (this._plugins_hook[hooki].OnTouchEnd)
+                    this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
 			}
 			
 			// Remove touch
@@ -1299,7 +1299,21 @@ cr.plugins_.rex_TouchWrap = function(runtime)
     {
         this._plugins_hook.push(obj);
     };
-    
+
+    instanceProto.UnHook = function (obj)
+    {
+        var i, cnt=this._plugins_hook.length, hookobj;
+        for (i=0; i<cnt; i++)
+        {
+            hookobj = this._plugins_hook[i];
+            if (obj === hookobj)
+            {
+                cr.arrayRemove(this._plugins_hook, i);
+                break;
+            }
+        }
+        this._plugins_hook.push(obj);
+    };    
     instanceProto.UseMouseInput = function()
     {
         return this.useMouseInput;
