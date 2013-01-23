@@ -78,7 +78,8 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
 		var cnt=touch_pts.length;
 		
 		var is_touched = false, inst=this.inst;
-	   
+	    var pre_tx = this.cur_touchX;
+        var pre_ty = this.cur_touchY;
 	    if (touch_obj.IsInTouch())
 	    {
 		    var i, touch_pt, tx, ty;
@@ -100,7 +101,9 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
 					
 		if ((!this.is_touched) && is_touched)
 		    this.runtime.trigger(cr.behaviors.Rex_TouchArea2.prototype.cnds.OnTouchStart, inst);
-		else if (this.is_touched && (!is_touched))
+        if ((pre_tx != this.cur_touchX) || (pre_ty != this.cur_touchY))
+            this.runtime.trigger(cr.behaviors.Rex_TouchArea2.prototype.cnds.OnTouchMoving, inst);
+		if (this.is_touched && (!is_touched))
 		    this.runtime.trigger(cr.behaviors.Rex_TouchArea2.prototype.cnds.OnTouchEnd, inst);
         this.is_touched = is_touched;			    
 	}; 
@@ -125,7 +128,11 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
 	{
 		return this.is_touched;
 	};   
-    
+	
+	Cnds.prototype.OnTouchMoving = function ()
+	{
+		return true;
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
