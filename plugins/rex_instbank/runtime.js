@@ -199,11 +199,6 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         {
             save_obj["plugin"] = "Text";
             save_obj["content"] = inst.text;
-			save_obj["font"] = inst.font;
-			save_obj["color"] = inst.color;		
-			save_obj["facename"] = inst.facename;
-			save_obj["fontstyle"] = inst.fontstyle;
-			save_obj["ptSize"] = inst.ptSize;
         }
         else
             save_obj["plugin"] = "World";
@@ -298,15 +293,12 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
         if (save_obj["plugin"] == "Sprite")
         {
             inst.cur_anim_speed = save_obj["cur_anim_speed"];
-            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, save_obj["cur_frame"]); 
-            cr.plugins_.Sprite.prototype.acts.SetAnim.call(inst, save_obj["cur_anim_name"], 1);   
+            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [save_obj["cur_frame"]]); 
+            cr.plugins_.Sprite.prototype.acts.SetAnim.apply(inst, [save_obj["cur_anim_name"], 1]);   
         } 
         else if (save_obj["plugin"] == "Text")
         {
-    		cr.plugins_.Text.prototype.acts.SetFontFace.call(inst, save_obj["facename"], save_obj["fontstyle"]);
-			cr.plugins_.Text.prototype.acts.SetFontSize.call(inst, save_obj["ptSize"]);
-			cr.plugins_.Text.prototype.acts.SetFontColor.call(inst, save_obj["color"]);
-    		cr.plugins_.Text.prototype.acts.SetText.call(inst, save_obj["content"]);
+            cr.plugins_.Text.prototype.acts.SetText.apply(inst, [save_obj["content"]]);
         } 
 
         inst.x = save_obj["x"];
@@ -319,11 +311,11 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
     };
     InstBankKlassProto._filled_array_inst = function(inst, save_obj)
     {
-        cr.plugins_.Arr.prototype.acts.JSONLoad.call(inst, save_obj["content"]);          
+        cr.plugins_.Arr.prototype.acts.JSONLoad.apply(inst, [save_obj["content"]]);          
     };
     InstBankKlassProto._filled_dictionary_inst = function(inst, save_obj)
     {
-        cr.plugins_.Dictionary.prototype.acts.JSONLoad.call(inst, save_obj["content"]);          
+        cr.plugins_.Dictionary.prototype.acts.JSONLoad.apply(inst, [save_obj["content"]]);          
     };    
     
     InstBankKlassProto._filled_instance = function(inst, save_obj)
@@ -381,13 +373,15 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
             return null;
             
         var runtime = this.plugin.runtime;
-        var _objtype = runtime.types[save_obj["type"]];
-        var sol = _objtype.getCurrentSol();
+        var objtype = runtime.types[save_obj["type"]];
+        //if (objtype == null)
+        //    return null;
+        var sol = objtype.getCurrentSol();
         var select_all_save = sol.select_all;  
 	    var _layer = runtime.getLayerByNumber(save_obj["layer"]);        
 
         var inst = runtime.createInstance(
-                       _objtype, 
+                       objtype, 
                        _layer, 
                        save_obj["x"], 
                        save_obj["y"]);
