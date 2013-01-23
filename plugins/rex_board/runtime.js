@@ -447,22 +447,25 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{	    
 	    var uid, inst, objtype, sol;
 	    var insts=this._insts;
-	    var objtype_name={};	
+	    var name2type={};	
 	    var has_inst = false;    
 	    for (uid in insts)
 	    {
 	        inst = insts[uid];
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
-	        if (!(objtype.name in objtype_name))
+	        if (!(objtype.name in name2type))
 	        {
 	            sol.select_all = false;
 	            sol.instances.length = 0;
-	            objtype_name[objtype.name] = true;
+	            name2type[objtype.name] = objtype;
 	        }
 	        sol.instances.push(inst);  
 	        has_inst = true;
 	    }
+	    var name;
+	    for (name in name2type)
+	        name2type[name].applySolToContainer();
 	    return has_inst;
 	};
     
@@ -504,6 +507,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                     sol.instances.push(inst); 
             }
         }
+        chess_type.applySolToContainer();
         return (sol.instances.length != 0);
 	};
 	instanceProto._pick_chess_on_tiles = function (chess_type, tiles)
@@ -521,10 +525,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
         
         var tiles_cnt = tiles.length;
-        var t, _xyz;
+        var t, tile, uid, _xyz;
         for (t=0; t<tiles_cnt; t++)
         {
-            _xyz = this.uid2xyz(tiles[t].uid);
+            tile = tiles[t];
+            uid = (typeof tile == "number")? tile:tile.uid;
+            _xyz = this.uid2xyz(uid);
             if (_xyz == null)
                 continue;
                 
@@ -554,6 +560,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }
         
         }
+        chess_type.applySolToContainer();
         return (sol.instances.length != 0);
 	};
 
@@ -563,7 +570,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		var ly = this.layout.PXY2LY(px, py);
 		return ((lx>=0) && (ly>=0) && (lx<=this.x_max) && (ly<=this.y_max));
 	};
-	 			
+	
+	instanceProto._pick_chess_on_LXYZ = function (chess_type, lx, ly, lz)
+	{
+        var uid = this.xyz2uid(lx, ly, lz);
+        if (uid == null)
+            return false;
+        var inst = this._insts[uid];
+        var chess_type = inst.type;
+        chess_type.getCurrentSol().pick_one(inst);
+        chess_type.applySolToContainer();
+        return true;            
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -650,12 +668,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Cnds.prototype.PickChessAboveTileUID = function (chess_type, tile_uid)
 	{
         if (!chess_type)
-            return false;       
-        var _xyz = this.uid2xyz(tile_uid);
-        if (_xyz != null)
+            return;
+        if (typeof tile_uid == "number")
+        {
+            var _xyz = this.uid2xyz(tile_uid);
+            if (_xyz == null)
+                return false;
 	        return this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
+        }
         else
-            return false;
+        {
+            tile_uid = JSON.parse(tile_uid);
+            return this._pick_chess_on_tiles(chess_type, tile_uid);
+        }
 	};  
 	Cnds.prototype.IsOnTheBoard = function (chess_type)
 	{
@@ -672,7 +697,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
         return true;
 	};  	
-	  
+	Cnds.prototype.PickChessAtLXYZ = function (chess_type, lx, ly, lz)
+	{
+        if (!chess_type)
+            return false;
+        return this._pick_chess_on_LXYZ(chess_type, lx, ly, lz);            
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -774,12 +804,27 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Acts.prototype.PickChessAboveTileUID = function (chess_type, tile_uid)
 	{
         if (!chess_type)
-            return;       
-        var _xyz = this.uid2xyz(tile_uid);
-        if (_xyz != null)
+            return;
+        if (typeof tile_uid == "number")
+        {
+            var _xyz = this.uid2xyz(tile_uid);
+            if (_xyz == null)
+                return;
 	        this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
+        }
+        else
+        {
+            tile_uid = JSON.parse(tile_uid);
+            this._pick_chess_on_tiles(chess_type, tile_uid);
+        }
 	}; 
 	
+	Acts.prototype.PickChessAtLXYZ = function (chess_type, lx, ly, lz)
+	{
+        if (!chess_type)
+            return;
+        this._pick_chess_on_LXYZ(chess_type, lx, ly, lz);            
+	};
 	Acts.prototype.SetBoardWidth = function (width)
 	{
 	    this.set_board_width(width-1);
