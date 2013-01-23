@@ -183,11 +183,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        s = null;
 	                        break;
 	                    }
-	                    if (s==null)
+	                    if ((s==null) || (s.symbol == ""))
 	                    {
 	                        is_matched = false;
 	                        break;
-	                    }
+	                    }	                    
                         else if (is_matchN_mode && (pattern==null))
                         {
                             pattern = s.symbol.repeat(pattern_length);
@@ -231,7 +231,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                for(i=0;i<pattern_length;i++)
 	                {	                                        
 	                    s = this._symbol_at(cur_x,cur_y);
-	                    if (s==null)
+	                    if ((s==null) || (s.symbol == ""))
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -405,6 +405,12 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._on_match_pattern(tiles_groups);
         return false;
 	};	
+	
+	Cnds.prototype.HasNoMatchPattern = function ()
+	{
+        return (!this._has_matched_pattern);
+	};	
+	
 	
 	//////////////////////////////////////
 	// Actions

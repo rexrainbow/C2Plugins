@@ -33,7 +33,9 @@ AddCondition(5, cf_trigger, "On matched N symbols", "1D Patern",
 AddStringParam("Template", "Pattern template.", '""');
 AddCondition(6, cf_trigger, "On matched 2D template pattern", "2D Patern", 
              "On matched 2D template pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles with 2d pattern" when matched pattern.', "OnMatchTemplatePattern2D");			 
-             
+AddCondition(7, 0, "No matched pattern", "No matched", 
+             "Has no matched pattern", 'Return true if no matched pattern in previous "action:Get matched tiles".', "HasNoMatchPattern");
+              
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Board", "Board object");
@@ -45,7 +47,7 @@ AddStringParam("Group", "Put result in this group", '""');
 AddAction(2, 0, "Get matched tiles", "Request: matched tiles", 
           "Get matched tiles to group <i>{0}</i>", 
           "Get matched tiles.", "GetMatchTiles");
-AddStringParam("Symbols", "Symbol", "");
+AddStringParam("Symbols", 'Symbol. "" is null symbol.', "");
 AddAction(3, 0, "Set symbols", "Request: Symbol", "Set symbol to <i>{0}</i>", 
           'Set symbol. Used in "Condition: On get symbol function".', "SetSymbol");          
 AddStringParam("Group", "Put result in this group", '""');
