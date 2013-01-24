@@ -384,12 +384,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.curTouchY = touchy;
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
         
-        var i, cnt=this._plugins_hook.length;
+        var hooki, cnt=this._plugins_hook.length;
         var touch_src = info["pointerId"];
-        for (i=0;i<cnt;i++)
+        for (hooki=0; hooki<cnt; hooki++)
 		{
-			if (this._plugins_hook[i].OnTouchStart)
-                this._plugins_hook[i].OnTouchStart(touch_src, touchx, touchy);
+			if (this._plugins_hook[hooki].OnTouchStart)
+                this._plugins_hook[hooki].OnTouchStart(touch_src, touchx, touchy);
 	    }
 	};
 
@@ -410,12 +410,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
         
-        var i, cnt=this._plugins_hook.length;
+        var hooki, cnt=this._plugins_hook.length;
         var touch_src = info["pointerId"];
-        for (i=0;i<cnt;i++)
+        for (hooki=0;i<cnt;i++)
 		{
-		    if (this._plugins_hook[i].OnTouchEnd)
-                this._plugins_hook[i].OnTouchEnd(touch_src);        
+		    if (this._plugins_hook[hooki].OnTouchEnd)
+                this._plugins_hook[hooki].OnTouchEnd(touch_src);        
 		}
 		
 		// Remove touch
@@ -1272,8 +1272,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
 		var nowtime = cr.performance_now();
 		
-		var i, len, t;
-        var cnt=this._plugins_hook.length;         
+		var i, len, t;        
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
