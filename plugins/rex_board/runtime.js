@@ -284,11 +284,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var xyzB=this.uid2xyz(uidB);
         if ((xyzA == null) || (xyzB == null))
             return false;
-            
+        
+        var instA = this.uid2inst(uidA);
+        var instB = this.uid2inst(uidB);        
 	    this.remove_item(uidA);   
 	    this.remove_item(uidB);   
-        this.add_item(uidA, xyzB.x, xyzB.y, xyzB.z);        
-        this.add_item(uidB, xyzA.x, xyzA.y, xyzA.z);   
+        this.add_item(instA, xyzB.x, xyzB.y, xyzB.z);        
+        this.add_item(instB, xyzA.x, xyzA.y, xyzA.z);   
+        return true;
 	};	
     
 	instanceProto.add_item = function(inst, _x, _y, _z)
