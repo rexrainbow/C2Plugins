@@ -109,10 +109,10 @@ AddCondition(4, cf_trigger, "On default exit", "Action",
              "On exit from any state", 
 			 "Triggered when no exit callback.", 
 			 "OnDefaultExit"); 
-AddCondition(5, cf_trigger, "On state changing", "Action", 
-             "On state changing", 
-			 "Triggered when state changing. Useful when debugging.", 
-			 "OnStateChanging");
+AddCondition(5, cf_trigger, "On state changed", "Action", 
+             "On state changed", 
+			 "Triggered when state changed. Useful when debugging.", 
+			 "OnStateChanged");
 AddStringParam("Name", "State name", '""');
 AddCondition(6, cf_trigger, "On transfer logic", "Logic", 
              "On <i>{0}</i> transfer logic", 

@@ -251,7 +251,7 @@ cr.plugins_.Rex_FSM = function(runtime)
         this.is_echo |= is_my_call;
 		return is_my_call;
 	};	
-	Cnds.prototype.OnStateChanging = function ()
+	Cnds.prototype.OnStateChanged = function ()
 	{
 		return true;
 	};     
@@ -480,9 +480,9 @@ cr.plugins_.Rex_FSM = function(runtime)
         var pre_state = this["PreState"];
         var cur_state = this["CurState"];
         
-        // trigger OnStateChanging first
+        // trigger OnStateChanged first
         this["_plugin"].runtime.trigger(
-            cr.plugins_.Rex_FSM.prototype.cnds.OnStateChanging, this["_plugin"]);  
+            cr.plugins_.Rex_FSM.prototype.cnds.OnStateChanged, this["_plugin"]);  
                         
         // try to run transfer_action
         var is_echo = this._run_transfer_action(pre_state, cur_state);

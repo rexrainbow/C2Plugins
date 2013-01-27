@@ -88,11 +88,11 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	    if ((this.events[tag] == null) || (this.events[tag][event_name] == null))
 		    return;
 	    delete this.events[tag][event_name];
+        this._current_finished_tag = tag;
 		this._current_finished_event_name = event_name;
 		this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAnyEventFinished, this); 
 		if (is_hash_empty(this.events[tag]))
 		{
-            this._current_finished_tag = tag;
 		    this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAllEventsFinished, this); 
 			delete this.events[tag];
         }
