@@ -96,7 +96,10 @@ AddAction(6, 0, "Set current speed", "Speed",
 AddNumberParam("Logic X", "The X index (0-based).", 0);
 AddNumberParam("Logic Y", "The Y index (0-based).", 0);
 AddAction(7, 0, "Move to", "Request", "{my} move to [<i>{0}</i>, <i>{1}</i>]", 
-          "Move to target.", "MoveToTarget");             
+          "Move to target.", "MoveToTarget"); 
+AddNumberParam("UID", "Target UID.");
+AddAction(8, 0, "Swap", "Swap", "{my} swap with chess UID <i>{0}</i>", 
+          "Swap with target chess.", "Swap");              
 AddComboParamOption("Right");
 AddComboParamOption("Down-right");	  
 AddComboParamOption("Down-left");	 
@@ -142,7 +145,9 @@ AddAction(18, 0, "Set solid by number", "Solid",
 AddObjectParam("Group", "Instance group object");
 AddAction(20, 0, "Set instance group ", "Collisions", 
           "Set instance group object to <i>{0}</i>", 
-          "Set instance group object.", "SetInstanceGroup");           
+          "Set instance group object.", "SetInstanceGroup");             
+          
+          
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Move-able", "Move-able.",1);
@@ -152,7 +157,8 @@ AddAction(21, 0, "Set move-able", "Solid",
 AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
 AddAction(22, 0, "Set move-able by number", "Solid", 
           "{my} set destination's move-able to <i>{0}</i>", 
-          "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");          
+          "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable"); 
+      
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 

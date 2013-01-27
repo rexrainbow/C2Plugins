@@ -114,7 +114,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         return null;	
 	};
 	
-    behinstProto._xyz_get = function (uid)
+    behinstProto.chess_xyz_get = function (uid)
     {
 	    if (uid == null)
 		    uid = this.inst.uid;
@@ -124,6 +124,14 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    else
             return null;
     };
+    behinstProto._chess_inst_get = function (uid)
+    {
+	    var board = this._board_get();
+		if (board != null)
+		    return board.uid2inst(uid);
+	    else
+            return null;
+    };    
     
     var _solid_get = function(inst)
     {
@@ -132,7 +140,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
     behinstProto.target2dir = function (target_x, target_y, target_z)
     {
-        var my_xyz = this._xyz_get();
+        var my_xyz = this.chess_xyz_get();
         var target_xyz = {x:target_x, y:target_y, z:target_z};
         return this._board_get().layout.XYZ2Dir(my_xyz, target_xyz);
     };
@@ -200,6 +208,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             return (-1);  // blocked
         }
     };
+
     behinstProto._move_to_target = function (target_x, target_y, target_z)
     {        
         var can_move = this._test_move_to(target_x, target_y, target_z);
@@ -241,20 +250,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             this.board.move_item(this.inst, target_x, target_y, z_index);
                 
             // set moveTo
-            var layout = this.board.layout;
-            this._cmd_move_to.set_target_pos(layout.LXYZ2PX(target_x, target_y, target_z), 
-                                             layout.LXYZ2PY(target_x, target_y, target_z));
-            this._is_moving_request_accepted = true;           
-            this.is_my_call = true;                          
-            this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted, this.inst);                                           
-            this.is_my_call = false;         
+            this.moveto_pxy(target_x, target_y, target_z);
+            this.on_moving_request_success(true);    
         } 
         else if (can_move == (-1))
         {
-            this._is_moving_request_accepted = false;
-            this.is_my_call = true;                             
-            this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestRejected, this.inst);                                           
-            this.is_my_call = false;            
+            this.on_moving_request_success(false);              
         }    
         else
         {
@@ -263,6 +264,23 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		return (can_move == 1);
     };
 	
+    behinstProto.moveto_pxy = function(lx, ly, lz)
+    {
+        var layout = this.board.layout;
+        this._cmd_move_to.set_target_pos(layout.LXYZ2PX(lx, ly, lz), 
+                                         layout.LXYZ2PY(lx, ly, lz));
+    };
+    
+    behinstProto.on_moving_request_success = function(can_move)
+    {
+        this._is_moving_request_accepted = can_move;           
+        this.is_my_call = true; 
+        var trig = (can_move)? cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted:
+                               cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestRejected;
+        this.runtime.trigger(trig, this.inst);                                           
+        this.is_my_call = false;  
+    }; 
+    
 	var _shuffle = function (arr)
 	{
         var i = arr.length, j, temp, random_value;
@@ -355,7 +373,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	};
     Cnds.prototype.TestMoveToOffset = function (dx, dy)
 	{
-		var _xyz = this._xyz_get();
+		var _xyz = this.chess_xyz_get();
 		if (_xyz == null)
 		    return false;
 
@@ -369,7 +387,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	};
     Cnds.prototype.TestMoveToNeighbor = function (dir)
 	{
-		var _xyz = this._xyz_get();
+		var _xyz = this.chess_xyz_get();
 		if (_xyz == null)
 		    return false;
 
@@ -429,7 +447,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    if (!this._cmd_move_to.activated)
 	        return;
     
-	    var _xyz = this._xyz_get();
+	    var _xyz = this.chess_xyz_get();
         if (_xyz == null)
             return;
             
@@ -447,7 +465,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    if (!this._cmd_move_to.activated)
 	        return;
 	        
-		var _xyz = this._xyz_get();
+		var _xyz = this.chess_xyz_get();
         if (_xyz == null)
             return;
             
@@ -465,7 +483,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    if (!this._cmd_move_to.activated)
 	        return;
 	        
-		var _xyz = this._xyz_get();
+		var _xyz = this.chess_xyz_get();
         if (_xyz == null)
             return;
             
@@ -486,11 +504,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    var inst = objtype.getFirstPicked();
 		if (inst == null)
 		    return;
-	    var target_xyz = this._xyz_get(inst.uid);
+	    var target_xyz = this.chess_xyz_get(inst.uid);
 		if (target_xyz == null)
 		    return;
 			
-		var _xyz = this._xyz_get();
+		var _xyz = this.chess_xyz_get();
         if (_xyz == null)
             return;
             
@@ -502,13 +520,40 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this._colliding_checking(tx, ty, tz);  
 		this._move_to_target(tx, ty, tz);	             
 	};   	
-	
+	Acts.prototype.Swap = function (target_uid)
+	{
+        var target_inst = this._chess_inst_get(target_uid);
+        if (target_inst == null)
+            return;
+        var behavior_index = target_inst.type.getBehaviorIndexByName(this.type.name);
+        var grid_move_behavior_inst = target_inst.behavior_insts[behavior_index];        
+        if (grid_move_behavior_inst == null)
+            return;    
+        var my_uid = this.inst.uid;
+        var is_swap_success = this._board_get().SwapChess(my_uid, target_uid);
+        if (!is_swap_success)
+            return;
+            
+        // after swap -- xyz had been swapped
+        var target_xyz = this.chess_xyz_get(my_uid);
+        var my_xyz = this.chess_xyz_get(target_uid);
+        // grid move my_chess        
+        var dir = this.target2dir(target_xyz.x, target_xyz.y, target_xyz.z);
+        this.set_move_target(target_xyz.x, target_xyz.y, target_xyz.z, dir);
+        this.moveto_pxy(target_xyz.x, target_xyz.y, target_xyz.z);
+        this.on_moving_request_success(true);
+        // grid move target_chess         
+        var dir = grid_move_behavior_inst.target2dir(my_xyz.x, my_xyz.y, my_xyz.z);
+        grid_move_behavior_inst.set_move_target(my_xyz.x, my_xyz.y, my_xyz.z, dir);
+        grid_move_behavior_inst.moveto_pxy(my_xyz.x, my_xyz.y, my_xyz.z);
+        grid_move_behavior_inst.on_moving_request_success(true);        
+	};  
 	Acts.prototype.Wander = function ()
 	{
 	    if (!this._cmd_move_to.activated)
 	        return;
 	        
-		var _xyz = this._xyz_get();
+		var _xyz = this.chess_xyz_get();
 		if (_xyz == null)
 		    return;
 		
@@ -561,7 +606,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	
     Acts.prototype.ResetWanderCenter = function ()
 	{
-        var _xyz = this._xyz_get();
+        var _xyz = this.chess_xyz_get();
 		if (_xyz == null)
 		    return;        
 	    this._wander.init_xyz.x = _xyz.x;
