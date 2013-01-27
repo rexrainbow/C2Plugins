@@ -52,6 +52,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._symbol_cache = {}; 
         this._tiles_groups = [];
         this._has_matched_pattern = false;
+		this._last_tick = -1;
         
         this._square_modes = [(this.properties[0] == 1),  // horizontal
                               (this.properties[1] == 1),  // vertical
@@ -79,7 +80,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         }
     };    
     
-    instanceProto._fill_symbol_cache = function (_x,_y)
+    instanceProto._write_symbol_cache = function (_x,_y)
     {
         var tile_uid = this.board.xyz2uid(_x,_y,0);
         if (tile_uid == null)
@@ -99,9 +100,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var s = this._symbol_cache[x];
 	    return (s==null)? s:s[y];
 	};
-	instanceProto._get_match_tiles = function(group_name,pattern_dimation)
+	instanceProto._create_symbol_array = function(x,y)
 	{
-        this._group_name = group_name;
         this._clean_symbol_cache();
         var x,y,uid;
         var x_max= this.board.x_max;
@@ -109,8 +109,13 @@ cr.plugins_.Rex_Matcher = function(runtime)
         for (y=0; y<=y_max; y++)
         {
             for (x=0; x<=x_max; x++)
-                this._fill_symbol_cache(x,y);
+                this._write_symbol_cache(x,y);
         }
+	};	
+	instanceProto._get_match_tiles = function(group_name,pattern_dimation)
+	{
+        this._group_name = group_name;
+        this._create_symbol_array();
         this._has_matched_pattern = false;
         
         if (pattern_dimation == 1)
@@ -125,15 +130,15 @@ cr.plugins_.Rex_Matcher = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnNoMatchPattern, this);
 	};
     
-	instanceProto._pattern_search = function(pattern)
+	instanceProto._pattern_search = function(pattern, is_any_pattern_mode)
 	{
         this._tiles_groups.length = 0;
         if (this._dir == null)
             this._dir = this.board.layout.GetDirCount();
         if (this._dir == 4)
-            this._pattern_search_square(pattern);
+            this._pattern_search_square(pattern, is_any_pattern_mode);
         else if (this._dir == 6)
-            this._pattern_search_hex(pattern);
+            this._pattern_search_hex(pattern, is_any_pattern_mode);
         // filled this._tiles_groups
         return this._tiles_groups;
 	};
@@ -142,7 +147,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         return new Array( num + 1 ).join( this );
     };
     
-	instanceProto._pattern_search_square = function(pattern)
+	instanceProto._pattern_search_square = function(pattern, is_any_pattern_mode)
 	{
         var is_matchN_mode = (typeof(pattern) == "number");        
 	    var x,y,i,c,s,is_matched,matched_tiles=[];
@@ -200,13 +205,17 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    }
                         matched_tiles.push(s);
 	                }
-	                if (is_matched)                
+	                if (is_matched)
+					{
 	                    this._tiles_groups.push(matched2uid(matched_tiles));            
+						if (is_any_pattern_mode)
+						    return;
+				    }
 	            }
 	        }
 	    }         	            
 	};
-	instanceProto._pattern_search_hex = function(pattern)
+	instanceProto._pattern_search_hex = function(pattern, is_any_pattern_mode)
 	{	  
         var is_matchN_mode = (typeof(pattern) == "number");   
         var dir,x,y,i,c,s,is_matched,matched_tiles=[];
@@ -253,7 +262,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    cur_y = next_y;
 	                }
 	                if (is_matched)
-	                    this._tiles_groups.push(matched2uid(matched_tiles));                 
+					{
+	                    this._tiles_groups.push(matched2uid(matched_tiles)); 
+						if (is_any_pattern_mode)
+						    return;						
+				    }
 	            }
 	        }
         }        
@@ -274,7 +287,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    }
 	};
 	
-	instanceProto._pattern_search_2d = function(pattern, is_template_mode)
+	instanceProto._pattern_search_2d = function(pattern, is_template_mode, is_any_pattern_mode)
 	{
         pattern = csv2array(pattern);
         this._tiles_groups.length = 0;
@@ -326,8 +339,12 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    break;
 	            }
 	            
-	            if (is_matched)                
+	            if (is_matched)     
+                {				
 	                this._tiles_groups.push(matched2uid(matched_tiles));   
+					if (is_any_pattern_mode)
+						    return this._tiles_groups;	
+			    }
 	        }
 	    }      
         return this._tiles_groups;
@@ -370,6 +387,14 @@ cr.plugins_.Rex_Matcher = function(runtime)
             arr[i]=arr[i].split(",");	
         return arr;    
 	};
+	
+	instanceProto._on_tick_changed = function ()
+	{       
+	    var cur_tick = this.runtime.tickcount;
+		var tick_changed = this.runtime.layout_first_tick || (this._last_tick !== (cur_tick - 1));
+        this._last_tick = cur_tick;
+		return tick_changed;
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -382,7 +407,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	
 	Cnds.prototype.OnMatchPattern = function (pattern)
 	{       
-        var tiles_groups = this._pattern_search(pattern);	    
+        var tiles_groups = this._pattern_search(pattern, false);	    
         this._on_match_pattern(tiles_groups);
         return false;
 	};
@@ -394,14 +419,14 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	
 	Cnds.prototype.OnMatchPattern2D = function (pattern)
 	{       
-        var tiles_groups = this._pattern_search_2d(pattern, false);	    
+        var tiles_groups = this._pattern_search_2d(pattern, false, false);	    
         this._on_match_pattern(tiles_groups);
         return false;
 	};
 	
 	Cnds.prototype.OnMatchTemplatePattern2D = function (pattern)
 	{
-        var tiles_groups = this._pattern_search_2d(pattern, true);	    
+        var tiles_groups = this._pattern_search_2d(pattern, true, false);	    
         this._on_match_pattern(tiles_groups);
         return false;
 	};	
@@ -411,6 +436,29 @@ cr.plugins_.Rex_Matcher = function(runtime)
         return (!this._has_matched_pattern);
 	};	
 	
+	Cnds.prototype.AnyMatchPattern = function (pattern)
+	{
+	    if (this._on_tick_changed)
+		    this._create_symbol_array();
+	    var tiles_groups = this._pattern_search(pattern, true);
+        return (tiles_groups.length != 0);
+	};	
+	
+	Cnds.prototype.AnyMatchPattern2D = function (pattern)
+	{
+	    if (this._on_tick_changed)
+		    this._create_symbol_array();
+	    var tiles_groups = this._pattern_search_2d(pattern, false, true);
+        return (tiles_groups.length != 0);
+	};		
+	
+	Cnds.prototype.AnyMatchTemplatePattern2D = function (pattern)
+	{
+	    if (this._on_tick_changed)
+		    this._create_symbol_array();		
+	    var tiles_groups = this._pattern_search_2d(pattern, true, true);
+        return (tiles_groups.length != 0);
+	};			
 	
 	//////////////////////////////////////
 	// Actions

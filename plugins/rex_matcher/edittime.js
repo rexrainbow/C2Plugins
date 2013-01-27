@@ -19,28 +19,40 @@
 AddCondition(1, cf_trigger, "On get symbol", "Symbol", 
              "On get symbol", 'Trigger by "Action:Get matched tiles" to get symbol.', "OnGetSymbol");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_trigger, "On matched 1d pattern", "1D Patern", 
-             "On matched 1d pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles" when 1d matched pattern.', "OnMatchPattern");    
-AddCondition(3, cf_trigger, "On no matched pattern", "No matched", 
-             "On no matched pattern", 'Trigger by "Action:Get matched tiles" when no matched pattern.', "OnNoMatchPattern");    
+AddCondition(2, cf_trigger, "On 1d pattern ", "1D Patern", 
+             "On 1d pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles" when 1d pattern matched.', "OnMatchPattern");    
+AddCondition(3, cf_trigger, "On no pattern", "No matched", 
+             "On no pattern matched", 'Trigger by "Action:Get matched tiles" when no pattern matched.', "OnNoMatchPattern");    
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(4, cf_trigger, "On matched 2D pattern", "2D Patern", 
-             "On matched 2D pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles with 2d pattern" when matched pattern.', "OnMatchPattern2D");    
+AddCondition(4, cf_trigger, "On 2D pattern", "2D Patern", 
+             "On 2D pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles with 2d pattern" when 2D pattern matched.', "OnMatchPattern2D");    
 AddNumberParam("Count", "Continuous symbols count.", 3);
-AddCondition(5, cf_trigger, "On matched N symbols", "1D Patern", 
-             "On matched <i>{0}</i> continuous symbols", 
-             'Trigger by "Action:Get matched tiles" when matched N continuous symbol.', "OnMatchPattern");
+AddCondition(5, cf_trigger, "On N symbols", "1D Patern", 
+             "On <i>{0}</i> continuous symbols matched", 
+             'Trigger by "Action:Get matched tiles" when N continuous symbols matched.', "OnMatchPattern");
 AddStringParam("Template", "Pattern template.", '""');
-AddCondition(6, cf_trigger, "On matched 2D template pattern", "2D Patern", 
-             "On matched 2D template pattern <i>{0}</i>", 'Trigger by "Action:Get matched tiles with 2d pattern" when matched pattern.', "OnMatchTemplatePattern2D");			 
-AddCondition(7, 0, "No matched pattern", "No matched", 
-             "Has no matched pattern", 'Return true if no matched pattern in previous "action:Get matched tiles".', "HasNoMatchPattern");
-              
+AddCondition(6, cf_trigger, "On 2D template pattern", "2D Patern", 
+             "On 2D template pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles with 2d pattern" when 2D template pattern matched.', "OnMatchTemplatePattern2D");			 
+AddCondition(7, 0, "No pattern" , "No matched", 
+             "Has no matched pattern", 'Return true if no matched pattern in lastest "action:Get matched tiles".', "HasNoMatchPattern");
+AddStringParam("Pattern", "Pattern.", '""');
+AddCondition(8, 0, "Any 1d pattern ", "1D Patern", 
+             "Has any 1d pattern <i>{0}</i> matched", 'Return true if there has any 1d pattern matched.', "AnyMatchPattern");   
+AddNumberParam("Pattern", "Pattern.", '""');
+AddCondition(9, 0, "Any N symbols", "1D Patern", 
+             "Has any <i>{0}</i>  continuous symbols matched", 'Return true if there has any N continuous symbols matched.', "AnyMatchPattern");
+AddStringParam("Pattern", "Pattern.", '""');
+AddCondition(10, 0, "Any 2D pattern", "2D Patern", 
+             "Has any 2D pattern <i>{0}</i> matched", 'Return true if there has any 2d pattern matched.', "AnyMatchPattern2D");   
+AddStringParam("Template", "Pattern template.", '""');
+AddCondition(11, 0, "Any 2D template pattern", "2D Patern", 
+             "Has any 2D template pattern <i>{0}</i> matched", 'Return true if there has any 2d template pattern matched.', "AnyMatchTemplatePattern2D");			 
+			 
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Board", "Board object");
 AddObjectParam("Group", "Instance group object");
-AddAction(1, 0, "Setup", "Setup", 
+AddAction(1, 0, "Setup", "0: Setup", 
           "Set board object to <i>{0}</i>, instance group object to <i>{1}</i>", 
           "Set board object and instance group object.", "Setup");         
 AddStringParam("Group", "Put result in this group", '""');
