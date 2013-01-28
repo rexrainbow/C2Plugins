@@ -19,35 +19,52 @@
 AddCondition(1, cf_trigger, "On get symbol", "Symbol", 
              "On get symbol", 'Trigger by "Action:Get matched tiles" to get symbol.', "OnGetSymbol");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_trigger, "On 1d pattern ", "1D Patern", 
+AddCondition(2, cf_trigger, "On 1d pattern ", "Get matched tiles: 1D Patern", 
              "On 1d pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles" when 1d pattern matched.', "OnMatchPattern");    
-AddCondition(3, cf_trigger, "On no pattern", "No matched", 
+AddCondition(3, cf_trigger, "On no pattern", "Get matched tiles: No matched", 
              "On no pattern matched", 'Trigger by "Action:Get matched tiles" when no pattern matched.', "OnNoMatchPattern");    
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(4, cf_trigger, "On 2D pattern", "2D Patern", 
+AddCondition(4, cf_trigger, "On 2D pattern", "Get matched tiles: 2D Patern", 
              "On 2D pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles with 2d pattern" when 2D pattern matched.', "OnMatchPattern2D");    
 AddNumberParam("Count", "Continuous symbols count.", 3);
-AddCondition(5, cf_trigger, "On N symbols", "1D Patern", 
+AddCondition(5, cf_trigger, "On N symbols", "Get matched tiles: 1D Patern", 
              "On <i>{0}</i> continuous symbols matched", 
              'Trigger by "Action:Get matched tiles" when N continuous symbols matched.', "OnMatchPattern");
 AddStringParam("Template", "Pattern template.", '""');
-AddCondition(6, cf_trigger, "On 2D template pattern", "2D Patern", 
+AddCondition(6, cf_trigger, "On 2D template pattern", "Get matched tiles: 2D Patern", 
              "On 2D template pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles with 2d pattern" when 2D template pattern matched.', "OnMatchTemplatePattern2D");			 
-AddCondition(7, 0, "No pattern" , "No matched", 
-             "Has no matched pattern", 'Return true if no matched pattern in lastest "action:Get matched tiles".', "HasNoMatchPattern");
+AddCondition(7, 0, "No pattern" , "If: No matched", 
+             "Has no matched pattern", 'Return true if no matched pattern in latest "action:Get matched tiles".', "HasNoMatchPattern");
+// any
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(8, 0, "Any 1d pattern ", "1D Patern", 
+AddCondition(8, 0, "Any 1d pattern ", "Any: 1D Patern", 
              "Has any 1d pattern <i>{0}</i> matched", 'Return true if there has any 1d pattern matched.', "AnyMatchPattern");   
-AddNumberParam("Pattern", "Pattern.", '""');
-AddCondition(9, 0, "Any N symbols", "1D Patern", 
+AddNumberParam("Count", "Continuous symbols count.", 3);
+AddCondition(9, 0, "Any N symbols", "Any: 1D Patern", 
              "Has any <i>{0}</i>  continuous symbols matched", 'Return true if there has any N continuous symbols matched.', "AnyMatchPattern");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(10, 0, "Any 2D pattern", "2D Patern", 
+AddCondition(10, 0, "Any 2D pattern", "Any: 2D Patern", 
              "Has any 2D pattern <i>{0}</i> matched", 'Return true if there has any 2d pattern matched.', "AnyMatchPattern2D");   
 AddStringParam("Template", "Pattern template.", '""');
-AddCondition(11, 0, "Any 2D template pattern", "2D Patern", 
-             "Has any 2D template pattern <i>{0}</i> matched", 'Return true if there has any 2d template pattern matched.', "AnyMatchTemplatePattern2D");			 
-			 
+AddCondition(11, 0, "Any 2D template pattern", "Any: 2D Patern", 
+             "Has any 2D template pattern <i>{0}</i> matched", 'Return true if there has any 2d template pattern matched.', "AnyMatchTemplatePattern2D");	
+// for each			 
+AddStringParam("Pattern", "Pattern.", '""');
+AddStringParam("Group", "Put result in this group", '""');
+AddCondition(12, cf_looping | cf_not_invertible, "For each 1d pattern ", "For each: 1D Patern", 
+             "For each 1d pattern <i>{0}</i>, put result in group <i>{1}</i>", 'Repeat the event for each 1d pattern matched.', "ForEachMatchPattern");   
+AddNumberParam("Count", "Continuous symbols count.", 3);
+AddStringParam("Group", "Put result in this group", '""');
+AddCondition(13, cf_looping | cf_not_invertible, "For each N symbols", "For each: 1D Patern", 
+             "For each <i>{0}</i>  continuous symbols, put result in group <i>{1}</i>", 'Repeat the event for each N continuous symbols matched.', "ForEachMatchPattern");
+AddStringParam("Pattern", "Pattern.", '""');
+AddStringParam("Group", "Put result in this group", '""');
+AddCondition(14, cf_looping | cf_not_invertible, "For each 2D pattern", "For each: 2D Patern", 
+             "For each 2D pattern <i>{0}</i>, put result in group <i>{1}</i>", 'Repeat the event for each 2d pattern matched.', "ForEachMatchPattern2D");   
+AddStringParam("Template", "Pattern template.", '""');
+AddStringParam("Group", "Put result in this group", '""');
+AddCondition(15, cf_looping | cf_not_invertible, "For each 2D template pattern", "For each: 2D Patern", 
+             "For each 2D template pattern <i>{0}</i>, put result in group <i>{1}</i>", 'Repeat the event for each 2d template pattern matched.', "ForEachMatchTemplatePattern2D");	 
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Board", "Board object");
@@ -66,6 +83,9 @@ AddStringParam("Group", "Put result in this group", '""');
 AddAction(4, 0, "Get matched tiles with 2d pattern", "Request: matched tiles (2d pattern)", 
           "Get matched tiles to group <i>{0}</i> with 2d pattern", 
           "Get matched tiles with 2d pattern.", "GetMatchTiles2D");
+AddAction(5, 0, "Force updating symbol array", "Symbol array", 
+          "Force updating symbol array", 
+          "Force updating symbol array.", "ForceUpdaeSymbolArray");		  
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Horizontal", "Horizontal axis.",1);
