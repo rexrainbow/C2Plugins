@@ -1317,7 +1317,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
     {
         return this.useMouseInput;
     }
-
+	instanceProto.IsMouseMode = function ()
+	{
+		return this._is_mouse_mode;
+	};
 	instanceProto.IsInTouch = function ()
 	{
 		return (this._is_mouse_mode)? this.mouseDown : this.touches.length;
