@@ -87,7 +87,10 @@ AddNumberParam("Angle", "The angle of moving destance to move toward, in degree.
 AddAction(8, 0, "Set target position by distance-angle", "Position", 
           "Set {my} target position by distance to <i>{0}</i>, angle to <i>{1}</i>)", 
           "Set target position to move toward by distance-angle.", 
-          "SetTargetPosByDistanceAngle");            
+          "SetTargetPosByDistanceAngle");         
+          
+AddAction(9, 0, "Stop", "Stop", "{my} stop", 
+          "Stop moving.", "Stop");               
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
@@ -105,7 +108,7 @@ AddExpression(5, ef_return_number, "Get target position X", "Target", "TargetX",
 AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY", 
               "The Y co-ordinate of target position to move toward.");              
 AddExpression(7, ef_return_number, "Get current moving angle", "Current", "MovingAngle", 
-              "Get current moving angle, in degree. Retrun (-1) when object is not moving.");     
+              "Get current moving angle, in degree. Retrun last moving angle when object is not moving.");     
               
          
 ACESDone();

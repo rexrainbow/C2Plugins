@@ -172,8 +172,8 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         {   
             var dx = this.inst.x - this._pre_pos_angle.x;
             var dy = this.inst.y - this._pre_pos_angle.y;
-            this._pre_pos_angle.angle = ((dx!=0) || (dy!=0))? cr.to_clamped_degrees(Math.atan2(dy,dx)):
-                                                              (-1);
+            if ((dx!=0) || (dy!=0))
+                this._pre_pos_angle.angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
             this._pre_pos_angle.angle_update = true;
         }
 		return this._pre_pos_angle.angle;
@@ -269,6 +269,12 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         var dy = distance*Math.sin(a);
         this.SetTargetPos(this.inst.x + dx, this.inst.y + dy);
 	};      
+    
+ 	Acts.prototype.Stop = function ()
+	{
+        this.is_moving = false;
+	};   	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
