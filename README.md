@@ -1,1 +1,1 @@
-[Wiki](https://github.com/rexrainbow/C2_plugins/wiki)
+[Wiki](http://goo.gl/vSxcb)
