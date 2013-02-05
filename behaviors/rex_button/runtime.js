@@ -294,16 +294,24 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.GetX = function()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetX.call(touch_obj, 
-                            touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
+        if (!touch_obj.IsMouseMode)
+            this.type.GetX.call(touch_obj, 
+                                touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
+        else
+            this.type.GetX.call(touch_obj, 
+                                touch_obj.fake_ret, 0, this.inst.layer.index);
         return touch_obj.fake_ret.value;          
 	};
     
 	behinstProto.GetY = function()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetY.call(touch_obj, 
-                            touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
+        if (!touch_obj.IsMouseMode)
+            this.type.GetY.call(touch_obj, 
+                                touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
+        else
+            this.type.GetY.call(touch_obj, 
+                                touch_obj.fake_ret, 0, this.inst.layer.index);     
         return touch_obj.fake_ret.value;         
 	};
 	//////////////////////////////////////
