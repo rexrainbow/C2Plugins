@@ -4,7 +4,7 @@
 		"name":			"Wait Event",
 		"id":			"Rex_WaitEvent",
 		"version":		"0.1",   		
-		"description":	"Wait events finished, used with ajax",
+		"description":	"Wait events finished.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Control flow",
