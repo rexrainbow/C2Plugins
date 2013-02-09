@@ -391,8 +391,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     var _TIMERQUEUE_SORT = function(timerA, timerB)
     {
-        var ta = timerA._abs_time;
-        var tb = timerB._abs_time;
+        var ta = timerA.abs_time;
+        var tb = timerB.abs_time;
         return (ta < tb) ? -1 : (ta > tb) ? 1 : 0;
     }
     
@@ -457,7 +457,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             this._process_timer_queue.sort(_TIMERQUEUE_SORT);
             this.triggered_timer = this._process_timer_queue.shift();
-            this._timer_abs_time = this.triggered_timer._abs_time;
+            this._timer_abs_time = this.triggered_timer.abs_time;
             //print "[TimeLine] Current Time=",this._timer_abs_time
             this.triggered_timer.DoHandle();
         }    
@@ -504,7 +504,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // internal function        
     TimeLineProto._is_timer_time_out = function(timer)
     {
-        return (timer._abs_time <= this.ABS_Time);
+        return (timer.abs_time <= this.ABS_Time);
     };
 
     TimeLineProto._add_timer_to_activate_lists = function(timer)
@@ -545,7 +545,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.delay_time_save = 0; //delay_time
         this.delay_time = 0; //delay_time
         this._remainder_time = 0;
-        this._abs_time = 0;      
+        this.abs_time = 0;      
         this._handler = new this._TimerHandler(thisArgs, call_back_fn, args);
         this._idle();
         this._abs_time_set(0); // delay_time
@@ -566,7 +566,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             if (!this._is_active)
             {
-                this._remainder_time = this._abs_time;
+                this._remainder_time = this.abs_time;
                 this.Resume(); // update timer in TimeLineMgr 
             }
         }
@@ -613,7 +613,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         var remainder_time = 0;
         if (this.IsActive())       // -> run     
         {
-            remainder_time = this._abs_time - this.timeline.CurrentTimeGet();
+            remainder_time = this.abs_time - this.timeline.CurrentTimeGet();
         }
         else if (this.IsAlive())   // (!this.IsActive() && this.IsAlive()) -> suspend
         {
@@ -639,9 +639,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                (this.ElapsedTimeGet() / this.delay_time_save);
     };       
             
-    TimerProto.DeltaErrorTickGet = function()
+    TimerProto.ExpiredTimeGet = function()
     {    
-        return (this.timeline._abs_time - this._abs_time);   
+        return (this.timeline.ABS_Time - this.abs_time);
     };
     
     TimerProto.SetCallbackArgs = function(args)
@@ -671,12 +671,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimerProto._abs_time_set = function(delta_time)
     {
-        this._abs_time = this.timeline.CurrentTimeGet() + delta_time;
+        this.abs_time = this.timeline.CurrentTimeGet() + delta_time;
     };
     
     TimerProto._suspend = function()
     {
-        this._remainder_time = this._abs_time - this.timeline.CurrentTimeGet();
+        this._remainder_time = this.abs_time - this.timeline.CurrentTimeGet();
         this._is_active = false;
     };
 
@@ -696,8 +696,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         if (this._is_active)
         {
             abs_time = this.timeline.CurrentTimeGet();
-            remainder_time = this._abs_time - abs_time;
-            this._abs_time = abs_time + (remainder_time*rate);
+            remainder_time = this.abs_time - abs_time;
+            this.abs_time = abs_time + (remainder_time*rate);
         }
         else
         {
