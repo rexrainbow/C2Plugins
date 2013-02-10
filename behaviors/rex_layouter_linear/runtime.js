@@ -94,7 +94,6 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             this._points.end.y = (quad.tly + quad.try_)/2;           
             break;            
         }
-        console.log(this._points);
 	};  
     
  	behinstProto._on_update = function ()
@@ -127,32 +126,38 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
     
 	behinstProto._update_fix_mode = function ()
 	{    
+	    var layouter =  this.inst;
+	    var sprites = layouter.sprites;
+	    var cnt = sprites.length;
+	    if (cnt == 0)
+	        return;
+	        
         this._get_start_end_points();
         var layouter =  this.inst;   
-        var a = layouter.angle;
-        var cos_a = Math.cos(a), sin_a = Math.sin(a);
-        var sprites = layouter.sprites;
-        var i, cnt = sprites.length, params;
+        var a = Math.atan2(this._points.end.y - this._points.start.y,
+                           this._points.end.x - this._points.start.x);
+        var cos_a = Math.cos(a), sin_a = Math.sin(a);        
+        var i, params;
         var dx = this.delta_distance * cos_a;
         var dy = this.delta_distance * sin_a; 
         
         // re-calc start point
-        if (this.alignment != 0)
+        var total_distance = this.delta_distance * (cnt-1);
+        switch (this.alignment)
         {
-            var total_distance = this.delta_distance * (cnt-1);
-            if (this.alignment == 1) // alignment center
-            {
-                total_distance /= 2;
-                var center_x = (this._points.start.x + this._points.end.x)/2;
-                var center_y = (this._points.start.y + this._points.end.y)/2;
-                this._points.start.x = center_x - (total_distance*cos_a);
-                this._points.start.y = center_y - (total_distance*sin_a);
-            }
-            else // alignment end
-            {
-                this._points.start.x = this._points.end.x - (total_distance * cos_a);
-                this._points.start.y = this._points.end.y - (total_distance * sin_a);
-            }            
+        case 0:
+            break;
+        case 1:  // alignment center
+            total_distance /= 2;
+            var center_x = (this._points.start.x + this._points.end.x)/2;
+            var center_y = (this._points.start.y + this._points.end.y)/2;
+            this._points.start.x = center_x - (total_distance*cos_a);
+            this._points.start.y = center_y - (total_distance*sin_a);
+            break;
+        case 2:  // alignment end
+            this._points.start.x = this._points.end.x - (total_distance * cos_a);
+            this._points.start.y = this._points.end.y - (total_distance * sin_a);        
+            break;            
         }
         
         var start_x = this._points.start.x;
@@ -162,7 +167,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	    {
 	        params = {x:start_x + (dx*i),
 	                  y:start_y + (dy*i),
-	                  angle:a};
+	                  angle:a};	          
 	        layouter.layout_inst(sprites[i], params);
 	    }        
 	};
