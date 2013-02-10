@@ -357,12 +357,15 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	
 	Cnds.prototype.PickInsts = function (objtype)
 	{
+		if (!objtype)
+			return; 	
 		return this._pick_insts(objtype);
-		return true;
 	};  
 
 	Cnds.prototype.PickLayouter =function (objtype)
 	{
+		if (!objtype)
+			return; 	
     	var insts = objtype.getCurrentSol().getObjects();        
     	var cnt = insts.length;
     	if (cnt == 0)
