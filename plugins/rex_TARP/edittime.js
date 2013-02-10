@@ -23,40 +23,40 @@ AddCondition(21, 0, "Is playing", "Player", "Is playing",
 
 //////////////////////////////////////////////////////////////
 // Actions   
-AddAction(1, 0, "Start", "Recorder", 
+AddAction(1, 0, "Start", "Recorder: Control", 
           "Record start", 
           "Record start.", "RecorderStart");       
 AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
-AddAction(2, 0, "Record", "Recorder", 
+AddAction(2, 0, "Record", "Recorder: Control", 
           "Record action <b>{0}</b> (<i>{...}</i>)", 
           "Record action by function and it's parameters.", "RecordAction");
-AddAction(3, 0, "Pause", "Recorder", 
+AddAction(3, 0, "Pause", "Recorder: Control", 
           "Record pause", 
           "Record pause.", "RecordPause");  
-AddAction(4, 0, "Resume", "Recorder", 
+AddAction(4, 0, "Resume", "Recorder: Control", 
           "Record resume", 
           "Record resume.", "RecorderResume");                    
            
 AddObjectParam("Timeline", "Timeline object for getting timer");
-AddAction(10, 0, "Setup", "Player", 
+AddAction(10, 0, "Setup", "Player: Setup", 
           "Get timer from <i>{0}</i>", 
           "Setup TARP.", "PlayerSetup");                             
 AddStringParam("Recorder list", "Record list", '""');
-AddAction(11, 0, "Load", "Player", 
+AddAction(11, 0, "Load", "Player: Control", 
           "Load recorder list <i>{0}</i>", 
           "Load recorder list.", "PlayerLoad"); 
 AddNumberParam("Offset", "Time offset at start", 0);
-AddAction(12, 0, "Play", "Player", 
+AddAction(12, 0, "Play", "Player: Control", 
           "Play", 
           "Play.", "PlayStart");   
-AddAction(13, 0, "Stop", "Player", 
+AddAction(13, 0, "Stop", "Player: Control", 
           "Player stop", 
           "Player stop.", "PlayerStop"); 
-AddAction(14, 0, "Pause", "Player", 
+AddAction(14, 0, "Pause", "Player: Control", 
           "Player pause", 
           "Player pause.", "PlayerPause");  
-AddAction(15, 0, "Resume", "Player", 
+AddAction(15, 0, "Resume", "Player: Control", 
           "Player resume", 
           "Player resume.", "PlayerResume");
          
