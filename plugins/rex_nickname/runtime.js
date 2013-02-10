@@ -54,11 +54,14 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
                     this.runtime.getLayerByNumber(_layer):
                     this.runtime.getLayerByName(_layer);  
         var inst = this.runtime.createInstance(obj_type, layer, x, y ); 
+		
+		this.runtime.isInOnDestroy++;
+		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
+		this.runtime.isInOnDestroy--;
+        
         // Pick just this instance
-        var sol = inst.type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
+        obj_type.getCurrentSol().pick_one(inst);
+        
 	    return inst;
 	}; 	
 
@@ -75,7 +78,7 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 	    if (!family_objtype.is_family)
 		    return;
 	    var objtype = this.nickname2objtype[nickname];
-        if (objtype == null)
+        if (!objtype)
             return;
         if (family_objtype.members.indexOf(objtype) == -1)
             return;           
@@ -113,15 +116,15 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 	Acts.prototype.CreateInsts = function (nickname,x,y,_layer, family_objtype)
 	{
         var inst = this.create_insts(nickname,x,y,_layer);
-        if (family_objtype == null)
+        if (inst == null)
+            return;            
+        if (!family_objtype)
             return;
         var objtype = this.nickname2objtype[nickname];
         if (family_objtype.members.indexOf(objtype) == -1)
             return; 
-        var sol_family = family_objtype.getCurrentSol();  
-        sol_family.instances.length = 1;
-        sol_family.instances[0] = inst;
-        sol_family.select_all = false; 
+             
+        family_objtype.getCurrentSol().pick_one(inst);
 	};	
 
     Acts.prototype.PickAll = function (nickname, family_objtype)
