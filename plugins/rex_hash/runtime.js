@@ -131,22 +131,43 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	Cnds.prototype.ForEachKey = function (key)
 	{
-        this._set_current_entey(key);
-        var current_event = this.runtime.getCurrentEventStack().current_event;
+        this._set_current_entey(key);        
+        
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 
         var key, value;
-		for (key in this._current_entry)
+        if (solModifierAfterCnds)
+		{
+		    for (key in this._current_entry)
+	        {
+                value = this._current_entry[key];
+                if ((typeof value != "number") && (typeof value != "string"))
+                    continue;
+		        this.runtime.pushCopySol(current_event.solModifiers);
+		        
+                this.exp_CurKey = key;
+                this.exp_CurValue = value;		        
+		    	current_event.retrigger();
+		    	
+		    	this.runtime.popSol(current_event.solModifiers);
+		    }
+	    }
+	    else
 	    {
-            value = this._current_entry[key];
-            if ((typeof value != "number") && (typeof value != "string"))
-                continue;
-                
-            this.exp_CurKey = key;
-            this.exp_CurValue = value;
-		    this.runtime.pushCopySol(current_event.solModifiers);
-			current_event.retrigger();
-			this.runtime.popSol(current_event.solModifiers);
-		}
+		    for (key in this._current_entry)
+	        {
+                value = this._current_entry[key];
+                if ((typeof value != "number") && (typeof value != "string"))
+                    continue;
+                    
+                this.exp_CurKey = key;
+                this.exp_CurValue = value;		        
+		    	current_event.retrigger();
+		    }	        
+	    }
+	
 
         this.exp_CurKey = "";
         this.exp_CurValue = 0;      

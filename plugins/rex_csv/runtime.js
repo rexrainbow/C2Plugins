@@ -140,19 +140,35 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Cnds.prototype.ForEachPage = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 		
 		this.forPage = "";
         var tables = this._tables;
         var page;
-		for (page in tables)
+		if (solModifierAfterCnds)
+		{        
+		    for (page in tables)
+	        {
+		        this.runtime.pushCopySol(current_event.solModifiers);
+                
+                this.forPage = page;
+                this.TurnPage(page);
+		    	current_event.retrigger();
+		    	
+		    	this.runtime.popSol(current_event.solModifiers);
+		    }
+	    }
+	    else
 	    {
-            this.forPage = page;
-            this.TurnPage(page);
-		    this.runtime.pushCopySol(current_event.solModifiers);
-			current_event.retrigger();
-			this.runtime.popSol(current_event.solModifiers);
-		}
+		    for (page in tables)
+	        {
+                this.forPage = page;
+                this.TurnPage(page);
+		    	current_event.retrigger();
+		    }	        
+	    }
 
 		this.forPage = "";
 		return false;        
@@ -592,20 +608,35 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	CSVKlassProto.ForEachCol = function ()
 	{   
-        var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
-		
+        var current_frame = this.plugin.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+			    
 		this.forCol = "";
         
         var keys = this.keys;
         var key_cnt = keys.length;
         var i;
-		for (i=0; i<key_cnt; i++ )
+        if (solModifierAfterCnds)
+        {
+		    for (i=0; i<key_cnt; i++ )
+	        {                
+		        this.plugin.runtime.pushCopySol(current_event.solModifiers);
+                
+                this.forCol = keys[i];		        
+		    	current_event.retrigger();
+		    	
+		    	this.plugin.runtime.popSol(current_event.solModifiers);
+		    }
+	    }
+	    else
 	    {
-            this.forCol = keys[i];
-		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
-			current_event.retrigger();
-			this.plugin.runtime.popSol(current_event.solModifiers);
-		}
+		    for (i=0; i<key_cnt; i++ )
+	        {
+                this.forCol = keys[i];
+		    	current_event.retrigger();
+		    }	        
+	    }
 
 		this.forCol = "";
 	};
@@ -620,40 +651,70 @@ cr.plugins_.Rex_CSV = function(runtime)
         }
             
         // current_entry is valid
-        var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
-		
+        var current_frame = this.plugin.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
 		this.forRow = "";
         
         var items = this.items;
         var item_cnt = items.length;
         var i;
-		for (i=0; i<item_cnt; i++ )
+        if (solModifierAfterCnds)
+        {
+		    for (i=0; i<item_cnt; i++ )
+	        {
+		        this.plugin.runtime.pushCopySol(current_event.solModifiers);
+
+                this.forRow = items[i];		        
+		    	current_event.retrigger();
+
+		    	this.plugin.runtime.popSol(current_event.solModifiers);
+		    }
+	    }
+	    else
 	    {
-            this.forRow = items[i];
-		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
-			current_event.retrigger();
-			this.plugin.runtime.popSol(current_event.solModifiers);
-		}
+		    for (i=0; i<item_cnt; i++ )
+	        {
+                this.forRow = items[i];
+		    	current_event.retrigger();
+		    }	        
+	    }
 
 		this.forRow = "";
 	};   
 	
 	CSVKlassProto.ForEachRow = function ()
 	{   
-        var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
+        var current_frame = this.plugin.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 		
 		this.forRow = "";
         
         var items = this.items;
         var item_cnt = items.length;
         var i;
-		for (i=0; i<item_cnt; i++ )
+        if (solModifierAfterCnds)
+        {        
+		    for (i=0; i<item_cnt; i++ )
+	        {
+		        this.plugin.runtime.pushCopySol(current_event.solModifiers);
+                
+                this.forRow = items[i];		        
+		    	current_event.retrigger();
+		    	
+		    	this.plugin.runtime.popSol(current_event.solModifiers);
+		    }
+	    }
+	    else
 	    {
-            this.forRow = items[i];
-		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
-			current_event.retrigger();
-			this.plugin.runtime.popSol(current_event.solModifiers);
-		}
+		    for (i=0; i<item_cnt; i++ )
+	        {
+                this.forRow = items[i];
+		    	current_event.retrigger();
+		    }	        
+	    }
 
 		this.forRow = "";
 	}; 
@@ -668,20 +729,35 @@ cr.plugins_.Rex_CSV = function(runtime)
         }
             
         // current_entry is valid
-        var current_event = this.plugin.runtime.getCurrentEventStack().current_event;
+        var current_frame = this.plugin.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 		
 		this.forCol = "";
         
         var keys = this.keys;
         var key_cnt = keys.length;
         var i;
-		for (i=0; i<key_cnt; i++ )
+        if (solModifierAfterCnds)
+        {           
+		    for (i=0; i<key_cnt; i++ )
+	        {                
+		        this.plugin.runtime.pushCopySol(current_event.solModifiers);
+		        
+		        this.forCol = keys[i];
+		    	current_event.retrigger();
+		    	
+		    	this.plugin.runtime.popSol(current_event.solModifiers);
+		    }
+	    }
+	    else
 	    {
-            this.forCol = keys[i];
-		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
-			current_event.retrigger();
-			this.plugin.runtime.popSol(current_event.solModifiers);
-		}
+		    for (i=0; i<key_cnt; i++ )
+	        {                
+		        this.forCol = keys[i];
+		    	current_event.retrigger();
+		    }	        
+	    }
 
 		this.forCol = "";
 	};
