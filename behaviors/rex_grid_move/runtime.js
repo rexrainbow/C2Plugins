@@ -189,18 +189,25 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             // find out if neighbors have solid property
             var z_hash = this.board.xy2zhash(target_x, target_y);
             var z;
-            if (!(0 in z_hash))  // tile does not exist
-                return null;                
-            for (z in z_hash)
+            if (target_z != 0)
             {
-                _target_uid = z_hash[z];
-                if (_solid_get(this.board.uid2inst(_target_uid)))  // solid
+                if (!(0 in z_hash))  // tile does not exist
+                    return null;                
+                for (z in z_hash)
                 {
-                    this.exp_BlockerUID = _target_uid;
-                    return (-1);  // blocked
-                }
-            }       
-            return 1; // can move to target
+                    _target_uid = z_hash[z];
+                    if (_solid_get(this.board.uid2inst(_target_uid)))  // solid
+                    {
+                        this.exp_BlockerUID = _target_uid;
+                        return (-1);  // blocked
+                    }
+                }                       
+                return 1; // can move to target
+            }
+            else  // target_z == 0
+            {
+                return (!(0 in z_hash))? 1: null;          
+            }
         }
         else    
         {
