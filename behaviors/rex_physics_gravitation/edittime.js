@@ -78,7 +78,7 @@ var property_list = [
     new cr.Property(ept_text, "Source tag", "", "Target will be attracted with souces which have the same tag."),   
     new cr.Property(ept_float, "Force", 1, "Appling force to target. Source only."),    
     new cr.Property(ept_float, "Sensitivity range", 0, "Appling force when distance is less then this range. 0 is infinity. Source only."),    
-    new cr.Property(ept_combo, "Traget", "No", "Gravitated by source.", "No|Yes"),    
+    new cr.Property(ept_combo, "Target", "No", "Gravitated by source.", "No|Yes"),    
     new cr.Property(ept_text, "Target tag", "", "Target will be attracted with souces which have the same tag."),     
 	];
 	

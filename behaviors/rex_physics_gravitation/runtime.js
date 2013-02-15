@@ -134,7 +134,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	behinstProto._get_physics_behavior_inst = function ()
     {
         var i = this.type.objtype.getBehaviorIndexByName("Physics");   
-        if (typeof i == "number")
+        if (i != (-1))
             return this.inst.behavior_insts[i];
         else
             alert("You should add a physics for gravitation behavior.");
@@ -150,18 +150,24 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
             return;
             
         var sources = this.sources[this.target_tag];
+		var my_uid = this.inst.uid;
         var uid, source_inst, inst, source_grange_pow2;
         for (uid in sources)
         {
             source_inst = sources[uid];
+			inst = source_inst.inst;
+			
+            //We do not want an object to be exerting a gravitational force on itself
+            if (my_uid === inst.uid)
+                continue;	
+				
             source_grange_pow2 = source_inst.sensitivity_range_pow2;
-            inst = source_inst.inst;
             if (this._in_range(inst,  source_grange_pow2))
             {
                 this._apply_force_toward(source_inst.gravitation_force, inst.x, inst.y);
                 this.has_been_attracted = true;
                 source_inst.has_attracting = true;
-                this._attracting_target(source_inst, this.inst.uid);
+                this._attracting_target(source_inst, my_uid);
                 this._attracted_by_source(this, uid);
             }
         }
