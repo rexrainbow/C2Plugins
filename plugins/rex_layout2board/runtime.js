@@ -115,11 +115,14 @@ cr.plugins_.Rex_layout2board = function(runtime)
         var lx, ly;       
         var board_info = this.boards[board.uid];
         var board_layout = board.layout;
+        var error;
         for (i=0; i<cnt; i++)
         {
             chess = instances[i];
             lx = board_layout.PXY2LX(chess.x, chess.y);
             ly = board_layout.PXY2LY(chess.x, chess.y); 
+            error = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly));
+            assert2(!error, "[Layout to Board] Error! The index of LX or LY is not an integer.");              
             board.add_item(chess, lx, ly, lz);
         }
 	};
