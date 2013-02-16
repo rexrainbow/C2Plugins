@@ -7,7 +7,7 @@
 		"description":	"Logic of matched game. Could be used in square or hex board.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Game logic",
+		"category":		"Board: logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
