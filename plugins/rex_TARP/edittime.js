@@ -43,7 +43,7 @@ AddAction(10, 0, "Setup", "Player: Setup",
           "Get timer from <i>{0}</i>", 
           "Setup TARP.", "PlayerSetup");                             
 AddStringParam("Recorder list", "Record list", '""');
-AddAction(11, 0, "Load", "Player: Control", 
+AddAction(11, 0, "Load", "Player: Setup", 
           "Load recorder list <i>{0}</i>", 
           "Load recorder list.", "PlayerLoad"); 
 AddNumberParam("Offset", "Time offset at start", 0);
