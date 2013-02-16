@@ -74,7 +74,7 @@ AddExpression(2, ef_return_string, "Transfer hash to string",
               "JSON", "HashTableToString", "Transfer hash table to JSON string.");
 AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
-              "Value", "At", "Get value from the hash by key string. Add second parameter to return default value when got invalid value.");
+              "Value", "At", "Get value from the hash by key string, return JSON string if the item is an object. Add second parameter to return default value when got invalid value.");
 AddExpression(4, ef_return_string, "Current key", "For Each", "CurKey", "Get the current key in a For Each loop.");
 AddExpression(5, ef_return_any, "Current value", "For Each", "CurValue", "Get the current value in a For Each loop.");
 AddAnyTypeParam("Key", "The key of the hash to get.", '""');

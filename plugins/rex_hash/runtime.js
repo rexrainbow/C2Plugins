@@ -342,7 +342,9 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{   
         var keys = key_string.split(".");
         var val = this._get_data(keys);
-        if ((typeof val != "number") && (typeof val != "string"))
+        if (typeof val == "object")
+            val = JSON.stringify(val);
+        else if ((typeof val != "number") && (typeof val != "string"))
             val = default_value;
 		ret.set_any(val);
 	};
@@ -351,7 +353,9 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{     
         var keys = key_string.split(".");
         var val = this._get_data(keys);
-        if ((typeof val != "number") && (typeof val != "string"))
+        if (typeof val == "object")
+            val = JSON.stringify(val);
+        else if ((typeof val != "number") && (typeof val != "string"))
             val = default_value;        
 		ret.set_any(val);
 	};
@@ -360,7 +364,9 @@ cr.plugins_.Rex_Hash = function(runtime)
         var keys = (arguments.length > 2)?
                    Array.prototype.slice.call(arguments,1):
                    [key];
-        var val = this._get_data(keys);      
+        var val = this._get_data(keys);    
+        if (typeof val == "object")
+            val = JSON.stringify(val);        
 		ret.set_any(val);
 	};    
     
