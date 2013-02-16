@@ -58,7 +58,7 @@ AddNumberParam("Face to", "Face direction.", 0);
 AddAction(5, 0, "Set face by number", "Face direction", "{my} set face to <i>{0}</i>", 
           "Set face direction by number.", "SetFace");  
 AddNumberParam("Cost", "Moving cost.", 1);	
-AddAction(7, 0, "Set moving cost", "Moving cost", "{my} set moving cost to <i>{0}</i>", 
+AddAction(7, 0, "Set cost", "Moving cost", "{my} set moving cost to <i>{0}</i>", 
           'Set moving cost. used under "condition:On get moving cost"', "SetMovingCost");  
 AddComboParamOption("Right");		  
 AddComboParamOption("Down");
@@ -105,6 +105,10 @@ AddComboParamOption("Random");
 AddComboParam("Mode", "Direction selection on forked road .", 0);
 AddAction(40, 0, "Set direction selection", "Forked road", "{my} set direction selection <i>{0}</i> on forked road", 
           "Set direction selection on forked road.", "SetDirectionSelection");
+AddObjectParam("Random generator", "Random generator object");
+AddAction(41, 0, "Set random generator", "Wander", 
+          "Set random generator object to <i>{0}</i>", 
+          "Set random generator object.", "SetRandomGenerator");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get face direction", "Moving result", "TargetFaceDir", 
@@ -121,7 +125,7 @@ AddExpression(12, ef_return_number, "Get logic Y of target tile", "Target tile",
               'Get logic Y of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
 AddExpression(30, ef_return_number,
               "STOP property used in cost function", "Cost", "STOP",
-              "STOP property used in cost function. The value is (-1)");   
+              'STOP property used in cost function, used in action:"Set moving cost". The value is (-1)');   
 ACESDone();
 
 // Property grid properties for this plugin

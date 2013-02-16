@@ -10,6 +10,7 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 {
 	this.runtime = runtime;
 };
+cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for Shuffing
 
 (function ()
 {
@@ -489,6 +490,15 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	{     
         this.forked_selection_mode = mode;
 	}; 	
+	
+    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
+	{
+        var random_gen = random_gen_objs.instances[0];
+        if (random_gen.check_name == "RANDOM")
+            cr.behaviors.Rex_MonopolyMovement._random_gen = random_gen;        
+        else
+            alert ("Monopoly movement: This object is not a random generator object.");
+	};        
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
