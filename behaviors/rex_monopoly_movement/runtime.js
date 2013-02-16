@@ -294,6 +294,7 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
         return tile_info;
     };
     
+    var prop_STOP = (-1);    
     behinstProto._get_cost = function (target_tile_uid)	
     {
 	    this._moving_cost = 1;
@@ -302,6 +303,10 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 		this.exp_TileLX = tile_xyz.x;
 		this.exp_TileLY = tile_xyz.y;			
 		this.runtime.trigger(cr.behaviors.Rex_MonopolyMovement.prototype.cnds.OnGetMovingCost, this.inst);
+	    if ( (this._moving_cost < 0) && 
+             (this._moving_cost != prop_STOP) )
+		    this._moving_cost = 0;
+        this._moving_cost = Math.floor(this._moving_cost);
 	    return this._moving_cost;
     };
     
@@ -333,7 +338,12 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
             tile_info = this._get_target_tile_info(tile_info);
             if (tile_info == null)
                 break;
-            cost = this._get_cost(tile_info.uid);              
+            cost = this._get_cost(tile_info.uid);   
+
+            // specila value
+            if (cost == prop_STOP)
+                cost =  moving_points;           
+            
             moving_points -= cost;
             if (moving_points < 0)
                 break;
@@ -347,7 +357,7 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	var _shuffle = function (arr)
 	{
         var i = arr.length, j, temp, random_value;
-		var random_gen = cr.behaviors.Rex_GridMove._random_gen;
+		var random_gen = cr.behaviors.Rex_MonopolyMovement._random_gen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
@@ -456,10 +466,8 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	};	
 	
 	Acts.prototype.SetMovingCost = function (cost)	
-	{     
-	    if (cost <0)
-		    cost = 0;
-        this._moving_cost = Math.floor(cost);
+	{
+        this._moving_cost = cost;
 	}; 	
 	
     Acts.prototype.SetDestinationSolid = function (is_solid)
@@ -515,4 +523,10 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	{
         ret.set_int(this.exp_TileLY);		
 	};
+    
+ 	Exps.prototype.STOP = function (ret)
+	{
+        ret.set_int(this.prop_STOP);		
+	};    
+    
 }());

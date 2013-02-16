@@ -119,7 +119,9 @@ AddExpression(11, ef_return_number, "Get logic X of target tile", "Target tile",
               'Get logic X of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
 AddExpression(12, ef_return_number, "Get logic Y of target tile", "Target tile", "TileLY", 
               'Get logic Y of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
-  
+AddExpression(30, ef_return_number,
+              "STOP property used in cost function", "Cost", "STOP",
+              "STOP property used in cost function. The value is (-1)");   
 ACESDone();
 
 // Property grid properties for this plugin
