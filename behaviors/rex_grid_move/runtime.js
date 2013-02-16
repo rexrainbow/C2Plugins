@@ -156,7 +156,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     behinstProto._custom_can_move_to_get = function ()
     {
         this.exp_CustomSolid = null;
-        this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnGetDestinationSolid, this.inst);
+        this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnGetSolid, this.inst);
         var can_move_to;
         if (this.exp_CustomSolid == null)
             can_move_to = null;
@@ -412,7 +412,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		return this._collide_test(objtype, group_name);
 	};
 	
-    Cnds.prototype.OnGetDestinationSolid = function ()
+    Cnds.prototype.OnGetSolid = function ()
 	{
 		return true;
 	};

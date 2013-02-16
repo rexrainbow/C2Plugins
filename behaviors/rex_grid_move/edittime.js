@@ -7,7 +7,7 @@
 		"description":	"Move sprite to neighbor on board object",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Movements",
+		"category":		"Board: logic",
 		"flags":		0
 	};
 };
@@ -54,9 +54,9 @@ AddStringParam("Group", "Put result in this group", '""');
 AddCondition(11, cf_trigger, "On colliding begin", "Collisions", 
             "On {my} colliding begin with <i>{0}</i>, put collided result to group <i>{1}</i>", 
             "Triggered when this chess collides begin with another chess.", "OnCollidedBegin");
-AddCondition(12, cf_trigger, "On get destination's solid", "Solid", 
-            "On {my} get destination's solid", 
-            "Triggered by plugin to get destination's solid property from event sheet.", "OnGetDestinationSolid");   
+AddCondition(12, cf_trigger, "On get solid", "Solid", 
+            "On {my} get solid", 
+            "Triggered by plugin to get solid property from event sheet.", "OnGetSolid");   
          
 //////////////////////////////////////////////////////////////
 // Actions
@@ -136,12 +136,12 @@ AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Solid", "Solid property.",0);
 AddAction(17, 0, "Set solid", "Solid", 
-          "{my} set destination's solid to <i>{0}</i>", 
-          "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
+          "{my} set solid to <i>{0}</i>", 
+          "Set solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
 AddNumberParam("Solid", "Solid property. 0=Disable, 1=Enable.", 0);
 AddAction(18, 0, "Set solid by number", "Solid", 
-          "{my} set destination's solid to <i>{0}</i>", 
-          "Set destination's solid. Used under 'condition: On get solid'.", "SetDestinationSolid");                            
+          "{my} set solid to <i>{0}</i>", 
+          "Set solid. Used under 'condition: On get solid'.", "SetDestinationSolid");                            
 AddObjectParam("Group", "Instance group object");
 AddAction(20, 0, "Set instance group ", "Collisions", 
           "Set instance group object to <i>{0}</i>", 
@@ -152,12 +152,12 @@ AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Move-able", "Move-able.",1);
 AddAction(21, 0, "Set move-able", "Solid", 
-          "{my} set destination's move-able to <i>{0}</i>", 
-          "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");
+          "{my} set move-able to <i>{0}</i>", 
+          "Set move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");
 AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
 AddAction(22, 0, "Set move-able by number", "Solid", 
-          "{my} set destination's move-able to <i>{0}</i>", 
-          "Set destination's move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable"); 
+          "{my} set move-able to <i>{0}</i>", 
+          "Set move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable"); 
       
 //////////////////////////////////////////////////////////////
 // Expressions
