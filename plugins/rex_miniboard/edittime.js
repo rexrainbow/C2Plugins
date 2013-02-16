@@ -7,7 +7,7 @@
 		"description":	"A board-container to group chess and move them together.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Board",
+		"category":		"Board: logic",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":	    pf_position_aces
