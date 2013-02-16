@@ -57,9 +57,13 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 		this._forkedroad_dir = null;
 		this._moving_cost = 1;
 		
+        this.exp_TargetFaceDir = 0;
+        this.exp_TargetLX = 0;
+        this.exp_TargetLY = 0;        
 		this.exp_TileUID = (-1);		
 		this.exp_TileLX = (-1);
 		this.exp_TileLY = (-1);		
+		this.exp_CustomSolid = false;
 	};
 
 	behinstProto.tick = function ()
@@ -100,22 +104,67 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 					dir_cnt = obj.layout.GetDirCount();
 					_dir_sequence_init(this._dir_sequence, dir_cnt);
 					this._target_tile_uids.length = dir_cnt;
-					this._is_square_grid = (dir_cnt == 4);					
+					this._is_square_grid = (dir_cnt == 4);
+                    this.exp_TargetFaceDir = this._current_dir_get();
+                    this.exp_TargetLX = _xyz.x;
+                    this.exp_TargetLY = _xyz.y;
                     return this.board;
                 }
             }
         }
         return null;	
 	};
-
+	
+    behinstProto._custom_solid_get = function (target_tile_uid)
+    {
+        this.exp_CustomSolid = null;	
+		this.exp_TileUID = target_tile_uid;
+		var tile_xyz = this.board.uid2xyz(target_tile_uid);
+		this.exp_TileLX = tile_xyz.x;
+		this.exp_TileLY = tile_xyz.y;			
+        this.runtime.trigger(cr.behaviors.Rex_MonopolyMovement.prototype.cnds.OnGetSolid, this.inst);
+        return this.exp_CustomSolid;
+    };
+    
+    var _solid_get = function(inst)
+    {
+        return (inst.extra != null) && (inst.extra.solidEnabled);
+    };
+    
+    behinstProto._solid_prop_get = function (target_tile_uid)
+    {
+        var tile_xyz = this.board.uid2xyz(target_tile_uid);
+        var z_hash = this.board.xy2zhash(tile_xyz.x, tile_xyz.y);
+        var z, target_chess_uid;
+        for (z in z_hash)
+        {
+            target_chess_uid = z_hash[z];
+            if (_solid_get(this.board.uid2inst(target_chess_uid)))  // solid
+                return true;
+        } 
+        return false;
+    };
+    
     behinstProto._get_neighbor_tile_uids = function (tile_info)	
     {
         var i, cnt=this._target_tile_uids.length, dir;
         var board = this.board;
         var layout = board.layout;
-        var tx, ty;
+        var tx, ty, target_tile_uid, is_solid;
         for (i=0; i<cnt; i++)
-            this._target_tile_uids[i] = board.dir2uid(tile_info.uid, i, 0);
+		{
+		    target_tile_uid = board.dir2uid(tile_info.uid, i, 0);
+            if (target_tile_uid == null) 
+            {
+                this._target_tile_uids[i] = null;
+                continue;
+            }
+            
+            is_solid = this._custom_solid_get(target_tile_uid);
+            if (is_solid == null)
+                 is_solid = this._solid_prop_get(target_tile_uid)
+            this._target_tile_uids[i] = (is_solid)? null:target_tile_uid;
+	    }
         return this._target_tile_uids
     };
     
@@ -156,15 +205,7 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 		this._tile_info.uid = uid;	
 		this._tile_info.dir = dir;
     };  
-	
-    
-    behinstProto._get_backward_tile_info = function (tile_info, target_tile_uids)	
-    {
-        var dir = tile_info.dir;
-		this._tile_info_set(target_tile_uids[dir], dir);
-		return this._tile_info;
-    };  
-	
+
     behinstProto._get_forward_tile_info = function (tile_info, target_tile_uids, random_mode)
     {
 	    // random_mode: 1=forward, then random, 2=all random
@@ -234,12 +275,22 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
     {        
         var target_tile_uids = this._get_neighbor_tile_uids(tile_info);
         var valid_cnt =  _get_valid_neighbor_tile_cnt(target_tile_uids);
-        if (valid_cnt == 1)  // go backward
-		    tile_info = this._get_backward_tile_info(tile_info, target_tile_uids);
-        else if (valid_cnt == 2)  // go forward
+        switch (valid_cnt)
+        {
+        case 0:  // can not go any where
+            tile_info = null;
+            break;
+        case 1:  // go backward
+            tile_info.dir = this._get_backward_dir(tile_info.dir);  // turn back
             tile_info = this._get_forward_tile_info(tile_info, target_tile_uids);
-        else
+            break;
+        case 2:  // go forward
+            tile_info = this._get_forward_tile_info(tile_info, target_tile_uids);
+            break;   
+        default:
             tile_info = this._get_forkedroad_tile_info(tile_info, target_tile_uids);
+            break;            
+        }
         return tile_info;
     };
     
@@ -250,7 +301,7 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 		var tile_xyz = this.board.uid2xyz(target_tile_uid);
 		this.exp_TileLX = tile_xyz.x;
 		this.exp_TileLY = tile_xyz.y;			
-		this.runtime.trigger(cr.behaviors.Rex_MonopolyMovement.prototype.cnds.OnGetMoving, this.inst);
+		this.runtime.trigger(cr.behaviors.Rex_MonopolyMovement.prototype.cnds.OnGetMovingCost, this.inst);
 	    return this._moving_cost;
     };
     
@@ -259,8 +310,19 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	    var current_tile_uid = this.board.lz2uid(this.inst.uid, 0);
 		var current_dir = this._current_dir_get();
 	    this._tile_info_set(current_tile_uid, current_dir);
+        this.exp_TargetFaceDir = current_dir;
 		return this._tile_info;
     };	
+    behinstProto._targetLXY_set = function (path_tiles_uid)	
+    {
+        var xyz;
+        if (path_tiles_uid.length > 0)
+            xyz = this.board.uid2xyz( path_tiles_uid[ path_tiles_uid.length-1 ] );
+        else
+            xyz = this.board.uid2xyz( this.inst.uid );
+        this.exp_TargetLX = xyz.x;
+        this.exp_TargetLY = xyz.y;          
+    };	    
     behinstProto.get_moving_path = function (moving_points)	
     {
 		this.path_tiles_uid.length = 0;
@@ -269,11 +331,16 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
         while (moving_points > 0)
         {
             tile_info = this._get_target_tile_info(tile_info);
-            cost = this._get_cost(tile_info.uid);
-            this.path_tiles_uid.push(tile_info.uid); 
+            if (tile_info == null)
+                break;
+            cost = this._get_cost(tile_info.uid);              
             moving_points -= cost;
+            if (moving_points < 0)
+                break;
+            this.path_tiles_uid.push(tile_info.uid); 
+            this.exp_TargetFaceDir = tile_info.dir;
         }
-        this._current_dir_set(tile_info.dir);
+        this._targetLXY_set(this.path_tiles_uid);
         // output: this.path_tiles_uid;
     };
 	
@@ -355,11 +422,16 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
         return (this.path_tiles_uid.length == 0);
 	}; 
 	
-	Cnds.prototype.OnGetMoving = function ()
+	Cnds.prototype.OnGetMovingCost = function ()
 	{
         return true;
 	}; 	
-
+	
+	Cnds.prototype.OnGetSolid = function ()
+	{
+        return true;
+	}; 	
+	
 	Cnds.prototype.OnForkedRoad = function ()
 	{
         return true;
@@ -385,8 +457,20 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	
 	Acts.prototype.SetMovingCost = function (cost)	
 	{     
-        this._moving_cost = cr.clamp(Math.floor(cost), 0, 1);
+	    if (cost <0)
+		    cost = 0;
+        this._moving_cost = Math.floor(cost);
 	}; 	
+	
+    Acts.prototype.SetDestinationSolid = function (is_solid)
+	{
+        this.exp_CustomSolid =  (is_solid > 0);
+	};
+	
+    Acts.prototype.SetDestinationMoveable = function (is_moveable)
+	{
+        this.exp_CustomSolid =  (!(is_moveable > 0));
+	};	
 	
 	Acts.prototype.SetFaceOnForkedRoad = function (dir)	
 	{     
@@ -401,7 +485,22 @@ cr.behaviors.Rex_MonopolyMovement = function(runtime)
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-	
+    
+ 	Exps.prototype.TargetFaceDir = function (ret)
+	{
+        ret.set_int(this.exp_TargetFaceDir);		
+	}; 	
+    
+ 	Exps.prototype.TargetLX = function (ret)
+	{
+        ret.set_int(this.exp_TargetLX);		
+	};     
+    
+ 	Exps.prototype.TargetLY = function (ret)
+	{
+        ret.set_int(this.exp_TargetLY);		
+	};   
+    
  	Exps.prototype.TileUID = function (ret)
 	{
         ret.set_int(this.exp_TileUID);		

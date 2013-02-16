@@ -24,10 +24,14 @@ AddCondition(3, 0, "Empty", "Forwarding path", "Forwarding path is empty",
              "Return ture if forwarding path is empty.", "IsForwardingPathEmpty");
 AddCondition(7, cf_trigger, "On get moving cost", "Moving cost", 
             "On {my} get moving cos", 
-            "Customize moving cost of each target tile.", "OnGetMoving");   		 
+            "Customize moving cost of each target tile.", "OnGetMovingCost");   
+AddCondition(8, cf_trigger, "On get solid", "Solid", 
+            "On {my} get solid", 
+            "Customize solid of each target tile.", "OnGetSolid");   				
 AddCondition(10, cf_trigger, "On forked road", "Forked road", 
             "{my} on forked road", 
             'Triggered when moving on forked road, assign direction by "action: Set face".', "OnForkedRoad");  
+		
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Moving points", "Moving points.", 1);
@@ -53,17 +57,15 @@ AddAction(4, 0, "Set face", "Face direction: hexagon", "{my} set face to <i>{0}<
 AddNumberParam("Face to", "Face direction.", 0);		  
 AddAction(5, 0, "Set face by number", "Face direction", "{my} set face to <i>{0}</i>", 
           "Set face direction by number.", "SetFace");  
-		  
-AddNumberParam("Cost", "Moving cost. It could only assign 0 or 1.", 1);	
+AddNumberParam("Cost", "Moving cost.", 1);	
 AddAction(7, 0, "Set moving cost", "Moving cost", "{my} set moving cost to <i>{0}</i>", 
-          'Set moving cost. used under "condition:On get moving cost"', "SetMovingCost");
-		  
+          'Set moving cost. used under "condition:On get moving cost"', "SetMovingCost");  
 AddComboParamOption("Right");		  
 AddComboParamOption("Down");
 AddComboParamOption("Left");
 AddComboParamOption("Up");
 AddComboParam("Face to", "Face direction.", 0);
-AddAction(10, 0, "Set face", "Forked road: square", "{my} set face to <i>{0}</i>", 
+AddAction(20, 0, "Set face", "Forked road: square", "{my} set face to <i>{0}</i>", 
           'Set face direction in square board. Used under "condition: On forked road"', "SetFaceOnForkedRoad");           
 AddComboParamOption("Right");
 AddComboParamOption("Down-right");	  
@@ -72,25 +74,51 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Face to", "Face direction.", 0);
-AddAction(11, 0, "Set face", "Forked road: hexagon", "{my} set face to <i>{0}</i>", 
+AddAction(21, 0, "Set face", "Forked road: hexagon", "{my} set face to <i>{0}</i>", 
           'Set face direction in hexagon board. Used under "condition: On forked road"', "SetFaceOnForkedRoad");    
 AddNumberParam("Face to", "Face direction.", 0);		  
-AddAction(12, 0, "Set face by number", "Forked road", "{my} set face to <i>{0}</i>", 
+AddAction(22, 0, "Set face by number", "Forked road", "{my} set face to <i>{0}</i>", 
           'Set face direction by number.  Used under "condition: On forked road"', "SetFaceOnForkedRoad");    
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Solid", "Solid property.",0);
+AddAction(30, 0, "Set solid", "Solid", 
+          "{my} set solid to <i>{0}</i>", 
+          "Set solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
+AddNumberParam("Solid", "Solid property. 0=Disable, 1=Enable.", 0);
+AddAction(31, 0, "Set solid by number", "Solid", 
+          "{my} set solid to <i>{0}</i>", 
+          "Set solid. Used under 'condition: On get solid'.", "SetDestinationSolid");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Move-able", "Move-able.",1);
+AddAction(32, 0, "Set move-able", "Solid", 
+          "{my} set move-able to <i>{0}</i>", 
+          "Set move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable");
+AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
+AddAction(33, 0, "Set move-able by number", "Solid", 
+          "{my} set move-able to <i>{0}</i>", 
+          "Set move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable"); 
+		  
 AddComboParamOption("Forwarding");		  
 AddComboParamOption("Random");
 AddComboParam("Mode", "Direction selection on forked road .", 0);
-AddAction(13, 0, "Set direction selection", "Forked road", "{my} set direction selection <i>{0}</i> on forked road", 
+AddAction(40, 0, "Set direction selection", "Forked road", "{my} set direction selection <i>{0}</i> on forked road", 
           "Set direction selection on forked road.", "SetDirectionSelection");
-		  
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get face direction", "Moving result", "TargetFaceDir", 
+              "Get the latest face direction");  
+AddExpression(2, ef_return_number, "Get target logic X", "Moving result", "TargetLX", 
+              "Get target logic X of the latest moving result");  
+AddExpression(3, ef_return_number, "Get target logic Y", "Moving result", "TargetLY", 
+              "Get target logic Y of the latest moving result");          
 AddExpression(10, ef_return_number, "Get UID of target tile", "Target tile", "TileUID", 
-              'Get UID of target tile. Used under "condition: On forked road"');  
+              'Get UID of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
 AddExpression(11, ef_return_number, "Get logic X of target tile", "Target tile", "TileLX", 
-              'Get logic X of target tile. Used under "condition: On forked road"');  
+              'Get logic X of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
 AddExpression(12, ef_return_number, "Get logic Y of target tile", "Target tile", "TileLY", 
-              'Get logic Y of target tile. Used under "condition: On forked road"');  
+              'Get logic Y of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
   
 ACESDone();
 
