@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Movement",
+		"name":			"SLG movement",
 		"id":			"Rex_SLGMovement",
 		"version":		"0.1",   		
 		"description":	"Movement on the SLG chess board",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Game logic",
+		"category":		"Board: logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -27,7 +27,7 @@ AddCondition(2, cf_trigger, "On filter", "Filter",
 // Actions 
 AddObjectParam("Board", "Board object");
 AddObjectParam("Group", "Instance group object");
-AddAction(0, 0, "Setup", "Setup", 
+AddAction(0, 0, "Setup", "0: Setup", 
           "Set board object to <i>{0}</i>, instance group object to <i>{1}</i>", 
           "Set board object and instance group object.", "Setup");  
 AddNumberParam("Cost", "Cost", 0);
@@ -55,7 +55,7 @@ AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(4, 0, "Get moving path", "Request: Moving path", 
-          "Get moving path of chess <i>{0}</i> to tile/chess <i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
+          "Get moving path of chess <i>{0}</i> to tile/chess <i>{1}</i> with moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");
 AddNumberParam("Chess UID", "The UID of chess", 0);
 AddNumberParam("Tile/Chess UID", "The UID of tile/chess", 0);
@@ -63,7 +63,7 @@ AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(5, 0, "Get moving path by UID", "Request: Moving path", 
-          "Get moving path of chess UID:<i>{0}</i> to tile/chess UID:<i>{1}</i> by moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
+          "Get moving path of chess UID:<i>{0}</i> to tile/chess UID:<i>{1}</i> with moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");      
 AddNumberParam("UID", "Filter result", 0);
 AddAction(6, 0, "Append filter result", "Filter", "Append filter result to UID:<i>{0}</i>", 
@@ -82,7 +82,7 @@ AddExpression(2, ef_return_number,
               "Get UID of target tile.");
 AddExpression(3, ef_return_number,
               "Blocking property used in cost function", "Cost", "BLOCKING",
-              "Blocking property used in cost function.");              
+              'Blocking property used in cost function, used in action:"Set cost". The value is (-1)');              
 AddExpression(4, ef_return_number,
               "Get logic X of target tile", "Request", "TileX",
               "Get logic X of target tile.");
@@ -93,7 +93,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-		new cr.Property(ept_combo, "Path mode", "Diagonal", "Geometry of moving path.", "Random|Diagonal|Straight"),  
+    new cr.Property(ept_combo, "Path mode", "Diagonal", "Geometry of moving path.", "Random|Diagonal|Straight"),  
 	];
 	
 // Called by IDE when a new object type is to be created
