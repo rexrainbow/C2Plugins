@@ -65,14 +65,6 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 	    return inst;
 	}; 	
 
-	instanceProto.draw = function(ctx)
-	{
-	};
-	
-	instanceProto.drawGL = function(glw)
-	{
-	};
-	
     instanceProto.PickAll = function (nickname, family_objtype)
 	{
 	    if (!family_objtype.is_family)
