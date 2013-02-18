@@ -182,6 +182,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
         return (this._official_fnobj_state != 1);  
     };	
+	
+    instanceProto.TimeGet = function()
+    {
+        return this.timeline.ABS_Time;  
+    };	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
