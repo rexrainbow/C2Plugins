@@ -22,14 +22,19 @@ AddCondition(21, 0, "Is playing", "Player", "Is playing",
              "Is player playing.", "IsPlaying");
 
 //////////////////////////////////////////////////////////////
-// Actions   
+// Actions  
+AddObjectParam("Timeline", "Timeline object for getting timer");
+AddAction(0, 0, "Setup", "0: Setup", 
+          "Get timer from <i>{0}</i>", 
+          "Setup TARP.", "Setup");  
 AddAction(1, 0, "Start", "Recorder: Control", 
           "Record start", 
           "Record start.", "RecorderStart");       
+AddNumberParam("Offset", "Time offset of this action", 0);		  
 AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
 AddAction(2, 0, "Record", "Recorder: Control", 
-          "Record action <b>{0}</b> (<i>{...}</i>)", 
+          "Record action <b>{1}</b> (<i>{...}</i>), time offset to <b>{0}</b>", 
           "Record action by function and it's parameters.", "RecordAction");
 AddAction(3, 0, "Pause", "Recorder: Control", 
           "Record pause", 
@@ -37,11 +42,7 @@ AddAction(3, 0, "Pause", "Recorder: Control",
 AddAction(4, 0, "Resume", "Recorder: Control", 
           "Record resume", 
           "Record resume.", "RecorderResume");                    
-           
-AddObjectParam("Timeline", "Timeline object for getting timer");
-AddAction(10, 0, "Setup", "Player: Setup", 
-          "Get timer from <i>{0}</i>", 
-          "Setup TARP.", "PlayerSetup");                             
+                                    
 AddStringParam("Recorder list", "Record list", '""');
 AddAction(11, 0, "Load", "Player: Setup", 
           "Load recorder list <i>{0}</i>", 
@@ -63,6 +64,14 @@ AddAction(15, 0, "Resume", "Player: Control",
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get latest record time", "Recorder", "LatestRecordTime", 
+              "Get latest record time, in second.");
+AddExpression(2, ef_return_number, "Get elapsed time of recorder", "Recorder", "RecorderElapsedTime", 
+              "Get elapsed of recorder, in second.");
+AddExpression(3, ef_return_number, "Get elapsed time of player", "Player", "PlayerElapsedTime", 
+              "Get elapsed time of player, in second."); 
+AddExpression(4, ef_return_number, "Get latest play time", "Player", "LatestPlayTime", 
+              "Get latest play time, in second.");			  
 AddExpression(10, ef_return_string, "Get recorder list", "Recorder", "RecorderList", 
               "Get recorder list in JSON format.");
 AddExpression(20, ef_return_number, "Get offset", "Player", "Offset", "Get offset time.");
