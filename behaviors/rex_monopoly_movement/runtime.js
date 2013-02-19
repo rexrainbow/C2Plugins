@@ -205,7 +205,23 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     {
 		this._tile_info.uid = uid;	
 		this._tile_info.dir = dir;
-    };  
+    }; 
+    
+    behinstProto._get_oneway_tile_info = function (tile_info, target_tile_uids)
+    {	
+        var tile_uid;
+        var i, cnt=target_tile_uids.length;
+        for (i=0; i<cnt; i++)
+        {
+		    tile_uid = target_tile_uids[i];
+            if (tile_uid != null)
+			{
+			    this._tile_info_set(tile_uid, i);
+                break;		    
+		    }
+        }
+		return this._tile_info;
+    };     
 
     behinstProto._get_forward_tile_info = function (tile_info, target_tile_uids, random_mode)
     {
@@ -248,6 +264,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	    return this._forkedroad_dir;
     };
 	
+	
     behinstProto._get_forkedroad_tile_info = function (tile_info, target_tile_uids)	
     {
 	    // custom dir
@@ -281,9 +298,8 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         case 0:  // can not go any where
             tile_info = null;
             break;
-        case 1:  // go backward
-            tile_info.dir = this._get_backward_dir(tile_info.dir);  // turn back
-            tile_info = this._get_forward_tile_info(tile_info, target_tile_uids);
+        case 1:  // only one way
+            tile_info = this._get_oneway_tile_info(tile_info, target_tile_uids);
             break;
         case 2:  // go forward
             tile_info = this._get_forward_tile_info(tile_info, target_tile_uids);
