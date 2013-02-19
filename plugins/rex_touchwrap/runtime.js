@@ -1299,7 +1299,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
         this._plugins_hook.push(obj);
     };
 
-    instanceProto.UnHook = function (obj)
+    instanceProto.UnHookMe = function (obj)
     {
         var i, cnt=this._plugins_hook.length, hookobj;
         for (i=0; i<cnt; i++)
@@ -1311,7 +1311,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
                 break;
             }
         }
-        this._plugins_hook.push(obj);
     };    
     instanceProto.UseMouseInput = function()
     {
