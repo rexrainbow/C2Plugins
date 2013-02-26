@@ -385,11 +385,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
         
         var hooki, cnt=this._plugins_hook.length;
-        var touch_src = info["pointerId"];
         for (hooki=0; hooki<cnt; hooki++)
 		{
 			if (this._plugins_hook[hooki].OnTouchStart)
-                this._plugins_hook[hooki].OnTouchStart(touch_src, touchx, touchy);
+                this._plugins_hook[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
 	    }
 	};
 
@@ -411,11 +410,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
         
         var hooki, cnt=this._plugins_hook.length;
-        var touch_src = info["pointerId"];
         for (hooki=0;i<cnt;i++)
 		{
 		    if (this._plugins_hook[hooki].OnTouchEnd)
-                this._plugins_hook[hooki].OnTouchEnd(touch_src);        
+                this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);        
 		}
 		
 		// Remove touch
@@ -501,7 +499,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
             for (hooki=0; hooki<cnt; hooki++)
 			{
 				if (this._plugins_hook[hooki].OnTouchStart)
-                    this._plugins_hook[hooki].OnTouchStart(this.trigger_id, touchx, touchy);
+                    this._plugins_hook[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
 			}
 		}		
 	};
