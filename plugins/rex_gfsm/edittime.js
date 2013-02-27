@@ -16,13 +16,13 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(0, 0, "Clean all memory", "Memory", 
+AddAction(0, af_deprecated, "Clean all memory", "Memory", 
           "Clean all memory", 
           "Clean all memory.", 
           "CleanMemory");
 AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddAnyTypeParam("Value", "Value of memory", 0);
-AddAction(1, 0, "Set a memory value", "Memory", 
+AddAction(1, af_deprecated, "Set a memory value", "Memory", 
           "Set Mem[<i>{0}</i>] to <i>{1}</i>", 
           "Set the value stored in memory in fsm.", 
           "SetMemory");
@@ -34,7 +34,7 @@ AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
 AddComboParamOption("Simple notation");
 AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(3, 0, "Load logic from CSV", "Advance: Logic (CSV)", 
+AddAction(3, af_deprecated, "Load logic from CSV", "Advance: Logic (CSV)", 
           "Load state transfer logic from csv table <i>{0}</i> in <i>{1}</i> format",
           "Load state transfer logic from csv table.", "CSV2Logic");
 AddStringParam("State", "Transfer from state.", '""');        
@@ -42,38 +42,38 @@ AddStringParam("Logic code", "The logic code of state transfer.", '""');
 AddComboParamOption("Simple notation");
 AddComboParamOption("Javascript");
 AddComboParam("Code format", "The code format of state transfer logic", 0);
-AddAction(4, 0, "Load logic", "Advance: Logic", 
+AddAction(4, af_deprecated, "Load logic", "Advance: Logic", 
           "Load <i>{0}</i> state transfer logic <i>{1}</i> in <i>{2}</i> format",
           "Load state transfer logic from code string.", "String2Logic");          
 AddObjectParam("Function", "Function object for controlling the game world");
-AddAction(5, 0, "Connect to function object", "Advance: Setup", 
+AddAction(5, af_deprecated, "Connect to function object", "Advance: Setup", 
           "Connect to function object <i>{0}</i>", 
           "Connect to function object.", "ConnectFn");   
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddAction(7, 0, "Load action from CSV", "Advance: Action (CSV)", 
+AddAction(7, af_deprecated, "Load action from CSV", "Advance: Action (CSV)", 
           "Load state transfer action from csv table <i>{0}</i>",
           "Load state transfer action from csv table.", "CSV2Action");          
 AddStringParam("State", "Transfer from state.", '""');   
 AddStringParam("State", "Transfer to state.", '""');       
 AddStringParam("Action code", "The action code of state transfer.", '""');
-AddAction(8, 0, "Load action", "Advance: Action", 
+AddAction(8, af_deprecated, "Load action", "Advance: Action", 
           "Load <i>{0}</i> -> <i>{1}</i> action <i>{1}</i>",
           "Load state transfer action from code string.", "String2Action");   
 AddStringParam("CSV table", "The state transfer logic in CSV table.", '""');
-AddAction(9, 0, "Load enter-exit action from CSV", "Advance: Action (CSV)", 
+AddAction(9, af_deprecated, "Load enter-exit action from CSV", "Advance: Action (CSV)", 
           "Load state enter-exit action from csv table <i>{0}</i>",
           "Load state enter-exit action from csv table.", "CSV2EnterExit");          
 AddStringParam("State", "State name.", '""');   
 AddStringParam("Enter code", "The code of state enter.", '""');     
 AddStringParam("Exit code", "The code of state exit.", '""');
-AddAction(10, 0, "Load enter-exit action", "Advance: Action", 
+AddAction(10, af_deprecated, "Load enter-exit action", "Advance: Action", 
           "Load <i>{0}</i>'s enter action to <i>{1}</i>, exist action to <i>{2}</i>",
           "Load state enter-exit action from code string.", "String2EnterExit"); 
 AddStringParam("Name", "State name", '""');
 AddAction(11, 0, "Transit to state", "Request", 
           "Transit state to <i>{0}</i>", "Transit to state.",  "Transit");          
 AddStringParam("Code", "JS function code", '""');
-AddAction(12, 0, "Inject JS function objects", "Advance: JS Function", 
+AddAction(12, af_deprecated, "Inject JS function objects", "Advance: JS Function", 
           "Inject JS <i>{0}</i>", "Inject JS function objects.", "InjectJSFunctionObjects");
 AddComboParamOption("No");
 AddComboParamOption("Yes");
@@ -136,7 +136,7 @@ AddCondition(8, 0, "Compare mem value", "Mem",
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");
 AddExpression(1, ef_return_string, "Previous state", "State", "PreState", "Get previous state.");
 AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
-AddExpression(2, ef_return_any | ef_variadic_parameters, 
+AddExpression(2, ef_deprecated | ef_return_any | ef_variadic_parameters, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");
 
