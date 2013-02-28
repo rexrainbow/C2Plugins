@@ -61,12 +61,48 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	behinstProto.tick = function ()
 	{
 	}; 
+	
+	var OFFSET_RIGHT = 0;
+	var OFFSET_BOTTOM = 1;
+	var OFFSET_LEFT = 2;
+	var OFFSET_TOP = 3;
+    var _offset_p = {x:0, y:0};
+	var _offset_get = function (inst, direction)
+	{	    
+        inst.update_bbox();
+        var quad = inst.bquad;  
+        var px, py;        
+	    switch (direction)
+	    {
+	    case OFFSET_RIGHT:
+            px = (quad.trx + quad.brx)/2;
+            py = (quad.try_ + quad.bry)/2;
+	        break;
+	    case OFFSET_BOTTOM:	  
+            px = (quad.blx + quad.brx)/2;   
+            py = (quad.bly + quad.bry)/2;     
+	        break;	   
+	    case OFFSET_LEFT:
+            px = (quad.tlx + quad.blx)/2;
+            py = (quad.tly + quad.bly)/2;
+	        break;
+	    case OFFSET_TOP:
+            px = (quad.tlx + quad.trx)/2; 
+            py = (quad.tly + quad.try_)/2;        
+	        break;	             
+	    }
+        _offset_p.x = inst.x - px;
+        _offset_p.y = inst.y - py;
+	    return _offset_p;
+	}; 	
 
-	behinstProto._get_start_end_points = function ()
+	behinstProto._get_start_end_points = function (insts)
 	{     
         var layouter =  this.inst;   
 	    layouter.update_bbox();
-	    var quad = layouter.bquad;       
+	    var quad = layouter.bquad;
+	    var inst_cnt = insts.length;
+        var _offset_p;
         switch (this.direction)
         {
         case 0:  // Left to right
@@ -74,47 +110,128 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             this._points.start.y = (quad.tly + quad.bly)/2;          
             this._points.end.x = (quad.trx + quad.brx)/2;
             this._points.end.y = (quad.try_ + quad.bry)/2;
+            if (inst_cnt >= 1)
+            {
+                _offset_p = _offset_get(insts[0], OFFSET_LEFT);
+                this._points.start.x += _offset_p.x;
+                this._points.start.y += _offset_p.y;
+            }
+            if (inst_cnt >= 2)
+            {
+                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_RIGHT);
+                this._points.end.x += _offset_p.x;
+                this._points.end.y += _offset_p.y;
+            }
             break;
         case 1:  // Right to left
             this._points.start.x = (quad.trx + quad.brx)/2;
             this._points.start.y = (quad.try_ + quad.bry)/2;
             this._points.end.x = (quad.tlx + quad.blx)/2;
-            this._points.end.y = (quad.tly + quad.bly)/2;      
+            this._points.end.y = (quad.tly + quad.bly)/2;
+            if (inst_cnt >= 1)
+            {
+                _offset_p = _offset_get(insts[0], OFFSET_RIGHT);
+                this._points.start.x += _offset_p.x;
+                this._points.start.y += _offset_p.y;
+            }
+            if (inst_cnt >= 2)
+            {
+                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_LEFT);
+                this._points.end.x += _offset_p.x;
+                this._points.end.y += _offset_p.y;
+            }            
             break;   
         case 2:  // Top to bottom
             this._points.start.x = (quad.tlx + quad.trx)/2;    
             this._points.start.y = (quad.tly + quad.try_)/2;         
             this._points.end.x = (quad.blx + quad.brx)/2; 
-            this._points.end.y = (quad.bly + quad.bry)/2;    
+            this._points.end.y = (quad.bly + quad.bry)/2;
+            if (inst_cnt >= 1)
+            {
+                _offset_p = _offset_get(insts[0], OFFSET_TOP);
+                this._points.start.x += _offset_p.x;
+                this._points.start.y += _offset_p.y;
+            }
+            if (inst_cnt >= 2)
+            {
+                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_BOTTOM);
+                this._points.end.x += _offset_p.x;
+                this._points.end.y += _offset_p.y;
+            }             
             break;
         case 3:  // Bottom to top
             this._points.start.x = (quad.blx + quad.brx)/2;   
             this._points.start.y = (quad.bly + quad.bry)/2;     
             this._points.end.x = (quad.tlx + quad.trx)/2;      
-            this._points.end.y = (quad.tly + quad.try_)/2;           
+            this._points.end.y = (quad.tly + quad.try_)/2; 
+            if (inst_cnt >= 1)
+            {
+                _offset_p = _offset_get(insts[0], OFFSET_BOTTOM);
+                this._points.start.x += _offset_p.x;
+                this._points.start.y += _offset_p.y;
+            }
+            if (inst_cnt >= 2)
+            {
+                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_TOP);
+                this._points.end.x += _offset_p.x;
+                this._points.end.y += _offset_p.y;
+            }
             break;            
         }
+        return this._points;
 	};  
     
  	behinstProto._on_update = function ()
 	{             
         this.mode_handler[this.mode].apply(this);
     };
+    
+    // rotate angle of instances
+    var angle_saved = [];
+    var _rotate_all = function (insts, a)
+    {
+        angle_saved.length = 0;
+        var cnt = insts.length, i, inst;
+        for (i=0; i<cnt; i++)  
+        {      
+            inst = insts[i];
+            angle_saved.push[inst.angle];
+            inst.angle = a;
+            inst.set_bbox_changed();
+        }
+    };
+    var _rotate_recover = function (insts)
+    {
+        var cnt = insts.length, i, inst;
+        for (i=0; i<cnt; i++)  
+        {      
+            inst = insts[i];
+            inst.angle = angle_saved[i];
+            inst.set_bbox_changed();
+        }
+        angle_saved.length = 0;
+    };    
 
 	behinstProto._update_avarage_mode = function ()
 	{    
-        this._get_start_end_points();
-        var layouter =  this.inst;   
-        var a = layouter.angle;
-        var sprites = layouter.sprites;
-        var i, cnt = sprites.length, params;
+	    var layouter =  this.inst;
+	    var sprites = layouter.sprites;
+	    var cnt = sprites.length;
+	    if (cnt == 0)
+	        return;
+	        
+	    var a = layouter.angle; 
+	    _rotate_all(sprites, a);
+        var points = this._get_start_end_points(sprites);        
+        var i, params;
         var seg = (cnt==1)? 1: (cnt-1);
-        var dx = (this._points.end.x - this._points.start.x)/seg;
-        var dy = (this._points.end.y - this._points.start.y)/seg;
+        var dx = (points.end.x - points.start.x)/seg;
+        var dy = (points.end.y - points.start.y)/seg;
         this.delta_distance = Math.sqrt((dx*dx) + (dy*dy));
-        var start_x = this._points.start.x;
-        var start_y = this._points.start.y;
+        var start_x = points.start.x;
+        var start_y = points.start.y;
         var inst_angle = cr.to_degrees(a);
+        _rotate_recover(sprites);
 	    for (i=0;i<cnt;i++)
 	    {
 	        params = {x:start_x + (dx*i),
@@ -126,16 +243,18 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
     
 	behinstProto._update_fix_mode = function ()
 	{    
+	    debugger;
 	    var layouter =  this.inst;
 	    var sprites = layouter.sprites;
 	    var cnt = sprites.length;
 	    if (cnt == 0)
 	        return;
 	        
-        this._get_start_end_points();
+	    _rotate_all(sprites, layouter.angle);	        
+        var points = this._get_start_end_points(sprites);
         var layouter =  this.inst;   
-        var a = Math.atan2(this._points.end.y - this._points.start.y,
-                           this._points.end.x - this._points.start.x);
+        var a = Math.atan2(points.end.y - points.start.y,
+                           points.end.x - points.start.x);
         var cos_a = Math.cos(a), sin_a = Math.sin(a);        
         var i, params;
         var dx = this.delta_distance * cos_a;
@@ -149,20 +268,22 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             break;
         case 1:  // alignment center
             total_distance /= 2;
-            var center_x = (this._points.start.x + this._points.end.x)/2;
-            var center_y = (this._points.start.y + this._points.end.y)/2;
-            this._points.start.x = center_x - (total_distance*cos_a);
-            this._points.start.y = center_y - (total_distance*sin_a);
+            var center_x = (points.start.x + points.end.x)/2;
+            var center_y = (points.start.y + points.end.y)/2;
+            this._points.start.x = center_x - (total_distance * cos_a);
+            this._points.start.y = center_y - (total_distance * sin_a);
             break;
         case 2:  // alignment end
-            this._points.start.x = this._points.end.x - (total_distance * cos_a);
-            this._points.start.y = this._points.end.y - (total_distance * sin_a);        
+            this._points.start.x = points.end.x - (total_distance * cos_a);
+            this._points.start.y = points.end.y - (total_distance * sin_a);        
             break;            
         }
         
-        var start_x = this._points.start.x;
-        var start_y = this._points.start.y;
-        var inst_angle = cr.to_degrees(a);       
+        var start_x = points.start.x;
+        var start_y = points.start.y;
+        a = layouter.angle;
+        var inst_angle = cr.to_degrees(a);
+        _rotate_recover(sprites);        
 	    for (i=0;i<cnt;i++)
 	    {
 	        params = {x:start_x + (dx*i),
