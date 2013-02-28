@@ -169,6 +169,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
     instanceProto._pick_insts = function (name, objtype, is_pop)
 	{
+        debugger;
 	    var group = this.GetGroup(name);
 	    var group_uids = group.GetSet();	    
         var sol = objtype.getCurrentSol();  
@@ -731,7 +732,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 	    if (typeof(_uid) == "number")    // single number
 	    {
-	        if (this._set[uid] != null)
+	        if (this._set[_uid] != null)
 	        {
 	            delete this._set[_uid];
 	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
