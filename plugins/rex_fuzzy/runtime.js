@@ -118,7 +118,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
             points.length = 3;
         return points;
     };    
-	Acts.prototype.DefineMembership = function (var_name, nb, nm, ns, zo, ps, pm, pb)
+	Acts.prototype.DefineMembership_7levles = function (var_name, nb, nm, ns, zo, ps, pm, pb)
 	{     
 		this.rule_bank.add_variable(var_name, 
                                     _get_points(nb).reverse(), 
@@ -129,7 +129,28 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
                                     _get_points(pm), 
                                     _get_points(pb));
 	};  
-
+	Acts.prototype.DefineMembership_5levles = function (var_name, nb, ns, zo, ps, pb)
+	{     
+		this.rule_bank.add_variable(var_name, 
+                                    null,
+                                    _get_points(nb).reverse(),                                    
+                                    _get_points(ns), 
+                                    _get_points(zo), 
+                                    _get_points(ps), 
+                                    _get_points(pb),
+                                    null);
+	};      
+	Acts.prototype.DefineMembership_3levles = function (var_name, nb, zo, pb)
+	{     
+		this.rule_bank.add_variable(var_name, 
+                                    null,
+                                    null,
+                                    _get_points(nb).reverse(),
+                                    _get_points(zo), 
+                                    _get_points(pb),
+                                    null,
+                                    null );
+	}; 
 	Acts.prototype.AddRule = function (rule, expression)
 	{
         var handler = this.rule_handler_gen(expression);
@@ -210,11 +231,15 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	Exps.prototype.MaxOutput = function (ret)
 	{
 	    var name, rules = this.rule_bank.rules;
-	    var max_grade = -1, max_name = "";
+	    var max_grade = -1, max_name = "", grade;
 	    for (name in rules)
 	    {
-	        if (max_grade < rules[name])
+            grade = rules[name][0];
+	        if (max_grade < grade)
+            {
 	            max_name = name;
+                max_grade = grade;
+            }
 	    }
 		ret.set_string(max_name);
 	}; 
