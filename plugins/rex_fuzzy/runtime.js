@@ -42,6 +42,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.rule_bank = new cr.plugins_.Rex_Fuzzy.FRuleBank();
+        this.exp_tool = new cr.plugins_.Rex_Fuzzy.FExp();
         this.err = null;
 	};
     var has_string = function(main, sub)
@@ -183,7 +184,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 		ret.set_float(grade_out);
 	}; 
 	
-	Exps.prototype.MemberShip = function (ret, var_name)
+	Exps.prototype.InputGrade = function (ret, var_name)
 	{
         var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
 		ret.set_string(max_membership);
@@ -191,13 +192,30 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	
 	Exps.prototype.NOT = function (ret, expA)
 	{
+        // number
+        if (typeof(expA) == "number")
+        {
+            ret.set_float(this.exp_tool["NOT"](expA));
+            return;
+        }
+        
+        // string: expression
         expA = exp_grade_gen(expA);
         var code_string = 'exp["NOT"]('+expA+')';
-		ret.set_string(code_string);
+		ret.set_string(code_string);        
 	}; 
     
 	Exps.prototype.OR = function (ret, expA, expB)
 	{    
+        // number
+        if (typeof(expA) == "number")
+        {
+            var args = Array.prototype.slice.call(arguments,1);
+            ret.set_float(this.exp_tool["OR"].apply(args));
+            return;
+        }
+        
+        // string: expression        
         var i, exp, cnt = arguments.length;
         var code_string = 'exp["OR"](';
         for (i=1; i<cnt; i++)
@@ -214,6 +232,15 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	
 	Exps.prototype.AND = function (ret, expA, expB)
 	{
+        // number
+        if (typeof(expA) == "number")
+        {
+            var args = Array.prototype.slice.call(arguments,1);
+            ret.set_float(this.exp_tool["AND"].apply(this.exp_tool["AND"], args));
+            return;
+        }
+        
+        // string: expression            
         var i, exp, cnt = arguments.length;
         var code_string = 'exp["AND"](';
         for (i=1; i<cnt; i++)
@@ -252,7 +279,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     {
         this.rules = {};
         this.in_vars = {};
-        this.exps = new FExp(this.in_vars);
+        this.exps = new cr.plugins_.Rex_Fuzzy.FExp(this.in_vars);
     };
     var FRuleBankProto = cr.plugins_.Rex_Fuzzy.FRuleBank.prototype;
     
@@ -263,7 +290,13 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
 	FRuleBankProto.add_rule = function (rule_name, handler)
 	{    
-        this.rules[rule_name] = [0, handler];
+        var rule = this.rules[rule_name];
+        if (rule == null)
+        {
+            rule = [0];
+            this.rules[rule_name] = rule;
+        }
+        rule.push(handler);
 	}; 
     
     FRuleBankProto.set_variable_value = function (var_name, value)
@@ -273,19 +306,23 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
     FRuleBankProto.execute = function ()
     {
-        var name, item;
+        var name, item, i, cnt, value;
         for (name in this.rules)
         {
             item = this.rules[name];
-            item[0] = item[1](this.exps);
+            value = -1;
+            cnt = item.length;
+            for (i=1; i<cnt; i++)
+                value = Math.max(value, item[i](this.exps));
+            item[0] = value;
         }
     }; 
         
-    var FExp = function(in_vars)
+    cr.plugins_.Rex_Fuzzy.FExp = function(in_vars)
     {
         this["i"] = in_vars;
     };
-    var FExpProto = FExp.prototype;
+    var FExpProto = cr.plugins_.Rex_Fuzzy.FExp.prototype;
     
     FExpProto["NOT"] = function(a)
     {
@@ -308,6 +345,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         assert2(m, "Fuzzy: can not get grade of " + name);        
         return m.get_grade(grade);
     }; 
+    
 
     var FMembership = function(nb, nm, ns, zo, ps, pm, pb)
     {
