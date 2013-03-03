@@ -318,11 +318,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	};
 	
 	instanceProto.onPointerMove = function (info)
-	{
+	{	    
 		// Ignore mouse events
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
 			return;
-		
+			
+	    this._is_mouse_mode = false;			
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -353,7 +354,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Ignore mouse events
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
 			return;
-			
+	
+	    this._is_mouse_mode = false;			
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -397,23 +399,24 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Ignore mouse events
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
 			return;
-			
+	
+        this._is_mouse_mode = false;			
 		if (info.preventDefault)
 			info.preventDefault();
 			
 		var i = this.findTouch(info["pointerId"]);
 		this.trigger_index = (i >= 0 ? this.touches[i].startindex : -1);
 		this.trigger_id = (i >= 0 ? this.touches[i]["id"] : -1);
-		
+
 		// Trigger OnNthTouchEnd & OnTouchEnd
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
         
-        var hooki, cnt=this._plugins_hook.length;
-        for (hooki=0;i<cnt;i++)
+        var cnt=this._plugins_hook.length, hooki; 
+        for (hooki=0; hooki<cnt; hooki++)
 		{
 		    if (this._plugins_hook[hooki].OnTouchEnd)
-                this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);        
+                this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
 		}
 		
 		// Remove touch
@@ -510,7 +513,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			info.preventDefault();
 		
 		var i, len, t;
-        var i, cnt=this._plugins_hook.length, hooki;
+        var cnt=this._plugins_hook.length, hooki;
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
