@@ -42,8 +42,63 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.rule_bank = new cr.plugins_.Rex_Fuzzy.FRuleBank();
+        this.err = null;
 	};
-   
+    var has_string = function(main, sub)
+    {
+        return (main.indexOf(sub) != (-1));
+    };
+	var exp_grade_gen = function (expression)
+	{              
+        if (has_string(expression, "AND") ||
+            has_string(expression, "OR")  ||
+            has_string(expression, "NOT") )
+            return expression;
+            
+        // is a grade expression
+        var name, grade;
+        if (has_string(expression, "+++") ||
+            has_string(expression, "---"))
+        {
+            name = expression.substring(3);
+            grade = expression.substring(0,3);   
+        }
+        else if (has_string(expression, "++") ||
+            has_string(expression, "--"))
+        {
+            name = expression.substring(2);
+            grade = expression.substring(0,2);   
+        }   
+        else if (has_string(expression, "+") ||
+            has_string(expression, "-"))
+        {
+            name = expression.substring(1);
+            grade = expression.substring(0,1);   
+        }           
+        else
+        {
+            name = expression;
+            grade = "";
+        }        
+        expression = 'exp["grade"]("'+name+'", "'+grade+'")';
+        return expression;
+	};     
+	instanceProto.rule_handler_gen = function (expression)
+	{    
+        expression = exp_grade_gen(expression);    
+        var handler;
+        var code_string = "function(exp){\n return "+expression +";\n}";
+        try
+        {
+            handler = eval("("+code_string+")");
+        }
+        catch(err)
+        {
+            handler = null;
+            this.err = err;
+        }
+        return handler;
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -65,30 +120,21 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     };    
 	Acts.prototype.DefineMembership = function (var_name, nb, nm, ns, zo, ps, pm, pb)
 	{     
-		this.rule_bank.add_variable(var_name, _get_points(nb).reverse(), _get_points(nm), _get_points(ns), 
-                                    _get_points(zo), _get_points(ps), _get_points(pm), _get_points(pb));
+		this.rule_bank.add_variable(var_name, 
+                                    _get_points(nb).reverse(), 
+                                    _get_points(nm), 
+                                    _get_points(ns), 
+                                    _get_points(zo), 
+                                    _get_points(ps), 
+                                    _get_points(pm), 
+                                    _get_points(pb));
 	};  
-    
-    var membership_map = ["nb", "nm", "ns", "zo", "ps", "pm", "pb"];
-	Acts.prototype.AddMembershipCond = function (cond_name, var_name, membership)
+
+	Acts.prototype.AddRule = function (rule, expression)
 	{
-		this.rule_bank.add_membership_cond(cond_name, var_name, membership_map[membership]);
-	};  
-    
-	Acts.prototype.AddInvertCond = function (cond_name, cond_from)
-	{
-		this.rule_bank.add_invert_cond(cond_name, cond_from);
-	};        
-    
-    var logic_op_map = ["and", "or"];
-	Acts.prototype.AddCombinationCond = function (cond_name, cond_A, logic_op, cond_B)
-	{
-		this.rule_bank.add_combination_cond(cond_name, cond_A, logic_op_map[logic_op], cond_B);
-	}; 
-    
-	Acts.prototype.AddRule = function (cond_name, var_name)
-	{
-		this.rule_bank.add_rule(cond_name, var_name);
+        var handler = this.rule_handler_gen(expression);
+        assert2(handler, "Fuzzy: can not parse exp " + expression + "  Error= " + this.err);
+		this.rule_bank.add_rule(rule, handler);
 	};  
     
 	Acts.prototype.SetVarValue = function (var_name, value)
@@ -106,11 +152,13 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
 	
-	Exps.prototype.Grade = function (ret, var_name)
+	Exps.prototype.OutputGrade = function (ret, var_name)
 	{
-        var grade_out = this.rule_bank.out_vars[var_name];
-        if (grade_out == null)
+        var grade_out, rule = this.rule_bank.rules[var_name];
+        if (rule == null)
             grade_out = 0;
+        else
+            grade_out = rule[0];
 		ret.set_float(grade_out);
 	}; 
 	
@@ -119,17 +167,67 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
 		ret.set_string(max_membership);
 	};     
+	
+	Exps.prototype.NOT = function (ret, expA)
+	{
+        expA = exp_grade_gen(expA);
+        var code_string = 'exp["NOT"]('+expA+')';
+		ret.set_string(code_string);
+	}; 
     
+	Exps.prototype.OR = function (ret, expA, expB)
+	{    
+        var i, exp, cnt = arguments.length;
+        var code_string = 'exp["OR"](';
+        for (i=1; i<cnt; i++)
+        {
+            exp = arguments[i];
+            exp = exp_grade_gen(exp);
+            code_string += exp;
+             if (i != (cnt-1))
+                code_string += ",";
+        }
+        code_string += ')';
+		ret.set_string(code_string);
+	};   
+	
+	Exps.prototype.AND = function (ret, expA, expB)
+	{
+        var i, exp, cnt = arguments.length;
+        var code_string = 'exp["AND"](';
+        for (i=1; i<cnt; i++)
+        {
+            exp = arguments[i];
+            exp = exp_grade_gen(exp);
+            code_string += exp;
+            if (i != (cnt-1))
+                code_string += ",";
+        }
+        code_string += ')';
+		ret.set_string(code_string);
+	};  
+	
+	Exps.prototype.MaxOutput = function (ret)
+	{
+	    var name, rules = this.rule_bank.rules;
+	    var max_grade = -1, max_name = "";
+	    for (name in rules)
+	    {
+	        if (max_grade < rules[name])
+	            max_name = name;
+	    }
+		ret.set_string(max_name);
+	}; 
+	   
 }());
 
 (function ()
 {
     cr.plugins_.Rex_Fuzzy.FRuleBank = function()
     {
-        this.rules = [];
-        this.conds = {};
+        this.rules = {};
         this.in_vars = {};
-        this.out_vars = {};
+        this.exps = new FExp(this.in_vars);
     };
     var FRuleBankProto = cr.plugins_.Rex_Fuzzy.FRuleBank.prototype;
     
@@ -138,46 +236,9 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         this.in_vars[var_name] = new FMembership(nb, nm, ns, zo, ps, pm, pb);
     };
     
-    FRuleBankProto.add_membership_cond = function (cond_name, var_name, membership)
-    {
-        if (this.conds[cond_name] != null)
-            alert("Fuzzy: condition "+ cond_name + " had existed");
-        var var_obj = this.in_vars[var_name];
-        if (var_obj == null)
-            alert("Fuzzy: can not find membership "+ var_name);
-        this.conds[cond_name] = new FCond(membership, var_obj);
-    };
-    
-    FRuleBankProto.add_invert_cond = function (cond_name, cond_from)
-    {
-        if (this.conds[cond_name] != null)
-            alert("Fuzzy: condition "+ cond_name + " had existed");    
-        var cond_obj = this.conds[cond_from];
-        if (cond_obj == null)
-            alert("Fuzzy: can not find condition "+ cond_from);
-        this.conds[cond_name] = new FCond("not", cond_obj );
-    }; 
-    
-    FRuleBankProto.add_combination_cond = function (cond_name, cond_A, logic_op, cond_B)
-    {
-        if (this.conds[cond_name] != null)
-            alert("Fuzzy: condition "+ cond_name + " had existed");        
-        var cond_A_obj = this.conds[cond_A], cond_B_obj = this.conds[cond_B];
-        if (cond_A_obj == null)
-            alert("Fuzzy: can not find condition "+ cond_A);    
-        if (cond_B_obj == null)
-            alert("Fuzzy: can not find condition "+ cond_B);              
-        this.conds[cond_name] = new FCond(logic_op, cond_A_obj, cond_B_obj );
-    }; 
-
-	FRuleBankProto.add_rule = function (cond_name, var_name)
-	{   
-        var cond_obj = this.conds[cond_name];            
-        if (cond_obj == null)
-            alert("Fuzzy: can not find condition "+ cond_name); 
-        if (this.out_vars[var_name] != null)
-            alert("Fuzzy: Output "+ var_name + " had been defined");       
-		this.rules.push( new FRule(cond_obj, var_name, this.out_vars) );
+	FRuleBankProto.add_rule = function (rule_name, handler)
+	{    
+        this.rules[rule_name] = [0, handler];
 	}; 
     
     FRuleBankProto.set_variable_value = function (var_name, value)
@@ -187,77 +248,51 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     
     FRuleBankProto.execute = function ()
     {
-        var name;
-        for (name in this.out_vars)
-            this.out_vars[name] = 0;
-        var i, rule_cnt = this.rules.length;
-        for (i=0; i<rule_cnt; i++)
-            this.rules[i].execute();
+        var name, item;
+        for (name in this.rules)
+        {
+            item = this.rules[name];
+            item[0] = item[1](this.exps);
+        }
     }; 
-    
-    var FRule = function(cond, out_var_name, out_vars)
+        
+    var FExp = function(in_vars)
     {
-        this.cond = cond;
-        this.out_var_name = out_var_name;
-        this.out_vars = out_vars;        
+        this["i"] = in_vars;
     };
-    var FRuleProto = FRule.prototype;
+    var FExpProto = FExp.prototype;
     
-    FRuleProto.execute = function()
+    FExpProto["NOT"] = function(a)
     {
-        var grade_value = this.cond.get_grade();
-        var current_grade_value = this.out_vars[this.out_var_name];
-        if ((current_grade_value == null) || (current_grade_value < grade_value))
-            this.out_vars[this.out_var_name] = grade_value;
+        return (1 - a);
     };
     
-    var FCond = function(op, opA, opB)
+    FExpProto["AND"] = function()
     {
-        this._get_grade = {"not":this.get_NOT_value,
-                           "and":this.get_AND_value,
-                           "or":this.get_OR_value}[op];
-        if (this._get_grade == null)
-            this._get_grade = this.get_membership_value;
-        this.op = op;
-        this.opA = opA;
-        this.opB = opB;
-    };
-    var FCondProto = FCond.prototype;
-    
-    FCondProto.get_NOT_value = function()
-    {
-        return (1 - this.opA.get_grade());
-    };
-    
-    FCondProto.get_AND_value = function()
-    {
-        return Math.min(this.opA.get_grade(), this.opB.get_grade());
+        return Math.min.apply( Math, arguments);
     };  
 
-    FCondProto.get_OR_value = function()
+    FExpProto["OR"] = function()
     {
-        return Math.max(this.opA.get_grade(), this.opB.get_grade());
-    }; 
-
-    FCondProto.get_membership_value = function()
-    {
-        return this.opA.get_grade(this.op);
+        return Math.max.apply( Math, arguments);
     }; 
     
-    FCondProto.get_grade = function()
+    FExpProto["grade"] = function(name, grade)
     {
-        return this._get_grade();
+        var m = this["i"][name];
+        assert2(m, "Fuzzy: can not get grade of " + name);        
+        return m.get_grade(grade);
     }; 
 
     var FMembership = function(nb, nm, ns, zo, ps, pm, pb)
     {
-        this._membership_cb = {"nb":new FGrade(nb),
-                               "nm":new FGrade(nm),
-                               "ns":new FGrade(ns),
-                               "zo":new FGrade(zo),
-                               "ps":new FGrade(ps),
-                               "pm":new FGrade(pm),
-                               "pb":new FGrade(pb), };
+        this._membership_cb = {"---":new FGrade(nb),
+                               "--": new FGrade(nm),
+                               "-":  new FGrade(ns),
+                               "":   new FGrade(zo),
+                               "+":  new FGrade(ps),
+                               "++": new FGrade(pm),
+                               "+++":new FGrade(pb), };
         this.value = 0;        
     };
     var FMembershipProto = FMembership.prototype;    

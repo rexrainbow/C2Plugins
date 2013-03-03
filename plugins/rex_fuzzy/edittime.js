@@ -20,57 +20,40 @@
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Name", "Input variable name.", '""');
-AddStringParam("Negative Big", 'Range setting of Negative Big. Empty string is ignored.', '"0, 17"');
-AddStringParam("Negative Medium", 'Range setting of Negative Medium. Empty string is ignored.', '"0, 17, 33"');
-AddStringParam("Negative Small", 'Range setting of Negative Small. Empty string is ignored.', '"17, 33, 50"');
-AddStringParam("Zero", 'Range setting of Zero. Empty string is ignored.', '"33, 50, 66"');
-AddStringParam("Positive Small", 'Range setting of Positive Small. Empty string is ignored.', '"50, 66, 83"');
-AddStringParam("Positive Medium", 'Range setting of Positive Medium. Empty string is ignored.', '"66, 83, 100"');
-AddStringParam("Positive Big", 'Range setting of Positive Big. Empty string is ignored.', '"83, 100"');
-AddAction(1, 0, "Define membership", "Membership", 
+AddStringParam("---", 'Range setting of Negative Big. Empty string is ignored.', '"0, 17"');
+AddStringParam("--", 'Range setting of Negative Medium. Empty string is ignored.', '"0, 17, 33"');
+AddStringParam("-", 'Range setting of Negative Small. Empty string is ignored.', '"17, 33, 50"');
+AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"33, 50, 66"');
+AddStringParam("+", 'Range setting of Positive Small. Empty string is ignored.', '"50, 66, 83"');
+AddStringParam("++", 'Range setting of Positive Medium. Empty string is ignored.', '"66, 83, 100"');
+AddStringParam("+++", 'Range setting of Positive Big. Empty string is ignored.', '"83, 100"');
+AddAction(1, 0, "0. Define membership", "0. Define", 
           "Define membership <i>{0}</i>: NB to <i>{1}</i>, NM to <i>{2}</i>, NS to <i>{3}</i>, ZO to <i>{4}</i>, PS to <i>{5}</i>, PM to <i>{6}</i>, PB to <i>{7}</i>", 
           "Define membership.", "DefineMembership");
-AddStringParam("Condition", "Condition name.", '""');         
-AddStringParam("Variable", "Variable name.", '""');
-AddComboParamOption("Negative Big");
-AddComboParamOption("Negative Medium");
-AddComboParamOption("Negative Small");
-AddComboParamOption("Zero");
-AddComboParamOption("Positive Small");
-AddComboParamOption("Positive Medium");
-AddComboParamOption("Positive Big");
-AddComboParam("Membership", "Membership of variable", 3);
-AddAction(2, 0, "Add membership condition", "Condition", 
-          "Add condition <i>{0}</i> : <i>{1}</i> is <i>{2}</i>", "Add condition from membership.", "AddMembershipCond"); 
-AddStringParam("Condition", "Condition name.", '""');
-AddStringParam("Condition from", "Condition name.", '""');
-AddAction(3, 0, "Add invert condition", "Condition", 
-          "Add condition <i>{0}</i> : NOT <i>{1}</i>", "Add invert condition.", "AddInvertCond");            
-AddStringParam("Condition", "Condition name.", '""');
-AddStringParam("Condition A", "Sub-condition name.", '""');
-AddComboParamOption("AND");
-AddComboParamOption("OR");
-AddComboParam("Logic", "Logic", 1);
-AddStringParam("Condition B", "Sub-condition name.", '""');
-AddAction(4, 0, "Add combination condition", "Condition", 
-          "Add condition <i>{0}</i> : <i>{1}</i> <i>{2}</i> <i>{3}</i>", "Add combination condition.", "AddCombinationCond");    
-AddStringParam("Condition", "Condition name.", '""');
-AddStringParam("Variable", "Variable name.", '""');
-AddAction(5, 0, "Add rule", "Rule", 
-          "Add rule <i>{0}</i> -> <i>{1}</i>", "Add rule.", "AddRule");  
-AddAction(6, 0, "Execute rules", "Rule", 
+AddStringParam("Rule", "Rule name.", '""');   
+AddStringParam("Expression", "Expression of memberships.", '""');
+AddAction(2, 0, "1. Add rule", "0. Define", 
+          "Add rule <i>{0}</i> <- <i>{1}</i>", "Add rule.", "AddRule");  
+AddAction(3, 0, "Execute rules", "Rule", 
           "Execute rules", "Execute rules.", "ExecuteRules");          
 AddStringParam("Name", "Variable name.", '""');
 AddNumberParam("Value", "Variable value.", 0);
-AddAction(10, 0, "Set variable value", "Input", 
+AddAction(4, 0, "Set variable value", "Input", 
           "Set variable <i>{0}</i> value to <i>{1}</i>", "Set variable value.", "SetVarValue");
           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Output", "Output name.", '""');
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Get output grade", "Output", "Grade", "Get output grade.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Get output grade", "Output", "OutputGrade", "Get output grade.");
 AddStringParam("Input", "Input name.", '""');
 AddExpression(2, ef_return_string | ef_variadic_parameters, "Get input maximum membership", "Input", "MemberShip", "Get input maximum membership.");
+AddStringParam("Expression", "Expression of membership.", '""');
+AddExpression(3, ef_return_string | ef_variadic_parameters, "NOT operation", "Logic", "NOT", "Do NOT operation of these expressions.");
+AddStringParam("Expression", "Expression of membership.", '""');
+AddExpression(4, ef_return_string | ef_variadic_parameters, "OR operation", "Logic", "OR", "Do OR operation of these expressions.");
+AddStringParam("Expression", "Expression of membership.", '""');
+AddExpression(5, ef_return_string | ef_variadic_parameters, "AND operation", "Logic", "AND", "Do AND operation of these expressions.");
+AddExpression(6, ef_return_string, "Get max output", "Output", "MaxOutput", "Get maximun output.");
 
 ACESDone();
 
