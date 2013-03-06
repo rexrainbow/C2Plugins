@@ -53,9 +53,9 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	};
 	
 	instanceProto._setup = function ()
-	{
+	{   	   
+	    assert2(cr.plugins_.Function, "Official function was not found.");
         var plugins = this.runtime.types;
-        assert2(plugins.Function, "Official function was not found.");
         this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
         this._get_ret = cr.plugins_.Function.prototype.exps.ReturnValue;
         var name, plugin;
@@ -292,7 +292,7 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	FunctionKlassProto["CallFn"] = function(name, params)
 	{
 	    var ret;
-	    this["_prepare_params"](name, params);
+	    this["_prepare_params"].apply(this, arguments);
         var fn_obj = this["JSFns"][name];
         if (fn_obj)
         {
@@ -309,8 +309,10 @@ cr.plugins_.Rex_FnExt = function(runtime)
         this["JSFns"][name] = fn;
 	};
 
-    FunctionKlassProto["_prepare_params"] = function(_name, _params)
+    FunctionKlassProto["_prepare_params"] = function()
     {          
+        var _name = arguments[0];
+        var _params = arguments[1];
         if (typeof(_name) == "object") // [name, param0, param1, ...]
         {
 			cr.shallowAssignArray(this["params"], _name);
@@ -321,8 +323,8 @@ cr.plugins_.Rex_FnExt = function(runtime)
             this["_name"] = arguments[0];
             this["params"].length = arguments.length -1;
             var i, len=arguments.length;
-            for (i=0; i<len; i++)
-                this["params"][i] = arguments[i+1];
+            for (i=1; i<len; i++)
+                this["params"][i-1] = arguments[i];
         }
         else // name, [param0, param1, ...]
         {
