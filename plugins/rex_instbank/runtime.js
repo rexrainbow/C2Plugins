@@ -163,7 +163,7 @@ cr.plugins_.Rex_InstanceBank = function(runtime)
 
 	InstBankKlassProto.CleanBank = function()
 	{
-        hash_clean(this._banks); 
+        hash_clean(this._bank); 
 	};     
   
     // save    
