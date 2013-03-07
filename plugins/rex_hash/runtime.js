@@ -113,11 +113,14 @@ cr.plugins_.Rex_Hash = function(runtime)
 	
 	var get_item_counts = function (hash_obj)
 	{
-	    if (hash_obj == null)
+	    if (hash_obj == null)  // nothing
 	        return (-1);
-	    else if ((typeof hash_obj == "number") || (typeof hash_obj == "string"))
+	    else if ((typeof hash_obj == "number") || (typeof hash_obj == "string"))  // number/string
 	        return 0;
+		else if (hash_obj.length != null)  // list
+		    return hash_obj.length;
 	        
+	    // hash table
 	    var key,cnt=0;
 	    for (key in hash_obj)
 	        cnt += 1;
