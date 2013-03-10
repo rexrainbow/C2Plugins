@@ -48,14 +48,10 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     var has_string = function(main, sub)
     {
         return (main.indexOf(sub) != (-1));
-    };
-	var exp_grade_gen = function (expression)
-	{              
-        if (has_string(expression, "AND") ||
-            has_string(expression, "OR")  ||
-            has_string(expression, "NOT") )
-            return expression;
-            
+    };    
+    var _name_grade_ret = {name:"",grade:""};
+    var name_grade_split = function (expression)
+    {
         // is a grade expression
         var name, grade;
         if (has_string(expression, "+++") ||
@@ -80,8 +76,21 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         {
             name = expression;
             grade = "";
-        }        
-        expression = 'exp["grade"]("'+name+'", "'+grade+'")';
+        }   
+        _name_grade_ret.name = name;
+        _name_grade_ret.grade = grade;
+        return _name_grade_ret;
+    };
+	var exp_grade_gen = function (expression)
+	{              
+        if (has_string(expression, "AND") ||
+            has_string(expression, "OR")  ||
+            has_string(expression, "NOT") )
+            return expression;
+            
+        // is a grade expression
+        var name_grade = name_grade_split(expression);    
+        expression = 'exp["grade"]("'+name_grade.name+'", "'+name_grade.grade+'")';
         return expression;
 	};     
 	instanceProto.rule_handler_gen = function (expression)
@@ -186,8 +195,8 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	
 	Exps.prototype.InputGrade = function (ret, var_name)
 	{
-        var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
-		ret.set_string(max_membership);
+        var name_grade = name_grade_split(var_name);
+		ret.set_float(this.rule_bank.input_grade_get(name_grade.name, name_grade.grade));
 	};     
 	
 	Exps.prototype.NOT = function (ret, expA)
@@ -270,7 +279,12 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	    }
 		ret.set_string(max_name);
 	}; 
-	   
+	
+	Exps.prototype.MaxInputMembership = function (ret, var_name)
+	{
+        var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
+		ret.set_string(max_membership + var_name);
+	}; 	   
 }());
 
 (function ()
@@ -287,6 +301,10 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     {
         this.in_vars[var_name] = new FMembership(nb, nm, ns, zo, ps, pm, pb);
     };
+    FRuleBankProto.input_grade_get = function (name, grade)
+    {
+        return this.exps["grade"](name, grade);
+    };    
     
 	FRuleBankProto.add_rule = function (rule_name, handler)
 	{    

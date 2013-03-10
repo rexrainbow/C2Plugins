@@ -60,9 +60,9 @@ AddAction(12, 0, "Set variable value", "Input",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Output", "Output name.", '""');
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Get output grade", "Output", "OutputGrade", "Get output grade.");
+AddExpression(1, ef_return_number, "Get output grade", "Output", "OutputGrade", "Get output grade.");
 AddStringParam("Input", "Input name.", '""');
-AddExpression(2, ef_return_string | ef_variadic_parameters, "Get input maximum membership", "Input", "InputGrade", "Get input maximum membership.");
+AddExpression(2, ef_return_number, "Get input grade", "Input", "InputGrade", "Get input grade.");
 AddAnyTypeParam("Expression", "Expression of membership, or a number.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "NOT operation", "Logic", "NOT", "Do NOT operation of these expressions.");
 AddAnyTypeParam("Expression", "Expression of membership, or a number.", '""');
@@ -70,6 +70,8 @@ AddExpression(4, ef_return_any | ef_variadic_parameters, "OR operation", "Logic"
 AddAnyTypeParam("Expression", "Expression of membership, or a number.", '""');
 AddExpression(5, ef_return_any | ef_variadic_parameters, "AND operation", "Logic", "AND", "Do AND operation of these expressions.");
 AddExpression(6, ef_return_string, "Get max output", "Output", "MaxOutput", "Get maximun output.");
+AddStringParam("Input", "Input name.", '""');
+AddExpression(7, ef_return_string, "Get input membership of max grade", "Input", "MaxInputMembership", "Get input membership of maximun grade.");
 
 ACESDone();
 
