@@ -169,7 +169,6 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
     instanceProto._pick_insts = function (name, objtype, is_pop)
 	{
-        debugger;
 	    var group = this.GetGroup(name);
 	    var group_uids = group.GetSet();	    
         var sol = objtype.getCurrentSol();  
@@ -188,7 +187,8 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                    group.RemoveUID(inst.uid);
            }
         }
-        sol.select_all = false;    
+        sol.select_all = false;   
+        objtype.applySolToContainer(); 
         return  (sol.instances.length >0);       
 	};  
     

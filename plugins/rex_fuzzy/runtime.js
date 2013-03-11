@@ -283,7 +283,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	Exps.prototype.MaxInputMembership = function (ret, var_name)
 	{
         var max_membership = this.rule_bank.in_vars[var_name].get_max_membership();
-		ret.set_string(max_membership + var_name);
+		ret.set_string(max_membership);
 	}; 	   
 }());
 
