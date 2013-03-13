@@ -3,7 +3,7 @@
 	return {
 		"name":			"Loop iterator",
 		"id":			"Rex_LoopIterator",
-		"version":		"0.1",   		
+		"version":		"0.1",
 		"description":	"An iterator to return loop index",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
@@ -27,16 +27,16 @@ AddNumberParam("Start", "Start index.", 0);
 AddNumberParam("End", "End index.", 9);
 AddNumberParam("Step", "Step.", 1);
 AddAction(1, 0, "Add loop", "Add", 
-          "Add loop <i>{0}</i>: from <i>{1}</i> to <i>{2}</i>, step <i>{3}</i>", 
+          "Add loop <i>{0}</i> : from <i>{1}</i> to <i>{2}</i>, step <i>{3}</i>", 
           "Add loop definitation.", "AddForLoop");
 AddStringParam("Name", "Variable name.", '""');
 AddStringParam("List", "List in JSON format.", '""');
 AddAction(2, 0, "Add list ", "Add", 
-          "Add list <i>{0}</i>: <i>{1}</i>", 
+          "Add list <i>{0}</i> : <i>{1}</i>", 
           "Add list definitation.", "AddList");          
 AddAction(3, 0, "Next", "Next", 
           "Next", 
-          "Next.", "Next");       
+          "Go to next stage.", "Next");       
             
 //////////////////////////////////////////////////////////////
 // Expressions

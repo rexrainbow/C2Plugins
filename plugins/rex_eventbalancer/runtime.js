@@ -45,18 +45,29 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         this.procressing_time = (1/60)*1000*this.properties[1];
         this.repeat_count = this.properties[2];
         this.cmd_stop = true;
+        this.is_running = false;
 	};   
     
     instanceProto.tick = function()
     {         
+        this.is_running = true;
         if (this.is_dynamic_mode)
             this._run_dynamic_mode()
         else
             this._run_static_mode()
             
         if (this.cmd_stop)
+        {
             this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStop, this);
+        }
     }; 
+    
+    // close is_running
+	instanceProto.tick2 = function ()
+	{	    
+	    this.is_running = false;
+	    this.runtime.untick2Me(this);
+	};    
 	
 	instanceProto._run_dynamic_mode = function()
 	{
@@ -102,7 +113,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 
 	Cnds.prototype.IsProcessing = function()
 	{    
-		return (!this.cmd_stop);
+		return this.is_running;
 	};    
 	//////////////////////////////////////
 	// Actions
@@ -119,6 +130,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	Acts.prototype.Stop = function()
 	{       
         this.runtime.untickMe(this);
+        this.runtime.tick2Me(this);
         this.cmd_stop = true;
 	}; 
 

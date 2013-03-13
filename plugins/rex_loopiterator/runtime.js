@@ -51,14 +51,7 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
 		var tick_changed = (this._last_tick != cur_tick);
         this._last_tick = cur_tick;
 		return tick_changed;
-	};
-	instanceProto.add_list_declare = function (name, list)
-	{
-        if (this.is_tick_changed())
-            this.loop_iters.reset();
-            
-        this.loop_iters.add_list(name, list)
-	};    
+	};   
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -215,7 +208,10 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
     };
     forloopIterKlassProto.index_get = function()
     {
-        return this.current;
+        var ret = this.current;
+        if (ret == null)
+            ret = this.start;
+        return ret;
     };
     
     // list
@@ -246,6 +242,10 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
     };
     listIterKlassProto.index_get = function()
     {
-        return this.list[this.current];
+        var ret = this.current;
+        if (ret == null)
+            ret = 0;
+            
+        return this.list[ret];        
     };    
 }()); 
