@@ -44,7 +44,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	    this.is_dynamic_mode = (this.properties[0] == 0);
         this.procressing_time = (1/60)*1000*this.properties[1];
         this.repeat_count = this.properties[2];
-        this.cmd_stop = false;
+        this.cmd_stop = true;
 	};   
     
     instanceProto.tick = function()
@@ -102,7 +102,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 
 	Cnds.prototype.IsProcessing = function()
 	{    
-		return true;
+		return (!this.cmd_stop);
 	};    
 	//////////////////////////////////////
 	// Actions
@@ -111,8 +111,8 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 
 	Acts.prototype.Start = function()
 	{       
+        this.cmd_stop = false;    
         this.runtime.tickMe(this);
-        this.cmd_stop = false;
         this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStart, this);
 	}; 
 
