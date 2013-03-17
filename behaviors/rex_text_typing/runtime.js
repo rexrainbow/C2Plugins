@@ -30,7 +30,25 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
         this.timeline = null;     
 	};
-
+	
+	behtypeProto._timeline_get = function ()
+	{
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        return null;	
+	};  
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -68,27 +86,31 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.SetText = function (param)
 	{
         cr.plugins_.Text.prototype.acts.SetText.apply(this.inst, [param]);
-	};    
+	};
+
+  
     
     behinstProto._get_timer = function ()
     {
         var timer = this.typing_timer;
         if  (timer == null)
         {
-            if (this.type.timeline == null)
-                alert("Text typing need a timeline object");
-            timer = this.type.timeline.CreateTimer(this, this.text_typing_handler);
+            var timeline = this.type._timeline_get();
+            assert2(timeline, "Text typing need a timeline object");
+            timer = timeline.CreateTimer(this, this.text_typing_handler);
         }
         return timer;
     };
     
-	behinstProto._start_typing = function (text, speed)
+	behinstProto._start_typing = function (text, speed, start_index)
 	{
         if (speed != 0)
         {
+            if (start_index == null)
+                start_index = 1;
             this.typing_timer = this._get_timer();
             this.typing_speed = speed;
-            this.typing_timer.SetCallbackArgs([1]);
+            this.typing_timer.SetCallbackArgs([start_index]);
             this.typing_timer.Start(0);
         }
         else
@@ -110,7 +132,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
         }
         else
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
-	};  
+	}; 
+
+	behinstProto.is_typing = function ()
+	{ 
+        return (this.typing_timer)? this.typing_timer.IsActive():false;
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -128,7 +155,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	Cnds.prototype.IsTextTyping = function ()
 	{ 
-        return (this.typing_timer)? this.typing_timer.IsActive():false;
+        return this.is_typing();
 	}; 
     
 	//////////////////////////////////////
@@ -172,7 +199,18 @@ cr.behaviors.Rex_text_typing = function(runtime)
             this.SetText(this.content);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
+	};
+    
+	Acts.prototype.AppendText = function(param)
+	{
+        var start_index = this.content.length;
+        if (typeof param === "number")
+            param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
+        this.content += param.toString();
+        if (!this.is_typing())
+            this._start_typing(this.content, this.typing_speed, start_index);
 	};    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

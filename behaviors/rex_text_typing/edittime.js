@@ -23,7 +23,7 @@ AddCondition(3, 0, "Is text typing", "Typing", "{my} Is typing",
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
-AddAction(2, 0, "Setup text-typing", "Setup", 
+AddAction(2, 0, "0: Setup", "Setup", 
           "{my} Get timer from <i>{0}</i> for text-typing", 
           "Setup text-typing.", "SetupTimer");
 AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
@@ -41,7 +41,11 @@ AddComboParam("Text state", "Text state, to keep current text or show all", 1);
 AddAction(5, 0, "Stop typing", "Typing", 
           "{my} Stop typing, <i>{0}</i>", 
           "Stop typing.", "StopTyping");   
-
+AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
+AddAction(6, 0, "Append text", "Typing", 
+          "{my} append <i>{0}</i>", 
+          "Type text letter by letter in the end of current content.", "AppendText");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,	"Get typing speed",	"Type", "TypingSpeed", "Get typing speed.");
