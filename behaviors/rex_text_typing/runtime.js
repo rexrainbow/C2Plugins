@@ -88,8 +88,6 @@ cr.behaviors.Rex_text_typing = function(runtime)
         cr.plugins_.Text.prototype.acts.SetText.apply(this.inst, [param]);
 	};
 
-  
-    
     behinstProto._get_timer = function ()
     {
         var timer = this.typing_timer;
