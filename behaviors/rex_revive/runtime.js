@@ -31,23 +31,25 @@ cr.behaviors.Rex_Revive = function(runtime)
         this.timeline = null;   
         this.behavior_index = null;        
 	};
-    
-    // copy from sprite plugin
-	behtypeProto._set_anim_frame = function (inst, framenumber)
+
+	behtypeProto._timeline_get = function ()
 	{
-		inst.changeAnimFrame = framenumber;
-		
-		// start ticking if not already
-		if (!inst.isTicking)
-		{
-			inst.runtime.tickMe(inst);
-			inst.isTicking = true;
-		}
-		
-		// not in trigger: apply immediately
-		if (!inst.inAnimTrigger)
-			inst.doChangeAnimFrame();
-	}; 
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        return null;	
+	};  
     
 	behtypeProto._revive_hanlder = function(custom_data,
                                             layer_name, x, y, 
@@ -61,7 +63,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         if (angle != null)
         {
             inst.cur_anim_speed = cur_anim_speed;  
-            this._set_anim_frame(inst, cur_frame);
+            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, cur_frame); 
             inst.changeAnimName = cur_anim_name;
             inst.doChangeAnim();              
             inst.angle = angle;
@@ -125,7 +127,8 @@ cr.behaviors.Rex_Revive = function(runtime)
             args = [custom_data];
             args.push.apply(args, this._revive_args.slice());
         }
-        var timer = this.type.timeline.CreateTimer(this.type, this.type._revive_hanlder, args);
+        var timeline = this.type._timeline_get();
+        var timer = timeline.CreateTimer(this.type, this.type._revive_hanlder, args);
         timer.Start(this.revive_time);  
 	};
 	

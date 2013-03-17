@@ -32,7 +32,25 @@ cr.behaviors.Rex_Timer = function(runtime)
         this.callback = null; 
         this.callback_type = 0;		
 	};
-
+	
+	behtypeProto._timeline_get = function ()
+	{
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        return null;	
+	};  
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -127,7 +145,10 @@ cr.behaviors.Rex_Timer = function(runtime)
         if (this.timer)  // timer exist
             this.timer.Remove();
         else            // create new timer instance
-            this.timer = this.type.timeline.CreateTimer(this, this._timer_handle);   
+        {
+            var timeline = this.type._timeline_get();
+            this.timer = timeline.CreateTimer(this, this._timer_handle);   
+        }
 	}; 
     
     Acts.prototype.Start = function (delay_time)
