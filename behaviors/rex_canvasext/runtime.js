@@ -50,7 +50,32 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 	behinstProto.tick = function ()
 	{
 	};
- 
+ 	
+	//helper function
+	behinstProto.draw_instances = function (instances, canvas_inst, blend_mode)
+	{
+	    var ctx = canvas_inst.ctx;
+	    var canvas = canvas_inst.canvas;
+	    var mode_save;
+	    var i, cnt=instances.length, inst;
+		for(i=0; i<cnt; i++)
+		{
+		    inst = instances[i];
+			if(inst.visible==false && this.runtime.testOverlap(canvas_inst, inst)== false)
+				continue;
+			
+			ctx.save();
+			ctx.scale(canvas.width/canvas_inst.width, canvas.height/canvas_inst.height);
+			ctx.rotate(-canvas_inst.angle);
+			ctx.translate(-canvas_inst.bquad.tlx, -canvas_inst.bquad.tly);
+			mode_save = inst.compositeOp;
+			inst.compositeOp = blend_mode;
+            ctx.globalCompositeOperation = blend_mode;
+			inst.draw(ctx);		
+			inst.compositeOp = mode_save;	
+			ctx.restore();
+		}
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -65,6 +90,24 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
+	
+	// http://www.scirra.com/forum/plugin-canvas_topic46006_post289303.html#289303
+	Acts.prototype.EraseObject = function (object)
+	{
+	    var canvas_inst = this.inst;	
+		this.inst.update_bbox();
+		
+		var sol = object.getCurrentSol();
+		var instances;
+		if (sol.select_all)
+			instances = sol.type.instances;
+		else
+			instances = sol.instances;
+		
+		this.draw_instances(instances, canvas_inst, "destination-out");
+		
+		this.runtime.redraw = true;
+	};
 	
 	Acts.prototype.LoadURL = function (url_, resize_)
 	{
