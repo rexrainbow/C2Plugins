@@ -295,11 +295,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{
 		return true;
 	}; 
-
- 	Cnds.prototype.OnDragging = function ()
-	{   
-        return true;
-    };
     
  	Cnds.prototype.IsDragging = function ()
 	{   
