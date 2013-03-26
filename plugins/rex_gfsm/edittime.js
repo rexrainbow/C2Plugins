@@ -126,7 +126,7 @@ AddCondition(7, 0, "Compare current state", "State",
 AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddCmpParam("Comparison", "Choose the way to compare the current speed.");
 AddAnyTypeParam("Value", "Value of memory", 0);
-AddCondition(8, 0, "Compare mem value", "Mem", 
+AddCondition(8, cf_deprecated, "Compare mem value", "Mem", 
              "<i>{0}</i> <i>{1}</i> <i>{2}</i>", 
 			 "Compare mem value.", 
 			 "CmpMemValue");			 
