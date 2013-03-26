@@ -124,7 +124,7 @@ AddCondition(7, 0, "Compare current state", "State",
 AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddCmpParam("Comparison", "Choose the way to compare the current speed.");
 AddAnyTypeParam("Value", "Value of memory", 0);
-AddCondition(8, 0, "Compare mem value", "Mem", 
+AddCondition(8, cf_deprecated, "Compare mem value", "Mem", 
              " {my} <i>{0}</i> <i>{1}</i> <i>{2}</i>", 
 			 "Compare mem value.", 
 			 "CmpMemValue");			 
@@ -134,7 +134,7 @@ AddCondition(8, 0, "Compare mem value", "Mem",
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");
 AddExpression(1, ef_return_string, "Previous state", "State", "PreState", "Get previous state.");
 AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
-AddExpression(2, ef_return_any | ef_variadic_parameters, 
+AddExpression(2, ef_deprecated | ef_return_any | ef_variadic_parameters, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");
 
