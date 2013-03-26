@@ -141,7 +141,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.CSV2Array = function (csv_string, array_objs)
+    Acts.prototype.CSV2Array = function (csv_string, array_objs, map_mode)
 	{  
         var array_obj = array_objs.getFirstPicked();
         if (array_obj.arr == null)
@@ -153,16 +153,33 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         var table = CSVToArray(csv_string);        
 		var x_cnt = table.length;
 		var y_cnt = table[0].length;
-		cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [x_cnt,y_cnt,1]);
+		if (map_mode == 0)
+		    cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [x_cnt,y_cnt,1]);
+	    else
+		    cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [y_cnt, x_cnt,1]);
         var i,j;
 		var array_set = cr.plugins_.Arr.prototype.acts.SetXYZ;
-		for(j=0;j<y_cnt;j++)
+		
+		if (map_mode == 0)
 		{
-		    for(i=0;i<x_cnt;i++)
-			{
-			    array_set.apply(array_obj, [i,j,0, table[i][j]]);
-			}
-		}	
+		    for(j=0;j<y_cnt;j++)
+		    {
+		        for(i=0;i<x_cnt;i++)
+			    {
+			        array_set.apply(array_obj, [i,j,0, table[i][j]]);
+			    }
+		    }
+        }	
+        else
+        {
+		    for(j=0;j<y_cnt;j++)
+		    {
+		        for(i=0;i<x_cnt;i++)
+			    {
+			        array_set.apply(array_obj, [j,i,0, table[i][j]]);
+			    }
+		    }
+        }		
 	};
     
 	//////////////////////////////////////
