@@ -115,7 +115,10 @@ cr.behaviors.Rex_chess = function(runtime)
 			return;
 				    
 	    var objA = this.inst.type;
-	    this._overlap_test(objA, objB);
+		var board = this._board_get();
+		if (board == null)
+		    return false;
+	    board._overlap_test(objA, objB);
 		// We've aleady run the event by now.
 		return false;
 	};
@@ -126,7 +129,10 @@ cr.behaviors.Rex_chess = function(runtime)
 			return;
 				    
 	    var objA = this.inst.type;
-	    this._overlap_test(objA, objB);
+		var board = this._board_get();
+		if (board == null)
+		    return false;
+	    board._overlap_test(objA, objB);
 		// We've aleady run the event by now.
 		return false;
 	};	
