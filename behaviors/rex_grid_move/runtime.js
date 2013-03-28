@@ -639,6 +639,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         else
             alert ("[Grid move] This object is not a instance group object.");            
 	};     
+    
+ 	Acts.prototype.Stop = function ()
+	{
+        this._cmd_move_to.is_moving = false;
+	};   	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

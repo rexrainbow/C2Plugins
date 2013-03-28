@@ -158,7 +158,9 @@ AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
 AddAction(22, 0, "Set move-able by number", "Solid", 
           "{my} set move-able to <i>{0}</i>", 
           "Set move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable"); 
-      
+		  
+AddAction(30, 0, "Stop", "Stop", "{my} stop", 
+          "Stop moving.", "Stop");      
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
