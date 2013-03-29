@@ -200,10 +200,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
 	        return;
-	        	    
-	    if (!board.is_inside_board(lx, ly, lz))
-	        return;  
-	        
+ 
         var chess_uid = this.inst.uid;
 	    board.remove_item(chess_uid);   
         board.add_item(chess_uid, lx, ly, lz);        
