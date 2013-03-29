@@ -772,9 +772,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};
 	
 	Acts.prototype.MoveChess2Index = function (chess_type, x, y, z)
-	{	
+	{		    
         var chess_uid = _get_uid(chess_type);
-	    if ((chess_uid == null) || (!this.is_inside_board(x,y,z)))
+	    if (chess_uid == null)
 	        return;  
 
 	    this.remove_item(chess_uid, true);   
