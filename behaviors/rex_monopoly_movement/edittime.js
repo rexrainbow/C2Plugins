@@ -7,7 +7,7 @@
 		"description":	"Get forwading path on the board, used in Monopoly-like game.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Board: logic",
+		"category":		"Board",
 		"flags":		0
 	};
 };

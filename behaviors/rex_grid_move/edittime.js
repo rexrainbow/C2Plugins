@@ -7,7 +7,7 @@
 		"description":	"Move sprite to neighbor on board object",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"Board: logic",
+		"category":		"Board",
 		"flags":		0
 	};
 };
