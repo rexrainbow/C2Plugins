@@ -16,8 +16,12 @@
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the rotation behavior.",1);
-AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's drag scale behavior.", "SetActivated");
+AddComboParam("Activated", "Enable the drag scale behavior.",1);
+AddAction(0, 0, "Set activated", "Active", "Set {my} activated to <i>{0}</i>", "Enable the object's drag scale behavior.", "SetActivated");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Auto scale", "Enable to auto scale instance size with dragging.",1);
+AddAction(1, 0, "Set auto scale", "Auto scale", "Set {my} auto scale to <i>{0}</i>", "Enable to auto scale instance size with dragging.", "SetAutoScale");
 
 //////////////////////////////////////////////////////////////
 // Conditions
@@ -40,6 +44,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+    new cr.Property(ept_combo, "Auto scale", "No", "Auto scale instance size with dragging.", "No|Yes"),
     ];
 	
 // Called by IDE when a new behavior type is to be created

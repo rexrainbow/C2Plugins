@@ -128,10 +128,13 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
     var TOUCH2 = 2;
 	behinstProto.onCreate = function()
 	{   
-	    this.activated = (this.properties[0]==1);               
+	    this.activated = (this.properties[0]==1);   
+	    this.autoscale_mode = (this.properties[1]==1);            
 	    this.drag_points = new cr.behaviors.Rex_DragScale2.DragPointsKlass(this);
 	    this.state = (this.GetTouchCnt() >0)? INVALID:TOUCH0;
 	    this.touchids = [];
+		this.init_width = 0;
+		this.init_height = 0;
 	};
 	
 	behinstProto.on_touch_start = function (touchid)
@@ -142,7 +145,11 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
         this.touchids.push(touchid);
         this.state = (this.touchids.length == 1)? TOUCH1:TOUCH2;
         if (this.state == TOUCH2)
-            this.drag_points.start_drag(this.touchids[0], this.touchids[1]);
+		{		
+		    this.init_width = this.inst.width;
+		    this.init_height = this.inst.height;
+            this.drag_points.start_drag(this.touchids[0], this.touchids[1]);			
+		}
 	}; 	
 	
 	behinstProto.on_touch_end = function (touchid)
@@ -167,10 +174,25 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 		}
 	}; 
 	
+	behinstProto.auto_scale = function (has_updated)
+	{  
+	    if ((!this.autoscale_mode) || (!has_updated))
+	        return;
+			
+	    var scale = this.drag_points.get_scale();	    
+        this.inst.width = this.init_width * scale;
+		this.inst.height = this.init_height * scale;
+        this.inst.set_bbox_changed();
+        this.runtime.redraw = true;
+	}; 
+	
 	behinstProto.tick = function ()
 	{  
-        if (this.state == TOUCH2)
-            this.drag_points.tick();
+        if (this.state != TOUCH2)
+            return;
+            
+        var pos_changed = this.drag_points.tick();
+        this.auto_scale(pos_changed);        
 	}; 
 	
 	behinstProto.GetTouchCnt = function()
@@ -242,7 +264,11 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 		}
 		this.activated = activated;
 	};  
-	
+
+	Acts.prototype.SetAutoScale = function (s)
+	{
+	    this.autoscale_mode = (s==1); 
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -321,7 +347,8 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
                 this.plugin.runtime.trigger(cr.behaviors.Rex_DragScale2.prototype.cnds.OnDragMoveStart, this.plugin.inst);
             this.plugin.runtime.trigger(cr.behaviors.Rex_DragScale2.prototype.cnds.OnDragMove, this.plugin.inst);
         }
-        this.pos_changed = pos_changed;            
+        this.pos_changed = pos_changed;  
+        return pos_changed;
     };
     
     DragPointsKlassProto.get_scale = function()
