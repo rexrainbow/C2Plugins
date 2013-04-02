@@ -226,8 +226,8 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     var _thisArg  = null;
 	var _sort_fn = function(uid_a, uid_b)
 	{   
-	    _thisArg._cmp_uidA = uid_a;
-	    _thisArg._cmp_uidB = uid_b;	    
+	    _thisArg._cmp_uidA = parseInt(uid_a);
+	    _thisArg._cmp_uidB = parseInt(uid_b);
 	    _thisArg.runtime.trigger(cr.plugins_.Rex_gInstGroup.prototype.cnds.OnSortingFn, _thisArg);
 	    return _thisArg._compared_result;	    
 	};		
