@@ -55,10 +55,8 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this.remain_distance = 0;
         this.is_hit_target = false;
         this._pre_pos = {x:0,y:0};
-        this._pre_pos_angle = {x:0,y:0,
-                               angle_update:false,
-                               angle:(-1)};
-        
+        this._pre_pos_angle = {x:0,y:0,angle:(-1)};
+        this._last_tick = null;
         this.is_my_call = false;
 	};
 
@@ -110,6 +108,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
             this.inst.x = this.target.x;
             this.inst.y = this.target.y;
             this.SetCurrentSpeed(0);
+            this.moving_angle_get();
             this.is_hit_target = true;
         }
         else
@@ -127,8 +126,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	{
         // save pre pos to get moveing angle
         this._pre_pos_angle.x = this.inst.x;
-		this._pre_pos_angle.y = this.inst.y; 
-        this._pre_pos_angle.angle_update = false;        
+		this._pre_pos_angle.y = this.inst.y;       
     };
     
 	behinstProto.SetCurrentSpeed = function(speed)
@@ -165,16 +163,23 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 		this._pre_pos_angle.x = this.inst.x;
 		this._pre_pos_angle.y = this.inst.y;         
 	};
-
+    
+	behinstProto.is_tick_changed = function ()
+	{       
+	    var cur_tick = this.runtime.tickcount;
+		var tick_changed = (this._last_tick != cur_tick);
+        this._last_tick = cur_tick;
+		return tick_changed;
+	};
+    
  	behinstProto.moving_angle_get = function (ret)
 	{
-        if (!this._pre_pos_angle.angle_update)
+        if (this.is_tick_changed())
         {   
             var dx = this.inst.x - this._pre_pos_angle.x;
             var dy = this.inst.y - this._pre_pos_angle.y;
             if ((dx!=0) || (dy!=0))
                 this._pre_pos_angle.angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
-            this._pre_pos_angle.angle_update = true;
         }
 		return this._pre_pos_angle.angle;
 	}; 
