@@ -5,7 +5,7 @@
 		"id":			"Rex_SpeedMoinitor",
 		"description":	"Get current speed of sprite.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_speedmoinitor.html",
 		"category":		"Attributes",
 		"flags":		bf_onlyone
 	};

@@ -73,8 +73,11 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.CmdQueue.Push(this.CmdEnd2Start);
         this.CmdQueue.Push(this.CmdStartHold);     
 
-        this.inst.opacity = start;
-	    this.runtime.redraw = true;
+        if (start != this.inst.opacity )
+        {
+            this.inst.opacity = start;
+	        this.runtime.redraw = true;
+        }
 	};
 
 	behinstProto.tick = function ()
@@ -130,7 +133,26 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.is_run = 0;
 	};     
     
-
+	behinstProto.saveToJSON = function ()
+	{ 
+		return { "en": this.activated,
+		         "ir": this.is_run,
+                 "daf": this.destroy_at_finish,
+                 "cq": this.CmdQueue.saveToJSON(),
+                 "cci": (this.cur_cmd!=null)? this.CmdQueue.cur_cmd_queuq_index:null,
+                };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+        this.activated = o["en"];
+        this.is_run = o["ir"];   
+        this.destroy_at_finish = o["daf"];
+        this.CmdQueue.loadFromJSON(o["cq"]);
+        var cur_cmd_queuq_index = o["cci"];
+        if (cur_cmd_queuq_index != null)
+            this.cur_cmd = this.CmdQueue.GetCmd(cur_cmd_queuq_index);        
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -295,6 +317,7 @@ cr.behaviors.Rex_Flash = function(runtime)
     CmdQueueProto.CleanAll = function()
 	{
         this.queue_index = 0;    
+        this.cur_cmd_queuq_index = -1;
         this._queue = [];
 	};
     
@@ -302,6 +325,7 @@ cr.behaviors.Rex_Flash = function(runtime)
 	{        
         this.repeat_count = this.repeat_count_save;    
         this.queue_index = 0;
+        this.cur_cmd_queuq_index = -1;
 	};
     
     CmdQueueProto.Push = function(item)
@@ -319,9 +343,13 @@ cr.behaviors.Rex_Flash = function(runtime)
         }
     };  
     
-    CmdQueueProto.GetCmd = function()
+    CmdQueueProto.GetCmd = function(index)
 	{
+        if (index != null)
+            return this._queue[index];
+            
         var cmd;
+        this.cur_cmd_queuq_index = this.queue_index;
         cmd = this._queue[this.queue_index];
         var index = this.queue_index+1;
         if (index >= this._queue.length)
@@ -337,20 +365,41 @@ cr.behaviors.Rex_Flash = function(runtime)
 
         return cmd;
 	};
-    
+
     CmdQueueProto.SetRepeatCnt = function(repeat_count)
     {
         this.repeat_count_save = repeat_count;
         this.repeat_count = repeat_count; 
     };
+	
+	CmdQueueProto.saveToJSON = function ()
+	{ 
+	    var i, cnt=this._queue.length, queue_save=[];
+	    for (i=0; i<cnt; i++)
+	        queue_save.push(this._queue[i].saveToJSON());
+	        
+		return { "i": this.queue_index,
+                 "cci": this.cur_cmd_queuq_index,
+		         "q": queue_save,
+                 "rptsv": this.repeat_count_save,
+                 "rpt": this.repeat_count
+                };
+	};
+    
+	CmdQueueProto.loadFromJSON = function (o)
+	{    
+        this.queue_index = o["i"];
+        this.cur_cmd_queuq_index = o["cci"];
+        	    
+	    var i, cnt=this._queue.length, queue_save=o["q"];
+	    for (i=0; i<cnt; i++)
+	        this._queue[i].loadFromJSON(queue_save[i])
+	        
+        this.repeat_count_save = o["rptsv"];
+        this.repeat_count = o["rpt"];   
+	};	
 
-    
-    
-    var SetDuration = function(duration)
-    {
-        this.duration_save = duration;        
-    };     
-    
+        
     // GradChange
     cr.behaviors.Rex_Flash.CmdGradChange = function(inst, start, target, duration)
     {
@@ -359,6 +408,7 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.target = target;
         this.duration_save = duration; 
         this.is_done = true;
+        
         this.redraw = false;       
     };
     var CmdGradChangeProto = cr.behaviors.Rex_Flash.CmdGradChange.prototype;
@@ -380,7 +430,7 @@ cr.behaviors.Rex_Flash = function(runtime)
             this.is_done = true;
             return dt;
         }
-
+        
         this.remain_duration -= dt;
         if (this.remain_duration <= 0)
         {
@@ -400,7 +450,7 @@ cr.behaviors.Rex_Flash = function(runtime)
     
     CmdGradChangeProto.SetDuration = function(duration)
     {
-        SetDuration.call(this, duration);        
+        this.duration_save = duration;       
     };  
 
     CmdGradChangeProto.SetStartEnd = function(start, target)
@@ -408,7 +458,31 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.start = start;
         this.target = target;     
     };
+	
+	CmdGradChangeProto.saveToJSON = function ()
+	{ 
+		return { "start": this.start,
+		         "target": this.target,
+                 "durs": this.duration_save,
+                 "done": this.is_done,
+                 "co" : this.current_opacity,
+                 "d" : this.delta,
+                 "rm" : this.remain_duration,                 
+                 "pass": this.is_pass,                 
+                };
+	};
     
+	CmdGradChangeProto.loadFromJSON = function (o)
+	{    
+        this.start = o["start"];
+        this.target = o["target"]; 
+        this.duration_save = o["durs"];
+        this.is_done = o["done"];  
+        this.current_opacity = o["co"];
+        this.delta = o["d"];
+        this.remain_duration = o["rm"];
+        this.is_pass = o["pass"]; 
+	};	
     
     // wait
     cr.behaviors.Rex_Flash.CmdWait = function(inst, hold, duration)
@@ -417,6 +491,7 @@ cr.behaviors.Rex_Flash = function(runtime)
         this.hold = hold;
         this.duration_save = duration;
         this.is_done = true;
+        
         this.redraw = false;        
     };
     var CmdWaitProto = cr.behaviors.Rex_Flash.CmdWait.prototype;
@@ -462,8 +537,25 @@ cr.behaviors.Rex_Flash = function(runtime)
     
     CmdWaitProto.SetDuration = function(duration)
     {
-        SetDuration.call(this, duration);        
+        this.duration_save = duration;     
     };      
+	
+	CmdWaitProto.saveToJSON = function ()
+	{ 
+		return { "hold": this.hold,
+                 "durs": this.duration_save,
+                 "done": this.is_done,
+                 "rm" : this.remain_duration,                 
+                 "pass": this.is_pass,                 
+                };
+	};
     
-    
+	CmdWaitProto.loadFromJSON = function (o)
+	{    
+        this.hold = o["hold"];
+        this.duration_save = o["durs"];
+        this.is_done = o["done"];  
+        this.remain_duration = o["rm"];
+        this.is_pass = o["pass"]; 
+	};	
 }());

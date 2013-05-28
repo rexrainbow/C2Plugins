@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	'Get scaling from two dragging points',
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_dragscale.html",
 		"category":		"Input",
 		"flags":		bf_onlyone
 	};

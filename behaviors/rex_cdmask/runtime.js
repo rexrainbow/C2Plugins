@@ -173,6 +173,17 @@ cr.behaviors.Rex_cdmask = function(runtime)
         sol.instances.push(this.canvas_inst);   
         sol.select_all = false; 
 	};
+	
+	behinstProto.saveToJSON = function ()
+	{ 
+		return { "mc": this.mask_color
+                };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+        this.mask_color = o["mc"];  
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

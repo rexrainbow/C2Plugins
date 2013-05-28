@@ -91,6 +91,23 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	        layouter.layout_inst(sprites[i], params);
 	    }
 	}; 	 	
+    
+	behinstProto.saveToJSON = function ()
+	{
+		return { "m": this.mode, 
+                 "sa": this.start_angle,
+                 "ra": this.range_angle,
+                 "da": this.delta_angle
+                };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{            
+        this.mode = o["m"];
+	    this.start_angle = o["sa"];
+	    this.range_angle = o["ra"]; // in degree
+	    this.delta_angle = o["da"]; // in degree
+	};       
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

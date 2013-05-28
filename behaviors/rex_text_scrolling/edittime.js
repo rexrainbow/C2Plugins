@@ -5,7 +5,7 @@
 		"id":			"Rex_text_scrolling",
 		"description":	"Scroll text on text object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_text_scrolling.html",
 		"category":		"Text",
 		"flags":		bf_onlyone
 	};

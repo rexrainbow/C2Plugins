@@ -5,7 +5,7 @@
 		"id":			"Rex_chess",
 		"description":	"Chess for board plugin.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_chess.html",
 		"category":		"Board",
 		"flags":		bf_onlyone
 	};

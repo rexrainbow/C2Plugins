@@ -85,6 +85,18 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 		
 		return null;
 	};	
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "p": this.is_pause,
+                 "ts": this.previous_timescale };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.is_pause = o["p"];
+		this.previous_timescale = o["ts"];
+	};	
 	 
 	//////////////////////////////////////
 	// Conditions

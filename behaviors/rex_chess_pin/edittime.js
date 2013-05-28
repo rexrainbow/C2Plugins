@@ -5,7 +5,7 @@
 		"id":			"rex_ChessPin",	
 		"description":	"Change logic index X, logic index Y with pined chess.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_chess_pin.html",
 		"category":		"Board",
 		"flags":		bf_onlyone
 	};

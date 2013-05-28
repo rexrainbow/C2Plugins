@@ -5,7 +5,7 @@
 		"id":			"Rex_physics_gravitation",
 		"description":	"Local gravitation, standed on physics behavior.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_physics_gravitation.html",
 		"category":		"Physics helper",
 		"flags":		0
 	};

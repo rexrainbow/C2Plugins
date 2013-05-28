@@ -158,7 +158,17 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 	{
         var touch_obj = this.type.touchwrap;
         return (touch_obj.UseMouseInput())?  true : touch_obj.IsInTouch();
-	};    
+	};   
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

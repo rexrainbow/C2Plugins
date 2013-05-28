@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Set sprite visiable when cursor is overed",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ninja2.html",
 		"category":		"General",
 		"flags":		bf_onlyone
 	};

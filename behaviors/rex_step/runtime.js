@@ -47,7 +47,7 @@ cr.behaviors.Rex_Step = function(runtime)
 	behinstProto.onCreate = function()
 	{
 		// Load properties
-        this.activated = this.properties[0]; 
+        this.activated = (this.properties[0] == 1); 
 		this.step_mode = this.properties[1];	// 0=None, 1=Linear, 2=Horizontal then vertical, 3=Vertical then horizontal
 		this.pixel_per_step = this.properties[2];
         this.noise_shiftt = this.properties[3];
@@ -113,7 +113,7 @@ cr.behaviors.Rex_Step = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if (this.activated == 0)
+        if (!this.activated)
             return;
         
         var cur_x = this.inst.x;
@@ -151,7 +151,18 @@ cr.behaviors.Rex_Step = function(runtime)
         this.inst.y = cur_y;
 		this.inst.set_bbox_changed();
 	};
-
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+		         "s": this.pixel_per_step };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+		this.pixel_per_step = o["s"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -179,12 +190,13 @@ cr.behaviors.Rex_Step = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-        if ( (this.activated==0) && (s==1) )
+	    var activated = (s==1);
+        if ( (!this.activated) && activated )
         {
             this.pre_x = this.inst.x;
             this.pre_y = this.inst.y;
         }
-		this.activated = s;
+		this.activated = activated;
 	};
     
 	Acts.prototype.StopStepping = function (mode)

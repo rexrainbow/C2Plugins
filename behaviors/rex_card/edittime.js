@@ -5,7 +5,7 @@
 		"id":			"Rex_Card",
 		"description":	"Assinig face of card by frame index.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_card.html",
 		"category":		"Object",
 		"flags":		bf_onlyone
 	};

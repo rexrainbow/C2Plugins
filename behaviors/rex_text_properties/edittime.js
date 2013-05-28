@@ -5,7 +5,7 @@
 		"id":			"Rex_text_properties",
 		"description":	"Support actions to change properties of text object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_text_properties.html",
 		"category":		"Text",
 		"flags":		bf_onlyone
 	};

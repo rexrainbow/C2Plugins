@@ -28,9 +28,29 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-        this.timeline = null;      
+        this.timeline = null;  
+        this.timelineUid = -1;    // for loading    
 	};
-
+	
+	behtypeProto._timeline_get = function ()
+	{
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        assert2(this.timeline, "Cooldown behavior: Can not find timeline oject.");
+        return null;	
+	};  
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -46,10 +66,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 	behinstProto.onCreate = function()
 	{      
         this.timer = null;
-        this.activated = this.properties[0];
-        this.cd_interval = 0;
+        this.activated = (this.properties[0] == 1);
+        this.cd_interval = this.properties[1];
         this.is_accept = false;
         this.is_my_call = false;
+        this.timer_save = null;        
 	};
     
 	behinstProto.onDestroy = function()
@@ -64,8 +85,8 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 	behinstProto.tick = function ()
 	{        
         var is_at_cooldown = (this.timer)?
-                         this.timer.IsActive():
-                         false;
+                             this.timer.IsActive():
+                             false;
 
         if (is_at_cooldown)
         {
@@ -82,7 +103,46 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCDFinished, this.inst); 
         this.is_my_call = false;
     };
+    
+	behinstProto.saveToJSON = function ()
+	{ 
+		return { "en": this.activated,
+                 "t": this.cd_interval,
+                 "acc": this.is_accept,
+                 
+                 "tim": (this.timer != null)? this.timer.saveToJSON() : null,
+                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1),
+                };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+        this.activated = o["en"];
+        this.cd_interval = o["t"];
+        this.is_accept = o["acc"];
+        
+        this.timer_save = o["tim"];
+        this.type.timelineUid = o["tluid"];        
+	};
+    
+	behinstProto.afterLoad = function ()
+	{
+		if (this.type.timelineUid === -1)
+			this.type.timeline = null;
+		else
+		{
+			this.type.timeline = this.runtime.getObjectByUID(this.type.timelineUid);
+			assert2(this.type.timeline, "Cooldown: Failed to find timeline object by UID");
+		}		
 
+        if (this.timer_save == null)
+            this.timer = null;
+        else
+        {
+            this.timer = this.type.timeline.LoadTimer(this, this._on_cooldown_finished, null, this.timer_save);
+        }     
+        this.timers_save = null;        
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -142,13 +202,13 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
     Acts.prototype.Request = function ()
 	{
-        if (this.activated == 0)
+        if (!this.activated)
             return;
             
         if ( this.timer == null )
         {
             this.is_accept = true;
-            this.timer = this.type.timeline.CreateTimer(this, this._on_cooldown_finished);
+            this.timer = this.type._timeline_get().CreateTimer(this, this._on_cooldown_finished);
         }
         else 
         {
@@ -189,7 +249,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s == 1);
 	};      
 
     Acts.prototype.Cancel = function ()
@@ -228,6 +288,6 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
 	Exps.prototype.Activated = function (ret)
 	{
-		ret.set_int(this.activated);
+		ret.set_int(this.activated? 1:0);
 	};    
 }());

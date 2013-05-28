@@ -52,7 +52,7 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
                 break;
             }
         }
-        assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
+        assert2(this.touchwrap, "You need put a Touchwrap object for Ninja2 behavior");
 	}; 
 	/////////////////////////////////////
 	// Behavior instance class
@@ -70,14 +70,14 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.activated = this.properties[0];
+        this.activated = (this.properties[0] == 1);
         this.is_over = false;
         this.inst.visible = 0;
 	};
 
 	behinstProto.tick = function ()
 	{
-        if (this.activated==1)
+        if (this.activated)
         {
             var inst = this.inst;
             inst.update_bbox();
@@ -113,6 +113,16 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
         this.type.GetY.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	}; 
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -135,7 +145,7 @@ cr.behaviors.Rex_Ninja2 = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s == 1);
 	};  
     
 	//////////////////////////////////////

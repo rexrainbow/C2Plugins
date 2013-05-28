@@ -28,7 +28,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-        this.timeline = null;     
+        this.timeline = null;  
+        this.timelineUid = -1;    // for loading     
 	};
 	
 	behtypeProto._timeline_get = function ()
@@ -47,6 +48,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
                 return this.timeline;
             }
         }
+        assert2(this.timeline, "Text Typing behavior: Can not find timeline oject.");
         return null;	
 	};  
 	/////////////////////////////////////
@@ -65,7 +67,9 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{    
         this.typing_timer = null;
         this.typing_speed = 0; 
-        this.content = "";        
+        this.typing_index = 0;
+        this.content = ""; 
+        this.timer_save = null;           
 	};
 
 	behinstProto.onDestroy = function()
@@ -108,34 +112,75 @@ cr.behaviors.Rex_text_typing = function(runtime)
                 start_index = 1;
             this.typing_timer = this._get_timer();
             this.typing_speed = speed;
-            this.typing_timer.SetCallbackArgs([start_index]);
+            this.typing_index = start_index;
             this.typing_timer.Start(0);
         }
         else
         {
+            this.typing_index = this.content.length;
             this.SetText(this.content);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
     };
     
-	behinstProto.text_typing_handler = function(text_index)
+	behinstProto.text_typing_handler = function()
 	{  
-        this.SetText(this.content.slice(0, text_index));
+        this.SetText(this.content.slice(0, this.typing_index));
         this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);       
-        text_index += 1;        
-        if (text_index <= this.content.length)
-        {
-            this.typing_timer.SetCallbackArgs([text_index]);
-            this.typing_timer.Restart(this.typing_speed);
-        }
+        this.typing_index += 1;        
+        if (this.typing_index <= this.content.length)
+            this.typing_timer.Restart(this.typing_speed);        
         else
+        {
+            this.typing_index = this.content.length;  
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
+        }
 	}; 
 
 	behinstProto.is_typing = function ()
 	{ 
         return (this.typing_timer)? this.typing_timer.IsActive():false;
 	}; 
+    
+	behinstProto.saveToJSON = function ()
+	{ 
+		return { "content": this.content,
+		         "spd" : this.typing_speed,
+		         "i" : this.typing_index,
+		         
+		         "tim": (this.typing_timer != null)? this.typing_timer.saveToJSON() : null,
+                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1)
+                };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+	    this.content = o["content"];
+	    this.typing_speed = o["spd"];
+	    this.typing_index = o["i"];
+	    
+        this.timer_save = o["tim"];
+        this.type.timelineUid = o["tluid"];   
+	};
+    
+	behinstProto.afterLoad = function ()
+	{
+		if (this.type.timelineUid === -1)
+			this.type.timeline = null;
+		else
+		{
+			this.type.timeline = this.runtime.getObjectByUID(this.type.timelineUid);
+			assert2(this.type.timeline, "Timer: Failed to find timeline object by UID");
+		}		       
+        
+        if (this.timer_save == null)
+            this.typing_timer = null;
+        else
+        {
+            this.typing_timer = this.type.timeline.LoadTimer(this, this.text_typing_handler, null, this.timer_save);
+        }     
+        this.timers_save = null;        
+	}; 	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -218,4 +263,10 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
 	    ret.set_float( this.typing_speed );
 	};
+    
+    Exps.prototype.TypingIndex = function (ret)
+	{
+	    ret.set_float( this.typing_index );
+	};	
+	
 }());

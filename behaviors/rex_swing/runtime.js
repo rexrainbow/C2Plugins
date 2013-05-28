@@ -51,14 +51,14 @@ cr.behaviors.Rex_Swing = function(runtime)
         var angle = (dir)? _angle:(-_angle); 
         var end =  start + _angle;    
         
-        this.activated = this.properties[0];
-        this.swing = {start:start,
-                      dir:dir,
-                      angle:angle,
-                      end:end};
-        this.rotate = {max:this.properties[3],
-                       acc:this.properties[4],
-                       dec:this.properties[5]};
+        this.activated = (this.properties[0] == 1);
+        this.swing = {"start":start,
+                      "dir":dir,
+                      "a":angle,
+                      "end":end};
+        this.rotate = {"max":this.properties[3],
+                       "acc":this.properties[4],
+                       "dec":this.properties[5]};
         this.is_setup = true;
         this.current_target = 0;
         this.current_dir = dir;
@@ -71,9 +71,8 @@ cr.behaviors.Rex_Swing = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if (this.activated == 0) {
+        if (!this.activated)
             return;
-        }
            
 		var dt = this.runtime.getDt(this.inst);
         if (dt==0)   // can not move if dt == 0
@@ -87,42 +86,41 @@ cr.behaviors.Rex_Swing = function(runtime)
             this.is_my_call = true; 
             this.runtime.trigger(cr.behaviors.Rex_Swing.prototype.cnds.OnHitStartEnd, this.inst); 
 
-            var is_start = (this.current_angle == this.swing.start);
+            var is_start = (this.current_angle == this.swing["start"]);
             var tirg = (is_start)? cr.behaviors.Rex_Swing.prototype.cnds.OnHitStart:
                                    cr.behaviors.Rex_Swing.prototype.cnds.OnHitEnd;
             this.runtime.trigger(tirg, this.inst);                       
             this.is_my_call = false;
             
             // workaround for setting activated=0 in trigger at event sheet
-            if (this.activated == 0) {
+            if (!this.activated)
                 return;
-            }   
 
             this.is_setup = false;
             
             // assign new target
-            this.current_target = (is_start)? this.swing.end:this.swing.start;
-            this.remain_angle = this.swing.angle;
-            this.current_speed = (this.rotate.acc == 0)?
-                                 this.rotate.max:
-                                 (this.rotate.acc * dt);                 
+            this.current_target = (is_start)? this.swing["end"]:this.swing["start"];
+            this.remain_angle = this.swing["a"];
+            this.current_speed = (this.rotate["acc"] == 0)?
+                                 this.rotate["max"]:
+                                 (this.rotate["acc"] * dt);                 
         }
         else
         {
             var is_slow_down = false;
-            if (this.rotate.dec != 0)
+            if (this.rotate["dec"] != 0)
             {
                 // is time to deceleration?                
                 var _speed = this.current_speed;
-                var _angle = (_speed*_speed)/(2*this.rotate.dec); // (v*v)/(2*a)
+                var _angle = (_speed*_speed)/(2*this.rotate["dec"]); // (v*v)/(2*a)
                 is_slow_down = (_angle >= this.remain_angle);
             }
-            var acc = (is_slow_down)? (-this.rotate.dec):this.rotate.acc;
+            var acc = (is_slow_down)? (-this.rotate["dec"]):this.rotate["acc"];
             if (acc !=0)
                 this.current_speed += (acc * dt);
         }
-        if (this.current_speed > this.rotate.max)
-            this.current_speed = this.rotate.max;        
+        if (this.current_speed > this.rotate["max"])
+            this.current_speed = this.rotate["max"];        
 		
 		// Apply movement to the object     
         var angle = this.current_speed * dt;
@@ -150,7 +148,32 @@ cr.behaviors.Rex_Swing = function(runtime)
         var angle = (dir)? angle_abs:(-angle_abs);        
         return (start+angle);
     }
-
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+                 "p": this.swing,
+                 "v": this.rotate,
+                 "is": this.is_setup,
+                 "ct": this.current_target,
+                 "cd": this.current_dir,
+                 "cs": this.current_speed,
+                 "ca": this.current_angle,
+                 "ra": this.remain_angle};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+        this.swing = o["p"];
+        this.rotat = o["v"];
+        this.is_setup = o["is"];
+        this.current_target = o["ct"];
+        this.current_dir = o["cd"];
+        this.current_speed = o["cs"];
+        this.current_angle = o["ca"];
+        this.remain_angle = o["ra"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -193,47 +216,47 @@ cr.behaviors.Rex_Swing = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s == 1);
 	};  
 
 	Acts.prototype.SetMaxSpeed = function (s)
 	{
-		this.rotate.max = s;
-        if (this.rotate.acc == 0)
+		this.rotate["max"] = s;
+        if (this.rotate["acc"] == 0)
             this.current_speed = s;
 	};      
     
 	Acts.prototype.SetAcceleration = function (a)
 	{
-		this.rotate.acc = a;
+		this.rotate["acc"] = a;
 	};
 	
 	Acts.prototype.SetDeceleration = function (a)
 	{
-		this.rotate.dec = a;
+		this.rotate["dec"] = a;
 	};
     
 	Acts.prototype.SetStartAngle = function (a)
 	{
-		this.swing.start = a;
-        this.swing.end = this._get_target_angle(a,this.swing.dir,this.swing.angle); 
+		this.swing["start"] = a;
+        this.swing["end"] = this._get_target_angle(a,this.swing["dir"],this.swing["a"]); 
         
         this.is_setup = true;
         this.current_angle = a;
-        this.current_dir = this.swing.dir;
+        this.current_dir = this.swing["dir"];
 	};
     
 	Acts.prototype.SetRotateTO = function (_angle)
 	{
         var dir = (_angle >= 0);
         var angle = (dir)? _angle:(-_angle);
-        this.swing.angle = angle; 
-		this.swing.dir = dir;
-        this.swing.end = this.swing.start + _angle; 
+        this.swing["a"] = angle; 
+		this.swing["dir"] = dir;
+        this.swing["end"] = this.swing["start"] + _angle; 
         
         this.is_setup = true;
         this.current_dir = dir;
-        this.current_angle = this.swing.start;
+        this.current_angle = this.swing["start"];
 	};    
     
 	//////////////////////////////////////
@@ -258,28 +281,28 @@ cr.behaviors.Rex_Swing = function(runtime)
 
 	Exps.prototype.MaxSpeed = function (ret)
 	{
-		ret.set_float(this.rotate.max);
+		ret.set_float(this.rotate["max"]);
 	}; 
 
 	Exps.prototype.Acc = function (ret)
 	{
-		ret.set_float(this.rotate.acc);
+		ret.set_float(this.rotate["acc"]);
 	};  
 
  	Exps.prototype.Dec = function (ret)
 	{
-		ret.set_float(this.rotate.dec);
+		ret.set_float(this.rotate["dec"]);
 	}; 
 
  	Exps.prototype.Start = function (ret)
 	{
-		ret.set_float(this.swing.start);
+		ret.set_float(this.swing["start"]);
 	};  
 
  	Exps.prototype.Angle = function (ret)
 	{
-        var angle = this.swing.angle;
-        if (!this.swing.dir)
+        var angle = this.swing["a"];
+        if (!this.swing["dir"])
             angle = -angle;
 		ret.set_float(angle);
 	};  

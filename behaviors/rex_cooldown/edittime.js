@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Accept request when cooldown",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_cooldown.html",
 		"category":		"Timer",
 		"flags":		0
 	};
@@ -47,19 +47,19 @@ AddAction(1, 0, "Request a call", "Call",
           "Request a call.", "Request");
 AddNumberParam("Time", "Cooldown interval, in seconds", 0.1);
 AddAction(2, 0, "Set Cooldown interval", "Setup", 
-          "Set cooldown interval to <i>{0}</i>", 
-          "Set cooldown interval.", "SetCDInterval");
-AddAction(3, 0, "Pause cooldown", "Control", 
+          "Set cooldown interval to <i>{0}</i> second", 
+          "Set cooldown interval, in second.", "SetCDInterval");
+AddAction(3, 0, "Pause", "Control", 
           "{my} pause cooldown", 
           "Pause cooldown.", "Pause"); 
-AddAction(4, 0, "Resume cooldown", "Control", 
+AddAction(4, 0, "Resume", "Control", 
           "{my} resume cooldown", 
           "Resume cooldown.", "Resume");
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the cooldown behavior.",1);
 AddAction(5, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's cooldown behavior.", "SetActivated");
-AddAction(6, 0, "Cancel cooldown", "Control", 
+AddAction(6, 0, "Cancel", "Control", 
           "{my} cancel cooldown", 
           "Cancel cooldown.", "Cancel"); 
 
@@ -85,6 +85,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),    
+    new cr.Property(ept_float, "Cooldown interval", 1, "Cooldown interval, in second."),     
 	];
 	
 // Called by IDE when a new behavior type is to be created

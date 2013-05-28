@@ -97,7 +97,16 @@ cr.behaviors.Rex_text_fpsmonitor = function(runtime)
 	    if (content != "")
 	        this.SetText(content);  
 	};
- 
+ 	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

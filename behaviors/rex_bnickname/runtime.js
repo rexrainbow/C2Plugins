@@ -56,7 +56,10 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	    this.nickname = nickname;
 	    if (cr.plugins_.Rex_Nickname == null)
 		    return;
-		cr.plugins_.Rex_Nickname.nickname2objtype[nickname] = this.inst.type;
+        if (cr.plugins_.Rex_Nickname.nickname2objtype[nickname] != null)
+            return;
+        
+		cr.plugins_.Rex_Nickname.nickname2objtype[nickname] = {sid:this.inst.type.sid, index:-1};
 	};  	
 	//////////////////////////////////////
 	// Conditions

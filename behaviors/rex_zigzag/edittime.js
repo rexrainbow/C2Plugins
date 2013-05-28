@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Using LOGO-like script to move/rotate sprite.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_zigzag.html",
 		"category":		"Movements",
 		"flags":		0
 	};

@@ -215,6 +215,18 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
                             touch_obj.fake_ret, touchid, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+                 "as": this.autoscale_mode };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+		this.autoscale_mode = o["as"]; 
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

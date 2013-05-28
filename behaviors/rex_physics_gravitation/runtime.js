@@ -56,6 +56,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         this._set_target((this.properties[4] == 1));
         this.gravitation_force = this.properties[2];
         this._set_range(this.properties[3]);
+        
         this.has_been_attracted = false;
         this.has_attracting = false;
         this.attracting_source_uid = (-1);
@@ -127,8 +128,8 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	};
 	behinstProto._set_range = function(range)
 	{        
-        this.sensitivity_range_pow2 = range*range;                     
         this.sensitivity_range = range;        
+        this.sensitivity_range_pow2 = range*range;                         
 	};
 	
 	behinstProto._get_physics_behavior_inst = function ()
@@ -255,7 +256,33 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         var key;
         for (key in source)
             target[key] = source[key];
-    };    
+    };
+    
+	behinstProto.saveToJSON = function ()
+	{
+		return { "st": this.source_tag, 
+                 "pst": this.pre_source_tag,
+                 "tt": this.target_tag,
+                 "is": this.is_source,
+                 "it": this.is_target, 
+                 "gf": this.gravitation_force,
+                 "sr": this.sensitivity_range,
+                };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{            
+        this.source_tag = o["st"]; 
+        this.pre_source_tag = o["pst"];
+        this.target_tag = o["tt"];
+        this.is_source = o["is"];
+        this._set_source(this.is_source);
+        this.is_target = o["it"];
+        this._set_target(this.is_target);
+        this.gravitation_force = o["gf"];
+        this.sensitivity_range = o["sr"];
+        this._set_range(this.sensitivity_range);
+	};        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

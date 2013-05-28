@@ -48,6 +48,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
         
 		this.board = null;
 		this.pinChess = null;
+        this.pinChessUid = -1;		// for loading
 		this.pinedChess_board = null;
 		this.dLX = null;
 		this.dLY = null;
@@ -138,6 +139,36 @@ cr.behaviors.rex_ChessPin = function(runtime)
 	    else
 		    return this.pinedChess_board.uid2xyz(pined_chess.uid);
 	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return {"en": this.activated,
+                "uid": (this.pinChess != null) ? this.pinChess.uid : -1}
+		       };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];		// wait until afterLoad to look up		
+		this.pinChessUid = o["uid"];
+	};
+	
+	behinstProto.afterLoad = function ()
+	{
+		// Look up the pinned object UID now getObjectByUID is available
+		if (this.pinChessUid === -1)
+			this.pinChess = null;
+		else
+		{
+			this.pinChess = this.runtime.getObjectByUID(this.pinChessUid);
+			assert2(this.pinChess, "Failed to find pin object by UID");
+		}
+		
+		this.pinChessUid = -1;
+        
+        this.board = null;
+        this.pinedChess_board = null;
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

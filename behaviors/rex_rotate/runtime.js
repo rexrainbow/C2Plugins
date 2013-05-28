@@ -45,7 +45,7 @@ cr.behaviors.Rex_Rotate = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.activated = this.properties[0];
+        this.activated = (this.properties[0]==1);
         this.direction = this.properties[1];
 		this.speed = this.properties[2];
 		this.acc = this.properties[3];         
@@ -53,9 +53,8 @@ cr.behaviors.Rex_Rotate = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if (this.activated == 0) {
+        if (!this.activated) 
             return;
-        }
                 
 		var dt = this.runtime.getDt(this.inst);
 		
@@ -73,7 +72,22 @@ cr.behaviors.Rex_Rotate = function(runtime)
 			this.inst.set_bbox_changed();
 		}        
 	}; 
-
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+                 "d": this.direction,
+				 "s": this.speed,
+				 "a": this.acc};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+		this.direction = o["d"];
+		this.speed = o["s"];
+		this.acc = o["a"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -91,12 +105,12 @@ cr.behaviors.Rex_Rotate = function(runtime)
 
 	Acts.prototype.SetActivated = function (s)
 	{
-		this.activated = s;
+		this.activated = (s==1);
 	};  
 
-	Acts.prototype.SetDirection = function (s)
+	Acts.prototype.SetDirection = function (d)
 	{
-		this.direction = s;
+		this.direction = d;
 	};      
     
 	Acts.prototype.SetSpeed = function (s)

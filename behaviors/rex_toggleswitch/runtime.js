@@ -66,7 +66,16 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
         this.runtime.trigger(trig_method, this.inst);   
         this.is_my_call = false;
 	};           
-
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "v": this.value };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.value = o["v"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

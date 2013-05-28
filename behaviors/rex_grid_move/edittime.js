@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Move sprite to neighbor on board object",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_grid_move.html",
 		"category":		"Board",
 		"flags":		0
 	};
@@ -47,7 +47,7 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "Moving direction.", 0);             
-AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid", "{my} can move to <i>{0}</i>", 
+AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid (Left-Right)", "{my} can move to <i>{0}</i>", 
              "Test if object can move to neighbor.", "TestMoveToNeighbor");                     
 AddObjectParam("Chess", "Chess object.");     
 AddStringParam("Group", "Put result in this group", '""');        
@@ -57,7 +57,15 @@ AddCondition(11, cf_trigger, "On colliding begin", "Collisions",
 AddCondition(12, cf_trigger, "On get solid", "Solid", 
             "On {my} get solid", 
             "Triggered by plugin to get solid property from event sheet.", "OnGetSolid");   
-         
+AddComboParamOption("Down-right");	      
+AddComboParamOption("Down");
+AddComboParamOption("Down-left");	 
+AddComboParamOption("Up-left");
+AddComboParamOption("Up");
+AddComboParamOption("Up-right");
+AddComboParam("Direction", "Moving direction.", 0);             
+AddCondition(13, 0, "Can move to neighbor", "Test: Hexagon grid (Up-Down)", "{my} can move to <i>{0}</i>", 
+             "Test if object can move to neighbor.", "TestMoveToNeighbor");   
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
@@ -107,7 +115,7 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "Moving direction.", 0);
-AddAction(9, 0, "Move to neighbor", "Request: Hexagon grid", "{my} move to <i>{0}</i>", 
+AddAction(9, 0, "Move to neighbor", "Request: Hexagon grid (Left-Right)", "{my} move to <i>{0}</i>", 
           "Move to neighbor.", "MoveToNeighbor"); 
 AddNumberParam("Direction", "The direction of neighbor.", 0);		  
 AddAction(10, 0, "Move to neighbor", "Request", "{my} move to direction <i>{0}</i>", 
@@ -115,23 +123,25 @@ AddAction(10, 0, "Move to neighbor", "Request", "{my} move to direction <i>{0}</
 AddObjectParam("Target", "Target object.");
 AddAction(11, 0, "Move to target", "Request", "{my} move to <i>{0}</i>", 
           "Move to target chess/tile.", "MoveToTargetChess");
-AddAction(12, 0, "Wander", "Wander", 
+// AI          
+AddAction(12, 0, "Wander", "AI: Wander", 
           "Wander", "Random moving in the boundary.", "Wander");
 AddNumberParam("Range x", "Wander range x, in logic unit", 1);
-AddAction(13, 0, "Set range x", "Wander", 
+AddAction(13, 0, "Set range x", "AI: Wander", 
           "Set {my} wander range x to <i>{0}</i>", 
           "Set the object's wander range x.", "SetWanderRangeX"); 
 AddNumberParam("Range y", "Wander range y, in logic unit", 1);
-AddAction(14, 0, "Set range y", "Wander", 
+AddAction(14, 0, "Set range y", "AI: Wander", 
           "Set {my} wander range y to <i>{0}</i>", 
           "Set the object's wander range y.", "SetWanderRangeY"); 		  
 AddObjectParam("Random generator", "Random generator object");
-AddAction(15, 0, "Set random generator", "Wander", 
+AddAction(15, 0, "Set random generator", "AI: Wander", 
           "Set random generator object to <i>{0}</i>", 
           "Set random generator object.", "SetRandomGenerator");
-AddAction(16, 0, "Reset center position", "Wander", 
-          "Reset wander center position to current logic position", 
+AddAction(16, 0, "Reset center position", "AI: Wander", 
+          "{my} reset wander center position to current logic position", 
           "Reset wander center position to current logic position.", "ResetWanderCenter");
+// AI              
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Solid", "Solid property.",0);
@@ -145,9 +155,7 @@ AddAction(18, 0, "Set solid by number", "Solid",
 AddObjectParam("Group", "Instance group object");
 AddAction(20, 0, "Set instance group ", "Collisions", 
           "Set instance group object to <i>{0}</i>", 
-          "Set instance group object.", "SetInstanceGroup");             
-          
-          
+          "Set instance group object.", "SetInstanceGroup");                                 
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Move-able", "Move-able.",1);
@@ -158,7 +166,31 @@ AddNumberParam("Move-able", "Move-able. 0=Disable, 1=Enable.", 0);
 AddAction(22, 0, "Set move-able by number", "Solid", 
           "{my} set move-able to <i>{0}</i>", 
           "Set move-able. Used under 'condition: On get solid'.", "SetDestinationMoveable"); 
-		  
+AddComboParamOption("Down-right");	      
+AddComboParamOption("Down");
+AddComboParamOption("Down-left");	 
+AddComboParamOption("Up-left");
+AddComboParamOption("Up");
+AddComboParamOption("Up-right");
+AddComboParam("Direction", "Moving direction.", 0);
+AddAction(23, 0, "Move to neighbor", "Request: Hexagon grid (Up-Down)", "{my} move to <i>{0}</i>", 
+          "Move to neighbor.", "MoveToNeighbor"); 	
+// AI    
+AddObjectParam("Chess", "Chess object.");
+AddComboParamOption("Approach to");
+AddComboParamOption("Depart from");
+AddComboParam("Mode", "Approach or Depart.", 0);
+AddAction(24, 0, "Approach/Depart", "AI: Approach/Depart", 
+          "{my} <i>{1}</i> <i>{0}</i>",
+          "Approach to chess or depart from chess.", "ApproachOrDepart");  
+AddAnyTypeParam("Chess UID", "The UID of chess", 0);
+AddComboParamOption("Approach to");
+AddComboParamOption("Depart from");
+AddComboParam("Mode", "Approach or Depart.", 0);
+AddAction(25, 0, "Approach/Depart chess by UID", "AI: Approach/Depart", 
+          "{my} <i>{1}</i> chess UID:<i>{0}</i>",
+          "Approach to chess or depart from chess.", "ApproachOrDepart");            
+// AI              
 AddAction(30, 0, "Stop", "Stop", "{my} stop", 
           "Stop moving.", "Stop");      
 //////////////////////////////////////////////////////////////

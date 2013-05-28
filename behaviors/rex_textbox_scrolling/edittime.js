@@ -5,9 +5,9 @@
 		"id":			"Rex_textbox_scrolling",
 		"description":	"Scroll textarea.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_textbox_scrolling.html",
 		"category":		"Textbox",
-		"flags":		0
+		"flags":		bf_onlyone
 	};
 };
 
@@ -72,6 +72,4 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
-	if (this.properties["Pixels per step"] < 1)
-		this.properties["Pixels per step"] = 1;
 }

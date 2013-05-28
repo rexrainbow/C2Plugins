@@ -87,7 +87,26 @@ cr.behaviors.Rex_Slowdown = function(runtime)
         this.is_my_call = true;
         this.runtime.trigger(cr.behaviors.Rex_Slowdown.prototype.cnds.OnStop, this.inst); 
         this.is_my_call = false;
-	};		
+	};	
+	
+    behinstProto.saveToJSON = function ()
+	{  
+		return { "en": this.activated,
+		         "dec": this.dec,
+                 "is_m": this.is_moving,
+                 "spd" : this.cur_speed,
+                 "a" : this.cur_angle
+               };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{  
+        this.activated = o["en"];  
+        this.dec = o["dec"];  
+        this.is_moving = o["is_m"];  
+		this.cur_speed = o["spd"];  			
+		this.cur_angle = o["a"];  	       
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -95,12 +114,12 @@ cr.behaviors.Rex_Slowdown = function(runtime)
     
 	Cnds.prototype.OnStop = function ()
 	{
-        return true;
+        return this.is_my_call;
 	};
     
 	Cnds.prototype.IsMoving = function ()
 	{
-		return (this.activated && this.is_moving);
+		return (this.is_my_call && this.activated && this.is_moving);
 	};
 		
 	//////////////////////////////////////

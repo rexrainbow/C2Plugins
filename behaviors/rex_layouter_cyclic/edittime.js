@@ -5,7 +5,7 @@
 		"id":			"Rex_layouter_cyclic",
 		"description":	"Put sprite cyclic on layouter.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_cyclic.html",
 		"category":		"Layouter",
 		"flags":		bf_onlyone
 	};

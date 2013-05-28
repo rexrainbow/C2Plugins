@@ -48,6 +48,7 @@ cr.behaviors.Rex_Revive = function(runtime)
                 return this.timeline;
             }
         }
+        assert2(this.timeline, "Revive behavior: Can not find timeline oject.");
         return null;	
 	};  
     

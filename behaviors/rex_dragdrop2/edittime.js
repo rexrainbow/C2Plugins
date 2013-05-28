@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Use the mouse to drag and drop an object",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_dragdrop2.html",
 		"category":		"Movements",
 		"flags":		bf_onlyone
 	};

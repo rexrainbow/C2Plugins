@@ -46,10 +46,10 @@ cr.behaviors.Rex_RotateTo = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.activated = (this.properties[0] == 1);
-        this.move = {max:this.properties[1],
-                     acc:this.properties[2],
-                     dec:this.properties[3]};
-        this.target = {angle:0, clockwise:true};  
+        this.move = {"max":this.properties[1],
+                     "acc":this.properties[2],
+                     "dec":this.properties[3]};
+        this.target = {"a":0, "cw":true};  
         this.is_rotating = false;  
         this.current_speed = 0;       
         this.remain_distance = 0;
@@ -79,14 +79,14 @@ cr.behaviors.Rex_RotateTo = function(runtime)
 
         // assign speed
         var is_slow_down = false;
-        if (this.move.dec != 0)
+        if (this.move["dec"] != 0)
         {
             // is time to deceleration?                
             var _speed = this.current_speed;
-            var _distance = (_speed*_speed)/(2*this.move.dec); // (v*v)/(2*a)
+            var _distance = (_speed*_speed)/(2*this.move["dec"]); // (v*v)/(2*a)
             is_slow_down = (_distance >= this.remain_distance);
         }
-        var acc = (is_slow_down)? (-this.move.dec):this.move.acc;
+        var acc = (is_slow_down)? (-this.move["dec"]):this.move["acc"];
         if (acc != 0)
         {
             this.SetCurrentSpeed( this.current_speed + (acc * dt) );    
@@ -100,13 +100,13 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {
             this.is_rotating = false;
-            this.inst.angle = cr.to_clamped_radians(this.target.angle);
+            this.inst.angle = cr.to_clamped_radians(this.target["a"]);
             this.SetCurrentSpeed(0);
             this.is_hit_target = true;
         }
         else
         {
-            if (this.target.clockwise)
+            if (this.target["cw"])
                 this.inst.angle += cr.to_clamped_radians(distance);
             else
                 this.inst.angle -= cr.to_clamped_radians(distance);
@@ -122,36 +122,61 @@ cr.behaviors.Rex_RotateTo = function(runtime)
 	{
         if (speed != null)
         {
-            this.current_speed = (speed > this.move.max)? 
-                                 this.move.max: speed;
+            this.current_speed = (speed > this.move["max"])? 
+                                 this.move["max"]: speed;
         }        
-        else if (this.move.acc==0)
+        else if (this.move["acc"]==0)
         {
-            this.current_speed = this.move.max;
+            this.current_speed = this.move["max"];
         }
 	};
 	
-	behinstProto.SetTargetAngle = function (angle, clockwise_mode)  // in radians
+	behinstProto.SetTargetAngle = function (angle, clockwise_mode)  // in degree
 	{
-        debugger;
         this.is_rotating = true;
         var cur_angle_degree = cr.to_degrees(this.inst.angle);
+        if (angle <0)
+            angle += 360;
 
 		if (clockwise_mode == 2)
 		{
 		    var dA = angle - cur_angle_degree;
 		    clockwise_mode = (dA <= 180)? 1:0;
 		}
-        this.target.clockwise = (clockwise_mode == 1);
-        if (this.target.clockwise)
+        this.target["cw"] = (clockwise_mode == 1);
+        if (this.target["cw"])
             this.remain_distance = angle - cur_angle_degree;
         else
             this.remain_distance = cur_angle_degree - angle;
         if (this.remain_distance < 0)
             this.remain_distance += 360;
-        this.target.angle = angle;
+        this.target["a"] = angle;
         this.SetCurrentSpeed(null);       
-	}; 
+	};
+
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+                 "v": this.move,
+                 "t": this.target,
+                 "ir": this.is_rotating,
+                 "cs": this.current_speed,
+                 "rd": this.remain_distance,
+                 "iht": this.is_hit_target
+                 };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+        this.activated = o["en"];
+        this.move = o["v"];
+        this.target = o["t"];
+        this.is_rotating = o["ir"];
+        this.current_speed = o["cs"];     
+        this.remain_distance = o["rd"];
+        this.is_hit_target = o["iht"];
+	};
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -189,19 +214,19 @@ cr.behaviors.Rex_RotateTo = function(runtime)
 
 	Acts.prototype.SetMaxSpeed = function (s)
 	{
-		this.move.max = s;
+		this.move["max"] = s;
         this.SetCurrentSpeed(null);
 	};      
     
 	Acts.prototype.SetAcceleration = function (a)
 	{
-		this.move.acc = a;
+		this.move["acc"] = a;
         this.SetCurrentSpeed(null);
 	};
 	
 	Acts.prototype.SetDeceleration = function (a)
 	{
-		this.move.dec = a;
+		this.move["dec"] = a;
 	};
     
 	Acts.prototype.SetTargetAngle = function (angle, clockwise_mode)
@@ -222,16 +247,21 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         if (inst != null)
         {
             var angle = Math.atan2(inst.y-this.inst.y , inst.x-this.inst.x);
-            this.SetTargetAngle(angle, clockwise_mode);
+            this.SetTargetAngle(cr.to_degrees(angle), clockwise_mode);
         }
 	};
     
  	Acts.prototype.SetTargetAngleByDeltaAngle = function (dA, clockwise_mode)
 	{
-	    var angle = cr.to_clamped_radians(this.inst.angle + dA);
+	    var angle = this.inst.angle + dA
         this.SetTargetAngle(angle, clockwise_mode);
 	};    
-
+    
+ 	Acts.prototype.SetTargetAngleToPos = function (tx, ty, clockwise_mode)
+	{
+	    var angle = Math.atan2(ty-this.inst.y , tx-this.inst.x);
+        this.SetTargetAngle(cr.to_degrees(angle), clockwise_mode);
+	}; 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -249,22 +279,22 @@ cr.behaviors.Rex_RotateTo = function(runtime)
     
 	Exps.prototype.MaxSpeed = function (ret)
 	{
-		ret.set_float(this.move.max);
+		ret.set_float(this.move["max"]);
 	}; 
 
 	Exps.prototype.Acc = function (ret)
 	{
-		ret.set_float(this.move.acc);
+		ret.set_float(this.move["acc"]);
 	};  
 
  	Exps.prototype.Dec = function (ret)
 	{
-		ret.set_float(this.move.dec);
+		ret.set_float(this.move["dec"]);
 	}; 
 
 	Exps.prototype.TargetAngle = function (ret)
 	{
-        var x = (this.is_rotating)? this.target.angle:0;
+        var x = (this.is_rotating)? this.target["a"]:0;
 		ret.set_float(x);
 	};    
 }());

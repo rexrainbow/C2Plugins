@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Change an object's opacity over time periodly.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_gleam.html",
 		"category":		"General",
 		"flags":		0
 	};
@@ -18,7 +18,6 @@ AddCondition(0, cf_trigger, "On flash finish", "",
              "On {my} flash finish", 
 			 "Triggered when flash finish.", 
 			 "OnFlashFinish"); 
-
 
 //////////////////////////////////////////////////////////////
 // Actions

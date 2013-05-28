@@ -107,7 +107,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         {
 		    miniboard_inst = touched_miniboard_insts[i];
             behavior_inst = miniboard_inst.behavior_insts[this.behavior_index];
-            if ((behavior_inst.dragable) && (!behavior_inst.drag_info.is_on_dragged))
+            if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_dragged))
                 this._behavior_insts.push(behavior_inst);
         }
             
@@ -166,7 +166,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.dragable = (this.properties[0] == 1);    
+	    this.activated = (this.properties[0] == 1);    
         this.drag_info = {touch_src:-1,
 		                  pre_x:0,
                           pre_y:0,
@@ -185,7 +185,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 
 	behinstProto.tick = function ()
 	{  
-        if (!(this.dragable && this.drag_info.is_on_dragged))
+        if (!(this.activated && this.drag_info.is_on_dragged))
             return;
 
         // this.activated == 1 && this.is_on_dragged        
@@ -321,17 +321,17 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	behinstProto.IsInTouch = function(touchX, touchY)
 	{
         var miniboard_inst = this.inst;
-        var chess_insts = miniboard_inst.chess_insts;
-        assert2(chess_insts, "(Mini board) Touch Ctrl behavior only could be used with mini board instance.");
-		var chess_uid, chess_inst;
-		var tx, ty
-        for (chess_uid in chess_insts)
+        var uids = miniboard_inst.items;
+        assert2(uids, "(Mini board) Touch Ctrl behavior only could be used with mini board instance.");
+		var uid, inst;
+		var tx, ty;
+        for (uid in uids)
         {
-            chess_inst = chess_insts[chess_uid];
-			chess_inst.update_bbox();
-			tx = chess_inst.layer.canvasToLayer(touchX, touchY, true);
-			ty = chess_inst.layer.canvasToLayer(touchX, touchY, false);                
-            if (chess_inst.contains_pt(tx,ty))
+            inst = miniboard_inst.uid2inst(uid);
+			inst.update_bbox();
+			tx = inst.layer.canvasToLayer(touchX, touchY, true);
+			ty = inst.layer.canvasToLayer(touchX, touchY, false);                
+            if (inst.contains_pt(tx,ty))
             {
                 this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnTouched, miniboard_inst);
                 return true;
@@ -339,6 +339,16 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         }
 		return false;
 	};	
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -366,7 +376,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
     
 	Cnds.prototype.IsDragable = function ()
 	{
-        return this.dragable;
+        return this.activated;
 	};		
     
 	Cnds.prototype.IsTouching = function ()
@@ -390,7 +400,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
     
 	Acts.prototype.SetDragable = function (en)
 	{
-		this.dragable = (en == 1);
+		this.activated = (en == 1);
 	}; 
 
 	Acts.prototype.ForceDrop = function ()

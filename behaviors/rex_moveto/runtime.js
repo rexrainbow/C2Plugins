@@ -46,16 +46,16 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.activated = (this.properties[0] == 1);
-        this.move = {max:this.properties[1],
-                     acc:this.properties[2],
-                     dec:this.properties[3]};
-        this.target = {x:0 , y:0, angle:0};
+        this.move = {"max":this.properties[1],
+                     "acc":this.properties[2],
+                     "dec":this.properties[3]};
+        this.target = {"x":0 , "y":0, "a":0};
         this.is_moving = false;  
-        this.current_speed = 0;       
+        this.current_speed = 0;
         this.remain_distance = 0;
         this.is_hit_target = false;
-        this._pre_pos = {x:0,y:0};
-        this._pre_pos_angle = {x:0,y:0,angle:(-1)};
+        this._pre_pos = {"x":0,"y":0};
+        this._moving_angle_info = {"x":0,"y":0,"a":(-1)};
         this._last_tick = null;
         this.is_my_call = false;
 	};
@@ -79,19 +79,19 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         if (dt==0)   // can not move if dt == 0
             return;
         
-        if ((this._pre_pos.x != this.inst.x) || (this._pre_pos.y != this.inst.y))
+        if ((this._pre_pos["x"] != this.inst.x) || (this._pre_pos["y"] != this.inst.y))
 		    this._reset_current_pos();    // reset this.remain_distance
 		    
         // assign speed
         var is_slow_down = false;
-        if (this.move.dec != 0)
+        if (this.move["dec"] != 0)
         {
             // is time to deceleration?                
             var _speed = this.current_speed;
-            var _distance = (_speed*_speed)/(2*this.move.dec); // (v*v)/(2*a)
+            var _distance = (_speed*_speed)/(2*this.move["dec"]); // (v*v)/(2*a)
             is_slow_down = (_distance >= this.remain_distance);
         }
-        var acc = (is_slow_down)? (-this.move.dec):this.move.acc;
+        var acc = (is_slow_down)? (-this.move["dec"]):this.move["acc"];
         if (acc != 0)
         {
             this.SetCurrentSpeed( this.current_speed + (acc * dt) );    
@@ -105,63 +105,63 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {
             this.is_moving = false;
-            this.inst.x = this.target.x;
-            this.inst.y = this.target.y;
+            this.inst.x = this.target["x"];
+            this.inst.y = this.target["y"];
             this.SetCurrentSpeed(0);
             this.moving_angle_get();
             this.is_hit_target = true;
         }
         else
         {
-            var angle = this.target.angle;
+            var angle = this.target["a"];
             this.inst.x += (distance * Math.cos(angle));
             this.inst.y += (distance * Math.sin(angle));
         } 
 
 		this.inst.set_bbox_changed();
-		this._pre_pos.x = this.inst.x;
-		this._pre_pos.y = this.inst.y;          
+		this._pre_pos["x"] = this.inst.x;
+		this._pre_pos["y"] = this.inst.y;          
 	}; 
 	behinstProto.tick2 = function ()
 	{
         // save pre pos to get moveing angle
-        this._pre_pos_angle.x = this.inst.x;
-		this._pre_pos_angle.y = this.inst.y;       
+        this._moving_angle_info["x"] = this.inst.x;
+		this._moving_angle_info["y"] = this.inst.y;       
     };
     
 	behinstProto.SetCurrentSpeed = function(speed)
 	{
         if (speed != null)
         {
-            this.current_speed = (speed > this.move.max)? 
-                                 this.move.max: speed;
+            this.current_speed = (speed > this.move["max"])? 
+                                 this.move["max"]: speed;
         }        
-        else if (this.move.acc==0)
+        else if (this.move["acc"]==0)
         {
-            this.current_speed = this.move.max;
+            this.current_speed = this.move["max"];
         }
 	};  
     
 	behinstProto._reset_current_pos = function ()
 	{
-        var dx = this.target.x - this.inst.x;
-        var dy = this.target.y - this.inst.y;
+        var dx = this.target["x"] - this.inst.x;
+        var dy = this.target["y"] - this.inst.y;
 
-        this.target.angle = Math.atan2(dy, dx);
+        this.target["a"] = Math.atan2(dy, dx);
         this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
-		this._pre_pos.x = this.inst.x;
-		this._pre_pos.y = this.inst.y; 
+		this._pre_pos["x"] = this.inst.x;
+		this._pre_pos["y"] = this.inst.y; 
 	};
 	
 	behinstProto.SetTargetPos = function (_x, _y)
 	{
         this.is_moving = true;         
-		this.target.x = _x;
-        this.target.y = _y;         	    
+		this.target["x"] = _x;
+        this.target["y"] = _y;         	    
         this._reset_current_pos();
         this.SetCurrentSpeed(null);
-		this._pre_pos_angle.x = this.inst.x;
-		this._pre_pos_angle.y = this.inst.y;         
+		this._moving_angle_info["x"] = this.inst.x;
+		this._moving_angle_info["y"] = this.inst.y;         
 	};
     
 	behinstProto.is_tick_changed = function ()
@@ -176,13 +176,42 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	{
         if (this.is_tick_changed())
         {   
-            var dx = this.inst.x - this._pre_pos_angle.x;
-            var dy = this.inst.y - this._pre_pos_angle.y;
+            var dx = this.inst.x - this._moving_angle_info["x"];
+            var dy = this.inst.y - this._moving_angle_info["y"];
             if ((dx!=0) || (dy!=0))
-                this._pre_pos_angle.angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
+                this._moving_angle_info["a"] = cr.to_clamped_degrees(Math.atan2(dy,dx));
         }
-		return this._pre_pos_angle.angle;
+		return this._moving_angle_info["a"];
 	}; 
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+		         "v": this.move,
+                 "t": this.target,
+                 "is_m": this.is_moving,
+                 "c_spd" : this.current_speed,
+                 "rd" : this.remain_distance,
+                 "is_ht" : this.is_hit_target,
+                 "pp": this._pre_pos,
+                 "ma": this._moving_angle_info,
+                 "lt": this._last_tick,
+               };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{  
+		this.activated = o["en"];
+		this.move = o["v"]; 
+		this.target = o["t"];
+		this.is_moving = o["is_m"]; 
+		this.current_speed = o["c_spd"];
+		this.remain_distance = o["rd"];		
+		this.is_hit_target = o["is_ht"];
+        this._pre_pos = o["pp"];
+        this._moving_angle_info = o["ma"];
+        this._last_tick = o["lt"];      
+	};	    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -228,19 +257,19 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 
 	Acts.prototype.SetMaxSpeed = function (s)
 	{
-		this.move.max = s;
+		this.move["max"] = s;
         this.SetCurrentSpeed(null);
 	};      
     
 	Acts.prototype.SetAcceleration = function (a)
 	{
-		this.move.acc = a;
+		this.move["acc"] = a;
         this.SetCurrentSpeed(null);
 	};
 	
 	Acts.prototype.SetDeceleration = function (a)
 	{
-		this.move.dec = a;
+		this.move["dec"] = a;
 	};
     
 	Acts.prototype.SetTargetPos = function (_x, _y)
@@ -297,28 +326,28 @@ cr.behaviors.Rex_MoveTo = function(runtime)
     
 	Exps.prototype.MaxSpeed = function (ret)
 	{
-		ret.set_float(this.move.max);
+		ret.set_float(this.move["max"]);
 	}; 
 
 	Exps.prototype.Acc = function (ret)
 	{
-		ret.set_float(this.move.acc);
+		ret.set_float(this.move["acc"]);
 	};  
 
  	Exps.prototype.Dec = function (ret)
 	{
-		ret.set_float(this.move.dec);
+		ret.set_float(this.move["dec"]);
 	}; 
 
 	Exps.prototype.TargetX = function (ret)
 	{
-        var x = (this.is_moving)? this.target.x:0;
+        var x = (this.is_moving)? this.target["x"]:0;
 		ret.set_float(x);
 	};  
 
  	Exps.prototype.TargetY = function (ret)
 	{
-        var y = (this.is_moving)? this.target.y:0;
+        var y = (this.is_moving)? this.target["y"]:0;
 		ret.set_float(y);
 	};     
 

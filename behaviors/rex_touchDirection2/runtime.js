@@ -211,12 +211,23 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         return touch_obj.fake_ret.value;         
 	};   
     
-	behtypeProto.GetSpeed = function()
+	behinstProto.GetSpeed = function()
 	{
         var touch_obj = this.type.touchwrap;
         this.type.GetSpeed.call(touch_obj, touch_obj.fake_ret, 0);
         return touch_obj.fake_ret.value;     
-	};      
+	};   	
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};		
+   
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

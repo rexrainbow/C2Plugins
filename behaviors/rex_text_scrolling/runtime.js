@@ -146,7 +146,33 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{
         cr.plugins_.Text.prototype.acts.SetText.apply(this.inst, [s]);
 	};    
-    
+ 	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "raw" : this.content_raw,
+		         "lines": this.content_lines,
+		         "lcnt": this.total_lines,
+		         "vlcnt": this.visible_lines,
+		         "lper": this.line_pos_percent,
+		         "start": this.start_line_index, 
+		          };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+        this.content_raw = o["raw"];
+	    this.content_lines = o["lines"];
+	    this.total_lines = o["lcnt"];
+	    this.visible_lines = o["vlcnt"];
+        this.line_pos_percent = o["lper"];
+        this.start_line_index = o["start"];
+	};
+		
+	behinstProto.afterLoad = function ()
+	{
+		this.text_changed = false;
+        cr.behaviors.Rex_text_scrolling.prototype.acts.ScrollByPercent.apply(this, [this.line_pos_percent]);
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

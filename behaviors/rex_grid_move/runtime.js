@@ -49,8 +49,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
         this.board = null;
         this._cmd_move_to = new cr.behaviors.Rex_GridMove.CmdMoveTo(this);
-        		
-        this._target_xyz = {x:0,y:0,z:0};        
+   
         this._is_moving_request_accepted = false;
         this.is_my_call = false;
         this.exp_BlockerUID = (-1);
@@ -58,9 +57,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.exp_DestinationLX = (-1);
         this.exp_DestinationLY = (-1);
         this.exp_DestinationLZ = (-1);
-        this.exp_CustomSolid = null;
-		this._wander = {range_x:this.properties[4],
-		                range_y:this.properties[5]};
+        this.is_customSolid = null;
+		this._wander = {"rx":this.properties[4],
+		                "ry":this.properties[5],
+		                "o": {"x":0, "y":0, "z":0}
+		               };
         this._dir_sequence = [];						
         this.force_move = (this.properties[6] == 1);
         this._colliding_xyz = {};
@@ -106,7 +107,9 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
                 { 
                     this.board = obj;
 					_dir_sequence_init(this._dir_sequence, obj.layout.GetDirCount());
-					this._wander.init_xyz = _xyz;
+					this._wander["o"]["x"] = _xyz.x;
+					this._wander["o"]["y"] = _xyz.y;
+					this._wander["o"]["z"] = _xyz.z;
                     return this.board;
                 }
             }
@@ -155,19 +158,19 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     
     behinstProto._custom_can_move_to_get = function ()
     {
-        this.exp_CustomSolid = null;
+        this.is_customSolid = null;
         this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnGetSolid, this.inst);
         var can_move_to;
-        if (this.exp_CustomSolid == null)
+        if (this.is_customSolid == null)
             can_move_to = null;
-        else if (this.exp_CustomSolid)
+        else if (this.is_customSolid)
             can_move_to = (-1);
         else
             can_move_to = 1;
         return can_move_to;
     };    
     
-    behinstProto._test_move_to = function (target_x, target_y, target_z)
+    behinstProto._test_move_to = function (target_x, target_y, target_z)   // return 1 if can move to
     {
         this.exp_BlockerUID = (-1);
       
@@ -345,6 +348,51 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         _sol.select_all = select_all_save;
         return (result_group.GetList().length != 0);
 	};
+	
+	behinstProto.saveToJSON = function ()
+	{	  
+	    var randomGen = cr.behaviors.Rex_GridMove._random_gen;
+	    var randomGenUid = (randomGen != null)? randomGen.uid:(-1);	    
+		return { "mt": this._cmd_move_to.saveToJSON(),
+		         "wander": this._wander,
+		         "z": this._z_saved,
+                 "e_buid": this.exp_BlockerUID,
+                 "e_dir" : this.exp_Direction,
+                 "e_dlx" : this.exp_DestinationLX,
+                 "e_dly" : this.exp_DestinationLY,
+                 "e_dlz" : this.exp_DestinationLZ,
+                 "ruid": randomGenUid,
+               };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+	    this._cmd_move_to.loadFromJSON(o["mt"]);
+	    this._wander = o["wander"];
+	    this._z_saved = o["z"];
+        this.exp_BlockerUID= o["e_buid"];
+        this.exp_Direction = o["e_dir"]; 
+        this.exp_DestinationLX = o["e_dlx"];
+        this.exp_DestinationLY = o["e_dly"];
+        this.exp_DestinationLZ = o["e_dlz"];	    
+		this.randomGenUid = o["ruid"];
+	};	
+    
+	behinstProto.afterLoad = function ()
+	{
+        var randomGen;
+		if (this.randomGenUid === -1)
+			randomGen = null;
+		else
+		{
+			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(randomGen, "Grid move: Failed to find random gen object by UID");
+		}		
+		this.randomGenUid = -1;			
+		cr.behaviors.Rex_GridMove._random_gen = randomGen;
+		
+		this.board = null;
+	}; 	
 
 	//////////////////////////////////////
 	// Conditions
@@ -429,19 +477,19 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
 	Acts.prototype.SetMaxSpeed = function (s)
 	{
-		this._cmd_move_to.move.max = s;
+		this._cmd_move_to.move["max"] = s;
         this._cmd_move_to._set_current_speed(null);
 	};      
     
 	Acts.prototype.SetAcceleration = function (a)
 	{
-		this._cmd_move_to.move.acc = a;
+		this._cmd_move_to.move["acc"] = a;
         this._cmd_move_to._set_current_speed(null);
 	};
 	
 	Acts.prototype.SetDeceleration = function (a)
 	{
-		this._cmd_move_to.move.dec = a;
+		this._cmd_move_to.move["dec"] = a;
 	};
     
 	Acts.prototype.SetCurrentSpeed = function (s)
@@ -565,19 +613,18 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		    return;
 		
 		var _layout = this._board_get().layout;
-		var init_lx = this._wander.init_xyz.x;
-		var init_ly = this._wander.init_xyz.y;
-		var range_x = this._wander.range_x;
-		var range_y = this._wander.range_y;		
+		var init_lx = this._wander["o"]["x"];
+		var init_ly = this._wander["o"]["y"];
+		var range_x = this._wander["rx"];
+		var range_y = this._wander["ry"];		
 		_shuffle(this._dir_sequence);
 		var i, dir, dir_count=this._dir_sequence.length;
-		var tx, ty, tz, can_move;
+		var tx, ty, tz=_xyz.z, can_move;
 		for (i=0; i<dir_count; i++)
 		{
 		    dir = this._dir_sequence[i];
 		    tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
-		    ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
-		    tz = _xyz.z;	
+		    ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);	
             if ((Math.abs(tx-init_lx) > range_x) || 
 			    (Math.abs(ty-init_ly) > range_y))
 				continue;
@@ -592,14 +639,14 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
 	    if (range_x < 0)
 		    range_x = 0;
-        this._wander.range_x = range_x;
+        this._wander["rx"] = range_x;
 	};   
 	
     Acts.prototype.SetWanderRangeY = function (range_y)
 	{
 	    if (range_y < 0)
 		    range_y = 0;
-        this._wander.range_y = range_y;
+        this._wander["ry"] = range_y;
 	}; 
 	
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
@@ -616,19 +663,19 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         var _xyz = this.chess_xyz_get();
 		if (_xyz == null)
 		    return;        
-	    this._wander.init_xyz.x = _xyz.x;
-        this._wander.init_xyz.y = _xyz.y;
-        this._wander.init_xyz.z = _xyz.z;       
+	    this._wander["o"]["x"] = _xyz.x;
+        this._wander["o"]["y"] = _xyz.y;
+        this._wander["o"]["z"] = _xyz.z;       
 	};  
 	
     Acts.prototype.SetDestinationSolid = function (is_solid)
 	{
-        this.exp_CustomSolid =  (is_solid > 0);
+        this.is_customSolid =  (is_solid > 0);
 	};
 	
     Acts.prototype.SetDestinationMoveable = function (is_moveable)
 	{
-        this.exp_CustomSolid =  (!(is_moveable > 0));
+        this.is_customSolid =  (!(is_moveable > 0));
 	};	
 	
     Acts.prototype.SetInstanceGroup = function (group_objs)
@@ -638,7 +685,95 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             this.type.group = group;        
         else
             alert ("[Grid move] This object is not a instance group object.");            
-	};     
+	};   
+    
+    // AI - Approach / Depart
+    // helper
+	var _physical_distance_get = function(target_insts, opx, opy)
+	{
+        var i,cnt=target_insts.length, inst, total_dist_pow2=0;
+        for (i=0; i<cnt; i++)
+        {
+            inst = target_insts[i];
+            total_dist_pow2 += ( Math.pow((inst.x - opx), 2) + Math.pow((inst.y - opy), 2) );
+        }
+        return total_dist_pow2;
+	};
+    var _ApproachOrDepart_dist2lxy = [];
+    var _ApproachOrDepart_dist2lxy_sort_fn = function(pA, pB)
+	{   
+	    return (pA.d < pB.d) ? -1 : (pA.d > pB.d) ? 1 : 0;
+	};
+	Acts.prototype.ApproachOrDepart = function (chess_objs, is_depart)
+	{
+	    if (!this._cmd_move_to.activated)
+	        return;
+		var _xyz = this.chess_xyz_get();
+		if (_xyz == null)
+		    return;   
+        // get targets            
+        var target_insts;
+        if (typeof chess_objs == "number")
+        {
+            var inst = this.runtime.getObjectByUID(chess_objs);
+            if (inst == null)
+                return;
+            target_insts = [inst];
+        }
+        else if (typeof chess_objs == "string")
+        {
+            var uids = JSON.parse(chess_objs);
+            var i, cnt=uids.length, inst;
+            target_insts = [];
+            for (i=0; i<cnt; i++)
+            {
+                inst = this.runtime.getObjectByUID(uids[i]);
+                if (inst == null)
+                    continue;
+                target_insts.push(inst);
+            }
+        }       
+        else
+        {
+            if (!chess_objs)
+                return;
+            target_insts = chess_objs.getCurrentSol().getObjects();
+        }
+        if (target_insts.length == 0)
+            return;  
+        // ----            
+        var _layout = this._board_get().layout;
+        var i, dir_count=this._dir_sequence.length;
+        var tx, ty, tz=_xyz.z, can_move, opx, opy, pd;  
+		for (i=0; i<dir_count; i++)
+		{		  
+		    tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, i);
+		    ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, i);
+	        this.set_move_target(tx, ty, tz, i);
+		    can_move = this._test_move_to(tx, ty, tz);	    
+			if (can_move != 1)
+			    continue;
+            opx = _layout.LXYZ2PX(tx, ty, tz);
+            opy = _layout.LXYZ2PY(tx, ty, tz);
+            pd = _physical_distance_get(target_insts, opx, opy);
+            _ApproachOrDepart_dist2lxy.push({d:pd, lx:tx, ly:ty, can_move:true});
+	    }        
+        if (_ApproachOrDepart_dist2lxy.length == 0)
+            return;
+        opx = _layout.LXYZ2PX(_xyz.x, _xyz.y, tz);
+        opy = _layout.LXYZ2PY(_xyz.x, _xyz.y, tz);
+        pd = _physical_distance_get(target_insts, opx, opy);
+        _ApproachOrDepart_dist2lxy.push({d:pd, lx:_xyz.x, ly:_xyz.y, can_move:false});
+        //_shuffle(_ApproachOrDepart_dist2lxy);     
+        _ApproachOrDepart_dist2lxy.sort(_ApproachOrDepart_dist2lxy_sort_fn);
+        var dist2lxy = (is_depart==1)? 
+            _ApproachOrDepart_dist2lxy[_ApproachOrDepart_dist2lxy.length-1]:
+            _ApproachOrDepart_dist2lxy[0];
+        if (dist2lxy.can_move)
+            this._move_to_target(dist2lxy.lx, dist2lxy.ly, tz);	
+        _ApproachOrDepart_dist2lxy.length = 0;
+	};    
+    // AI - Approach / Depart
     
  	Acts.prototype.Stop = function ()
 	{
@@ -661,27 +796,27 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     
 	Exps.prototype.MaxSpeed = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.move.max);
+		ret.set_float(this._cmd_move_to.move["max"]);
 	}; 
 
 	Exps.prototype.Acc = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.move.acc);
+		ret.set_float(this._cmd_move_to.move["acc"]);
 	};  
 
  	Exps.prototype.Dec = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.move.dec);
+		ret.set_float(this._cmd_move_to.move["dec"]);
 	}; 
 
 	Exps.prototype.TargetX = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.target.x);
+		ret.set_float(this._cmd_move_to.target["x"]);
 	};  
 
  	Exps.prototype.TargetY = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.target.y);
+		ret.set_float(this._cmd_move_to.target["y"]);
 	};     
 
  	Exps.prototype.BlockerUID = function (ret)
@@ -717,12 +852,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 (function ()
 {
     cr.behaviors.Rex_GridMove.CmdMoveTo = function(plugin)
-    {
+    {     
         this.activated = plugin.properties[0];
-        this.move = {max:plugin.properties[1],
-                     acc:plugin.properties[2],
-                     dec:plugin.properties[3]};
-        this.target = {x:0 , y:0, angle:0};
+        this.move = {"max":plugin.properties[1],
+                     "acc":plugin.properties[2],
+                     "dec":plugin.properties[3]};
+        this.target = {"x":0 , "y":0, "a":0};
         this.is_moving = false;  
         this.current_speed = 0;       
         this.remain_distance = 0;
@@ -756,14 +891,14 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		
         // assign speed
         var is_slow_down = false;
-        if (this.move.dec != 0)
+        if (this.move["dec"] != 0)
         {
             // is time to deceleration?                
             var _speed = this.current_speed;
-            var _distance = (_speed*_speed)/(2*this.move.dec); // (v*v)/(2*a)
+            var _distance = (_speed*_speed)/(2*this.move["dec"]); // (v*v)/(2*a)
             is_slow_down = (_distance >= this.remain_distance);
         }
-        var acc = (is_slow_down)? (-this.move.dec):this.move.acc;
+        var acc = (is_slow_down)? (-this.move["dec"]):this.move["acc"];
         if (acc != 0)
         {
             this._set_current_speed( this.current_speed + (acc * dt) );    
@@ -776,14 +911,14 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         // is hit to target at next tick?
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {            
-            this.inst.x = this.target.x;
-            this.inst.y = this.target.y;
+            this.inst.x = this.target["x"];
+            this.inst.y = this.target["y"];
             this._set_current_speed(0);
             this.is_hit_target = true;
         }
         else
         {
-            var angle = this.target.angle;
+            var angle = this.target["a"];
             this.inst.x += (distance * Math.cos(angle));
             this.inst.y += (distance * Math.sin(angle));
         } 
@@ -795,12 +930,12 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
         if (speed != null)
         {
-            this.current_speed = (speed > this.move.max)? 
-                                 this.move.max: speed;
+            this.current_speed = (speed > this.move["max"])? 
+                                 this.move["max"]: speed;
         }        
-        else if (this.move.acc==0)
+        else if (this.move["acc"]==0)
         {
-            this.current_speed = this.move.max;
+            this.current_speed = this.move["max"];
         }
 	};  
     
@@ -810,10 +945,33 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         var dy = _y - this.inst.y;
         
         this.is_moving = true;         
-		this.target.x = _x;
-        this.target.y = _y; 
-        this.target.angle = Math.atan2(dy, dx);
+		this.target["x"] = _x;
+        this.target["y"] = _y; 
+        this.target["a"] = Math.atan2(dy, dx);
         this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
         this._set_current_speed(null);
 	}; 
+	
+	CmdMoveToProto.saveToJSON = function ()
+	{
+		return { "en": this.activated,
+		         "v": this.move,
+                 "t": this.target,
+                 "is_m": this.is_moving,
+                 "c_spd" : this.current_speed,
+                 "rd" : this.remain_distance,
+                 "is_ht" : this.is_hit_target
+               };
+	};
+	
+	CmdMoveToProto.loadFromJSON = function (o)
+	{  
+		this.activated = o["en"];
+		this.move = o["v"]; 
+		this.target = o["t"];
+		this.is_moving = o["is_m"]; 
+		this.current_speed = o["c_spd"];
+		this.remain_distance = o["rd"];		
+		this.is_hit_target = o["is_ht"];
+	};	
 }());  

@@ -281,6 +281,16 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         drag_info.inst_start_y = inst.y;   
         drag_info.is_moved = false;      
 	}; 
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

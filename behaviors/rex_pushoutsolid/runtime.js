@@ -66,6 +66,16 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 			this.runtime.pushOutSolidNearest(this.inst);
 		}	    
 	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.activated };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["en"];
+	};		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

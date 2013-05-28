@@ -50,6 +50,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         this.hex_dir = this.properties[1];   
         this.forked_selection_mode = this.properties[2];		
         this.board = null; 
+        this.randomGenUid = -1;    // for loading
 		this._is_square_grid = true;
         this._target_tile_uids = []; 
 		this._dir_sequence = [];
@@ -386,6 +387,43 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
             arr[j] = temp;
         }
     };	
+	
+	behinstProto.saveToJSON = function ()
+	{
+	    var randomGen = cr.behaviors.Rex_MonopolyMovement._random_gen;
+	    var randomGenUid = (randomGen != null)? randomGen.uid:(-1);	    
+		return { "ds": this.square_dir,
+		         "de": this.hex_dir,
+                 "fm": this.forked_selection_mode,
+                 "ruid": randomGenUid,
+                 "p" : this.path_tiles_uid
+               };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.square_dir = o["ds"];
+		this.hex_dir = o["de"]; 
+		this.forked_selection_mode = o["fm"];
+		this.randomGenUid = o["ruid"]; 
+		this.path_tiles_uid = o["p"];	
+	};	
+    
+	behinstProto.afterLoad = function ()
+	{
+        var randomGen;
+		if (this.randomGenUid === -1)
+			randomGen = null;
+		else
+		{
+			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(randomGen, "Monopoly movement: Failed to find random gen object by UID");
+		}		
+		this.randomGenUid = -1;			
+		cr.behaviors.Rex_MonopolyMovement._random_gen = randomGen;
+		
+		this.board = null;
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

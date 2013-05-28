@@ -5,7 +5,7 @@
 		"id":			"Rex_CanvasExt",
 		"description":	"Extension of canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvasext.html",
 		"category":		"Canvas",
 		"flags":		bf_onlyone
 	};

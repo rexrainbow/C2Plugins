@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Rotate sprite to specific angle",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_rotateto.html",
 		"category":		"Movements",
 		"flags":		0
 	};
@@ -56,7 +56,7 @@ AddComboParamOption("Anti-Clockwise");
 AddComboParamOption("Clockwise");
 AddComboParamOption("Nearest side");
 AddComboParam("Clockwise", "Rotate clockwise or anti-clockwise.",2);
-AddAction(4, 0, "Set target angle", "Target angle", 
+AddAction(4, 0, "Rotate to angle", "Target angle", 
           "Set {my} target angle to <i>{0}</i>, <i>{1}</i>", 
           "Set target angle to rotate toward.", 
           "SetTargetAngle");
@@ -71,7 +71,7 @@ AddComboParamOption("Anti-Clockwise");
 AddComboParamOption("Clockwise");
 AddComboParamOption("Nearest side");
 AddComboParam("Clockwise", "Rotate clockwise or anti-clockwise.",2);  
-AddAction(6, 0, "Set target angle to object", "Target angle", 
+AddAction(6, 0, "Rotate to object", "Target angle", 
           "Set {my} target angle to <i>{0}</i>, <i>{1}</i>", 
           "Set target angle to rotate toward.", 
           "SetTargetAngleOnObject");  
@@ -81,11 +81,21 @@ AddComboParamOption("Anti-Clockwise");
 AddComboParamOption("Clockwise");
 AddComboParamOption("Nearest side");
 AddComboParam("Clockwise", "Rotate clockwise or anti-clockwise.",2); 
-AddAction(7, 0, "Set target angle by delta angle", "Target angle", 
+AddAction(7, 0, "Rotate by delta angle", "Target angle", 
           "Set {my} target angle by delta <i>{0}</i>,  <i>{1}</i>)", 
           "Set target angle to rotate toward by delta angle.", 
           "SetTargetAngleByDeltaAngle");  
-        
+
+AddNumberParam("X", "X co-ordinate of target position.", 0);
+AddNumberParam("Y", "Y co-ordinate of target position.", 0);
+AddComboParamOption("Anti-Clockwise");
+AddComboParamOption("Clockwise");
+AddComboParamOption("Nearest side");
+AddComboParam("Clockwise", "Rotate clockwise or anti-clockwise.",2);  
+AddAction(8, 0, "Rotate toward to position", "Target angle", 
+          "Set {my} target angle toward to (<i>{0}</i>, <i>{1}</i>), <i>{2}</i>", 
+          "Set target angle toward to position.", 
+          "SetTargetAngleToPos")          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 

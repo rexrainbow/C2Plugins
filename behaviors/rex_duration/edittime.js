@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Execute callback during duration",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_duration.html",
 		"category":		"Timer",
 		"flags":		0
 	};
@@ -15,13 +15,24 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddAnyTypeParam("Duration", "Duration name", '""');
-AddCondition(0, 0, "Is duration running", "Durations", "Is {my} <i>{0}</i> running", "", "IsRunning");
-
+AddCondition(0, 0, "Is duration running", "Durations", "{my} <i>{0}</i> is running", "", "IsRunning");
+AddAnyTypeParam("Duration", "Duration name", '""');
+AddCondition(1, cf_trigger, "On start", "Callback", "{my} on <i>{0}</i> start", 
+             "Triggered when duration start.", "OnStart");
+AddAnyTypeParam("Duration", "Duration name", '""');
+AddCondition(2, cf_trigger, "On interval", "Callback", "{my} on <i>{0}</i> interval", 
+             "Triggered when duration interval.", "OnInterval");
+AddAnyTypeParam("Duration", "Duration name", '""');
+AddCondition(3, cf_trigger, "On end", "Callback", "{my} on <i>{0}</i> end", 
+             "Triggered when duration end.", "OnEnd");   
+             
 //////////////////////////////////////////////////////////////
 // Actions
+
+// ---- deprecated ----
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(0, 0, "Setup", "Z: Deprecated", 
+AddAction(0, af_deprecated, "Setup", "Z: Deprecated", 
           "{my} get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");          
 AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');
@@ -30,29 +41,37 @@ AddNumberParam("Interval", "Interval time", 0.1);
 AddStringParam("On start", "Callback at duration starting", '""');
 AddStringParam("On interval", 'Callback for each interval', '""');
 AddStringParam("On end", "Callback at duration finished", '""');
-AddAction(2, 0, "Start duration", "Control", 
+AddAction(2, af_deprecated, "Start duration", "Z: Deprecated", 
           "Start {my} <i>{0}</i> with duration to <i>{1}</i> second for each <i>{2}</i> second. Callback of 'On start' to <i>{3}</i>, 'On interval' to <i>{4}</i>, and 'On end' to <i>{5}</i>", 
+          "Start duration.", "Start_deprecated");
+// ---- deprecated ----
+
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');
+AddNumberParam("Duration", "Duration time", 1);
+AddNumberParam("Interval", "Interval time", 0.1);
+AddAction(1, 0, "Start", "Control", 
+          "{my} start <i>{0}</i> with duration to <i>{1}</i> second, interval to <i>{2}</i> second", 
           "Start duration.", "Start");
 AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');      
-AddAction(3, 0, "Pause duration", "Control", 
-          "Pause {my} <i>{0}</i>", 
+AddAction(3, 0, "Pause", "Control", 
+          "{my} pause <i>{0}</i>", 
           "Pause duration.", "Pause"); 
 AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');      
-AddAction(4, 0, "Resume duration", "Control", 
-          "Resume {my} <i>{0}</i>", 
+AddAction(4, 0, "Resume", "Control", 
+          "{my} resume <i>{0}</i>", 
           "Resume duration.", "Resume"); 
 AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');        
-AddAction(5, 0, "Stop duration", "Control", 
-          "Stop {my} <i>{0}</i>", 
+AddAction(5, 0, "Stop", "Control", 
+          "{my} stop <i>{0}</i>", 
           "Stop duration.", "Stop");
-AddAction(6, 0, "Pause all durations", "Control: All", 
-          "Pause {my} all durations", 
+AddAction(6, 0, "Pause all", "Control: All", 
+          "{my} pause all durations", 
           "Pause all durations.", "PauseAll");                    
-AddAction(7, 0, "Resume all durations", "Control: All", 
-          "Resume {my} all durations", 
+AddAction(7, 0, "Resume all", "Control: All", 
+          "{my} resume all durations", 
           "Resume all durations.", "ResumeAll"); 
-AddAction(8, 0, "Stop all durations", "Control: All", 
-          "Stop {my} all durations", 
+AddAction(8, 0, "Stop all", "Control: All", 
+          "{my} stop all durations", 
           "Stop all durations.", "StopAll");          
 
 AddObjectParam("Timeline", "Timeline object to get timer");
@@ -60,6 +79,17 @@ AddAction(10, 0, "Setup", "Setup",
           "{my} get timer from <i>{0}</i>", 
           "Setup.", "Setup2");
           
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');           
+AddNumberParam("Duration", "Duration time", 1);
+AddAction(15, 0, "Add duration time", "Time", 
+          "{my} <i>{0}</i>: add <i>{1}</i> second to duration time", 
+          "Add(extend) duration time.", "AddDurationTime");
+AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');           
+AddNumberParam("Interval", "Interval time", 0.1);
+AddAction(16, 0, "Set interval time", "Time", 
+          "{my} <i>{0}</i>: set interval time to <i>{1}</i> second", 
+          "Set interval time.", "SetIntervalTime");  
+                  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Get remainder duration", 

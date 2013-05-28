@@ -28,10 +28,31 @@ cr.behaviors.Rex_Duration = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-        this.timeline = null;    
-        this.callback = null;        
+        this.timeline = null;  
+        this.timelineUid = -1;    // for loading         
+        this.callback = null;     // deprecated
+        this.callbackUid = -1;    // for loading   // deprecated     
 	};
-
+	
+	behtypeProto._timeline_get = function ()
+	{
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        assert2(this.timeline, "Duration behavior: Can not find timeline oject.");
+        return null;	
+	};  
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -47,25 +68,27 @@ cr.behaviors.Rex_Duration = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.timers = {};
-        this._trigger_timer = null;     
-        this._timers_cache = [];        
+        this._trigger_duration_name = "";        
+        this._timers_dead_pool = [];   
+        this.is_my_call = false;  
+        this.timers_save = null;      
 	};
     
 	behinstProto.onDestroy = function()
 	{
         var name, timer;
         for (name in this.timers)
-            this.timers[name].Remove();
+            this.timers[name].Remove();        
 	};    
     
     
 	behinstProto._create_timer = function ()
 	{
         var timer;
-        if (this._timers_cache.length > 0)
-            timer = this._timers_cache.pop()
+        if (this._timers_dead_pool.length > 0)
+            timer = this._timers_dead_pool.pop()
         else
-            timer = this.type.timeline.CreateTimer(this, this._timer_handle);       
+            timer = this.type._timeline_get().CreateTimer(this, this._timer_handle);       
         return timer;
 	};
     
@@ -73,8 +96,8 @@ cr.behaviors.Rex_Duration = function(runtime)
 	{
         var timer = this.timers[timer_name];
         delete this.timers[timer_name];
-        if (this._timers_cache.length < 3)
-            this._timers_cache.push(timer);            
+        if (this._timers_dead_pool.length < 3)
+            this._timers_dead_pool.push(timer);            
 	};
     
 	behinstProto.tick = function ()
@@ -83,53 +106,150 @@ cr.behaviors.Rex_Duration = function(runtime)
 
     behinstProto._exec_callback = function(callback)
     {
-        if (callback == "")
-            return;
-            
-        // setup sol
-        var sol = this.type.objtype.getCurrentSol();
-        sol.select_all = false;
-	    sol.instances.length = 1;        
-        sol.instances[0] = this.inst;
-        // call function object
-		var has_rex_function = (this.type.callback != null);
-		if (has_rex_function)
-		    this.type.callback.CallFn(callback, []);     			
-		else
-		{
-		    var has_fnobj = this.type.timeline.RunCallback(callback, [], true);           
-		    assert2(has_fnobj, "Timer: Can not find callback oject.");
+        if (typeof(callback) != "string")
+        {
+            this.is_my_call = true;
+            this.runtime.trigger(callback, this.inst); 
+            this.is_my_call = false;
         }
+        else // ---- deprecated ----
+        {
+            if (callback == "")
+                return;
+            
+            // setup sol
+            var sol = this.type.objtype.getCurrentSol();
+            sol.select_all = false;
+	        sol.instances.length = 1;        
+            sol.instances[0] = this.inst;
+            this.type.objtype.applySolToContainer();
+            // call function object
+		    var has_rex_function = (this.type.callback != null);
+		    if (has_rex_function)
+     		    this.type.callback.CallFn(callback, []);     			
+		    else
+		    {
+		        var has_fnobj = this.type.timeline.RunCallback(callback, [], true);           
+		        assert2(has_fnobj, "Timer: Can not find callback oject.");
+            }
+        }   // ---- deprecated ----        
     };
-        
+    
+    var cb_on_start_get = function(timer)
+    {
+        var cb = timer.extra.cb_on_start;
+        return (cb == null)? cr.behaviors.Rex_Duration.prototype.cnds.OnStart : cb;
+    };    
+    var cb_on_interval_get = function(timer)
+    {
+        var cb = timer.extra.cb_on_interval;
+        return (cb == null)? cr.behaviors.Rex_Duration.prototype.cnds.OnInterval : cb;
+    };
+    var cb_on_end_get = function(timer)
+    {
+        var cb = timer.extra.cb_on_end;
+        return (cb == null)? cr.behaviors.Rex_Duration.prototype.cnds.OnEnd : cb;
+    };
     behinstProto._timer_handle = function(duration_name)
     {
         var timer = this.timers[duration_name];
-        this._trigger_timer = timer;
-        var duration_remain = timer.__duration_duration_remain;
-        var interval = timer.__duration_interval;
-        if (duration_remain <= interval)
+        this._trigger_duration_name = duration_name;
+        var duration_remain = timer.extra.duration_remain_time;
+        var interval = timer.extra.interval_time;
+                
+        // run start callback
+        if (timer.extra.is_start)
         {
-            timer.__duration_duration_remain = 0;
-            if (duration_remain == interval)
-                this._exec_callback(timer.__duration_cb_on_interval);
-            timer.__duration_is_new = false;                
-            this._exec_callback(timer.__duration_cb_on_end); 
-            if (!timer.__duration_is_new)
+            timer.extra.is_start = false;
+            this._exec_callback(cb_on_start_get(timer));
+        }
+        else  // others
+        {
+            if (duration_remain <= interval)
             {
-                timer.__duration_is_alive = false;
-                this._destroy_timer(duration_name);
+                timer.extra.duration_remain_time = 0;
+                if (duration_remain == interval)
+                    this._exec_callback(cb_on_interval_get(timer));               
+                this._exec_callback(cb_on_end_get(timer)); 
+            }
+            else
+            {
+                duration_remain -= interval;         
+                timer.extra.duration_remain_time = duration_remain;
+                this._exec_callback(cb_on_interval_get(timer));               
             }
         }
+        
+        if (timer.extra.duration_remain_time > 0)
+            timer.Start(Math.min(duration_remain, interval)); 
+        else
+            this.DurationRemove(duration_name);
+    };
+    
+    var remain_time_get = function (timer)
+    {
+        return timer.extra.duration_remain_time - timer.ElapsedTimeGet();
+    };
+    
+    behinstProto.DurationRemove = function (duration_name)
+	{
+        var timer = this.timers[duration_name];
+        if (timer == null)
+            return;
+
+        timer.Remove();
+        this._destroy_timer(duration_name);
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{ 
+	    var tims_save = {};
+        var name, tims = this.timers;
+        for (name in tims)        
+            tims_save[name] = tims[name].saveToJSON();                
+		return { "tims": tims_save,
+                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1),
+                 "cbuid": (this.type.callback != null)? this.type.callback.uid: (-1)    // deprecated
+                };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+        this.timers_save = o["tims"];
+        this.type.timelineUid = o["tluid"];
+        this.type.callbackUid = o["cbuid"];   // deprecated     
+	};
+    
+	behinstProto.afterLoad = function ()
+	{
+		if (this.type.timelineUid === -1)
+			this.type.timeline = null;
+		else
+		{
+			this.type.timeline = this.runtime.getObjectByUID(this.type.timelineUid);
+			assert2(this.type.timeline, "Timer: Failed to find timeline object by UID");
+		}		
+        
+        // ---- deprecated ----
+		if (this.type.callbackUid === -1)
+			this.type.callback = null;
+		else
+		{
+			this.type.callback = this.runtime.getObjectByUID(this.type.callbackUid);
+			assert2(this.type.callback, "Timer: Failed to find rex_function object by UID");
+		}		
+		// ---- deprecated ----          
+        
+        if (this.timers_save == null)
+            this.timers = {};
         else
         {
-            duration_remain -= interval;         
-            timer.__duration_duration_remain = duration_remain;          
-            timer.Start(Math.min(duration_remain, interval)); 
-            this._exec_callback(timer.__duration_cb_on_interval);               
-        }
-    };
-
+            var name, tims=this.timers, tims_save=this.timers_save, tl=this.type.timeline;
+            for (name in tims_save)   
+                tims[name] = tl.LoadTimer(this, this._timer_handle, [name], tims_save[name]);    
+        }     
+        this.timers_save = null;        
+	}; 	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -137,15 +257,31 @@ cr.behaviors.Rex_Duration = function(runtime)
     
 	Cnds.prototype.IsRunning = function (name)
 	{  
-        var timer = this.timers[duration_name];        
-        return ((timer != null) && timer.__duration_is_alive);
+        var timer = this.timers[name];        
+        return (timer != null);
 	};
-
+    
+	Cnds.prototype.OnStart = function (name)
+	{       
+        return ((this._trigger_duration_name == name) && this.is_my_call);
+	};
+    
+	Cnds.prototype.OnInterval = function (name)
+	{       
+        return ((this._trigger_duration_name == name) && this.is_my_call);
+	};
+    
+	Cnds.prototype.OnEnd = function (name)
+	{       
+        return ((this._trigger_duration_name == name) && this.is_my_call);
+	};    
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
+    // ---- deprecated ----
     Acts.prototype.Setup = function (timeline_objs, fn_objs)
 	{
         var timeline = timeline_objs.instances[0];
@@ -160,9 +296,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         else
             alert ("Duration behavior should connect to a function object");
 	};      
-    
-
-    Acts.prototype.Start = function (duration_name, duration_time, interval_time,
+    Acts.prototype.Start_deprecated = function (duration_name, duration_time, interval_time,
                            cb_on_start, cb_on_interval, cb_on_end)
 	{
         var args = [duration_name];
@@ -175,18 +309,39 @@ cr.behaviors.Rex_Duration = function(runtime)
             this.timers[duration_name] = timer;
         }
         timer.SetCallbackArgs(args);
-        timer.__duration_duration = duration_time;
-        timer.__duration_interval = interval_time;
-        timer.__duration_duration_remain = duration_time;
-        timer.__duration_cb_on_interval = cb_on_interval;
-        timer.__duration_cb_on_end = cb_on_end;
-        timer.__duration_is_alive = true;
-        timer.__duration_is_new = true;   // prevent destroy after on end callback
-        timer.Start(Math.min(duration_time, interval_time));
-        this._trigger_timer = timer;
-        this._exec_callback(cb_on_start);        
+        timer.extra.duration_time = duration_time;
+        timer.extra.interval_time = interval_time;
+        timer.extra.duration_remain_time = duration_time;
+        timer.extra.cb_on_start = cb_on_start;
+        timer.extra.cb_on_interval = cb_on_interval;
+        timer.extra.cb_on_end = cb_on_end;
+        timer.extra.is_start = true;
+        timer.Start(0);     
 	};
-
+    // ---- deprecated ----
+    
+    Acts.prototype.Start = function (duration_name, duration_time, interval_time)
+	{
+        var args = [duration_name];
+        var timer = this.timers[duration_name];
+        if (timer != null)     
+            timer.Remove(); 
+        else
+        {
+            timer = this._create_timer();          
+            this.timers[duration_name] = timer;
+        }
+        timer.SetCallbackArgs(args);
+        timer.extra.duration_time = duration_time;
+        timer.extra.interval_time = interval_time;
+        timer.extra.duration_remain_time = duration_time;
+        timer.extra.cb_on_start = null;
+        timer.extra.cb_on_interval = null;
+        timer.extra.cb_on_end = null;        
+        timer.extra.is_start = true;
+        timer.Start(0);        
+	};
+        
     Acts.prototype.Pause = function (duration_name)
 	{
         var timer = this.timers[duration_name];
@@ -203,13 +358,7 @@ cr.behaviors.Rex_Duration = function(runtime)
     
     Acts.prototype.Stop = function (duration_name)
 	{
-        var timer = this.timers[duration_name];
-        if (timer != null)
-        {
-            this.timer.Remove();
-            timer.__duration_is_alive = false;
-            this._destroy_timer(duration_name);
-        }
+        this.DurationRemove(duration_name);
 	};
 
     Acts.prototype.PauseAll = function ()
@@ -242,7 +391,6 @@ cr.behaviors.Rex_Duration = function(runtime)
             timer = this.timers[name];
             if (timer.IsActive());
                 timer.Remove();
-            timer.__duration_is_alive = false;
             this._destroy_timer(name);
         }
 	};
@@ -254,7 +402,37 @@ cr.behaviors.Rex_Duration = function(runtime)
             this.type.timeline = timeline;        
         else
             alert ("Duration behavior should connect to a timeline object");     		
-	};	
+	};
+	
+    Acts.prototype.AddDurationTime = function (duration_name, duration_time)
+	{
+        if (duration_time == 0)
+            return;
+            
+        var timer = this.timers[duration_name];
+        if (timer == null)
+            return;
+            
+        timer.extra.duration_time += duration_time;
+        timer.extra.duration_remain_time += duration_time;
+        if (duration_time < 0)
+        {        
+            var duration_remain_time = timer.extra.duration_remain_time;
+            if (duration_remain_time < 0)
+                timer.Start(duration_remain_time); 
+            else if (timer.extra.interval_time > duration_remain_time);
+                timer.Start(duration_remain_time); 
+        }
+	};
+	
+    Acts.prototype.SetIntervalTime = function (duration_name, interval_time)
+	{
+        var timer = this.timers[duration_name];
+        if (timer == null)
+            return;
+            
+        timer.extra.interval_time = interval_time;
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -262,73 +440,79 @@ cr.behaviors.Rex_Duration = function(runtime)
 
     Exps.prototype.Remainder = function (ret, duration_name)
 	{
-	    var timer = (duration_name != null)? 
-	                this.timers[duration_name]:this._trigger_timer;
+        if (duration_name == null)
+            duration_name = this._trigger_duration_name;
+	    var timer = this.timers[duration_name];
 	    var val;
-	    if ((timer == null) || (!timer.__duration_is_alive))
+	    if (timer == null)
 	        val = 0;
 	    else
-	        val = timer.__duration_duration_remain;
+	        val = remain_time_get(timer);
 	    ret.set_float(val);
 	};
     
 	Exps.prototype.Elapsed = function (ret, duration_name)
 	{
-	    var timer = (duration_name != null)? 
-	                this.timers[duration_name]:this._trigger_timer;
+        if (duration_name == null)
+            duration_name = this._trigger_duration_name;
+	    var timer = this.timers[duration_name];
 	    var val;
-	    if ((timer == null) || (!timer.__duration_is_alive))
+	    if (timer == null)
 	        val = 0;
 	    else
-	        val = timer.__duration_duration - timer.__duration_duration_remain;   
+	        val = timer.extra.duration_time - remain_time_get(timer);   
 	    ret.set_float(val);
 	};  
 
     Exps.prototype.RemainderPercent = function (ret, duration_name)
 	{
-	    var timer = (duration_name != null)? 
-	                this.timers[duration_name]:this._trigger_timer;
+        if (duration_name == null)
+            duration_name = this._trigger_duration_name;
+	    var timer = this.timers[duration_name];
 	    var val;
-	    if ((timer == null) || (!timer.__duration_is_alive))
+	    if (timer == null)
 	        val = 0;
 	    else
-	        val = timer.__duration_duration_remain/timer.__duration_duration;   
+	        val = remain_time_get(timer)/timer.extra.duration_time;   
 	    ret.set_float(val);
 	};
     
 	Exps.prototype.ElapsedPercent = function (ret, duration_name)
 	{
-	    var timer = (duration_name != null)? 
-	                this.timers[duration_name]:this._trigger_timer;
+        if (duration_name == null)
+            duration_name = this._trigger_duration_name;
+	    var timer = this.timers[duration_name];
 	    var val;
-	    if ((timer == null) || (!timer.__duration_is_alive))
+	    if (timer == null)
 	        val = 0;
 	    else
-	        val = (timer.__duration_duration - timer.__duration_duration_remain)/timer.__duration_duration;    
+	        val = (timer.extra.duration_time - remain_time_get(timer))/timer.extra.duration_time;    
 	    ret.set_float(val);
 	};  
 
     Exps.prototype.Interval = function (ret, duration_name)
 	{
-	    var timer = (duration_name != null)? 
-	                this.timers[duration_name]:this._trigger_timer;
+        if (duration_name == null)
+            duration_name = this._trigger_duration_name;
+	    var timer = this.timers[duration_name];
 	    var val;
-	    if ((timer == null) || (!timer.__duration_is_alive))
+	    if (timer == null)
 	        val = 0;
 	    else
-	        val = timer.__duration_interval;
+	        val = timer.extra.interval_time;
 	    ret.set_float(val);
 	};
     
 	Exps.prototype.Duration = function (ret, duration_name)
 	{
-	    var timer = (duration_name != null)? 
-	                this.timers[duration_name]:this._trigger_timer;
+        if (duration_name == null)
+            duration_name = this._trigger_duration_name;
+	    var timer = this.timers[duration_name];
 	    var val;
-	    if ((timer == null) || (!timer.__duration_is_alive))
+	    if (timer == null)
 	        val = 0;
 	    else
-	        val = timer.__duration_duration;   
+	        val = timer.extra.duration_time;   
 	    ret.set_float(val);
 	}; 
 }());

@@ -57,35 +57,10 @@ cr.behaviors.Rex_boundary = function(runtime)
         this.vertical_boundary = [this.properties[4], this.properties[5]];
         _sort_boundary(this.horizontal_boundary);
         _sort_boundary(this.vertical_boundary);
-        this.horizontal_pin_instance = {inst:null, p0:null, p1:null};
-        this.vertical_pin_instance = {inst:null, p0:null, p1:null};
-        
-		// Need to know if pinned object gets destroyed
-		this.myDestroyCallback = (function (self) {
-											return function(inst) {
-												self.onInstanceDestroyed(inst);
-											};
-										})(this);
-										
-		this.runtime.addDestroyCallback(this.myDestroyCallback);        
+        this.horizontal_pin_instance = {"uid":(-1), "p0":null, "p1":null};
+        this.vertical_pin_instance = {"uid":(-1), "p0":null, "p1":null};
 	};
-	
-	behinstProto.onInstanceDestroyed = function (inst)
-	{
-		// Pinned object being destroyed
-		if (this.horizontal_pin_instance.inst == inst)
-			this.horizontal_pin_instance.inst = null;
-		if (this.vertical_pin_instance.inst == inst)
-			this.vertical_pin_instance.inst = null;            
-	};    
-	
-	behinstProto.onDestroy = function()
-	{
-		this.horizontal_pin_instance.inst = null;
-        this.vertical_pin_instance.inst = null;
-		this.runtime.removeDestroyCallback(this.myDestroyCallback);
-	};
-	
+
 	behinstProto.tick = function ()
 	{
         this.horizontal_boundary_update();
@@ -103,20 +78,22 @@ cr.behaviors.Rex_boundary = function(runtime)
 	behinstProto.horizontal_boundary_update = function ()
 	{
         var pin = this.horizontal_pin_instance;
-        if (pin.inst == null)
+        var pin_inst = this.runtime.getObjectByUID(pin["uid"]);
+        if (pin_inst == null)
             return;
-        this.horizontal_boundary[0] = pin.inst.getImagePoint(pin.p0, true);
-        this.horizontal_boundary[1] = pin.inst.getImagePoint(pin.p1, true);    
+        this.horizontal_boundary[0] = pin_inst.getImagePoint(pin["p0"], true);
+        this.horizontal_boundary[1] = pin_inst.getImagePoint(pin["p1"], true);    
         _sort_boundary(this.horizontal_boundary);
 	};
     
 	behinstProto.vertical_boundary_update = function ()
 	{
         var pin = this.vertical_pin_instance;
-        if (pin.inst == null)
+        var pin_inst = this.runtime.getObjectByUID(pin["uid"]);
+        if (pin_inst == null)
             return;
-        this.vertical_boundary[0] = pin.inst.getImagePoint(pin.p0, false);
-        this.vertical_boundary[1] = pin.inst.getImagePoint(pin.p1, false);    
+        this.vertical_boundary[0] = pin_inst.getImagePoint(pin["p0"], false);
+        this.vertical_boundary[1] = pin_inst.getImagePoint(pin["p1"], false);    
         _sort_boundary(this.vertical_boundary);
 	};
     
@@ -172,7 +149,27 @@ cr.behaviors.Rex_boundary = function(runtime)
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1);
         return pec;
 	};        
-    
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "he": this.horizontal_enable,
+		         "hb": this.horizontal_boundary,
+                 "ve": this.vertical_enable,                 
+                 "vb": this.vertical_boundary,
+                 "hp": this.horizontal_pin_instance,
+                 "vp": this.vertical_pin_instance
+                };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.activated = o["he"];
+		this.horizontal_boundary = o["hb"];
+        this.vertical_enable = o["ve"];        
+        this.vertical_boundary = o["vb"];
+        this.horizontal_pin_instance = o["hp"];
+        this.vertical_pin_instance = o["vp"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -222,15 +219,15 @@ cr.behaviors.Rex_boundary = function(runtime)
 		this.horizontal_boundary[0] = l;
 		this.horizontal_boundary[1] = r;
 		_sort_boundary(this.horizontal_boundary);
-        this.horizontal_pin_instance.inst = null;
+        this.horizontal_pin_instance["uid"] = (-1);
 	};
 
 	Acts.prototype.SetVerticalBoundary = function (u, d)
 	{
-		this.vertical_boundary[0] = l;
-		this.vertical_boundary[1] = r;
+		this.vertical_boundary[0] = u;
+		this.vertical_boundary[1] = d;
 		_sort_boundary(this.vertical_boundary);
-        this.vertical_pin_instance.inst = null;        
+        this.vertical_pin_instance["uid"] = (-1);        
 	};
 
     var _get_instance = function (obj)
@@ -242,17 +239,17 @@ cr.behaviors.Rex_boundary = function(runtime)
 	Acts.prototype.SetHorizontalBoundaryToObject = function (obj, left_imgpt, right_imgpt)
 	{
         var pin = this.horizontal_pin_instance;
-		pin.inst = _get_instance(obj);	
-        pin.p0 = left_imgpt;	
-        pin.p1 = right_imgpt;	
+		pin["uid"] = _get_instance(obj).uid;	
+        pin["p0"] = left_imgpt;	
+        pin["p1"] = right_imgpt;	
 	};   
     
 	Acts.prototype.SetVerticalBoundaryToObject = function (obj, top_imgpt, bottom_imgpt)
 	{
         var pin = this.vertical_pin_instance;
-		pin.inst = _get_instance(obj);	
-        pin.p0 = top_imgpt;	
-        pin.p1 = bottom_imgpt;	        
+		pin["uid"] = _get_instance(obj).uid;	
+        pin["p0"] = top_imgpt;	
+        pin["p1"] = bottom_imgpt;	        
 	};
  
 	//////////////////////////////////////

@@ -186,7 +186,16 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 		    this.enabled = false;
 		}
 	};
-
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.enabled };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.enabled = o["en"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	//////////////////////////////////////

@@ -62,6 +62,21 @@ cr.behaviors.Rex_Card = function(runtime)
 	    var frame_index = (is_back_face)? this.card_back:this.card_front;
 	    cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(this.inst, [frame_index]);
         this.init_face = (-1);
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{ 
+		return { "if": this.init_face,
+                 "b": this.card_back,
+                 "f": this.card_front
+                };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+        this.init_face = o["if"];
+        this.card_back = o["b"];
+        this.card_front = o["f"];   
 	};	
 	//////////////////////////////////////
 	// Conditions

@@ -46,8 +46,6 @@ cr.behaviors.Rex_SpeedMoinitor = function(runtime)
 	    this.pre_x = this.inst.x;
 	    this.pre_y = this.inst.y;
 	    this.dt = 0	    
-	    this.dx = 0;
-	    this.dy = 0;
 		
 		this._speed = 0;
 		this._angle = 0;
@@ -64,15 +62,17 @@ cr.behaviors.Rex_SpeedMoinitor = function(runtime)
 	behinstProto.tick2 = function ()
 	{
 	    var inst = this.inst;	    
-	    this.dx = inst.x - this.pre_x;
-	    this.dy = inst.y - this.pre_y;
+	    var dx = inst.x - this.pre_x;
+	    var dy = inst.y - this.pre_y;
 	    this.pre_x = inst.x;
 	    this.pre_y = inst.y;
 		
-		if ( ((this.dx != 0) || (this.dy !=0)) && (this.dt != 0))
+		if ( ((dx != 0) || (dy !=0)) && (this.dt != 0))
 		{
-		    this._last_speed = this.speed_get();
-		    this._last_angle = this.angle_get();
+		    this._speed = Math.sqrt((dx*dx)+(dy*dy)) / this.dt;
+			this._angle  = cr.to_degrees(Math.atan2(dy, dx));
+		    this._last_speed = this._speed;
+		    this._last_angle = this._angle;
 		}
 		else
 		{
@@ -92,18 +92,24 @@ cr.behaviors.Rex_SpeedMoinitor = function(runtime)
 		}
 	};  
 	
-
-	behinstProto.speed_get = function ()
+	behinstProto.saveToJSON = function ()
 	{
-	    this._speed  = Math.sqrt((this.dx*this.dx)+(this.dy*this.dy)) / this.dt;
-		return this._speed;
+		return { "px": this.pre_x,
+                 "py": this.pre_y, 
+		         "lx": this._last_speed,
+		         "la": this._last_angle,
+				 "im": this._is_moving
+				 };
 	};
 	
-	behinstProto.angle_get = function ()
+	behinstProto.loadFromJSON = function (o)
 	{
-	    this._angle  = cr.to_degrees(Math.atan2(this.dy,this.dx));
-		return this._angle;
-	};	
+		this.pre_x = o["px"];
+		this.pre_y = o["py"];	
+		this._last_speed = o["lx"];
+		this._last_angle = o["la"];	
+        this._is_moving = o["im"];	
+	};		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

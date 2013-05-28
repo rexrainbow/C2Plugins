@@ -5,7 +5,7 @@
 		"id":			"Rex_Step",
 		"description":	"Insert x,y position.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_step.html",
 		"category":		"General",
 		"flags":		0
 	};

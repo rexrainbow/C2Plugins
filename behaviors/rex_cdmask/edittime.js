@@ -5,7 +5,7 @@
 		"id":			"Rex_cdmask",
 		"description":	"Cool down mask.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_cdmask.html",
 		"category":		"Effect",
 		"flags":		0
 	};

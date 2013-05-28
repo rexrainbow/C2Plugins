@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	'Get click event from "touch end".',
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_button.html",
 		"category":		"Object",
 		"flags":		bf_onlyone
 	};
@@ -25,7 +25,7 @@ AddAnyTypeParam("Rolling-in", 'Frame index (number) or animation name (string) a
 AddAction(3, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, INACTIVE: <i>{2}</i>, rolling-in: <i>{3}</i>", 
           "Set display of states.", "SetDisplay");        
 AddAction(4, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} click detecting", 
-          "Cancel click detecting at click detecting state.", "GotoACTIVE");   
+          "Cancel click detecting at click detecting state.", "GotoACTIVE");		  
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1,	cf_trigger, "On clicked", "Click", "On {my} clicked", "Triggered when clicked.", "OnClick");

@@ -5,7 +5,7 @@
 		"id":			"Rex_boundary",
 		"description":	"Limit position of object in the boundary.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_boundary.html",
 		"category":		"General",
 		"flags":		0
 	};

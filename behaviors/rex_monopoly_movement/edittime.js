@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Get forwading path on the board, used in Monopoly-like game.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_monopoly_movement.html",
 		"category":		"Board",
 		"flags":		0
 	};

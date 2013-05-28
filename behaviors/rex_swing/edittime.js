@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Swing sprite",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_swing.html",
 		"category":		"Movements",
 		"flags":		0
 	};

@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Move sprite to specific position",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_moveto.html",
 		"category":		"Movements",
 		"flags":		0
 	};
@@ -59,7 +59,7 @@ AddAction(3, 0, "Set deceleration", "Speed",
 
 AddNumberParam("X", "The X co-ordinate to move toward.");
 AddNumberParam("Y", "The Y co-ordinate to move toward.");
-AddAction(4, 0, "Set target position", "Position", 
+AddAction(4, 0, "Set target", "Position", 
           "Set {my} target position to (<i>{0}</i>, <i>{1}</i>)", 
           "Set target position to move toward.", 
           "SetTargetPos");
@@ -70,21 +70,21 @@ AddAction(5, 0, "Set current speed", "Speed",
           "Set the object's Current speed.", "SetCurrentSpeed");
   
 AddObjectParam("Target", "Target object.");
-AddAction(6, 0, "Set target position to object", "Position", 
+AddAction(6, 0, "Set target to object", "Position", 
           "Set {my} target position to <i>{0}</i>", 
           "Set target position to move toward.", 
           "SetTargetPosOnObject");  
   
 AddNumberParam("dX", "The delta X to move toward, in pixel.");
 AddNumberParam("dY", "The delta Y to move toward, in pixel.");
-AddAction(7, 0, "Set target position by delta XY", "Position", 
+AddAction(7, 0, "Set target by delta XY", "Position", 
           "Set {my} target position by (delta <i>{0}</i>, delta <i>{1}</i>)", 
           "Set target position to move toward by deltaX and deltaY.", 
           "SetTargetPosByDeltaXY");  
           
 AddNumberParam("Distance", "The destance to move toward, in pixel.");          
 AddNumberParam("Angle", "The angle of moving destance to move toward, in degree.");
-AddAction(8, 0, "Set target position by distance-angle", "Position", 
+AddAction(8, 0, "Set target by distance-angle", "Position", 
           "Set {my} target position by distance to <i>{0}</i>, angle to <i>{1}</i>)", 
           "Set target position to move toward by distance-angle.", 
           "SetTargetPosByDistanceAngle");         

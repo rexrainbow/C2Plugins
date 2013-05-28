@@ -106,7 +106,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
                 behavior_inst.finish_click_detecting();            
         }	    
     };  
-        
+
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -307,6 +307,29 @@ cr.behaviors.Rex_Button2 = function(runtime)
 		this.type.GetY.call(touch_obj, 
                             touch_obj.fake_ret, src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
+	};
+	
+	behinstProto.saveToJSON = function ()
+	{
+	    var activated = (this._state != INACTIVE_STATE);
+		return { "en": activated,
+                 "fn": this._display.normal,
+                 "fc": this._display.click,
+                 "fi": this._display.inactive,
+                 "fr": this._display.rollingin};
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		var activated = o["en"];
+		if (activated && (this._state != ACTIVE_STATE))
+		    this._goto_active_state();
+		else ((!activated) && (this._state != INACTIVE_STATE))
+		    this._goto_inactive_state(); 
+        this._display.normal = o["fn"];
+        this._display.click = o["fc"];
+        this._display.inactive = o["fi"];
+        this._display.rollingin = o["fr"];           
 	};
 	//////////////////////////////////////
 	// Conditions

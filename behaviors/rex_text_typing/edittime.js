@@ -5,7 +5,7 @@
 		"id":			"Rex_text_typing",
 		"description":	"Typing text on text object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_text_typing.html",
 		"category":		"Text",
 		"flags":		bf_onlyone
 	};
@@ -23,7 +23,7 @@ AddCondition(3, 0, "Is text typing", "Typing", "{my} Is typing",
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
-AddAction(2, 0, "0: Setup", "Setup", 
+AddAction(2, 0, "Setup", "Setup", 
           "{my} Get timer from <i>{0}</i> for text-typing", 
           "Setup text-typing.", "SetupTimer");
 AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\"");
@@ -48,8 +48,9 @@ AddAction(6, 0, "Append text", "Typing",
           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number,	"Get typing speed",	"Type", "TypingSpeed", "Get typing speed.");
-
+AddExpression(1, ef_return_number,	"Get typing speed", "Type", "TypingSpeed", "Get typing speed.");
+AddExpression(2, ef_return_number,	"Get current index of typing character", "Type", 
+              "TypingIndex", "Get current index of typing character.");
 
 ACESDone();
 

@@ -243,7 +243,6 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
     
 	behinstProto._update_fix_mode = function ()
 	{    
-	    debugger;
 	    var layouter =  this.inst;
 	    var sprites = layouter.sprites;
 	    var cnt = sprites.length;
@@ -292,7 +291,23 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	        layouter.layout_inst(sprites[i], params);
 	    }        
 	};
-
+    
+	behinstProto.saveToJSON = function ()
+	{
+		return { "m": this.mode, 
+                 "dir": this.direction,
+                 "ali": this.alignment,
+                 "dd": this.delta_distance
+                };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{            
+        this.mode = o["m"];        
+        this.direction = o["dir"];
+        this.alignment = o["ali"];
+        this.delta_distance = o["dd"];
+	};  
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

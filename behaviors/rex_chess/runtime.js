@@ -96,6 +96,11 @@ cr.behaviors.Rex_chess = function(runtime)
             
         return uid;
 	};
+    
+	behinstProto.afterLoad = function ()
+	{
+		this.board = null;
+	};
 	
 	//////////////////////////////////////
 	// Conditions
