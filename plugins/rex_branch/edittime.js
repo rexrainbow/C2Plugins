@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Control the execution flow",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_branch.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -16,10 +16,10 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, 0, "If", "Branch", "If", "Bracnh If.", "BranchIf");
-AddCondition(2, 0, "Else if", "Branch", "Else if", "Bracnh Else if.", "BranchElseIf");
+AddCondition(1, 0, "If (", "Branch", "If (", "Bracnh If.", "BranchIf");
+AddCondition(2, 0, "Else if (", "Branch", "Else if (", "Bracnh Else if.", "BranchElseIf");
 AddCondition(3, 0, "Else", "Branch", "Else", "Bracnh Else.", "BranchElseIf");
-AddCondition(4, 0, "Break", "Branch", "Break", "Leave branch.", "BranchBreak");
+AddCondition(4, 0, ")", "Branch", ")", "Leave branch.", "BranchBreak");
 
 //////////////////////////////////////////////////////////////
 // Actions     

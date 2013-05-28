@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Generate patterns with shuffle or random mode.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_patterngen.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -25,7 +25,7 @@ AddComboParam("Mode", "Mode of pattern generator.",0);
 AddAction(1, 0, "Set mode", "Mode", "Set mode to <i>{0}</i>", 
           "Set mode of pattern generator.", "SetMode");  
 AddStringParam("Pattern", "Pattern in gererator.", '""');
-AddNumberParam("Count", "Count.", 1);
+AddNumberParam("Count", "Pattern count.", 1);
 AddAction(2, 0, "Set pattern", "Pattern", "Set pattern <i>{0}</i> with count to <i>{1}</i>", 
           "Set pattern.", "SetPattern");
 AddStringParam("Pattern", "Pattern in gererator.", '""');
@@ -45,8 +45,8 @@ AddExpression(2, ef_return_string,
               "Get pattern", "Generator", "Pattern", 
               "Get pattern from generator.");
 AddStringParam("Pattern", "Pattern in gererator.", '""');
-AddExpression(3, ef_return_number | ef_variadic_parameters, 
-              "Get count of pattern", "Pattern", "Count", "Get count of pattern.");
+AddExpression(3, ef_return_number, 
+              "Get count of pattern", "Pattern", "TotalCount", "Get total count of pattern.");
               
 ACESDone();
 

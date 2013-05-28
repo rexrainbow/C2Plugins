@@ -180,6 +180,19 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
 	    this._recorder = o["data"];
 	    this._current_index = o["curIndex"];
 	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "d": this._recorder,
+                 "i": this._current_index };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this._recorder = o["d"];
+	    this._current_index = o["i"];
+	};
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

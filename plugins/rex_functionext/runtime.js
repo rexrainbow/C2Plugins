@@ -50,6 +50,7 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	                      set_int: function(value){this.value=value;},	                      
 	                     };
 		this._tmp_params = [];
+        this.raw_code = [];
 	};
 	
 	instanceProto._setup = function ()
@@ -213,7 +214,28 @@ cr.plugins_.Rex_FnExt = function(runtime)
                 this.CallFunction(cmds[i]);
         }
         
-	};             
+	};   
+    
+	instanceProto.saveToJSON = function ()
+	{
+		return { "rc": this.raw_code
+		          };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    // restore code injecting
+	    this.raw_code = o["rc"];
+	    var i, cnt=this.raw_code.length, raw_item;
+	    var cb = {"0": cr.plugins_.Rex_FnExt.prototype.acts.CreateJSFunctionObject,
+	              "1": cr.plugins_.Rex_FnExt.prototype.acts.InjectJSFunctionObjects}
+	    for (i=0; i<cnt; i++)
+	    {
+	        raw_item = this.raw_code[i];
+	        cb[raw_item[0]].apply(this, raw_item[1]);
+	    }
+	    
+	};        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -228,12 +250,14 @@ cr.plugins_.Rex_FnExt = function(runtime)
 	{
         var fn = eval("("+code_string+")");
         this.fnObj["InjectJS"](name, fn);
+        this.raw_code.push(["0", [name, code_string]]);
 	};
 
 	Acts.prototype.InjectJSFunctionObjects = function (code_string)
 	{ 	    
         var fn = eval("("+code_string+")");
         fn(this.fnObj);
+        this.raw_code.push(["1", [code_string]]);
 	};
 	
 	Acts.prototype.RunCSVCommands = function (csv_string)

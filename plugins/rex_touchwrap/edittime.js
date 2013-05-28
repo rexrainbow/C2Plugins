@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"A wrap from official Touch plugin to export touch/mouse input to other plugins.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_touchwrap.html",
 		"category":		"Input",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

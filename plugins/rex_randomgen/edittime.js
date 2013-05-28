@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Generate random number with a seed.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_randomgen.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

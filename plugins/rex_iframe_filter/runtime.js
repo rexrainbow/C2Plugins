@@ -45,6 +45,15 @@ cr.plugins_.Rex_IframeFilter = function(runtime)
         this.white_list = [];
 	};
 	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "wl": this.white_list };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.white_list = o["wl"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -63,12 +72,11 @@ cr.plugins_.Rex_IframeFilter = function(runtime)
 		if (ref == "")    // not in iframe
 		    return true;
 	    
-		var list = this.white_list;
-		var list_len = list.length;
+		var list_len = this.white_list.length;
 		var i;
 		for (i=0;i<list_len;i++)
 		{
-		    if (ref.indexOf(list[i])!=-1)			
+		    if (ref.indexOf(this.white_list[i])!=-1)			
 			    return true;			
 		}
 		return false;

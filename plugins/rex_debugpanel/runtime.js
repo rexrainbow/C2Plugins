@@ -228,7 +228,17 @@ cr.plugins_.Rex_DebugPanel = function(runtime)
         }        
         return row_index;
 	};
-    
+
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "key": this.KEY_POPUP
+                 };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.KEY_POPUP = o["key"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

@@ -6,7 +6,7 @@
 		"version":		"0.1",           
 		"description":	"Time-Action Recorder and Player",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_TARP.html",
 		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -6,7 +6,7 @@ function GetPluginSettings()
 		"version":		"0.1",               
 		"description":	"Allows you to communicate over the Internet via streaming sockets.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bottleneck.html",
 		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

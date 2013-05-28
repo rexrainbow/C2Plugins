@@ -6,7 +6,7 @@
 		"version":		"0.11",          
 		"description":	"Create sprites according to json string transfered from tmx.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_jsontmximporter.html",
 		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

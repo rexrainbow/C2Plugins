@@ -6,7 +6,7 @@
 		"version":		"0.5",            
 		"description":	"Store value in a hash table",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_hash.html",
 		"category":		"Data & Storage",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -20,7 +20,7 @@ AddStringParam("Key string", "The key string of the hash table.", '""');
 AddCondition(1, cf_looping | cf_not_invertible, "For each item", "For Each", 
              "For each item in <i>{0}</i>", "Repeat the event for each item in key.", "ForEachKey");
 AddStringParam("Key string", "The key string of the hash table.", '""');
-AddCondition(2,0,"Key exists","Key","Key {0} exists","Check if a key exists in hash table.","KeyExists");
+AddCondition(2, 0,"Key exists","Key","Key {0} exists","Check if a key exists in hash table.","KeyExists");
 
             
 //////////////////////////////////////////////////////////////

@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"An iterator to return loop index",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_loopiterator.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

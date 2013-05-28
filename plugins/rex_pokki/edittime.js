@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Event of Pokki",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pokki.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

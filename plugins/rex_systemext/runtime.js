@@ -10,56 +10,6 @@ cr.plugins_.Rex_SysExt = function(runtime)
 {
 	this.runtime = runtime;
 };
-cr.plugins_.Rex_SysExt._uid2inst = {};
-cr.plugins_.Rex_SysExt._get_objtype = function (type_name)
-{    
-    if (this._uid2inst[type_name] == null)    
-        this._uid2inst[type_name] = {}    
-    return this._uid2inst[type_name];
-};
-cr.plugins_.Rex_SysExt.push_inst = function (inst)
-{
-    this._get_objtype(inst.type.name)[inst.uid] = inst;
-};
-cr.plugins_.Rex_SysExt.remove_inst = function (inst)
-{
-    delete this._get_objtype(inst.type.name)[inst.uid];
-};
-cr.plugins_.Rex_SysExt.get_inst = function (type_name, uid)
-{
-    var objs = this._get_objtype(type_name);   
-    return (objs != null)? objs[uid]:null;
-};
-cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
-{
-    var inst = this.get_inst(objtype.name, uid);
-    var is_find = (inst!=null);
-    var sol = objtype.getCurrentSol(); 
-    if (!is_find)
-    {
-        var insts = sol.getObjects();
-        var insts_length = insts.length;
-        var i, inst;
-        
-        for (i=0; i < insts_length; i++)
-        {
-            inst = insts[i];
-            if (inst.uid == uid)
-            {
-                is_find = true;
-                break;
-            }
-        }
-    }
-    if (is_find)
-    {
-        sol.pick_one(inst);
-        objtype.applySolToContainer();
-    }      
-    else
-        sol.instances.length = 0;    
-    sol.select_all = false;
-};
 
 (function ()
 {
@@ -140,7 +90,46 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
         sol.select_all = false; 
         objtype.applySolToContainer();
         return (sol.instances.length != 0);        
-	};     
+	};      
+    instanceProto._quick_pick = function (objtype, uid)
+	{	    
+        if (!objtype)
+            return;
+		if (!objtype.instances.length)
+			return;
+        
+        var inst = this.runtime.getObjectByUID(uid);
+        var is_find = (inst != null);
+        if (is_find)
+        {
+            var type_name = inst.type.name;
+            if (objtype.is_family)
+            {
+                is_find = false;
+                var members = objtype.members;
+                var cnt = members.length;
+                var i;
+                for (i=0; i<cnt; i++)
+                {
+                    if (type_name == members[i].name)
+                    {
+                        is_find = true;
+                        break;
+                    }
+                }
+            }
+            else
+                is_find = (type_name == objtype.name);
+        }
+        var sol = objtype.getCurrentSol();  
+        if (is_find)
+            sol.pick_one(inst);
+        else
+            sol.instances.length = 0;
+        sol.select_all = false;
+        objtype.applySolToContainer();
+        return is_find;
+	};        
     instanceProto._get_layer = function(layerparam)
     {
         return (typeof layerparam == "number")?
@@ -193,6 +182,11 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 	{
         return this._pick_inverse(objtype, uid, is_pick_all);
 	};     
+ 
+	Cnds.prototype.QuickPickByUID = function (objtype, uid)
+	{
+        return this._quick_pick(objtype, uid);
+	};        
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -204,7 +198,7 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
 	}; 
     
     Acts.prototype.PickByUID = function (objtype, uid, is_pick_all)
-	{
+	{  
         if (!objtype)
             return;
 		if (!objtype.instances.length)
@@ -230,24 +224,17 @@ cr.plugins_.Rex_SysExt.pick_inst = function (objtype, uid)
         }
         
         if (is_find)
-        {
             sol.pick_one(inst);
-            objtype.applySolToContainer();
-        }
         else
             sol.instances.length = 0;
             
         sol.select_all = false;
+        objtype.applySolToContainer();
 	}; 
     
     Acts.prototype.QuickPickByUID = function (objtype, uid)
 	{	    
-        if (!objtype)
-            return;
-		if (!objtype.instances.length)
-			return;
-            
-	    cr.plugins_.Rex_SysExt.pick_inst(objtype, uid);
+        this._quick_pick(objtype, uid);
 	};    
         
     Acts.prototype.PickByPropCmp = function (objtype, prop_index, cmp, value, is_pick_all)

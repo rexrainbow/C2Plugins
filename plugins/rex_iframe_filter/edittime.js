@@ -6,7 +6,7 @@
 		"version":		"0.8",
 		"description":	"Check if current page is not in iframe, or in acceptable iframe.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_iframe_filter.html",
 		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

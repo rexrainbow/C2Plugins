@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Logic of matched game. Could be used in square or hex board.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_matcher.html",
 		"category":		"Board: logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -76,8 +76,8 @@ AddStringParam("Group", "Put result in this group", '""');
 AddAction(2, 0, "Get matched tiles", "Request: matched tiles", 
           "Get matched tiles to group <i>{0}</i>", 
           "Get matched tiles.", "GetMatchTiles");
-AddStringParam("Symbols", 'Symbol. "" is null symbol.', "");
-AddAction(3, 0, "Set symbols", "Request: Symbol", "Set symbol to <i>{0}</i>", 
+AddStringParam("Symbol", 'Symbol. "" is null symbol.', "");
+AddAction(3, 0, "Set symbol", "Request: Symbol", "Set symbol to <i>{0}</i>", 
           'Set symbol. Used in "Condition: On get symbol function".', "SetSymbol");          
 AddStringParam("Group", "Put result in this group", '""');
 AddAction(4, 0, "Get matched tiles with 2d pattern", "Request: matched tiles (2d pattern)", 

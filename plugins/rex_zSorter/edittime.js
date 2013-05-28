@@ -6,7 +6,7 @@
 		"version":		"1.0",
 		"description":	"Sorts Objects in Layer By Y",
 		"author":		"Juan Pablo Tarquino",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_zSorter.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

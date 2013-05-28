@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"A chess board container",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board.html",
 		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -76,6 +76,9 @@ AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
 AddAction(1, 0, "Add tile", "Logic: Add", "Add tile <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0]", 
           "Add tile on the board.", "AddTile");
+AddObjectParam("Chess", "Chess object.");
+AddAction(2, 0, "Destroy chess", "Destroy", "Destroy <i>{0}</i>", 
+          "Destroy chess and remove it from the board.", "DestroyChess");          
 AddObjectParam("Chess", "Chess object.");   
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);

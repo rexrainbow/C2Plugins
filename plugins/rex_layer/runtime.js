@@ -48,14 +48,18 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 	    this._width_init = this.width;
 	    this._height_init = this.height;
  
+	    this._init();
+	    this.runtime.tick2Me(this);        
+	};
+	
+	instanceProto._init = function()
+	{
 	    this._width_save = this.width;
 	    this._height_save = this.height;
 	    this._angle_save = this.angle;
 	    this._opactiy_save = this.opacity;
-	    this._visible_save = this.visible;	       
-	    
-	    this.runtime.tick2Me(this);        
-	};
+	    this._visible_save = this.visible;
+	};	
 
 	instanceProto.tick2 = function()
 	{
@@ -101,6 +105,30 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 	instanceProto.drawGL = function(glw)
 	{
 	};
+	
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "w" : this.width,
+		         "wi": this._width_init,
+                 "h" : this.height,
+                 "hi": this._height_init,
+                 "a" : this.angle,
+	             "o" : this.opacity,
+	             "v" : this.visible,
+	            };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.width = o["w"];
+		this._width_init = o["wi"];
+        this.height = o["h"]; 
+        this._height_init = o["hi"];
+        this.angle = o["a"];
+        this.opacity = o["o"];
+        this.visible = o["v"];
+        this._init();       
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

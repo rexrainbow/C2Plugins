@@ -53,7 +53,17 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	    if (!this._has_matched_pattern)
             this.runtime.trigger(cr.plugins_.Rex_SequenceMatcher.prototype.cnds.OnNoMatchPattern, this);
 	};
-    
+	
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "d": this._symbol_buffer.saveToJSON()
+	            };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this._symbol_buffer.loadFromJSON(o["d"]);    
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -145,4 +155,17 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	    }
 	    return is_matched;
 	};
+	
+	BufferKlassProto.saveToJSON = function ()
+	{    
+		return { "b" : this._buf,
+		         "l" : this.max_len,
+	            };
+	};
+	
+	BufferKlassProto.loadFromJSON = function (o)
+	{
+	    this._buf = o["b"];
+	    this.set_max_length(o["l"]);
+	};		
 }());    

@@ -6,7 +6,7 @@
 		"version":		"0.1",          
 		"description":	"Sync function call for network.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_syncfunction.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

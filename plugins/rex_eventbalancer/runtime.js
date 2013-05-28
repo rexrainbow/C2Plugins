@@ -90,7 +90,28 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
                 break;
 	    }
 	};    
-  
+	
+    instanceProto.saveToJSON = function ()
+	{    
+		return { "dm": this.is_dynamic_mode,
+                 "pt": this.procressing_time,
+                 "rc": this.repeat_count,
+                 "stop": this.cmd_stop,
+                 "isrun": this.is_running,
+                 };
+	};
+	instanceProto.loadFromJSON = function (o)
+	{	    
+	    this.is_dynamic_mode = o["dm"];
+        this.procressing_time = o["pt"];
+        this.repeat_count = o["rc"];
+        this.cmd_stop = o["stop"];
+        this.is_running = o["isrun"];
+        
+        if (this.is_running)
+            this.runtime.tickMe(this);
+	};	
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

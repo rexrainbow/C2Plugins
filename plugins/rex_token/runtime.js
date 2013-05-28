@@ -90,6 +90,18 @@ cr.plugins_.Rex_Token = function(runtime)
 	    }
 	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
 	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "l": this.player_id_list,
+                 "i": this.index          };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.player_id_list = o["l"];
+		this.index = o["i"];		
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

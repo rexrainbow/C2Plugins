@@ -43,7 +43,15 @@ cr.plugins_.Rex_Date = function(runtime)
 	{
 	    this._timers = {};
 	};
-	
+    instanceProto.saveToJSON = function ()
+	{    
+		return { "tims": this._timers,
+                };
+	};
+	instanceProto.loadFromJSON = function (o)
+	{	    
+		this._timers = o["tims"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -139,5 +147,5 @@ cr.plugins_.Rex_Date = function(runtime)
 	{
         var timestamp = new Date(year, month-1, day, hours, minutes, seconds, milliseconds); // build Date object
         ret.set_float(timestamp.getTime());
-	};    
+	};
 }());

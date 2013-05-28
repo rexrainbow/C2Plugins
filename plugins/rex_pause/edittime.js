@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Pause timescale",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pause.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

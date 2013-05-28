@@ -152,7 +152,16 @@ cr.plugins_.Rex_TiltAlpha2LeftRightKey = function(runtime)
         
         this.key_status = current_key_status;
 	}; 
-    
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "s": this._sensitivity
+                 };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this._sensitivity = o["s"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

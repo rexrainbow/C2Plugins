@@ -52,6 +52,17 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
         this._last_tick = cur_tick;
 		return tick_changed;
 	};   
+
+    instanceProto.saveToJSON = function ()
+	{    
+		return { "lps": this.loop_iters.saveToJSON(),
+                 "lt": this._last_tick};
+	};
+	instanceProto.loadFromJSON = function (o)
+	{	    
+       this.loop_iters.loadFromJSON(o["lps"]);
+       this._last_tick = o["lt"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -121,7 +132,7 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
     {
         if (this.vars[name] != null)
             return;
-        var iter = new forloopIterKlass(start, end, step);
+        var iter = new forloopIterKlass(name, start, end, step);
         this.loops.push(iter);
         this.vars[name] = iter;
     };
@@ -129,7 +140,7 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
     {
         if (this.vars[name] != null)
             return;    
-        var iter = new listIterKlass(list);
+        var iter = new listIterKlass(name, list);
         this.loops.push(iter);
         this.vars[name] = iter;
     };
@@ -179,9 +190,42 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
 	    return (iter != null)? iter.index_get():0;
     };
     
+    LoopItersKlassProto.saveToJSON = function ()
+	{    
+	    var i,cnt=this.loops.length, iter, type, loops_saved = [];
+	    for (i=0; i<cnt; i++)	    
+	    {
+	        iter = this.loops[i];
+	        type = (iter instanceof forloopIterKlass)? "for":"list";
+	        iter = iter.saveToJSON();
+	        iter["__type"] = type
+	        loops_saved.push(iter);
+	    };
+		return { "loops":loops_saved,
+		         "ff": this.first_flg,
+                };
+	};
+	LoopItersKlassProto.loadFromJSON = function (o)
+	{	    
+       var loops_save = o["loops"];
+       var i, cnt=loops_save.length, iter, type, iterKlass, iterObj;
+       for (i=0; i<cnt; i++)
+       {
+           iter = loops_save[i];
+           type = iter["__type"];
+           iterKlass = (type == "for")?  forloopIterKlass:listIterKlass;
+           iterObj = new iterKlass();
+           iterObj.loadFromJSON(iter);
+           this.loops.push(iterObj);
+           this.vars[iter["name"]] = iterObj;
+       }
+       this.first_flg = o["ff"];
+	};
+	    
     // for loop
-    var forloopIterKlass = function(start, end, step)
+    var forloopIterKlass = function(name, start, end, step)
     {
+        this.name = name;
         this.start = start;
         this.end = end;
         this.step = step;
@@ -213,10 +257,28 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
             ret = this.start;
         return ret;
     };
-    
+    forloopIterKlassProto.saveToJSON = function ()
+	{    
+		return { "name": this.name,
+		         "start": this.start,
+                 "end": this.end,
+                 "step": this.step,
+                 "cur": this.current,
+                };
+	};
+	forloopIterKlassProto.loadFromJSON = function (o)
+	{	    
+	    this.name = o["name"];
+        this.start = o["start"];
+        this.end = o["end"];
+        this.step = o["step"];
+        this.current = o["cur"];
+	};
+	
     // list
-    var listIterKlass = function(list)
+    var listIterKlass = function(name, list)
     {
+        this.name = name;      
         this.list = list;
         this.current = null;
     };
@@ -248,4 +310,17 @@ cr.plugins_.Rex_LoopIterator = function(runtime)
             
         return this.list[ret];        
     };    
+    listIterKlassProto.saveToJSON = function ()
+	{    
+		return { "name": this.name,
+		         "l": this.list,
+                 "cur": this.current,
+                };
+	};
+	listIterKlassProto.loadFromJSON = function (o)
+	{	    
+	    this.name = o["name"];
+        this.list = o["l"];
+        this.current = o["cur"];
+	};
 }()); 

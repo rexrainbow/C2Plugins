@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Injecting javascript code to interact with official function plugin",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_functionext.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

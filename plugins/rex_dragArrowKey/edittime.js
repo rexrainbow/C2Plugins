@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get arrow key event from dragging input.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_dragArrowKey.html",
 		"category":		"Input",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -47,7 +47,10 @@ AddCondition(24, cf_trigger, "On Right arrow released", "Released", "On Right ar
 
 //////////////////////////////////////////////////////////////
 // Actions
-
+AddAction(1, 0, "Cancel", "Detector", 
+          "Cancel current dragging", 
+          "Cancel current dragging like touch end.", "Cancel");  
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(3, ef_return_number, "Distance of dragging at X coordinate", "Distance", "DistX", "Distance of dragging at X coordinate.");

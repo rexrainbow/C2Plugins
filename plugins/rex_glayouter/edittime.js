@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Layout instances to get position and angle.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_glayouter.html",
 		"category":		"General",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
@@ -85,8 +85,7 @@ var property_list = [
     new cr.Property(ept_combo, "Pin mode", "None", "Moving instances like pin behavior.", 
                     "None|Position & angle|Position only|Angle only"),
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
-                    "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),        
-    new cr.Property(ept_text, "Tag", "", "Tag for adding sprite into container at layout editor."),					
+                    "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),					
 	];
 	
 // Called by IDE when a new object type is to be created

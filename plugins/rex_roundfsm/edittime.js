@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"A finite state machine to descript a round",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_roundfsm.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -49,8 +49,8 @@ AddCondition(11, cf_trigger, 'On enter "RunCommand"', '6. "RunCommand" state',
              'On enter "RunCommand"', 'Trigger when state enter to "RunCommand".', "OnEnterRunCommand");
 AddCondition(12, cf_trigger, 'On exit "RunCommand"', '6. "RunCommand" state', 
              'On exit "RunCommand"', 'Trigger when state exit from "RunCommand".', "OnExitRunCommand"); 
-AddCondition(13, cf_trigger, "On state changing", "Debug", 
-             "On state changing", "Trigger when state changing.", "OnStateChanging");           
+AddCondition(13, cf_trigger, "On state changed", "Debug", 
+             "On state changed", "Trigger when state changed.", "OnStateChanged");           
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");

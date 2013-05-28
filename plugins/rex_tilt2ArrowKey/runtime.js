@@ -254,7 +254,17 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
              
         this.keyLR = current_keyLR; 
 	};	
-		
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "s": this._sensitivity };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this._sensitivity = o["s"];
+	};
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

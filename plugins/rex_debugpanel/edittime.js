@@ -5,8 +5,8 @@
 		"id":			"Rex_DebugPanel",
 		"version":		"0.1",        
 		"description":	"Dump debug message to panel.",
-		"author":		"",
-		"help url":		"",
+		"author":		"Rex.Rainbow",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_debugpanel.html",
 		"category":		"General",
 		"type":			"object",			// appears in layout
 		"rotatable":	false,

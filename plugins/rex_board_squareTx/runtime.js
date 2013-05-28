@@ -157,6 +157,24 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	              (angle==270)? 3: 
 	              null;  //fixme
         return dir;				 
+	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "iso": this.is_isometric,
+                 "w": this.width,
+                 "h": this.height,
+                 "ox": this.PositionOX,
+                 "oy": this.PositionOY};
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.is_isometric = o["iso"];
+        this.SetWidth(o["w"]);
+        this.SetHeight(o["h"]);   
+        this.SetPOX(o["ox"]);
+        this.SetPOY(o["oy"]);          
 	};	
 	//////////////////////////////////////
 	// Conditions

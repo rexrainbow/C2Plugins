@@ -43,40 +43,25 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
 	{
         this._directions = this.properties[0];
         this.runtime.tickMe(this);
-		this.myDestroyCallback = (function (self) {
-											return function(inst) {
-												self.onInstanceDestroyed(inst);
-											};
-										})(this); 
-        this.runtime.addDestroyCallback(this.myDestroyCallback); 
         this.setup_stage = true;
         // touch   
         this.touchwrap = null;
         this.pre_key_id = 0;
-        this.keyMap = [{inst:null, state:false, is_in_touch:false}, 
-                       {inst:null, state:false, is_in_touch:false}, 
-                       {inst:null, state:false, is_in_touch:false}, 
-                       {inst:null, state:false, is_in_touch:false}  ];
+        this.keyMap = [{uid:null, state:false, is_in_touch:false}, 
+                       {uid:null, state:false, is_in_touch:false}, 
+                       {uid:null, state:false, is_in_touch:false}, 
+                       {uid:null, state:false, is_in_touch:false}  ];
         
-        this.press_handlers =   [cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnRIGHTPresse,
-                                 cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnDOWNPresse,
-                                 cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnLEFTPresse,
+        this.press_handlers =   [cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnRIGHTPressed,
+                                 cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnDOWNPressed,
+                                 cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnLEFTPressed,
                                  cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnUPPressed     ];   
         this.release_handlers = [cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnRIGHTReleased,
                                  cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnDOWNReleased,
                                  cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnLEFTReleased,
                                  cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnUPReleased    ];
 	};
-	
-	instanceProto.onInstanceDestroyed = function (inst)
-	{
-        for(i=0; i<4; i++)
-        {
-            if (this.keyMap[i].inst == inst)
-                this.keyMap[i].inst = null;
-        }
-	};  
-	
+
 	instanceProto.TouchWrapGet = function ()
 	{  
         var plugins = this.runtime.types;
@@ -133,8 +118,10 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
         for (i=0; i<4; i++)
         {
             keyMap = this.keyMap[i];
-            keyMap.is_in_touch = false;        
-            inst = keyMap.inst;
+            keyMap.is_in_touch = false;       
+            if (keyMap.uid == null)			
+			    continue;
+            inst = this.runtime.getObjectByUID(keyMap.uid);
             if (inst == null)
                 continue;
  			for (j=0; j<lenj; j++)
@@ -144,7 +131,10 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
 				px = inst.layer.canvasToLayer(tx, ty, true);
 				py = inst.layer.canvasToLayer(tx, ty, false);
                 if (inst.contains_pt(px, py))
+				{
 				    keyMap.is_in_touch = true;
+					break;
+			    }
 			}
         }
     };    
@@ -194,8 +184,8 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
     {
         if (this.pre_key_id == key_id)
             return;
-            
-        var i;
+        		
+        var i, is_key_down;
         for (i=0; i<4; i++)
         {
             var is_key_down = ((_keyid_list[i] & key_id) != 0);            
@@ -217,7 +207,24 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_Sprite2ArrowKey.prototype.cnds.OnAnyKey, this);
         
         this.pre_key_id = key_id;            
-    };
+    };    
+	
+	instanceProto.saveToJSON = function ()
+	{    	    
+	    var i, cnt=this.keyMap.length, keyuid=[];
+	    for (i=0; i<cnt; i++)
+	        keyuid.push(this.keyMap[i].uid);
+		return { "keyuid": keyuid,
+                 };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    var keyuid = o["keyuid"];
+	    var i, cnt=this.keyMap.length, keyMap;
+	    for (i=0; i<cnt; i++)
+		    this.keyMap[i].uid = keyuid[i];
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -286,7 +293,12 @@ cr.plugins_.Rex_Sprite2ArrowKey = function(runtime)
     
     Acts.prototype.SetArrowkeySprite = function (arrowkey, objs)
 	{
-        this.keyMap[arrowkey].inst = objs.getFirstPicked();
+	    if (!objs)
+	        return;
+	    var keyMap = this.keyMap[arrowkey];
+		keyMap.uid = objs.getFirstPicked().uid;
+		keyMap.state = false;
+		keyMap.is_in_touch = false;
 	}; 
 	//////////////////////////////////////
 	// Expressions

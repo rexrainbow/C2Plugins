@@ -148,10 +148,27 @@ cr.plugins_.Rex_RoundFSM = function(runtime)
         if (trig != null)            
             this.runtime.trigger(this._enterTrigs[new_state],this);              
 	};
-	instanceProto._has_instances = function(group_name)
-	{
-        return (this.group.GetGroup(group_name).length > 0);
+
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "en": this.activated,
+                 "src": this.exp_Source,
+                 "cmd": this.exp_Command,
+                 "tgt": this.exp_Target,
+		         "ps": this._pre_state,
+                 "cs": this._cur_state
+                };
 	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.activated = o["en"];
+        this.exp_Source = o["src"];
+        this.exp_Command = o["cmd"];
+        this.exp_Target = o["tgt"];
+		this._pre_state = o["ps"];
+        this._cur_state = o["cs"];     
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -174,7 +191,7 @@ cr.plugins_.Rex_RoundFSM = function(runtime)
 	Cnds.prototype.OnExitAcceptCommand = function ()  { return true; };
 	Cnds.prototype.OnEnterRunCommand = function ()  { return true; };    
 	Cnds.prototype.OnExitRunCommand = function ()  { return true; };		
-	Cnds.prototype.OnStateChanging = function ()  { return true; };		 
+	Cnds.prototype.OnStateChanged = function ()  { return true; };		 
 	 
 	//////////////////////////////////////
 	// Actions

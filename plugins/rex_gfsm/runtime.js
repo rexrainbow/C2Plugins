@@ -27,12 +27,6 @@ cr.plugins_.Rex_FSM = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-        this.logic = {};
-        this.transfer_action = {};
-        this.exit_action = {};
-        this.enter_action = {};        
-        this.fn_obj = null;
-        this.adapter = new cr.plugins_.Rex_FSM.FSMAdapterKlass(this);
 	};
 
 	/////////////////////////////////////
@@ -46,176 +40,42 @@ cr.plugins_.Rex_FSM = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{      
-	    this.is_debug_mode = this.properties[0];  
-        this.activated = this.properties[1];
+	{
+        this.activated = (this.properties[0] == 1);
 		var previous_state = "Off";		
-		var current_state = this.properties[2];		
-        current_state = (current_state!="")? current_state:"Off";	           
-		// initial memory
-		var mem = this.properties[3];
-        try
-        {
-            mem = (mem!="")? JSON.parse(mem):{};      
-        }
-        catch(err)
-        {
-            alert(err);
-            mem = {};            
-        }   
-        this.fsm = new cr.plugins_.Rex_FSM.FSMKlass(this, 
-                                                     previous_state, current_state,
-                                                     mem); 
+		var current_state = this.properties[1];		
+        current_state = (current_state!="")? current_state:"Off";
+        this.fsm = new cr.plugins_.Rex_FSM.FSMKlass(this, previous_state, current_state); 
         this.is_echo = false;
-        this.is_my_call = false; 
         this.next_state = null;
 	};  
-    
-    var _sn2js = function(code_line)
+	
+    instanceProto.run_trigger = function(trigger)
     {
-        var index_end_mark = code_line.lastIndexOf("->");          
-        var index_left_brace = code_line.indexOf("(");
-        var index_right_brace = code_line.substring(0,index_end_mark).lastIndexOf(")");
-        var condition_code = code_line.substring(index_left_brace,index_right_brace+1);
-        if (condition_code != "")
-            condition_code = "if"+condition_code;
-        var return_code;
-        if (index_end_mark == -1)
-            return_code = code_line;
-        else
-            return_code = code_line.substring(index_end_mark+2);
-        if (return_code!= "")
-            return_code = "return "+return_code+";";
-        return condition_code+return_code;
+        this.is_echo = false;
+        this.runtime.trigger(trigger, this);
+        return (this.is_echo);        
     };
-    
-    var SN2JS = function (code_string)
-    {
-        var sn_lines = code_string.split("\n");
-        var i;
-        var line_cnt = sn_lines.length;
-        var js_lines = [];
-        for (i=0; i<line_cnt; i++)
-        {
-            js_lines.push(_sn2js(sn_lines[i]));
-        }
-        return js_lines.join("\n");
-    };
-    
-	instanceProto._load_code = function (dict, name, code_string, code_format)
-	{
-        if (code_format == 0)  //Simple notation        
-            code_string = SN2JS(code_string);
-            
-        code_string = "function(fsm, fn, csv){\n"+code_string +"\n}";
-        try
-        {
-            dict[name] = eval("("+code_string+")");
-        }
-        catch(err)
-        {
-            alert(err);
-        }
-	};
-
-    // copy from    
-    // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
-    
-    // This will parse a delimited string into an array of
-    // arrays. The default delimiter is the comma, but this
-    // can be overriden in the second argument.
-    var CSVToArray = function ( strData, strDelimiter ){
-        // Check to see if the delimiter is defined. If not,
-        // then default to comma.
-        strDelimiter = (strDelimiter || ",");
-
-        // Create a regular expression to parse the CSV values.
-        var objPattern = new RegExp(
-                (
-                        // Delimiters.
-                        "(\\" + strDelimiter + "|\\r?\\n|\\r|^)" +
-
-                        // Quoted fields.
-                        "(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|" +
-
-                        // Standard fields.
-                        "([^\"\\" + strDelimiter + "\\r\\n]*))"
-                ),
-                "gi"
-                );
-
-
-        // Create an array to hold our data. Give the array
-        // a default empty first row.
-        var arrData = [[]];
-
-        // Create an array to hold our individual pattern
-        // matching groups.
-        var arrMatches = null;
-
-
-        // Keep looping over the regular expression matches
-        // until we can no longer find a match.
-        while (arrMatches = objPattern.exec( strData )){
-
-                // Get the delimiter that was found.
-                var strMatchedDelimiter = arrMatches[ 1 ];
-
-                // Check to see if the given delimiter has a length
-                // (is not the start of string) and if it matches
-                // field delimiter. If id does not, then we know
-                // that this delimiter is a row delimiter.
-                if (
-                        strMatchedDelimiter.length &&
-                        (strMatchedDelimiter != strDelimiter)
-                        ){
-
-                        // Since we have reached a new row of data,
-                        // add an empty row to our data array.
-                        arrData.push( [] );
-
-                }
-
-
-                // Now that we have our delimiter out of the way,
-                // let's check to see which kind of value we
-                // captured (quoted or unquoted).
-                if (arrMatches[ 2 ]){
-
-                        // We found a quoted value. When we capture
-                        // this value, unescape any double quotes.
-                        var strMatchedValue = arrMatches[ 2 ].replace(
-                                new RegExp( "\"\"", "g" ),
-                                "\""
-                                );
-
-                } else {
-
-                        // We found a non-quoted value.
-                        var strMatchedValue = arrMatches[ 3 ];
-
-                }
-
-
-                // Now that we have our value string, let's add
-                // it to the data array.
-                arrData[ arrData.length - 1 ].push( strMatchedValue );
-        }
-
-        // Return the parsed data.
-        return( arrData );
-    };     
-    
+	
     instanceProto.get_next_state = function()
     {
         this.next_state = null;
-        this.is_echo = false;
-        this.is_my_call = true;
-        this.runtime.trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnLogic,this);
-        this.is_my_call = false;
+		this.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnLogic);
         return this.next_state;
-    };   
+    }; 
 
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "en": this.activated,
+		         "fsm": this.fsm.saveToJSON()
+		         };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.activated = o["en"];
+	    this.fsm.loadFromJSON(o["fsm"]);
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -224,32 +84,29 @@ cr.plugins_.Rex_FSM = function(runtime)
 	Cnds.prototype.OnEnter = function (name)
 	{
         this.is_echo = true;
-		return (this.is_my_call & (this.fsm["CurState"] == name));
+		return (this.fsm.CurState == name);
 	};
 
 	Cnds.prototype.OnDefaultEnter = function ()
 	{
-		return (this.is_my_call);
+		return true;
 	}; 	
 	
 	Cnds.prototype.OnExit = function (name)
 	{
         this.is_echo = true;
-		return (this.is_my_call && (this.fsm["PreState"] == name));
+		return (this.fsm.PreState == name);
 	};	
     
 	Cnds.prototype.OnDefaultExit = function ()
 	{
-		return (this.is_my_call);
+		return true;
 	}; 	    
 
 	Cnds.prototype.OnTransfer = function (name_from, name_to)
 	{
-	    var is_my_call = this.is_my_call &&
-                         ((this.fsm["PreState"] == name_from) && 
-		                  (this.fsm["CurState"] == name_to));
-        this.is_echo |= is_my_call;
-		return is_my_call;
+        this.is_echo = true;
+		return ((this.fsm.PreState == name_from) && (this.fsm.CurState == name_to));
 	};	
 	Cnds.prototype.OnStateChanged = function ()
 	{
@@ -258,16 +115,12 @@ cr.plugins_.Rex_FSM = function(runtime)
 	Cnds.prototype.OnLogic = function (name)
 	{
         this.is_echo = true;
-		return (this.is_my_call && (this.fsm["CurState"] == name));
+		return (this.fsm.CurState == name);
 	}; 
 	Cnds.prototype.IsCurState = function (name)
 	{
-		return (this.fsm["CurState"] == name);
-	};
-	Cnds.prototype.CmpMemValue = function (index, cmp, val)
-	{
-		return cr.do_cmp(this.fsm["Mem"][index], cmp, val);
-	};
+		return (this.fsm.CurState == name);
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -277,132 +130,20 @@ cr.plugins_.Rex_FSM = function(runtime)
 	{
 		this.activated = (s==1);
 	};     
-    
-	Acts.prototype.CleanMemory = function ()
-	{
-        this.fsm["Mem"] = {};
-	};  
-        
-	Acts.prototype.SetMemory = function (index, value)
-	{
-        this.fsm["Mem"][index] = value;
-	};
-
+	
     Acts.prototype.Request = function ()
 	{
-        if (this.activated)
-	        this.fsm.Request();
+        if (!this.activated)
+            return;
+
+        this.fsm.Request();
 	};  
     
-    Acts.prototype.Transit = function (new_state)
+    Acts.prototype.GotoState = function (new_state)
 	{
         if (this.activated)    
 	        this.fsm.Request(new_state);
 	};     
-
-    Acts.prototype.CSV2Logic = function (csv_string, code_format)
-	{
-        if (csv_string == "")
-            return;
-            
-        var code_array = CSVToArray(csv_string);   
-        var i, state_name, code_string;
-        var state_len = code_array.length;
-        for (i=1;i<state_len;i++)
-        {
-            state_name = code_array[i][0];        
-            code_string = code_array[i][1];  
-            if (code_string != null)
-                this._load_code(this.type.logic, state_name, code_string, code_format);    
-        }  
-	};
-
-    Acts.prototype.String2Logic = function (state_name, code_string, code_format)
-	{
-        if (code_string == "")
-            return;
-        this._load_code(this.type.logic, state_name, code_string, code_format);
-	};
-    
-    Acts.prototype.ConnectFn = function (fn_objs)
-	{  
-        var fn_obj = fn_objs.instances[0];
-        if (fn_obj.check_name == "FUNCTION")
-            this.type.fn_obj = fn_obj.adapter;        
-        else
-            alert ("Can not connect to a function object");
-	};    
-
-    Acts.prototype.CSV2Action = function (csv_string)
-	{
-        if (csv_string == "")
-            return;
-            
-        var code_array = CSVToArray(csv_string);   
-        var i, j, pre_state, cur_state, code_string;
-        var state_len = code_array.length;
-        for (i=1; i<state_len; i++)
-        {
-            cur_state = code_array[i][0];
-            for (j=1; j<state_len; j++)
-            {
-                pre_state = code_array[0][j];
-                code_string = code_array[i][j];
-                
-                this._load_code(this.type.transfer_action, 
-                                (pre_state+"->"+cur_state), 
-                                code_string, 1);
-            }
-        }  
-	};    
-    
-    Acts.prototype.String2Action = function (pre_state, cur_state, code_string)
-	{
-        if (code_string == "")
-            return;
-        this._load_code(this.type.transfer_action, 
-                        (pre_state+"->"+cur_state), 
-                        code_string, 1);
-	};    
-
-    Acts.prototype.CSV2EnterExit = function (csv_string)
-	{
-        if (csv_string == "")
-            return;
-            
-        var code_array = CSVToArray(csv_string);   
-        var i, j, state_name, enter_code_string, exit_code_string;
-        var state_len = code_array.length;
-        for (i=1; i<state_len; i++)
-        {
-            state_name = code_array[i][0];
-            enter_code_string = code_array[i][1];
-            exit_code_string = code_array[i][2];
-            if (enter_code_string != "")
-                this._load_code(this.type.enter_action, 
-                                state_name, enter_code_string, 1);
-            if (exit_code_string != "")
-                this._load_code(this.type.exit_action, 
-                                state_name, enter_code_string, 1);              
-        }  
-	};    
-    
-    Acts.prototype.String2EnterExit = function (state, 
-                                         enter_code_string, exit_code_string)
-	{
-        if (enter_code_string != "")
-            this._load_code(this.type.enter_action, 
-                            state_name, enter_code_string, 1);
-        if (exit_code_string != "")
-            this._load_code(this.type.exit_action, 
-                            state_name, enter_code_string, 1);       
-	}; 
-
-	Acts.prototype.InjectJSFunctionObjects = function (code_string)
-	{
-        var fn = eval("("+code_string+")");
-        fn(this.type.adapter, this.type.fn_obj);
-	};    
 
 	Acts.prototype.NextStateSet = function (state)
 	{
@@ -415,77 +156,46 @@ cr.plugins_.Rex_FSM = function(runtime)
 
 	Exps.prototype.CurState = function (ret)
 	{
-	    ret.set_string(this.fsm["CurState"]);
+	    ret.set_string(this.fsm.CurState);
 	};	
 	
 	Exps.prototype.PreState = function (ret)
 	{
-	    ret.set_string(this.fsm["PreState"]);
-	};
-	
-    Exps.prototype.Mem = function (ret, index, default_value)
-	{
-        var value = this.fsm["Mem"][index];
-        if (value == null) 
-        {
-            value = default_value;
-            if (this.is_debug_mode) 
-                alert ("Can not find index in memory '" + index + "'");
-                
-        }
-	    ret.set_any(value);
-	};	
+	    ret.set_string(this.fsm.PreState);
+	}; 
 }());
 
 (function ()
 {
-    cr.plugins_.Rex_FSM.FSMKlass = function(plugin, 
-                                            previous_state, current_state,
-                                            mem)
+    cr.plugins_.Rex_FSM.FSMKlass = function(plugin, previous_state, current_state)
     {
-        this["_plugin"] = plugin;
-        this["_type"] = plugin.type;
-        
-        this["PreState"] = previous_state;
-        this["CurState"] = current_state;
-        this["Mem"] = mem;
+        this.plugin = plugin;
+        this.PreState = previous_state;
+        this.CurState = current_state;
     };
     var FSMKlassProto = cr.plugins_.Rex_FSM.FSMKlass.prototype;
-    
+	
     FSMKlassProto.Request = function(new_state)
     {
         if (new_state == null)
         {
-            // try to get next state from event sheet first
-            new_state = this["_plugin"].get_next_state();
-            
-            // no transfer logic defined in event sheet
-            if (!this["_plugin"].is_echo)
-            {
-                var fn = this["_type"].logic[this["CurState"]];
-                if (fn == null)
-                    return;
-                // fn != null      
-                new_state = fn(this, this["_type"].fn_obj);            
-            }
-                 
+            new_state = this.plugin.get_next_state();
             if (new_state == null)
                 return;
         }
             
         // new_state != null: state transfer
-        this["PreState"] = this["CurState"];
-        this["CurState"] = new_state;
+        this.PreState = this.CurState;
+        this.CurState = new_state;
                 
-        var pre_state = this["PreState"];
-        var cur_state = this["CurState"];
+        var pre_state = this.PreState;
+        var cur_state = this.CurState;
         
         // trigger OnStateChanged first
-        this["_plugin"].runtime.trigger(
-            cr.plugins_.Rex_FSM.prototype.cnds.OnStateChanged, this["_plugin"]);  
+		this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnStateChanged);
                         
         // try to run transfer_action
-        var is_echo = this._run_transfer_action(pre_state, cur_state);
+        var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnTransfer);
         if (is_echo)
             return;
          
@@ -493,90 +203,35 @@ cr.plugins_.Rex_FSM = function(runtime)
         this._run_exit_action(pre_state);
         this._run_enter_action(cur_state);
     };
-    
-    FSMKlassProto._run_transfer_action = function(pre_state, cur_state)
-    {
-        var name = pre_state+"->"+cur_state;
-        var fn = this["_type"].transfer_action[name];
-        if (fn != null)
-        {
-            fn(this, this["_type"].fn_obj);
-        }        
-        this["_plugin"].is_echo = false;
-        this["_plugin"].is_my_call = true;
-        this["_plugin"].runtime.trigger(
-            cr.plugins_.Rex_FSM.prototype.cnds.OnTransfer,this["_plugin"]);
-        this["_plugin"].is_my_call = false;  
 
-        return ( (fn != null) || this["_plugin"].is_echo);        
-    };
-    
     FSMKlassProto._run_exit_action = function(pre_state)
     {
-        var fn = this["_type"].exit_action[pre_state];
-        if (fn != null)
-             fn(this, this["_type"].fn_obj);
-        
-        this["_plugin"].is_echo = false;
-        this["_plugin"].is_my_call = true;
-        this["_plugin"].runtime.trigger(
-            cr.plugins_.Rex_FSM.prototype.cnds.OnExit, this["_plugin"]); 
-        this["_plugin"].is_my_call = false; 
+	    var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnExit);
         // no exit handle event, try to trigger default exit event
-        if (!this["_plugin"].is_echo)
-        {
-            this["_plugin"].is_my_call = true;
-            this["_plugin"].runtime.trigger(
-                cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultExit, this["_plugin"]); 
-            this["_plugin"].is_my_call = false;            
-        }      
+		if (is_echo)
+		    return;
+	    this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultExit);  
     };
     
     FSMKlassProto._run_enter_action = function(cur_state)
     {
-        var fn = this["_type"].enter_action[cur_state];
-        if (fn != null)
-            fn(this, this["_type"].fn_obj);
-
-        this["_plugin"].is_echo = false;
-        this["_plugin"].is_my_call = true;
-        this["_plugin"].runtime.trigger(
-            cr.plugins_.Rex_FSM.prototype.cnds.OnEnter, this["_plugin"]); 
-        this["_plugin"].is_my_call = false; 
+	    var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnEnter);
         // no enter handle event, try to trigger default enter event
-        if (!this["_plugin"].is_echo)
-        {
-            this["_plugin"].is_my_call = true;
-            this["_plugin"].runtime.trigger(
-                cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultEnter, this["_plugin"]);             
-            this["_plugin"].is_my_call = false; 
-        }      
-    };    
-    
-    // adapter for exporting to javascript
-    cr.plugins_.Rex_FSM.FSMAdapterKlass = function(type)
-    {
-        this["_type"] = type;
-    };
-    var FSMAdapterKlassProto = cr.plugins_.Rex_FSM.FSMAdapterKlass.prototype;
-    
-	FSMAdapterKlassProto["InjectLogic"] = function(state_name, fn)
+		if (is_echo)
+		    return;
+	    this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultEnter);    
+    };  
+	
+	FSMKlassProto.saveToJSON = function ()
+	{    
+		return { "ps": this.PreState,
+		         "cs": this.CurState
+			   };
+	};
+	
+	FSMKlassProto.loadFromJSON = function (o)
 	{
-	    this["_type"].logic[state_name] = fn;
-	}; 
-    
-	FSMAdapterKlassProto["InjectExitAction"] = function(state_name, fn)
-	{
-	    this["_type"].exit_action[state_name] = fn;
-	}; 
-    
-	FSMAdapterKlassProto["InjectEnterAction"] = function(state_name, fn)
-	{
-	    this["_type"].enter_action[state_name] = fn;
-	}; 
-    
-	FSMAdapterKlassProto["InjectTransferAction"] = function(pre_state, cur_state, fn)
-	{
-	    this["_type"].transfer_action[(pre_state+"->"+cur_state)] = fn;
-	};     
+	    this.PreState = o["ps"];
+		this.CurState = o["cs"];
+	};	
 }());

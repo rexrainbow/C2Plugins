@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Round-robin player index, used in turn based game.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_token.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

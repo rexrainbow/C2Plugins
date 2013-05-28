@@ -6,7 +6,7 @@
 		"version":		"0.11",          
 		"description":	"Create sprites according to tmx string.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tmximporter.html",
 		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

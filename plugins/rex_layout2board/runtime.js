@@ -86,7 +86,18 @@ cr.plugins_.Rex_layout2board = function(runtime)
         board_layout.SetPOX(board_info.px0);
         board_layout.SetPOY(board_info.py0);
     };
-
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "w": this.cell_width,
+                 "h": this.cell_height };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.cell_width = o["w"];
+		this.cell_height = o["h"];		
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

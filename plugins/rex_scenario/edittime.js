@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Executing function from a csv table while time-out",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_scenario.html",
 		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -25,7 +25,7 @@ AddCondition(1, 0, "Is running", "Control", "Is running",
 // Actions     
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(1, 0, "Setup", "Z: Deprecated", 
+AddAction(1, af_deprecated, "Setup", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
 AddStringParam("Commands", "Commands in CSV format", "");
@@ -67,7 +67,7 @@ AddAction(31, 0, "Set value", "Memory",
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 
-          "Setup.", "Setup2");		  
+          "Setup.", "Setup2");	         
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_string, "Get last tag", 

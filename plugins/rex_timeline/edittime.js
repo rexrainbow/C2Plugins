@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"TimeLine & Timer, to execute function while time-out.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timeline.html",
 		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddAnyTypeParam("Name", "Timer's name", '""');
-AddCondition(0, 0, "Is timmer running", "Timer", "Is running", "", "IsRunning");
+AddCondition(0, 0, "Is timmer running", "Timer", "<i>{0}</i> is running", "", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -40,7 +40,7 @@ AddAction(2, af_deprecated, "Create timer", "Z: Deprecated",
 		  
 AddStringParam("Name", "Timer's name.", '""');      
 AddNumberParam("Time", "Time-out in seconds", 0);
-AddAction(3, 0, "Start timer", "Timer: Control", 
+AddAction(3, 0, "Start", "Timer: Control", 
           "Start timer <i>{0}</i>, time-out is <i>{1}</i> seconds", 
           "Start timer.", "StartTimer");
 AddNumberParam("Time", "Time-out in seconds", 0);
@@ -48,22 +48,22 @@ AddAction(4, 0, "Start triggered timer", "Timer: Triggered timer",
           "Start triggered timer, time-out is <i>{0}</i> seconds", 
           "Start triggered timer.", "StartTrgTimer");
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(5, 0, "Pause timer", "Timer: Control", 
+AddAction(5, 0, "Pause", "Timer: Control", 
           "Pause timer <i>{0}</i>", 
           "Pause timer.", "PauseTimer");
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(6, 0, "Resume timer", "Timer: Control", 
+AddAction(6, 0, "Resume", "Timer: Control", 
           "Resume timer <i>{0}</i>", 
           "Resume timer.", "ResumeTimer");          
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(7, 0, "Stop timer", "Timer: Control", 
+AddAction(7, 0, "Stop", "Timer: Control", 
           "Stop timer <i>{0}</i>", 
           "Stop timer.", "StopTimer");
-AddAction(8, 0, "Clean timeline", "TimeLine", 
+AddAction(8, 0, "Clean", "TimeLine", 
           "Clean timeline", 
           "Clean timeline.", "CleanTimeLine");  
 AddStringParam("Name", "Timer's name.", '""');      
-AddAction(9, 0, "Delete timer", "Timer", 
+AddAction(9, 0, "Delete", "Timer", 
           "Delete timer <i>{0}</i>", 
           "Delete timer.", "DeleteTimer"); 
 
@@ -124,8 +124,11 @@ AddExpression(4, ef_return_number, "Get current time of timeline",
 AddExpression(5, ef_return_string, "Get triggered timer's name", 
               "Timer", "TriggeredTimerName", 
               "Get triggered timer's name.");            
-
-
+AddStringParam("Name", "Timer's name.", '""');  
+AddExpression(6, ef_return_number | ef_variadic_parameters, "Get delay time of timer", 
+              "Timer", "TimerDelayTime", 
+              "Get delay time of timer.");
+              
 ACESDone();
 
 // Property grid properties for this plugin

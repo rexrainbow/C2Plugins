@@ -57,7 +57,18 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 		}
 		return is_empty;
 	};
-	//////////////////////////////////////
+    instanceProto.saveToJSON = function ()
+	{    
+		return { "evts": this.events,
+                 "ename": this._current_finished_event_name,
+                };
+	};
+	instanceProto.loadFromJSON = function (o)
+	{	    
+		this.events = o["evts"];	
+        this._current_finished_event_name = o["ename"];
+	};
+    //////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();      

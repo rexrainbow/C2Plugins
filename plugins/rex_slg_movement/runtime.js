@@ -49,9 +49,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    
 	    this.path_mode = this.properties[0];
 	                     
-        this.board = null; 
+        this.board = null;
+        this.boardUid = -1;    // for loading         
         this.group = null;
-        this.random_gen = null;
+        this.groupUid = -1;    // for loading        
+        this.randomGen = null;
+        this.randomGenUid = -1;    // for loading
         this._skip_first = null;
         this._cost_fn_name = null;
         this._filter_fn_name = null;
@@ -163,8 +166,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	        switch (this.path_mode)
 	        {
 	        case 0:  
-                var random_value = (this.random_gen == null)?
-			                        Math.random(): this.random_gen.random();
+                var random_value = (this.randomGen == null)?
+			                        Math.random(): this.randomGen.random();
 	            var i = Math.floor(random_value*pre_tiles_cnt);
 	            pre_tile = pre_tiles[i];
 	            break;
@@ -344,6 +347,51 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return path_tiles;
 	};
 	
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "boarduid": (this.board != null)? this.board.uid:(-1),
+		         "groupuid": (this.group != null)? this.group.uid:(-1),
+		         "randomuid": (this.randomGen != null)? this.randomGen.uid:(-1), };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.boardUid = o["boarduid"];
+		this.groupUid = o["groupuid"];
+		this.randomGenUid = o["randomuid"];		       
+	};
+	
+	instanceProto.afterLoad = function ()
+	{
+		if (this.boardUid === -1)
+			this.board = null;
+		else
+		{
+			this.board = this.runtime.getObjectByUID(this.boardUid);
+			assert2(this.board, "SLG movement: Failed to find board object by UID");
+		}		
+		this.boardUid = -1;
+		
+		if (this.groupUid === -1)
+			this.group = null;
+		else
+		{
+			this.group = this.runtime.getObjectByUID(this.groupUid);
+			assert2(this.group, "SLG movement: Failed to find instance group object by UID");
+		}		
+		this.groupUid = -1;	
+		
+		if (this.randomGenUid === -1)
+			this.randomGen = null;
+		else
+		{
+			this.randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(this.randomGen, "SLG movement: Failed to find random gen object by UID");
+		}		
+		this.randomGenUid = -1;			
+			
+	};
+		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -393,7 +441,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	}; 	   
 	 
 	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
-	{	        	    
+	{	        	
+	    assert2(this.board, "SLG movement should connect to a board object");
+	    assert2(this.group, "SLG movement should connect to a instance group object"); 
+	       
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
 	    if ((_xyz == null) || (moving_points<=0))
@@ -420,6 +471,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		
 	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
 	{        
+	    assert2(this.board, "SLG movement should connect to a board object");
+	    assert2(this.group, "SLG movement should connect to a instance group object"); 
+	      	    
 	    var chess_uid = _get_uid(chess_objs);
 	    var tile_uid = _get_uid(tile_objs);
 	    if ((chess_uid == null) || (tile_uid == null) || (moving_points<=0))
@@ -438,11 +492,11 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             this.group.GetGroup(group_name).Clean();	  
 	};	  	
 	
-    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
+    Acts.prototype.SetRandomGenerator = function (randomGen_objs)
 	{
-        var random_gen = random_gen_objs.instances[0];
-        if (random_gen.check_name == "RANDOM")
-            this.random_gen = random_gen;        
+        var randomGen = randomGen_objs.instances[0];
+        if (randomGen.check_name == "RANDOM")
+            this.randomGen = randomGen;        
         else
             alert ("[slg movement] This object is not a random generator object.");
 	};    

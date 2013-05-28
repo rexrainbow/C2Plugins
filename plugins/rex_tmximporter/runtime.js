@@ -450,6 +450,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         else
             this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnEachObject, this); 
     };  
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

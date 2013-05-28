@@ -127,6 +127,15 @@ cr.plugins_.Rex_Hash = function(runtime)
 	    return cnt;
 	}
 	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "d": this.hashtable };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.hashtable = o["d"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

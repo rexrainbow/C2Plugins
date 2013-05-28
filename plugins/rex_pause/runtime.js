@@ -72,7 +72,18 @@ cr.plugins_.Rex_Pause = function(runtime)
         }
         this.runtime.trigger(trig_method, this);   
 	};       
-    
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "p": this.is_pause,
+                 "ts": this.previous_timescale };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.is_pause = o["p"];
+		this.previous_timescale = o["ts"];
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

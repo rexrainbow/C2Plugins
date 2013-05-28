@@ -52,9 +52,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.atPage = "";  
         
         // turn to default page "_"
-        this.TurnPage("_");  
-        
-        this.adapter = new cr.plugins_.Rex_CSV.CSVAdapterKlass(this);
+        this.TurnPage("_");          
         this.check_name = "CSV";   
 	};
 
@@ -121,6 +119,32 @@ cr.plugins_.Rex_CSV = function(runtime)
         return this.current_table.ToString();   
 	};
 	
+	instanceProto.saveToJSON = function ()
+	{
+	    var page, tables={};
+	    for (page in this._tables)	   
+        {
+            this.TurnPage(page);
+	        tables[page] = {"d":this.current_table.table, 
+			                "k":this.current_table.keys, 
+							"i":this.current_table.items}
+		}
+		return { "d": tables };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    var tables = o["d"], table;
+		var page;
+		for (page in tables)
+		{
+		    this.TurnPage(page);
+		    table = tables[page];
+			this.current_table.table = table["d"];
+			this.current_table.keys = table["k"];
+			this.current_table.items = table["i"];
+		}
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -190,7 +214,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 		if (!(this.current_table.keys.indexOf(col_name) != (-1)))
 		    return false;    
-	    var table = this.current_table._table;
+	    var table = this.current_table.table;
 	    var col_data = table[col_name], row_name;
 		var matched = false;
 		for (row_name in col_data)
@@ -208,7 +232,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 		if (!(this.current_table.items.indexOf(row_name) != (-1)))
 		    return false;    
-	    var table = this.current_table._table;
+	    var table = this.current_table.table;
 	    var col_name;
 		var matched = false;
 		for (col_name in table)
@@ -231,7 +255,12 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
         return (this.current_table.items.indexOf(key) != (-1));
 	};
-	
+
+	Cnds.prototype.IsEntryValid = function (col, row)
+	{
+        return ((this.current_table.keys.indexOf(key) != (-1)) && 
+                (this.current_table.items.indexOf(key) != (-1))   );
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -323,9 +352,12 @@ cr.plugins_.Rex_CSV = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
-	Exps.prototype.At = function (ret, col, row, page)
+	Exps.prototype.At = function (ret, col, row, page, default_value)
 	{  
-        ret.set_any(this.Get(col, row, page));
+        var value = this.Get(col, row, page);
+        if (value == null)
+            value = (default_value == null)? 0 : default_value;        
+        ret.set_any(value);
 	}; 
     
 	Exps.prototype.CurCol = function (ret)
@@ -397,7 +429,7 @@ cr.plugins_.Rex_CSV = function(runtime)
     cr.plugins_.Rex_CSV.CSVKlass = function(plugin)
     {
         this.plugin = plugin;  
-		this._table = {};
+		this.table = {};
         this.keys = [];    // col name
         this.items = [];   // row name
         this.forCol = "";
@@ -408,15 +440,15 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.Clear = function()
 	{        
         var key;
-        for (key in this._table)
-            delete this._table[key];
+        for (key in this.table)
+            delete this.table[key];
         this.keys.length = 0;
         this.items.length = 0;
 	};  
     
 	CSVKlassProto.ToString = function()
 	{
-        var save_data = {"table":this._table,
+        var save_data = {"table":this.table,
                          "keys":this.keys,
                          "items":this.items};
 		return JSON.stringify(save_data);   
@@ -427,13 +459,13 @@ cr.plugins_.Rex_CSV = function(runtime)
         var save_data = JSON.parse(JSON_string);
         try
         {
-	        this._table = save_data["table"];
+	        this.table = save_data["table"];
             this.keys = save_data["keys"];
             this.items = save_data["items"];  
         }
         catch(err)  // compatible with older version
         {
-            this._table = save_data;
+            this.table = save_data;
         }
 	};
 
@@ -445,8 +477,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         for (i=0; i<key_cnt; i++)
         {
             key = keys[i];
-            if (this._table[key] == null)
-                this._table[key] = {};         
+            if (this.table[key] == null)
+                this.table[key] = {};         
         }
 	};
     
@@ -455,7 +487,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         var item_name = values.shift();
         var keys = this.keys;
         var key_cnt = this.keys.length;   
-        var table = this._table;
+        var table = this.table;
         var i;
         for (i=0; i<key_cnt; i++)
         {
@@ -484,17 +516,17 @@ cr.plugins_.Rex_CSV = function(runtime)
     CSVKlassProto.At = function(col, row)
 	{
 	    var entry;
-	    entry = this._table[col];
-	    if ((entry == null) && this.plugin.isInPreview)
+	    entry = this.table[col];
+	    if (entry == null)
         {
-            console.log("[CSV] Expression:At - Can not find col index '" +col+"' in table.");
-	        return 0;
+            log("[CSV] Expression:At - Can not find col index '" +col+"' in table.");
+	        return null;
         }
 	    entry = entry[row];
-	    if ((entry == null) && this.plugin.isInPreview)
+	    if (entry == null)
         {
-            console.log("[CSV] Expression:At - Can not find row index " +row+" in table.");
-	        return 0;	 
+            log("[CSV] Expression:At - Can not find row index " +row+" in table.");
+	        return null;	 
         }
         return entry;   
 	};
@@ -502,19 +534,19 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.SetEntry = function (col, row, val)
 	{
 	    var entry;
-	    entry = this._table[col];
-	    if ((entry == null) && this.plugin.isInPreview)
+	    entry = this.table[col];
+	    if (entry == null)
         {
-            console.log("[CSV] Action:SetEntry - Can not find col index " +col+" in table.");
+            log("[CSV] Action:SetEntry - Can not find col index " +col+" in table.");
 	        return;
         }
 	    entry = entry[row];
-	    if ((entry == null) && this.plugin.isInPreview)
+	    if (entry == null)
         {
-            console.log("[CSV] Action:SetEntry - Can not find row index " +row+" in table.");
+            log("[CSV] Action:SetEntry - Can not find row index " +row+" in table.");
 	        return;	    
         }
-        this._table[col][row] = val;        
+        this.table[col][row] = val;        
 	};
     
 	CSVKlassProto.ConvertType = function (row, to_type)
@@ -523,7 +555,7 @@ cr.plugins_.Rex_CSV = function(runtime)
                                     parseFloat;
         var keys = this.keys;
         var key_cnt = keys.length;
-        var table = this._table;
+        var table = this.table;
         var i, val;
         for (i=0; i<key_cnt; i++)
         {
@@ -540,7 +572,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         var has_ref = false;
         if (this.keys.length > 0)
         {
-            var ref_col = this._table[this.keys[0]];
+            var ref_col = this.table[this.keys[0]];
             has_ref = true;
         }
         var col_data = {};
@@ -559,7 +591,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             else
                 col_data[items[i]] = init_value;
         }        
-        this._table[col] = col_data;
+        this.table[col] = col_data;
         this.keys.push(col);
 	};
     
@@ -570,7 +602,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             
         var keys = this.keys;
         var key_cnt = keys.length;
-        var table = this._table;
+        var table = this.table;
         var i;
         for (i=0; i<key_cnt; i++)
         {
@@ -585,7 +617,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         if (col_index == (-1))
             return;
 
-        delete this._table[col]; 
+        delete this.table[col]; 
         this.keys.splice(col_index, 1);
 	};
     
@@ -597,7 +629,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             
         var keys = this.keys;
         var key_cnt = keys.length;
-        var table = this._table;
+        var table = this.table;
         var i;
         for (i=0; i<key_cnt; i++)
         {
@@ -644,9 +676,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.ForEachRowInCol = function (col)
 	{
         var has_col_index = (this.keys.indexOf(col)!=(-1));
-        if ((!has_col_index) && this.plugin.isInPreview)
+        if (!has_col_index)
         {
-            console.log("[CSV] Condition:For each row in col - Can not find col index " + col+" in table.");
+            log("[CSV] Condition:For each row in col - Can not find col index " + col+" in table.");
             return;	    
         }
             
@@ -722,9 +754,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 	CSVKlassProto.ForEachColInRow = function (row)
 	{
         var has_row_index = (this.items.indexOf(row)!=(-1));
-        if ((!has_row_index) && this.plugin.isInPreview)
+        if (!has_row_index)
         {
-            console.log("[CSV] Condition:For each row in col - Can not find row index "+row+" in table.");
+            log("[CSV] Condition:For each row in col - Can not find row index "+row+" in table.");
             return; 	    
         }
             
@@ -795,12 +827,12 @@ cr.plugins_.Rex_CSV = function(runtime)
     CSVKlassProto.SortCol = function (col, is_increasing)
     {
         var has_col_index = (this.keys.indexOf(col)!=(-1));
-        if ((!has_col_index) && this.plugin.isInPreview)
+        if (!has_col_index)
         {
-            console.log("[CSV] Action:Sort Col - Can not find col index " + col+" in table.");
+            log("[CSV] Action:Sort Col - Can not find col index " + col+" in table.");
             return;
         }
-        _sort_table = this._table;
+        _sort_table = this.table;
         _sort_col_name = col;
         _sort_is_increasing = (is_increasing == 0);
         this.items.sort(_col_sort);
@@ -809,12 +841,12 @@ cr.plugins_.Rex_CSV = function(runtime)
     CSVKlassProto.SortRow = function (row, is_increasing)
     {
         var has_row_index = (this.items.indexOf(row)!=(-1));
-        if ((!has_row_index) && this.plugin.isInPreview)
+        if (!has_row_index)
         {
-            console.log("[CSV] Action:Sort Row - Can not find row index "+row+" in table.");
+            log("[CSV] Action:Sort Row - Can not find row index "+row+" in table.");
             return;        
         }
-        _sort_table = this._table;
+        _sort_table = this.table;
         _sort_row_name = row;
         _sort_is_increasing = (is_increasing == 0);      
         this.keys.sort(_row_sort); 
@@ -907,21 +939,5 @@ cr.plugins_.Rex_CSV = function(runtime)
 
         // Return the parsed data.
         return( arrData );
-    };    
-    
-    // adapter for exporting to javascript
-    cr.plugins_.Rex_CSV.CSVAdapterKlass = function(plugin)
-    {
-        this["_plugin"] = plugin;      
-    };
-    var CSVAdapterKlassProto = cr.plugins_.Rex_CSV.CSVAdapterKlass.prototype; 
-    
-    CSVAdapterKlassProto["Get"] = function(col, row, page)
-    {
-        return this["_plugin"].Get(col, row, page);
-    };
-    CSVAdapterKlassProto["Set"] = function(value, col, row, page)
-    {
-        this["_plugin"].Set(value, col, row, page);
-    };
+    };       
 }());    

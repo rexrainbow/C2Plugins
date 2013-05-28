@@ -23,3 +23,6 @@ C. time
 - timer.RemainderTimePercentGet()
 - timer.ElapsedTimePercentGet()
 - timer.DeltaErrorTickGet()
+
+3. load timer (for save/load system)
+- timeline_obj.LoadTimer(thisArg, call_back_fn, args, load_info);

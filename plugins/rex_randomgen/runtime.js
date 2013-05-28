@@ -209,6 +209,23 @@ MersenneTwister.prototype.genrand_res53 = function() {
   return(a*67108864.0+b)*(1.0/9007199254740992.0); 
 } 
 
+
+// save / load
+MersenneTwister.prototype.saveToJSON = function() 
+{
+  return { "mt": this.mt,
+           "mti": this.mti,
+           };
+} 
+
+MersenneTwister.prototype.loadFromJSON = function (o)
+{
+  this.mt = o["mt"];
+  this.mti = o["mti"];
+} 
+
+
+
 /* These real versions are due to Isaku Wada, 2002/01/09 added */
 
 
@@ -249,7 +266,17 @@ MersenneTwister.prototype.genrand_res53 = function() {
 	{
         return this.rand_gen.random();
 	};
-
+	
+	instanceProto.saveToJSON = function ()
+	{       	    
+		return { "rand": this.rand_gen.saveToJSON()
+		         };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.rand_gen.loadFromJSON(o["rand"]);
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

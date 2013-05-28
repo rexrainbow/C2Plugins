@@ -72,8 +72,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	        count = patterns[pat];
 	        if (count > 0)
 	        {
-	            this._pat_rank.push({rate:count/total_count,
-	                                 pattern:pat});
+	            this._pat_rank.push({"rate":count/total_count,
+	                                 "pattern":pat});
 	        }
 	    }
 	};
@@ -89,13 +89,13 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	instanceProto._get_rand_pattern = function(pat_rank)
 	{
 	    var value = this._get_random_value();
-	    var pattern="",i,cnt=pat_rank.length,rate;
-	    for (i=0;i<cnt;i++)
+	    var pattern="", i, cnt=pat_rank.length;
+	    for (i=0; i<cnt; i++)
 	    {
-	        value -= pat_rank[i].rate;
+	        value -= pat_rank[i]["rate"];
 	        if (value < 0)
 	        {
-	            pattern = pat_rank[i].pattern;
+	            pattern = pat_rank[i]["pattern"];
 	            break;
 	        }
 	    }
@@ -158,6 +158,25 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    }
 	    return pattern;
 	};
+
+	instanceProto.saveToJSON = function ()
+	{       	    
+		return { "m": this.mode,
+		         "pats": this.patterns,
+		         "pr": this._pat_rank,
+		         "spats": this._shadow_patterns,
+		         "rstf": this.restart_gen_flg
+		         };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.mode = o["m"];
+	    this.patterns = o["pats"];
+	    this._pat_rank = o["pr"];
+	    this._shadow_patterns = o["spats"];
+	    this.restart_gen_flg = o["rstf"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -178,7 +197,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{
 	    if (pattern == "")
 	        return;
-        this.patterns[pattern] = count; 
+        this.patterns[pattern] = count;
         this.restart_gen_flg = true;       
 	};
 	
@@ -206,7 +225,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{
         var random_gen = random_gen_objs.instances[0];
         if (random_gen.check_name == "RANDOM")
-            cr.plugins_.Rex_gInstGroup._random_gen = random_gen;        
+            cr.plugins_.Rex_PatternGen._random_gen = random_gen;        
         else
             alert ("[Pattern generator] This object is not a random generator object.");
 	}; 	
@@ -220,12 +239,10 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		ret.set_string(this.get_pattern());
 	};	
 	
-	Exps.prototype.Count = function (ret, pattern)
+	Exps.prototype.TotalCount = function (ret, pattern)
 	{
-	    var count;
-	    if (pattern in this.patterns)
-	        count = this.patterns[pattern];
-	    else
+	    var count = this.patterns[pattern];
+	    if (count == null)
 	        count = 0;
 		ret.set_float(count);
 	};	

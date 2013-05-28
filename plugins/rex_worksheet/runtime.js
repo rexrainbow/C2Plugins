@@ -41,13 +41,16 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-        this.timeline = null;
-        this.callback = null; 		
+        this.timeline = null;  
+        this.timelineUid = -1;    // for loading         
+        this.callback = null;     // deprecated
+        this.callbackUid = -1;    // for loading   // deprecated  	
         this.timer = null; 
         this.instructions = [];
         this.offset = 0;
         this.current_cmd = {};
         this.pre_abs_time = 0;        
+        this.timer_save = null;         
 	};
     
 	
@@ -56,7 +59,27 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         if (this.timer)
             this.timer.Remove();
 	};    
-
+	
+	instanceProto._timeline_get = function ()
+	{
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        assert2(this.timeline, "Worksheet: Can not find timeline oject.");
+        return null;	
+	};
+    
 	instanceProto.Start = function(instructions, offset)
 	{
         this.pre_abs_time = 0;
@@ -68,7 +91,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	instanceProto.Run = function()
 	{
 	    var cur_cmd = this.current_cmd;
-        var name = cur_cmd.cb_name, params = cur_cmd.cb_params;
+        var name = cur_cmd["cb"], params = cur_cmd["parms"];
         var has_rex_function = (this.callback != null);
         if (has_rex_function)
 		    this.callback.CallFn(name, params);
@@ -109,9 +132,9 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 			var params = CSVToArray(line)[0];
 			var delay_time = parseFloat(params.shift());
 			var name = params.shift();
-            instructions.push({time:delay_time,
-			                   cb_name:name,
-							   cb_params:params});                  
+            instructions.push({"t":delay_time,
+			                   "cb":name,
+							   "parms":params});                  
         }
         
         instructions.sort(_INSTRUCTION_SORT);
@@ -126,10 +149,10 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             this.current_cmd = this.instructions.shift();
             if (this.timer== null)
             {
-                this.timer = this.timeline.CreateTimer(this, this.Run);
+                this.timer = this._timeline_get().CreateTimer(this, this.Run);
             }
             
-            var next_abs_time = this.current_cmd.time + this.offset;
+            var next_abs_time = this.current_cmd["t"] + this.offset;
             this.timer.Start(next_abs_time - this.pre_abs_time);
             this.pre_abs_time = next_abs_time;
         }
@@ -225,7 +248,59 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 
         // Return the parsed data.
         return( arrData );
-    };            
+    };      
+
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "insts": this.instructions,
+                 "off": this.offset,
+                 "cmd": this.current_cmd ,
+                 "abst": this.pre_abs_time,
+                 "tim": (this.timer != null)? this.timer.saveToJSON() : null,
+                 "tluid": (this.timeline != null)? this.timeline.uid: (-1),
+                 "cbuid": (this.callback != null)? this.callback.uid: (-1)    // deprecated
+                };
+	};
+    
+	instanceProto.loadFromJSON = function (o)
+	{    
+        this.instructions = o["insts"];
+        this.offset = o["off"];
+        this.current_cmd = o["cmd"];
+        this.pre_abs_time = o["abst"];    
+        this.timer_save = o["tim"];
+        this.timelineUid = o["tluid"];
+        this.callbackUid = o["cbuid"];   // deprecated     
+	};
+    
+	instanceProto.afterLoad = function ()
+	{
+		if (this.timelineUid === -1)
+			this.timeline = null;
+		else
+		{
+			this.timeline = this.runtime.getObjectByUID(this.timelineUid);
+			assert2(this.timeline, "Timer: Failed to find timeline object by UID");
+		}		
+        
+        // ---- deprecated ----
+		if (this.callbackUid === -1)
+			this.callback = null;
+		else
+		{
+			this.callback = this.runtime.getObjectByUID(this.callbackUid);
+			assert2(this.callback, "Timer: Failed to find rex_function object by UID");
+		}		
+		// ---- deprecated ----          
+        
+        if (this.timer_save == null)
+            this.timer = null;
+        else
+        {
+            this.timer = this.timeline.LoadTimer(this, this.Run, null, this.timer_save);
+        }     
+        this.timers_save = null;        
+	}; 
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

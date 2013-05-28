@@ -54,6 +54,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 		this.pre_x = 0;
 		this.pre_y = 0;
         this.is_on_moving = false;  
+        this.cmd_cancel = false;
         this.keyMap = [false, false, false, false];
         this.pre_key_id = 0;
         this.diff_x = 0;
@@ -89,6 +90,11 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     
     instanceProto.OnTouchStart = function (touch_src, touchX, touchY)
     { 
+        if (this.cmd_cancel)
+        {
+            this.cmd_cancel = false;
+            return;
+        }
         this.is_on_moving = true;
         this.touch_src = touch_src;    
         this.pre_x = this.get_touch_x();
@@ -144,10 +150,11 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     var UPKEY = 0x8;
 	instanceProto._touch_arrow = function ()
 	{    
-        if ((this.touchwrap == null) || (!this.is_on_moving))
+        if ((this.touchwrap == null) || (!this.is_on_moving) || this.cmd_cancel) 
         {
             this.diff_x = 0;
-            this.diff_y = 0;        
+            this.diff_y = 0;
+            this.cmd_cancel = false;
             return;
         }
         
@@ -287,7 +294,13 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-
+		
+	Acts.prototype.Cancel = function ()
+	{        
+	    this.touch_src = null;
+	    this.is_on_moving = false;
+        this.cmd_cancel = true;
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

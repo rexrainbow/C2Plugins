@@ -10,7 +10,6 @@ cr.plugins_.Rex_Layouter = function(runtime)
 {
 	this.runtime = runtime;
 };
-cr.plugins_.Rex_Layouter.tag2container = {};
 
 (function ()
 {
@@ -28,7 +27,6 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 
 	typeProto.onCreate = function()
 	{
-        this.uid2container = {};  // pick container from instance's uid   
 	};
 
 	/////////////////////////////////////
@@ -44,21 +42,11 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	instanceProto.onCreate = function()
 	{
 	    this.check_name = "LAYOUTER";
-        this.insts_group = {};
-        this.sprites = [];
-		this.myDestroyCallback = (function (self) {
-											return function(inst) {
-												self.onInstanceDestroyed(inst);
-											};
-										})(this); 
-        this.runtime.addDestroyCallback(this.myDestroyCallback); 
-		this.tag = this.properties[2];
-		cr.plugins_.Rex_Layouter.tag2container[this.tag] = this;
+        this._uids = {};
+        this.sprites = [];    // uid
+        this.pin_status = {};
         if (this.pin_mode != 0)
-        {
-            this.pin_status = {};
-            this.runtime.tick2Me(this);            
-        }
+            this.runtime.tick2Me(this);
         
         // handlers for behaviors
         this.handlers = [];
@@ -66,34 +54,10 @@ cr.plugins_.Rex_Layouter.tag2container = {};
         this.has_event_call = false;
         this._get_layouter_handler();
 	};
-	
-	instanceProto.onInstanceDestroyed = function (inst)
-	{
-        var uid=inst.uid;
-        if (!(uid in this.type.uid2container))
-            return;
-
-        var type_name = inst.type.name;
-        delete this.insts_group[type_name][uid];                
-        delete this.type.uid2container[uid];
-        if ((this.pin_mode != 0) && (this.pin_status[uid] != null))
-            delete this.pin_status[uid];
-	};    
     
 	instanceProto.onDestroy = function ()
-	{
-	    delete cr.plugins_.Rex_Layouter.tag2container[this.tag];
-        var uid2container = this.type.uid2container;
-        var type_name,_container,uid,inst;
-        for (type_name in this.insts_group)
-        {
-            _container = this.insts_group[type_name];
-            for(uid in _container)
-            {            
-                delete uid2container[uid];
-            }
-        }  
-		this.runtime.removeDestroyCallback(this.myDestroyCallback);        	
+	{		
+        this._destory_all_insts();
 	};
     
 	instanceProto.tick2 = function ()
@@ -101,11 +65,13 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	    if (this.pin_mode == 0)
 	        return;
 	        				
-	    var uid,status,pin_inst,a,new_x,new_y,new_angle;
+	    var uid, status, pin_inst, a, new_x, new_y, new_angle;
 	    for (uid in this.pin_status)
 	    {
-	        status = this.pin_status[uid];
-            pin_inst = status.pin_inst;	 
+            pin_inst = this._uid2inst(uid);
+            if (pin_inst == null)
+                continue;
+            status = this.pin_status[uid];            
             if ((this.pin_mode == 1) || (this.pin_mode == 2))
 			{
 			    a = this.angle + status.delta_angle;				
@@ -142,33 +108,29 @@ cr.plugins_.Rex_Layouter.tag2container = {};
     
 	instanceProto.add_insts = function (insts)
 	{
-        var type_name=insts[0].type.name;
-        if (this.insts_group[type_name]==null)
-            this.insts_group[type_name] = {};
-        var _container = this.insts_group[type_name];
-        var inst,uid,i,cnt=insts.length;
-        var uid2container = this.type.uid2container;
+        var inst, i, cnt=insts.length;
 		var is_world = insts[0].type.plugin.is_world;
-        for (i=0;i<cnt;i++)
+        for (i=0; i<cnt; i++)
         {
             inst = insts[i];
-            uid = inst.uid;
-            uid2container[uid] = this;
-            _container[uid] = inst;
-            if (is_world && (this.pin_mode != 0))
-                this.pin_inst(inst);            
+            if (this._uids[inst.uid])  // is inside container
+                continue;            
+            inst.extra.rex_container_uid = this.uid;
+            this._uids[inst.uid] = true;
+            if (is_world)
+            {
+                this.sprites.push(inst.uid);
+                if (this.pin_mode != 0)
+                    this.pin_inst(inst);
+            }
         }
-        
-        if (is_world)
-            this.sprites.push.apply(this.sprites, insts);
             
         this._do_layout(insts, true);           
 	};
 
 	instanceProto.pin_inst = function (inst)
 	{
-        this.pin_status[inst.uid] = {pin_inst:inst,
-                                     delta_angle:cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
+        this.pin_status[inst.uid] = {delta_angle:cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
                                      delta_dist:cr.distanceTo(this.x, this.y, inst.x, inst.y),
 									 main_start_angle:this.angle,
 									 sub_start_angle:inst.angle,
@@ -187,50 +149,83 @@ cr.plugins_.Rex_Layouter.tag2container = {};
         var sol = inst.type.getCurrentSol();
         sol.select_all = false;
 		sol.instances.length = 1;
-		sol.instances[0] = inst;   
+		sol.instances[0] = inst;  
+
+		// Siblings aren't in instance lists yet, pick them manually
+		var i, len, s;
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				sol = s.type.getCurrentSol();
+				sol.select_all = false;
+				sol.instances.length = 1;
+				sol.instances[0] = s;
+			}
+		}
+        
 	    this.add_insts([inst]);
 	    return inst;
 	};    
 
+    instanceProto._remove_uid = function (uid)
+	{
+        if (uid in this._uids)
+            delete this._uids[uid];
+        if (uid in this.pin_inst)
+            delete this.pin_inst[uid];
+        cr.arrayFindRemove(this.sprites, uid)
+	};
+    
 	instanceProto.remove_insts = function (insts)
 	{
-        var type_name=insts[0].type.name;
-        if (this.insts_group[type_name]==null)
-            this.insts_group[type_name] = {};
-        var _container = this.insts_group[type_name];
-        var inst,uid,i,cnt=insts.length;
-        for (i=0;i<cnt;i++)
+        var i, cnt=insts.length;
+        for (i=0; i<cnt; i++)
         {
-            inst = insts[i];
-            uid = inst.uid;
-            if (uid in uid2container)
-            {
-                delete uid2container[uid];
-                delete _container[uid];
-            } 
-            cr.arrayFindRemove(this.sprites, inst);                                        
+            this._remove_uid(insts[i].uid);
         }
-        
-        this._do_layout(insts, false);      
 	}; 
+    
+    instanceProto._uid2inst = function(uid, objtype)
+    {
+	    if (uid == null)
+		    return null;
+        var inst = this.runtime.getObjectByUID(uid);
+        if (inst == null)
+        {
+            this._remove_uid(uid);
+			return null;
+        }
+
+        if ((objtype == null) || (inst.type == objtype))
+            return inst;        
+        else if (objtype.is_family)
+        {
+            var families = inst.type.families;
+            var cnt=families.length, i;
+            for (i=0; i<cnt; i++)
+            {
+                if (objtype == families[i])
+                    return inst;
+            }
+        }
+        // objtype mismatch
+        return null;
+    };
     
     instanceProto._pick_insts = function (objtype)
 	{
-        var type_name=objtype.name;
-	    var _container = this.insts_group[type_name];	    
         var sol = objtype.getCurrentSol();  
-        sol.select_all = true;   
-        var insts = sol.getObjects();
-        var insts_length = insts.length;
-        var i, inst;
+        sol.select_all = false;   
         sol.instances.length = 0;   // clear contents
-        for (i=0; i < insts_length; i++)
+        var uid, inst;
+        for (uid in this._uids)
         {
-           inst = insts[i];
-           if (inst.uid in _container)
-               sol.instances.push(inst);
+            inst = this._uid2inst(uid, objtype)
+            if (inst != null)
+                sol.instances.push(inst);
         }
-        sol.select_all = false;    
         return  (sol.instances.length >0);       
 	};
  	     
@@ -258,19 +253,13 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	
 	instanceProto._destory_all_insts = function ()
 	{
-        var uid2container = this.type.uid2container;
-        var type_name,_container,uid,inst;
-        for (type_name in this.insts_group)
+        var uid, inst;
+        for (uid in this._uids)
         {
-            _container = this.insts_group[type_name];
-            for(uid in _container)
-            {
-                inst = _container[uid];   			
-                delete _container[uid];                
-                delete uid2container[uid];			      
-                this.runtime.DestroyInstance(inst);
-            }
-        }         	
+            inst = this.runtime.getObjectByUID(uid);
+            if (inst != null)
+                this.runtime.DestroyInstance(inst);       
+        }     	
 	};	
 	
 	instanceProto._get_layouter_handler = function ()
@@ -301,8 +290,9 @@ cr.plugins_.Rex_Layouter.tag2container = {};
         }           
 	}; 
     
-	instanceProto.layout_inst = function (inst, params)
+	instanceProto.layout_inst = function (uid, params)
 	{
+        var inst = this.runtime.getObjectByUID(uid);
 	    params.inst = inst;
 	    this.layout_inst_params = params;
 	    this.has_event_call = false;
@@ -344,6 +334,21 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	    var bbox = inst.bbox;
 	    return (bbox.top+bbox.bottom)/2;            
 	};
+    
+	instanceProto.saveToJSON = function ()
+	{
+		return { "uids": this._uids, 
+                 "s": this.sprites,
+                 "ps": this.pin_status,
+                };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{            
+        this._uids = o["uids"];	
+        this.sprites = o["s"];
+        this.pin_status = o["ps"];
+	};        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -365,34 +370,35 @@ cr.plugins_.Rex_Layouter.tag2container = {};
 	Cnds.prototype.PickLayouter =function (objtype)
 	{
 		if (!objtype)
-			return; 	
+			return; 
+            
     	var insts = objtype.getCurrentSol().getObjects();        
     	var cnt = insts.length;
-    	if (cnt == 0)
-            return false;  
-        
-        var i,container,container_uid,uids={}; 
-	    var runtime = this.runtime;
-	    var container_type = runtime.getCurrentCondition().type;         
-        var sol = container_type.getCurrentSol();
-        sol.select_all = false;
-        sol.instances.length = 0;              
-        for (i=0;i<cnt;i++)
+        if (cnt == 0)
+            return false;
+        var container_type = this.runtime.getCurrentCondition().type;  
+        var container_sol = container_type.getCurrentSol();
+        container_sol.select_all = false;
+        container_sol.instances.length = 0;                
+        var i, container_uid, container_inst;
+        var uids = {};
+        for (i=0; i<cnt; i++)
         {
-            container = container_type.uid2container[insts[i].uid]; 
-            container_uid = container.uid;
-            if ((container!=null) && !(container_uid in uids))
-            {
-                sol.instances.push(container);
-                uids[container_uid] = true;                
-            }
-        }    	
-        var current_event = runtime.getCurrentEventStack().current_event;
-        runtime.pushCopySol(current_event.solModifiers);
+            container_uid = insts[i].extra.rex_container_uid;
+            if (container_uid in uids)
+                continue;
+            container_inst = this.runtime.getObjectByUID(container_uid);
+            if (container_inst == null)
+                continue;            
+            container_sol.instances.push(container_inst);
+            uids[container_uid] = true;
+        }
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+        this.runtime.pushCopySol(current_event.solModifiers);
         current_event.retrigger();
-        runtime.popSol(current_event.solModifiers);
+        this.runtime.popSol(current_event.solModifiers);
 		return false;            
-	}; 	
+	}; 
 
 	Cnds.prototype.PickAllInsts = function ()
 	{

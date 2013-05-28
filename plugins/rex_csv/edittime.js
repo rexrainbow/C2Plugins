@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Read 2d table from cvs string.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_csv.html",
 		"category":		"Data & Storage",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -42,6 +42,10 @@ AddCondition(7, 0, "Key in col", "In",
 AddStringParam("Key", "The row index.", '""');
 AddCondition(8, 0, "Key in row", "In", 
              "Key <i>{0}</i> in row", "Return true if key in row.", "IsKeyInRow"); 
+AddStringParam("Col", "The col index.", '""');             
+AddStringParam("Row", "The row index.", '""');
+AddCondition(9, 0, "Entry is valid", "In", 
+             "(<i>{0}</i>, <i>{1}</i>) is valid", "Return true if the entry is valid.", "IsEntryValid");              
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("CSV string", "The csv string for loading.", '""');
@@ -102,7 +106,8 @@ AddAction(14, 0, "Sort items in row", "Sort", "Sort items in row <i>{0}</i> , by
 // Expressions
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
-AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table: At", "At", "Get value from current table. Add page index to turn the page.");
+AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table: At", "At", 
+              "Get value from current table. Add page index at 3rd parameter to turn the page. Add default value at 4th parameter for invalid value.");
 AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current column index in a For Each loop.");
 AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the current row index in a For Each loop.");
 AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
@@ -120,7 +125,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [	
-    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"), 
     new cr.Property(ept_text, "Delimiter", ",", "Set delimiter for splitting items."),     
 	];
 	

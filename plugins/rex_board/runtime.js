@@ -47,6 +47,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.reset_board(this.properties[0]-1,
 	                     this.properties[1]-1);
         this.layout = null;
+        this.layoutUid = -1;    // for loading
         this._kicked_chess_inst = null;
         
 		// Need to know if pinned object gets destroyed
@@ -87,8 +88,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		        this.board[x][y] = {};
 		}
 		
-		this.items = {};
-        this._insts = {};
+		if (this.items == null)
+		    this.items = {};
+		else
+		    hash_clean(this.items);
 	};
 	
 	instanceProto.set_board_width = function(x_max)
@@ -181,13 +184,6 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return uid;
 	};
     
-    instanceProto._get_layer = function(layerparam)
-    {
-        return (typeof layerparam == "number")?
-               this.runtime.getLayerByNumber(layerparam):
-               this.runtime.getLayerByName(layerparam);
-    };
-   	
 	instanceProto.xyz2uid = function(x, y, z)
 	{
 	    return (this.is_inside_board(x, y, z))? this.board[x][y][z]:null;
@@ -241,13 +237,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
 	instanceProto.uid2inst = function(uid)
 	{
-	    return this._insts[uid];
+	    if (this.uid2xyz(uid) == null)  // not on the board
+	        return null;
+	    else
+	        return this.runtime.getObjectByUID(uid);
 	};
     
 	instanceProto.CreateItem = function(obj,x,y,z,_layer)
 	{
-        var layer = this._get_layer(_layer);
-        var inst = this.layout.CreateItem(obj,x,y,z,layer);
+        var layer = (typeof _layer == "number")?
+                    this.runtime.getLayerByNumber(_layer):
+                    this.runtime.getLayerByName(_layer);
+        var inst = this.layout.CreateItem(obj, x, y, z, layer);
         if (!inst)
             return;
         
@@ -302,14 +303,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         var is_inst = (typeof(inst) != "number");
         var uid = (is_inst)? inst.uid:inst;
-        if (this._insts[uid] != null)  // already on board
+        if (this.uid2inst(uid) != null)  // already on board
             this.remove_item(uid);
         this.remove_item(this.xyz2uid(_x,_y,_z), true);
 	    this.board[_x][_y][_z] = uid;
 	    this.items[uid] = {x:_x, y:_y, z:_z};
-        
-        if (is_inst)
-            this._insts[uid] = inst;
             
         this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnCollided, this);                                           
 	};
@@ -325,13 +323,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                     
         if (kicking_notify)
         {
-            this._kicked_chess_inst = this._insts[uid];
+            this._kicked_chess_inst = this.uid2inst(uid);
             this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnChessKicked, this); 
         }
         
         delete this.items[uid];
-        delete this.board[_xyz.x][_xyz.y][_xyz.z];        
-        delete this._insts[uid];
+        delete this.board[_xyz.x][_xyz.y][_xyz.z];
 	};
 	instanceProto.move_item = function(chess_inst, target_x, target_y, target_z)
 	{
@@ -446,15 +443,16 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
 	};	
     
+    var name2type = {};  // private global object
 	instanceProto._pick_all_insts = function ()
 	{	    
 	    var uid, inst, objtype, sol;
-	    var insts=this._insts;
-	    var name2type={};	
+	    var uids = this.items;
+	    hash_clean(name2type);
 	    var has_inst = false;    
-	    for (uid in insts)
+	    for (uid in uids)
 	    {
-	        inst = insts[uid];
+	        inst = this.uid2inst(uid);
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
 	        if (!(objtype.name in name2type))
@@ -469,6 +467,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var name;
 	    for (name in name2type)
 	        name2type[name].applySolToContainer();
+	    hash_clean(name2type);
 	    return has_inst;
 	};
     
@@ -573,26 +572,85 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		var ly = this.layout.PXY2LY(px, py);
 		return ((lx>=0) && (ly>=0) && (lx<=this.x_max) && (ly<=this.y_max));
 	};
-	
+		
 	instanceProto._pick_chess_on_LXYZ = function (chess_type, lx, ly, lz)
 	{
         var uid = this.xyz2uid(lx, ly, lz);
         if (uid == null)
             return false;
-        var inst = this._insts[uid];
+        var inst = this.uid2inst(uid);
         var chess_type = inst.type;
         chess_type.getCurrentSol().pick_one(inst);
         chess_type.applySolToContainer();
         return true;            
+	};
+	
+	instanceProto.saveToJSON = function ()
+	{    
+	    // wrap: copy from this.items
+	    var uid, uid2xyz = {}, item;
+	    for (uid in this.items)
+	    {
+	        uid2xyz[uid] = {};
+	        item = this.items[uid];
+	        uid2xyz[uid]["x"] = item.x;
+	        uid2xyz[uid]["y"] = item.y;
+	        uid2xyz[uid]["z"] = item.z;	        
+	    }
+		return { "luid": (this.layout != null)? this.layout.uid:(-1),
+		         "mx": this.x_max,
+                 "my": this.y_max,
+                 "xyz2uid": this.board,
+                 "uid2xyz": uid2xyz };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.layoutUid = o["luid"];
+		this.x_max = o["mx"];
+        this.y_max = o["my"]; 
+        this.board = o["xyz2uid"];
+        
+        // wrap: copy to this.items
+        hash_clean(this.items);
+	    var uid, uid2xyz = o["uid2xyz"], item;
+	    for (uid in uid2xyz)
+	    {
+	        this.items[uid] = {};
+	        item = uid2xyz[uid];
+	        this.items[uid].x = item["x"];
+	        this.items[uid].y = item["y"];
+	        this.items[uid].z = item["z"];	        
+	    }     
+	};
+	
+	instanceProto.afterLoad = function ()
+	{
+		if (this.layoutUid === -1)
+			this.layout = null;
+		else
+		{
+			this.layout = this.runtime.getObjectByUID(this.layoutUid);
+			assert2(this.layout, "Board: Failed to find layout object by UID");
+		}
+		
+		this.layoutUid = -1;
+	};
+		
+	var hash_clean = function (obj)
+	{
+	    var k;
+	    for (k in obj)
+	        delete obj[k];
 	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();        
 	  
-	Cnds.prototype.IsEmpty = function (_x,_y,_z)
+	Cnds.prototype.IsEmpty = function (x,y,z)
 	{
-		return (this.board[_x][_y][_z] == null);
+		return (this.board[x][y][z] == null);
 	}; 
 	
 	Cnds.prototype.OnCollided = function (objA, objB)
@@ -721,6 +779,20 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var inst = objs.getFirstPicked();
 	    this.add_item(inst,x,y,0);
 	};
+		
+	Acts.prototype.DestroyChess = function (chess_type)
+	{
+        if (!chess_type)
+            return;  
+        var chess = chess_type.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+        for (i=0; i<chess_cnt; i++)  
+        {      
+	        this.remove_item(chess[i].uid);
+	        this.runtime.DestroyInstance(chess[i]);
+	    }
+	};	
+	
 	
 	Acts.prototype.AddChess = function (objs,x,y,z)
 	{
@@ -734,7 +806,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (layout.check_name == "LAYOUT")
             this.layout = layout;        
         else
-            alert ("SLG board should connect to a layout object");
+            alert ("Board should connect to a layout object");
 	};  
 		
 	Acts.prototype.CreateTile = function (_obj_type,x,y,_layer)

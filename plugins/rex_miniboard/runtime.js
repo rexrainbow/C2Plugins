@@ -28,6 +28,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	typeProto.onCreate = function()
 	{
 	    this.layout = null;	
+	    this.layoutUid = -1;	
 	};
 
 	/////////////////////////////////////
@@ -59,7 +60,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this.runtime.tick2Me(this); 
 
 		//this._kicked_chess_inst = null;	
-        this.exp_putable = 0;
+        this.is_putable = 0;
         this.exp_RequestLX = (-1);		
         this.exp_RequestLY = (-1);
         this.exp_RequestLZ = (-1);   
@@ -71,26 +72,28 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	instanceProto.ResetBoard = function ()
 	{
 		this.board = {};
-		this.items = {};
-        this.chess_insts = {};
-		this.main_board = null;
+		this.items = {};  // uid2xyz
+		this.mainBoard = null;
+		this.mainBoardUid = -1;    // for loading
 		this.POX = (-1);
 		this.POY = (-1);
 	};	
 	
 	instanceProto.onInstanceDestroyed = function (inst)
 	{
-	    var uid=inst.uid;		
-		if (this.chess_insts[uid] == null)
-		    return;
-	    this.remove_item(uid);
+		this.remove_item(inst.uid);
 	};    
     
 	instanceProto.onDestroy = function ()
 	{
-		var uid, inst, insts=this.chess_insts;
-		for (uid in insts)
-		    this.runtime.DestroyInstance(insts[uid]);
+		var uid, inst, uids=this.items;
+		for (uid in uids)
+		{
+		    inst = this.uid2inst(uid);
+		    if (inst == null)
+		        continue;
+		    this.runtime.DestroyInstance(inst);
+		}
 		this.runtime.removeDestroyCallback(this.myDestroyCallback);        	    	
 	};
 	instanceProto.chess_pos_set = function ()
@@ -100,10 +103,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		if ((dx == 0) && (dy == 0))
 		    return;
 			
-		var uid, inst, insts=this.chess_insts;
-		for (uid in insts)
+		var uid, inst, uids=this.items;
+		for (uid in uids)
 		{
-		    inst = insts[uid];
+		    inst = this.uid2inst(uid);
+		    if (inst == null)
+		        continue;
 			inst.x += dx;
 			inst.y += dy;
 			inst.set_bbox_changed();
@@ -155,6 +160,20 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		}
 		return null;
 	};
+	
+	instanceProto.uid2xyz = function(uid)
+	{
+	    return this.items[uid];
+	};
+	
+	instanceProto.uid2inst = function(uid)
+	{
+	    if (this.uid2xyz(uid) == null)  // not on the board
+	        return null;
+	    else
+	        return this.runtime.getObjectByUID(uid);
+	};
+		
 	instanceProto._put_chess = function(x, y, z, uid)
 	{
 	    var tmp;
@@ -166,18 +185,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    tmp = tmp[y];
 		tmp[z] = uid;
 	};	
-	instanceProto.uid2xyz = function(uid)
-	{
-	    return this.items[uid];
-	};
+
 	instanceProto.remove_item = function(uid, kicking_notify)
-	{        
-        if (uid == null)
-            return;
-	    
-        var _xyz = this.uid2xyz(uid);
-        if (_xyz == null)
-            return;
+	{            
+        var inst = this.uid2inst(uid);
+        if (inst == null)
+            return;            
                     
         //if (kicking_notify)
         //{
@@ -185,13 +198,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         //    this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnChessKicked, this); 
         //}
         
-        var chess_inst = this.chess_insts[uid];
+        var _xyz = this.uid2xyz(uid);
         delete this.items[uid];
-        delete this.board[_xyz.x][_xyz.y][_xyz.z];        
-        delete this.chess_insts[uid];	
-        
-        delete chess_inst.extra.rex_miniboard_uid;	
+        delete this.board[_xyz.x][_xyz.y][_xyz.z];	        
+        delete inst.extra.rex_miniboard_uid;	
 	};
+	
 	instanceProto.add_item = function(inst, _x, _y, _z)
 	{                
         // inst could be instance(object) or uid(number)
@@ -201,13 +213,11 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         var uid = inst.uid;
         this.remove_item(this.xyz2uid(_x,_y,_z), true);
 		this._put_chess(_x, _y, _z,uid);
-	    this.items[uid] = {x:_x, y:_y, z:_z};
-        this.chess_insts[uid] = inst;
-        
+	    this.items[uid] = {x:_x, y:_y, z:_z};        
         inst.extra.rex_miniboard_uid = this.uid;
         //this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnCollided, this);                                           
 	};
-
+	
 	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
 	{
         var layer = this._get_layer(_layer);
@@ -218,12 +228,29 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this.runtime.isInOnDestroy++;
 		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
 		this.runtime.isInOnDestroy--;
-        
+
         // Pick just this instance
-        obj_type.getCurrentSol().pick_one(inst);
+        var sol = obj_type.getCurrentSol();
+        sol.select_all = false;
+		sol.instances.length = 1;
+		sol.instances[0] = inst;
+		
+		// Siblings aren't in instance lists yet, pick them manually
+		var i, len, s;
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				sol = s.type.getCurrentSol();
+				sol.select_all = false;
+				sol.instances.length = 1;
+				sol.instances[0] = s;
+			}
+		}
 
         return inst;
-	};
+	};	
 	instanceProto.CreateChess = function(obj_type,x,y,z,layer)
 	{
         if ( (obj_type ==null) || (this.type.layout == null) )
@@ -247,8 +274,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		var board_ymax = board_inst.y_max;
 		var board = board_inst.board;   
 		var _xyz, x, y, z;
-		var uid, insts = this.chess_insts;
-		for (uid in insts)
+		var uid, uids=this.items;
+		for (uid in uids)
 		{
 		    _xyz = this.uid2xyz(uid);
 			x = _xyz.x+offset_lx;
@@ -263,23 +290,26 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	}; 	
 	instanceProto.PutChess = function (board_inst, offset_lx, offset_ly)
 	{	 
-	    if (this.main_board != null)
+	    if (this.mainBoard != null)
 		    return;
 			
 		var _xyz, x, y, z;
-		var uid, insts = this.chess_insts;
-		for (uid in insts)
+		var uid, inst, uids=this.items;
+		for (uid in uids)
 		{
+		    inst = this.uid2inst(uid);
+		    if (inst == null)
+		        continue;
 		    _xyz = this.uid2xyz(uid);
 			x = _xyz.x+offset_lx;
 			y = _xyz.y+offset_ly;
 			z = _xyz.z;			
-			board_inst.add_item(insts[uid], x, y, z);
+			board_inst.add_item(inst, x, y, z);
 		}
 		this.x = board_inst.layout.LXYZ2PX(offset_lx, offset_ly, 0);
 		this.y = board_inst.layout.LXYZ2PY(offset_lx, offset_ly, 0);
 		this.chess_pos_set();
-		this.main_board = board_inst;
+		this.mainBoard = board_inst;
 		this.POX = offset_lx;
 		this.POY = offset_ly;
         this.last_POX = offset_lx;
@@ -288,50 +318,54 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	instanceProto.PullOutChess = function ()
 	{	 
-	    if (this.main_board == null)
+	    if (this.mainBoard == null)
 		    return;
         
 		var _xyz, x, y, z;
-		var uid, insts = this.chess_insts;
-		for (uid in insts)
-			this.main_board.remove_item(uid);
-		this.main_board = null;
+		var uid, uids=this.items;
+		for (uid in uids)
+			this.mainBoard.remove_item(uid);
+		this.mainBoard = null;
 		this.POX = (-1);
 		this.POY = (-1);
 	};
     
+    var name2type = {};  // private global object
 	instanceProto._pick_all_insts = function ()
 	{	    
 	    var uid, inst, objtype, sol;
-	    var insts=this.chess_insts;
-	    var objtype_name={};	
+	    var uids=this.items;
+	    hash_clean(name2type);
 	    var has_inst = false;    
-	    for (uid in insts)
+	    for (uid in uids)
 	    {
-	        inst = insts[uid];
+		    inst = this.uid2inst(uid);
+		    if (inst == null)
+		        continue;
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
-	        if (!(objtype.name in objtype_name))
+	        if (!(objtype.name in name2type))
 	        {
 	            sol.select_all = false;
 	            sol.instances.length = 0;
-	            objtype_name[objtype.name] = true;
+	            name2type[objtype.name] = true;
 	        }
 	        sol.instances.push(inst);  
 	        has_inst = true;
 	    }
+        hash_clean(name2type);
 	    return has_inst;
 	};
 	
-	instanceProto.is_put_able = function (board_inst, offset_lx, offset_ly)
+	instanceProto._is_putable_test = function (board_inst, offset_lx, offset_ly)
 	{
 		var board_xmax = board_inst.x_max;
 		var board_ymax = board_inst.y_max;
 		var board = board_inst.board;   
 		var _xyz, x, y, z;
-		var uid, insts = this.chess_insts;
-		for (uid in insts)
-		{
+		var uid, uids=this.items;
+		for (uid in uids)
+		{		    
 		    _xyz = this.uid2xyz(uid);
 			x = _xyz.x+offset_lx;
 			y = _xyz.y+offset_ly;
@@ -346,9 +380,9 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
                 this.exp_RequestLY = _xyz.y+offset_ly;
                 this.exp_RequestLZ = _xyz.z;
                 this.exp_RequestChessUID = parseInt(uid);
-                this.exp_putable = false;
+                this.is_putable = false;
                 this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPutAbleRequest, this);
-                if (!this.exp_putable)
+                if (!this.is_putable)
                     return false;
 		    }
 		}
@@ -358,6 +392,89 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.exp_RequestChessUID = (-1);	
 		return true;
 	};
+		
+	var hash_clean = function (obj)
+	{
+	    var k;
+	    for (k in obj)
+	        delete obj[k];
+	};
+	
+	instanceProto.saveToJSON = function ()
+	{    
+	    // wrap: copy from this.items
+	    var uid, uid2xyz = {}, item;
+	    for (uid in this.items)
+	    {
+	        uid2xyz[uid] = {};
+	        item = this.items[uid];
+	        uid2xyz[uid]["x"] = item.x;
+	        uid2xyz[uid]["y"] = item.y;
+	        uid2xyz[uid]["z"] = item.z;	        
+	    }
+	    	    
+		return { "pre_x": this._pre_x,
+		         "pre_y": this._pre_y,
+                 "l_pox": this.last_POX,
+                 "l_poy": this.last_POY,
+                 "xyz2uid": this.board,
+                 "uid2xyz": uid2xyz,
+                 "mbuid" : (this.mainBoard!=null)? this.mainBoard.uid:(-1),
+                 "pox": this.POX,
+                 "poy": this.POY,
+                 "luid": (this.type.layout != null)? this.type.layout.uid:(-1)
+               };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this._pre_x = o["pre_x"];
+		this._pre_y = o["pre_y"];
+        this.last_POX = o["l_pox"]; 
+        this.last_POY = o["l_poy"];
+        this.board = o["xyz2uid"];     
+        this.mainBoardUid = o["mbuid"];
+        this.POX = o["pox"]; 
+        this.POY = o["poy"];  
+        this.type.layoutUid = o["luid"];
+        
+        
+        // wrap: copy to this.items
+        hash_clean(this.items);
+	    var uid, uid2xyz = o["uid2xyz"], item;
+	    for (uid in uid2xyz)
+	    {
+	        this.items[uid] = {};
+	        item = uid2xyz[uid];
+	        this.items[uid].x = item["x"];
+	        this.items[uid].y = item["y"];
+	        this.items[uid].z = item["z"];	        
+	    }          
+	};
+	
+	instanceProto.afterLoad = function ()
+	{
+		if (this.mainBoardUid === -1)
+			this.mainBoard = null;
+		else
+		{
+			this.mainBoard = this.runtime.getObjectByUID(this.mainBoardUid);
+			assert2(this.mainBoard, "Mini board: Failed to find main board object by UID");
+		}
+		
+		this.mainBoardUid = -1;
+		
+		if (this.type.layoutUid === -1)
+			this.type.layout = null;
+		else
+		{
+			this.type.layout = this.runtime.getObjectByUID(this.type.layoutUid);
+			assert2(this.type.layout, "Mini board: Failed to find layout object by UID");
+		}
+		
+		this.type.layoutUid = -1;		
+	};
+			
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -375,52 +492,36 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    return this._pick_all_insts();
 	};
     
-    var _uid2inst = {};
-    var _uid2inst_get = function(insts)
-    {
-        var uid;
-        for (uid in _uid2inst)
-            delete _uid2inst[uid];
-        var i, cnt=insts.length, inst;
-        for (i=0; i<cnt; i++)
-        {
-            inst = insts[i];
-            _uid2inst[inst.uid] = inst;
-        }
-        return _uid2inst;
-    };
-    
-	Cnds.prototype.PickMiniboard =function (objtype)
+	Cnds.prototype.PickMiniboard = function (objtype)
 	{
 		if (!objtype)
 			return; 
             
     	var insts = objtype.getCurrentSol().getObjects();        
     	var cnt = insts.length;
-    	if (cnt == 0)
-            return false;  
- 
+        if (cnt == 0)
+            return false;
+        var miniboard_type = this.runtime.getCurrentCondition().type;  
+        var miniboard_sol = miniboard_type.getCurrentSol();
+        miniboard_sol.select_all = false;
+        miniboard_sol.instances.length = 0;                
         var i, miniboard_uid, miniboard_inst;
-	    var runtime = this.runtime;
-	    var container_type = runtime.getCurrentCondition().type;         
-        var sol = container_type.getCurrentSol();
-        sol.select_all = true;
-        var uid2inst = _uid2inst_get(sol.getObjects());
-        sol.select_all = false;
-        sol.instances.length = 0;              
-        for (i=0;i<cnt;i++)
+        var uids = {};
+        for (i=0; i<cnt; i++)
         {
             miniboard_uid = insts[i].extra.rex_miniboard_uid;
-            miniboard_inst = uid2inst[miniboard_uid];
+            if (miniboard_uid in uids)
+                continue;
+            miniboard_inst = this.runtime.getObjectByUID(miniboard_uid);
             if (miniboard_inst == null)
-                continue;            
-            sol.instances.push(miniboard_inst);
-            delete uid2inst[miniboard_uid];
+                continue;
+            miniboard_sol.instances.push(miniboard_inst);
+            uids[miniboard_uid] = true;
         }
-        var current_event = runtime.getCurrentEventStack().current_event;
-        runtime.pushCopySol(current_event.solModifiers);
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+        this.runtime.pushCopySol(current_event.solModifiers);
         current_event.retrigger();
-        runtime.popSol(current_event.solModifiers);
+        this.runtime.popSol(current_event.solModifiers);
 		return false;            
 	}; 
 	  
@@ -429,14 +530,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		if (!board_objs)
 			return; 
 		var board_inst = board_objs.getFirstPicked();
-		return (this.main_board == board_inst);
+		return (this.mainBoard == board_inst);
 	}; 
 	
 	Cnds.prototype.IsPutAble = function (board_objs, offset_lx, offset_ly)
 	{
 		if (!board_objs)
 			return; 
-		return this.is_put_able(board_objs.getFirstPicked(), offset_lx, offset_ly);
+		return this._is_putable_test(board_objs.getFirstPicked(), offset_lx, offset_ly);
 	}; 
 	  
 	Cnds.prototype.OnPutAbleRequest = function ()
@@ -553,7 +654,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	Acts.prototype.SetPutAble = function (put_able)
 	{	
-        this.exp_putable = (put_able == 1);
+        this.is_putable = (put_able == 1);
 	};		
 	
 		    
@@ -564,12 +665,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	Exps.prototype.LX = function (ret)
 	{
-	    var lx = (this.main_board == null)? (-1): this.POX;
+	    var lx = (this.mainBoard == null)? (-1): this.POX;
 	    ret.set_int(lx);
 	};
 	Exps.prototype.LY = function (ret)
     {
-	    var ly = (this.main_board == null)? (-1): this.POY;
+	    var ly = (this.mainBoard == null)? (-1): this.POY;
 	    ret.set_int(ly);
 	};	
 	Exps.prototype.LastLX = function (ret)

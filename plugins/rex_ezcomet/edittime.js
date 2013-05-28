@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Send or receive message through EZ Comet service: http://ezcomet.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ezcomet.html",
 		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

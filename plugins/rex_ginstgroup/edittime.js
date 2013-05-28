@@ -6,7 +6,7 @@
 		"version":		"1.0",         
 		"description":	"A set/list to store instances by uid",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ginstgroup.html",
 		"category":		"Data & Storage",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -44,7 +44,7 @@ AddComboParamOption("Get");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
 AddCondition(6, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
-             "Get or pop one instance from group.", "PopInstance");             
+             "Get or pop one instance from group.", "PopOneInstance");             
 AddStringParam("Subset", "Group name.", '""'); 
 AddStringParam("Main set", "Group name.", '""'); 
 AddCondition(7, 0, "Is a subset", "Group: Set operation", "<i>{0}</i> is a subset of <i>{1}</i>", 
@@ -68,22 +68,22 @@ AddAction(4, 0, "Load all", "Group: JSON", "Load all groups from JSON string <i>
           "Load all groups from JSON string.", "String2All");  
 AddStringParam("Name", "Group name.", '""');
 AddAction(5, 0, "Destroy group", "Group", "Destroy group <i>{0}</i>", 
-          "Destroy group.", "Destroy");                              
+          "Destroy group.", "DestroyGroup");                              
 AddObjectParam("Instances", "Instances to be added into group.");
 AddStringParam("Name", "Group name.", '""');
-AddAction(6, 0, "Add instances", "Instance: Add", "Add <i>{0}</i> into group <i>{1}</i>", 
+AddAction(6, 0, "Add instances", "Group: Add instances", "Add <i>{0}</i> into group <i>{1}</i>", 
           "Add instances into group.", "AddInsts");
 AddNumberParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
-AddAction(7, 0, "Add instances by UID", "Instance: Add", "Add instance UID:<i>{0}</i> into group <i>{1}</i>", 
+AddAction(7, 0, "Add instances by UID", "Group: Add instances", "Add instance UID:<i>{0}</i> into group <i>{1}</i>", 
           "Add instances into group by UID.", "AddInstByUID");          
 AddObjectParam("Instances", "Instances to be removed from group.");
 AddStringParam("Name", "Group name.", '""');
-AddAction(8, 0, "Remove instances", "Instance: Reomve", "Remove <i>{0}</i> from group <i>{1}</i>", 
+AddAction(8, 0, "Remove instances", "Group: Reomve instances", "Remove <i>{0}</i> from group <i>{1}</i>", 
           "Remove instances from group.", "RemoveInsts"); 
 AddNumberParam("UID", "The UID of instance to be removed from group.", 0);
 AddStringParam("Name", "Group name.", '""');
-AddAction(9, 0, "Remove instances by UID", "Instance: Reomve", "Remove instance UID:<i>{0}</i> from group <i>{1}</i>", 
+AddAction(9, 0, "Remove instances by UID", "Group: Reomve instances", "Remove instance UID:<i>{0}</i> from group <i>{1}</i>", 
           "Remove instances from group by UID.", "RemoveInst");
 AddStringParam("A", "Group A.", '""');
 AddStringParam("B", "Group B.", '""');
@@ -177,7 +177,10 @@ AddStringParam("Name", "Group name.", '""');
 AddNumberParam("Index", "The zero-based index to insert to.");
 AddAction(27, 0, "Insert instance by UID", "List: Push & Insert", "Insert instance UID:<i>{0}</i> into group <i>{1}</i> at index <i>{2}</i>", 
           "Insert instances into group.", "InsertInstByUID");
-      
+AddObjectParam("Instances", "Instances to be set into group.");
+AddStringParam("Name", "Group name.", '""');
+AddAction(28, 0, "Clean & Add", "Group: Set", "Clean and Add <i>{0}</i> into group <i>{1}</i>", 
+          "Clean and Add instances into group.", "CleanAdddInsts");
           
 //////////////////////////////////////////////////////////////
 // Expressions

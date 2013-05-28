@@ -46,6 +46,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.SetPOY(this.properties[1]);
         this.SetWidth(this.properties[2]);
         this.SetHeight(this.properties[3]);
+        this.is_up2down = (this.properties[4]==1);
 	};
 	instanceProto.SetPOX = function(pox)
 	{
@@ -67,55 +68,108 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
         this.width = width;
         this.half_width = width/2;        
-	}; 
+	};
 	instanceProto.SetHeight = function(height)
 	{
-        this.height = height;        
+        this.height = height; 
+        this.half_height = height/2;
 	};   
 	instanceProto.LXYZ2PX = function(logic_x, logic_y, logic_z)
 	{
-        return (logic_x*this.width)+((logic_y%2)*this.half_width)+this.PositionOX;
+	    var px;
+	    if (this.is_up2down)
+	        px = (logic_x*this.width)+this.PositionOX;
+	    else
+	        px = (logic_x*this.width)+((logic_y%2)*this.half_width)+this.PositionOX;
+        return px;
 	};
 	instanceProto.LXYZ2PY = function(logic_x, logic_y, logic_z)
 	{
-        return (logic_y*this.height)+this.PositionOY;
+	    var py;
+	    if (this.is_up2down)
+	        py = (logic_y*this.height)+((logic_x%2)*this.half_height)+this.PositionOY;
+	    else
+	        py = (logic_y*this.height)+this.PositionOY;
+        return py;
 	};   
 	instanceProto.PXY2LX = function(physical_x,physical_y)
 	{
-	    var ly = this.PXY2LY(physical_x,physical_y);
-		var lx = Math.round((physical_x - this.PositionOX - ((ly%2)*this.half_width))/this.width);
+	    var lx;
+	    if (this.is_up2down)
+	        lx = Math.round((physical_x-this.PositionOX)/this.width);
+	    else
+	    {
+	        var ly = this.PXY2LY(physical_x,physical_y);
+		    lx = Math.round((physical_x - this.PositionOX - ((ly%2)*this.half_width))/this.width);
+	    }	    
 		return lx;
 	};
 	instanceProto.PXY2LY = function(physical_x,physical_y)
 	{
-	    return Math.round((physical_y-this.PositionOY)/this.height);
+	    var ly;
+	    if (this.is_up2down)
+	    {
+	        var lx = this.PXY2LX(physical_y,physical_x);
+		    ly = Math.round((physical_y - this.PositionOY - ((lx%2)*this.half_height))/this.height); 
+	    }
+	    else
+	        ly = Math.round((physical_y-this.PositionOY)/this.height);
+	    return ly;
 	};	
 	instanceProto.CreateItem = function(obj_type,x,y,z,layer)
-	{
+	{	
         return this.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y,z),this.LXYZ2PY(x,y,z) );        
 	}; 	
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
 	    var dx;
-	    if ((y%2) == 1)
-		{
-		    dx = ((dir==0) || (dir==1) || (dir==5))? 1:
-			     (dir==3)?                          (-1):
-                                                   0;
-        }												  
-        else
-		{
-		    dx = ((dir==2) || (dir==3) || (dir==4))? (-1):
-			     (dir==0)?                           1:
-                                                     0;
-        }
+	    if (this.is_up2down)
+	    {
+	        dx = ((dir==0) || (dir==5))? 1:
+			     ((dir==2) || (dir==3))? (-1):
+                                         0;  
+	    }
+	    else
+	    {
+	        if ((y%2) == 1)
+		    {
+		        dx = ((dir==0) || (dir==1) || (dir==5))? 1:
+		    	     (dir==3)?                          (-1):
+                                                       0;
+            }												  
+            else
+		    {
+		        dx = ((dir==2) || (dir==3) || (dir==4))? (-1):
+		    	     (dir==0)?                           1:
+                                                         0;
+            }
+	    }	   
 		return (x+dx);
 	};
 	instanceProto.GetNeighborLY = function(x, y, dir)
 	{
-        var dy = ((dir==1) || (dir==2))? 1:
+	    var dy;
+	    if (this.is_up2down)
+	    {
+	        if ((x%2) == 1)
+		    {
+		        dy = ((dir==0) || (dir==1) || (dir==2))? 1:
+		    	     (dir==4)?                          (-1):
+                                                       0;
+            }												  
+            else
+		    {
+		        dy = ((dir==3) || (dir==4) || (dir==5))? (-1):
+		    	     (dir==1)?                           1:
+                                                         0;
+            }	        
+	    }
+		else
+		{
+		    dy = ((dir==1) || (dir==2))? 1:
 			     ((dir==4) || (dir==5))? (-1):
-                                         0;        
+                                         0;
+		}          
         return (y+dy);						 
 	};	
 	instanceProto.GetDirCount = function()
@@ -123,6 +177,56 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         return 6;						 
 	};
 	
+	var dxy2dir = function (dx, dy, x, y, is_up2down)
+	{
+	    var dir;
+	    if (is_up2down)
+	    {
+	        if ((x%2) == 1)
+	        {
+	            dir = ((dx==1) && (dy==1))?   0:
+                      ((dx==0) && (dy==1))?   1:
+	                  ((dx==-1) && (dy==1))?  2:
+                      ((dx==-1) && (dy==0))?  3:
+	                  ((dx==0) && (dy==-1))?  4: 
+	                  ((dx==1) && (dy==0))?   5:
+	                  null;  //fixme
+	        }		 
+	        else
+	        {
+	            dir = ((dx==1) && (dy==0))?   0:
+                      ((dx==0) && (dy==1))?   1:
+	                  ((dx==-1) && (dy==0))?  2:
+                      ((dx==-1) && (dy==-1))? 3:
+	                  ((dx==0) && (dy==-1))?  4:
+	                  ((dx==1) && (dy==-1))?  5: 
+	                  null;	 //fixme
+	        }
+	    }
+	    else
+	    {
+	        if ((y%2) == 1)
+	        {
+	            dir = ((dx==1) && (dy==0))?   0:
+	                  ((dx==1) && (dy==1))?   1:
+                      ((dx==0) && (dy==1))?   2:
+	                  ((dx==-1) && (dy==0))?  3:
+                      ((dx==0) && (dy==-1))?  4:
+	                  ((dx==1) && (dy==-1))?  5: 
+	                  null;  //fixme
+	        }		 
+	        else
+	        {
+	            dir = ((dx==1) && (dy==0))?   0:
+	                  ((dx==0) && (dy==1))?   1:
+                      ((dx==-1) && (dy==1))?  2:
+	                  ((dx==-1) && (dy==0))?  3:
+                      ((dx==-1) && (dy==-1))? 4:
+	                  ((dx==0) && (dy==-1))?  5: 
+	                  null;	 //fixme
+	        }     
+	    }	
+	};
 	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
 	{  
 	    var dx = xyz_to.x - xyz_o.x;
@@ -134,27 +238,17 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	        dy = dy/vmax;
 	    }
 
-	    
-	    var angle;
-	    if ((xyz_o.y%2) == 1)
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.is_up2down); 
+	    var angle;	    
+	    if (this.is_up2down)
 	    {
-	        angle = ((dx==1) && (dy==0))?    0:
-	                ((dx==1) && (dy==1))?   60:
-                    ((dx==0) && (dy==1))?  120:
-	                ((dx==-1) && (dy==0))? 280:
-                    ((dx==0) && (dy==-1))? 240:
-	                ((dx==1) && (dy==-1))? 300: 
-	                (-1); //fixme
-	    }		 
+	        angle = (dir != null)? ((dir*60)+30):
+	                               (-1);
+	    }
 	    else
 	    {
-	        angle = ((dx==1) && (dy==0))?     0:
-	                ((dx==0) && (dy==1))?    60:
-                    ((dx==-1) && (dy==1))?  120:
-	                ((dx==-1) && (dy==0))?  280:
-                    ((dx==-1) && (dy==-1))? 240:
-	                ((dx==0) && (dy==-1))?  300:
-	                (-1); //fixme
+	        angle = (dir != null)? dir*60:
+	                               (-1);
 	    }
         return angle;				 
 	};
@@ -169,29 +263,25 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	        dy = dy/vmax;
 	    }
 	    
-	    var dir;
-	    if ((xyz_o.y%2) == 1)
-	    {
-	        dir = ((dx==1) && (dy==0))?   0:
-	              ((dx==1) && (dy==1))?   1:
-                  ((dx==0) && (dy==1))?   2:
-	              ((dx==-1) && (dy==0))?  3:
-                  ((dx==0) && (dy==-1))?  4:
-	              ((dx==1) && (dy==-1))?  5: 
-	              null;  //fixme
-	    }		 
-	    else
-	    {
-	        dir = ((dx==1) && (dy==0))?   0:
-	              ((dx==0) && (dy==1))?   1:
-                  ((dx==-1) && (dy==1))?  2:
-	              ((dx==-1) && (dy==0))?  3:
-                  ((dx==-1) && (dy==-1))? 4:
-	              ((dx==0) && (dy==-1))?  5: 
-	              null;	 //fixme
-	    }
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.is_up2down);  
 	    return dir;
 	};		
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "w": this.width,
+                 "h": this.height,
+                 "ox": this.PositionOX,
+                 "oy": this.PositionOY};
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+        this.SetWidth(o["w"]);
+        this.SetHeight(o["h"]);   
+        this.SetPOX(o["ox"]);
+        this.SetPOY(o["oy"]);          
+	};	    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

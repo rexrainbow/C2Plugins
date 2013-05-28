@@ -4,9 +4,9 @@
 		"name":			"Container",
 		"id":			"Rex_Container",
 		"version":		"0.1",
-		"description":	"Container of sprites and other objects.",
+		"description":	"Put sprites or other objects into this box.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_container.html",
 		"category":		"Data & Storage",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
@@ -39,7 +39,7 @@ AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i>
 AddObjectParam("Instances", "Remove instances from container.");          
 AddAction(5, 0, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
           "Remove instances.", "RemoveInsts"); 
-AddAction(9, 0, "Destroy container", "Destroy", "Destroy container and instances in this contaner", 
+AddAction(9, af_deprecated, "Destroy container", "Destroy", "Destroy container and instances in this contaner", 
           "Destroy container and instances in this contaner.", "ContainerDestroy"); 		  
 AddObjectParam("Object", "Object for picking");
 AddAction(10, 0, "Pick instances", "SOL: instances", 

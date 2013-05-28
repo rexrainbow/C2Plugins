@@ -43,6 +43,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 	    this.check_name = "INSTGROUP";
 	    this.groups = {};
+        this.randomGenUid = -1;    // for loading
 	    this._cmp_uidA = 0;
 	    this._cmp_uidB = 0;
 	    this._sort_fn_name = "";	    
@@ -60,7 +61,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 										
 		this.runtime.addDestroyCallback(this.myDestroyCallback);     	    
 	};
-	cr.plugins_.Rex_gInstGroup._random_gen = null;  // random generator for Shuffing
+	cr.plugins_.Rex_gInstGroup._randomGen = null;  // random generator for Shuffing
 	
 	instanceProto.onDestroy = function ()
 	{
@@ -167,59 +168,69 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         return {"a":group_a, "b":group_b};
     };
     
+    instanceProto._uid2inst = function(uid, objtype)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (inst == null)
+			return null;
+
+        if ((objtype == null) || (inst.type == objtype))
+            return inst;        
+        else if (objtype.is_family)
+        {
+            var families = inst.type.families;
+            var cnt=families.length, i;
+            for (i=0; i<cnt; i++)
+            {
+                if (objtype == families[i])
+                    return inst;
+            }
+        }
+        // objtype mismatch
+        return null;
+    };
+    
     instanceProto._pick_insts = function (name, objtype, is_pop)
 	{
-	    var group = this.GetGroup(name);
-	    var group_uids = group.GetSet();	    
+        var group = this.GetGroup(name);
+        var uid_list = group.GetList();
         var sol = objtype.getCurrentSol();  
-        sol.select_all = true;   
-        var insts = sol.getObjects();
-        var insts_length = insts.length;
-        var i, inst;
+        sol.select_all = false;
         sol.instances.length = 0;   // clear contents
-        for (i=0; i < insts_length; i++)
+        var cnt=uid_list.length, i, inst;
+        for(i=0; i<cnt; i++)
         {
-           inst = insts[i];
-           if (group_uids[ inst.uid ] != null)
-           {
-               sol.instances.push(inst);
-               if (is_pop == 1)
-                   group.RemoveUID(inst.uid);
-           }
+            inst = this._uid2inst(uid_list[i], objtype);
+            if (inst != null)
+                sol.instances.push(inst);
         }
-        sol.select_all = false;   
+        if (is_pop==1)
+        {
+            cnt=sol.instances.length;
+            for(i=0; i<cnt; i++)
+                group.RemoveUID(sol.instances[i].uid);        
+        }
         objtype.applySolToContainer(); 
         return  (sol.instances.length >0);       
 	};  
     
     instanceProto._pop_one_instance = function (name, index, objtype, is_pop)
-	{	    
-        var uid_list = this.GetGroup(name).GetList();
-        var is_valid_index = (uid_list.length > index);
-                   
-        var sol = objtype.getCurrentSol();  
-        sol.select_all = true;   
-        var insts = sol.getObjects();
-        var insts_length = insts.length;
-        var i, inst;
+	{
+        var group = this.GetGroup(name);
+        var uid_list = group.GetList();
+        var is_valid_index = (uid_list.length > index);   
+        var sol = objtype.getCurrentSol();
+        sol.select_all = false;            
         sol.instances.length = 0;   // clear contents
+        var inst=null;
         if (is_valid_index)
         {
-            var _uid = uid_list[index];
-            for (i=0; i < insts_length; i++)
-            {
-               inst = insts[i];
-               if (inst.uid == _uid)
-               {
-                   sol.instances.push(inst);
-                   break;
-               }
-            }
+            inst = this._uid2inst(uid_list[index], objtype);
+            if (inst != null)
+                 sol.instances.push(inst);
         }
-        sol.select_all = false;       
-        
-        if ((is_pop==1) && is_valid_index)
-            cr.arrayRemove(uid_list, index);  
+        if ((is_pop==1) && (inst != null))
+            group.RemoveUID(inst.uid);
         return  (sol.instances.length >0);              
 	};	    
 
@@ -232,7 +243,43 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    return _thisArg._compared_result;	    
 	};		
 	
-
+	instanceProto.saveToJSON = function ()
+	{
+		var info = {};
+	    var name;
+	    var groups = this.groups;
+	    for (name in groups)
+	        info[name] = groups[name].GetList();
+        
+        var randomGen = cr.plugins_.Rex_gInstGroup._randomGen;
+        var randomGenUid = (randomGen != null)? randomGen.uid:(-1);
+		return { "d": info,
+                 "randomuid":randomGenUid};
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+        var info = o["d"];
+		var name, group;
+	    for (name in info)
+            this.GetGroup(name).SetByUIDList(info[name]);
+            
+        this.randomGenUid = o["randomuid"];	
+	};
+    
+	instanceProto.afterLoad = function ()
+	{
+        var randomGen;
+		if (this.randomGenUid === -1)
+			randomGen = null;
+		else
+		{
+			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(randomGen, "Instance group: Failed to find random gen object by UID");
+		}		
+		this.randomGenUid = -1;			
+		cr.plugins_.Rex_gInstGroup._randomGen = randomGen;
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -278,7 +325,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 		return (this.GetGroup(name).GetList().length == 0);        
 	}; 	
 	  
-	Cnds.prototype.PopInstance = function (name, index, objtype, is_pop)
+	Cnds.prototype.PopOneInstance = function (name, index, objtype, is_pop)
 	{
         if (!objtype)
             return;	    
@@ -301,7 +348,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    this.GetGroup(name).Clean();
 	};  	
 	
-    Acts.prototype.Destroy = function (name)
+    Acts.prototype.DestroyGroup = function (name)
 	{
 	    this.DestroyGroup(name);
 	}; 	
@@ -456,11 +503,11 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         this._pop_one_instance(name, index, objtype, is_pop);  
 	};		
 	
-    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
+    Acts.prototype.SetRandomGenerator = function (randomGen_objs)
 	{
-        var random_gen = random_gen_objs.instances[0];
-        if (random_gen.check_name == "RANDOM")
-            cr.plugins_.Rex_gInstGroup._random_gen = random_gen;        
+        var randomGen = randomGen_objs.instances[0];
+        if (randomGen.check_name == "RANDOM")
+            cr.plugins_.Rex_gInstGroup._randomGen = randomGen;        
         else
             alert ("[Instance group] This object is not a random generator object.");
 	};  
@@ -513,7 +560,13 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     Acts.prototype.InsertInstByUID = function (uid, name, index)
 	{
 	    this.GetGroup(name).InsertUID(uid, index);    
-	};	  
+	};	
+    
+    Acts.prototype.CleanAdddInsts = function (objtype, name)
+	{
+        cr.plugins_.Rex_gInstGroup.prototype.acts.Clean.call(this, name);
+        cr.plugins_.Rex_gInstGroup.prototype.acts.AddInsts.call(this, objtype, name);
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -847,12 +900,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	var _shuffle = function (arr)
 	{
         var i = arr.length, j, temp, random_value;
-		var random_gen = cr.plugins_.Rex_gInstGroup._random_gen;
+		var randomGen = cr.plugins_.Rex_gInstGroup._randomGen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
-		    random_value = (random_gen == null)?
-			               Math.random(): random_gen.random();
+		    random_value = (randomGen == null)?
+			               Math.random(): randomGen.random();
             j = Math.floor( random_value * (i+1) );
             temp = arr[i]; 
             arr[i] = arr[j]; 

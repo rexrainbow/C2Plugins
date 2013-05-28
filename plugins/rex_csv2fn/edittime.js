@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Call function by csv table",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_csv2fn.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

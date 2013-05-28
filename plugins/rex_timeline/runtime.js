@@ -54,11 +54,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // timers    
         this.timers = {}; 
 		this.exp_triggered_timer_name = "";
+        this.timers_save = null;
 		
         // callback:
         
 		// rex_function
-        this.my_callback = null;        
+        this.my_callback = null; 
+        this.my_callbackUid = -1;    // for loading 
         // rex_functionext or function
         this._official_fnobj = null;
         this._official_fnobj_state = 0;  // 0=unknow, 1=not avaiable, 2=rex_functionext, 3=function
@@ -98,6 +100,15 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         return (new cr.plugins_.Rex_TimeLine.Timer(this.timeline, thisArg, call_back_fn, args));
     };
+	
+    // load timer (for save/load system)
+	instanceProto.LoadTimer = function (thisArg, call_back_fn, args, load_info)
+	{
+        var timer = this.CreateTimer(thisArg, call_back_fn, args); 
+        timer.loadFromJSON(load_info);
+        timer.afterLoad();
+        return timer;
+	}; 
     
     instanceProto._GetTimerStruct = function(timer_name)
     {	    
@@ -187,6 +198,55 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         return this.timeline.ABS_Time;  
     };	
+    
+	instanceProto.saveToJSON = function ()
+	{ 
+        var name, timer, timer_save = {};        
+        for (name in this.timers)
+        {
+            timer = this.timers[name];
+            timer_save[name] = {"tim": timer.timer.saveToJSON(),
+                                "cmd": timer.command,
+                                "pams": timer.params,
+                                };
+        }
+		return { "ug": this.update_with_game_time,
+                 "tl": this.timeline.saveToJSON(),
+                 "timers": timer_save,
+                 "rexFnUid": (this.my_callback != null)? this.my_callback.uid : (-1)
+                 };
+	};
+    
+	instanceProto.loadFromJSON = function (o)
+	{
+        this.timeline.loadFromJSON(o["tl"]);
+        this.timers_save = o["timers"];
+        this.my_callbackUid = o["rexFnUid"];
+	};     
+
+    
+	instanceProto.afterLoad = function ()
+	{
+        var name, timer_info, timer_struct;
+        for (name in this.timers_save)
+        {
+            timer_info = this.timers_save[name];
+            timer_struct = this._GetTimerStruct(name);
+            timer_struct.command = timer_info["cmd"];
+            timer_struct.params = timer_info["pams"];
+            timer_struct.timer = this.LoadTimer(this, this._timer_handle, [timer_struct], timer_info["tim"]);
+        }
+        this.timers_save = null;
+        
+		if (this.my_callbackUid === -1)
+			this.my_callback = null;
+		else
+		{
+			this.my_callback = this.runtime.getObjectByUID(this.my_callbackUid);
+			assert2(this.my_callback, "Timeline: Failed to find rex_function object by UID");
+		}		
+		this.my_callbackUid = -1;        
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -381,7 +441,15 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	Exps.prototype.TriggeredTimerName = function (ret)
 	{ 
 	    ret.set_string(this.exp_triggered_timer_name);
-	};    
+	};   
+    
+	Exps.prototype.TimerDelayTime = function (ret)
+	{ 
+        var timer = this._GetTimer(timer_name);
+        var t = (timer)? timer.DelayTimeGet():0;     
+	    ret.set_float(t);
+	};	
+	 
 }());
 
 
@@ -505,6 +573,16 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
         return is_success;
     };
+	
+	TimeLineProto.saveToJSON = function ()
+	{
+		return { "at": this.ABS_Time };
+	};
+	
+	TimeLineProto.loadFromJSON = function (o)
+	{
+		this.ABS_Time = o["at"];
+	};    
 
     // internal function        
     TimeLineProto._is_timer_time_out = function(timer)
@@ -547,13 +625,17 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     cr.plugins_.Rex_TimeLine.Timer = function(timeline, thisArgs, call_back_fn, args)
     {
         this.timeline = timeline;
-        this.delay_time_save = 0; //delay_time
         this.delay_time = 0; //delay_time
         this._remainder_time = 0;
         this.abs_time = 0;      
         this._handler = new this._TimerHandler(thisArgs, call_back_fn, args);
+        this.extra = {};
         this._idle();
-        this._abs_time_set(0); // delay_time
+        this._abs_timeout_set(0); // delay_time
+        // state: 
+        // - idle: (!this._is_alive) && (!this._is_active)
+        // - run: (this._is_alive) && (this._is_active)
+        // - suspend: (this._is_alive) && (!this._is_active)
     };
     var TimerProto = cr.plugins_.Rex_TimeLine.Timer.prototype;
     
@@ -562,11 +644,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         if (delay_time != null)  // assign new delay time
         {
-            this.delay_time_save = delay_time;
             this.delay_time = delay_time;
         }
         //this._handler.CleanIterator()
-        this._abs_time_set(this.delay_time_save);
+        this._abs_timeout_set(this.delay_time);
         if (this._is_alive)
         {
             if (!this._is_active)
@@ -629,30 +710,39 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimerProto.ElapsedTimeGet = function()
     {
-        return (this.delay_time_save - this.RemainderTimeGet());
+        return (this.delay_time - this.RemainderTimeGet());
     };  
 
     TimerProto.RemainderTimePercentGet = function()
     {
-        return (this.delay_time_save==0)? 0:
-               (this.RemainderTimeGet() / this.delay_time_save);
+        return (this.delay_time == 0)? 0:
+               (this.RemainderTimeGet() / this.delay_time);
     };     
 
     TimerProto.ElapsedTimePercentGet = function()
     {
-        return (this.delay_time_save==0)? 0:
-               (this.ElapsedTimeGet() / this.delay_time_save);
+        return (this.delay_time == 0)? 0:
+               (this.ElapsedTimeGet() / this.delay_time);
     };       
             
     TimerProto.ExpiredTimeGet = function()
     {    
         return (this.timeline.ABS_Time - this.abs_time);
     };
-    
+            
+    TimerProto.DelayTimeGet = function()
+    {    
+        return this.delay_time;
+    };    
     TimerProto.SetCallbackArgs = function(args)
     {    
         this._handler.args = args;   
     };    
+    
+    TimerProto.GetCallbackArgs = function()
+    {    
+        return this._handler.args;   
+    };      
     
     // export to timeline
     TimerProto.DoHandle = function()
@@ -660,12 +750,47 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this._idle();
         this._handler.DoHandle();
     };    
+	
+    // export to save/load timer
+	TimerProto.saveToJSON = function ()
+	{
+		return { "dt": this.delay_time,
+                 "rt": this._remainder_time,
+                 "at": this.abs_time,
+                 "alive": this._is_alive,
+                 "active": this._is_active,
+                 "ex": this.extra
+                 };
+	};
+    
+	TimerProto.loadFromJSON = function (o)
+	{
+        this.delay_time = o["dt"];
+        this._remainder_time = o["rt"];
+        this.abs_time = o["at"];        
+        this._is_alive = o["alive"];
+        this._is_active = o["active"];
+        this.extra = o["ex"];
+        // this._handler will be set at timer created
+	};     
+	
+	TimerProto.afterLoad = function ()
+	{
+        if (this.IsAlive())
+        {
+            this.timeline.RegistTimer(this);
+            if (!this.IsActive())
+            {
+                this.timeline.SuspendTimer(this);
+            }
+        }
+	};
     
     // internal functions
     TimerProto._idle = function()
     {
-        this._is_alive = false;
-        this._is_active = false;
+        this._is_alive = false;   // start, stop
+        this._is_active = false;  // suspend, resume
     };
     
     TimerProto._run = function()
@@ -674,7 +799,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this._is_active = true;   
     };
 
-    TimerProto._abs_time_set = function(delta_time)
+    TimerProto._abs_timeout_set = function(delta_time)
     {
         this.abs_time = this.timeline.CurrentTimeGet() + delta_time;
     };
@@ -687,7 +812,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimerProto._resume = function()
     {
-        this._abs_time_set(this._remainder_time);
+        this._abs_timeout_set(this._remainder_time);
         this._is_active = true;
     };
         

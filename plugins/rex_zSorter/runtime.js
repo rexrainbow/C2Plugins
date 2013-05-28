@@ -72,6 +72,16 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	    _thisArg.runtime.trigger(cr.plugins_.Rex_ZSorter.prototype.cnds.OnSortingFn, _thisArg);
 	    return _thisArg._compared_result;	    
 	};
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "xi": x_increasing };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    x_increasing = o["xi"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

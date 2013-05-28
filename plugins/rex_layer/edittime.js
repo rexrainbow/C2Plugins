@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Adding behavior to change the scale/anlge/opacity/visible of layer.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_layer.html",
 		"category":		"General",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

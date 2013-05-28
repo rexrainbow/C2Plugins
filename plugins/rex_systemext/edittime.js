@@ -6,7 +6,7 @@
 		"version":		"0.11",	
 		"description":	"System extension",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_systemext.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -25,9 +25,14 @@ AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddCondition(1, 0, "Pick inverse", "SOL", 
+AddCondition(1, cf_deprecated, "Pick inverse", "SOL", 
              "Pick <i>{0}</i> inverse instances by UID to <i>{1}</i>, form <i>{2}</i>", 
              "Pick inverse instances.", "PickInverse");  
+AddObjectParam("Object", "Object for picking");
+AddNumberParam("UID", "UID of object", 0);
+AddCondition(2, cf_deprecated, "Quick picking by UID", "SOL", 
+             "Quick picking <i>{0}</i> instance by UID = <i>{1}</i>", 
+             "Quick picking instance by UID.", "QuickPickByUID");                 
 //////////////////////////////////////////////////////////////
 // Actions
 // SOL
@@ -57,7 +62,7 @@ AddAnyTypeParam("Value", "The target compare value", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(2, cf_deprecated, "Pick by property", "SOL", 
+AddAction(2, af_deprecated, "Pick by property", "SOL", 
           "Pick <i>{0}</i> instances by comparing <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
           "Pick instances by property comparing.", "PickByPropCmp");
 AddStringParam("Group", "Group name", '""');          
@@ -72,7 +77,7 @@ AddAction(4, 0, "Set visible", "Layers & transforms",
           "Set the visible of a layer.", "SetLayerVisible");     
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
-AddAction(5, 0, "Quick picking by UID", "SOL", 
+AddAction(5, af_deprecated, "Quick picking by UID", "SOL", 
           "Quick picking <i>{0}</i> instance by UID = <i>{1}</i>", 
           "Quick picking instance by UID.", "QuickPickByUID");                    
 AddObjectParam("Object", "Object for picking");

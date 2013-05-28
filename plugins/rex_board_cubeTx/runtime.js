@@ -144,6 +144,24 @@ cr.plugins_.Rex_SLGCubeTx = function(runtime)
 	{  
         return null;				 
 	};	
+	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "iso": this.is_isometric,
+                 "w": this.width,
+                 "h": this.height,
+                 "ox": this.PositionOX,
+                 "oy": this.PositionOY};
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+		this.is_isometric = o["iso"];
+        this.SetWidth(o["w"]);
+        this.SetHeight(o["h"]);   
+        this.SetPOX(o["ox"]);
+        this.SetPOY(o["oy"]);          
+	};	    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -165,8 +183,8 @@ cr.plugins_.Rex_SLGCubeTx = function(runtime)
 	};
     Acts.prototype.SetOffset = function (x, y)
     {        
-        this.PositionOX = x;
-        this.PositionOY = y;
+        this.SetPOX(x);
+        this.SetPOY(y);
 	};    
 	//////////////////////////////////////
 	// Expressions

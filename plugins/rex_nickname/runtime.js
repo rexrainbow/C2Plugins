@@ -10,7 +10,7 @@ cr.plugins_.Rex_Nickname = function(runtime)
 {
 	this.runtime = runtime;
 };
-cr.plugins_.Rex_Nickname.nickname2objtype = {};
+cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_index[_index]}
 
 (function ()
 {
@@ -44,23 +44,50 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 	{	    
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
 	};
+    
+	instanceProto._getObjectType = function (nickname)
+	{
+        var sid_info = this.nickname2objtype[nickname];
+        if (sid_info == null)
+            return null;
+            
+        var sid = sid_info.sid;
+        var objtypes = this.runtime.types_by_index;
+        var t = objtypes[sid_info.index];
+        if ((t != null) && (t.sid === sid))
+            return t;
+    
+		var i, len=objtypes.length;
+		for (i=0; i<len; i++)
+		{
+            t = objtypes[i];
+			if (t.sid === sid)
+            {
+                sid_info.index = i;
+				return t;
+            }
+		}
+		
+		return null;
+	};    
 	
 	instanceProto.create_insts = function (nickname,x,y,_layer)
 	{
-	    var obj_type = this.nickname2objtype[nickname];
-        if (obj_type == null)
+	    var objtype = this._getObjectType(nickname);
+        if (objtype == null)
             return;
         var layer = (typeof _layer == "number")?
                     this.runtime.getLayerByNumber(_layer):
                     this.runtime.getLayerByName(_layer);  
-        var inst = this.runtime.createInstance(obj_type, layer, x, y ); 
+        var inst = this.runtime.createInstance(objtype, layer, x, y ); 
 		
 		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
+		this.runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
 		this.runtime.isInOnDestroy--;
         
         // Pick just this instance
-        obj_type.getCurrentSol().pick_one(inst);
+        objtype.getCurrentSol().pick_one(inst);
+        objtype.applySolToContainer();
         
 	    return inst;
 	}; 	
@@ -69,7 +96,7 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 	{
 	    if (!family_objtype.is_family)
 		    return;
-	    var objtype = this.nickname2objtype[nickname];
+	    var objtype = this._getObjectType(nickname);
         if (!objtype)
             return;
         if (family_objtype.members.indexOf(objtype) == -1)
@@ -83,7 +110,27 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
         sol_family.select_all = false; 
         sol.select_all = sol_save;  
 	};	
-    
+	
+	instanceProto.saveToJSON = function ()
+	{    
+	    var sid2name = {};
+	    var name, objtype;
+	    for (name in this.nickname2objtype)
+	        sid2name[this.nickname2objtype[name].sid] = name;
+		return { "sid2name": sid2name,
+		         };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{   
+	    var sid2name = o["sid2name"];	   
+	    var sid, name, objtype;
+	    for (sid in sid2name)
+	    {
+	        name = sid2name[sid];
+            this.nickname2objtype[name] = {sid:parseInt(sid, 10), index:-1};
+	    }
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -102,7 +149,9 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
 		
 	Acts.prototype.AssignNickname = function (nickname, objtype)
 	{
-        this.nickname2objtype[nickname] = objtype;
+        if (objtype == null)
+            return;
+        this.nickname2objtype[nickname] = {sid:objtype.sid, index:-1};
 	};
 	
 	Acts.prototype.CreateInsts = function (nickname,x,y,_layer, family_objtype)
@@ -112,11 +161,12 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};
             return;            
         if (!family_objtype)
             return;
-        var objtype = this.nickname2objtype[nickname];
-        if (family_objtype.members.indexOf(objtype) == -1)
+
+        if (family_objtype.members.indexOf(inst.type) == -1)
             return; 
              
         family_objtype.getCurrentSol().pick_one(inst);
+        family_objtype.applySolToContainer();
 	};	
 
     Acts.prototype.PickAll = function (nickname, family_objtype)

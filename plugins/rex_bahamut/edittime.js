@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get user data from Bahamut website. http://www.gamer.com.tw/",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bahamut.html",
 		"category":		"Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

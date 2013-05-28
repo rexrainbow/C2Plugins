@@ -42,8 +42,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.board = null; 
+        this.boardUid = -1;    // for loading 
         this._dir = null;
-        this.group = null;    
+        this.group = null;
+        this.groupUid = -1;    // for loading     
 	    this.exp_TileUID =0;	
 	    this.exp_TileX =0;	        
 	    this.exp_TileY =0;
@@ -396,6 +398,42 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._last_tick = cur_tick;
 		return tick_changed;
 	};
+	
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "boarduid": (this.board != null)? this.board.uid:(-1),
+		         "groupuid": (this.group != null)? this.group.uid:(-1),
+		         "sm": this._square_modes};
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.boardUid = o["boarduid"];
+		this.groupUid = o["groupuid"];	
+		this._square_modes = o["sm"];
+		this._last_tick = null;  	 		      
+	};
+	
+	instanceProto.afterLoad = function ()
+	{
+		if (this.boardUid === -1)
+			this.board = null;
+		else
+		{
+			this.board = this.runtime.getObjectByUID(this.boardUid);
+			assert2(this.board, "Matcher: Failed to find board object by UID");
+		}		
+		this.boardUid = -1;
+		
+		if (this.groupUid === -1)
+			this.group = null;
+		else
+		{
+			this.group = this.runtime.getObjectByUID(this.groupUid);
+			assert2(this.group, "Matcher: Failed to find instance group object by UID");
+		}		
+		this.groupUid = -1;						
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

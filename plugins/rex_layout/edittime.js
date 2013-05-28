@@ -5,7 +5,7 @@
 		"id":			"Rex_Layout",
 		"description":	"Layout instances",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layout.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Create object by nickname.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_nickname.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -17,13 +17,13 @@
 ////////////////////////////////////////
 // Conditions        
 AddStringParam("Nickname", "Nickname of object.", '""');
-AddObjectParam("Object", "Object.");
+AddObjectParam("Family", "Family type.");
 AddCondition(10, 0, "Pick all instances", "SOL", "Pick all <i>{0}</i> instances into family <i>{1}</i>", "Pick all instances.", "PickAll");
 
 ////////////////////////////////////////
 // Actions
 AddStringParam("Nickname", "Nickname of object.", '""');
-AddObjectParam("Object", "Object."); 
+AddObjectParam("Object", "Object type."); 
 AddAction(1, 0, "Assign nickname", "Assign", "Assign nickname <i>{0}</i> to <i>{1}</i>", 
           "Assign nickname.", "AssignNickname");
 AddStringParam("Nickname", "Nickname of object.", '""');   

@@ -41,6 +41,8 @@ cr.plugins_.Rex_TARP = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
+        this.timeline = null;  
+        this.timelineUid = -1;    // for loading          	    
 	    this.recorder = new cr.plugins_.Rex_TARP.RecorderKlass(this);
 	    this.player = new cr.plugins_.Rex_TARP.PlayerKlass(this); 
 	};
@@ -49,7 +51,56 @@ cr.plugins_.Rex_TARP = function(runtime)
 	{
         this.player.Stop();
 	};    
+	
+	instanceProto._timeline_get = function ()
+	{
+        if (this.timeline != null)
+            return this.timeline;
+    
+        var plugins = this.runtime.types;
+        var name, obj;
+        for (name in plugins)
+        {
+            obj = plugins[name].instances[0];
+            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            {
+                this.timeline = obj;
+                return this.timeline;
+            }
+        }
+        assert2(this.timeline, "TARP: Can not find timeline oject.");
+        return null;	
+	};
 
+	instanceProto.saveToJSON = function ()
+	{    
+		return { "tluid": (this.timeline != null)? this.timeline.uid: (-1),
+		         "r": this.recorder.saveToJSON(),
+                 "p": this.player.saveToJSON(),
+                };
+	};
+    
+	instanceProto.loadFromJSON = function (o)
+	{    
+	    this.timelineUid = o["tluid"];
+	    this.recorder.loadFromJSON(o["r"]);
+	    this.player.loadFromJSON(o["p"]);
+	};
+    
+	instanceProto.afterLoad = function ()
+	{
+		if (this.timelineUid === -1)
+			this.timeline = null;
+		else
+		{
+			this.timeline = this.runtime.getObjectByUID(this.timelineUid);
+			assert2(this.timeline, "TARP: Failed to find timeline object by UID");
+		}	
+		this.timelineUid = -1;
+		
+		this.recorder.afterLoad();
+	    this.player.afterLoad();       
+	}; 	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -76,12 +127,9 @@ cr.plugins_.Rex_TARP = function(runtime)
 	{  
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
-		{
-		    this.recorder.Setup(timeline);
-            this.player.Setup(timeline);       
-	    }
+            this.timeline = timeline;        
         else
-            alert ("TARP should connect to a timeline object");
+            alert ("TARP should connect to a timeline object");   
 	}; 	
 	
     // recorder
@@ -167,13 +215,13 @@ cr.plugins_.Rex_TARP = function(runtime)
 	    this.plugin = plugin;
         this.recorder_list = [];		
         this.dt_start = 0;	
-        this.wallclock = new WallClockKlass();		
+        this.wallclock = new WallClockKlass(plugin);		
     };
     var RecorderKlassProto = cr.plugins_.Rex_TARP.RecorderKlass.prototype;
         
     RecorderKlassProto.Setup = function (timeline_obj)
     {
-	    this.wallclock.Init(this.plugin, timeline_obj);
+	    this.wallclock.Init(this.plugin);
     };   
     RecorderKlassProto.Start = function ()
     {
@@ -213,25 +261,40 @@ cr.plugins_.Rex_TARP = function(runtime)
     {
         return this.wallclock.ElapsedTimeGet();
     };	    
-    
+	RecorderKlassProto.saveToJSON = function ()
+	{    
+		return { "l": this.recorder_list,
+                 "dts": this.dt_start,
+                 "wc": this.wallclock.saveToJSON(),
+                };
+	};
+	RecorderKlassProto.loadFromJSON = function (o)
+	{    
+        this.recorder_list = o["l"];
+        this.dt_start = o["dts"];
+        this.wallclock.loadFromJSON(o["wc"]);
+	};
+	RecorderKlassProto.afterLoad = function ()
+	{
+		this.wallclock.afterLoad();
+	}; 
+	
     // player
     cr.plugins_.Rex_TARP.PlayerKlass = function(plugin)
     {
-        this.plugin = plugin;
-        this.timeline = null; 		
+        this.plugin = plugin;	
         this.timer = null; 
         this.player_list = [];
         this.play_index = 0;
         this.offset = 0;
         this.current_cmd = null;
-        this.wallclock = new WallClockKlass();			
+        this.wallclock = new WallClockKlass(plugin);  		
     };
     var PlayerKlassProto = cr.plugins_.Rex_TARP.PlayerKlass.prototype;
     
     PlayerKlassProto.Setup = function (timeline_obj)
     {
-        this.timeline = timeline_obj;
-		this.wallclock.Init(this.plugin, timeline_obj);
+		this.wallclock.Init(this.plugin);
     };    
     PlayerKlassProto.JSON2List = function (JSON_string)
     {
@@ -280,7 +343,7 @@ cr.plugins_.Rex_TARP = function(runtime)
             this.play_index += 1;
             if (this.timer== null)
             {
-                this.timer = this.timeline.CreateTimer(this, this._run);
+                this.timer = this.plugin._timeline_get().CreateTimer(this, this._run);
             }
             this.timer.Start(this.current_cmd[0] + this.offset);
 			this.wallclock.current_time_get();
@@ -293,30 +356,55 @@ cr.plugins_.Rex_TARP = function(runtime)
 	PlayerKlassProto._run = function()
 	{
         var name = this.current_cmd[1], params = this.current_cmd[2];
-        var has_fnobj = this.timeline.RunCallback(name, params, true);
+        var has_fnobj = this.plugin._timeline_get().RunCallback(name, params, true);
         assert2(has_fnobj, "Worksheet: Can not find callback oject.");
         this._start_cmd();        
 	};	
-	
-	
-	var WallClockKlass = function(plugin, timeline)
+	PlayerKlassProto.saveToJSON = function ()
+	{    
+		return { "tim": (this.timer != null)? this.timer.saveToJSON() : null,
+                 "l": this.player_list,
+                 "i": this.play_index,
+                 "off": this.offset,
+                 "cmd": this.current_cmd,
+                 "wc": this.wallclock.saveToJSON(),
+                };
+	};
+	PlayerKlassProto.loadFromJSON = function (o)
 	{
-	    this.plugin = null;
-	    this.timeline = null;	
-		
-		this.sample_time = {tick:null, time:null};	
+        this.timer_save = o["tim"]; 
+        this.player_list = o["l"]; 
+        this.play_index = o["i"]; 
+        this.offset = o["off"]; 
+        this.current_cmd = o["cmd"]; 
+        this.wallclock.loadFromJSON(o["wc"]);
+	};
+	PlayerKlassProto.afterLoad = function ()
+	{
+        if (this.timer_save == null)
+            this.timer = null;
+        else
+        {
+            this.timer = this.plugin._timeline_get().LoadTimer(this, this._run, null, this.timer_save);
+        }     
+        this.timers_save = null;
+        
+        this.wallclock.afterLoad();
+	}; 
+	
+	var WallClockKlass = function(plugin)
+	{
+	    this.plugin = plugin;
+		this.sample_time = {"tick":null, "time":null};	
         this.start_time = 0;
         this.pause_sum = 0;
 	};
 	var WallClockKlassProto = WallClockKlass.prototype;
 	
-    WallClockKlassProto.Init = function (plugin, timeline)
-    {
-	    this.plugin = plugin;
-	    this.timeline = timeline;
-		
-		this.sample_time.tick = null;
-		this.sample_time.time = null;	
+    WallClockKlassProto.Init = function ()
+    {        
+		this.sample_time["tick"] = null;
+		this.sample_time["time"] = null;	
         this.start_time = 0;
         this.pause_sum = 0;
     };	
@@ -330,12 +418,12 @@ cr.plugins_.Rex_TARP = function(runtime)
     {
 	    assert2(this.plugin, "TARP: remember to assign timeline object at start of layout");
         var cur_tick = this.plugin.runtime.tickcount;
-        if (cur_tick != this.sample_time.tick)
+        if (cur_tick != this.sample_time["tick"])
 		{
-		    this.sample_time.time = this.timeline.TimeGet();
-			this.sample_time.tick = cur_tick;
+		    this.sample_time["time"] = this.plugin._timeline_get().TimeGet();
+			this.sample_time["tick"] = cur_tick;
 		}
-		return this.sample_time.time;
+		return this.sample_time["time"];
     };	
 	WallClockKlassProto.Pause = function ()
     {
@@ -352,7 +440,7 @@ cr.plugins_.Rex_TARP = function(runtime)
     }; 
     WallClockKlassProto.SampleTimeGet = function ()
     {
-	    var t = this.sample_time.time;
+	    var t = this.sample_time["time"];
 		if (t == null)
 		    t = 0.0;
 	    else
@@ -363,4 +451,20 @@ cr.plugins_.Rex_TARP = function(runtime)
     {
         return this.current_time_get() - this.start_time - this.pause_sum;
     };		
+	WallClockKlassProto.saveToJSON = function ()
+	{    
+		return { "samptim": this.sample_time,
+                 "st": this.player_list,
+                 "ps": this.pause_sum,
+                };
+	};
+	WallClockKlassProto.loadFromJSON = function (o)
+	{	    
+		this.sample_time = o["samptim"];	
+        this.start_time = o["st"];
+        this.pause_sum = o["ps"];
+	};
+	WallClockKlassProto.afterLoad = function ()
+	{
+	}; 	
 }());        

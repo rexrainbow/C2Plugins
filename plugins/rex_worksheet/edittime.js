@@ -6,7 +6,7 @@
 		"version":		"1.0",           
 		"description":	"Executing instructions from a string while time-out",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_worksheet.html",
 		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -25,7 +25,7 @@ AddCondition(1, 0, "Is worksheet running", "Control", "Is running",
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(0, 0, "Setup work sheet", "Z: Deprecated", 
+AddAction(0, af_deprecated, "Setup work sheet", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup work sheet.", "Setup");
 AddStringParam("Instructions", "Instructions in work sheet", '""');
