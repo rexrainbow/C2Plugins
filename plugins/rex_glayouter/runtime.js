@@ -280,13 +280,13 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    if (this.sprites.length == 0)
 	        return;
 	        
-        var j, handler_cnt = this.handlers.length;
+        var j, handler_cnt = this.handlers.length, cb;
         for (j=0;j<handler_cnt;j++)
         {
-            if (is_add_mode)
-                this.handlers[j].on_add_insts(insts); 
-            else
-                this.handlers[j].on_remove_insts(insts); 
+            cb = (is_add_mode)? this.handlers[j].on_add_insts:
+                                this.handlers[j].on_remove_insts;
+            if (cb != null)
+                cb.call(this.handlers[j], insts);            
         }           
 	}; 
     
@@ -313,6 +313,11 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	            inst.opacity = params.opacity; 
 	        if (params.visible != null)
 	            inst.visible = params.visible; 
+	        if (params.frameindex != null)      // sprite only
+            {
+                if ((cr.plugins_.Sprite) && (inst instanceof cr.plugins_.Sprite.prototype.Instance))
+                    cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, params.frameindex); 
+            }
 	        inst.set_bbox_changed();	            	            	                
 	    }
 	};
@@ -516,12 +521,19 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	        val = this.layout_inst_params.inst.visible;
 		ret.set_int(val);
 	};		
-		
-	Exps.prototype.Tag = function (ret)
+	
+	Exps.prototype.InstFrameIndex = function (ret)
 	{
-		ret.set_string(this.tag);
-	};
-		
+	    var val=this.layout_inst_params.frameindex;
+	    if (val == null)
+        {
+	        val = this.layout_inst_params.inst.cur_frame;  // sprite only
+            if (val == null)
+                val = (-1);
+        }
+		ret.set_int(val);
+	};		
+	
 	Exps.prototype.SpritesCnt = function (ret)
 	{
 		ret.set_int(this.sprites.length);

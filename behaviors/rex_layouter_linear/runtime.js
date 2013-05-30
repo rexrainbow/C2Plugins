@@ -67,8 +67,9 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	var OFFSET_LEFT = 2;
 	var OFFSET_TOP = 3;
     var _offset_p = {x:0, y:0};
-	var _offset_get = function (inst, direction)
+	behinstProto._offset_get = function (uid, direction)
 	{	    
+        var inst = this.runtime.getObjectByUID(uid);
         inst.update_bbox();
         var quad = inst.bquad;  
         var px, py;        
@@ -96,12 +97,12 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	    return _offset_p;
 	}; 	
 
-	behinstProto._get_start_end_points = function (insts)
+	behinstProto._get_start_end_points = function (uids)
 	{     
         var layouter =  this.inst;   
 	    layouter.update_bbox();
 	    var quad = layouter.bquad;
-	    var inst_cnt = insts.length;
+	    var inst_cnt = uids.length;
         var _offset_p;
         switch (this.direction)
         {
@@ -112,13 +113,13 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             this._points.end.y = (quad.try_ + quad.bry)/2;
             if (inst_cnt >= 1)
             {
-                _offset_p = _offset_get(insts[0], OFFSET_LEFT);
+                _offset_p = this._offset_get(uids[0], OFFSET_LEFT);
                 this._points.start.x += _offset_p.x;
                 this._points.start.y += _offset_p.y;
             }
             if (inst_cnt >= 2)
             {
-                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_RIGHT);
+                _offset_p = this._offset_get(uids[inst_cnt-1], OFFSET_RIGHT);
                 this._points.end.x += _offset_p.x;
                 this._points.end.y += _offset_p.y;
             }
@@ -130,13 +131,13 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             this._points.end.y = (quad.tly + quad.bly)/2;
             if (inst_cnt >= 1)
             {
-                _offset_p = _offset_get(insts[0], OFFSET_RIGHT);
+                _offset_p = this._offset_get(uids[0], OFFSET_RIGHT);
                 this._points.start.x += _offset_p.x;
                 this._points.start.y += _offset_p.y;
             }
             if (inst_cnt >= 2)
             {
-                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_LEFT);
+                _offset_p = this._offset_get(uids[inst_cnt-1], OFFSET_LEFT);
                 this._points.end.x += _offset_p.x;
                 this._points.end.y += _offset_p.y;
             }            
@@ -148,13 +149,13 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             this._points.end.y = (quad.bly + quad.bry)/2;
             if (inst_cnt >= 1)
             {
-                _offset_p = _offset_get(insts[0], OFFSET_TOP);
+                _offset_p = this._offset_get(uids[0], OFFSET_TOP);
                 this._points.start.x += _offset_p.x;
                 this._points.start.y += _offset_p.y;
             }
             if (inst_cnt >= 2)
             {
-                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_BOTTOM);
+                _offset_p = this._offset_get(uids[inst_cnt-1], OFFSET_BOTTOM);
                 this._points.end.x += _offset_p.x;
                 this._points.end.y += _offset_p.y;
             }             
@@ -166,13 +167,13 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             this._points.end.y = (quad.tly + quad.try_)/2; 
             if (inst_cnt >= 1)
             {
-                _offset_p = _offset_get(insts[0], OFFSET_BOTTOM);
+                _offset_p = this._offset_get(uids[0], OFFSET_BOTTOM);
                 this._points.start.x += _offset_p.x;
                 this._points.start.y += _offset_p.y;
             }
             if (inst_cnt >= 2)
             {
-                _offset_p = _offset_get(insts[inst_cnt-1], OFFSET_TOP);
+                _offset_p = this._offset_get(uids[inst_cnt-1], OFFSET_TOP);
                 this._points.end.x += _offset_p.x;
                 this._points.end.y += _offset_p.y;
             }
@@ -188,24 +189,25 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
     
     // rotate angle of instances
     var angle_saved = [];
-    var _rotate_all = function (insts, a)
+    behinstProto._rotate_all = function (uids, a)
     {
         angle_saved.length = 0;
-        var cnt = insts.length, i, inst;
+        var cnt = uids.length, i, inst;
         for (i=0; i<cnt; i++)  
         {      
-            inst = insts[i];
+            inst = this.runtime.getObjectByUID(uids[i]);
             angle_saved.push[inst.angle];
             inst.angle = a;
             inst.set_bbox_changed();
         }
     };
-    var _rotate_recover = function (insts)
+    
+    behinstProto._rotate_recover = function (uids)
     {
-        var cnt = insts.length, i, inst;
+        var cnt = uids.length, i, inst;
         for (i=0; i<cnt; i++)  
         {      
-            inst = insts[i];
+            inst = this.runtime.getObjectByUID(uids[i]);
             inst.angle = angle_saved[i];
             inst.set_bbox_changed();
         }
@@ -221,7 +223,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	        return;
 	        
 	    var a = layouter.angle; 
-	    _rotate_all(sprites, a);
+	    this._rotate_all(sprites, a);
         var points = this._get_start_end_points(sprites);        
         var i, params;
         var seg = (cnt==1)? 1: (cnt-1);
@@ -231,7 +233,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         var start_x = points.start.x;
         var start_y = points.start.y;
         var inst_angle = cr.to_degrees(a);
-        _rotate_recover(sprites);
+        this._rotate_recover(sprites);
 	    for (i=0;i<cnt;i++)
 	    {
 	        params = {x:start_x + (dx*i),
@@ -249,7 +251,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	    if (cnt == 0)
 	        return;
 	        
-	    _rotate_all(sprites, layouter.angle);	        
+	    this._rotate_all(sprites, layouter.angle);	        
         var points = this._get_start_end_points(sprites);
         var layouter =  this.inst;   
         var a = Math.atan2(points.end.y - points.start.y,
@@ -282,7 +284,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         var start_y = points.start.y;
         a = layouter.angle;
         var inst_angle = cr.to_degrees(a);
-        _rotate_recover(sprites);        
+        this._rotate_recover(sprites);        
 	    for (i=0;i<cnt;i++)
 	    {
 	        params = {x:start_x + (dx*i),
