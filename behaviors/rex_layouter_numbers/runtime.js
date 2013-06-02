@@ -56,45 +56,45 @@ cr.behaviors.Rex_layouter_numbers = function(runtime)
 	{
         value = Math.floor(value);
         this.value = value;
+        if (!cr.plugins_.Sprite)
+            return;
+        var set_frameindex = cr.plugins_.Sprite.prototype.acts.SetAnimFrame;
         var is_negative = (value < 0);
         var is_zero = (value == 0);
         var layouter=this.inst;
         var sprites=layouter.sprites; 
-        var i, cnt=sprites.length, params;
-        var _index, is_visible;    
+        var i, cnt=sprites.length, inst;
+        var _index;           
         value = Math.abs(value);
 	    for (i=0; i<cnt; i++)
-	    {	        
+	    {	    
+	        inst = this.runtime.getObjectByUID(sprites[i]);
+	        if (! (inst instanceof cr.plugins_.Sprite.prototype.Instance) )
+	           continue;	            
+	        
             if (is_zero)
             {
                 _index = 0;
-                is_visible = 1;
                 is_zero = false;
             }
             else if (value == 0)
             {
                 if (is_negative)
                 {
-                    _index = 10;  // "-"
-                    is_visible = 1;
+                    _index = 11;  // "-"
                     is_negative = false;                    
                 }
                 else
                 {
-                    _index = 0;
-                    is_visible = 0;
+                    _index = 10;
                 }
             }
             else
             {
                 _index = (value%10);
-                is_visible = 1;
                 value = Math.floor(value/10); 
             }
-	        params = {frameindex: _index,   
-                      visible: is_visible   
-                      };
-	        layouter.layout_inst(sprites[i], params);     
+            set_frameindex.call(inst, _index);    
 	    }
 	};  
 	behinstProto.saveToJSON = function ()
