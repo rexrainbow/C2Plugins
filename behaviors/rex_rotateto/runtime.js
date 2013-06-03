@@ -111,7 +111,6 @@ cr.behaviors.Rex_RotateTo = function(runtime)
             else
                 this.inst.angle -= cr.to_clamped_radians(distance);
         } 
-
 		this.inst.set_bbox_changed();        
 	}; 
 	behinstProto.tick2 = function ()
@@ -131,27 +130,17 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         }
 	};
 	
-	behinstProto.SetTargetAngle = function (angle, clockwise_mode)  // in degree
+	behinstProto.SetTargetAngle = function (target_angle_radians, clockwise_mode)  // in radians
 	{
         this.is_rotating = true;
-        var cur_angle_degree = cr.to_degrees(this.inst.angle);
-        if (angle <0)
-            angle += 360;
+        var cur_angle_radians = this.inst.angle;
 
-		if (clockwise_mode == 2)
-		{
-		    var dA = angle - cur_angle_degree;
-		    clockwise_mode = (dA <= 180)? 1:0;
-		}
-        this.target["cw"] = (clockwise_mode == 1);
-        if (this.target["cw"])
-            this.remain_distance = angle - cur_angle_degree;
-        else
-            this.remain_distance = cur_angle_degree - angle;
-        if (this.remain_distance < 0)
-            this.remain_distance += 360;
-        this.target["a"] = angle;
-        this.SetCurrentSpeed(null);       
+        this.target["cw"] = (clockwise_mode == 2)? cr.angleClockwise(target_angle_radians, cur_angle_radians) :
+                                                   (clockwise_mode == 1);
+        this.remain_distance = cr.to_clamped_degrees(cr.angleDiff(cur_angle_radians, target_angle_radians));
+
+        this.target["a"] = cr.to_clamped_degrees(target_angle_radians);
+        this.SetCurrentSpeed(null); 
 	};
 
 	behinstProto.saveToJSON = function ()
@@ -231,7 +220,7 @@ cr.behaviors.Rex_RotateTo = function(runtime)
     
 	Acts.prototype.SetTargetAngle = function (angle, clockwise_mode)
 	{
-        this.SetTargetAngle(angle, clockwise_mode)
+        this.SetTargetAngle(cr.to_clamped_radians(angle), clockwise_mode)
 	};
     
 	Acts.prototype.SetCurrentSpeed = function (s)
@@ -247,20 +236,20 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         if (inst != null)
         {
             var angle = Math.atan2(inst.y-this.inst.y , inst.x-this.inst.x);
-            this.SetTargetAngle(cr.to_degrees(angle), clockwise_mode);
+            this.SetTargetAngle(angle, clockwise_mode);
         }
 	};
     
  	Acts.prototype.SetTargetAngleByDeltaAngle = function (dA, clockwise_mode)
 	{
 	    var angle = this.inst.angle + dA
-        this.SetTargetAngle(angle, clockwise_mode);
+        this.SetTargetAngle(cr.to_clamped_radians(angle), clockwise_mode);
 	};    
     
  	Acts.prototype.SetTargetAngleToPos = function (tx, ty, clockwise_mode)
 	{
 	    var angle = Math.atan2(ty-this.inst.y , tx-this.inst.x);
-        this.SetTargetAngle(cr.to_degrees(angle), clockwise_mode);
+        this.SetTargetAngle(angle, clockwise_mode);
 	}; 
 	//////////////////////////////////////
 	// Expressions
