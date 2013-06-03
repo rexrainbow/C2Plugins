@@ -102,7 +102,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
         if (is_hit)
         {
             this.is_my_call = true;
-            this.runtime.trigger(cr.behaviors.Rex_Value_interpolation.prototype.cnds.OnValueChangedFinished, this.inst); 
+            this.runtime.trigger(cr.behaviors.Rex_Value_interpolation.prototype.cnds.OnHitTargetValue, this.inst); 
             this.is_my_call = false;
         }
         else
@@ -166,7 +166,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 		return this.is_my_call;  
 	};
     
-	Cnds.prototype.OnValueChangedFinished = function ()
+	Cnds.prototype.OnHitTargetValue = function ()
 	{  
 		return this.is_my_call;  
 	};	

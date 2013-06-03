@@ -17,8 +17,8 @@
 AddCondition(0, 0, "Is value changing", "Timer", "Is {my} value changing", "", "IsValueChanging");
 AddCondition(1, cf_trigger, "On value changing", "Timer", "On {my} value changing", 
              "Triggered when value changing.", "OnValueChanging");
-AddCondition(2, cf_trigger, "On value changing finished", "Timer", "On {my} value changing", 
-             "Triggered when value changing finished.", "OnValueChangedFinished");
+AddCondition(2, cf_trigger, "On hit target value", "Timer", "On {my} hit target value", 
+             "Triggered when hit target value.", "OnHitTargetValue");
              
 //////////////////////////////////////////////////////////////
 // Actions
