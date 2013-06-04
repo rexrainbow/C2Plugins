@@ -137,7 +137,10 @@ cr.behaviors.Rex_RotateTo = function(runtime)
 
         this.target["cw"] = (clockwise_mode == 2)? cr.angleClockwise(target_angle_radians, cur_angle_radians) :
                                                    (clockwise_mode == 1);
-        this.remain_distance = cr.to_clamped_degrees(cr.angleDiff(cur_angle_radians, target_angle_radians));
+        var remain_distance = (clockwise_mode == 2)? cr.angleDiff(cur_angle_radians, target_angle_radians) :
+                              (clockwise_mode == 1)? (target_angle_radians - cur_angle_radians) :
+                                                     (cur_angle_radians - target_angle_radians);
+        this.remain_distance = cr.to_clamped_degrees(remain_distance);
 
         this.target["a"] = cr.to_clamped_degrees(target_angle_radians);
         this.SetCurrentSpeed(null); 
