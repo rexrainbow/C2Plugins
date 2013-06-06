@@ -59,9 +59,9 @@ AddAction(3, 0, "Set deceleration", "Speed",
 
 AddNumberParam("X", "The X co-ordinate to move toward.");
 AddNumberParam("Y", "The Y co-ordinate to move toward.");
-AddAction(4, 0, "Set target", "Position", 
-          "Set {my} target position to (<i>{0}</i>, <i>{1}</i>)", 
-          "Set target position to move toward.", 
+AddAction(4, 0, "Move to XY", "MoveTo", 
+          "{my} move to (<i>{0}</i>, <i>{1}</i>)", 
+          "Move to specific position.", 
           "SetTargetPos");
 
 AddNumberParam("Current speed", "Current speed, in pixel per second.");
@@ -70,23 +70,23 @@ AddAction(5, 0, "Set current speed", "Speed",
           "Set the object's Current speed.", "SetCurrentSpeed");
   
 AddObjectParam("Target", "Target object.");
-AddAction(6, 0, "Set target to object", "Position", 
-          "Set {my} target position to <i>{0}</i>", 
-          "Set target position to move toward.", 
+AddAction(6, 0, "Move to object", "MoveTo", 
+          "{my} move to <i>{0}</i>", 
+          "Move to object.", 
           "SetTargetPosOnObject");  
   
 AddNumberParam("dX", "The delta X to move toward, in pixel.");
 AddNumberParam("dY", "The delta Y to move toward, in pixel.");
-AddAction(7, 0, "Set target by delta XY", "Position", 
-          "Set {my} target position by (delta <i>{0}</i>, delta <i>{1}</i>)", 
-          "Set target position to move toward by deltaX and deltaY.", 
+AddAction(7, 0, "Move to delta XY", "MoveTo", 
+          "{my} move to (delta <i>{0}</i>, delta <i>{1}</i>)", 
+          "Move to specific position by deltaXY.", 
           "SetTargetPosByDeltaXY");  
           
 AddNumberParam("Distance", "The destance to move toward, in pixel.");          
 AddNumberParam("Angle", "The angle of moving destance to move toward, in degree.");
-AddAction(8, 0, "Set target by distance-angle", "Position", 
-          "Set {my} target position by distance to <i>{0}</i>, angle to <i>{1}</i>)", 
-          "Set target position to move toward by distance-angle.", 
+AddAction(8, 0, "Move to distance-angle", "MoveTo", 
+          "{my} move to (distance <i>{0}</i>, angle <i>{1}</i>)", 
+          "Move to specific position by distance-angle.", 
           "SetTargetPosByDistanceAngle");         
           
 AddAction(9, 0, "Stop", "Stop", "{my} stop", 
