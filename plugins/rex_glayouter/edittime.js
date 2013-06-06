@@ -74,10 +74,7 @@ AddExpression(7, ef_return_number,
               "Get opacity of layouted instance.");  
 AddExpression(8, ef_return_number,
               "Get visible of layouted instance", "Layout", "InstVisible",
-              "Get visible of layouted instance.");   
-AddExpression(9, ef_return_number,
-              "Get frame index of layouted instance", "Layout", "InstFrameIndex",
-              "Get frame index of layouted instance.");               
+              "Get visible of layouted instance.");       
 AddExpression(21, ef_return_number, "Get sprites count", "Sprite", "SpritesCnt", "Get sprites count.");
 
 ACESDone();

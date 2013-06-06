@@ -74,13 +74,13 @@ cr.plugins_.Rex_Container.tag2container = {};
             status = this.pin_status[uid];            
             if ((this.pin_mode == 1) || (this.pin_mode == 2))
 			{
-			    a = this.angle + status.delta_angle;				
-                new_x = this.x + (status.delta_dist*Math.cos(a));
-                new_y = this.y + (status.delta_dist*Math.sin(a));
+			    a = this.angle + status["da"];				
+                new_x = this.x + (status["dd"]*Math.cos(a));
+                new_y = this.y + (status["dd"]*Math.sin(a));
 			}
             if ((this.pin_mode == 1) || (this.pin_mode == 3))
 			{
-			    new_angle = status.sub_start_angle + (this.angle - status.main_start_angle);
+			    new_angle = status["rda"] + this.angle;
 			}
             
             if (((new_x != null) && (new_y != null)) && 
@@ -124,10 +124,9 @@ cr.plugins_.Rex_Container.tag2container = {};
 
 	instanceProto.pin_inst = function (inst)
 	{
-        this.pin_status[inst.uid] = {delta_angle:cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
-                                     delta_dist:cr.distanceTo(this.x, this.y, inst.x, inst.y),
-									 main_start_angle:this.angle,
-									 sub_start_angle:inst.angle,
+        this.pin_status[inst.uid] = {"da":cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
+                                     "dd":cr.distanceTo(this.x, this.y, inst.x, inst.y),
+									 "rda": inst.angle - this.angle,
                                     };
 	};	
     
@@ -167,6 +166,8 @@ cr.plugins_.Rex_Container.tag2container = {};
 	{
         if (uid in this._uids)
             delete this._uids[uid];
+        else
+            return;
         if (uid in this.pin_inst)
             delete this.pin_inst[uid];
 	};

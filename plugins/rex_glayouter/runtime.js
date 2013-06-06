@@ -45,14 +45,19 @@ cr.plugins_.Rex_Layouter = function(runtime)
         this._uids = {};
         this.sprites = [];    // uid
         this.pin_status = {};
+        this.pin_mode = this.properties[0];
         if (this.pin_mode != 0)
             this.runtime.tick2Me(this);
+            
+        this._opactiy_save = this.opacity;
+	    this._visible_save = this.visible;            
         
         // handlers for behaviors
         this.handlers = [];
         this.layout_inst_params = null;
         this.has_event_call = false;
         this._get_layouter_handler();
+        
 	};
     
 	instanceProto.onDestroy = function ()
@@ -62,6 +67,33 @@ cr.plugins_.Rex_Layouter = function(runtime)
     
 	instanceProto.tick2 = function ()
 	{
+	    var i, cnt=this.sprites.length, inst;
+	    if (cnt == 0)
+	        return;	        
+	    if (this._opactiy_save != this.opacity)
+	    {
+	        this.opacity = cr.clamp(this.opacity, 0, 1);
+	        for (i=0; i<cnt; i++)
+	        {
+	            inst = this._uid2inst(this.sprites[i]); 
+	            inst.opacity = this.opacity;
+	        }
+	        this.runtime.redraw = true;
+	        this._opactiy_save = this.opacity; 
+	    }
+	    
+	    if (this._visible_save != this.visible)
+	    {
+	        for (i=0; i<cnt; i++)
+	        {
+	            inst = this._uid2inst(this.sprites[i]); 
+	            inst.visible = visible;
+	        }
+	        this.runtime.redraw = true;
+	        this._visible_save = this.visible;	  
+	    }
+	    
+	    // pin	    
 	    if (this.pin_mode == 0)
 	        return;
 	        				
@@ -71,31 +103,31 @@ cr.plugins_.Rex_Layouter = function(runtime)
             pin_inst = this._uid2inst(uid);
             if (pin_inst == null)
                 continue;
-            status = this.pin_status[uid];            
+            status = this.pin_status[uid];          
             if ((this.pin_mode == 1) || (this.pin_mode == 2))
 			{
-			    a = this.angle + status.delta_angle;				
-                new_x = this.x + (status.delta_dist*Math.cos(a));
-                new_y = this.y + (status.delta_dist*Math.sin(a));
+			    a = this.angle + status["da"];
+                new_x = this.x + (status["dd"]*Math.cos(a));
+                new_y = this.y + (status["dd"]*Math.sin(a));
 			}
             if ((this.pin_mode == 1) || (this.pin_mode == 3))
 			{
-			    new_angle = status.sub_start_angle + (this.angle - status.main_start_angle);
+			    new_angle = status["rda"] + this.angle;
 			}
-            
             if (((new_x != null) && (new_y != null)) && 
 			    ((new_x != pin_inst.x) || (new_y != pin_inst.y)))
-            {
+            {                
 			    pin_inst.x = new_x;
 			    pin_inst.y = new_y;
-			    pin_inst.set_bbox_changed();
+			    pin_inst.set_bbox_changed();			    
             }
 			if ((new_angle != null) && (new_angle != pin_inst.angle))
 			{
 			    pin_inst.angle = new_angle;
 			    pin_inst.set_bbox_changed();
 			}
-	    }      
+	    }    
+	     
 	};    
 	
 	instanceProto.draw = function(ctx)
@@ -110,6 +142,8 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	{
         var inst, i, cnt=insts.length;
 		var is_world = insts[0].type.plugin.is_world;
+				
+		// update uids, sprites
         for (i=0; i<cnt; i++)
         {
             inst = insts[i];
@@ -118,23 +152,35 @@ cr.plugins_.Rex_Layouter = function(runtime)
             inst.extra.rex_container_uid = this.uid;
             this._uids[inst.uid] = true;
             if (is_world)
-            {
-                this.sprites.push(inst.uid);
-                if (this.pin_mode != 0)
-                    this.pin_inst(inst);
-            }
+                this.sprites.push(inst.uid);            
         }
-            
-        this._do_layout(insts, true);           
+        
+        // layout instances
+        this._do_layout(insts, true);
+        
+        // pin instances
+        if (is_world && (this.pin_mode != 0))
+        {
+            for (i=0; i<cnt; i++)
+                this.pin_inst(insts[i]);
+        }
 	};
 
 	instanceProto.pin_inst = function (inst)
 	{
-        this.pin_status[inst.uid] = {delta_angle:cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
-                                     delta_dist:cr.distanceTo(this.x, this.y, inst.x, inst.y),
-									 main_start_angle:this.angle,
-									 sub_start_angle:inst.angle,
-                                    };
+        if (this.pin_status[inst.uid] != null)
+        {
+            this.pin_status[inst.uid]["da"] = cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle;
+            this.pin_status[inst.uid]["dd"] = cr.distanceTo(this.x, this.y, inst.x, inst.y);
+            this.pin_status[inst.uid]["rda"] = inst.angle - this.angle;
+        }
+        else
+        {
+            this.pin_status[inst.uid] = {"da":cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
+                                         "dd":cr.distanceTo(this.x, this.y, inst.x, inst.y),
+                                         "rda": inst.angle - this.angle,	
+                                        };
+        }
 	};	
     
 	instanceProto.create_insts = function (obj_type,x,y,_layer)
@@ -173,6 +219,9 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	{
         if (uid in this._uids)
             delete this._uids[uid];
+        else
+            return;
+            
         if (uid in this.pin_inst)
             delete this.pin_inst[uid];
         cr.arrayFindRemove(this.sprites, uid)
@@ -313,13 +362,9 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	            inst.opacity = params.opacity; 
 	        if (params.visible != null)
 	            inst.visible = params.visible; 
-	        if (params.frameindex != null)      // sprite only
-            {
-                if ((cr.plugins_.Sprite) && (inst instanceof cr.plugins_.Sprite.prototype.Instance))
-                    cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, params.frameindex); 
-            }
 	        inst.set_bbox_changed();	            	            	                
 	    }
+	    this.pin_inst(inst);
 	};
 	
 	instanceProto.get_centerX = function (inst)
@@ -521,19 +566,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	        val = this.layout_inst_params.inst.visible;
 		ret.set_int(val);
 	};		
-	
-	Exps.prototype.InstFrameIndex = function (ret)
-	{
-	    var val=this.layout_inst_params.frameindex;
-	    if (val == null)
-        {
-	        val = this.layout_inst_params.inst.cur_frame;  // sprite only
-            if (val == null)
-                val = (-1);
-        }
-		ret.set_int(val);
-	};		
-	
+
 	Exps.prototype.SpritesCnt = function (ret)
 	{
 		ret.set_int(this.sprites.length);
