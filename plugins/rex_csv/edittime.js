@@ -49,45 +49,45 @@ AddCondition(9, 0, "Entry is valid", "In",
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("CSV string", "The csv string for loading.", '""');
-AddAction(1, 0, "Load table", "Table", "Load table from csv string <i>{0}</i>",
+AddAction(1, 0, "Load table", "0: Load", "Load table from csv string <i>{0}</i>",
          "Load table from csv string.", "LoadCSV");
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
-AddAction(2, 0, "Set entry", "Table", "Set value at (<i>{0}</i>, <i>{1}</i>) to <i>{2}</i>", 
-          "Set the value in the table.", "SetEntry");
-AddAction(3, 0, "Clear", "Table", "Clear", "Clear all entries.", "Clear");
+AddAction(2, 0, "Set entry", "Set", "Set value at (<i>{0}</i>, <i>{1}</i>) to <i>{2}</i>", 
+          "Set the value in the table at current page.", "SetEntry");
+AddAction(3, 0, "Clear", "Set", "Clear", "Clear all entries.", "Clear");
 AddStringParam("Row", "The row index.", '""');
 AddComboParamOption("Integer");
 AddComboParamOption("Float");
 AddComboParam("Type", "Conver type to numver.",0);
-AddAction(4, 0, "Convert type", "Table", "Convert entries type to <i>{1}</i> on row <i>{0}</i>",
+AddAction(4, 0, "Convert type", "Convert", "Convert entries type to <i>{1}</i> on row <i>{0}</i>",
          "Convert entries type in a row.", "ConvertType");
 AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(6, 0, "Load one table", "JSON", "Load table form JSON string <i>{0}</i>",
+AddAction(6, 0, "Load one table", "0: Load", "Load table form JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");  
 AddStringParam("Col index", "Column index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
-AddAction(7, 0, "Append a column", "Append/Remove", "Append column <i>{0}</i> with initial value to <i>{1}</i>",
+AddAction(7, 0, "Append a column", "Resize", "Append column <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a column.", "AppendCol");
 AddStringParam("Row index", "Row index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
-AddAction(8, 0, "Append a row", "Append/Remove", "Append row <i>{0}</i> with initial value to <i>{1}</i>",
+AddAction(8, 0, "Append a row", "Resize", "Append row <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a row.", "AppendRow");  
 AddStringParam("Col index", "Column index.", '""');
-AddAction(9, 0, "Remove a column", "Append/Remove", "Remove column <i>{0}</i>",
+AddAction(9, 0, "Remove a column", "Resize", "Remove column <i>{0}</i>",
          "Remove a column.", "RemoveCol");
 AddStringParam("Row index", "Row index.", '""');
-AddAction(10, 0, "Remove a row", "Append/Remove", "Remove row <i>{0}</i>",
+AddAction(10, 0, "Remove a row", "Resize", "Remove row <i>{0}</i>",
          "Remove a row.", "RemoveRow");           
 AddStringParam("Delimiter", "Set delimiter for splitting items.", ",");
 AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
          "Set delimiter for splitting items.", "SetDelimiter");
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(12, 0, "Load all tables", "JSON", "Load all tables form JSON string <i>{0}</i>",
+AddAction(12, 0, "Load all tables", "0: Load", "Load all tables form JSON string <i>{0}</i>",
          "Load all tables from JSON string.", "StringToAllTables"); 
 AddStringParam("Col index", "Col index.", '""');
 AddComboParamOption("Increasing");
@@ -101,7 +101,13 @@ AddComboParamOption("Decreasing");
 AddComboParam("Order", "Sorting order of item.", 0); 
 AddAction(14, 0, "Sort items in row", "Sort", "Sort items in row <i>{0}</i> , by <i>{1}</i> order",
          "Sort items in row.", "SortRow");  
-       
+AddStringParam("Col", "The column index.", '""');
+AddStringParam("Row", "The row index.", '""');
+AddStringParam("Page", "The index of page.", '""');
+AddAnyTypeParam("Value", "The value to store.", "0");
+AddAction(15, 0, "Set entry at page", "Set", "Set value at (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>) to <i>{3}</i>", 
+          "Set the value in the table at a specific page.", "SetEntryAtPage");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Col", "The column index.", '""');

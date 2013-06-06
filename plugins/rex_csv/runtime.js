@@ -347,6 +347,12 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.current_table.SortRow(row, is_increasing);
 	}; 
     
+	Acts.prototype.SetEntryAtPage = function (col, row, page, val)
+	{
+        this.TurnPage(page);
+        this.current_table.SetEntry(col, row, val);       
+	};
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
