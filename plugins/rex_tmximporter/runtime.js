@@ -4,6 +4,9 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
+// load socket.io.min.js
+document.write('<script src="zlib_and_gzip.min.js"></script>');
+
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_TMXImporter = function(runtime)
@@ -918,9 +921,44 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var encoding = xml_obj.get_string_value("@encoding", xml_data);
         var compression = xml_obj.get_string_value("@compression", xml_data);      
         var data = _get_node_text(xml_data);
-        data = (encoding == "base64")? _decBase64AsArray(data):_decCSV(data);
-        if (compression != "")
-            alert ("TMXImporter could not support any decompression");             
+        if(typeof(String.prototype.trim) === "undefined")
+        {
+            String.prototype.trim = function() 
+            {
+                return String(this).replace(/^\s+|\s+$/g, '');
+            };
+        }
+        
+        data = data.trim();
+        if (encoding == "base64")
+        {
+            if (compression == "")
+            {
+                data = _decBase64AsArray(data);
+            }
+            else if (compression == "zlib")
+            {
+                data = atob(data);
+                data = data.split('').map(function(e) {
+                    return e.charCodeAt(0);
+                });
+                var inflate = new window["Zlib"]["Inflate"](data);
+                data = inflate["decompress"]();
+            }
+            else if (compression == "gzip")
+            {
+                data = atob(data);
+                data = data.split('').map(function(e) {
+                    return e.charCodeAt(0);
+                });
+                var gunzip = new window["Zlib"]["Gunzip"](data);
+                data = gunzip["decompress"]();               
+            }
+        }
+        else if (encoding == "csv")
+            data = _decCSV(data);
+        else
+            alert ("TMXImporter: could not decompress data");             
         return data;
     };
     var _get_objectgroups = function (xml_obj)

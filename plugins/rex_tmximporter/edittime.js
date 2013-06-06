@@ -10,7 +10,8 @@
 		"category":		"Board",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		0,
+        "dependency":	"zlib_and_gzip.min.js"
 	};
 };
 
