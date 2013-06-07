@@ -251,10 +251,6 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var inst = this.layout.CreateItem(obj, x, y, z, layer);
         if (!inst)
             return;
-        
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(obj.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
 
         // Pick just this instance
         var sol = obj.getCurrentSol();
@@ -275,7 +271,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 				sol.instances[0] = s;
 			}
 		}
-
+        
+		this.runtime.isInOnDestroy++;
+		this.runtime.trigger(Object.getPrototypeOf(obj.plugin).cnds.OnCreated, inst);
+		this.runtime.isInOnDestroy--;
+        
         return inst;
 	};
 		

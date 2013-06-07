@@ -54,6 +54,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
         
         // handlers for behaviors
         this.handlers = [];
+        this._insts = [];    // temp list
         this.layout_inst_params = null;
         this.has_event_call = false;
         this._get_layouter_handler();
@@ -183,11 +184,12 @@ cr.plugins_.Rex_Layouter = function(runtime)
         }
 	};	
     
-	instanceProto.create_insts = function (obj_type,x,y,_layer)
+	instanceProto.create_inst = function (obj_type,x,y,_layer)
 	{
         if (obj_type == null)
             return;
-        var layer = (typeof _layer == "number")?
+        var layer = (_layer == null)? this.layer:
+                    (typeof _layer == "number")?
                     this.runtime.getLayerByNumber(_layer):
                     this.runtime.getLayerByName(_layer);  
         var inst = this.runtime.createInstance(obj_type, layer, x, y ); 
@@ -211,7 +213,10 @@ cr.plugins_.Rex_Layouter = function(runtime)
 			}
 		}
         
-	    this.add_insts([inst]);
+		this.runtime.isInOnDestroy++;
+		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
+		this.runtime.isInOnDestroy--;
+
 	    return inst;
 	};    
 
@@ -227,7 +232,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
         cr.arrayFindRemove(this.sprites, uid)
 	};
     
-	instanceProto.remove_insts = function (insts)
+	instanceProto.remove_uids = function (insts)
 	{
         var i, cnt=insts.length;
         for (i=0; i<cnt; i++)
@@ -235,6 +240,24 @@ cr.plugins_.Rex_Layouter = function(runtime)
             this._remove_uid(insts[i].uid);
         }
 	}; 
+    
+	instanceProto.destroy_insts = function (insts)
+	{
+        var i, cnt=insts.length, inst;
+        this._insts.length = 0;
+        for (i=0; i<cnt; i++)
+        {
+            inst = insts[i];
+            if (!(inst.uid in this._uids))
+                continue;
+            this._insts.push(inst);
+            this.runtime.DestroyInstance(inst);
+            this._remove_uid(inst.uid);
+        }
+        // layout instances
+        this._do_layout(this._insts, false);
+        this._insts.length = 0;
+	};     
     
     instanceProto._uid2inst = function(uid, objtype)
     {
@@ -482,7 +505,12 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	
 	Acts.prototype.CreateInsts = function (obj_type,x,y,_layer)
 	{
-        this.create_insts(obj_type,x,y,_layer);
+        this.create_inst(obj_type,x,y,_layer);
+        
+        this._insts.length = 0;
+        this._insts.push(inst);
+	    this.add_insts(this._insts);
+        this._insts.length = 0;        
 	};
 	
 	Acts.prototype.RemoveInsts = function (objtype)
@@ -490,7 +518,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
         var insts = objtype.getCurrentSol().getObjects();
         if (insts.length==0)
             return;
-	    this.remove_insts(insts);
+	    this.remove_uids(insts);
 	};
 	
 	Acts.prototype.ForceLayout = function ()
