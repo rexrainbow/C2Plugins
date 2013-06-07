@@ -16,6 +16,10 @@
 	  			 		 
 //////////////////////////////////////////////////////////////
 // Actions     
+AddObjectParam("Number", "Sprite of number.");
+AddNumberParam("Digit", "Count of digit.");
+AddAction(0, 0, "Create digits", "0: Setup", "Create digits to <i>{1}</i> <i>{0}</i>", 
+          "Create digits.", "CreateNumberSprites");  
 AddNumberParam("Value", "Value.");
 AddAction(1, 0, "Set value", "Number", 
           "Set {my} value to <i>{0}</i>", 
