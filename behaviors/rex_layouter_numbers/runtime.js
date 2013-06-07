@@ -52,49 +52,31 @@ cr.behaviors.Rex_layouter_numbers = function(runtime)
 	{
 	};  
 
+    var char2frameindex = { "0":0, "1":1, "2":2, "3":3, "4":4, 
+                            "5":5, "6":6, "7":7, "8":8, "9":9, 
+                            "": 10, "-": 11 };
 	behinstProto.set_value = function (value)
 	{
-        value = Math.floor(value);
-        this.value = value;
+        this.value = Math.floor(value);
         if (!cr.plugins_.Sprite)
             return;
         var set_frameindex = cr.plugins_.Sprite.prototype.acts.SetAnimFrame;
-        var is_negative = (value < 0);
-        var is_zero = (value == 0);
         var layouter=this.inst;
         var sprites=layouter.sprites; 
         var i, cnt=sprites.length, inst;
-        var _index;           
-        value = Math.abs(value);
+                  
+        var value_string = this.value.toString();          
+        var last_index = value_string.length-1;
+        var c, string_index = 0;
 	    for (i=0; i<cnt; i++)
 	    {	    
 	        inst = this.runtime.getObjectByUID(sprites[i]);
 	        if (! (inst instanceof cr.plugins_.Sprite.prototype.Instance) )
 	           continue;	            
 	        
-            if (is_zero)
-            {
-                _index = 0;
-                is_zero = false;
-            }
-            else if (value == 0)
-            {
-                if (is_negative)
-                {
-                    _index = 11;  // "-"
-                    is_negative = false;                    
-                }
-                else
-                {
-                    _index = 10;
-                }
-            }
-            else
-            {
-                _index = (value%10);
-                value = Math.floor(value/10); 
-            }
-            set_frameindex.call(inst, _index);    
+	        c = value_string.charAt(last_index - string_index);  
+            set_frameindex.call(inst, char2frameindex[c]);
+            string_index += 1;
 	    }
 	};  
 	behinstProto.saveToJSON = function ()
