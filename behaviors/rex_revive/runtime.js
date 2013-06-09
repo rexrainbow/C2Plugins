@@ -64,7 +64,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         if (angle != null)
         {
             inst.cur_anim_speed = cur_anim_speed;  
-            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, cur_frame); 
+            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, cur_frame); 
             inst.changeAnimName = cur_anim_name;
             inst.doChangeAnim();              
             inst.angle = angle;
