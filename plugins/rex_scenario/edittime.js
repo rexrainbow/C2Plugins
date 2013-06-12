@@ -20,7 +20,8 @@ AddCondition(0, cf_trigger, "On execution completed", "Control", "On completed",
              "Triggered when scenario executed completed.", "OnCompleted");
 AddCondition(1, 0, "Is running", "Control", "Is running", 
              "Is scenario running.", "IsRunning");
-             
+AddCondition(2, cf_trigger, "On tag changed", "Tag", "On tag changed", 
+             "Triggered when tag changed.", "OnTagChanged");   
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Timeline", "Timeline object to get timer");
@@ -29,7 +30,7 @@ AddAction(1, af_deprecated, "Setup", "Z: Deprecated",
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
 AddStringParam("Commands", "Commands in CSV format", "");
-AddAction(2, 0, "Load commands", "Load", 
+AddAction(2, 0, "Load commands", "0: Load", 
           "Load commands <i>{0}</i>", 
           "Load commands.", "LoadCmds");
 AddNumberParam("Offset", "Time offset at start", 0);
@@ -84,6 +85,7 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),
     new cr.Property(ept_combo, "Time stamp", "Differential", "Time stamp type.", "Accumulation|Differential"),
+    new cr.Property(ept_combo, "Eval mode", "Yes", 'Enable "Eval mode" for parameters. "Mem" feature only could be used in eval mode.', "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

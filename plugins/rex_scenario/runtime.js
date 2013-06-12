@@ -43,6 +43,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	{
         this.is_debug_mode = (this.properties[0] == 1);
         this.is_accT_mode = (this.properties[1] == 0);
+        this.is_eval_mode = (this.properties[2] == 1);
         this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);        
         this.timeline = null;  
         this.timelineUid = -1;    // for loading     
@@ -120,7 +121,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	Cnds.prototype.IsRunning = function ()
 	{
 		return this._scenario.is_running;
-	};    
+	}; 
+	
+	Cnds.prototype.OnTagChanged = function ()
+	{
+		return true;
+	}; 	   
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -275,20 +281,20 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
 
 		// remove empty cell
-        cnt = queue.length;
-		var cell_cnt = queue[0].length;
-        var cmd_pack, j;
-        for (i=0;i<cnt;i++)
-        {
-            cmd_pack = queue[i];
-            for(j=0;j<cell_cnt;j++)
-			{
-			    if (cmd_pack[j] == "")
-				    break;
-			}
-			if (j<cell_cnt)
-			    cmd_pack.splice(j, cell_cnt-j)
-        }
+        //cnt = queue.length;
+		//var cell_cnt = queue[0].length;
+        //var cmd_pack, j;
+        //for (i=0;i<cnt;i++)
+        //{
+        //    cmd_pack = queue[i];
+        //    for(j=0;j<cell_cnt;j++)
+		//	{
+		//	    if (cmd_pack[j] == "")
+		//		    break;
+		//	}
+		//	if (j<cell_cnt)
+		//	    cmd_pack.splice(j, cell_cnt-j)
+        //}
 		
         cnt = queue.length;
         var cmd_pack;
@@ -308,15 +314,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
 		if (offset != null)
             this.offset = offset;
         if (this.timer == null)
-            this.timer = this.plugin._timeline_get().CreateTimer(this, this._execute_fn);
+            this.timer = this.plugin._timeline_get().CreateTimer(this, this._delay_execute_c2fn);
         else
             this.timer.Remove();  // stop timer
         this.cmd_table.reset();
-		var valid_tag = true;
-		if (tag != "")
-		    valid_tag = this._extra_cmd_handlers["tag"].goto_tag(tag);
-		if (valid_tag)
-            this._run_next_cmd();
+        var index = this._extra_cmd_handlers["tag"].tag2index(tag);
+        if (index == null)
+	    {
+	        assert2(index, "Scenario: Could not find tag "+tag);
+	        return;
+	    }
+	    this._run_next_cmd(index);
     };  
 
     ScenarioKlassProto.get_last_tag = function ()
@@ -329,19 +337,25 @@ cr.plugins_.Rex_Scenario = function(runtime)
 		this.pre_abs_time = 0;
     };
 	
-    ScenarioKlassProto._run_next_cmd = function ()
-    {      
-        var cmd_pack = this.cmd_table.get();
-        if ((cmd_pack == null) && (this.cmd_table.queue != null))
+    ScenarioKlassProto._run_next_cmd = function (index)
+    {     
+        var is_continue = true;
+        var cmd_pack, cmd;
+        while (is_continue)
         {
-            this._exit();
-            return;
+            cmd_pack = this.cmd_table.get(index);
+            index = null;
+            if ((cmd_pack == null) && (this.cmd_table.queue != null))
+            {
+                this._exit();
+                return;
+            }
+            cmd = cmd_pack[0];
+            if (!isNaN(cmd))
+                is_continue = this._on_delay_execution_command(cmd_pack);
+            else  // might be other command
+                is_continue = this._extra_cmd_handlers[cmd.toLowerCase()].on_executing(cmd_pack);
         }
-        var cmd = cmd_pack[0];
-        if (!isNaN(cmd))
-            this._on_delay_execution_command(cmd_pack);
-        else  // might be other command
-            this._extra_cmd_handlers[cmd.toLowerCase()].on_executing(cmd_pack);
     }; 
 	
     ScenarioKlassProto._exit = function ()
@@ -357,13 +371,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     ScenarioKlassProto.resume = function()
     {
-        if (!this.is_pause)
+        if (!(this.is_pause && this.is_running))
             return;
         this.is_pause = false;
         this._reset_abs_time();
         this._run_next_cmd();
     };
-    
+    ScenarioKlassProto.on_tag_changed = function()
+    {
+        var inst = this.plugin;
+        inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnTagChanged, inst);
+    };
 	ScenarioKlassProto._on_delay_execution_command = function(cmd_pack)
 	{
         var deltaT, cmd = parseFloat(cmd_pack[0]);
@@ -376,31 +394,50 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else
             deltaT = cmd;
              
+        var is_eval_mode = this.plugin.is_eval_mode;
         // get function  name and parameters
 		var fn_name=cmd_pack[1];
 		var fn_params=[];
 		fn_params.length = cmd_pack.length - 2;
         // eval parameters
         var param_cnt=fn_params.length, i, param;
+        var re = new RegExp("\n", "gm");
         for (i=0;i<param_cnt;i++)
         {
             param = cmd_pack[i+2];
             if (param != "")
-			{
-			    var code_string = "function(scenario, MEM)\
-				{\
-				    return "+param+"\
-				}";
-				var fn = eval("("+code_string+")");
-                param = fn(this, this.Mem);
+			{          
+                if (is_eval_mode)
+                {
+                    param = param.replace(re, "\\n");    // replace "\n" to "\\n"
+			        var code_string = "function(scenario, MEM)\
+				    {\
+				        return "+param+"\
+				    }";
+				    var fn = eval("("+code_string+")");
+                    param = fn(this, this.Mem);
+                }
+                else
+                {
+                    if (!(isNaN(param)))
+                        param = parseFloat(param);
+                }
 		    }
             fn_params[i] = param;
         }
-        this.timer.SetCallbackArgs([fn_name, fn_params]);
-        this.timer.Start(deltaT);
+        if (deltaT == 0)
+        {
+            this._execute_c2fn(fn_name, fn_params);
+        }
+        else
+        {
+            this.timer.SetCallbackArgs([fn_name, fn_params]);
+            this.timer.Start(deltaT);
+        }
+        return (deltaT == 0);  // is_continue
 	};  
     
-	ScenarioKlassProto._execute_fn = function(name, params)
+	ScenarioKlassProto._execute_c2fn = function(name, params)
 	{
 	    var plugin = this.plugin;
         var has_rex_function = (plugin.callback != null);
@@ -411,9 +448,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var has_fnobj = plugin._timeline_get().RunCallback(name, params, true);     
             assert2(has_fnobj, "Scenario: Can not find callback oject.");
         }
-
-		this._run_next_cmd();
 	};
+	
+	ScenarioKlassProto._delay_execute_c2fn = function(name, params)
+	{
+	    this._execute_c2fn(name, params);
+		this._run_next_cmd();
+	};	
 	
 	ScenarioKlassProto.saveToJSON = function ()
 	{    
@@ -447,7 +488,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (this.timer_save != null)
         {
             var timeline = this.plugin._timeline_get();
-            timeline.LoadTimer(this, this._execute_fn, this.timer_save["__cbargs"],  this.timer_save);
+            timeline.LoadTimer(this, this._delay_execute_c2fn, this.timer_save["__cbargs"],  this.timer_save);
             this.timer_save = null;
         }
 	};
@@ -497,6 +538,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdWAITKlassProto.on_executing = function(cmd_pack)
     {
         this.scenario.pause();
+        return false;  // is_continue
     }; 
 	
     // extra command : TIMESTAMP
@@ -510,7 +552,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
 	    var mode = cmd_pack[1].toLowerCase().substring(0, 4);
 		this.scenario.plugin.is_accT_mode = (mode == "acc");
-        this.scenario._run_next_cmd();
+        return true;  // is_continue
     };	
 	
     // extra command : EXIT
@@ -523,34 +565,36 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdEXITKlassProto.on_executing = function(cmd_pack)
     {
         this.scenario._exit();
+        return false;  // is_continue
     };
 
-    // extra command : TAG
+    // extra command : fgoto
+    
     var CmdTAGKlass = function(scenario)
     {
         this.scenario = scenario;
-		this.tag2index = {};
+		this._tag2index = {};
 		this.last_tag = "";
     };
     var CmdTAGKlassProto = CmdTAGKlass.prototype;    
     CmdTAGKlassProto.on_parsing = function(index, cmd_pack) 
 	{
-	    this.tag2index[cmd_pack[1]] = index;
+	    this._tag2index[cmd_pack[1]] = index;
 	};
     CmdTAGKlassProto.on_executing = function(cmd_pack)
-    {	    
+    {	   
 	    this.last_tag = cmd_pack[1];
 	    this.scenario._reset_abs_time();
-        this.scenario._run_next_cmd();
+	    this.scenario.on_tag_changed();
+        return true;  // is_continue
     };
-	CmdTAGKlassProto.goto_tag = function(tag) 
-	{
-	    var index = this.tag2index[tag];
-		var valid_tag = (index != null);
-		if (valid_tag)
-		    this.scenario.cmd_table.get(index);
-		return valid_tag
-	}; 
+    CmdTAGKlassProto.tag2index = function(tag)
+    {	 
+        var index = this._tag2index[tag];
+        if ((tag == "") && (index == null))
+            index = 0;
+        return index;        
+    };
   	
     // template
     //var CmdHandlerKlass = function(scenario) {};
