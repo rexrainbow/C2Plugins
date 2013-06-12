@@ -64,10 +64,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_IsFlipped = 0;        
         this.exp_LayerName = "";  
         this.exp_LayerOpacity = 1;  
-        this.exp_map_properties = {};                
-        this.exp_layer_properties = {};
-        this.exp_tileset_properties = {};        
-        this.exp_tile_properties = {};        
+        this.exp_map_properties = null;                
+        this.exp_layer_properties = null;
+        this.exp_tileset_properties = null;        
+        this.exp_tile_properties = null;        
         
         // objects
 		this.exp_ObjGroupName = "";        
@@ -182,7 +182,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
+                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: null;
                    
                 if (this._obj_type != null)
                     this._created_inst = this._create_instance(x,y,c2_layer); 
@@ -372,7 +372,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
+                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: null;
                    
                 if (this._obj_type != null)
                     this._created_inst = this._create_instance(x,y,c2_layer); 
@@ -478,8 +478,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     // for each property
 	Cnds.prototype.ForEachLayerProperty = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
+        if (this.exp_layer_properties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;	
         var key, props = this.exp_layer_properties, value;
 		for (key in props)
 	    {
@@ -495,9 +497,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 		return false;        
 	};   
 	Cnds.prototype.ForEachTilesetProperty = function ()
-	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
+	{
+        if (this.exp_tileset_properties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;		
         var key, props = this.exp_tileset_properties, value;
 		for (key in props)
 	    {
@@ -514,8 +518,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};   
 	Cnds.prototype.ForEachTileProperty = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
+        if (this.exp_tile_properties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;		
         var key, props = this.exp_tile_properties, value;
 		for (key in props)
 	    {
@@ -532,8 +538,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};
 	Cnds.prototype.ForEachMapProperty = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
+        if (this.exp_map_properties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;		
         var key, props = this.exp_map_properties, value;
 		for (key in props)
 	    {
@@ -640,23 +648,41 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};    
 	Exps.prototype.LayerProp = function (ret, name, default_value)
 	{   
-        var value = this.exp_layer_properties[name];
-        if (value == null)
+        var value;
+        if (this.exp_layer_properties == null)
             value = default_value;
+        else
+        {
+            value = this.exp_layer_properties[name];
+            if (value == null)
+                value = default_value;
+        }
 	    ret.set_any(value);
 	};
 	Exps.prototype.TilesetProp = function (ret, name, default_value)
 	{       
-        var value = this.exp_tileset_properties[name];
-        if (value == null)
-            value = default_value;        
+        var value;
+        if (this.exp_tileset_properties == null)
+            value = default_value;
+        else
+        {
+            value = this.exp_tileset_properties[name];
+            if (value == null)
+                value = default_value;        
+        }
 	    ret.set_any(value);
 	};     
 	Exps.prototype.TileProp = function (ret, name, default_value)
-	{       
-        var value = this.exp_tile_properties[name];
-        if (value == null)
-            value = default_value;        
+	{    
+        var value    
+        if (this.exp_tile_properties == null)
+            value = default_value;
+        else
+        {
+            value = this.exp_tile_properties[name];
+            if (value == null)
+                value = default_value;        
+        }
 	    ret.set_any(value);
 	}; 
 	Exps.prototype.PhysicalX = function (ret)
@@ -697,9 +723,15 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};
 	Exps.prototype.MapProp = function (ret, name, default_value)
 	{   
-        var value = this.exp_map_properties[name];
-        if (value == null)
+        var value;
+        if (this.exp_map_properties == null)
             value = default_value;
+        else
+        {
+            value = this.exp_map_properties[name];
+            if (value == null)
+                value = default_value;
+        }
 	    ret.set_any(value);
 	};	
     
@@ -856,13 +888,13 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         tileset.spacing = xml_obj.get_number_value("@spacing", xml_tileset);
         tileset.margin = xml_obj.get_number_value("@margin", xml_tileset); 
         var xml_tiles = xml_obj.get_nodes("./tile", xml_tileset);
-        tileset.tiles = _get_tiles(xml_obj, xml_tiles);
+        tileset.tiles = _get_tiles(xml_obj, xml_tiles, tileset.firstgid);
         
         var xml_properties = xml_obj.get_nodes("./properties/property", xml_tileset);
         tileset.properties = _get_properties(xml_obj, xml_properties);
         return tileset;
     };
-    var _get_tiles = function(xml_obj, xml_tiles)
+    var _get_tiles = function(xml_obj, xml_tiles, gid_offset)
     {
         var tiles = {};  
         var id;
@@ -870,7 +902,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
      
         while (xml_tile != null)
         {
-            id = xml_obj.get_number_value("@id", xml_tile) + 1;
+            id = xml_obj.get_number_value("@id", xml_tile) + gid_offset;
             tiles[id] = _get_tile(xml_obj, xml_tile); 
             xml_tile = xml_tiles.get_next_node();
         }        
@@ -921,6 +953,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var encoding = xml_obj.get_string_value("@encoding", xml_data);
         var compression = xml_obj.get_string_value("@compression", xml_data);      
         var data = _get_node_text(xml_data);
+        
         if(typeof(String.prototype.trim) === "undefined")
         {
             String.prototype.trim = function() 
@@ -932,28 +965,23 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         data = data.trim();
         if (encoding == "base64")
         {
-            if (compression == "")
+            data = atob(data);
+            data = data.split('').map(function(e) {
+                return e.charCodeAt(0);
+            });
+            
+            if (compression == "zlib")
             {
-                data = _decBase64AsArray(data);
-            }
-            else if (compression == "zlib")
-            {
-                data = atob(data);
-                data = data.split('').map(function(e) {
-                    return e.charCodeAt(0);
-                });
                 var inflate = new window["Zlib"]["Inflate"](data);
                 data = inflate["decompress"]();
             }
             else if (compression == "gzip")
             {
-                data = atob(data);
-                data = data.split('').map(function(e) {
-                    return e.charCodeAt(0);
-                });
                 var gunzip = new window["Zlib"]["Gunzip"](data);
                 data = gunzip["decompress"]();               
             }
+            
+            data = _array_merge(data);
         }
         else if (encoding == "csv")
             data = _decCSV(data);
@@ -1027,9 +1055,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     
     var _get_properties = function (xml_obj, xml_properties)
     {  
-        var properties = {};
-        var name, value;         
-        var xml_property = xml_properties.get_next_node();              
+        var xml_property = xml_properties.get_next_node(); 
+        if (xml_property == null)
+            return null
+        
+        var name, value, properties = {};        
         while (xml_property != null)
         {            
             name = xml_obj.get_string_value("@name", xml_property);
@@ -1048,22 +1078,24 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         return (s!=null)? parseFloat(s):default_value;
     };
     
-    var _decBase64AsArray = function(data) 
+    var _array_merge = function(data) 
     {
-        data = Base64.decode(data);
    	    var bytes = 4;
    	    var len = data.length / bytes;
-   	    var arr = [];
-   	    var i, j;
+   	    var arr = data;
+   	    var i, j, tmp;
    
    	    for (i = 0; i<len; i++) 
    	    {
-   		    arr[i] = 0;
+            tmp = 0;
    		    for (j = bytes - 1; j >= 0; --j) 
-   			    arr[i] += data.charCodeAt((i * bytes) + j) << (j << 3);
+                tmp += ( data[(i * bytes) + j] << (j << 3) );
+            arr[i] = tmp;
    	    }  
+        arr.length = len;
         return arr;
-    };
+    };   
+    
     var _decCSV = function(data) 
     {     
         data = data.replace(/(^\s*)|(\s*$)/g,"");
@@ -1075,8 +1107,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             data[i] = _string2int(data[i]);
         return data;
     };
-    
-      
+
     cr.plugins_.Rex_TMXImporter.LayoutKlass = function(plugin, OX, OY, width, height, is_isometric)
     {
         this.plugin = plugin;
@@ -1114,55 +1145,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{
         return this.plugin.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y),this.LXYZ2PY(x,y) );         
 	}; 
-	
-	
-	/**
-	 *  Base64 decoding
-	 *  @see <a href="http://www.webtoolkit.info/">http://www.webtoolkit.info/</A>
-	 */
-	var Base64 = (function() {
 
-		// hold public stuff in our singleton
-		var singleton = {};
-
-		// private property
-		var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
-		// public method for decoding
-		singleton.decode = function(input) {
-			
-			// make sure our input string has the right format
-			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-			
-			var output = [], chr1, chr2, chr3, enc1, enc2, enc3, enc4, i = 0;
-            
-            while (i < input.length) 
-            {
-                enc1 = _keyStr.indexOf(input.charAt(i++));
-                enc2 = _keyStr.indexOf(input.charAt(i++));
-                enc3 = _keyStr.indexOf(input.charAt(i++));
-                enc4 = _keyStr.indexOf(input.charAt(i++));
-                
-                chr1 = (enc1 << 2) | (enc2 >> 4);
-                chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                chr3 = ((enc3 & 3) << 6) | enc4;
-                
-                output.push(String.fromCharCode(chr1));
-                
-                if (enc3 != 64)
-                    output.push(String.fromCharCode(chr2));
-                if (enc4 != 64)
-                    output.push(String.fromCharCode(chr3));
-            }
-            
-            output = output.join('');
-            return output;
-		};
-
-		return singleton;
-
-	})();
-    
     // copy from xml plugin
     var XMLParser = function(xml_string, isIE) 
 	{
