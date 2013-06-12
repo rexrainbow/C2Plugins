@@ -48,7 +48,9 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         this.mode = this.properties[0];        
         this.direction = this.properties[1];
         this.alignment = this.properties[2];
-        this.delta_distance = this.properties[3];        
+        this.spacing = this.properties[3];
+        
+        
         this._points = {start:{x:0,y:0},end:{x:0,y:0}};
         
         // implement handlers
@@ -179,6 +181,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
             }
             break;            
         }
+
         return this._points;
 	};  
     
@@ -229,7 +232,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         var seg = (cnt==1)? 1: (cnt-1);
         var dx = (points.end.x - points.start.x)/seg;
         var dy = (points.end.y - points.start.y)/seg;
-        this.delta_distance = Math.sqrt((dx*dx) + (dy*dy));
+        this.spacing = Math.sqrt((dx*dx) + (dy*dy));
         var start_x = points.start.x;
         var start_y = points.start.y;
         var inst_angle = cr.to_degrees(a);
@@ -258,11 +261,11 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
                            points.end.x - points.start.x);
         var cos_a = Math.cos(a), sin_a = Math.sin(a);        
         var i, params;
-        var dx = this.delta_distance * cos_a;
-        var dy = this.delta_distance * sin_a; 
+        var dx = this.spacing * cos_a;
+        var dy = this.spacing * sin_a; 
         
         // re-calc start point
-        var total_distance = this.delta_distance * (cnt-1);
+        var total_distance = this.spacing * (cnt-1);
         switch (this.alignment)
         {
         case 0:
@@ -299,7 +302,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 		return { "m": this.mode, 
                  "dir": this.direction,
                  "ali": this.alignment,
-                 "dd": this.delta_distance
+                 "dd": this.spacing
                 };
 	};
 	
@@ -308,7 +311,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         this.mode = o["m"];        
         this.direction = o["dir"];
         this.alignment = o["ali"];
-        this.delta_distance = o["dd"];
+        this.spacing = o["dd"];
 	};  
 	//////////////////////////////////////
 	// Conditions
@@ -335,9 +338,9 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 		this.alignment = m;		
 	};	
     
-	Acts.prototype.SetDeltaDist = function (dist)
+	Acts.prototype.SetDeltaDist = function (d)
 	{
-		this.delta_distance = dist;		
+		this.spacing = d;		
 	};		
 		
 	//////////////////////////////////////
