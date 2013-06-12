@@ -46,8 +46,6 @@ cr.plugins_.Rex_Layouter = function(runtime)
         this.sprites = [];    // uid
         this.pin_status = {};
         this.pin_mode = this.properties[0];
-        if (this.pin_mode != 0)
-            this.runtime.tick2Me(this);
             
         this._opactiy_save = this.opacity;
 	    this._visible_save = this.visible;            
@@ -59,6 +57,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
         this.has_event_call = false;
         this._get_layouter_handler();
         
+        this.runtime.tick2Me(this);        
 	};
     
 	instanceProto.onDestroy = function ()
@@ -66,34 +65,37 @@ cr.plugins_.Rex_Layouter = function(runtime)
         this._destory_all_insts();
 	};
     
-	instanceProto.tick2 = function ()
-	{
-	    var i, cnt=this.sprites.length, inst;
-	    if (cnt == 0)
-	        return;	        
-	    if (this._opactiy_save != this.opacity)
+	instanceProto._update_opacity = function ()
+	{		
+        if (this._opactiy_save == this.opacity)
+            return;
+        var i, cnt=this.sprites.length, inst;    
+	    this.opacity = cr.clamp(this.opacity, 0, 1);
+	    for (i=0; i<cnt; i++)
 	    {
-	        this.opacity = cr.clamp(this.opacity, 0, 1);
-	        for (i=0; i<cnt; i++)
-	        {
-	            inst = this._uid2inst(this.sprites[i]); 
-	            inst.opacity = this.opacity;
-	        }
-	        this.runtime.redraw = true;
-	        this._opactiy_save = this.opacity; 
+	        inst = this._uid2inst(this.sprites[i]); 
+	        inst.opacity = this.opacity;
 	    }
-	    
-	    if (this._visible_save != this.visible)
+	    this.runtime.redraw = true;
+	    this._opactiy_save = this.opacity; 
+	};
+    
+	instanceProto._update_visible = function ()
+	{		
+        if (this._visible_save == this.visible)
+            return;
+        var i, cnt=this.sprites.length, inst;    
+	    for (i=0; i<cnt; i++)
 	    {
-	        for (i=0; i<cnt; i++)
-	        {
-	            inst = this._uid2inst(this.sprites[i]); 
-	            inst.visible = visible;
-	        }
-	        this.runtime.redraw = true;
-	        this._visible_save = this.visible;	  
+	        inst = this._uid2inst(this.sprites[i]); 
+	        inst.visible = this.visible;
 	    }
-	    
+	    this.runtime.redraw = true;
+	    this._visible_save = this.visible;	  
+	};
+    
+	instanceProto._update_position_angle = function ()
+	{		
 	    // pin	    
 	    if (this.pin_mode == 0)
 	        return;
@@ -127,8 +129,17 @@ cr.plugins_.Rex_Layouter = function(runtime)
 			    pin_inst.angle = new_angle;
 			    pin_inst.set_bbox_changed();
 			}
-	    }    
-	     
+	    } 
+	};
+    
+	instanceProto.tick2 = function ()
+	{
+	    var i, cnt=this.sprites.length, inst;
+	    if (cnt == 0)
+	        return;	        
+	    this._update_opacity();
+	    this._update_visible();
+        this._update_position_angle();	     
 	};    
 	
 	instanceProto.draw = function(ctx)
