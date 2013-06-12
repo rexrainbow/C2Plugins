@@ -61,7 +61,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_InstUID = (-1);
         this.exp_Frame = (-1);        
         this.exp_IsMirrored = 0;
-        this.exp_IsFlipped = 0;        
+        this.exp_IsFlipped = 0;
+        this.exp_TileAngle = 0;
         this.exp_LayerName = "";  
         this.exp_LayerOpacity = 1;  
         this.exp_map_properties = null;                
@@ -144,7 +145,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	// bitmaks to check for flipped & rotated tiles
 	var FlippedHorizontallyFlag		= 0x80000000;
 	var FlippedVerticallyFlag		= 0x40000000;
-	var FlippedAntiDiagonallyFlag   = 0x20000000;    
+	var FlippedAntiDiagonallyFlag   = 0x20000000;   
 	instanceProto._create_layer_objects = function(tmx_layer)
 	{
         var c2_layer =  this._get_layer(tmx_layer.name);
@@ -153,7 +154,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
-        var x,y,inst,tileset_obj,tile_obj,layer_opacity,_gid; 
+        var x,y,inst,tileset_obj,tile_obj,layer_opacity,_gid, tile_rotateID; 
         var i=0;
         
         this.exp_LayerName = tmx_layer.name;        
@@ -177,7 +178,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
-                tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
+                tile_rotateID = (_gid >> 29) & 0x7;
+                this.exp_TileAngle = (tile_rotateID == 5)? 90:
+                                     (tile_rotateID == 6)? 180:
+                                     (tile_rotateID == 3)? 270: 0;
+                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 				this.exp_TilesetName = tileset_obj.name;
                 this.exp_tileset_properties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
@@ -198,11 +203,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{  
         var inst = this.layout.CreateItem(this._obj_type,x,y,c2_layer);
         cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [this.exp_TileID-1]);
-        inst.opacity = this.exp_LayerOpacity;
-        if (this.exp_IsMirrored ==1)
-            inst.width = -inst.width;
-        if (this.exp_IsFlipped ==1)
-            inst.height = -inst.height;            
+        inst.opacity = this.exp_LayerOpacity;          
+        inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
         
         this.exp_InstUID = inst.uid; 
         return inst        
@@ -329,7 +331,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     instanceProto._retrieve_one_tile = function()
     {   
         var unit_cnt=0;
-        var layer_index,data_index,layers,layer,c2_layer,_gid,x,y;
+        var layer_index,data_index,layers,layer,c2_layer,_gid,x,y,tile_rotateID;
         var tileset_obj,tile_obj;
         var is_valid = false;
         while (!is_valid)
@@ -367,6 +369,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                tile_rotateID = (_gid >> 29) & 0x7;
+                this.exp_TileAngle = (tile_rotateID == 5)? 90:
+                                     (tile_rotateID == 6)? 180:
+                                     (tile_rotateID == 3)? 270: 0;                
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 		        this.exp_TilesetName = tileset_obj.name;
                 this.exp_tileset_properties = tileset_obj.properties;
@@ -461,12 +467,31 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	  
 	Cnds.prototype.OnEachTileCell = function ()
 	{
-        if (this._created_inst != null)
+        var inst = this._created_inst;
+        if (inst != null)
         {
-            var sol = this._created_inst.type.getCurrentSol();
+            var sol = inst.type.getCurrentSol();
             sol.select_all = false;
 		    sol.instances.length = 1;
-		    sol.instances[0] = this._created_inst;    
+		    sol.instances[0] = inst;
+		
+		    // Siblings aren't in instance lists yet, pick them manually
+		    var i, len, s;
+		    if (inst.is_contained)
+		    {
+			    for (i = 0, len = inst.siblings.length; i < len; i++)
+			    {
+				    s = inst.siblings[i];
+				    sol = s.type.getCurrentSol();
+				    sol.select_all = false;
+				    sol.instances.length = 1;
+				    sol.instances[0] = s;
+			    }
+		    }
+        
+		    this.runtime.isInOnDestroy++;
+		    this.runtime.trigger(Object.getPrototypeOf(inst.type.plugin).cnds.OnCreated, inst);
+		    this.runtime.isInOnDestroy--;
         }
 		return true;
 	};	
@@ -734,7 +759,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         }
 	    ret.set_any(value);
 	};	
-    
+	Exps.prototype.TileAngle = function (ret)
+	{     
+	    ret.set_float(this.exp_TileAngle);
+	};    
+
     // objects
 	Exps.prototype.ObjGroupName = function (ret)
 	{     

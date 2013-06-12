@@ -114,7 +114,9 @@ AddExpression(25, ef_return_string,
 AddStringParam("Name", "Property name.", '""');
 AddExpression(26, ef_return_any | ef_variadic_parameters, 
               "Get map properties", "Map", "MapProp", "Get map properties. Add second parameters to set default value.");
-                            
+AddExpression(27, ef_return_number, 
+              "Get angle", "Tile: Layer", "TileAngle", "Get angle of created instance.");
+              
 // For each property
 AddExpression(30, ef_return_string, 
               "Current layer property name", "For Each", "CurLayerPropName", "Get the name of current layer property in a For Each loop."); 
