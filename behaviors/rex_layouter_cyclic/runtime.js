@@ -46,9 +46,12 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	{
 	    this.check_name = "LAYOUTER";
         this.mode = this.properties[0];
-	    this.start_angle = this.properties[1];
-	    this.range_angle = this.properties[2]; // in degree
-	    this.delta_angle = this.properties[3]; // in degree
+	    this.start_angle = cr.to_clamped_radians(this.properties[1]);  // in radians
+        var range_angle = this.properties[2];
+	    this.range_angle = (Math.abs(range_angle) == 360)? 
+                           (2*Math.PI): cr.to_clamped_radians(range_angle);  // in radians
+	    this.delta_angle = cr.to_clamped_radians(this.properties[3]);  // in radians
+        this.angle_offset = cr.to_clamped_radians(this.properties[4]); // in radians
         
         // implement handlers
         this.on_add_insts = this._on_update;
@@ -64,30 +67,22 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	    var layouter = this.inst;
 	    var OX = layouter.get_centerX(layouter); 
 	    var OY = layouter.get_centerY(layouter); 
-	    var OA = cr.to_clamped_degrees(layouter.angle);
+	    var OA = layouter.angle;
 	    var sprites = layouter.sprites;  
 	    var i, cnt = sprites.length, params;
 	    var a, r = Math.min(layouter.width, layouter.height)/2;        
-	    var start_angle = cr.to_clamped_radians(OA + this.start_angle);  // in rad
-	    var delta_angle;  // in rad
+	    var start_angle = OA + this.start_angle;  // in radians
         if (this.mode == 0)  // average mode
-        {
-	        var range_angle = (Math.abs(this.range_angle) == 360)? 
-                              (2*Math.PI): cr.to_radians(this.range_angle);  // in rad
-            delta_angle = range_angle/cnt;  // in rad
-            this.delta_angle = this.range_angle/cnt;  // in degree
-        }
+            this.delta_angle = (cnt==1)? 0 : this.range_angle/(cnt-1);  // in radians
         else  // fix mode
-        {
-            delta_angle = cr.to_radians(this.delta_angle);  // in rad
-            this.range_angle = this.delta_angle * cnt;  // in degree
-        }
+            this.range_angle = this.delta_angle * (cnt-1);  // in radians
+
 	    for (i=0;i<cnt;i++)
 	    {
-	        a = start_angle + (delta_angle*i);  // in rad
+	        a = start_angle + (this.delta_angle*i);  // in radians
 	        params = {x:OX + (r*Math.cos(a)),
 	                  y:OY + (r*Math.sin(a)),
-	                  angle:a};
+	                  angle:a + this.angle_offset};
 	        layouter.layout_inst(sprites[i], params);
 	    }
 	}; 	 	
@@ -97,7 +92,8 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 		return { "m": this.mode, 
                  "sa": this.start_angle,
                  "ra": this.range_angle,
-                 "da": this.delta_angle
+                 "da": this.delta_angle,
+                 "aoff": this.angle_offset,
                 };
 	};
 	
@@ -107,6 +103,7 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	    this.start_angle = o["sa"];
 	    this.range_angle = o["ra"]; // in degree
 	    this.delta_angle = o["da"]; // in degree
+        this.angle_offset = o["aoff"]; // in degree
 	};       
 	//////////////////////////////////////
 	// Conditions
@@ -125,16 +122,16 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
     
 	Acts.prototype.SetStartAngle = function (a)
 	{
-		this.start_angle = a;
+		this.start_angle = cr.to_clamped_radians(a);
 	};	
 	
 	Acts.prototype.SetRangeAngle = function (a)
 	{
-        this.range_angle = a;
+        this.range_angle = cr.to_clamped_radians(a);
 	};     
 	Acts.prototype.SetDeltaAngle = function (a)
 	{
-        this.delta_angle = a;
+        this.delta_angle = cr.to_clamped_radians(a);
 	}; 
 	      
 	//////////////////////////////////////

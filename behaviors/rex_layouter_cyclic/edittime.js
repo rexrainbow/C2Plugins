@@ -49,6 +49,7 @@ var property_list = [
     new cr.Property(ept_float, "Start angle", 0, "Start angle of first instance, in degree."),
     new cr.Property(ept_float, "Range angle", 360, "Range angle, in degree. Negative is anti-clockwise. Used in average mode."),
     new cr.Property(ept_float, "Delta angle", 15, "Delta angle, in degree. Negative is anti-clockwise. Used in fix mode."),
+    new cr.Property(ept_float, "Angle offset", 0, "Angle offset of each sprite, in degree."),
 	];
 	
 // Called by IDE when a new behavior type is to be created
