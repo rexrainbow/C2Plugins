@@ -65,10 +65,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_TileAngle = 0;
         this.exp_LayerName = "";  
         this.exp_LayerOpacity = 1;  
-        this.exp_map_properties = null;                
-        this.exp_layer_properties = null;
-        this.exp_tileset_properties = null;        
-        this.exp_tile_properties = null;        
+        this.exp_MapProperties = null;                
+        this.exp_LayerProperties = null;
+        this.exp_TilesetProperties = null;        
+        this.exp_TileProperties = null;
+        this.exp_BaclgroundColor = 0;        
         
         // objects
 		this.exp_ObjGroupName = "";        
@@ -120,7 +121,8 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                                                       this.exp_MapWidth*this.exp_TileWidth;
         this.exp_TotalHeight = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileHeight: 
                                                        this.exp_MapHeight*this.exp_TileHeight;
-        this.exp_map_properties = this._tmx_obj.map.properties;
+        this.exp_BaclgroundColor = this._tmx_obj.map.backgroundcolor;                                                       
+        this.exp_MapProperties = this._tmx_obj.map.properties;
 	};
 	instanceProto.RetrieveTileArray = function(obj_type)
 	{
@@ -131,7 +133,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var i;
         // tiles
         for(i=0; i<layers_cnt; i++)
-           this._create_layer_objects(layers[i]); 
+           this._create_layer_objects(layers[i], i); 
         // objects
         this._retrieve_objects();
         this.runtime.trigger(cr.plugins_.Rex_TMXImporter.prototype.cnds.OnRetrieveFinished, this);
@@ -146,11 +148,17 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	var FlippedHorizontallyFlag		= 0x80000000;
 	var FlippedVerticallyFlag		= 0x40000000;
 	var FlippedAntiDiagonallyFlag   = 0x20000000;   
-	instanceProto._create_layer_objects = function(tmx_layer)
+	instanceProto._create_layer_objects = function(tmx_layer, layer_index)
 	{
         var c2_layer =  this._get_layer(tmx_layer.name);
         if ((c2_layer == null) && (this._obj_type != null))
-            alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
+            alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer');
+        if ((this._obj_type != null) && (c2_layer != null) && (layer_index == 0) && (this.exp_BaclgroundColor != null))
+        {
+            cr.system_object.prototype.acts.SetLayerBackground.call(this, c2_layer, this.exp_BaclgroundColor);
+            //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2_layer, 0);            
+        }
+            
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
@@ -158,7 +166,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         var i=0;
         
         this.exp_LayerName = tmx_layer.name;        
-        this.exp_layer_properties = tmx_layer.properties;
+        this.exp_LayerProperties = tmx_layer.properties;
         this.exp_LayerOpacity = tmx_layer.opacity;
         for (y=0; y<height; y++)
         {
@@ -182,12 +190,12 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 this.exp_TileAngle = (tile_rotateID == 5)? 90:
                                      (tile_rotateID == 6)? 180:
                                      (tile_rotateID == 3)? 270: 0;
-                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
+                tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 				this.exp_TilesetName = tileset_obj.name;
-                this.exp_tileset_properties = tileset_obj.properties;
+                this.exp_TilesetProperties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: null;
+                this.exp_TileProperties = (tile_obj != null)? tile_obj.properties: null;
                    
                 if (this._obj_type != null)
                     this._created_inst = this._create_instance(x,y,c2_layer); 
@@ -202,7 +210,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	instanceProto._create_instance = function(x,y,c2_layer)
 	{  
         var inst = this.layout.CreateItem(this._obj_type,x,y,c2_layer);
-        cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [this.exp_TileID-1]);
+        cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, this.exp_Frame);
         inst.opacity = this.exp_LayerOpacity;          
         inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
         
@@ -350,6 +358,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             c2_layer =  this._get_layer(layer.name);
             if ((c2_layer == null) && (this._obj_type != null))
                 alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
+            if ((this._obj_type != null) && (c2_layer != null) && (layer_index == 0) && (data_index == 0) && (this.exp_BaclgroundColor != null))
+            {
+                cr.system_object.prototype.acts.SetLayerBackground.call(this, c2_layer, this.exp_BaclgroundColor);
+                //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2_layer, 0);            
+            }                
             // get tile id
             unit_cnt += 1;
             _gid = layer.data[data_index];            
@@ -357,7 +370,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
             if (is_valid)  
             {         
                 this.exp_LayerName = layer.name;        
-                this.exp_layer_properties = layer.properties;
+                this.exp_LayerProperties = layer.properties;
                 this.exp_LayerOpacity = layer.opacity;            
                 this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);       
                 // prepare expressions
@@ -375,10 +388,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                                      (tile_rotateID == 3)? 270: 0;                
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 		        this.exp_TilesetName = tileset_obj.name;
-                this.exp_tileset_properties = tileset_obj.properties;
+                this.exp_TilesetProperties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: null;
+                this.exp_TileProperties = (tile_obj != null)? tile_obj.properties: null;
                    
                 if (this._obj_type != null)
                     this._created_inst = this._create_instance(x,y,c2_layer); 
@@ -503,11 +516,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     // for each property
 	Cnds.prototype.ForEachLayerProperty = function ()
 	{   
-        if (this.exp_layer_properties == null)
+        if (this.exp_LayerProperties == null)
             return false;
             
         var current_event = this.runtime.getCurrentEventStack().current_event;	
-        var key, props = this.exp_layer_properties, value;
+        var key, props = this.exp_LayerProperties, value;
 		for (key in props)
 	    {
             this.exp_CurLayerPropName = key;
@@ -523,11 +536,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};   
 	Cnds.prototype.ForEachTilesetProperty = function ()
 	{
-        if (this.exp_tileset_properties == null)
+        if (this.exp_TilesetProperties == null)
             return false;
             
         var current_event = this.runtime.getCurrentEventStack().current_event;		
-        var key, props = this.exp_tileset_properties, value;
+        var key, props = this.exp_TilesetProperties, value;
 		for (key in props)
 	    {
             this.exp_CurTilesetPropName = key;
@@ -543,11 +556,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};   
 	Cnds.prototype.ForEachTileProperty = function ()
 	{   
-        if (this.exp_tile_properties == null)
+        if (this.exp_TileProperties == null)
             return false;
             
         var current_event = this.runtime.getCurrentEventStack().current_event;		
-        var key, props = this.exp_tile_properties, value;
+        var key, props = this.exp_TileProperties, value;
 		for (key in props)
 	    {
             this.exp_CurTilePropName = key;
@@ -563,11 +576,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	};
 	Cnds.prototype.ForEachMapProperty = function ()
 	{   
-        if (this.exp_map_properties == null)
+        if (this.exp_MapProperties == null)
             return false;
             
         var current_event = this.runtime.getCurrentEventStack().current_event;		
-        var key, props = this.exp_map_properties, value;
+        var key, props = this.exp_MapProperties, value;
 		for (key in props)
 	    {
             this.exp_CurMapPropName = key;
@@ -674,11 +687,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	Exps.prototype.LayerProp = function (ret, name, default_value)
 	{   
         var value;
-        if (this.exp_layer_properties == null)
+        if (this.exp_LayerProperties == null)
             value = default_value;
         else
         {
-            value = this.exp_layer_properties[name];
+            value = this.exp_LayerProperties[name];
             if (value == null)
                 value = default_value;
         }
@@ -687,11 +700,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	Exps.prototype.TilesetProp = function (ret, name, default_value)
 	{       
         var value;
-        if (this.exp_tileset_properties == null)
+        if (this.exp_TilesetProperties == null)
             value = default_value;
         else
         {
-            value = this.exp_tileset_properties[name];
+            value = this.exp_TilesetProperties[name];
             if (value == null)
                 value = default_value;        
         }
@@ -700,11 +713,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	Exps.prototype.TileProp = function (ret, name, default_value)
 	{    
         var value    
-        if (this.exp_tile_properties == null)
+        if (this.exp_TileProperties == null)
             value = default_value;
         else
         {
-            value = this.exp_tile_properties[name];
+            value = this.exp_TileProperties[name];
             if (value == null)
                 value = default_value;        
         }
@@ -749,11 +762,11 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	Exps.prototype.MapProp = function (ret, name, default_value)
 	{   
         var value;
-        if (this.exp_map_properties == null)
+        if (this.exp_MapProperties == null)
             value = default_value;
         else
         {
-            value = this.exp_map_properties[name];
+            value = this.exp_MapProperties[name];
             if (value == null)
                 value = default_value;
         }
@@ -763,7 +776,14 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
 	{     
 	    ret.set_float(this.exp_TileAngle);
 	};    
-
+	Exps.prototype.BackgroundColor = function (ret)
+	{     
+	    var val = this.exp_BaclgroundColor;
+	    if (val == null)
+	        val = 0;
+	    ret.set_int(val);
+	}; 
+	
     // objects
 	Exps.prototype.ObjGroupName = function (ret)
 	{     
@@ -882,6 +902,19 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         }
         return null;    
     }; 
+    
+    // RGB -> BGR
+    var _get_C2_color_number = function(rgb_string) 
+    {
+        if (rgb_string == "")
+            return null;
+        
+        var rgb = parseInt(rgb_string.substring(1), 16);
+        var r = (rgb >> 16) & 0xFF;
+        var g = (rgb >> 8) & 0xFF;
+        var b = (rgb) & 0xFF;
+        return ( (b<<16) | (g<<8) | (r) );
+    };
 
     var _get_map = function (xml_obj)
     {     
@@ -891,6 +924,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         map.height = xml_obj.get_number_value("@height");
         map.tilewidth = xml_obj.get_number_value("@tilewidth");
         map.tileheight = xml_obj.get_number_value("@tileheight");
+        map.backgroundcolor = _get_C2_color_number(xml_obj.get_string_value("@backgroundcolor"));
         var xml_properties = xml_obj.get_nodes("./properties/property");
         map.properties = _get_properties(xml_obj, xml_properties);
         return map;           
@@ -1009,7 +1043,6 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
                 var gunzip = new window["Zlib"]["Gunzip"](data);
                 data = gunzip["decompress"]();               
             }
-            
             data = _array_merge(data);
         }
         else if (encoding == "csv")
@@ -1111,7 +1144,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
     {
    	    var bytes = 4;
    	    var len = data.length / bytes;
-   	    var arr = data;
+   	    var arr = [];
    	    var i, j, tmp;
    
    	    for (i = 0; i<len; i++) 

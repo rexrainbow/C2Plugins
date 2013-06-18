@@ -41,14 +41,14 @@ AddCondition(21, cf_trigger, "On retrieving duration", "Duration",
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("TMX string", "The tmx string for loading.", '""');
-AddAction(1, 0, "Import tmx", "TMX", "Import tmx string <i>{0}</i>",
+AddAction(1, 0, "Import tmx", "0: Load", "Import tmx string <i>{0}</i>",
          "Import tmx string.", "ImportTMX"); 
 AddObjectParam("Tile", "Tile object.");
-AddAction(2, 0, "Create tiles", "TMX", "Create tiles <i>{0}</i>",
+AddAction(2, 0, "Create tiles", "One tick mode", "Create tiles <i>{0}</i>",
          'Retrieve tile array and creating tiles. It will trigger "Condition:On each tile cell".', "CreateTiles");
-AddAction(3, 0, "Release tmx object", "TMX", "Release tmx object",
+AddAction(3, 0, "Release tmx object", "Release", "Release tmx object",
          "Release tmx object.", "ReleaseTMX");       
-AddAction(7, 0, "Retrieve tile array", "Advance", "Retrieve tile array",
+AddAction(7, 0, "Retrieve tile array", "One tick mode", "Retrieve tile array",
          'Retrieve tile array. It will trigger "Condition:On each tile cell"', "RetrieveTileArray");         
 AddNumberParam("X", "X co-ordinate of instance at Logic(0,0).", 0);
 AddNumberParam("Y", "Y co-ordinate of instance at Logic(0,0).", 0);       
@@ -57,9 +57,9 @@ AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance positi
 
 // duration mode         
 AddObjectParam("Tile", "Tile object.");
-AddAction(20, 0, "Create tiles in a duration", "Duration", "Create tiles <i>{0}</i> in a duration",
+AddAction(20, 0, "Create tiles in a duration", "Duration mode", "Create tiles <i>{0}</i> in a duration",
          'Retrieve tile array and creating tiles in a duration. It will trigger "Condition:On each tile cell".', "CreateTilesDuration");
-AddAction(21, 0, "Retrieve tile array in a duration", "Duration", "Retrieve tile array in a duration",
+AddAction(21, 0, "Retrieve tile array in a duration", "Duration mode", "Retrieve tile array in a duration",
          'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
          
 //////////////////////////////////////////////////////////////
@@ -116,7 +116,9 @@ AddExpression(26, ef_return_any | ef_variadic_parameters,
               "Get map properties", "Map", "MapProp", "Get map properties. Add second parameters to set default value.");
 AddExpression(27, ef_return_number, 
               "Get angle", "Tile: Layer", "TileAngle", "Get angle of created instance.");
-              
+AddExpression(28, ef_return_number, 
+              "Get background color", "Map", "BackgroundColor", "Get background color.");  
+             
 // For each property
 AddExpression(30, ef_return_string, 
               "Current layer property name", "For Each", "CurLayerPropName", "Get the name of current layer property in a For Each loop."); 
