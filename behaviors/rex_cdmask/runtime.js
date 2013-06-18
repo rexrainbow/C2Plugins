@@ -30,7 +30,27 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	{ 
         this.canvas_type = null;   	    
 	};
-
+	
+	behtypeProto._canvas_get = function ()
+	{
+        if (this.canvas_type != null)
+            return this.canvas_type;
+    
+        assert2(cr.plugins_.c2canvas, "[CD mask] you need pass a canvas object.");
+        var plugins = this.runtime.types;
+        var name, t;
+        for (name in plugins)
+        {
+            t = plugins[name];
+            if (t instanceof cr.plugins_.c2canvas.prototype.Type)
+            {
+                this.canvas_type = t;
+                return this.canvas_type;
+            }
+        }
+        assert2(this.canvas_type, "[CD mask] you need pass a canvas object.");
+        return null;	
+	};  
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -49,7 +69,6 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	    this.is_circle = (this.properties[1] == 1);
         this.is_back = (this.properties[2] == 1);
 	    this.canvas_inst = null;
-        this._inst_info = {};
 	};  
     
 	behinstProto.onDestroy = function()
@@ -60,8 +79,13 @@ cr.behaviors.Rex_cdmask = function(runtime)
             this.canvas_inst = null;
         }
 	};  
-    
+	
 	behinstProto.tick = function ()
+	{
+		// do work in tick2 instead, after events to get latest object position
+	};
+
+	behinstProto.tick2 = function ()
 	{
         this._pin_canvas_to_inst();
 	};
@@ -71,8 +95,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
 	    if (this.canvas_inst != null)
 	        return;
 	        
-	    var canvas_type = this.type.canvas_type;
-        assert2(canvas_type, "[CD mask] you need pass a canvas object.");   
+	    var canvas_type = this.type._canvas_get();           
 	    var _layer = this.runtime.getLayerByNumber(this.inst.layer.index);
 	    var _x = this.inst.x;
 	    var _y = this.inst.y;	         
@@ -98,24 +121,26 @@ cr.behaviors.Rex_cdmask = function(runtime)
        
 	behinstProto._pin_canvas_to_inst = function ()
 	{
-        if (this.canvas_inst == null)
+	    var canvas_inst = this.canvas_inst;
+        if (canvas_inst == null)
             return;
             
         var reflash = false;     
-        if (this._inst_info.x != this.inst.x)
+        if (canvas_inst.x != this.inst.x)
         {
-            this.canvas_inst.x = this.inst.x;
-            this._inst_info.x = this.inst.x;
+            canvas_inst.x = this.inst.x;
             reflash = true;
         }
-        if (this._inst_info.y != this.inst.y)
+        if (canvas_inst.y != this.inst.y)
         {
-            this.canvas_inst.y = this.inst.y;
-            this._inst_info.y = this.inst.y;
+            canvas_inst.y = this.inst.y;
             reflash = true;
         }   
         if (reflash)
-            this.canvas_inst.runtime.redraw = true; 
+        {
+            canvas_inst.set_bbox_changed();
+            canvas_inst.runtime.redraw = true; 
+        }
 	};
     
     var start_radians = cr.to_radians(-90);
