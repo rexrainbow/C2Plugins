@@ -82,7 +82,7 @@ AddComboParamOption("Clockwise");
 AddComboParamOption("Nearest side");
 AddComboParam("Clockwise", "Rotate clockwise or anti-clockwise.",2); 
 AddAction(7, 0, "Rotate by delta angle", "Target angle", 
-          "Set {my} target angle by delta <i>{0}</i>,  <i>{1}</i>)", 
+          "Set {my} target angle by delta <i>{0}</i>,  <i>{1}</i>", 
           "Set target angle to rotate toward by delta angle.", 
           "SetTargetAngleByDeltaAngle");  
 

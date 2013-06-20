@@ -245,8 +245,11 @@ cr.behaviors.Rex_RotateTo = function(runtime)
     
  	Acts.prototype.SetTargetAngleByDeltaAngle = function (dA, clockwise_mode)
 	{
-	    var angle = this.inst.angle + dA
-        this.SetTargetAngle(cr.to_clamped_radians(angle), clockwise_mode);
+	    var dA_rad = cr.to_clamped_radians(dA);
+	    if (clockwise_mode==0)
+	        dA_rad = -dA_rad;
+	    var angle = this.inst.angle + dA_rad;
+        this.SetTargetAngle(angle, clockwise_mode);
 	};    
     
  	Acts.prototype.SetTargetAngleToPos = function (tx, ty, clockwise_mode)
