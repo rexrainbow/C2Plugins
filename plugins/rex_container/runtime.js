@@ -48,10 +48,10 @@ cr.plugins_.Rex_Container.tag2container = {};
 		this.tag = this.properties[2];
 		cr.plugins_.Rex_Container.tag2container[this.tag] = this;
         this.pin_status = {};
-        if (this.pin_mode != 0)
-        {
-            this.runtime.tick2Me(this);            
-        }
+        this.runtime.tick2Me(this); 
+        
+        this._opactiy_save = this.opacity;
+	    this._visible_save = this.visible;         
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -59,8 +59,39 @@ cr.plugins_.Rex_Container.tag2container = {};
 	    delete cr.plugins_.Rex_Container.tag2container[this.tag];
         this._destory_all_insts();
 	};
+	
+	instanceProto._update_opacity = function ()
+	{		
+        if (this._opactiy_save == this.opacity)
+            return;
+        var uid, inst;   
+	    this.opacity = cr.clamp(this.opacity, 0, 1);
+	    for (uid in this._uids)
+	    {
+	        inst = this._uid2inst(uid); 
+	        if (inst.opacity != null)
+	            inst.opacity = this.opacity;
+	    }
+	    this.runtime.redraw = true;
+	    this._opactiy_save = this.opacity; 
+	};
     
-	instanceProto.tick2 = function ()
+	instanceProto._update_visible = function ()
+	{		
+        if (this._visible_save == this.visible)
+            return;
+        var uid, inst;  
+	    for (uid in this._uids)
+	    {
+	        inst = this._uid2inst(uid); 
+	        if (inst.visible != null)
+	            inst.visible = this.visible;
+	    }
+	    this.runtime.redraw = true;
+	    this._visible_save = this.visible;	  
+	};
+	
+	instanceProto._update_position_angle = function ()
 	{
 	    if (this.pin_mode == 0)
 	        return;
@@ -96,7 +127,14 @@ cr.plugins_.Rex_Container.tag2container = {};
 			    pin_inst.set_bbox_changed();
 			}
 	    }      
-	};    
+	};  
+	  
+	instanceProto.tick2 = function ()
+	{        
+	    this._update_opacity();
+	    this._update_visible();
+        this._update_position_angle();	     
+	};  
 	
 	instanceProto.draw = function(ctx)
 	{
