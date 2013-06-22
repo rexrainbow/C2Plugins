@@ -28,27 +28,35 @@ AddCondition(21, cf_static | cf_not_invertible, "Pick container", "SOL: containe
 ////////////////////////////////////////
 // Actions
 AddObjectParam("Instances", "Add instances into container.");          
-AddAction(3, 0, "Add instances", "Add/Remove", "Add instances <i>{0}</i>", 
+AddAction(3, 0, "Add instances", "Add instances", "Add instances <i>{0}</i>", 
           "Add instances.", "AddInsts");             
 AddObjectParam("Instances", "Add instances into container.");       
 AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
-AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
+AddAction(4, 0, "Create&Add instances", "Add instances", "Create and add <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
           "Create and Add instances.", "CreateInsts");            
 AddObjectParam("Instances", "Remove instances from container.");          
-AddAction(5, 0, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
-          "Remove instances.", "RemoveInsts"); 
+AddAction(5, 0, "Remove instances", "Remove instances", "Remove instances <i>{0}</i>", 
+          "Remove instances.", "RemoveInsts");          
 AddAction(9, af_deprecated, "Destroy container", "Destroy", "Destroy container and instances in this contaner", 
           "Destroy container and instances in this contaner.", "ContainerDestroy"); 		  
 AddObjectParam("Object", "Object for picking");
 AddAction(10, 0, "Pick instances", "SOL: instances", 
           "Pick <i>{0}</i>", "Pick instances.", "PickInsts");
 AddAction(11, 0, "Pick all instances", "SOL: instances", 
-          "Pick all instances in this container", "Pick all instances in this container.", "PickAllInsts");          
+          "Pick all instances in this container", "Pick all instances in this container.", "PickAllInsts");  
+
+AddNumberParam("Scale", "The object width and height to set, based on a multiple of its original dimensions, e.g. 1 = original size, 2 = double size, 0.5 = half size etc.", "1");
+AddAction(20, 0, "Set scale", "Size & Position", "Set scale to <i>{0}</i>", "Set the width and height as a multiple of its original size.", "SetScale");          
 ////////////////////////////////////////
 // Expressions
 AddExpression(3, ef_return_string, "Get tag", "Tag", "Tag", "Get tag.");
+// image points
+AddAnyTypeParam("ImagePoint", "Name or number of image point to get.");
+AddExpression(4, ef_return_number, "Get image point X",		"Size & Position",	"ImagePointX", "The X position of one of the object's image points.");
+AddAnyTypeParam("ImagePoint", "Name or number of image point to get.");
+AddExpression(5, ef_return_number, "Get image point Y",		"Size & Position",	"ImagePointY", "The Y position of one of the object's image points.");
 
 ACESDone();
 

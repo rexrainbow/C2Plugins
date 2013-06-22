@@ -28,8 +28,14 @@ cr.plugins_.Rex_Container.tag2container = {};
 
 	typeProto.onCreate = function()
 	{
+		if (this.is_family)
+			return;
+			
+        var frame = this.animations[0][7][0];
+        this.hotspotX = frame[7];
+	    this.hotspotY = frame[8];        
+        this.image_points = frame[9];
 	};
-
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -49,9 +55,14 @@ cr.plugins_.Rex_Container.tag2container = {};
 		cr.plugins_.Rex_Container.tag2container[this.tag] = this;
         this.pin_status = {};
         this.runtime.tick2Me(this); 
-        
+                
+        this._width_save = this.width;
+        this._height_save = this.height;
         this._opactiy_save = this.opacity;
 	    this._visible_save = this.visible;         
+        
+        this._original_width = this.width;
+        this._original_height = this.height;
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -59,6 +70,37 @@ cr.plugins_.Rex_Container.tag2container = {};
 	    delete cr.plugins_.Rex_Container.tag2container[this.tag];
         this._destory_all_insts();
 	};
+    
+	instanceProto._update_size = function ()
+	{		
+        if ((this._width_save == this.width) && (this._height_save == this.height))
+            return;
+        var width_factor = (this.width>0)? (this.width/this._width_save):0;
+        var height_factor = (this.height>0)? (this.height/this._height_save):0;
+        var factor = Math.min(width_factor, height_factor);        
+        var uid, inst, status;   	    
+	    for (uid in this._uids)
+	    {
+	        inst = this._uid2inst(uid); 
+            if (inst == null)
+                continue; 
+	        if (inst.width != null)
+	            inst.width *= factor;
+            if (inst.height != null)
+	            inst.height *= factor;
+	    }
+	    for (uid in this.pin_status)
+	    {
+	        inst = this._uid2inst(uid); 
+            if (inst == null)
+                continue;             
+	        status = this.pin_status[uid];    
+            status["dd"] *= factor;           
+	    }
+	    this.runtime.redraw = true;
+	    this._width_save = this.width; 
+        this._height_save = this.height;
+	};    
 	
 	instanceProto._update_opacity = function ()
 	{		
@@ -69,6 +111,8 @@ cr.plugins_.Rex_Container.tag2container = {};
 	    for (uid in this._uids)
 	    {
 	        inst = this._uid2inst(uid); 
+            if (inst == null)
+                continue; 
 	        if (inst.opacity != null)
 	            inst.opacity = this.opacity;
 	    }
@@ -84,6 +128,8 @@ cr.plugins_.Rex_Container.tag2container = {};
 	    for (uid in this._uids)
 	    {
 	        inst = this._uid2inst(uid); 
+            if (inst == null)
+                continue;             
 	        if (inst.visible != null)
 	            inst.visible = this.visible;
 	    }
@@ -95,7 +141,7 @@ cr.plugins_.Rex_Container.tag2container = {};
 	{
 	    if (this.pin_mode == 0)
 	        return;
-	        				
+	         
 	    var uid, status, pin_inst, a, new_x, new_y, new_angle;
 	    for (uid in this.pin_status)
 	    {
@@ -104,8 +150,8 @@ cr.plugins_.Rex_Container.tag2container = {};
                 continue;
             status = this.pin_status[uid];            
             if ((this.pin_mode == 1) || (this.pin_mode == 2))
-			{
-			    a = this.angle + status["da"];				
+			{	
+                a = this.angle + status["da"];
                 new_x = this.x + (status["dd"]*Math.cos(a));
                 new_y = this.y + (status["dd"]*Math.sin(a));
 			}
@@ -131,6 +177,9 @@ cr.plugins_.Rex_Container.tag2container = {};
 	  
 	instanceProto.tick2 = function ()
 	{        
+        if (is_hash_empty(this.pin_status))
+            return;
+        this._update_size();
 	    this._update_opacity();
 	    this._update_visible();
         this._update_position_angle();	     
@@ -145,7 +194,7 @@ cr.plugins_.Rex_Container.tag2container = {};
 	};
     
 	instanceProto.add_insts = function (insts)
-	{
+	{        
         var inst, i, cnt=insts.length;
 		var is_world = insts[0].type.plugin.is_world;
         for (i=0; i<cnt; i++)
@@ -155,18 +204,30 @@ cr.plugins_.Rex_Container.tag2container = {};
                 continue;
             inst.extra.rex_container_uid = this.uid;
             this._uids[inst.uid] = true;
+
             if (is_world && (this.pin_mode != 0))
+            {
                 this.pin_inst(inst);
+            }
         }
 	};
 
 	instanceProto.pin_inst = function (inst)
 	{
-        this.pin_status[inst.uid] = {"da":cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
-                                     "dd":cr.distanceTo(this.x, this.y, inst.x, inst.y),
-									 "rda": inst.angle - this.angle,
-                                    };
-	};	
+        if (this.pin_status[inst.uid] != null)
+        {
+            this.pin_status[inst.uid]["da"] = cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle;
+            this.pin_status[inst.uid]["dd"] = cr.distanceTo(this.x, this.y, inst.x, inst.y);
+            this.pin_status[inst.uid]["rda"] = inst.angle - this.angle;
+        }
+        else
+        {
+            this.pin_status[inst.uid] = {"da":cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
+                                         "dd":cr.distanceTo(this.x, this.y, inst.x, inst.y),
+                                         "rda": inst.angle - this.angle,	
+                                        };
+        }
+	};		
     
 	instanceProto.create_insts = function (obj_type,x,y,_layer)
 	{
@@ -301,7 +362,47 @@ cr.plugins_.Rex_Container.tag2container = {};
                 this.runtime.DestroyInstance(inst);       
         }     	
 	};	
+	
+	instanceProto.getImagePointIndexByName = function(name)
+	{
+        name = name.toLowerCase();
+        var image_points = this.type.image_points;
+        var i, cnt=image_points.length;
+        for (i=0; i<cnt; i++)
+        {
+            if (name=== image_points[i][0].toLowerCase())
+				return i;
+        }		
+		return -1;
+	};
+    
+	instanceProto.getImagePoint = function(imgpt, getX)
+	{
+        var image_points = this.type.image_points;
+        var index;
+        if (cr.is_string(imgpt))
+			index = this.getImagePointIndexByName(imgpt);
+		else
+			index = imgpt -1;	// 0 is origin		
+		index = cr.floor(index);
+		if (index < 0 || index >= image_points.length)
+			return getX ? this.x : this.y;	// return origin
+	    
+		// get position scaled and relative to origin in pixels
+		var x = (image_points[index][1] - this.type.hotspotX) * this.width;
+		var y = (image_points[index][2] - this.type.hotspotY) * this.height;
 		
+		// rotate by object angle
+		var cosa = Math.cos(this.angle);
+		var sina = Math.sin(this.angle);
+		var x_temp = (x * cosa) - (y * sina);
+		y = (y * cosa) + (x * sina);
+		x = x_temp;
+		x += this.x;
+		y += this.y;
+		return getX ? x : y;
+	};
+    
 	var hash_clean = function (obj)
 	{
 	    var k;
@@ -309,6 +410,15 @@ cr.plugins_.Rex_Container.tag2container = {};
 	        delete obj[k];
 	};  
     
+	var is_hash_empty = function (obj)
+	{
+	    var k;
+	    for (k in obj)
+        {
+            return false;
+        }
+        return true;
+	};
 	instanceProto.saveToJSON = function ()
 	{
 		return { "uids": this._uids, 
@@ -403,12 +513,25 @@ cr.plugins_.Rex_Container.tag2container = {};
             return;
 	    this.remove_insts(insts);
 	};
- 	
+    
 	Acts.prototype.ContainerDestroy = function ()
 	{
 	    this._destory_all_insts();
 		this.runtime.DestroyInstance(this);
-	};   
+	};  
+    
+	Acts.prototype.SetScale = function (s)
+	{
+		var new_width = this._original_width * s;
+		var new_height = this._original_height * s ;
+		
+		if (this.width !== new_width || this.height !== new_height)
+		{
+			this.width = new_width;
+			this.height = new_height;
+			this.set_bbox_changed();
+		}
+	};      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -419,4 +542,14 @@ cr.plugins_.Rex_Container.tag2container = {};
 	{
 		ret.set_string(this.tag);
 	};
+    
+	Exps.prototype.ImagePointX = function (ret, imgpt)
+	{    
+		ret.set_float(this.getImagePoint(imgpt, true));
+	};
+	
+	Exps.prototype.ImagePointY = function (ret, imgpt)
+	{
+		ret.set_float(this.getImagePoint(imgpt, false));
+	};    
 }());
