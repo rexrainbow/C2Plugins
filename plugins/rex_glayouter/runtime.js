@@ -74,6 +74,8 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    for (i=0; i<cnt; i++)
 	    {
 	        inst = this._uid2inst(this.sprites[i]); 
+            if (inst == null)
+                continue; 
 	        inst.opacity = this.opacity;
 	    }
 	    this.runtime.redraw = true;
@@ -88,6 +90,8 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    for (i=0; i<cnt; i++)
 	    {
 	        inst = this._uid2inst(this.sprites[i]); 
+            if (inst == null)
+                continue;             
 	        inst.visible = this.visible;
 	    }
 	    this.runtime.redraw = true;

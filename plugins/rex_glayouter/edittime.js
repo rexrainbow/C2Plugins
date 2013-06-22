@@ -39,7 +39,7 @@ AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
           "Create and Add instances.", "CreateInsts");            
 AddObjectParam("Instances", "Remove instances from layouter.");          
-AddAction(5, cf_deprecated, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
+AddAction(5, 0, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
           "Remove instances.", "RemoveInsts"); 	
 AddAction(6, 0, "Force layout", "Layout", "Force layout instances", 
           "Force layout instances.", "ForceLayout");          
