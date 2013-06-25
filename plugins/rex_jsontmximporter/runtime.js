@@ -4,6 +4,9 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
+// load socket.io.min.js
+document.write('<script src="zlib_and_gzip.min.js"></script>');
+
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_JSONTMXImporter = function(runtime)
@@ -58,13 +61,15 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_InstUID = (-1);
         this.exp_Frame = (-1);        
         this.exp_IsMirrored = 0;
-        this.exp_IsFlipped = 0;        
+        this.exp_IsFlipped = 0;
+        this.exp_TileAngle = 0;
         this.exp_LayerName = "";  
         this.exp_LayerOpacity = 1;  
-        this.exp_map_properties = {};                
-        this.exp_layer_properties = {};
-        this.exp_tileset_properties = {};        
-        this.exp_tile_properties = {};        
+        this.exp_MapProperties = null;                
+        this.exp_LayerProperties = null;
+        this.exp_TilesetProperties = null;        
+        this.exp_TileProperties = null;
+        this.exp_BaclgroundColor = 0;        
         
         // objects
 		this.exp_ObjGroupName = "";        
@@ -116,7 +121,8 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                                                       this.exp_MapWidth*this.exp_TileWidth;
         this.exp_TotalHeight = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileHeight: 
                                                        this.exp_MapHeight*this.exp_TileHeight;
-        this.exp_map_properties = this._tmx_obj.map.properties;
+        this.exp_BaclgroundColor = this._tmx_obj.map.backgroundcolor;                                                       
+        this.exp_MapProperties = this._tmx_obj.map.properties;
 	};
 	instanceProto.RetrieveTileArray = function(obj_type)
 	{
@@ -127,7 +133,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         var i;
         // tiles
         for(i=0; i<layers_cnt; i++)
-           this._create_layer_objects(layers[i]); 
+           this._create_layer_objects(layers[i], i); 
         // objects
         this._retrieve_objects();
         this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnRetrieveFinished, this);
@@ -141,20 +147,26 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	// bitmaks to check for flipped & rotated tiles
 	var FlippedHorizontallyFlag		= 0x80000000;
 	var FlippedVerticallyFlag		= 0x40000000;
-	var FlippedAntiDiagonallyFlag   = 0x20000000;    
-	instanceProto._create_layer_objects = function(tmx_layer)
+	var FlippedAntiDiagonallyFlag   = 0x20000000;   
+	instanceProto._create_layer_objects = function(tmx_layer, layer_index)
 	{
         var c2_layer =  this._get_layer(tmx_layer.name);
         if ((c2_layer == null) && (this._obj_type != null))
-            alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
+            alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer');
+        if ((this._obj_type != null) && (c2_layer != null) && (layer_index == 0) && (this.exp_BaclgroundColor != null))
+        {
+            cr.system_object.prototype.acts.SetLayerBackground.call(this, c2_layer, this.exp_BaclgroundColor);
+            //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2_layer, 0);            
+        }
+            
         var width = tmx_layer.width;
         var height = tmx_layer.height;
         var data = tmx_layer.data;
-        var x,y,inst,tileset_obj,tile_obj,layer_opacity,_gid; 
+        var x,y,inst,tileset_obj,tile_obj,layer_opacity,_gid, tile_rotateID; 
         var i=0;
         
         this.exp_LayerName = tmx_layer.name;        
-        this.exp_layer_properties = tmx_layer.properties;
+        this.exp_LayerProperties = tmx_layer.properties;
         this.exp_LayerOpacity = tmx_layer.opacity;
         for (y=0; y<height; y++)
         {
@@ -174,12 +186,16 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                tile_rotateID = (_gid >> 29) & 0x7;
+                this.exp_TileAngle = (tile_rotateID == 5)? 90:
+                                     (tile_rotateID == 6)? 180:
+                                     (tile_rotateID == 3)? 270: 0;
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 				this.exp_TilesetName = tileset_obj.name;
-                this.exp_tileset_properties = tileset_obj.properties;
+                this.exp_TilesetProperties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
+                this.exp_TileProperties = (tile_obj != null)? tile_obj.properties: null;
                    
                 if (this._obj_type != null)
                     this._created_inst = this._create_instance(x,y,c2_layer); 
@@ -194,12 +210,9 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	instanceProto._create_instance = function(x,y,c2_layer)
 	{  
         var inst = this.layout.CreateItem(this._obj_type,x,y,c2_layer);
-        cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(inst, [this.exp_TileID-1]);
-        inst.opacity = this.exp_LayerOpacity;
-        if (this.exp_IsMirrored ==1)
-            inst.width = -inst.width;
-        if (this.exp_IsFlipped ==1)
-            inst.height = -inst.height;            
+        cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, this.exp_Frame);
+        inst.opacity = this.exp_LayerOpacity;          
+        inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
         
         this.exp_InstUID = inst.uid; 
         return inst        
@@ -326,7 +339,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     instanceProto._retrieve_one_tile = function()
     {   
         var unit_cnt=0;
-        var layer_index,data_index,layers,layer,c2_layer,_gid,x,y;
+        var layer_index,data_index,layers,layer,c2_layer,_gid,x,y,tile_rotateID;
         var tileset_obj,tile_obj;
         var is_valid = false;
         while (!is_valid)
@@ -345,6 +358,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             c2_layer =  this._get_layer(layer.name);
             if ((c2_layer == null) && (this._obj_type != null))
                 alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
+            if ((this._obj_type != null) && (c2_layer != null) && (layer_index == 0) && (data_index == 0) && (this.exp_BaclgroundColor != null))
+            {
+                cr.system_object.prototype.acts.SetLayerBackground.call(this, c2_layer, this.exp_BaclgroundColor);
+                //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2_layer, 0);            
+            }                
             // get tile id
             unit_cnt += 1;
             _gid = layer.data[data_index];            
@@ -352,7 +370,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             if (is_valid)  
             {         
                 this.exp_LayerName = layer.name;        
-                this.exp_layer_properties = layer.properties;
+                this.exp_LayerProperties = layer.properties;
                 this.exp_LayerOpacity = layer.opacity;            
                 this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);       
                 // prepare expressions
@@ -364,12 +382,16 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
                 this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
                 this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                tile_rotateID = (_gid >> 29) & 0x7;
+                this.exp_TileAngle = (tile_rotateID == 5)? 90:
+                                     (tile_rotateID == 6)? 180:
+                                     (tile_rotateID == 3)? 270: 0;                
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 		        this.exp_TilesetName = tileset_obj.name;
-                this.exp_tileset_properties = tileset_obj.properties;
+                this.exp_TilesetProperties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-                this.exp_tile_properties = (tile_obj != null)? tile_obj.properties: {};
+                this.exp_TileProperties = (tile_obj != null)? tile_obj.properties: null;
                    
                 if (this._obj_type != null)
                     this._created_inst = this._create_instance(x,y,c2_layer); 
@@ -450,6 +472,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         else
             this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnEachObject, this); 
     };  
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -457,12 +480,31 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	  
 	Cnds.prototype.OnEachTileCell = function ()
 	{
-        if (this._created_inst != null)
+        var inst = this._created_inst;
+        if (inst != null)
         {
-            var sol = this._created_inst.type.getCurrentSol();
+            var sol = inst.type.getCurrentSol();
             sol.select_all = false;
 		    sol.instances.length = 1;
-		    sol.instances[0] = this._created_inst;    
+		    sol.instances[0] = inst;
+		
+		    // Siblings aren't in instance lists yet, pick them manually
+		    var i, len, s;
+		    if (inst.is_contained)
+		    {
+			    for (i = 0, len = inst.siblings.length; i < len; i++)
+			    {
+				    s = inst.siblings[i];
+				    sol = s.type.getCurrentSol();
+				    sol.select_all = false;
+				    sol.instances.length = 1;
+				    sol.instances[0] = s;
+			    }
+		    }
+        
+		    this.runtime.isInOnDestroy++;
+		    this.runtime.trigger(Object.getPrototypeOf(inst.type.plugin).cnds.OnCreated, inst);
+		    this.runtime.isInOnDestroy--;
         }
 		return true;
 	};	
@@ -474,9 +516,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     // for each property
 	Cnds.prototype.ForEachLayerProperty = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
-        var key, props = this.exp_layer_properties, value;
+        if (this.exp_LayerProperties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;	
+        var key, props = this.exp_LayerProperties, value;
 		for (key in props)
 	    {
             this.exp_CurLayerPropName = key;
@@ -491,10 +535,12 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 		return false;        
 	};   
 	Cnds.prototype.ForEachTilesetProperty = function ()
-	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
-        var key, props = this.exp_tileset_properties, value;
+	{
+        if (this.exp_TilesetProperties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;		
+        var key, props = this.exp_TilesetProperties, value;
 		for (key in props)
 	    {
             this.exp_CurTilesetPropName = key;
@@ -510,9 +556,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	};   
 	Cnds.prototype.ForEachTileProperty = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
-        var key, props = this.exp_tile_properties, value;
+        if (this.exp_TileProperties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;		
+        var key, props = this.exp_TileProperties, value;
 		for (key in props)
 	    {
             this.exp_CurTilePropName = key;
@@ -528,9 +576,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	};
 	Cnds.prototype.ForEachMapProperty = function ()
 	{   
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-		
-        var key, props = this.exp_map_properties, value;
+        if (this.exp_MapProperties == null)
+            return false;
+            
+        var current_event = this.runtime.getCurrentEventStack().current_event;		
+        var key, props = this.exp_MapProperties, value;
 		for (key in props)
 	    {
             this.exp_CurMapPropName = key;
@@ -636,23 +686,41 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	};    
 	Exps.prototype.LayerProp = function (ret, name, default_value)
 	{   
-        var value = this.exp_layer_properties[name];
-        if (value == null)
+        var value;
+        if (this.exp_LayerProperties == null)
             value = default_value;
+        else
+        {
+            value = this.exp_LayerProperties[name];
+            if (value == null)
+                value = default_value;
+        }
 	    ret.set_any(value);
 	};
 	Exps.prototype.TilesetProp = function (ret, name, default_value)
 	{       
-        var value = this.exp_tileset_properties[name];
-        if (value == null)
-            value = default_value;        
+        var value;
+        if (this.exp_TilesetProperties == null)
+            value = default_value;
+        else
+        {
+            value = this.exp_TilesetProperties[name];
+            if (value == null)
+                value = default_value;        
+        }
 	    ret.set_any(value);
 	};     
 	Exps.prototype.TileProp = function (ret, name, default_value)
-	{       
-        var value = this.exp_tile_properties[name];
-        if (value == null)
-            value = default_value;        
+	{    
+        var value    
+        if (this.exp_TileProperties == null)
+            value = default_value;
+        else
+        {
+            value = this.exp_TileProperties[name];
+            if (value == null)
+                value = default_value;        
+        }
 	    ret.set_any(value);
 	}; 
 	Exps.prototype.PhysicalX = function (ret)
@@ -693,12 +761,29 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	};
 	Exps.prototype.MapProp = function (ret, name, default_value)
 	{   
-        var value = this.exp_map_properties[name];
-        if (value == null)
+        var value;
+        if (this.exp_MapProperties == null)
             value = default_value;
+        else
+        {
+            value = this.exp_MapProperties[name];
+            if (value == null)
+                value = default_value;
+        }
 	    ret.set_any(value);
 	};	
-    
+	Exps.prototype.TileAngle = function (ret)
+	{     
+	    ret.set_float(this.exp_TileAngle);
+	};    
+	Exps.prototype.BackgroundColor = function (ret)
+	{     
+	    var val = this.exp_BaclgroundColor;
+	    if (val == null)
+	        val = 0;
+	    ret.set_int(val);
+	}; 
+	
     // objects
 	Exps.prototype.ObjGroupName = function (ret)
 	{     
@@ -817,6 +902,19 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         }
         return null;    
     }; 
+    
+    // RGB -> BGR
+    var _get_C2_color_number = function(rgb_string) 
+    {
+        if (rgb_string == "")
+            return null;
+        
+        var rgb = parseInt(rgb_string.substring(1), 16);
+        var r = (rgb >> 16) & 0xFF;
+        var g = (rgb >> 8) & 0xFF;
+        var b = (rgb) & 0xFF;
+        return ( (b<<16) | (g<<8) | (r) );
+    };
 
     var _get_map = function (dict_obj)
     {     
@@ -827,6 +925,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         map.height = _get_number_value(dict_obj, "@height");
         map.tilewidth = _get_number_value(dict_obj, "@tilewidth");
         map.tileheight = _get_number_value(dict_obj, "@tileheight");
+        map.backgroundcolor = _get_C2_color_number(_get_string_value(dict_obj, "@backgroundcolor", ""));
         map.properties = _get_properties(dict_obj);
         return map;           
     };
@@ -865,11 +964,11 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         tileset.tileheight = _get_number_value(dict_obj, "@tileheight");
         tileset.spacing = _get_number_value(dict_obj, "@spacing");
         tileset.margin = _get_number_value(dict_obj, "@margin"); 
-        tileset.tiles = _get_tiles(dict_obj);
+        tileset.tiles = _get_tiles(dict_obj, tileset.firstgid);
         tileset.properties = _get_properties(dict_obj);
         return tileset;
     };
-    var _get_tiles = function(dict_obj, xml_tiles)
+    var _get_tiles = function(dict_obj, gid_offset)
     {
         dict_obj = dict_obj["tile"];
         if (dict_obj == null)
@@ -883,13 +982,13 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             for (i=0; i<tile_cnt; i++)
             {
                 tile = dict_obj[i];
-                id = _get_number_value(tile, "@id") + 1;
+                id = _get_number_value(tile, "@id") + gid_offset;
                 tiles[id] = _get_tile(tile);
             }
         }
         else
         {
-            id = _get_number_value(dict_obj, "@id") + 1;
+            id = _get_number_value(dict_obj, "@id") + gid_offset;
             tiles[id] = _get_tile(dict_obj);
         }
         return tiles;
@@ -905,7 +1004,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         dict_obj = dict_obj["map"]["layer"];
         if (dict_obj == null)
             return {};
-                    
+        
         var layer, layers = [];        
         if (dict_obj.length)
         {
@@ -947,9 +1046,39 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         var encoding = _get_string_value(dict_obj, "@encoding");
         var compression = _get_string_value(dict_obj, "@compression");      
         var data = _get_string_value(dict_obj, "#text");
-        data = (encoding == "base64")? _decBase64AsArray(data):_decCSV(data);
-        if (compression != null)
-            alert ("TMXImporter could not support any decompression");             
+        
+        if(typeof(String.prototype.trim) === "undefined")
+        {
+            String.prototype.trim = function() 
+            {
+                return String(this).replace(/^\s+|\s+$/g, '');
+            };
+        }
+        
+        data = data.trim();
+        if (encoding == "base64")
+        {
+            data = atob(data);
+            data = data.split('').map(function(e) {
+                return e.charCodeAt(0);
+            });
+            
+            if (compression == "zlib")
+            {
+                var inflate = new window["Zlib"]["Inflate"](data);
+                data = inflate["decompress"]();
+            }
+            else if (compression == "gzip")
+            {
+                var gunzip = new window["Zlib"]["Gunzip"](data);
+                data = gunzip["decompress"]();               
+            }
+            data = _array_merge(data);
+        }
+        else if (encoding == "csv")
+            data = _decCSV(data);
+        else
+            alert ("TMXImporter: could not decompress data");             
         return data;
     };
     var _get_objectgroups = function (dict_obj)
@@ -1049,22 +1178,24 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         return (s!=null)? parseInt(s):default_value;
     };    
 
-    var _decBase64AsArray = function(data) 
+    var _array_merge = function(data) 
     {
-        data = Base64.decode(data);
    	    var bytes = 4;
    	    var len = data.length / bytes;
    	    var arr = [];
-   	    var i, j;
+   	    var i, j, tmp;
    
    	    for (i = 0; i<len; i++) 
    	    {
-   		    arr[i] = 0;
+            tmp = 0;
    		    for (j = bytes - 1; j >= 0; --j) 
-   			    arr[i] += data.charCodeAt((i * bytes) + j) << (j << 3);
+                tmp += ( data[(i * bytes) + j] << (j << 3) );
+            arr[i] = tmp;
    	    }  
+        arr.length = len;
         return arr;
-    };
+    };  
+    
     var _decCSV = function(data) 
     {     
         data = data.replace(/(^\s*)|(\s*$)/g,"");
@@ -1115,55 +1246,6 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	{
         return this.plugin.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y),this.LXYZ2PY(x,y) );         
 	}; 
-	
-	
-	/**
-	 *  Base64 decoding
-	 *  @see <a href="http://www.webtoolkit.info/">http://www.webtoolkit.info/</A>
-	 */
-	var Base64 = (function() {
-
-		// hold public stuff in our singleton
-		var singleton = {};
-
-		// private property
-		var _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-
-		// public method for decoding
-		singleton.decode = function(input) {
-			
-			// make sure our input string has the right format
-			input = input.replace(/[^A-Za-z0-9\+\/\=]/g, "");
-			
-			var output = [], chr1, chr2, chr3, enc1, enc2, enc3, enc4, i = 0;
-            
-            while (i < input.length) 
-            {
-                enc1 = _keyStr.indexOf(input.charAt(i++));
-                enc2 = _keyStr.indexOf(input.charAt(i++));
-                enc3 = _keyStr.indexOf(input.charAt(i++));
-                enc4 = _keyStr.indexOf(input.charAt(i++));
-                
-                chr1 = (enc1 << 2) | (enc2 >> 4);
-                chr2 = ((enc2 & 15) << 4) | (enc3 >> 2);
-                chr3 = ((enc3 & 3) << 6) | enc4;
-                
-                output.push(String.fromCharCode(chr1));
-                
-                if (enc3 != 64)
-                    output.push(String.fromCharCode(chr2));
-                if (enc4 != 64)
-                    output.push(String.fromCharCode(chr3));
-            }
-            
-            output = output.join('');
-            return output;
-		};
-
-		return singleton;
-
-	})();
-    
 
     var _get_string_value = function (obj, key, default_value)
     {
