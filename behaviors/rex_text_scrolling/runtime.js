@@ -53,6 +53,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.text_changed = false;
         this.lastwidth = this.inst.width;
         this.lastheight = this.inst.height;
+		this._set_text_handler = this._set_text_handler_get();
 	};
 
 	behinstProto.onDestroy = function()
@@ -135,17 +136,48 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
                   this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
 	    this.total_lines = inst.lines.length;
-	    this.visible_lines = Math.floor(inst.height/inst.pxHeight);
-        if ((inst.height%inst.pxHeight) == 0)
+		var line_height = this._line_height_get();
+	    this.visible_lines = Math.floor(inst.height/line_height);
+        if ((inst.height%line_height) == 0)
             this.visible_lines -= 1;
 	    this._copy_content_lines(inst.lines);
 	    this.SetText(this._get_visible_lines(this.start_line_index));
 	};    
 	
-	behinstProto.SetText = function (s)
+	behinstProto._line_height_get = function ()
+	{	
+	    var line_height, inst=this.inst;
+        if (cr.plugins_.Sprite &&
+		    (this.inst instanceof cr.plugins_.Sprite.prototype.Instance))
+	        line_height = inst.pxHeight;
+	    else if (cr.plugins_.Spritefont2 &&
+		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+			line_height = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
+
+	    assert2(line_height, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
+	    return line_height;
+    };  
+	
+	behinstProto._set_text_handler_get = function ()
 	{
-        cr.plugins_.Text.prototype.acts.SetText.apply(this.inst, [s]);
-	};    
+	    var set_text_handler;
+        if (cr.plugins_.Sprite &&
+		    (this.inst instanceof cr.plugins_.Sprite.prototype.Instance))
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;
+	    else if (cr.plugins_.Spritefont2 &&
+		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else
+		    set_text_handler = null;
+	    return set_text_handler;
+    };  	
+	
+	behinstProto.SetText = function (param)
+	{
+	    if (this._set_text_handler == null)
+		    return;
+        this._set_text_handler.call(this.inst, param);
+	};   
  	
 	behinstProto.saveToJSON = function ()
 	{

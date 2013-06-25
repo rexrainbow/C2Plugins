@@ -69,7 +69,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this.typing_speed = 0; 
         this.typing_index = 0;
         this.content = ""; 
-        this.timer_save = null;           
+        this.timer_save = null;
+		this._set_text_handler = this._set_text_handler_get();
 	};
 
 	behinstProto.onDestroy = function()
@@ -87,9 +88,25 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
 	};
 	
+	behinstProto._set_text_handler_get = function ()
+	{
+	    var set_text_handler;
+        if (cr.plugins_.Sprite &&
+		    (this.inst instanceof cr.plugins_.Sprite.prototype.Instance))
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;
+	    else if (cr.plugins_.Spritefont2 &&
+		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else
+		    set_text_handler = null;
+	    return set_text_handler;
+    };  	
+	
 	behinstProto.SetText = function (param)
 	{
-        cr.plugins_.Text.prototype.acts.SetText.apply(this.inst, [param]);
+	    if (this._set_text_handler == null)
+		    return;
+        this._set_text_handler.call(this.inst, param);
 	};
 
     behinstProto._get_timer = function ()
