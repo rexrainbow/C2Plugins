@@ -47,6 +47,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
 	{
 	    this.platform_behavior_inst = null;
         this.activated = (this.properties[0] == 1);
+        this.is_moving = false;
         this.target = {"m":0,       // 0: x mode , 1: distance mode
                        "dir": 0, // 0:left , 1: right
                        "x":0,
