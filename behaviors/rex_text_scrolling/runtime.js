@@ -161,8 +161,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto._set_text_handler_get = function ()
 	{
 	    var set_text_handler;
-        if (cr.plugins_.Sprite &&
-		    (this.inst instanceof cr.plugins_.Sprite.prototype.Instance))
+        if (cr.plugins_.Text &&
+		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))
 	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
@@ -170,7 +170,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    else
 		    set_text_handler = null;
 	    return set_text_handler;
-    };  	
+    }; 	
 	
 	behinstProto.SetText = function (param)
 	{

@@ -223,10 +223,8 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto._check_rollingover = function (is_touch_inside)
 	{
         if (is_touch_inside)
-        {
-            // only ACTIVE_STATE or CLICK_DETECTING_STATE could rolling in
-            if ((!this._rollingover_flag) &&
-                ((this._state == ACTIVE_STATE) || (this._state == CLICK_DETECTING_STATE))  )
+        {            
+            if (!this._rollingover_flag)
             {
                 this._set_animation(this._display.rollingin, ROLLINGIN_DISPLAY);  
                 this._rollingover_flag = true;
