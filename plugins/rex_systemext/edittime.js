@@ -45,7 +45,7 @@ AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(1, 0, "Pick by UID", "SOL", 
+AddAction(1, af_deprecated, "Pick by UID", "SOL", 
           "Pick <i>{0}</i> instance by UID to <i>{1}</i>, form <i>{2}</i>", 
           "Pick instance by UID.", "PickByUID");          
 AddObjectParam("Object", "Object for picking");
@@ -77,9 +77,9 @@ AddAction(4, 0, "Set visible", "Layers & transforms",
           "Set the visible of a layer.", "SetLayerVisible");     
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
-AddAction(5, af_deprecated, "Quick picking by UID", "SOL", 
-          "Quick picking <i>{0}</i> instance by UID = <i>{1}</i>", 
-          "Quick picking instance by UID.", "QuickPickByUID");                    
+AddAction(5, 0, "Pick by UID", "SOL", 
+          "Pick <i>{0}</i> by UID = <i>{1}</i>", 
+          "Pick by UID.", "QuickPickByUID");                    
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
@@ -92,7 +92,8 @@ AddAction(6, 0, "Pick inverse", "SOL",
 // Expressions
 AddStringParam('""', "Code string.", '""');
 AddExpression(0, ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
-
+AddNumberParam("Number", "Decimal number", 0);
+AddExpression(1, ef_return_string, "Get hex string", "Math", "ToHexString", "Transfer decimal value to hex string.");
 
 
 ACESDone();

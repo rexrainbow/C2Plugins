@@ -326,5 +326,9 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	{
 	    ret.set_any( eval( "("+code_string+")" ) );
 	};
-    
+
+    Exps.prototype.ToHexString = function (ret, decval)
+	{
+	    ret.set_string( decval.toString(16) );
+	};  
 }());
