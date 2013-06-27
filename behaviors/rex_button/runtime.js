@@ -135,7 +135,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	{   
 	    this._init_activated = (this.properties[0]==1);
         this._click_mode = this.properties[1];      
-        this._auto_CLICK2ACTIVE = (this.properties[0]==1);
+        this._auto_CLICK2ACTIVE = (this.properties[2]==1);
         this._touch_src = null;
         this._state = ACTIVE_STATE; 
         this._pre_state = ACTIVE_STATE;       
