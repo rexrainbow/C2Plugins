@@ -140,7 +140,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    this.visible_lines = Math.floor(inst.height/line_height);
         if ((inst.height%line_height) == 0)
             this.visible_lines -= 1;
-	    this._copy_content_lines(inst.lines);
+	    this._copy_content_lines(inst.lines);		
 	    this.SetText(this._get_visible_lines(this.start_line_index));
 	};    
 	
@@ -229,6 +229,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	Acts.prototype.SetContent = function(param)
 	{   
         this.content_raw = _param2string(param);
+		this.start_line_index = 0;
         this.SetContent();
 	};
 
