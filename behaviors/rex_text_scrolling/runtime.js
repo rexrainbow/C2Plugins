@@ -147,11 +147,11 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto._line_height_get = function ()
 	{	
 	    var line_height, inst=this.inst;
-        if (cr.plugins_.Sprite &&
-		    (this.inst instanceof cr.plugins_.Sprite.prototype.Instance))
+        if (cr.plugins_.Text &&
+		    (inst instanceof cr.plugins_.Text.prototype.Instance))
 	        line_height = inst.pxHeight;
 	    else if (cr.plugins_.Spritefont2 &&
-		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+		         (inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
 			line_height = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
 
 	    assert2(line_height, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
