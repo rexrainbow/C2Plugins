@@ -83,7 +83,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_ObjectLY = 0; 
         this.exp_ObjectPX = 0;
         this.exp_ObjectPY = 0;         
-        this.exp_object_properties = {};
+        this.exp_ObjectProperties = {};
 
         // for each property
         this.exp_CurLayerPropName = "";
@@ -250,7 +250,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 this.exp_ObjectLY = y;                
                 this.exp_ObjectPX = this.layout.LXYZ2PX(x,y);
                 this.exp_ObjectPY = this.layout.LXYZ2PY(x,y);                
-                this.exp_object_properties = obj.properties;
+                this.exp_ObjectProperties = obj.properties;
                 this.runtime.trigger(cr.plugins_.Rex_JSONTMXImporter.prototype.cnds.OnEachObject, this); 
             }
         }
@@ -445,7 +445,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         this.exp_ObjectLY = y;                
         this.exp_ObjectPX = this.layout.LXYZ2PX(x,y);
         this.exp_ObjectPY = this.layout.LXYZ2PY(x,y);                
-        this.exp_object_properties = obj.properties;
+        this.exp_ObjectProperties = obj.properties;
         
         // update index
         if (object_index == (group.objects.length-1))  // the last object index
@@ -830,10 +830,16 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	    ret.set_int(this.exp_ObjectPY);
 	};	
 	Exps.prototype.ObjectProp = function (ret, name, default_value)
-	{       
-        var value = this.exp_object_properties[name];
-        if (value == null)
-            value = default_value;        
+	{   
+        var value;
+        if (this.exp_ObjectProperties == null)
+            value = default_value;
+        else
+        {
+            value = this.exp_ObjectProperties[name];
+            if (value == null)
+                value = default_value;
+        }
 	    ret.set_any(value);
 	}; 
     
