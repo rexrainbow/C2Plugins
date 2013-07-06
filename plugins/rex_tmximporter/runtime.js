@@ -213,6 +213,10 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, this.exp_Frame);
         inst.opacity = this.exp_LayerOpacity;          
         inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
+        if ((this.exp_TileAngle == 0) && (this.exp_IsMirrored ==1))
+            inst.width = -inst.width;
+        if ((this.exp_TileAngle == 0) && (this.exp_IsFlipped ==1))
+            inst.height = -inst.height;         
         
         this.exp_InstUID = inst.uid; 
         return inst        
