@@ -80,14 +80,31 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
                     this.runtime.getLayerByNumber(_layer):
                     this.runtime.getLayerByName(_layer);  
         var inst = this.runtime.createInstance(objtype, layer, x, y ); 
+		if (inst == null)
+		    return null;
 		
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
+        var sol = inst.type.getCurrentSol();
+        sol.select_all = false;
+		sol.instances.length = 1;
+		sol.instances[0] = inst;
+		
+		// Siblings aren't in instance lists yet, pick them manually
+		var i, len, s;
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				sol = s.type.getCurrentSol();
+				sol.select_all = false;
+				sol.instances.length = 1;
+				sol.instances[0] = s;
+			}
+		}
         
-        // Pick just this instance
-        objtype.getCurrentSol().pick_one(inst);
-        objtype.applySolToContainer();
+		this.runtime.isInOnDestroy++;
+		this.runtime.trigger(Object.getPrototypeOf(inst.type.plugin).cnds.OnCreated, inst);
+		this.runtime.isInOnDestroy--;
         
 	    return inst;
 	}; 	
