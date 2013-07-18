@@ -26,7 +26,7 @@ AddCondition(2, cf_trigger, "On tag changed", "Tag", "On tag changed",
 // Actions     
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(1, af_deprecated, "Setup", "Z: Deprecated", 
+AddAction(1, 0, "Setup", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
 AddStringParam("Commands", "Commands in CSV format", "");
