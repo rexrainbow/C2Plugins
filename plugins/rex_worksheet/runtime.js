@@ -85,10 +85,14 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.pre_abs_time = 0;
         this.instructions = this._parsing(instructions);
         this.offset = offset;        
-        this._start_cmd();
+        var is_continue = true;
+        while(is_continue)
+        {
+            is_continue = this._start_cmd();
+        }
 	}; 
-    
-	instanceProto.Run = function()
+  
+	instanceProto._execute_cmd = function()
 	{
 	    var cur_cmd = this.current_cmd;
         var name = cur_cmd["cb"], params = cur_cmd["parms"];
@@ -97,16 +101,25 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 		    this.callback.CallFn(name, params);
         else    // run official function
         {
-            var has_fnobj = this.timeline.RunCallback(name, params, true);
+            var has_fnobj = this._timeline_get().RunCallback(name, params, true);
             assert2(has_fnobj, "Worksheet: Can not find callback oject.");
-        }
-        this._start_cmd();        
+        }    
+	}; 
+	    
+	instanceProto._delay_run = function()
+	{
+	    this._execute_cmd();
+        var is_continue = true;
+        while(is_continue)
+        {
+            is_continue = this._start_cmd();
+        }       
 	};   
     
     var _INSTRUCTION_SORT = function(instA, instB)
     {
-        var ta = instA.time;
-        var tb = instB.time;
+        var ta = instA["t"];
+        var tb = instB["t"];
         return (ta < tb) ? -1 : (ta > tb) ? 1 : 0;
     }
     
@@ -116,6 +129,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         var instructions = [];
         var i,line,slices,comma_index;
         var line_length = lines.length;
+        var params,delay_time,name;
         for (i=0; i<line_length; i++)
         {
             line = lines[i];
@@ -129,9 +143,9 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
                 continue;
                 
             // output
-			var params = CSVToArray(line)[0];
-			var delay_time = parseFloat(params.shift());
-			var name = params.shift();
+			params = CSVToArray(line)[0];
+			delay_time = parseFloat(params.shift());
+			name = params.shift();
             instructions.push({"t":delay_time,
 			                   "cb":name,
 							   "parms":params});                  
@@ -147,19 +161,30 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         if (this.instructions.length>0)
         {
             this.current_cmd = this.instructions.shift();
-            if (this.timer== null)
-            {
-                this.timer = this._timeline_get().CreateTimer(this, this.Run);
-            }
-            
             var next_abs_time = this.current_cmd["t"] + this.offset;
-            this.timer.Start(next_abs_time - this.pre_abs_time);
-            this.pre_abs_time = next_abs_time;
+            var dt = next_abs_time - this.pre_abs_time;
+            
+            if (dt!=0)
+            {
+                if (this.timer== null)
+                {
+                    this.timer = this._timeline_get().CreateTimer(this, this._delay_run);
+                }
+                            
+                this.timer.Start(next_abs_time - this.pre_abs_time);
+                this.pre_abs_time = next_abs_time;
+            }
+            else
+            {
+                this._execute_cmd();
+                return true;
+            }
         }
         else
         {
             this.runtime.trigger(cr.plugins_.Rex_WorkSheet.prototype.cnds.OnCompleted, this);
         }
+        return false;
 	};
 	
     // copy from    
@@ -297,7 +322,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.timeline.LoadTimer(this, this.Run, null, this.timer_save);
+            this.timer = this.timeline.LoadTimer(this, this._delay_run, null, this.timer_save);
         }     
         this.timers_save = null;        
 	}; 
