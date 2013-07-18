@@ -31,8 +31,8 @@ AddAction(0, 0, "Set enabled", "Anchor", "Set {my} {0}", "Enable or disable the 
 ACESDone();
 
 var property_list = [
-	new cr.Property(ept_combo, "Left edge", "Window left", "Anchor the object's left edge to a window edge.", "Window left|Window right"),
-	new cr.Property(ept_combo, "Top edge", "Window top", "Anchor the object's top edge to a window edge.", "Window top|Window bottom"),
+	new cr.Property(ept_combo, "Left edge", "Window left", "Anchor the object's left edge to a window edge.", "Window left|Window right|None"),
+	new cr.Property(ept_combo, "Top edge", "Window top", "Anchor the object's top edge to a window edge.", "Window top|Window bottom|None"),
 	new cr.Property(ept_combo, "Right edge", "None", "Anchor the object's right edge.", "None|Window right"),
 	new cr.Property(ept_combo, "Bottom edge", "None",	"Anchor the object's bottom edge.", "None|Window bottom"),
     new cr.Property(ept_combo, "Set once", "No", "Enable to set position once when window size changed.", "No|Yes")	

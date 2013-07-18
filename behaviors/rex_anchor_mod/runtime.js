@@ -44,8 +44,8 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-		this.anch_left = this.properties[0];		// 0 = left, 1 = right
-		this.anch_top = this.properties[1];			// 0 = top, 1 = bottom
+		this.anch_left = this.properties[0];		// 0 = left, 1 = right, 2 = none
+		this.anch_top = this.properties[1];			// 0 = top, 1 = bottom, 2 = none
 		this.anch_right = this.properties[2];		// 0 = none, 1 = right
 		this.anch_bottom = this.properties[3];		// 0 = none, 1 = bottom
 		
