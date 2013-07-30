@@ -225,8 +225,6 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;      
 	    var x_max=this.board.x_max;
 	    var y_max=this.board.y_max;       
-        var get_neighbor_x = this.board.layout.GetNeighborLX;
-        var get_neighbor_y = this.board.layout.GetNeighborLY;
         var cur_x,cur_y,next_x,next_y;
         for(dir=0;dir<3;dir++)  // dir = 0,1,2
         {
@@ -259,8 +257,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        break;
 	                    }
                         matched_tiles.push(s);                        
-                        next_x = get_neighbor_x(cur_x,cur_y,dir);
-	                    next_y = get_neighbor_y(cur_x,cur_y,dir);
+                        next_x = this.board.layout.GetNeighborLX(cur_x,cur_y,dir);
+	                    next_y = this.board.layout.GetNeighborLY(cur_x,cur_y,dir);
 	                    cur_x = next_x;
 	                    cur_y = next_y;
 	                }
