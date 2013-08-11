@@ -341,14 +341,12 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 
 	Exps.prototype.TargetX = function (ret)
 	{
-        var x = (this.is_moving)? this.target["x"]:0;
-		ret.set_float(x);
+		ret.set_float(this.target["x"]);
 	};  
 
  	Exps.prototype.TargetY = function (ret)
 	{
-        var y = (this.is_moving)? this.target["y"]:0;
-		ret.set_float(y);
+		ret.set_float(this.target["y"]);
 	};     
 
  	Exps.prototype.MovingAngle = function (ret)
