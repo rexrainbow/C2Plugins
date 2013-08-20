@@ -83,7 +83,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
         {
 		    inst = ovl_insts[i];
             behavior_inst = inst.behavior_insts[this.behavior_index];
-            if (behavior_inst._state == ACTIVE_STATE)
+            if (behavior_inst.is_enable())
                 behavior_inst.start_click_detecting(touch_src);
         }
         
@@ -158,6 +158,13 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this._check_click_cancel(is_touch_inside);    
         this._check_rollingover(is_touch_inside);           
 	}; 
+	
+	behinstProto.is_enable = function(frame_index)
+	{
+	    var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
+	    var is_visible = (layer.visible && this.inst.visible);
+        return ( (this._state == ACTIVE_STATE) && is_visible );               
+	}; 	
 
 	behinstProto._display_frame = function(frame_index)
 	{
