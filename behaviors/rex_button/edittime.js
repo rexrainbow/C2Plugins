@@ -48,6 +48,7 @@ var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this goto ACTIVE state at the start of the layout.", "No|Yes"),
 	new cr.Property(ept_combo, "Click mode", "Released", "Clicking when touch released or pressed.", "Released|Pressed"),    
 	new cr.Property(ept_combo, "Activated after Clicked", "Yes", "Auto back to ACTIVE state after CLICKED state.", "No|Yes"),
+	new cr.Property(ept_combo, "Visible checking", "Yes", "Set Yes to enable button if visible.", "No|Yes"),
     ];
 	
 // Called by IDE when a new behavior type is to be created

@@ -136,6 +136,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	    this._init_activated = (this.properties[0]==1);
         this._click_mode = this.properties[1];      
         this._auto_CLICK2ACTIVE = (this.properties[2]==1);
+		this._is_visible_checking = (this.properties[3]==1);
         this._touch_src = null;
         this._state = ACTIVE_STATE; 
         this._pre_state = ACTIVE_STATE;       
@@ -161,8 +162,14 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	
 	behinstProto.is_enable = function(frame_index)
 	{
-	    var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
-	    var is_visible = (layer.visible && this.inst.visible);
+	    var is_visible;
+	    if (this._is_visible_checking)
+		{
+	        var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
+	        is_visible = (layer.visible && this.inst.visible);
+        }
+		else
+		    is_visible = true;
         return ( (this._state == ACTIVE_STATE) && is_visible );               
 	}; 	
 
