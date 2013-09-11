@@ -68,6 +68,27 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 		this.events = o["evts"];	
         this._current_finished_event_name = o["ename"];
 	};
+
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    var cur_event_list = [];
+	    var tag, name, _evts;
+	    for (tag in this.events)
+	    {
+	        _evts = this.events[tag];
+	        for (name in _evts)
+	        {
+	            cur_event_list.push({"name": tag+"-"+name, "value": ""});
+	        }
+	    }
+		propsections.push({
+			"title": this.type.name,
+			"properties": cur_event_list
+		});
+	};
+	/**END-PREVIEWONLY**/
+	
     //////////////////////////////////////
 	// Conditions
 	function Cnds() {};
