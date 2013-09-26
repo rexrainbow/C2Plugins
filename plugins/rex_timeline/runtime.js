@@ -706,8 +706,16 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             remainder_time = this._remainder_time;
         }
         return remainder_time;  
-    };   
-
+    };  
+     
+    TimerProto.RemainderTimeSet = function(remainder_time)
+    {
+        if (!this.IsAlive())
+            return;
+             
+        remainder_time = cr.clamp(remainder_time, 0, this.delay_time);
+        this.abs_time = this.timeline.CurrentTimeGet() + remainder_time;         
+    };
     TimerProto.ElapsedTimeGet = function()
     {
         return (this.delay_time - this.RemainderTimeGet());
@@ -825,7 +833,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         if (this._is_active)
         {
-            abs_time = this.timeline.CurrentTimeGet();
+            var abs_time = this.timeline.CurrentTimeGet();
             remainder_time = this.abs_time - abs_time;
             this.abs_time = abs_time + (remainder_time*rate);
         }
