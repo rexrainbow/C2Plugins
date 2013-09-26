@@ -256,7 +256,16 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 	{
         if (this.timer)
             this.timer.Remove();
-	};     
+	};
+
+    Acts.prototype.SetRemainerTime = function (remainder_time)
+	{
+        if ( (!this.activated) || 
+             (this.timer==null)  )
+            return;	    
+        this.timer.RemainderTimeSet(remainder_time);            
+	};	
+	     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

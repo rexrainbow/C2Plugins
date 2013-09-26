@@ -62,7 +62,10 @@ AddAction(5, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable
 AddAction(6, 0, "Cancel", "Control", 
           "{my} cancel cooldown", 
           "Cancel cooldown.", "Cancel"); 
-
+AddNumberParam("Time", "Cooldown remainder time, in seconds", 0.1);
+AddAction(7, 0, "Set Cooldown remainder time", "Time", 
+          "Set cooldown remainder time to <i>{0}</i> second", 
+          "Set cooldown remainder time, in second. This value should smaller then cooldown interval.", "SetRemainerTime");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get remainder time", 
