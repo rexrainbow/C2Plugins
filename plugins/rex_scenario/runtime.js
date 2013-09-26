@@ -49,6 +49,10 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.timelineUid = -1;    // for loading     
         this.callback = null;     // deprecated
         this.callbackUid = -1;    // for loading   // deprecated  
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];
+        /**END-PREVIEWONLY**/	
 	};
 	
 	instanceProto._timeline_get = function ()
@@ -108,6 +112,27 @@ cr.plugins_.Rex_Scenario = function(runtime)
 
         this._scenario.afterLoad();
 	}; 
+	
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    this.propsections.length = 0;
+	    this.propsections.push({"name": "Tag", "value": this._scenario.get_last_tag()});
+		var debugger_info=this._scenario.debugger_info;
+		var i,cnt=debugger_info.length;
+        for (i=0;i<cnt;i++)
+		    this.propsections.push(debugger_info[i]);
+	    var k,mem=this._scenario.Mem;
+		for (k in mem)
+		    this.propsections.push({"name": "Mem-"+k, "value": mem[k]});
+			
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.propsections
+		});
+	};
+	/**END-PREVIEWONLY**/	
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -240,9 +265,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
 									"tag":new CmdTAGKlass(this),
                                     };
 		// variablies pool
-		this.Mem = {};
-		
+		this.Mem = {};		
 		this.timer_save = null;
+		
+		/**BEGIN-PREVIEWONLY**/
+		this.debugger_info = [];
+		/**END-PREVIEWONLY**/	
     };
     var ScenarioKlassProto = cr.plugins_.Rex_Scenario.ScenarioKlass.prototype;
     
@@ -439,6 +467,16 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
 	ScenarioKlassProto._execute_c2fn = function(name, params)
 	{
+	    /**BEGIN-PREVIEWONLY**/
+	    var debugger_info=this.debugger_info;
+	    debugger_info.length = 0;
+		debugger_info.push({"name": "Function name", "value": name});
+	    var i, cnt=params.length;
+		for (i=0;i<cnt;i++)
+		    debugger_info.push({"name": "Parameter "+i, "value": params[i]});
+		/**END-PREVIEWONLY**/	
+		
+		
 	    var plugin = this.plugin;
         var has_rex_function = (plugin.callback != null);
         if (has_rex_function)
@@ -537,6 +575,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdWAITKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdWAITKlassProto.on_executing = function(cmd_pack)
     {
+        /**BEGIN-PREVIEWONLY**/
+	    var debugger_info=this.scenario.debugger_info;
+	    debugger_info.length = 0;
+		debugger_info.push({"name": "WAIT", "value": ""});	
+		/**END-PREVIEWONLY**/	
+		
         this.scenario.pause();
         return false;  // is_continue
     }; 
@@ -564,6 +608,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdEXITKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdEXITKlassProto.on_executing = function(cmd_pack)
     {
+        /**BEGIN-PREVIEWONLY**/
+	    var debugger_info=this.scenario.debugger_info;
+	    debugger_info.length = 0;
+		debugger_info.push({"name": "EXIT", "value": ""});	
+		/**END-PREVIEWONLY**/	
+	
         this.scenario._exit();
         return false;  // is_continue
     };
