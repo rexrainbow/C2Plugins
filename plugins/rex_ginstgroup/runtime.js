@@ -59,7 +59,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 											};
 										})(this);
 										
-		this.runtime.addDestroyCallback(this.myDestroyCallback);     	    
+		this.runtime.addDestroyCallback(this.myDestroyCallback); 
+		
+		
+		/**BEGIN-PREVIEWONLY**/
+		this.propsections = [];
+		/**END-PREVIEWONLY**/	    	    
 	};
 	cr.plugins_.Rex_gInstGroup._randomGen = null;  // random generator for Shuffing
 	
@@ -280,6 +285,46 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 		this.randomGenUid = -1;			
 		cr.plugins_.Rex_gInstGroup._randomGen = randomGen;
 	};
+	
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    this.propsections.length = 0;	
+		var groups = this.groups, group_name;
+		var uid, uids, inst;
+		var types = {}, type_name, s;
+	    for (group_name in groups)
+	    {
+	        // clean types
+            for (type_name in types) 
+	        {
+	            delete types[type_name];
+	        }
+	        uids = groups[group_name].GetSet();
+	        for (uid in uids)
+	        {
+	            inst = this.runtime.getObjectByUID(uid);
+	            if (inst == null)
+	                continue;
+	            type_name = inst.type.name;
+	            if (type_name in types)
+	                types[type_name] += 1;
+	            else
+	                types[type_name] = 1;
+	        }
+	        s = "";	   
+	        for (type_name in types) 	        
+	            s += type_name.toString() + ":" + types[type_name].toString() + "  ";
+	        this.propsections.push({"name": group_name, "value": s});
+	    }
+		        	
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.propsections
+		});
+	};
+	/**END-PREVIEWONLY**/	
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -881,7 +926,8 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	GroupKlassProto.IsInGroup = function(uid)
 	{
 	    return (this._set[uid] != null);
-	};	
+	};
+		
 	GroupKlassProto.ToString = function()
 	{
 	    return JSON.stringify(this._list);
@@ -895,8 +941,8 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	GroupKlassProto.Shuffle = function()
 	{
 	    _shuffle(this._list);
-	}
-		
+	};
+	
 	var _shuffle = function (arr)
 	{
         var i = arr.length, j, temp, random_value;
