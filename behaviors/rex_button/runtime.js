@@ -192,18 +192,14 @@ cr.behaviors.Rex_Button2 = function(runtime)
 
 	behinstProto._set_animation = function(display, name)
 	{      
-        var valid =  (display != "");   
-        if (!valid)
-            this._display_frame();
-        else
-        {
-            if (typeof(display) == "number")
-                this._display_frame(display);
-            else
-                this._display_animation(display);
-            this._display.cur_name = name;
-        }    
-        return valid;        
+	    if (display == "")
+	        return;
+	        
+       if (typeof(display) == "number")
+           this._display_frame(display);
+       else
+           this._display_animation(display);
+       this._display.cur_name = name;        
 	}; 
     
 	behinstProto._init = function()
