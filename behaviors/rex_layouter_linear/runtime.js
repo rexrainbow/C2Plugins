@@ -72,6 +72,8 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	behinstProto._offset_get = function (uid, direction)
 	{	    
         var inst = this.runtime.getObjectByUID(uid);
+		if (inst == null)
+			return;		
         inst.update_bbox();
         var quad = inst.bquad;  
         var px, py;        
@@ -199,6 +201,8 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         for (i=0; i<cnt; i++)  
         {      
             inst = this.runtime.getObjectByUID(uids[i]);
+			if (inst == null)
+			    continue;
             angle_saved.push[inst.angle];
             inst.angle = a;
             inst.set_bbox_changed();
@@ -211,6 +215,8 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         for (i=0; i<cnt; i++)  
         {      
             inst = this.runtime.getObjectByUID(uids[i]);
+			if (inst == null)
+			    continue;			
             inst.angle = angle_saved[i];
             inst.set_bbox_changed();
         }
