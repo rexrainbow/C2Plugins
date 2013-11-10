@@ -169,7 +169,21 @@ cr.behaviors.Rex_boundary = function(runtime)
         this.vertical_boundary = o["vb"];
         this.horizontal_pin_instance = o["hp"];
         this.vertical_pin_instance = o["vp"];
-	};	
+	};
+
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "Horizontal", "value": this.horizontal_boundary[0] + "," + this.horizontal_boundary[1]},
+				{"name": "Vertical", "value": this.vertical_boundary[0] + "," + this.vertical_boundary[1]},
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
