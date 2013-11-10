@@ -13,8 +13,8 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On turn on", "Event", "On {my} turn on", "", "OnTurnOn");
-AddCondition(1, cf_trigger, "On turn off", "Event", "On {my} turn off", "", "OnTurnOff");
+AddCondition(0, cf_trigger, "On turn on", "Event", "On {my} turn on", "Triggered when turn on.", "OnTurnOn");
+AddCondition(1, cf_trigger, "On turn off", "Event", "On {my} turn off", "Triggered when turn off.", "OnTurnOff");
 AddCondition(2, 0, "Is turn on", "If", "Is turn on", "", "IsTurnOn");
 
 //////////////////////////////////////////////////////////////

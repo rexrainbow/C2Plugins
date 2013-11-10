@@ -68,8 +68,10 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this.typing_timer = null;
         this.typing_speed = 0; 
         this.typing_index = 0;
-        this.content = ""; 
+        this.content = "";
+        this.raw_text_length = 0;
         this.timer_save = null;
+		this._text_type = "";        
 		this._set_text_handler = this._set_text_handler_get();
 	};
 
@@ -88,25 +90,70 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
 	};
 	
-	behinstProto._set_text_handler_get = function ()
+	behinstProto._text_type_get = function ()
 	{
-	    var set_text_handler;
+	    var text_type;
         if (cr.plugins_.Text &&
-		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))
-	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;
+		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
+	        text_type = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+			text_type = "Spritefont2";	  
+	    else if (cr.plugins_.rex_TagText &&
+		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
+		    text_type = "rex_TagText";
+		else
+		    text_type = "";	 
+		return text_type;
+	};
+	
+	behinstProto._set_text_handler_get = function ()
+	{
+	    this.text_type = this._text_type_get();
+	    var set_text_handler;
+        if (this.text_type == "Text")		
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (this.text_type == "Spritefont2")	
 			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (this.text_type == "rex_TagText")	
+			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
 	    else
 		    set_text_handler = null;
 	    return set_text_handler;
     };  	
+
+	behinstProto._get_raw_text_length = function (content)
+	{	    
+	    var len;
+		if ((this.text_type == "Text") || (this.text_type == "Spritefont2"))
+		    len = content.length;
+        else if (this.text_type == "rex_TagText")
+            len = this.inst.rawTextGet(content).length;
+        else
+            len = 0;
+        return len;
+	};
 	
-	behinstProto.SetText = function (param)
+	behinstProto.SetText = function (content, start_index, end_index)
 	{	    
 	    if (this._set_text_handler == null)
 		    return;
-        this._set_text_handler.call(this.inst, param);
+		    
+	    if (start_index == null)
+	        start_index = 0;
+	    if (end_index == null)
+	        end_index = this.raw_text_length;
+
+		if ((this.text_type == "Text") || (this.text_type == "Spritefont2"))
+		{
+		    content = content.slice(start_index, end_index);
+            this._set_text_handler.call(this.inst, content);
+        }
+        else if (this.text_type == "rex_TagText")
+        {
+            content = this.inst.subTextGet(content, start_index, end_index);
+            this._set_text_handler.call(this.inst, content);
+        }
 	};
 
     behinstProto._get_timer = function ()
@@ -123,6 +170,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	behinstProto._start_typing = function (text, speed, start_index)
 	{
+	    this.raw_text_length = this._get_raw_text_length(text);
         if (speed != 0)
         {
             if (start_index == null)
@@ -134,7 +182,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
         }
         else
         {
-            this.typing_index = this.content.length;
+            this.typing_index = this.raw_text_length;
             this.SetText(this.content);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
@@ -142,14 +190,14 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	behinstProto.text_typing_handler = function()
 	{  
-        this.SetText(this.content.slice(0, this.typing_index));
+        this.SetText(this.content, 0, this.typing_index);
         this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);       
         this.typing_index += 1;        
-        if (this.typing_index <= this.content.length)
+        if (this.typing_index <= this.raw_text_length)
             this.typing_timer.Restart(this.typing_speed);        
         else
         {
-            this.typing_index = this.content.length;  
+            this.typing_index = this.raw_text_length;  
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
 	}; 
@@ -263,7 +311,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	Acts.prototype.AppendText = function(param)
 	{
-        var start_index = this.content.length;
+        var start_index = this.raw_text_length;
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
         this.content += param.toString();

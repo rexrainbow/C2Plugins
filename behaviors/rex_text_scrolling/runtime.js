@@ -44,7 +44,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 
 	behinstProto.onCreate = function()
 	{ 
-        this.content_raw = "";
+        this.content = "";
 	    this.content_lines = [];
 	    this.total_lines = 0;
 	    this.visible_lines = 0;
@@ -53,6 +53,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.text_changed = false;
         this.lastwidth = this.inst.width;
         this.lastheight = this.inst.height;
+		this._text_type = "";  
 		this._set_text_handler = this._set_text_handler_get();
 	};
 
@@ -89,15 +90,28 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         return cr.clamp(percent, 0, 1);
 	};    
     
-	behinstProto._get_visible_lines = function (start_line_index)
+	behinstProto._visible_text_get = function (start_line_index)
 	{
         this.start_line_index = (start_line_index < 0)? 0:start_line_index;
         var end_index = this.start_line_index + this.visible_lines;
         if (end_index > this.total_lines)
             end_index = this.total_lines;
-        var i,text = "";
-        for (i=this.start_line_index; i<end_index; i++)
-            text += (this.content_lines[i] + "\n");
+        var i,text;
+		
+		if ( (this.text_type == "Text") || (this.text_type == "Spritefont2") )
+		{
+		    text = "";
+		    for (i=this.start_line_index; i<end_index; i++)
+			    text += (this.content_lines[i] + "\n");
+		}
+		else if (this.text_type == "rex_TagText")
+		{
+	        if (this.start_line_index == end_index)
+		        return "";		
+		    var start_char_index = this.content_lines[this.start_line_index].index;
+			var end_char_index = this.content_lines[end_index-1].index;
+			text = this.inst.subTextGet(this.content, start_char_index, end_char_index);
+		}
         return text;
 	};
 	
@@ -106,7 +120,15 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    this.content_lines.length = 0;
 	    var i, line, line_cnt=lines.length;
 	    for (i=0; i<line_cnt; i++)
-	        this.content_lines.push(lines[i].text);
+		{
+		    if ((this.text_type == "Text") || (this.text_type == "Spritefont2"))
+                this.content_lines.push(lines[i].text);
+            else if (this.text_type == "rex_TagText")
+			{
+			    line = lines[i];
+                this.content_lines.push( { text:line["text"], index:line["index"] } );   // copy	
+		    }
+	    }
 	};	
 
     behinstProto._get_webgl_ctx = function ()
@@ -131,7 +153,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto.SetContent = function ()
 	{
         var inst = this.inst;              
-        this.SetText(this.content_raw);
+        this.SetText(this.content);
         var ctx = (this.runtime.enableWebGL)? 
                   this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
@@ -141,47 +163,63 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         if ((inst.height%line_height) == 0)
             this.visible_lines -= 1;
 	    this._copy_content_lines(inst.lines);		
-	    this.SetText(this._get_visible_lines(this.start_line_index));
+	    this.SetText(this._visible_text_get(this.start_line_index));
 	};    
 	
 	behinstProto._line_height_get = function ()
 	{	
 	    var line_height, inst=this.inst;
-        if (cr.plugins_.Text &&
-		    (inst instanceof cr.plugins_.Text.prototype.Instance))
+        if ( (this.text_type == "Text") || (this.text_type == "rex_TagText") )
 	        line_height = inst.pxHeight;
-	    else if (cr.plugins_.Spritefont2 &&
-		         (inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+	    else if (this.text_type == "Spritefont2")	
 			line_height = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
 
 	    assert2(line_height, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
 	    return line_height;
     };  
 	
-	behinstProto._set_text_handler_get = function ()
+	behinstProto._text_type_get = function ()
 	{
-	    var set_text_handler;
+	    var text_type;
         if (cr.plugins_.Text &&
-		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))
-	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;
+		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
+	        text_type = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+			text_type = "Spritefont2";	  
+	    else if (cr.plugins_.rex_TagText &&
+		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
+		    text_type = "rex_TagText";
+		else
+		    text_type = "";	 
+		return text_type;
+	};
+	
+	behinstProto._set_text_handler_get = function ()
+	{
+	    this.text_type = this._text_type_get();
+	    var set_text_handler;
+        if (this.text_type == "Text")		
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (this.text_type == "Spritefont2")	
 			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (this.text_type == "rex_TagText")	
+			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
 	    else
 		    set_text_handler = null;
 	    return set_text_handler;
-    }; 	
+    };  		
 	
-	behinstProto.SetText = function (param)
-	{
+	behinstProto.SetText = function (content)
+	{	    
 	    if (this._set_text_handler == null)
 		    return;
-        this._set_text_handler.call(this.inst, param);
-	};   
+		this._set_text_handler.call(this.inst, content);
+	};  
  	
 	behinstProto.saveToJSON = function ()
 	{
-		return { "raw" : this.content_raw,
+		return { "raw" : this.content,
 		         "lines": this.content_lines,
 		         "lcnt": this.total_lines,
 		         "vlcnt": this.visible_lines,
@@ -192,7 +230,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-        this.content_raw = o["raw"];
+        this.content = o["raw"];
 	    this.content_lines = o["lines"];
 	    this.total_lines = o["lcnt"];
 	    this.visible_lines = o["vlcnt"];
@@ -228,7 +266,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
  
 	Acts.prototype.SetContent = function(param)
 	{   
-        this.content_raw = _param2string(param);
+        this.content = _param2string(param);
 		this.start_line_index = 0;
         this.SetContent();
 	};
@@ -237,38 +275,38 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{   
         this.line_pos_percent = cr.clamp(percent, 0, 1);
         var start_line_index = this.perent2line(this.line_pos_percent);
-        this.SetText(this._get_visible_lines(start_line_index));
+        this.SetText(this._visible_text_get(start_line_index));
 	};
     
 	Acts.prototype.AppendContent = function(param)
 	{   
-        this.content_raw += _param2string(param);
+        this.content += _param2string(param);
         this.text_changed = true;
 	}; 
 
 	Acts.prototype.ScrollByIndex = function(line_index)
 	{   
-        this.SetText(this._get_visible_lines(line_index));
+        this.SetText(this._visible_text_get(line_index));
 	}; 
 
 	Acts.prototype.NextLine = function()
 	{   
-        this.SetText(this._get_visible_lines(this.start_line_index+1));
+        this.SetText(this._visible_text_get(this.start_line_index+1));
 	}; 
 
 	Acts.prototype.PreviousLine = function()
 	{   
-        this.SetText(this._get_visible_lines(this.start_line_index-1));
+        this.SetText(this._visible_text_get(this.start_line_index-1));
 	};   
 
 	Acts.prototype.NextPage = function()
 	{   
-        this.SetText(this._get_visible_lines(this.start_line_index+this.visible_lines));
+        this.SetText(this._visible_text_get(this.start_line_index+this.visible_lines));
 	}; 
 
 	Acts.prototype.PreviousPage = function()
 	{   
-        this.SetText(this._get_visible_lines(this.start_line_index-this.visible_lines));
+        this.SetText(this._visible_text_get(this.start_line_index-this.visible_lines));
 	};   
 	  
 	//////////////////////////////////////
@@ -278,7 +316,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 
 	Exps.prototype.Text = function(ret)
 	{
-		ret.set_string(this.content_raw);
+		ret.set_string(this.content);
 	};
 
 	Exps.prototype.TotalCnt = function(ret)
