@@ -140,6 +140,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
         {
             canvas_inst.set_bbox_changed();
             canvas_inst.runtime.redraw = true; 
+            inst.update_tex = true; 
         }
 	};
     
@@ -187,7 +188,8 @@ cr.behaviors.Rex_cdmask = function(runtime)
 		    ctx.fill();
 	    }
 	    
-	    inst.runtime.redraw = true;    
+	    inst.runtime.redraw = true;  
+	    inst.update_tex = true;  
 	};	
 	
 	behinstProto._pick_canvas_inst = function ()

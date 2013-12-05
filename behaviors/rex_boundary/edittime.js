@@ -15,8 +15,8 @@
 // Conditions
 AddCondition(2,	cf_trigger, "On hit any boundary", "Hit", 
              "On {my} hit any boundary", "Triggered when object hit any boundary.", "OnHitAnyBoundary");  
-AddCondition(3,	cf_trigger, "On hit lefy boundary", "Hit", 
-             "On {my} hit lefy boundary", "Triggered when object hit lefy boundary.", "OnHitLeftBoundary"); 
+AddCondition(3,	cf_trigger, "On hit left boundary", "Hit", 
+             "On {my} hit left boundary", "Triggered when object hit left boundary.", "OnHitLeftBoundary"); 
 AddCondition(4,	cf_trigger, "On hit right boundary", "Hit", 
              "On {my} hit right boundary", "Triggered when object hit right boundary.", "OnHitRightBoundary"); 
 AddCondition(5,	cf_trigger, "On hit top boundary", "Hit", 

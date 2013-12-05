@@ -110,6 +110,20 @@ cr.behaviors.Rex_SpeedMoinitor = function(runtime)
 		this._last_angle = o["la"];	
         this._is_moving = o["im"];	
 	};		
+    
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Speed", "value": this._speed},
+			               {"name": "Angle", "value": this._angle},
+                           {"name": "Last speed", "value": this._last_speed},
+			               {"name": "Last angle", "value": this._last_angle}
+                           ]
+		});
+	};
+	/**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

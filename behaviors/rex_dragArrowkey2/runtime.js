@@ -261,7 +261,27 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
                             touch_obj.fake_ret, this.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	};  
-	
+    
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{	  
+        var key_name = "";
+        if (this.pre_key_id & RIGHTKEY)
+            key_name += "Right ";
+        if (this.pre_key_id & DOWNKEY)
+            key_name += "Down ";     
+        if (this.pre_key_id & LEFTKEY)
+            key_name += "Left ";
+        if (this.pre_key_id & UPKEY)
+            key_name += "Up ";                
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Pressed key", "value": key_name},			               
+                           ]
+		});
+	};
+	/**END-PREVIEWONLY**/  
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
