@@ -161,7 +161,7 @@
         //    this.context.shadowColor = proShadow[3].replace("px", "");
         //} 
         this.context.textBaseline = this.textBaseline;
-        this.context.textAlign = this.textAlign;
+        //this.context.textAlign = this.textAlign;
         this.context.fillText(prop.text, offset_x + prop.x, offset_y + prop.y);
         
         this.context.restore();

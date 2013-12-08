@@ -67,6 +67,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	{
 		this.type = type;
 		this.runtime = type.runtime;
+		
 		this.text_changed = true;
 	};
 	
@@ -122,13 +123,15 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 		assert2(this.pxHeight, "Could not determine font text height");
 		
-		this.canvas_text = new window["CanvasText"];
+        this._tag = null;
+        if (!this.recycled)
+        {
+		    this.canvas_text = new window["CanvasText"];
+        }
 		this.canvas_text["wrapbyword"] = this.wrapbyword;
 		this.canvas_text["halign"] = this.halign;
 		this.canvas_text["valign"] = this.valign;
 		this.canvas_text["vshift"] = this.vshift * this.runtime.devicePixelRatio;
-		
-        this._tag = null;
 		this.lines = this.canvas_text["rawTextLine"];
 	};
 	
@@ -254,7 +257,8 @@ cr.plugins_.rex_TagText = function(runtime)
 
 	instanceProto.draw = function(ctx, glmode)
 	{
-		
+        ctx.globalAlpha = glmode ? 1 : this.opacity;
+            
 		var myscale = 1;
 		
 		if (glmode)
@@ -294,20 +298,13 @@ cr.plugins_.rex_TagText = function(runtime)
 
 		var line_height = this.pxHeight;
 		line_height += (this.line_height_offset * this.runtime.devicePixelRatio);
-		
-		if (this.angle !== 0 || glmode)
-			ctx.restore();
 			
-		this.last_render_tick = this.runtime.tickcount;
-    
-        ctx.globalAlpha = glmode ? 1 : this.opacity;
-        
 		this.canvas_text["config"]({
             "canvas": ctx.canvas,
             "context": ctx,
             "fontFamily": this.facename,
             "fontSize": this.ptSize.toString() + "pt",
-            "fontWeight": this.fontstyle,
+            "fontStyle": this.fontstyle,
             "fontColor":this.color,
 			"lineHeight": line_height,
             //"textBaseline": "top",          
@@ -319,6 +316,12 @@ cr.plugins_.rex_TagText = function(runtime)
             "boxWidth": this.width,
             "boxHeight": this.height
         });
+        
+		
+		if (this.angle !== 0 || glmode)
+			ctx.restore();
+			
+		this.last_render_tick = this.runtime.tickcount;
 	};
 	
 	instanceProto.drawGL = function(glw)
@@ -338,10 +341,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		var scaledwidth = Math.ceil(floatscaledwidth);
 		var scaledheight = Math.ceil(floatscaledheight);
 		
-		var windowWidth = this.runtime.width;
-		var windowHeight = this.runtime.height;
-		var halfw = windowWidth / 2;
-		var halfh = windowHeight / 2;
+		var halfw = this.runtime.draw_width / 2;
+		var halfh = this.runtime.draw_height / 2;
 		
 		// Create 2D context for this instance if not already
 		if (!this.myctx)
@@ -400,14 +401,19 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 		var q = this.bquad;
 		
-		var tlx = this.layer.layerToCanvas(q.tlx, q.tly, true);
-		var tly = this.layer.layerToCanvas(q.tlx, q.tly, false);
-		var trx = this.layer.layerToCanvas(q.trx, q.try_, true);
-		var try_ = this.layer.layerToCanvas(q.trx, q.try_, false);
-		var brx = this.layer.layerToCanvas(q.brx, q.bry, true);
-		var bry = this.layer.layerToCanvas(q.brx, q.bry, false);
-		var blx = this.layer.layerToCanvas(q.blx, q.bly, true);
-		var bly = this.layer.layerToCanvas(q.blx, q.bly, false);
+		// Temporarily ignore the devicePixelRatio when translating to the canvas so we get
+		// canvas pixels and not CSS pixels. Otherwise text becomes misaligned.
+		var old_dpr = this.runtime.devicePixelRatio;
+		this.runtime.devicePixelRatio = 1;
+		var tlx = this.layer.layerToCanvas(q.tlx, q.tly, true, true);
+		var tly = this.layer.layerToCanvas(q.tlx, q.tly, false, true);
+		var trx = this.layer.layerToCanvas(q.trx, q.try_, true, true);
+		var try_ = this.layer.layerToCanvas(q.trx, q.try_, false, true);
+		var brx = this.layer.layerToCanvas(q.brx, q.bry, true, true);
+		var bry = this.layer.layerToCanvas(q.brx, q.bry, false, true);
+		var blx = this.layer.layerToCanvas(q.blx, q.bly, true, true);
+		var bly = this.layer.layerToCanvas(q.blx, q.bly, false, true);
+		this.runtime.devicePixelRatio = old_dpr;
 		
 		if (this.runtime.pixel_rounding || (this.angle === 0 && layer_angle === 0))
 		{
