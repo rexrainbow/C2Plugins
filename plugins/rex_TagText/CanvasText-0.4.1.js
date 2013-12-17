@@ -222,6 +222,32 @@
         pens[0].length = 0;
     };
     
+    var propname_map = 
+    {
+    "color":"fontColor",
+    "font-family":"fontFamily",
+    "font-size":"fontSize",
+    "font-weight":"fontWeight",
+    "font-style":"fontStyle",
+    };
+    var _style2prop = function(properties)   // property list
+    {
+        var i, cnt=properties.length;
+        var prop = {}, property;
+        for (i= 0; i<cnt; i++) 
+        {
+            property = properties[i].split(":");
+            if (isEmpty(property[0]) || isEmpty(property[1])) 
+            {
+                // Wrong property name or value. We jump to the
+                // next loop.
+                continue;
+            }
+            prop[propname_map[property[0]]] = property[1];
+        }
+        return prop;
+    };
+    
     CanvasTextProto.drawText = function (textInfo) 
     {  	
         // Save the textInfo into separated vars to work more comfortably.
@@ -246,24 +272,39 @@
 		var acc_line_len = 0;
         
         // Let's draw something for each match found.
-        for (i = 0; i < match_cnt; i++) {
+        for (i = 0; i < match_cnt; i++) 
+        {
             // Save the current context.
             this.context.save();        
             
             // Check if current fragment is a class tag.
-            if (/<\s*class=/i.test(match[i])) { 
+            if (/<\s*class=/i.test(match[i])) 
+            { 
                 // Looks the attributes and text inside the class tag.
                 innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>/);
                
                 classDefinition = this.getClass(innerMatch[1]);
                 proText = innerMatch[2];
                 text_prop = this._text_prop_get(classDefinition);
-            } else if (/<\s*br\s*\/>/i.test(match[i])) {
+            }
+            else if (/<\s*style=/i.test(match[i])) 
+            {
+                // Looks the attributes and text inside the style tag.
+                innerMatch = match[i].match(/<\s*style=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/style\s*\>/);
+
+                // innerMatch[1] contains the properties of the attribute.
+                var properties = _style2prop(innerMatch[1].split(";"));                
+                proText = innerMatch[2];
+                text_prop = this._text_prop_get(properties);
+                
+            } else if (/<\s*br\s*\/>/i.test(match[i])) 
+            {
                 // Check if current fragment is a line break.
                 y += this.lineHeight;
                 start_x = textInfo.x;
                 continue;
-            } else {
+            } else 
+            {
                 // Text without special style.
                 proText = match[i];
                 text_prop = this._text_prop_get();
@@ -403,6 +444,15 @@
             return this.savedClasses[id];
         }
     };
+    
+    /**
+     * A simple function to check if the given value is empty.
+     */
+    var isEmpty = function (str) {
+        // Remove white spaces.
+        str = str.replace(/^\s+|\s+$/, '');
+        return str.length == 0;
+    };    
     
     /**
      * Check if a line break is needed.
