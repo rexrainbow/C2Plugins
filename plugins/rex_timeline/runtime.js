@@ -42,6 +42,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	instanceProto.onCreate = function()
 	{     
         this.update_with_game_time = (this.properties[0] == 1);
+        this.update_with_real_time = (this.properties[0] == 2);
+        if (this.update_with_real_time)
+        {
+            var timer = new Date();
+            this.last_real_time = timer.getTime();
+        }
         
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
@@ -72,6 +78,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         if (this.update_with_game_time)
         {
             this.timeline.Dispatch(this.runtime.dt);
+        }
+        else if (this.update_with_real_time)
+        {
+            var timer = new Date();
+            var last_real_time = timer.getTime();      
+            var dt = (last_real_time - this.last_real_time)/1000;
+            this.timeline.Dispatch(dt);
+            this.last_real_time = last_real_time;
         }
         else if (this.manual_push)  // !this.update_with_game_time
         {
@@ -136,7 +150,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	instanceProto._setup_callback = function (raise_assert_when_not_fnobj_avaiable)
 	{
         if (raise_assert_when_not_fnobj_avaiable)
-            assert2(cr.plugins_.Rex_FnExt || cr.plugins_.Function, "Function extension or official function was not found.");
+            assert2(cr.plugins_.Rex_FnExt || cr.plugins_.Function || cr.plugins_.Rex_Function, 
+                    "Function extension or official function, or rex_function was not found.");
 
         var plugins = this.runtime.types;			
         var name, plugin;
@@ -172,6 +187,23 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                 }                                          
             }
 		}
+		
+        // try to get callback from rex_function
+		if (cr.plugins_.Rex_Function != null)    
+		{	
+            this._call_fn = cr.plugins_.Rex_Function.prototype.acts.CallFunction;
+            var name, plugin;
+            for (name in plugins)
+            {
+                plugin = plugins[name];
+                if (plugin.plugin.acts.CallFunction == this._call_fn)
+                {
+                    this._official_fnobj = plugin.instances[0];
+				    this._official_fnobj_state = 3;
+                    return;
+                }                                          
+            }
+		}		
         
         this._official_fnobj_state = 1;  // function object is not avaiable
 	};   

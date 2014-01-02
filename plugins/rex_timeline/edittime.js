@@ -133,7 +133,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Game time", "Yes", "Enable to update timeline with game time.", "No|Yes")
+    new cr.Property(ept_combo, "Game time", "Yes", "Enable to update timeline with game time, or real-time.", "No|Yes|Real-time")
 	];
 	
 // Called by IDE when a new object type is to be created
