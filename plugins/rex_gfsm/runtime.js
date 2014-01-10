@@ -76,6 +76,18 @@ cr.plugins_.Rex_FSM = function(runtime)
 	    this.activated = o["en"];
 	    this.fsm.loadFromJSON(o["fsm"]);
 	};
+	
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Current", "value": this.fsm.CurState},
+			               {"name": "Previous", "value": this.fsm.PreState}]
+		});
+	};
+	/**END-PREVIEWONLY**/
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

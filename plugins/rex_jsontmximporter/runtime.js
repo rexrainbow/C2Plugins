@@ -5,7 +5,7 @@ assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
 // load socket.io.min.js
-document.write('<script src="zlib_and_gzip.min.js"></script>');
+//document.write('<script src="zlib_and_gzip.min.js"></script>');
 
 /////////////////////////////////////
 // Plugin class
@@ -1075,13 +1075,15 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
             
             if (compression == "zlib")
             {
-                var inflate = new window["Zlib"]["Inflate"](data);
-                data = inflate["decompress"]();
+                //var inflate = new window["Zlib"]["Inflate"](data);
+                //data = inflate["decompress"]();
+			    log("JSONTMXImporter: zlib was not supported");
             }
             else if (compression == "gzip")
             {
-                var gunzip = new window["Zlib"]["Gunzip"](data);
-                data = gunzip["decompress"]();               
+                //var gunzip = new window["Zlib"]["Gunzip"](data);
+                //data = gunzip["decompress"]();
+                log("JSONTMXImporter: gzip was not supported");				
             }
             data = _array_merge(data);
         }

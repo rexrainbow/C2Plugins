@@ -41,6 +41,9 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+	    this.exp_CurX = 0;
+	    this.exp_CurY = 0;
+	    this.exp_CurValue = "";
 	};
 
     // copy from    
@@ -136,6 +139,54 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();      
     
+	Cnds.prototype.ForEachCell = function (csv_string)
+	{
+	    var table = CSVToArray(csv_string);
+		var y_cnt = table.length;
+		var x_cnt = table[0].length;
+		var i,j;
+	    
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+			    
+		this.forCol = "";
+        
+        if (solModifierAfterCnds)
+        {
+		    for (j=0; j<y_cnt; j++ )
+	        {
+	            this.exp_CurY = j;	            
+	            for (i=0; i<x_cnt; i++ )
+	            {
+                    this.runtime.pushCopySol(current_event.solModifiers);
+                    
+	                this.exp_CurX = i;
+                    this.exp_CurValue = table[j][i];                    
+		    	    current_event.retrigger();
+		    	    
+		    	    this.runtime.popSol(current_event.solModifiers);
+		        }
+		    }	
+	    }
+	    else
+	    {
+		    for (j=0; j<y_cnt; j++ )
+	        {
+	            this.exp_CurY = j;	            
+	            for (i=0; i<x_cnt; i++ )
+	            {
+	                this.exp_CurX = i;
+                    this.exp_CurValue = table[j][i];
+		    	    current_event.retrigger();
+		        }
+		    }	        
+	    }
+
+		this.forCol = "";
+		return false;
+	};  
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -186,5 +237,19 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-
+    
+	Exps.prototype.CurX = function (ret)
+	{
+		ret.set_int(this.exp_CurX);
+	};
+    
+	Exps.prototype.CurY = function (ret)
+	{
+		ret.set_int(this.exp_CurY);
+	};	
+    
+	Exps.prototype.CurValue = function (ret)
+	{
+		ret.set_string(this.exp_CurValue);
+	};		
 }());

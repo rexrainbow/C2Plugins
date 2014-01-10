@@ -10,13 +10,17 @@
 		"category":		"Data & Storage",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		pf_singleglobal
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddStringParam("Data", "Data in CSV format", "");
+AddCondition(1, cf_looping | cf_not_invertible, "For each cell", "For each cell", 
+             "For each cell in <i>{0}</i>", 
+             "Repeat the event for each cell in the csv table.", "ForEachCell");
+             
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Data", "Data in CSV format", "");
@@ -29,8 +33,13 @@ AddAction(1, 0, "Put csv data into array", "CSV to Array",
           "Put csv data into array.", "CSV2Array");
 //////////////////////////////////////////////////////////////
 // Expressions
-
-
+AddExpression(1, ef_return_number, "Current X", "For Each cell", "CurX", 
+              "Get the current X index in a For Each loop.");
+AddExpression(2, ef_return_number, "Current Y", "For Each cell", "CurY", 
+              "Get the current Y index in a For Each loop.");
+AddExpression(3, ef_return_string, "Current value", "For Each cell", "CurValue", 
+              "Get the current cell value in a For Each loop.");
+                         
 ACESDone();
 
 // Property grid properties for this plugin

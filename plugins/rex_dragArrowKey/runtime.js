@@ -229,6 +229,26 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         
         this.pre_key_id = key_id;
     };
+    
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+        var key_name = "";
+        if (this.pre_key_id & RIGHTKEY)
+            key_name += "Right ";
+        if (this.pre_key_id & DOWNKEY)
+            key_name += "Down ";     
+        if (this.pre_key_id & LEFTKEY)
+            key_name += "Left ";
+        if (this.pre_key_id & UPKEY)
+            key_name += "Up ";                
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Pressed key", "value": key_name},			               
+                           ]
+		});
+	};
+	/**END-PREVIEWONLY**/      
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

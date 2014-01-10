@@ -242,6 +242,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	{
 		ret.set_string(this._scenario.get_last_tag());
 	};
+    
+	Exps.prototype.Mem = function(ret, index)
+	{
+		ret.set_any(this._scenario.Mem[index]);
+	};    
 }());
 
 (function ()

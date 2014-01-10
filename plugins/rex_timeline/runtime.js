@@ -39,14 +39,24 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+	var FNTYPE_UK = 0;          // unknow 
+	var FNTYPE_NA = 1;	        // not avaiable
+	var FNTYPE_REXFNEX = 2;     // rex_functionext
+	var FNTYPE_OFFICIALFN = 3;  // official function
+	var FNTYPE_REXFN = 4;       // rex_function
 	instanceProto.onCreate = function()
 	{     
         this.update_with_game_time = (this.properties[0] == 1);
         this.update_with_real_time = (this.properties[0] == 2);
+        
         if (this.update_with_real_time)
         {
             var timer = new Date();
             this.last_real_time = timer.getTime();
+        }
+        else
+        {
+            this.last_real_time = null;
         }
         
         // timeline  
@@ -65,14 +75,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // callback:
         
 		// rex_function
-        this.my_callback = null; 
-        this.my_callbackUid = -1;    // for loading 
+        this.rex_function_objUid = -1;    // for loading 
         // rex_functionext or function
-        this._official_fnobj = null;
-        this._official_fnobj_state = 0;  // 0=unknow, 1=not avaiable, 2=rex_functionext, 3=function
+        this._fnobj = null;
+        this._fnobj_type = FNTYPE_UK;
 	    this._call_fn = null;
 	};
-    
+
     instanceProto.tick = function()
     {
         if (this.update_with_game_time)
@@ -99,14 +108,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	    this.exp_triggered_timer_name = timer_struct.name;
         var name = timer_struct.command;
         var params = timer_struct.params;  
-        var has_rex_function = (this.my_callback != null);
-        if (has_rex_function)
-            this.my_callback.CallFn(name, params);
-        else    // run official function
-        {
-            var has_fnobj = this.RunCallback(name, params, true);            
-            assert2(has_fnobj, "Timeline: Can not find callback oject.");
-        }
+        var has_fnobj = this.RunCallback(name, params, true);            
+        assert2(has_fnobj, "Timeline: Can not find callback oject.");
     };
     
     // export: get new timer instance
@@ -132,7 +135,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             this.timers[timer_name] = {name:timer_name,
 			                           timer:null, 
                                        command:""};
-            if (this.my_callback != null)
+            if (this._fnobj_type == FNTYPE_REXFN)
 			    this.timers[timer_name].params = {};
 		    else
 			    this.timers[timer_name].params = [];
@@ -150,8 +153,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	instanceProto._setup_callback = function (raise_assert_when_not_fnobj_avaiable)
 	{
         if (raise_assert_when_not_fnobj_avaiable)
-            assert2(cr.plugins_.Rex_FnExt || cr.plugins_.Function || cr.plugins_.Rex_Function, 
-                    "Function extension or official function, or rex_function was not found.");
+        {
+            var has_func = (cr.plugins_.Rex_FnExt != null)   || 
+                           (cr.plugins_.Function != null)    ||
+                           (cr.plugins_.Rex_Function != null);
+            assert2(has_func, "Function extension or official function, or rex_function was not found.");
+        }
 
         var plugins = this.runtime.types;			
         var name, plugin;
@@ -164,8 +171,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                 plugin = plugins[name];
                 if (plugin.plugin.acts.CallFunction == this._call_fn)
                 {
-                    this._official_fnobj = plugin.instances[0];
-				    this._official_fnobj_state = 2;
+                    this._fnobj = plugin.instances[0];
+				    this._fnobj_type = FNTYPE_REXFNEX;
                     return;
                 }                                          
             }
@@ -174,15 +181,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // try to get callback from official function
 		if (cr.plugins_.Function != null)    
 		{	
-            this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-            var name, plugin;
+            this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;     
             for (name in plugins)
             {
                 plugin = plugins[name];
                 if (plugin.plugin.acts.CallFunction == this._call_fn)
                 {
-                    this._official_fnobj = plugin.instances[0];
-				    this._official_fnobj_state = 3;
+                    this._fnobj = plugin.instances[0];
+				    this._fnobj_type = FNTYPE_OFFICIALFN;
                     return;
                 }                                          
             }
@@ -192,38 +198,40 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		if (cr.plugins_.Rex_Function != null)    
 		{	
             this._call_fn = cr.plugins_.Rex_Function.prototype.acts.CallFunction;
-            var name, plugin;
             for (name in plugins)
             {
                 plugin = plugins[name];
                 if (plugin.plugin.acts.CallFunction == this._call_fn)
                 {
-                    this._official_fnobj = plugin.instances[0];
-				    this._official_fnobj_state = 3;
+                    this._fnobj = plugin.instances[0];
+				    this._fnobj_type = FNTYPE_REXFN;
                     return;
-                }                                          
+                }
             }
 		}		
         
-        this._official_fnobj_state = 1;  // function object is not avaiable
+        this._fnobj_type = FNTYPE_NA;  // function object is not avaiable
 	};   
 
     instanceProto.RunCallback = function(name, params, raise_assert_when_not_fnobj_avaiable)
     {
-	    if (this._official_fnobj_state == 0)
+	    if (this._fnobj_type == FNTYPE_UK)
 	        this._setup_callback(raise_assert_when_not_fnobj_avaiable);
         
-	    switch (this._official_fnobj_state)
+	    switch (this._fnobj_type)
 		{
-		case 2:  // rex_functionext
-		    this._official_fnobj.CallFunction(name, params);
+		case FNTYPE_REXFNEX:     // rex_functionext
+		    this._fnobj.CallFunction(name, params);
 			break;
-	    case 3:  // function
-            this._call_fn.call(this._official_fnobj, name, params);
+	    case FNTYPE_OFFICIALFN:  // official function
+            this._call_fn.call(this._fnobj, name, params);
 			break;
+	    case FNTYPE_REXFN:      // rex_function	   
+            this._fnobj.CallFn(name, params);
+			break;			
 		}      
 
-        return (this._official_fnobj_state != 1);  
+        return (this._fnobj_type != FNTYPE_NA);  
     };	
 	
     instanceProto.TimeGet = function()
@@ -245,7 +253,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		return { "ug": this.update_with_game_time,
                  "tl": this.timeline.saveToJSON(),
                  "timers": timer_save,
-                 "rexFnUid": (this.my_callback != null)? this.my_callback.uid : (-1)
+                 "rexFnUid": (this.rex_function_obj != null)? this.rex_function_obj.uid : (-1),
+                 "lrt": this.last_real_time
                  };
 	};
     
@@ -253,7 +262,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         this.timeline.loadFromJSON(o["tl"]);
         this.timers_save = o["timers"];
-        this.my_callbackUid = o["rexFnUid"];
+        this.rex_function_objUid = o["rexFnUid"];
+        this.last_real_time = o["lrt"];
 	};     
 
     
@@ -270,14 +280,18 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
         this.timers_save = null;
         
-		if (this.my_callbackUid === -1)
-			this.my_callback = null;
+		if (this.rex_function_objUid === -1)
+		{
+		    this._fnobj = null;
+			this._fnobj_type = FNTYPE_UK; 
+        }
 		else
 		{
-			this.my_callback = this.runtime.getObjectByUID(this.my_callbackUid);
-			assert2(this.my_callback, "Timeline: Failed to find rex_function object by UID");
+			this._fnobj = this.runtime.getObjectByUID(this.rex_function_objUid);
+			assert2(this.rex_function_obj, "Timeline: Failed to find rex_function object by UID");
+			this._fnobj_type = FNTYPE_REXFN;      			
 		}		
-		this.my_callbackUid = -1;        
+		this.rex_function_objUid = -1;        
 	};    
 	//////////////////////////////////////
 	// Conditions
@@ -306,10 +320,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         var callback = fn_objs.instances[0];
         if (callback.check_name == "FUNCTION")
-            this.my_callback = callback;        
-
+        {
+            this._fnobj = callback;  
+            this._fnobj_type = FNTYPE_REXFN;      
+        }
         else
-            alert ("Timeline should connect to a function object");
+            alert ("Timeline should connect to a rex_function object");
 	};      
     
     Acts.prototype.CreateTimer = function (timer_name, command)
@@ -740,12 +756,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         return remainder_time;  
     };  
      
-    TimerProto.RemainderTimeSet = function(remainder_time)
+    TimerProto.RemainderTimeSet = function(_t)
     {
         if (!this.IsAlive())
             return;
              
-        remainder_time = cr.clamp(remainder_time, 0, this.delay_time);
+        var remainder_time = cr.clamp(_t, 0, this.delay_time);
         this.abs_time = this.timeline.CurrentTimeGet() + remainder_time;         
     };
     TimerProto.ElapsedTimeGet = function()

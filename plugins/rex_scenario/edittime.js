@@ -75,7 +75,7 @@ AddExpression(2, ef_return_string, "Get last tag",
               "Tag", "LastTag", 
               "Get last tag."); 
 AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
-AddExpression(3, ef_return_any | ef_variadic_parameters, 
+AddExpression(3, ef_return_any, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");
 			  

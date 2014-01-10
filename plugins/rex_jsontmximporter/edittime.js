@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-        "dependency":	"zlib_and_gzip.min.js"
+        //"dependency":	"zlib_and_gzip.min.js"
 	};
 };
 

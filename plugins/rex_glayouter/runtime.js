@@ -44,6 +44,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    this.check_name = "LAYOUTER";
         this._uids = {};
         this.sprites = [];    // uid
+        this._removed_uids = [];
         this.pin_status = {};
         this.pin_mode = this.properties[0];
             
@@ -154,7 +155,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	{
 	};
     
-	instanceProto.add_insts = function (insts)
+	instanceProto.add_insts = function (insts, skip_layout)
 	{
         var inst, i, cnt=insts.length;
 		var is_world = insts[0].type.plugin.is_world;
@@ -164,15 +165,16 @@ cr.plugins_.Rex_Layouter = function(runtime)
         {
             inst = insts[i];
             if (this._uids[inst.uid])  // is inside container
-                continue;            
-            inst.extra.rex_container_uid = this.uid;
-            this._uids[inst.uid] = true;
+                continue;    
+            this._uids[inst.uid] = true;                      
+            inst.extra.rex_container_uid = this.uid;           
             if (is_world)
-                this.sprites.push(inst.uid);            
+                this.sprites.push(inst.uid);                
         }
         
-        // layout instances
-        this._do_layout(insts, true);
+         // layout instances
+        if (!skip_layout)
+            this._do_layout(insts, true);
         
         // pin instances
         if (is_world && (this.pin_mode != 0))
@@ -244,7 +246,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
             
         if (uid in this.pin_inst)
             delete this.pin_inst[uid];
-        cr.arrayFindRemove(this.sprites, uid)
+        cr.arrayFindRemove(this.sprites, uid);
 	};
     
 	instanceProto.remove_uids = function (insts)
@@ -349,6 +351,21 @@ cr.plugins_.Rex_Layouter = function(runtime)
         }     	
 	};	
 	
+	instanceProto._remove_invalid_insts = function ()
+	{
+        var uid, inst;
+        this._removed_uids.length = 0;
+        for (uid in this._uids)
+        {
+            inst = this.runtime.getObjectByUID(uid);
+            if (inst == null)
+                this._removed_uids.push(parseInt(uid));
+        }  
+        var i, cnt=this._removed_uids.length;   	
+        for(i=0; i<cnt; i++)
+            this._remove_uid(this._removed_uids[i]);
+	};	
+	
 	instanceProto._get_layouter_handler = function ()
 	{
         var behavior_insts = this.behavior_insts;
@@ -378,8 +395,13 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	}; 
     
 	instanceProto.layout_inst = function (uid, params)
-	{
-        var inst = this.runtime.getObjectByUID(uid);
+	{	
+	    var inst;
+	    if (typeof(uid) == "number")
+            inst = this.runtime.getObjectByUID(uid);
+        else
+            inst = uid;
+            
 	    params.inst = inst;
 	    this.layout_inst_params = params;
 	    this.has_event_call = false;
@@ -403,6 +425,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	        inst.set_bbox_changed();	            	            	                
 	    }
 	    this.pin_inst(inst);
+	    this.layout_inst_params = null;
 	};
 	
 	instanceProto.get_centerX = function (inst)
@@ -452,6 +475,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	{
 		if (!objtype)
 			return; 	
+        this._remove_invalid_insts();
 		return this._pick_insts(objtype);
 	};  
 
@@ -490,6 +514,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 
 	Cnds.prototype.PickAllInsts = function ()
 	{
+        this._remove_invalid_insts();	
 	    this._pick_all_insts();
 	    return true;
 	};
@@ -502,6 +527,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 		
 	Acts.prototype.AddInsts = function (objtype)
 	{
+        this._remove_invalid_insts();	    
         var insts = objtype.getCurrentSol().getObjects();
         if (insts.length==0)
             return;
@@ -510,18 +536,23 @@ cr.plugins_.Rex_Layouter = function(runtime)
     
     Acts.prototype.PickInsts = function (objtype)
 	{
+        this._remove_invalid_insts();	    
 	    this._pick_insts(objtype);
 	}; 
 	 
 	Acts.prototype.PickAllInsts = function ()
 	{
+        this._remove_invalid_insts();	    
 	    this._pick_all_insts();
 	};	
 	
 	Acts.prototype.CreateInsts = function (obj_type,x,y,_layer)
-	{
-        this.create_inst(obj_type,x,y,_layer);
+	{    
+        var inst = this.create_inst(obj_type,x,y,_layer);
+        if (inst==null)
+            return;
         
+        this._remove_invalid_insts();	        
         this._insts.length = 0;
         this._insts.push(inst);
 	    this.add_insts(this._insts);
@@ -530,6 +561,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	
 	Acts.prototype.RemoveInsts = function (objtype)
 	{
+        this._remove_invalid_insts();	    
         var insts = objtype.getCurrentSol().getObjects();
         if (insts.length==0)
             return;
@@ -538,6 +570,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	
 	Acts.prototype.ForceLayout = function ()
 	{	
+        this._remove_invalid_insts();	    
         this._do_layout([], true);
 	};    
     

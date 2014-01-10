@@ -50,7 +50,11 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.offset = 0;
         this.current_cmd = {};
         this.pre_abs_time = 0;        
-        this.timer_save = null;         
+        this.timer_save = null;
+
+		/**BEGIN-PREVIEWONLY**/
+		this.debugger_info = [];
+		/**END-PREVIEWONLY**/			
 	};
     
 	
@@ -96,6 +100,16 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 	{
 	    var cur_cmd = this.current_cmd;
         var name = cur_cmd["cb"], params = cur_cmd["parms"];
+		
+	    /**BEGIN-PREVIEWONLY**/
+	    var debugger_info=this.debugger_info;
+	    debugger_info.length = 0;
+		debugger_info.push({"name": "Function name", "value": name});
+	    var i, cnt=params.length;
+		for (i=0;i<cnt;i++)
+		    debugger_info.push({"name": "Parameter "+i, "value": params[i]});
+		/**END-PREVIEWONLY**/	
+		
         var has_rex_function = (this.callback != null);
         if (has_rex_function)
 		    this.callback.CallFn(name, params);
@@ -326,6 +340,16 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         }     
         this.timers_save = null;        
 	}; 
+	
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.debugger_info
+		});
+	};
+	/**END-PREVIEWONLY**/	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
