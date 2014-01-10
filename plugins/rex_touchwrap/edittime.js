@@ -63,6 +63,14 @@ AddCondition(11, cf_trigger, "On Nth touch end", "Touch", "On touch {0} end", "T
 AddNumberParam("Touch number", "Enter a zero-based index of the touch to test, e.g. 0 for first touch, 1 for second, etc.");
 AddCondition(12, 0,			"Has Nth touch", "Touch", "Has touch {0}", "True if a particular touch is currently in contact with the device.", "HasNthTouch");
 
+
+////////////////////////
+AddComboParamOption("Off");
+AddComboParamOption("On");
+AddComboParam("Enable", "Enable the touch detecting.");
+AddAction(100, 0, "Set enable", "Enable", "Set touch enable to <i>{0}</i>", 
+          "Set touch enable.", "SetEnable");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Touch X position", "Touch", "X", "Get the primary touch X co-ordinate in the layout.");
@@ -125,7 +133,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_combo, "Use mouse input", "Yes", "Use mouse clicks as single-touch input (useful for testing).", "No|Yes")
+	new cr.Property(ept_combo, "Use mouse input", "Yes", "Use mouse clicks as single-touch input (useful for testing).", "No|Yes"),
+	new cr.Property(ept_combo, "Enable", "Yes", "Enable touch detecting.", "No|Yes")
 	];
 	
 // Called by IDE when a new object type is to be created

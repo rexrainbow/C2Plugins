@@ -315,10 +315,15 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		}
 		
 		this.runtime.tick2Me(this);
+		
+		this.enable = (this.properties[1] == 1);
 	};
 	
 	instanceProto.onPointerMove = function (info)
 	{	    
+	    if (!this.enable)
+	        return;
+	        
 		// Ignore mouse events
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
 			return;
@@ -351,6 +356,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onPointerStart = function (info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 		// Ignore mouse events
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
 			return;
@@ -396,6 +404,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onPointerEnd = function (info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 		// Ignore mouse events
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
 			return;
@@ -428,6 +439,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onTouchMove = function (info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -462,6 +476,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onTouchStart = function (info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 		if (info.preventDefault)
 			info.preventDefault();
 			
@@ -509,6 +526,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onTouchEnd = function (info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -574,6 +594,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onMouseDown = function(info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 	    this._is_mouse_mode = true;
 		this.mouseDown = true;	    
 		if (info.preventDefault && this.runtime.had_a_click)
@@ -588,6 +611,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	instanceProto.onMouseMove = function(info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
         this._is_mouse_mode = true;
 		if (info.preventDefault && this.runtime.had_a_click)
 			info.preventDefault();
@@ -606,6 +632,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
 	instanceProto.onMouseUp = function(info)
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 	    this._is_mouse_mode = true;	    
 		this.mouseDown = false;			    
 		if (info.preventDefault && this.runtime.had_a_click)
@@ -622,6 +651,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	instanceProto.tick2 = function()
 	{
+	    if (!this.enable)
+	        return;
+	        	    
 		var i, len, t;
 		var nowtime = cr.performance_now();
 		
@@ -787,6 +819,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	pluginProto.cnds = new Cnds();
 
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+	pluginProto.acts = new Acts();
+        
+	Acts.prototype.SetEnable = function(en)
+	{
+		this.enable = (en==1);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
