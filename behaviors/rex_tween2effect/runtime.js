@@ -51,7 +51,11 @@ cr.behaviors.Rex_Tween2Effect = function(runtime)
 	    this.effect_param_index = this.properties[1];
 	    this.tween_behavior_inst = this.get_tween_behavior_inst();  
 	};
-
+	
+	var TYPE_INVALID = 0;
+	var TYPE_LITETWEEN = 1;
+	var TYPE_TWEEN = 2;
+	var TYPE_TWEENMOD = 3;
 	behinstProto.tick = function ()
 	{
 	    if (this.tween_behavior_inst == null)
@@ -61,22 +65,40 @@ cr.behaviors.Rex_Tween2Effect = function(runtime)
 	    if (!this.tween_behavior_inst.active)
 	        return;
 
+        var value = (this.tween_behavior_type == TYPE_LITETWEEN)? this.tween_behavior_inst.inst.value:
+                                                                  this.tween_behavior_inst.value;
 	    this.type.plug_proto.prototype.acts.SetEffectParam.call(
 	        this.inst, 
 	        this.effect_name,                  // name
 	        this.effect_param_index,           // param index
-	        this.tween_behavior_inst.value     // value
+	        value                              // value
 	    );	  
 	};  
-	
+
 	behinstProto.get_tween_behavior_inst = function ()
     {
-        if (cr.behaviors.lunarray_Tween == null)
-            return null;
+        var has_lunarray_LiteTween_behavior = (cr.behaviors.lunarray_LiteTween != null);
+        var has_lunarray_Tween_behavior = (cr.behaviors.lunarray_Tween != null);
+        var has_rex_lunarray_Tween_mod_behavior = (cr.behaviors.rex_lunarray_Tween_mod != null);        
+        var has_tween_behavior = (has_lunarray_LiteTween_behavior || 
+                                  has_lunarray_Tween_behavior || 
+                                  has_rex_lunarray_Tween_mod_behavior);
+        assert2(has_tween_behavior, "[Tween2Effect] Could not find tween behavior");
         var i = this.type.objtype.getBehaviorIndexByName(this.type.name);  
         var tween_behavior_inst = this.inst.behavior_insts[i-1];
         assert2(tween_behavior_inst, "Could not find tween behavior above tween2effect "+  this.type.name + " behavior");
-        if (!(tween_behavior_inst instanceof cr.behaviors.lunarray_Tween.prototype.Instance))
+        var is_lunarray_LiteTween_behavior = has_lunarray_LiteTween_behavior && 
+                                             (tween_behavior_inst instanceof cr.behaviors.lunarray_LiteTween.prototype.Instance);
+        var is_lunarray_Tween_behavior = has_lunarray_Tween_behavior && 
+                                         (tween_behavior_inst instanceof cr.behaviors.lunarray_Tween.prototype.Instance);                                                
+        var is_rex_lunarray_Tween_behavior = has_rex_lunarray_Tween_mod_behavior && 
+                                             (tween_behavior_inst instanceof cr.behaviors.rex_lunarray_Tween_mod.prototype.Instance);                                             
+        this.tween_behavior_type = (is_lunarray_LiteTween_behavior)? TYPE_LITETWEEN:
+                                   (is_lunarray_Tween_behavior)?     TYPE_TWEEN:
+                                   (is_rex_lunarray_Tween_behavior)? TYPE_TWEENMOD:  
+                                                                     TYPE_INVALID;                              
+        assert2(this.tween_behavior_type, "Could not find tween behavior above tween2effect "+  this.type.name + " behavior");                                
+        if (this.tween_behavior_type == 0)
             return null;
         return tween_behavior_inst;
     };		
