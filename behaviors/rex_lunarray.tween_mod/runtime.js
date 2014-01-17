@@ -148,6 +148,7 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 		this.onEndDone = false;
 		this.onCooldown = false;
 		this.onCooldownDone = false;
+		this.onCountEnd = false;
 		
 		if (this.active) {
 			this.init();
@@ -746,6 +747,7 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 			"coord_mode": this.coord_mode,
 			"forceInit": this.forceInit,
 			"group": this.group,
+			"repeatcount":this.repeatcount,
 
 			"targetObject": this.targetObject,
 			"pingpongCounter": this.pingpongCounter,
@@ -789,7 +791,8 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 			"onEnd": this.onEnd,
 			"onEndDone": this.onEndDone,
 			"onCooldown": this.onCooldown,
-			"onCooldownDone": this.onCooldownDone
+			"onCooldownDone": this.onCooldownDone,
+			"onCountEnd":this.onCountEnd,
 		};
 	};
 	
@@ -809,6 +812,7 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 			this.coord_mode = o["coord_mode"];
 			this.forceInit = o["forceInit"];
 			this.group = o["group"];
+			this.repeatcount = o["repeatcount"];
 
 			this.targetObject = o["targetObject"];
 			this.pingpongCounter = o["pingpongCounter"];
@@ -853,6 +857,8 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 			this.onEndDone = o["onEndDone"];
 			this.onCooldown = o["onCooldown"];
 			this.onCooldownDone = o["onCooldownDone"];
+			this.onCountEnd = o["onCountEnd"];
+			
 			this.groupSync();
 	};
 	
@@ -1054,7 +1060,8 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 				this.i = 0;
 				//this.saveState();
 				this.init();
-				this.active = (this.repeatcount != 0);
+				this.onCountEnd = (this.repeatcount == 0);
+				this.active = (!this.onCountEnd);
 			} else if (this.playmode == 2) {
 				//ping pong
 				if (isForceStop) {
@@ -1064,7 +1071,8 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 					this.reverse = !this.reverse;
 					this.i = 0;
 					this.init();
-					this.active = (this.repeatcount != 0);
+					this.onCountEnd = (this.repeatcount == 0);
+				    this.active = (!this.onCountEnd);
 				}
 			} else if (this.playmode == 3) {
 				//play once and destroy
@@ -1074,7 +1082,8 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 				this.loop = true;
 				this.i = 0;
 				this.init();
-				this.active = (this.repeatcount != 0);
+				this.onCountEnd = (this.repeatcount == 0);
+				this.active = (!this.onCountEnd);
 			} else if (this.playmode == 5) {
 				//ping pong stop
 				if (isForceStop) {
@@ -1083,7 +1092,8 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 				} else {
 					if (this.pingpongCounter <= 0) {
 						this.i = this.duration + this.initiating + this.cooldown;
-						this.active = (this.repeatcount != 0);
+						this.onCountEnd = (this.repeatcount == 0);
+				        this.active = (!this.onCountEnd);
 					} else {
 						if (!this.reverse) {
 							this.pingpongCounter -= 1;
@@ -1118,6 +1128,12 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 			this.onCooldown = true;
 			this.runtime.trigger(cr.behaviors.rex_lunarray_Tween_mod.prototype.cnds.OnCooldownEnd, this.inst);
 			this.onCooldownDone = true;
+		}
+		
+		if (this.onCountEnd)
+		{
+		    this.runtime.trigger(cr.behaviors.rex_lunarray_Tween_mod.prototype.cnds.OnCountEnd, this.inst);
+		    this.onCountEnd = false;
 		}
 		//this.groupUpdateProgress((this.i / (this.duration + this.initiating + this.cooldown)));
 	}
@@ -1174,6 +1190,12 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 			return this.onCooldown;
 		}
 	};
+
+    cnds.OnCountEnd = function ()
+	{
+		return this.onCountEnd;
+	};	
+	
 
 	//////////////////////////////////////
 	// Actions
