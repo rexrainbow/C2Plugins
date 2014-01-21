@@ -131,6 +131,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
 			"properties": this.propsections
 		});
 	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+		if (name == "Tag")    // change page
+		{
+		    if (this._scenario.has_tag(value))
+		        this._scenario.start(null, value);
+			else			
+			    alert("Invalid tag "+value);
+		}
+	};	
 	/**END-PREVIEWONLY**/	
 	
 	//////////////////////////////////////
@@ -363,7 +374,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
     ScenarioKlassProto.get_last_tag = function ()
     {      
         return this._extra_cmd_handlers["tag"].last_tag;
-    };    	
+    };  
+    
+    ScenarioKlassProto.has_tag = function (tag)
+    {
+        return this._extra_cmd_handlers["tag"].has_tag(tag);
+    };
+          	
     // internal methods
     ScenarioKlassProto._reset_abs_time = function ()
     {      
@@ -650,6 +667,10 @@ cr.plugins_.Rex_Scenario = function(runtime)
             index = 0;
         return index;        
     };
+    CmdTAGKlassProto.has_tag = function(tag)
+    {	 
+        return (this.tag2index(tag) != null);      
+    };  	
   	
     // template
     //var CmdHandlerKlass = function(scenario) {};
