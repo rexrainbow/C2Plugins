@@ -79,7 +79,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // rex_functionext or function
         this._fnobj = null;
         this._fnobj_type = FNTYPE_UK;
-	    this._call_fn = null;
+	    this._act_call_fn = null;
+		this._exp_call = null;
 	};
 
     instanceProto.tick = function()
@@ -165,11 +166,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		// try to get callback from function extension
 		if (cr.plugins_.Rex_FnExt != null)
 		{
-            this._call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+            this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+			this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
             for (name in plugins)
             {
                 plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._call_fn)
+                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
                 {
                     this._fnobj = plugin.instances[0];
 				    this._fnobj_type = FNTYPE_REXFNEX;
@@ -181,11 +183,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // try to get callback from official function
 		if (cr.plugins_.Function != null)    
 		{	
-            this._call_fn = cr.plugins_.Function.prototype.acts.CallFunction;     
+            this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+            this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
             for (name in plugins)
             {
                 plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._call_fn)
+                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
                 {
                     this._fnobj = plugin.instances[0];
 				    this._fnobj_type = FNTYPE_OFFICIALFN;
@@ -197,11 +200,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // try to get callback from rex_function
 		if (cr.plugins_.Rex_Function != null)    
 		{	
-            this._call_fn = cr.plugins_.Rex_Function.prototype.acts.CallFunction;
+            this._act_call_fn = cr.plugins_.Rex_Function.prototype.acts.CallFunction;
+			this._exp_call = cr.plugins_.Rex_Function.prototype.exps.Call;		
             for (name in plugins)
             {
                 plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._call_fn)
+                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
                 {
                     this._fnobj = plugin.instances[0];
 				    this._fnobj_type = FNTYPE_REXFN;
@@ -224,7 +228,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		    this._fnobj.CallFunction(name, params);
 			break;
 	    case FNTYPE_OFFICIALFN:  // official function
-            this._call_fn.call(this._fnobj, name, params);
+            this._act_call_fn.call(this._fnobj, name, params);
 			break;
 	    case FNTYPE_REXFN:      // rex_function	   
             this._fnobj.CallFn(name, params);
@@ -233,6 +237,24 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
         return (this._fnobj_type != FNTYPE_NA);  
     };	
+	
+    instanceProto.Call = function(params, raise_assert_when_not_fnobj_avaiable)
+    {
+	    // params = [ ret, name, param0, param1, ... ]
+	    if (this._fnobj_type == FNTYPE_UK)
+	        this._setup_callback(raise_assert_when_not_fnobj_avaiable);
+        
+	    switch (this._fnobj_type)
+		{
+		case FNTYPE_REXFNEX:     // rex_functionext
+		case FNTYPE_OFFICIALFN:  // official function
+		case FNTYPE_REXFN:       // rex_function	 
+		    this._exp_call.apply(this._fnobj, params);
+			break;
+		}      
+
+        return (this._fnobj_type != FNTYPE_NA);  
+    };		
 	
     instanceProto.TimeGet = function()
     {

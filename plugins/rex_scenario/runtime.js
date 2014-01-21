@@ -460,12 +460,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
                 if (is_eval_mode)
                 {
                     param = param.replace(re, "\\n");    // replace "\n" to "\\n"
-			        var code_string = "function(scenario, MEM)\
+			        var code_string = "function(scenario)\
 				    {\
+					    var MEM = scenario.Mem;\
+						var Call = scenario._getvalue_from_c2fn;\
+						_thisArg = scenario;\
 				        return "+param+"\
 				    }";
 				    var fn = eval("("+code_string+")");
-                    param = fn(this, this.Mem);
+                    param = fn(this);
                 }
                 else
                 {
@@ -477,7 +480,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
         if (deltaT == 0)
         {
-            this._execute_c2fn(fn_name, fn_params);
+            this.execute_c2fn(fn_name, fn_params);
         }
         else
         {
@@ -487,7 +490,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         return (deltaT == 0);  // is_continue
 	};  
     
-	ScenarioKlassProto._execute_c2fn = function(name, params)
+	ScenarioKlassProto.execute_c2fn = function(name, params)
 	{
 	    /**BEGIN-PREVIEWONLY**/
 	    var debugger_info=this.debugger_info;
@@ -498,7 +501,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
 		    debugger_info.push({"name": "Parameter "+i, "value": params[i]});
 		/**END-PREVIEWONLY**/	
 		
-		
+	    this._execute_c2fn(name, params);
+	};
+	
+	ScenarioKlassProto._execute_c2fn = function(name, params)
+	{
 	    var plugin = this.plugin;
         var has_rex_function = (plugin.callback != null);
         if (has_rex_function)
@@ -508,11 +515,38 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var has_fnobj = plugin._timeline_get().RunCallback(name, params, true);     
             assert2(has_fnobj, "Scenario: Can not find callback oject.");
         }
-	};
+	};	
+	
+	var fake_ret = {value:0,
+	                set_any: function(value){this.value=value;},
+	                set_int: function(value){this.value=value;},	 
+                    set_float: function(value){this.value=value;},	                          
+	               };    
+    var _params = [];
+	var _thisArg = null;
+	ScenarioKlassProto._getvalue_from_c2fn = function()
+	{
+	    _params.length = 0;
+		_params.push(fake_ret);
+		var i, cnt=arguments.length;
+		for (i=0; i<cnt; i++)
+		    _params.push(arguments[i]);
+			
+	    var plugin = _thisArg.plugin;
+        var has_rex_function = (plugin.callback != null);
+        if (has_rex_function)
+            cr.plugins_.Rex_Function.prototype.exps.Call.apply(plugin.callback, _params);
+        else    // run official function
+        {
+            var has_fnobj = plugin._timeline_get().Call(_params, true);     
+            assert2(has_fnobj, "Scenario: Can not find callback oject.");
+        }
+		return fake_ret.value;
+	};		
 	
 	ScenarioKlassProto._delay_execute_c2fn = function(name, params)
 	{
-	    this._execute_c2fn(name, params);
+	    this.execute_c2fn(name, params);
 		this._run_next_cmd();
 	};	
 	
