@@ -130,18 +130,16 @@ cr.behaviors.Rex_physics_torque = function(runtime)
 			"title": this.type.name,
 			"properties": [
 				{"name": "Force", "value": this.current_applied_force},
+				{"name": "Applied force", "value": this.current_applied_force},				
 				{"name": "PI-Kp", "value": this.pid_ctrl.kp},
 				{"name": "PI-Ki", "value": this.pid_ctrl.ki},
 				{"name": "PI-Kd", "value": this.pid_ctrl.kd},
-				{"name": "Reset-windup", "value": this.pid_ctrl.is_reset_windup},
 			]
 		});
 	};
 	
 	behinstProto.onDebugValueEdited = function (header, name, value)
 	{
-		var a, s;
-		
 		switch (name) 
 		{
 		case "PI-Kp": 
