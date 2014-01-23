@@ -41,11 +41,22 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+	    this.is_eval_mode = (this.properties[0] == 1);
 	    this.exp_CurX = 0;
 	    this.exp_CurY = 0;
 	    this.exp_CurValue = "";
 	};
-
+	
+	instanceProto.value_get = function(v)
+	{
+	    if (v == null)
+	        v = 0;
+	    else if (this.is_eval_mode)
+	        v = eval("("+v+")");
+        
+        return v;
+	};
+	
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
     
@@ -150,8 +161,6 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 			    
-		this.forCol = "";
-        
         if (solModifierAfterCnds)
         {
 		    for (j=0; j<y_cnt; j++ )
@@ -162,7 +171,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
                     this.runtime.pushCopySol(current_event.solModifiers);
                     
 	                this.exp_CurX = i;
-                    this.exp_CurValue = table[j][i];                    
+                    this.exp_CurValue = this.value_get(table[j][i]);                    
 		    	    current_event.retrigger();
 		    	    
 		    	    this.runtime.popSol(current_event.solModifiers);
@@ -177,13 +186,12 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	            for (i=0; i<x_cnt; i++ )
 	            {
 	                this.exp_CurX = i;
-                    this.exp_CurValue = table[j][i];
+                    this.exp_CurValue = this.value_get(table[j][i]);        
 		    	    current_event.retrigger();
 		        }
 		    }	        
 	    }
 
-		this.forCol = "";
 		return false;
 	};  
 	
@@ -194,12 +202,11 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 
     Acts.prototype.CSV2Array = function (csv_string, array_objs, map_mode)
 	{  
+	    assert2(cr.plugins_.Arr, "[CSV2Array] Error:No Array object found.");
+	    	    
         var array_obj = array_objs.getFirstPicked();
-        if (array_obj.arr == null)
-        {
-            alert("CSV2Array need an array object.");
-            return;
-        }
+        var is_array_inst = (array_obj instanceof cr.plugins_.Arr.prototype.Instance);
+        assert2(is_array_inst, "[CSV2Array] Error:Need an array object.");
 
         var table = CSVToArray(csv_string);        
 		var x_cnt = table.length;
@@ -208,7 +215,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 		    cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [x_cnt,y_cnt,1]);
 	    else
 		    cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [y_cnt, x_cnt,1]);
-        var i,j;
+        var i,j,v;
 		var array_set = cr.plugins_.Arr.prototype.acts.SetXYZ;
 		
 		if (map_mode == 0)
@@ -217,7 +224,8 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 		    {
 		        for(i=0;i<x_cnt;i++)
 			    {
-			        array_set.apply(array_obj, [i,j,0, table[i][j]]);
+			        v = this.value_get(table[i][j]);
+			        array_set.apply(array_obj, [i,j,0, v]);
 			    }
 		    }
         }	
@@ -227,7 +235,8 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 		    {
 		        for(i=0;i<x_cnt;i++)
 			    {
-			        array_set.apply(array_obj, [j,i,0, table[i][j]]);
+			        v = this.value_get(table[i][j]);
+			        array_set.apply(array_obj, [j,i,0, v]);
 			    }
 		    }
         }		

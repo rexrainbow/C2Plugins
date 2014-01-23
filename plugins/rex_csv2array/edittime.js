@@ -44,6 +44,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Eval mode", "No", 'Enable "Eval mode" for parsing value.', "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created
