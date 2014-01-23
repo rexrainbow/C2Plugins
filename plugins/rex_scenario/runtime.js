@@ -234,7 +234,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	{
         this._scenario.Mem[index] = value;
 	};
-    
+        
+	Acts.prototype.StringToMEM = function (JSON_string)
+	{	
+        this._scenario.Mem = JSON.parse(JSON_string);;
+	};
+	
     Acts.prototype.Setup2 = function (timeline_objs)
 	{  
         var timeline = timeline_objs.instances[0];
@@ -243,8 +248,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else
             alert ("Scenario should connect to a timeline object");
 	};
-	
-	
+
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -258,7 +262,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	Exps.prototype.Mem = function(ret, index)
 	{
 		ret.set_any(this._scenario.Mem[index]);
-	};    
+	};   
+    
+	Exps.prototype.MEMToString = function(ret)
+	{
+		ret.set_string(JSON.stringify(this._scenario.Mem));
+	};  	
+	 
 }());
 
 (function ()
@@ -573,7 +583,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	{
 	    this.execute_c2fn(name, params);
 		this._run_next_cmd();
-	};	
+	};
 	
 	ScenarioKlassProto.saveToJSON = function ()
 	{    
@@ -602,7 +612,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.pre_abs_time = o["pa"];
         this.offset = o["off"];
         this.Mem = o["mem"];
-        this.cmd_handler_get("end if").loadFromJSON(o["CmdENDIF"]);
+        if (o["CmdENDIF"])
+            this.cmd_handler_get("end if").loadFromJSON(o["CmdENDIF"]);
 	};	
 	ScenarioKlassProto.afterLoad = function ()
 	{

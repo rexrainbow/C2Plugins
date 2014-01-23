@@ -64,7 +64,9 @@ AddAction(31, 0, "Set value", "Memory",
           "Set MEM[<i>{0}</i>] to <i>{1}</i>", 
           "Set the value stored in memory.", 
           "SetMemory");	
-
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(32, 0, "Load from JSON", "Memory", "Load MEM form JSON string to <i>{0}</i>",
+         "Load memory from JSON string.", "StringToMEM");
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 
@@ -78,7 +80,10 @@ AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
 AddExpression(3, ef_return_any, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");
-			  
+AddExpression(4, ef_return_string, "Transfer memory to string", 
+              "Memory", "MEMToString", 
+              "Transfer memory to JSON string."); 
+              
 ACESDone();
 
 // Property grid properties for this plugin
