@@ -74,8 +74,18 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
         assert2(this.timeline, "Scenario: Can not find timeline oject.");
         return null;	
+	};
+		
+	instanceProto.value_get = function(v)
+	{
+	    if (v == null)
+	        v = 0;
+	    else if (this.is_eval_mode)
+	        v = eval("("+v+")");
+        
+        return v;
 	};	
-	
+
 	instanceProto.saveToJSON = function ()
 	{ 
 		return { "s": this._scenario.saveToJSON(),
@@ -125,7 +135,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 		    this.propsections.push(debugger_info[i]);
 	    var k,mem=this._scenario.Mem;
 		for (k in mem)
-		    this.propsections.push({"name": "Mem-"+k, "value": mem[k]});
+		    this.propsections.push({"name": "MEM-"+k+, "value": mem[k]});
 			
 		propsections.push({
 			"title": this.type.name,
@@ -142,7 +152,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
 			else			
 			    alert("Invalid tag "+value);
 		}
-	};	
+		else if (name.substring(0,4) == "MEM-") // set mem value
+		{	   
+		    var k = name.substring(4);
+		    this._scenario.Mem[k] = value;
+	    }
+	};
 	/**END-PREVIEWONLY**/	
 	
 	//////////////////////////////////////
@@ -722,7 +737,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
     var CmdTAGKlassProto = CmdTAGKlass.prototype;    
     CmdTAGKlassProto.on_parsing = function(index, cmd_pack) 
 	{
-	    this._tag2index[cmd_pack[1]] = index;
+	    var tag = cmd_pack[1];
+	    this.check_tag(index, tag);
+	    this._tag2index[tag] = index;
 	};
     CmdTAGKlassProto.on_executing = function(cmd_pack)
     {	   
@@ -731,6 +748,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	    this.scenario.on_tag_changed();
         return true;  // is_continue
     };
+    CmdTAGKlassProto.check_tag = function(index, tag)
+    {	
+        // check if tag had not been repeated 
+        var new_tag = (this._tag2index[tag] == null);
+        assert2(new_tag, "Scenario: line "+index + " , Tag "+tag + " was existed.");
+        
+        // check if tag was not in if-block
+        var CmdENDIF = this.scenario.cmd_handler_get("end if");
+        var isnot_in_ifblock = !(CmdENDIF.is_in_ifblock());
+        assert2(isnot_in_ifblock, "Scenario: line "+index + " , Tag "+tag + " is in if-block.");
+    };    
     CmdTAGKlassProto.tag2index = function(tag)
     {	 
         var index = this._tag2index[tag];
@@ -913,7 +941,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {       
         assert2(!this.pendding_enable, "Scenario: Error at IF block, line "+index);
         this.pendding_enable = true;
-    };       
+    }; 
+    CmdENDIFKlassProto.is_in_ifblock = function() 
+    {               
+        return this.pendding_enable;
+    };          
     CmdENDIFKlassProto.push_ifcmd = function(index, cmd_pack) 
     {        
         assert2(this.pendding_enable, "Scenario: Error at IF block, line "+index);
