@@ -65,13 +65,11 @@ cr.behaviors.Rex_Tween2Effect = function(runtime)
 	    if (!this.tween_behavior_inst.active)
 	        return;
 
-        var value = (this.tween_behavior_type == TYPE_LITETWEEN)? this.tween_behavior_inst.inst.value:
-                                                                  this.tween_behavior_inst.value;
 	    this.type.plug_proto.prototype.acts.SetEffectParam.call(
 	        this.inst, 
 	        this.effect_name,                  // name
 	        this.effect_param_index,           // param index
-	        value                              // value
+	        this.tween_behavior_inst.value     // value
 	    );	  
 	};  
 
@@ -98,7 +96,7 @@ cr.behaviors.Rex_Tween2Effect = function(runtime)
                                    (is_rex_lunarray_Tween_behavior)? TYPE_TWEENMOD:  
                                                                      TYPE_INVALID;                              
         assert2(this.tween_behavior_type, "Could not find tween behavior above tween2effect "+  this.type.name + " behavior");                                
-        if (this.tween_behavior_type == 0)
+        if (this.tween_behavior_type == TYPE_INVALID)
             return null;
         return tween_behavior_inst;
     };		
