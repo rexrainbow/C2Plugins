@@ -24,7 +24,9 @@ AddCondition(12, cf_trigger, "On resumed", "Task", "On any task resumed",
 AddCondition(13, cf_trigger, "On finished", "Task", "On any task finished", 
              "Triggered when any task finished.", "OnTaskFinished");                   
 AddCondition(14, cf_trigger, "On killed", "Task", "On any task killed", 
-             "Triggered when any task killed.", "OnTaskKilled");               
+             "Triggered when any task killed.", "OnTaskKilled");   
+AddCondition(15, cf_trigger, "On suspended", "Task", "On any task suspended", 
+             "Triggered when any task suspended.", "OnTaskSuspended");                            
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Code", "Lua script", "");
@@ -33,8 +35,9 @@ AddAction(1, 0, "Run script", "Run",
           "Run script.", "RunScript");
 AddStringParam("Task", "Task name", "");
 AddStringParam("Function", "Function name", "");
+AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
 AddAction(10, 0, "Start ", "Task", 
-          "Start task: <i>{0}</i> with function: <i>{1}</i>", 
+          "Start task: <i>{0}</i> with function: <i>{1}</i> (<i>{...}</i>)", 
           "Start task with a lua function.", "TaskStart");	
 AddStringParam("Task", "Task name", "");
 AddAction(11, 0, "Resume", "Task", 
@@ -46,7 +49,7 @@ AddAction(12, 0, "Kill", "Task",
           "Kill task.", "TaskKill");   
 AddAction(13, 0, "Kill all", "Task", 
           "Kill all tasks", 
-          "l all tasks.", "TaskKillAll");           
+          "Kill all tasks.", "TaskKillAll");           
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 

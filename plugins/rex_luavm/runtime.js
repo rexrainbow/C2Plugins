@@ -109,61 +109,54 @@ cr.plugins_.Rex_luaVM = function(runtime)
         assert2(has_fnobj, "Lua VM: Can not find callback object.");
 		return fake_ret.value;
 	};
-
-	instanceProto.onCreate = function()
-	{
-	    // link to official function
-        this._fnobj = null;
-        this._fnobj_type = FNTYPE_UK;
-	    this._act_call_fn = null;
-		this._exp_call = null;              
-
-        // timers
-	    this.timer_cache = new TimerCacheKlass(this);        
-        this.timers = {};  // map task name to timer
-        this.timers_save = null;     
     
-        window["LuaVM"] = {
+    var run_init_code = function()
+    {
+        window["__luavm__"] = {
             "Call":             _getvalue_from_c2fn,
             "TimerStart":       _timer_start,
             "OnTaskStarted":    _on_task_started,
             "OnTaskResumed":    _on_task_resumed,
             "OnTaskFinished":   _on_task_finished,
             "OnTaskKilled":     _on_task_killed,
+            "OnTaskSuspended":  _on_task_suspended,
             "TimerRemove":      _timer_remove,
         };
-	   
-		_thisArg = this;	
+        
 	    var init = "\
-Call = js.global.LuaVM.Call\n\
+Call = js.global.__luavm__.Call\n\
 ";
-        Lua.execute(init);	
+        window["Lua"]["execute"](init);	
         
         var init_tasks = "\
 Wait = coroutine.yield\n\
 Tasks = {}\n\
 Tasks['tasks'] = {}\n\
-Tasks['on_task_started'] = js.global.LuaVM.OnTaskStarted\n\
-Tasks['on_task_resumed'] = js.global.LuaVM.OnTaskResumed\n\
-Tasks['on_task_finished'] = js.global.LuaVM.OnTaskFinished\n\
-Tasks['on_task_killed'] = js.global.LuaVM.OnTaskKilled\n\
+Tasks['on_task_started'] = js.global.__luavm__.OnTaskStarted\n\
+Tasks['on_task_resumed'] = js.global.__luavm__.OnTaskResumed\n\
+Tasks['on_task_finished'] = js.global.__luavm__.OnTaskFinished\n\
+Tasks['on_task_killed'] = js.global.__luavm__.OnTaskKilled\n\
+Tasks['on_task_suspended'] = js.global.__luavm__.OnTaskSuspended\n\
 Tasks['waiting_tasks'] = {}\n\
-Tasks['timer_start'] = js.global.LuaVM.TimerStart\n\
-Tasks['timer_remove'] = js.global.LuaVM.TimerRemove\n\
-function TaskRun(is_start, tn, fn)\n\
+Tasks['timer_start'] = js.global.__luavm__.TimerStart\n\
+Tasks['timer_remove'] = js.global.__luavm__.TimerRemove\n\
+function TaskRun(tn, fn, ...)\n\
     local t = Tasks.tasks[tn]\n\
     if t == nil then\n\
-	    if is_start == false then return end\n\
-	    if fn == nil then return end\n\
+	    if fn == nil then\n\
+	        print('Task ' .. tn .. ' could not be created.')\n\
+            return\n\
+        end\n\
 		t = coroutine.create(fn)\n\
         Tasks.tasks[tn] = t\n\
 	end\n\
-    if is_start then\n\
-        Tasks.on_task_started(tn)\n\
-    else\n\
+    if fn == nil then\n\
         Tasks.on_task_resumed(tn)\n\
+    else\n\
+        Tasks.on_task_started(tn)\n\
     end\n\
-    is_alive, delay_time = coroutine.resume(t)\n\
+    is_alive, delay_time = coroutine.resume(t, ...)\n\
+    Tasks.on_task_suspended(tn)\n\
     if type(delay_time) == 'number' then\n\
         Tasks.timer_start(delay_time, tn)\n\
     else\n\
@@ -175,13 +168,14 @@ function TaskRun(is_start, tn, fn)\n\
         Tasks.on_task_finished(tn)\n\
     end\n\
 end\n\
-function TaskStart(tn, fn)\n\
-    TaskRun(true, tn, fn)\n\
+function TaskStart(tn, fn, ...)\n\
+    TaskRun(tn, fn, ...)\n\
 end\n\
 function TaskResume(tn)\n\
+    if Tasks.tasks[tn] == nil then return end\n\
     if Tasks.waiting_tasks[tn] == nil then return end\n\
     Tasks.waiting_tasks[tn] = nil\n\
-    TaskRun(false, tn)\n\
+    TaskRun(tn, nil)\n\
 end\n\
 function TaskKill(tn)\n\
     if Tasks.tasks[tn] == nil then return end\n\
@@ -199,13 +193,31 @@ function TaskKillAll()\n\
     end\n\
 end\n\
 ";
-        Lua.execute(init_tasks);	
-              
+        window["Lua"]["execute"](init_tasks);	    
+    };
+
+	instanceProto.onCreate = function()
+	{
+	    // link to official function
+        this._fnobj = null;
+        this._fnobj_type = FNTYPE_UK;
+	    this._act_call_fn = null;
+		this._exp_call = null;              
+
+        // timers
+	    this.timer_cache = new TimerCacheKlass(this);        
+        this.timers = {};  // map task name to timer
+        this.timers_save = null;     
+ 
+        // save/load 
         this.timeline = null;  
         this.timelineUid = -1;    // for loading     		
         
         // exp
         this.exp_TaskName = "";
+        
+		_thisArg = this;   
+        run_init_code();        
 	};
 	
 	instanceProto._timeline_get = function ()
@@ -253,7 +265,7 @@ end\n\
         var timer = this.timers[task_name];
         this.timer_cache.free(timer);
         delete this.timers[task_name];
-	    var s = "TaskRun(false, '" + task_name + "')";
+	    var s = "TaskRun('" + task_name + "', nil)";
         window["Lua"].execute(s);
 	};   
     
@@ -261,25 +273,26 @@ end\n\
     {
         _thisArg.exp_TaskName = task_name;
         _thisArg.runtime.trigger(cr.plugins_.Rex_luaVM.prototype.cnds.OnTaskStarted, _thisArg);
-        _thisArg.exp_TaskName = "";        
     };
     var _on_task_resumed = function (task_name)
     {
         _thisArg.exp_TaskName = task_name;
         _thisArg.runtime.trigger(cr.plugins_.Rex_luaVM.prototype.cnds.OnTaskResumed, _thisArg);
-        _thisArg.exp_TaskName = "";          
     };    
     var _on_task_finished = function (task_name)
     {
         _thisArg.exp_TaskName = task_name;
         _thisArg.runtime.trigger(cr.plugins_.Rex_luaVM.prototype.cnds.OnTaskFinished, _thisArg);
-        _thisArg.exp_TaskName = "";          
     };        
     var _on_task_killed = function (task_name)
     {
         _thisArg.exp_TaskName = task_name;
         _thisArg.runtime.trigger(cr.plugins_.Rex_luaVM.prototype.cnds.OnTaskKilled, _thisArg);
-        _thisArg.exp_TaskName = "";          
+    }; 
+    var _on_task_suspended = function (task_name)
+    {
+        _thisArg.exp_TaskName = task_name;
+        _thisArg.runtime.trigger(cr.plugins_.Rex_luaVM.prototype.cnds.OnTaskSuspended, _thisArg);
     }; 
     
 	instanceProto.onDestroy = function ()
@@ -371,7 +384,12 @@ end\n\
 	Cnds.prototype.OnTaskKilled = function ()
 	{
 		return true;
-	};    
+	};  
+
+	Cnds.prototype.OnTaskSuspended = function ()
+	{
+		return true;
+	};	  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -379,31 +397,34 @@ end\n\
     
     Acts.prototype.RunScript = function (s)
 	{
-        window["Lua"].execute(s);
+        window["Lua"]["execute"](s);
 	};
     
-    Acts.prototype.TaskStart = function (task_name, function_name)
+    Acts.prototype.TaskStart = function (task_name, function_name, params_)
 	{
-	    var s = "TaskStart('" + task_name + "', " + function_name + ")";
-        window["Lua"].execute(s);
+	    var arg_string = params_.join(",");
+	    if (params_.length > 0)
+	        arg_string = ", " + arg_string;
+	    var s = "TaskStart('" + task_name + "', " + function_name + arg_string + ")";
+        window["Lua"]["execute"](s);
 	};	
     
     Acts.prototype.TaskResume = function (task_name)
 	{
-	    var s = "TaskResume('" + task_name + "')";
-        window["Lua"].execute(s);
+	    var s = "TaskResume('" + task_name + "', nil)";
+        window["Lua"]["execute"](s);
 	};	
     
     Acts.prototype.TaskKill = function (task_name)
 	{
 	    var s = "TaskKill('" + task_name + "')";
-        window["Lua"].execute(s);    
+        window["Lua"]["execute"](s);    
 	};	
     
     Acts.prototype.TaskKillAll = function ()
 	{
 	    var s = "TaskKillAll()";
-        window["Lua"].execute(s);       
+        window["Lua"]["execute"](s);       
 	};	    
     
     Acts.prototype.Setup2 = function (timeline_objs)
