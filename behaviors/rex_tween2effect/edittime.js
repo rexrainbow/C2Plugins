@@ -26,7 +26,8 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [ 
     new cr.Property(ept_text, "Name", "", "The name of effect."),
-    new cr.Property(ept_integer, "Index", 0, "The index of parameter in effect.")
+    new cr.Property(ept_integer, "Index", 0, "The index of parameter in effect."),
+    new cr.Property(ept_combo, "Target", "Instance", "The target for passing tween value.", "Instance|Layer|Layout"),
 	];
 	
 // Called by IDE when a new behavior type is to be created

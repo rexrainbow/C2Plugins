@@ -45,32 +45,74 @@ cr.behaviors.Rex_Tween2Effect = function(runtime)
 	
 	var behinstProto = behaviorProto.Instance.prototype;
 
+	var TARGET_INSTANCE = 0;
+	var TARGET_LAYER = 1;
+	var TARGET_LAYOUT = 2;
 	behinstProto.onCreate = function()
 	{        
 	    this.effect_name = this.properties[0];
 	    this.effect_param_index = this.properties[1];
-	    this.tween_behavior_inst = this.get_tween_behavior_inst();  
+	    this.tween_target = this.properties[2];
+	    this.tween_behavior_inst = this.get_tween_behavior_inst(); 
+	    	    
+	    switch(this.tween_target)
+	    {
+        case TARGET_INSTANCE: 
+            this.set_param_fn = this.type.plug_proto.prototype.acts.SetEffectParam;
+        break;
+        case TARGET_LAYER: 
+            this.set_param_fn = cr.system_object.prototype.acts.SetLayerEffectParam;
+        break;     
+        case TARGET_LAYOUT: 
+            this.set_param_fn = cr.system_object.prototype.acts.SetLayoutEffectParam;
+        break;            
+	    } 
 	};
 	
-	var TYPE_INVALID = 0;
-	var TYPE_LITETWEEN = 1;
-	var TYPE_TWEEN = 2;
-	var TYPE_TWEENMOD = 3;
+	var TWEEN_INVALID = 0;
+	var TWEEN_LITETWEEN = 1;
+	var TWEEN_TWEEN = 2;
+	var TWEEN_TWEENMOD = 3;
 	behinstProto.tick = function ()
 	{
 	    if (this.tween_behavior_inst == null)
 	        return;
-        if (this.type.plug_proto == null)
+        if ((this.tween_target == TARGET_INSTANCE) && (this.type.plug_proto == null))
             return;
 	    if (!this.tween_behavior_inst.active)
 	        return;
 
-	    this.type.plug_proto.prototype.acts.SetEffectParam.call(
-	        this.inst, 
-	        this.effect_name,                  // name
-	        this.effect_param_index,           // param index
-	        this.tween_behavior_inst.value     // value
-	    );	  
+        switch (this.tween_target)
+        {
+        case TARGET_INSTANCE: 
+	        this.set_param_fn.call(
+	            this.inst,                         // this_
+	            this.effect_name,                  // name
+	            this.effect_param_index,           // param index
+	            this.tween_behavior_inst.value     // value
+	        );
+        break;
+        case TARGET_LAYER: 
+	        this.set_param_fn.call(
+	            this.runtime.system,               // this_
+	            this.inst.layer,                   // layer
+	            this.effect_name,                  // name
+	            this.effect_param_index,           // param index
+	            this.tween_behavior_inst.value     // value
+	        );
+        break;
+        case TARGET_LAYOUT: 
+	        this.set_param_fn.call(
+	            this.runtime.system,               // this_
+	            this.effect_name,                  // name
+	            this.effect_param_index,           // param index
+	            this.tween_behavior_inst.value     // value
+	        );
+        break;        
+        }
+        
+        
+	  
 	};  
 
 	behinstProto.get_tween_behavior_inst = function ()
@@ -91,12 +133,12 @@ cr.behaviors.Rex_Tween2Effect = function(runtime)
                                          (tween_behavior_inst instanceof cr.behaviors.lunarray_Tween.prototype.Instance);                                                
         var is_rex_lunarray_Tween_behavior = has_rex_lunarray_Tween_mod_behavior && 
                                              (tween_behavior_inst instanceof cr.behaviors.rex_lunarray_Tween_mod.prototype.Instance);                                             
-        this.tween_behavior_type = (is_lunarray_LiteTween_behavior)? TYPE_LITETWEEN:
-                                   (is_lunarray_Tween_behavior)?     TYPE_TWEEN:
-                                   (is_rex_lunarray_Tween_behavior)? TYPE_TWEENMOD:  
-                                                                     TYPE_INVALID;                              
+        this.tween_behavior_type = (is_lunarray_LiteTween_behavior)? TWEEN_LITETWEEN:
+                                   (is_lunarray_Tween_behavior)?     TWEEN_TWEEN:
+                                   (is_rex_lunarray_Tween_behavior)? TWEEN_TWEENMOD:  
+                                                                     TWEEN_INVALID;                              
         assert2(this.tween_behavior_type, "Could not find tween behavior above tween2effect "+  this.type.name + " behavior");                                
-        if (this.tween_behavior_type == TYPE_INVALID)
+        if (this.tween_behavior_type == TWEEN_INVALID)
             return null;
         return tween_behavior_inst;
     };		
