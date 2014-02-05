@@ -45,7 +45,7 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
 	};
     
-	instanceProto._getObjectType = function (nickname)
+	instanceProto.Nickname2Type = function (nickname)
 	{
         var sid_info = this.nickname2objtype[nickname];
         if (sid_info == null)
@@ -73,7 +73,7 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	
 	instanceProto.create_insts = function (nickname,x,y,_layer)
 	{
-	    var objtype = this._getObjectType(nickname);
+	    var objtype = this.Nickname2Type(nickname);
         if (objtype == null)
             return;
         var layer = (typeof _layer == "number")?
@@ -113,7 +113,7 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	{
 	    if (!family_objtype.is_family)
 		    return;
-	    var objtype = this._getObjectType(nickname);
+	    var objtype = this.Nickname2Type(nickname);
         if (!objtype)
             return;
         if (family_objtype.members.indexOf(objtype) == -1)
