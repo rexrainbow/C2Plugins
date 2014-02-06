@@ -24,6 +24,7 @@
  
 (function ()
 {
+    var savedClasses = {};        // global class define
     var CanvasText = function ()
     {
         // The property that will contain the ID attribute value.
@@ -33,7 +34,7 @@
         // The property that will contain the canvas context.
         this.context = null;
         // The property that will contain the created style class.
-        this.savedClasses = [];
+        //this.savedClasses = [];
         
         this.rawTextLine = [pkgCache.allocLine("", null, 0)];
         this._text_pkg = [];
@@ -261,14 +262,17 @@
 		var cursor_x = start_x;
 		var text_prop;
 		
+        this.rawTextLine.length = 1;
+		this.rawTextLine[0].text = "";
 		
         // The main regex. Looks for <style>, <class> or <br /> tags.
         var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/style\s*\>|[^<]+/g);
+		if (!match)
+		    return;
         var match_cnt = match.length;
         var innerMatch = null;
 
-        this.rawTextLine.length = 1;
-		this.rawTextLine[0].text = "";
+
 		var acc_line_len = 0;
         
         // Let's draw something for each match found.
@@ -370,6 +374,9 @@
         pkgCache.freeAllLines(this._text_pkg);
         // The main regex. Looks for <style>, <class> or <br /> tags.
         var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/style\s*\>|[^<]+/g);
+		if (!match)
+		    return this._text_pkg;
+			
         var innerMatch=null, classDefinition=null;
         var i, icnt=match.length;
         var start_index=0;
@@ -432,7 +439,8 @@
      */
     CanvasTextProto.defineClass = function (id, definition) {
         // Save it.
-        this.savedClasses[id] = definition;
+        //this.savedClasses[id] = definition;
+		savedClasses[id] = definition;
         return true;
     }; 
     
@@ -440,9 +448,10 @@
      * Returns a saved class.
      */
     CanvasTextProto.getClass = function (id) {
-        if (this.savedClasses[id] !== undefined) {
-            return this.savedClasses[id];
-        }
+        //if (this.savedClasses[id] !== undefined) {
+        //    return this.savedClasses[id];
+        //}
+		return savedClasses[id];
     };
     
     /**
@@ -482,7 +491,7 @@
     };
     var ObjCacheKlassProto = ObjCacheKlass.prototype;   
     
-	ObjCacheKlassProto._allocLine = function(_text, _tag, _index)
+	ObjCacheKlassProto._allocLine = function()
 	{
 		return (this.lines.length > 0)? this.lines.pop(): {};
 	};

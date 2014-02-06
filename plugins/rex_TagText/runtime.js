@@ -257,6 +257,9 @@ cr.plugins_.rex_TagText = function(runtime)
 
 	instanceProto.draw = function(ctx, glmode)
 	{
+	    if (this.text == "")
+		    return;
+			
         ctx.globalAlpha = glmode ? 1 : this.opacity;
             
 		var myscale = 1;

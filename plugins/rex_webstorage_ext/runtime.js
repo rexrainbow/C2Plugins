@@ -85,7 +85,7 @@ cr.plugins_.Rex_WebstorageExt = function(runtime)
     {
         var webstorage_obj = this.webstorage_get();
         this._load_fn.call(webstorage_obj, this.fake_ret, key);
-        return parseInt(this.fake_ret.value);
+        return this.fake_ret.value;
     };
     
     instanceProto.save_value = function (key, value)

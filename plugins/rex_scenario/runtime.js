@@ -135,7 +135,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 		    this.propsections.push(debugger_info[i]);
 	    var k,mem=this._scenario.Mem;
 		for (k in mem)
-		    this.propsections.push({"name": "MEM-"+k+, "value": mem[k]});
+		    this.propsections.push({"name": "MEM-"+k, "value": mem[k]});
 			
 		propsections.push({
 			"title": this.type.name,
@@ -588,7 +588,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else    // run official function
         {
             var has_fnobj = plugin._timeline_get().Call(_params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback oject.");
+            assert2(has_fnobj, "Scenario: Can not find callback object.");
         }
 		return fake_ret.value;
 	};	
