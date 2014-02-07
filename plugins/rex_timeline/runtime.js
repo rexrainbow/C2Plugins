@@ -814,7 +814,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     };    
     TimerProto.SetCallbackArgs = function(args)
     {    
-        this._handler.args = args;   
+        cr.shallowAssignArray(this._handler.args, args);
     };    
     
     TimerProto.GetCallbackArgs = function()
@@ -916,8 +916,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // _TimerHandler
     cr.plugins_.Rex_TimeLine._TimerHandler = function(thisArg, call_back_fn, args)
     {   
+        if (!args)
+            args = [];
+            
         this.thisArg = thisArg;
-        this.call_back_fn = call_back_fn;
+        this.call_back_fn = call_back_fn;       
         this.args = args;
     };
     var _TimerHandlerProto = cr.plugins_.Rex_TimeLine._TimerHandler.prototype;
