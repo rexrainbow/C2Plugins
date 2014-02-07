@@ -19,7 +19,7 @@
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(3, ef_return_string, "Get nickname", "Nickname", "Nickname", "Get nickname.");
+AddExpression(3, ef_return_any, "Get nickname", "Nickname", "Nickname", "Get nickname.");
 
 
 ACESDone();
@@ -27,6 +27,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [ 
     new cr.Property(ept_text, "Nickname", "", "Nickname of this object."),	
+    new cr.Property(ept_combo, "Mode", "Manual", "Define nickname manually or using SID. SID is an unique number for each object type.", "Manual|SID"),
 	];
 	
 // Called by IDE when a new behavior type is to be created
