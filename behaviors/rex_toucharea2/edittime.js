@@ -37,9 +37,9 @@ AddExpression(4, ef_return_number, "Drag-distance", "Polar", "Distance",
 AddExpression(5, ef_return_number, "Drag-angle", "Polar", "Angle", 
               "Get the drag-angle from start point to current point in degree. Return -1 if not in touch this object.");
 AddExpression(6, ef_return_number, "Dragged unit vector X", "Polar", "VectorX", 
-              "Get the dragged unit vector X. Return -1 if not in touch this object.");
+              "Get the dragged unit vector X.");
 AddExpression(7, ef_return_number, "Dragged unit vector Y", "Polar", "VectorY", 
-              "Get the dragged unit vector Y. Return -1 if not in touch this object.");
+              "Get the dragged unit vector Y.");
                                    
 ACESDone();
 
