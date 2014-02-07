@@ -24,11 +24,23 @@ AddCondition(3, cf_trigger, "On touch moving", "Touch moving", "On touch moving"
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Touch X position", "Touch", "X", 
-              "Get the touch X co-ordinate in this object. Return 0 if not in touch this object.");
-AddExpression(1, ef_return_number, "Touch Y position", "Touch", "Y", 
-              "Get the touch Y co-ordinate in this object. Return 0 if not in touch this object.");
-
+AddExpression(0, ef_return_number, "Touch X position", "Current", "X", 
+              "Get the touch X co-ordinate in this object. Return -1 if not in touch this object.");
+AddExpression(1, ef_return_number, "Touch Y position", "Current", "Y", 
+              "Get the touch Y co-ordinate in this object. Return -1 if not in touch this object.");
+AddExpression(2, ef_return_number, "Touch start X position", "Start", "StartX", 
+              "Get the touch start X co-ordinate in this object. Return -1 if not in touch this object.");
+AddExpression(3, ef_return_number, "Touch start Y position", "Start", "StartY", 
+              "Get the touch start Y co-ordinate in this object. Return -1 if not in touch this object.");
+AddExpression(4, ef_return_number, "Drag-distance", "Polar", "Distance", 
+              "Get the drag-distance from start point to current point. Return -1 if not in touch this object.");
+AddExpression(5, ef_return_number, "Drag-angle", "Polar", "Angle", 
+              "Get the drag-angle from start point to current point in degree. Return -1 if not in touch this object.");
+AddExpression(6, ef_return_number, "Dragged unit vector X", "Polar", "VectorX", 
+              "Get the dragged unit vector X. Return -1 if not in touch this object.");
+AddExpression(7, ef_return_number, "Dragged unit vector Y", "Polar", "VectorY", 
+              "Get the dragged unit vector Y. Return -1 if not in touch this object.");
+                                   
 ACESDone();
 
 // Property grid properties for this plugin
