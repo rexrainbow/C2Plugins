@@ -8,6 +8,7 @@ A. action
 - timer.Start(delay_time)
 - timer.Restart(delay_time)
 - timer.SetCallbackArgs(args)        // args is an array
+- timer.GetCallbackArgs()            // return an array
 - timer.Suspend()                    // paused, still in timeline
 - timer.Resume()
 - timer.Remove()                     // remove from timeline
