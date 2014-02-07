@@ -55,14 +55,14 @@ cr.behaviors.Rex_Replacer = function(runtime)
         return null;
 	};
 	
-	behtypeProto.Nickname2Type = function (nickname)
+	behtypeProto.CreateInst = function (nickname, x, y, layer)
 	{
 	    var nickname_inst = this._nickname_inst_get();
 	    if (nickname_inst == null)
 	        return null;
-	        
-	    return nickname_inst.Nickname2Type(nickname);
-	};
+
+	    return nickname_inst.CreateInst(nickname, x, y, layer);
+	};	
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -165,7 +165,8 @@ cr.behaviors.Rex_Replacer = function(runtime)
   	behinstProto.replaceTo = function (objtype)
 	{     
 	    this.fadeout_start(this.fade_duration);
-	    var target_inst = this.create_inst(objtype);
+	    var target_inst = this.type.CreateInst(objtype, 
+	                                           this.inst.x, this.inst.y, this.inst.layer);
 	    if (target_inst == null)
 	        return;
 	    this.ReplacingInstUID = target_inst.uid;
@@ -175,39 +176,6 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	        return;
 	    replacer_inst.fadein_start(this.fade_duration);     
 	};
-	
-	behinstProto.create_inst = function (objtype)
-	{
-        var inst = this.runtime.createInstance(objtype, 
-                                               this.inst.layer, this.inst.x, this.inst.y ); 
-		if (inst == null)
-		    return null;
-		
-        var sol = inst.type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
-		
-		// Siblings aren't in instance lists yet, pick them manually
-		var i, len, s;
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
-        
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(inst.type.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
-        
-	    return inst;
-	}; 		
 	
 	behinstProto.saveToJSON = function ()
 	{
@@ -277,14 +245,7 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	behaviorProto.acts = new Acts();
 
     Acts.prototype.ReplaceInst = function (objtype)
-	{
-        if (typeof(objtype) == "string")
-        {
-            objtype = this.type.Nickname2Type(objtype);
-        }
-        if (!objtype)
-            return;
-            
+	{ 
         this.replaceTo(objtype);                           
 	}; 
 	
