@@ -32,7 +32,7 @@ AddAction(2, 0, "Set buffer length", "Symbol buffer",
           "Set symbol buffer length.", "SetSymbolBufferLength");
 AddStringParam("Symbol", "Symbol to push", '""');
 AddAction(5, 0, "Push symbol", "Request: Matching", 
-          "Push symbol <i>{0}</i>", 
+          "Push symbol: <i>{0}</i>", 
           "Push symbol into buffer then do matching.", "PushSymbol");
              
 //////////////////////////////////////////////////////////////
