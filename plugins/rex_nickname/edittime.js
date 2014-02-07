@@ -15,10 +15,20 @@
 };
 
 ////////////////////////////////////////
-// Conditions        
+// Conditions 
+AddStringParam("Nickname", "Nickname of object.", '""');
+AddCondition(1, 0, "Is nickname valid", "Nickname", "Nickname <i>{0}</i> is valid", "Return true if this nickname is valid.", "IsNicknameValid");       
 AddStringParam("Nickname", "Nickname of object.", '""');
 AddObjectParam("Family", "Family type.");
-AddCondition(10, 0, "Pick all instances", "SOL", "Pick all <i>{0}</i> instances into family <i>{1}</i>", "Pick all instances.", "PickAll");
+AddCondition(10, 0, "Pick instances", "SOL", 
+             "Pick <i>{0}</i> instances into family <i>{1}</i>", 
+             "Pick all instances.", "Pick");
+             
+AddStringParam("Substring", "Substring to get matched nicknames.", '""');
+AddObjectParam("Family", "Family type.");
+AddCondition(11, 0, "Pick matched instances", "SOL", 
+             "Pick instances with matched substring to <i>{0}</i> into family <i>{1}</i>", 
+             "Pick matched instances.", "PickMatched");
 
 ////////////////////////////////////////
 // Actions
@@ -43,7 +53,12 @@ AddStringParam("Nickname", "Nickname of object.", '""');
 AddObjectParam("Family", "Family object for SOL."); 
 AddAction(10, 0, "Pick all instances", "SOL", 
           "Pick all <i>{0}</i> instances into family <i>{1}</i>", 
-          "Pick all.", "PickAll");	 		  
+          "Pick all.", "Pick");	 	
+AddStringParam("Substring", "Substring to get matched nicknames.", '""');
+AddObjectParam("Family", "Family type.");
+AddAction(11, 0, "Pick matched instances", "SOL", 
+          "Pick instances with matched substring to <i>{0}</i> into family <i>{1}</i>", 
+          "Pick matched instances.", "PickMatched");          	  
 ////////////////////////////////////////
 // Expressions
 

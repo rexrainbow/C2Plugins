@@ -11,6 +11,10 @@ cr.plugins_.Rex_Nickname = function(runtime)
 	this.runtime = runtime;
 };
 cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_index[_index]}
+cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
+{
+    cr.plugins_.Rex_Nickname.nickname2objtype[nickname] = {sid:objtype.sid, index:-1};
+};
 
 (function ()
 {
@@ -45,6 +49,7 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
 	};
     
+	// export		
 	instanceProto.Nickname2Type = function (nickname)
 	{
         var sid_info = this.nickname2objtype[nickname];
@@ -71,14 +76,17 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 		return null;
 	};    
 	
-	instanceProto.create_insts = function (nickname,x,y,_layer)
+	// export
+	instanceProto.CreateInst = function (nickname,x,y,_layer)
 	{
-	    var objtype = this.Nickname2Type(nickname);
+	    var objtype = (typeof(nickname) == "string")? this.Nickname2Type(nickname):
+	                                                  nickname;
         if (objtype == null)
-            return;
-        var layer = (typeof _layer == "number")?
-                    this.runtime.getLayerByNumber(_layer):
-                    this.runtime.getLayerByName(_layer);  
+            return null;
+                        
+        var layer = (typeof _layer == "number")? this.runtime.getLayerByNumber(_layer):
+                    (typeof _layer == "string")? this.runtime.getLayerByName(_layer):  
+                                                 _layer;
         var inst = this.runtime.createInstance(objtype, layer, x, y ); 
 		if (inst == null)
 		    return null;
@@ -109,31 +117,72 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	    return inst;
 	}; 	
 
+    // export
     instanceProto.PickAll = function (nickname, family_objtype)
 	{
 	    if (!family_objtype.is_family)
-		    return;
+		    return false;
+
+		var sol_family = family_objtype.getCurrentSol(); 
+		sol_family.select_all = false;
+		sol_family.instances.length = 0;   // clear contents
+				    
 	    var objtype = this.Nickname2Type(nickname);
-        if (!objtype)
-            return;
-        if (family_objtype.members.indexOf(objtype) == -1)
-            return;           
-        var sol = objtype.getCurrentSol();    
-        var sol_save = sol.select_all;   
-        sol.select_all = true;
-        var all_insts = sol.getObjects();
-        var sol_family = family_objtype.getCurrentSol();  
-        sol_family.instances = all_insts.slice();
-        sol_family.select_all = false; 
-        sol.select_all = sol_save;  
+        if ( (!objtype) ||
+		     (family_objtype.members.indexOf(objtype) == -1) )
+	    {			
+            return false;
+		}
+		else
+		{
+            var sol = objtype.getCurrentSol();    
+            var sol_save = sol.select_all;   
+            sol.select_all = true;
+            var all_insts = sol.getObjects();
+            sol_family.instances = all_insts.slice();
+            sol_family.select_all = false; 
+            sol.select_all = sol_save; 		
+		}
+		return true;
 	};	
 	
+
+    instanceProto.PickMatched = function (_substring, family_objtype)
+	{
+	    if (!family_objtype.is_family)
+		    return false;
+		    
+		var sol_family = family_objtype.getCurrentSol(); 
+		sol_family.select_all = false;
+		var sol_family_insts = sol_family.instances;
+		sol_family_insts.length = 0;   // clear contents
+		    
+		var nickname;
+		var objtype, sol, sol_save;
+		for (nickname in this.nickname2objtype)
+		{
+		    if (nickname.match(_substring) == null)
+		        continue;
+		    
+		    objtype = this.Nickname2Type(nickname);
+		    if ( (!objtype) ||
+		         (family_objtype.members.indexOf(objtype) == -1) )
+		        continue;
+		    
+		    sol = objtype.getCurrentSol();  
+		    sol_save = sol.select_all;
+		    sol_family_insts.push.apply(sol_family_insts, sol.getObjects());
+		    sol.select_all = sol_save;
+		}
+		return (sol_family_insts.length > 0);		
+	};
+
 	instanceProto.saveToJSON = function ()
 	{    
 	    var sid2name = {};
 	    var name, objtype;
 	    for (name in this.nickname2objtype)
-	        sid2name[this.nickname2objtype[name].sid] = name;
+	        sid2name[this.nickname2objtype[name][sid]] = name;
 		return { "sid2name": sid2name,
 		         };
 	};
@@ -153,12 +202,20 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 
-	Cnds.prototype.PickAll = function (nickname, family_objtype)
-	{
-	    this.PickAll(nickname, family_objtype);
-		return true;
+	Cnds.prototype.IsNicknameValid = function (nickname)
+	{	    
+		return (this.nickname2objtype[nickname] != null);
 	};
 	
+	Cnds.prototype.Pick = function (nickname, family_objtype)
+	{
+		return this.PickAll(nickname, family_objtype);
+	};
+	
+	Cnds.prototype.PickMatched = function (_substring, family_objtype)
+	{
+		return this.PickMatched(_substring, family_objtype);
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -168,29 +225,42 @@ cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_in
 	{
         if (objtype == null)
             return;
-        this.nickname2objtype[nickname] = {sid:objtype.sid, index:-1};
+        cr.plugins_.Rex_Nickname.AddNickname(nickname, objtype);
 	};
 	
 	Acts.prototype.CreateInsts = function (nickname,x,y,_layer, family_objtype)
 	{
-        var inst = this.create_insts(nickname,x,y,_layer);
-        if (inst == null)
-            return;            
+        var inst = this.CreateInst(nickname,x,y,_layer);
+		
+		// SOL
         if (!family_objtype)
             return;
-
-        if (family_objtype.members.indexOf(inst.type) == -1)
-            return; 
-             
-        family_objtype.getCurrentSol().pick_one(inst);
-        family_objtype.applySolToContainer();
+			
+        if ((inst == null) || 
+		    (family_objtype.members.indexOf(inst.type) == -1))	    
+		{
+		    // clean sol
+			var sol = family_objtype.getCurrentSol();
+			sol.select_all = false;
+            sol.instances.length = 0;   // clear contents
+		}
+        else
+		{
+		    // sol push
+            family_objtype.getCurrentSol().pick_one(inst);
+            family_objtype.applySolToContainer();
+        }             
 	};	
 
-    Acts.prototype.PickAll = function (nickname, family_objtype)
+    Acts.prototype.Pick = function (nickname, family_objtype)
 	{
 	    this.PickAll(nickname, family_objtype);    
 	}; 
-    
+	
+	Acts.prototype.PickMatched = function (_substring, family_objtype)
+	{
+		this.PickMatched(_substring, family_objtype);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
