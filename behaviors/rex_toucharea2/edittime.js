@@ -14,10 +14,10 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On touch start", "Touch", "On touch start", "Triggered when touch input begins.", "OnTouchStart");
-AddCondition(1, cf_trigger, "On touch end", "Touch", "On touch end", "Triggered when touch input ends.", "OnTouchEnd");
-AddCondition(2, 0, "Is in touch", "Touch", "Is in touch", "True if touch is currently in contact with this object.", "IsInTouch");
-AddCondition(3, cf_trigger, "On touch moving", "Touch moving", "On touch moving", "Triggered when touch and moving.", "OnTouchMoving");
+AddCondition(0, cf_trigger, "On touch start", "Touch", "{my} on touch start", "Triggered when touch input begins.", "OnTouchStart");
+AddCondition(1, cf_trigger, "On touch end", "Touch", "{my} on touch end", "Triggered when touch input ends.", "OnTouchEnd");
+AddCondition(2, 0, "Is in touch", "Touch", "{my} is in touch", "True if touch is currently in contact with this object.", "IsInTouch");
+AddCondition(3, cf_trigger, "On touch moving", "Touch moving", "{my} on touch moving", "Triggered when touch and moving.", "OnTouchMoving");
 
 //////////////////////////////////////////////////////////////
 // Actions
