@@ -55,7 +55,11 @@ cr.plugins_.Rex_angle2ArrowKeyMap = function(runtime)
 
 
 	instanceProto.angle2keyID = function (angle)
-	{    
+	{
+	    angle = (angle % 360);
+	    if (angle <0)
+	        angle += 360;
+	        
         var key_id;
         switch (this._directions)
         {

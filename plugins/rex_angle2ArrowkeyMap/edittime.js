@@ -16,40 +16,40 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On Up arrow pressed", "Pressd", "On Up arrow pressed", 
-             "Triggered when Up arrow is pressed.", "OnUPPressed");
-AddCondition(2, cf_trigger, "On Down arrow pressed", "Pressd", "On Down arrow pressed", 
-             "Triggered when Down arrow is pressed.", "OnDOWNPressed");
-AddCondition(3, cf_trigger, "On Left arrow pressed", "Pressd", "On Left arrow pressed", 
-             "Triggered when Left arrow is pressed.", "OnLEFTPressed");
-AddCondition(4, cf_trigger, "On Right arrow pressed", "Pressd", "On Right arrow pressed", 
-             "Triggered when Right arrow is pressed.", "OnRIGHTPressed");
-AddCondition(5, cf_trigger, "On any arrow pressed", "Pressd", "On any arrow pressed", 
-             "Triggered when any arrow is pressed.", "OnAnyPressed");
+AddCondition(1, cf_trigger, "On Up key pressed", "Pressd", "On Up key pressed", 
+             "Triggered when Up key is pressed.", "OnUPPressed");
+AddCondition(2, cf_trigger, "On Down key pressed", "Pressd", "On Down key pressed", 
+             "Triggered when Down key is pressed.", "OnDOWNPressed");
+AddCondition(3, cf_trigger, "On Left key pressed", "Pressd", "On Left key pressed", 
+             "Triggered when Left key is pressed.", "OnLEFTPressed");
+AddCondition(4, cf_trigger, "On Right key pressed", "Pressd", "On Right key pressed", 
+             "Triggered when Right key is pressed.", "OnRIGHTPressed");
+AddCondition(5, cf_trigger, "On any key pressed", "Pressd", "On any key pressed", 
+             "Triggered when any key is pressed.", "OnAnyPressed");
 
-AddCondition(11, 0,	"Up arrow is down",	"Is down", "Up arrow is down", 
-             "Return true if Up arrow is currently held down.", "IsUPDown");
-AddCondition(12, 0,	"Down arrow is down", "Is down", "Down arrow is down", 
-             "Return true if Down arrow is currently held down.", "IsDOWNDown");
-AddCondition(13, 0,	"Left arrow is down", "Is down", "Left arrow is down", 
-             "Return true if Left arrow is currently held down.", "IsLEFTDown");
-AddCondition(14, 0,	"Right arrow is down", "Is down", "Right arrow is down", 
-             "Return true if Right arrow is currently held down.", "IsRIGHTDown");
+AddCondition(11, 0,	"Up key is down",	"Is down", "Up key is down", 
+             "Return true if Up key is currently held down.", "IsUPDown");
+AddCondition(12, 0,	"Down key is down", "Is down", "Down key is down", 
+             "Return true if Down key is currently held down.", "IsDOWNDown");
+AddCondition(13, 0,	"Left key is down", "Is down", "Left key is down", 
+             "Return true if Left key is currently held down.", "IsLEFTDown");
+AddCondition(14, 0,	"Right key is down", "Is down", "Right key is down", 
+             "Return true if Right key is currently held down.", "IsRIGHTDown");
 
-AddCondition(21, cf_trigger, "On Up arrow released", "Released", "On Up arrow released", 
-             "Triggered when Up arrow is released.", "OnUPReleased");
-AddCondition(22, cf_trigger, "On Down arrow released", "Released", "On Down arrow released", 
-             "Triggered when Down arrow is released.", "OnDOWNReleased");
-AddCondition(23, cf_trigger, "On Left arrow released", "Released", "On Left arrow released", 
+AddCondition(21, cf_trigger, "On Up key released", "Released", "On Up key released", 
+             "Triggered when Up key is released.", "OnUPReleased");
+AddCondition(22, cf_trigger, "On Down key released", "Released", "On Down key released", 
+             "Triggered when Down key is released.", "OnDOWNReleased");
+AddCondition(23, cf_trigger, "On Left key released", "Released", "On Left key released", 
              "Triggered when Left arrow is released.", "OnLEFTReleased");
-AddCondition(24, cf_trigger, "On Right arrow released", "Released", "On Right arrow released", 
-             "Triggered when Right arrow is released.", "OnRIGHTReleased");
+AddCondition(24, cf_trigger, "On Right key released", "Released", "On Right key released", 
+             "Triggered when Right key is released.", "OnRIGHTReleased");
 
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Angle", "Pressing angle in degree.", 0);
 AddAction(1, 0, "Set angle", "Key-down", 
-          "Set pressing angle to <i>{0}</i>", 
+          "Set input angle to <i>{0}</i>", 
           "Set pressing angle.", "SetAngle");  
 AddAction(2, 0, "Release", "Key-up", 
           "Release all", 
@@ -57,6 +57,7 @@ AddAction(2, 0, "Release", "Key-up",
           
 //////////////////////////////////////////////////////////////
 // Expressions
+AddNumberParam("Angle", "Input angle, option.", 0);
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Angle of arrowkey", "Arrowkey", "ArrowkeyAngle", "Get the angle mapped from arrowkey, in degrees.");
 
 ACESDone();
