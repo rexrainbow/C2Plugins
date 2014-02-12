@@ -601,7 +601,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             this._process_timer_queue.sort(_TIMERQUEUE_SORT);
             this.triggered_timer = this._process_timer_queue.shift();
             this._timer_abs_time = this.triggered_timer.abs_time;
-            //print "[TimeLine] Current Time=",this._timer_abs_time
+            //log("[TimeLine] Current Time="+this._timer_abs_time);
             this.triggered_timer.DoHandle();
         }    
         this._timer_abs_time = this.ABS_Time;   
@@ -716,7 +716,6 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             this.delay_time = delay_time;
         }
-        //this._handler.CleanIterator()
         this._abs_timeout_set(this.delay_time);
         if (this._is_alive)
         {
