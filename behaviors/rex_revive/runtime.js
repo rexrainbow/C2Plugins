@@ -32,25 +32,26 @@ cr.behaviors.Rex_Revive = function(runtime)
         this.behavior_index = null;        
 	};
 
-	behtypeProto._timeline_get = function ()
-	{
+    behtypeProto._timeline_get = function ()
+    {
         if (this.timeline != null)
             return this.timeline;
     
+        assert2(cr.plugins_.Rex_TimeLine, "Revive behavior: Can not find timeline oject.");
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_TimeLine.prototype.Instance)
             {
-                this.timeline = obj;
+                this.timeline = inst;
                 return this.timeline;
             }
         }
         assert2(this.timeline, "Revive behavior: Can not find timeline oject.");
         return null;	
-	};  
+    };
     
 	behtypeProto._revive_hanlder = function(custom_data,
                                             layer_name, x, y, 

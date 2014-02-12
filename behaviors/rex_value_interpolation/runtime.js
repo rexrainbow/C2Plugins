@@ -31,26 +31,27 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
         this.timeline = null;  
         this.timelineUid = -1;    // for loading         
 	};
-	
-	behtypeProto._timeline_get = function ()
-	{
+
+    behtypeProto._timeline_get = function ()
+    {
         if (this.timeline != null)
             return this.timeline;
     
+        assert2(cr.plugins_.Rex_TimeLine, "Value interpolation behavior: Can not find timeline oject.");
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_TimeLine.prototype.Instance)
             {
-                this.timeline = obj;
+                this.timeline = inst;
                 return this.timeline;
             }
         }
-        assert2(this.timeline, "Timer behavior: Can not find timeline oject.");
+        assert2(this.timeline, "Value interpolation behavior:Can not find timeline oject.");
         return null;	
-	};  
+    };     
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
