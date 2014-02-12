@@ -8,39 +8,39 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 // Plugin class
 cr.plugins_.Rex_Scenario = function(runtime)
 {
-	this.runtime = runtime;
+    this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_Scenario.prototype;
-		
-	/////////////////////////////////////
-	// Object type class
-	pluginProto.Type = function(plugin)
-	{
-		this.plugin = plugin;
-		this.runtime = plugin.runtime;
-	};
-	
-	var typeProto = pluginProto.Type.prototype;
+    var pluginProto = cr.plugins_.Rex_Scenario.prototype;
+        
+    /////////////////////////////////////
+    // Object type class
+    pluginProto.Type = function(plugin)
+    {
+        this.plugin = plugin;
+        this.runtime = plugin.runtime;
+    };
+    
+    var typeProto = pluginProto.Type.prototype;
 
-	typeProto.onCreate = function()
-	{
-	};
+    typeProto.onCreate = function()
+    {
+    };
 
-	/////////////////////////////////////
-	// Instance class
-	pluginProto.Instance = function(type)
-	{
-		this.type = type;
-		this.runtime = type.runtime;
-	};
-	
-	var instanceProto = pluginProto.Instance.prototype;
+    /////////////////////////////////////
+    // Instance class
+    pluginProto.Instance = function(type)
+    {
+        this.type = type;
+        this.runtime = type.runtime;
+    };
+    
+    var instanceProto = pluginProto.Instance.prototype;
 
-	instanceProto.onCreate = function()
-	{
+    instanceProto.onCreate = function()
+    {
         this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);  
         this._scenario.is_debug_mode = (this.properties[0] == 1);
         this._scenario.is_accT_mode = (this.properties[1] == 0);
@@ -54,10 +54,10 @@ cr.plugins_.Rex_Scenario = function(runtime)
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];
         /**END-PREVIEWONLY**/	
-	};
-	
-	instanceProto._timeline_get = function ()
-	{
+    };
+    
+    instanceProto._timeline_get = function ()
+    {
         if (this.timeline != null)
             return this.timeline;
     
@@ -74,118 +74,118 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
         assert2(this.timeline, "Scenario: Can not find timeline oject.");
         return null;	
-	};
-		
-	instanceProto.value_get = function(v)
-	{
-	    if (v == null)
-	        v = 0;
-	    else if (this.is_eval_mode)
-	        v = eval("("+v+")");
+    };
+        
+    instanceProto.value_get = function(v)
+    {
+        if (v == null)
+            v = 0;
+        else if (this.is_eval_mode)
+            v = eval("("+v+")");
         
         return v;
-	};	
+    };	
 
-	instanceProto.saveToJSON = function ()
-	{ 
-		return { "s": this._scenario.saveToJSON(),
-		         "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
+    instanceProto.saveToJSON = function ()
+    { 
+        return { "s": this._scenario.saveToJSON(),
+                 "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
                  "cbUid": (this.callback != null)? this.callback.uid : (-1)  // deprecated
                  };
-	};
+    };
     
-	instanceProto.loadFromJSON = function (o)
-	{
-	    this._scenario.loadFromJSON(o["s"]);
-	    this.timelineUid = o["tlUid"];
+    instanceProto.loadFromJSON = function (o)
+    {
+        this._scenario.loadFromJSON(o["s"]);
+        this.timelineUid = o["tlUid"];
         this.callbackUid = o["cbUid"];  // deprecated
-	};     
+    };     
 
-	instanceProto.afterLoad = function ()
-	{
-		if (this.timelineUid === -1)
-			this.timeline = null;
-		else
-		{
-			this.timeline = this.runtime.getObjectByUID(this.timelineUid);
-			assert2(this.timeline, "Scenario: Failed to find timeline object by UID");
-		}		
+    instanceProto.afterLoad = function ()
+    {
+        if (this.timelineUid === -1)
+            this.timeline = null;
+        else
+        {
+            this.timeline = this.runtime.getObjectByUID(this.timelineUid);
+            assert2(this.timeline, "Scenario: Failed to find timeline object by UID");
+        }		
         
         // ---- deprecated ----
-		if (this.callbackUid === -1)
-			this.callback = null;
-		else
-		{
-			this.callback = this.runtime.getObjectByUID(this.callbackUid);
-			assert2(this.callback, "Scenario: Failed to find rex_function object by UID");
-		}		
-		// ---- deprecated ---- 
+        if (this.callbackUid === -1)
+            this.callback = null;
+        else
+        {
+            this.callback = this.runtime.getObjectByUID(this.callbackUid);
+            assert2(this.callback, "Scenario: Failed to find rex_function object by UID");
+        }		
+        // ---- deprecated ---- 
 
         this._scenario.afterLoad();
-	}; 
-	
-	/**BEGIN-PREVIEWONLY**/
-	instanceProto.getDebuggerValues = function (propsections)
-	{
-	    this.propsections.length = 0;
-	    this.propsections.push({"name": "Tag", "value": this._scenario.get_last_tag()});
-		var debugger_info=this._scenario.debugger_info;
-		var i,cnt=debugger_info.length;
-        for (i=0;i<cnt;i++)
-		    this.propsections.push(debugger_info[i]);
-	    var k,mem=this._scenario.Mem;
-		for (k in mem)
-		    this.propsections.push({"name": "MEM-"+k, "value": mem[k]});
-			
-		propsections.push({
-			"title": this.type.name,
-			"properties": this.propsections
-		});
-	};
-	
-	instanceProto.onDebugValueEdited = function (header, name, value)
-	{
-		if (name == "Tag")    // change page
-		{
-		    if (this._scenario.has_tag(value))
-		        this._scenario.start(null, value);
-			else			
-			    alert("Invalid tag "+value);
-		}
-		else if (name.substring(0,4) == "MEM-") // set mem value
-		{	   
-		    var k = name.substring(4);
-		    this._scenario.Mem[k] = value;
-	    }
-	};
-	/**END-PREVIEWONLY**/	
-	
-	//////////////////////////////////////
-	// Conditions
-	function Cnds() {};
-	pluginProto.cnds = new Cnds();
+    }; 
     
-	Cnds.prototype.OnCompleted = function ()
-	{
-		return true;
-	};  
+    /**BEGIN-PREVIEWONLY**/
+    instanceProto.getDebuggerValues = function (propsections)
+    {
+        this.propsections.length = 0;
+        this.propsections.push({"name": "Tag", "value": this._scenario.get_last_tag()});
+        var debugger_info=this._scenario.debugger_info;
+        var i,cnt=debugger_info.length;
+        for (i=0;i<cnt;i++)
+            this.propsections.push(debugger_info[i]);
+        var k,mem=this._scenario.Mem;
+        for (k in mem)
+            this.propsections.push({"name": "MEM-"+k, "value": mem[k]});
+            
+        propsections.push({
+            "title": this.type.name,
+            "properties": this.propsections
+        });
+    };
+    
+    instanceProto.onDebugValueEdited = function (header, name, value)
+    {
+        if (name == "Tag")    // change page
+        {
+            if (this._scenario.has_tag(value))
+                this._scenario.start(null, value);
+            else			
+                alert("Invalid tag "+value);
+        }
+        else if (name.substring(0,4) == "MEM-") // set mem value
+        {	   
+            var k = name.substring(4);
+            this._scenario.Mem[k] = value;
+        }
+    };
+    /**END-PREVIEWONLY**/	
+    
+    //////////////////////////////////////
+    // Conditions
+    function Cnds() {};
+    pluginProto.cnds = new Cnds();
+    
+    Cnds.prototype.OnCompleted = function ()
+    {
+        return true;
+    };  
 
-	Cnds.prototype.IsRunning = function ()
-	{
-		return this._scenario.is_running;
-	}; 
-	
-	Cnds.prototype.OnTagChanged = function ()
-	{
-		return true;
-	}; 	   
-	//////////////////////////////////////
-	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
+    Cnds.prototype.IsRunning = function ()
+    {
+        return this._scenario.is_running;
+    }; 
+    
+    Cnds.prototype.OnTagChanged = function ()
+    {
+        return true;
+    }; 	   
+    //////////////////////////////////////
+    // Actions
+    function Acts() {};
+    pluginProto.acts = new Acts();
     
     Acts.prototype.Setup = function (timeline_objs, fn_objs)
-	{  
+    {  
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
             this.timeline = timeline;        
@@ -197,93 +197,93 @@ cr.plugins_.Rex_Scenario = function(runtime)
             this.callback = callback;        
         else
             alert ("Scenario should connect to a function object");
-	};  
+    };  
     
     Acts.prototype.LoadCmds = function (csv_string)
-	{  
+    {  
         this._scenario.load(csv_string);
-	};
+    };
     
     Acts.prototype.Start = function (offset, tag)
-	{  
+    {  
         this._scenario.start(offset, tag);    
-	};
+    };
     
     Acts.prototype.Pause = function ()
-	{  
+    {  
         var timer = this._scenario.timer;
         if (timer)
             timer.Suspend();  
-	};    
+    };    
     
     Acts.prototype.Resume = function ()
-	{  
+    {  
         var timer = this._scenario.timer;
         if (timer)
             timer.Resume();  
-	}; 
+    }; 
     
     Acts.prototype.Stop = function ()
-	{  
+    {  
         var timer = this._scenario.timer;
         if (timer)
             timer.Remove();  
-	};     
+    };     
     
     Acts.prototype.SetOffset = function (offset)
-	{
+    {
         this._scenario.offset = offset;
-	}; 
+    }; 
     
     Acts.prototype.Continue = function ()
-	{
+    {
         this._scenario.resume();
-	};
+    };
     
     Acts.prototype.GoToTag = function (tag)
-	{
+    {
         this._scenario.start(null, tag);    
-	};     
+    };     
         
-	Acts.prototype.SetMemory = function (index, value)
-	{
+    Acts.prototype.SetMemory = function (index, value)
+    {
         this._scenario.Mem[index] = value;
-	};
+    };
         
-	Acts.prototype.StringToMEM = function (JSON_string)
-	{	
+    Acts.prototype.StringToMEM = function (JSON_string)
+    {	
         this._scenario.Mem = JSON.parse(JSON_string);;
-	};
-	
+    };
+    
     Acts.prototype.Setup2 = function (timeline_objs)
-	{  
+    {  
         var timeline = timeline_objs.instances[0];
         if (timeline.check_name == "TIMELINE")
             this.timeline = timeline;        
         else
             alert ("Scenario should connect to a timeline object");
-	};
+    };
 
-	//////////////////////////////////////
-	// Expressions
-	function Exps() {};
-	pluginProto.exps = new Exps();
+    //////////////////////////////////////
+    // Expressions
+    function Exps() {};
+    pluginProto.exps = new Exps();
 
-	Exps.prototype.LastTag = function(ret)
-	{
-		ret.set_string(this._scenario.get_last_tag());
-	};
+    Exps.prototype.LastTag = function(ret)
+    {
+        ret.set_string(this._scenario.get_last_tag());
+    };
     
-	Exps.prototype.Mem = function(ret, index)
-	{
-		ret.set_any(this._scenario.Mem[index]);
-	};   
+    Exps.prototype.Mem = function(ret, index)
+    {
+        ret.set_any(this._scenario.Mem[index]);
+    };   
     
-	Exps.prototype.MEMToString = function(ret)
-	{
-		ret.set_string(JSON.stringify(this._scenario.Mem));
-	};  	
-	 
+    Exps.prototype.MEMToString = function(ret)
+    {
+        ret.set_string(JSON.stringify(this._scenario.Mem));
+    };  	
+     
 }());
 
 (function ()
@@ -297,37 +297,41 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.cmd_table = new CmdQueueKlass();        
         // default is the same as worksheet 
         // -status-
-		this.is_running = false;
-		this.is_pause = false;
-		// --------
+        this.is_running = false;
+        this.is_pause = false;
+        // --------
         this.timer = null;      
         this.pre_abs_time = 0;
         this.offset = 0;  
         // for other commands   
         this._extra_cmd_handlers = {"wait":new CmdWAITKlass(this),
-		                            "time stamp":new CmdTIMESTAMPKlass(this),
-									"exit":new CmdEXITKlass(this),
-									"tag":new CmdTAGKlass(this),									
-									"goto":new CmdGOTOKlass(this),
-									"if":new CmdIFKlass(this),
-									"else if": new CmdELSEIFKlass(this),
-									"else": new CmdELSEKlass(this),
-									"end if":new CmdENDIFKlass(this),
+                                    "time stamp":new CmdTIMESTAMPKlass(this),
+                                    "exit":new CmdEXITKlass(this),
+                                    "tag":new CmdTAGKlass(this),									
+                                    "goto":new CmdGOTOKlass(this),
+                                    "if":new CmdIFKlass(this),
+                                    "else if": new CmdELSEIFKlass(this),
+                                    "else": new CmdELSEKlass(this),
+                                    "end if":new CmdENDIFKlass(this),
                                     };
-		// variablies pool
-		this.Mem = {};		
-		this.timer_save = null;
-		
-		/**BEGIN-PREVIEWONLY**/
-		this.debugger_info = [];
-		/**END-PREVIEWONLY**/	
+        // variablies pool
+        this.Mem = {};		
+        this.timer_save = null;
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.debugger_info = [];
+        /**END-PREVIEWONLY**/	
     };
     var ScenarioKlassProto = cr.plugins_.Rex_Scenario.ScenarioKlass.prototype;
     
     // export methods
     ScenarioKlassProto.load = function (csv_string)
     {        
-	
+        // reset all extra cmd handler
+        var extra_cmd_handler;
+        for(extra_cmd_handler in this._extra_cmd_handlers)
+            this._extra_cmd_handlers[extra_cmd_handler].on_reset();
+            
         this.cmd_table.reset(CSVToArray(csv_string));
         var queue = this.cmd_table.queue;
         // check vaild
@@ -344,7 +348,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
                     // invalid command                
                     invalid_cmd_indexs.push(i);
                     if (this.is_debug_mode)
-                        alert ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");                   
+                        log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");                   
                 }
             }
         }        
@@ -358,22 +362,22 @@ cr.plugins_.Rex_Scenario = function(runtime)
                 queue.splice(invalid_cmd_indexs[i],1);
         }
 
-		// remove empty cell
+        // remove empty cell
         //cnt = queue.length;
-		//var cell_cnt = queue[0].length;
+        //var cell_cnt = queue[0].length;
         //var cmd_pack, j;
         //for (i=0;i<cnt;i++)
         //{
         //    cmd_pack = queue[i];
         //    for(j=0;j<cell_cnt;j++)
-		//	{
-		//	    if (cmd_pack[j] == "")
-		//		    break;
-		//	}
-		//	if (j<cell_cnt)
-		//	    cmd_pack.splice(j, cell_cnt-j)
+        //	{
+        //	    if (cmd_pack[j] == "")
+        //		    break;
+        //	}
+        //	if (j<cell_cnt)
+        //	    cmd_pack.splice(j, cell_cnt-j)
         //}
-		
+        
         cnt = queue.length;
         var cmd_pack;
         for (i=0;i<cnt;i++)
@@ -387,9 +391,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     ScenarioKlassProto.start = function (offset, tag)
     {
-	    this.is_running = true;
+        this.is_running = true;
         this._reset_abs_time();
-		if (offset != null)
+        if (offset != null)
             this.offset = offset;
         if (this.timer == null)
             this.timer = this.plugin._timeline_get().CreateTimer(this, this._delay_execute_c2fn);
@@ -398,11 +402,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.cmd_table.reset();
         var index = this.cmd_handler_get("tag").tag2index(tag);
         if (index == null)
-	    {
-	        assert2(index, "Scenario: Could not find tag "+tag);
-	        return;
-	    }
-	    this._run_next_cmd(index);
+        {
+            assert2(index, "Scenario: Could not find tag "+tag);
+            return;
+        }
+        this._run_next_cmd(index);
     };  
     
     ScenarioKlassProto.cmd_handler_get = function (cmd_name)
@@ -419,13 +423,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         return this.cmd_handler_get("tag").has_tag(tag);
     };
-          	
+              
     // internal methods
     ScenarioKlassProto._reset_abs_time = function ()
     {      
-		this.pre_abs_time = 0;
+        this.pre_abs_time = 0;
     };
-	
+    
     ScenarioKlassProto._run_next_cmd = function (index)
     {     
         var is_continue = true;
@@ -453,11 +457,14 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     ScenarioKlassProto._exit = function ()
     {      
+        if (this.is_debug_mode)
+            log ("Scenario finished");  
+            
         this.is_running = false;
         var inst = this.plugin;
         inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnCompleted, inst);
     };
-	
+    
     ScenarioKlassProto.pause = function ()
     {
         this.is_pause = true;
@@ -475,8 +482,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
         var inst = this.plugin;
         inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnTagChanged, inst);
     };
-	ScenarioKlassProto._on_delay_execution_command = function(cmd_pack)
-	{
+    ScenarioKlassProto._on_delay_execution_command = function(cmd_pack)
+    {
         var deltaT, cmd = parseFloat(cmd_pack[0]);
         if (this.is_accT_mode)
         {
@@ -488,18 +495,18 @@ cr.plugins_.Rex_Scenario = function(runtime)
             deltaT = cmd;
 
         // get function  name and parameters
-		var fn_name=cmd_pack[1];
-		var fn_params=[];
-		fn_params.length = cmd_pack.length - 2;
+        var fn_name=cmd_pack[1];
+        var fn_params=[];
+        fn_params.length = cmd_pack.length - 2;
         // eval parameters
         var param_cnt=fn_params.length, i, param;       
         for (i=0;i<param_cnt;i++)
         {
             param = cmd_pack[i+2];
             if (param != "")
-			{          
-			    param = this.param_get(param);
-		    }
+            {          
+                param = this.param_get(param);
+            }
             fn_params[i] = param;
         }
         if (deltaT == 0)
@@ -512,22 +519,22 @@ cr.plugins_.Rex_Scenario = function(runtime)
             this.timer.Start(deltaT);
         }
         return (deltaT == 0);  // is_continue
-	}; 
-	
-	var re = new RegExp("\n", "gm");
+    }; 
+    
+    var re = new RegExp("\n", "gm");
     ScenarioKlassProto.param_get = function(param)
     {
         if (this.is_eval_mode)
         {
             param = param.replace(re, "\\n");    // replace "\n" to "\\n"
-	        var code_string = "function(scenario)\
-	        {\
-	    	    var MEM = scenario.Mem;\
-	    		var Call = _getvalue_from_c2fn;\
-	    		_thisArg = scenario;\
-	            return "+param+"\
-	        }";
-	        var fn = eval("("+code_string+")");
+            var code_string = "function(scenario)\
+            {\
+                var MEM = scenario.Mem;\
+                var Call = _getvalue_from_c2fn;\
+                _thisArg = scenario;\
+                return "+param+"\
+            }";
+            var fn = eval("("+code_string+")");
             param = fn(this);
         }
         else
@@ -538,23 +545,25 @@ cr.plugins_.Rex_Scenario = function(runtime)
         return param;
     };	 
     
-	ScenarioKlassProto.execute_c2fn = function(name, params)
-	{
-	    /**BEGIN-PREVIEWONLY**/
-	    var debugger_info=this.debugger_info;
-	    debugger_info.length = 0;
-		debugger_info.push({"name": "Function name", "value": name});
-	    var i, cnt=params.length;
-		for (i=0;i<cnt;i++)
-		    debugger_info.push({"name": "Parameter "+i, "value": params[i]});
-		/**END-PREVIEWONLY**/	
-		
-	    this._execute_c2fn(name, params);
-	};
-	
-	ScenarioKlassProto._execute_c2fn = function(name, params)
-	{
-	    var plugin = this.plugin;
+    ScenarioKlassProto.execute_c2fn = function(name, params)
+    {
+        /**BEGIN-PREVIEWONLY**/
+        var debugger_info=this.debugger_info;
+        debugger_info.length = 0;
+        debugger_info.push({"name": "Function name", "value": name});
+        var i, cnt=params.length;
+        for (i=0;i<cnt;i++)
+            debugger_info.push({"name": "Parameter "+i, "value": params[i]});
+        /**END-PREVIEWONLY**/	
+        
+        if (this.is_debug_mode)
+            log (name+":"+params.toString());  
+        this._execute_c2fn(name, params);
+    };
+    
+    ScenarioKlassProto._execute_c2fn = function(name, params)
+    {
+        var plugin = this.plugin;
         var has_rex_function = (plugin.callback != null);
         if (has_rex_function)
             plugin.callback.CallFn(name, params);
@@ -563,25 +572,25 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var has_fnobj = plugin._timeline_get().RunCallback(name, params, true);     
             assert2(has_fnobj, "Scenario: Can not find callback oject.");
         }
-	};	
-	
-	// expression:Call in function object
-	var fake_ret = {value:0,
-	                set_any: function(value){this.value=value;},
-	                set_int: function(value){this.value=value;},	 
+    };	
+    
+    // expression:Call in function object
+    var fake_ret = {value:0,
+                    set_any: function(value){this.value=value;},
+                    set_int: function(value){this.value=value;},	 
                     set_float: function(value){this.value=value;},	                          
-	               };    
+                   };    
     var _params = [];
-	var _thisArg = null;
-	var _getvalue_from_c2fn = function()
-	{
-	    _params.length = 0;
-		_params.push(fake_ret);
-		var i, cnt=arguments.length;
-		for (i=0; i<cnt; i++)
-		    _params.push(arguments[i]);
-			
-	    var plugin = _thisArg.plugin;
+    var _thisArg = null;
+    var _getvalue_from_c2fn = function()
+    {
+        _params.length = 0;
+        _params.push(fake_ret);
+        var i, cnt=arguments.length;
+        for (i=0; i<cnt; i++)
+            _params.push(arguments[i]);
+            
+        var plugin = _thisArg.plugin;
         var has_rex_function = (plugin.callback != null);
         if (has_rex_function)
             cr.plugins_.Rex_Function.prototype.exps.Call.apply(plugin.callback, _params);
@@ -590,36 +599,36 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var has_fnobj = plugin._timeline_get().Call(_params, true);     
             assert2(has_fnobj, "Scenario: Can not find callback object.");
         }
-		return fake_ret.value;
-	};	
-	// expression:Call in function object	
-	
-	ScenarioKlassProto._delay_execute_c2fn = function(name, params)
-	{
-	    this.execute_c2fn(name, params);
-		this._run_next_cmd();
-	};
-	
-	ScenarioKlassProto.saveToJSON = function ()
-	{    
-	    var timer_save = null;
-	    if (this.timer != null)
-	    {
-	        timer_save = this.timer.saveToJSON();
-	        timer_save["__cbargs"] = this.timer.GetCallbackArgs();
-	    }
-		return { "q": this.cmd_table.saveToJSON(),
-		         "isrun": this.is_running,
-		         "isp": this.is_pause,
-		         "tim" : timer_save,
-		         "pa": this.pre_abs_time,	       
-		         "off": this.offset,
-		         "mem": this.Mem,
-				 "CmdENDIF": this.cmd_handler_get("end if").saveToJSON(),
+        return fake_ret.value;
+    };	
+    // expression:Call in function object	
+    
+    ScenarioKlassProto._delay_execute_c2fn = function(name, params)
+    {
+        this.execute_c2fn(name, params);
+        this._run_next_cmd();
+    };
+    
+    ScenarioKlassProto.saveToJSON = function ()
+    {    
+        var timer_save = null;
+        if (this.timer != null)
+        {
+            timer_save = this.timer.saveToJSON();
+            timer_save["__cbargs"] = this.timer.GetCallbackArgs();
+        }
+        return { "q": this.cmd_table.saveToJSON(),
+                 "isrun": this.is_running,
+                 "isp": this.is_pause,
+                 "tim" : timer_save,
+                 "pa": this.pre_abs_time,	       
+                 "off": this.offset,
+                 "mem": this.Mem,
+                 "CmdENDIF": this.cmd_handler_get("end if").saveToJSON(),
                 };
-	};
-	ScenarioKlassProto.loadFromJSON = function (o)
-	{    
+    };
+    ScenarioKlassProto.loadFromJSON = function (o)
+    {    
         this.cmd_table.loadFromJSON(o["q"]); 
         this.is_running = o["isrun"];
         this.is_pause = o["isp"];
@@ -629,17 +638,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.Mem = o["mem"];
         if (o["CmdENDIF"])
             this.cmd_handler_get("end if").loadFromJSON(o["CmdENDIF"]);
-	};	
-	ScenarioKlassProto.afterLoad = function ()
-	{
+    };	
+    ScenarioKlassProto.afterLoad = function ()
+    {
         if (this.timer_save != null)
         {
             var timeline = this.plugin._timeline_get();
             timeline.LoadTimer(this, this._delay_execute_c2fn, this.timer_save["__cbargs"],  this.timer_save);
             this.timer_save = null;
         }
-	};
-	
+    };
+    
     // CmdQueueKlass
     var CmdQueueKlass = function(queue)
     {
@@ -663,66 +672,74 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.current_index = index;
         return cmd;
     };
-	CmdQueueKlassProto.saveToJSON = function ()
-	{    
-		return { "q": this.queue,
-		         "i": this.current_index,
+    CmdQueueKlassProto.saveToJSON = function ()
+    {    
+        return { "q": this.queue,
+                 "i": this.current_index,
                 };
-	};
-	CmdQueueKlassProto.loadFromJSON = function (o)
-	{    
+    };
+    CmdQueueKlassProto.loadFromJSON = function (o)
+    {    
         this.queue = o["q"];
         this.current_index = o["i"];  
-	}; 	
-	
+    }; 	
+    
     // extra command : WAIT
     var CmdWAITKlass = function(scenario)
     {
         this.scenario = scenario;
     };
     var CmdWAITKlassProto = CmdWAITKlass.prototype;    
+    CmdWAITKlassProto.on_reset = function() {};
     CmdWAITKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdWAITKlassProto.on_executing = function(cmd_pack)
     {
         /**BEGIN-PREVIEWONLY**/
-	    var debugger_info=this.scenario.debugger_info;
-	    debugger_info.length = 0;
-		debugger_info.push({"name": "WAIT", "value": ""});	
-		/**END-PREVIEWONLY**/	
-		
+        var debugger_info=this.scenario.debugger_info;
+        debugger_info.length = 0;
+        debugger_info.push({"name": "WAIT", "value": ""});	
+        /**END-PREVIEWONLY**/	
+        
+        if (this.scenario.is_debug_mode)
+            log ("WAIT");
+            
         this.scenario.pause();
         return false;  // is_continue
     }; 
-	
+    
     // extra command : TIMESTAMP
     var CmdTIMESTAMPKlass = function(scenario)
     {
         this.scenario = scenario;
     };
-    var CmdTIMESTAMPKlassProto = CmdTIMESTAMPKlass.prototype;    
+    var CmdTIMESTAMPKlassProto = CmdTIMESTAMPKlass.prototype;
+    CmdTIMESTAMPKlassProto.on_reset = function() {};    
     CmdTIMESTAMPKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdTIMESTAMPKlassProto.on_executing = function(cmd_pack)
     {
-	    var mode = cmd_pack[1].toLowerCase().substring(0, 4);
-		this.scenario.plugin.is_accT_mode = (mode == "acc");
+        var mode = cmd_pack[1].toLowerCase().substring(0, 4);
+        this.scenario.plugin.is_accT_mode = (mode == "acc");
         return true;  // is_continue
     };	
-	
+    
     // extra command : EXIT
     var CmdEXITKlass = function(scenario)
     {
         this.scenario = scenario;
     };
-    var CmdEXITKlassProto = CmdEXITKlass.prototype;    
+    var CmdEXITKlassProto = CmdEXITKlass.prototype;   
+    CmdEXITKlassProto.on_reset = function() {}; 
     CmdEXITKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdEXITKlassProto.on_executing = function(cmd_pack)
     {
         /**BEGIN-PREVIEWONLY**/
-	    var debugger_info=this.scenario.debugger_info;
-	    debugger_info.length = 0;
-		debugger_info.push({"name": "EXIT", "value": ""});	
-		/**END-PREVIEWONLY**/	
-	
+        var debugger_info=this.scenario.debugger_info;
+        debugger_info.length = 0;
+        debugger_info.push({"name": "EXIT", "value": ""});	
+        /**END-PREVIEWONLY**/	
+        
+        if (this.scenario.is_debug_mode)
+            log ("EXIT"); 
         this.scenario._exit();
         return false;  // is_continue
     };
@@ -731,21 +748,32 @@ cr.plugins_.Rex_Scenario = function(runtime)
     var CmdTAGKlass = function(scenario)
     {
         this.scenario = scenario;
-		this._tag2index = {};
-		this.last_tag = "";
+        this._tag2index = {};
+        this.last_tag = "";
     };
     var CmdTAGKlassProto = CmdTAGKlass.prototype;    
+    CmdTAGKlassProto.on_reset = function() 
+    {
+        var t;
+        for(t in this._tag2index)
+            delete this._tag2index[t];
+            
+        this.last_tag = "";
+    }; 
     CmdTAGKlassProto.on_parsing = function(index, cmd_pack) 
-	{
-	    var tag = cmd_pack[1];
-	    this.check_tag(index, tag);
-	    this._tag2index[tag] = index;
-	};
+    {
+        var tag = cmd_pack[1];
+        this.check_tag(index, tag);
+        this._tag2index[tag] = index;
+    };
     CmdTAGKlassProto.on_executing = function(cmd_pack)
     {	   
-	    this.last_tag = cmd_pack[1];
-	    this.scenario._reset_abs_time();
-	    this.scenario.on_tag_changed();
+        if (this.scenario.is_debug_mode)
+            log ("TAG "+cmd_pack[1]); 
+            
+        this.last_tag = cmd_pack[1];
+        this.scenario._reset_abs_time();
+        this.scenario.on_tag_changed();
         return true;  // is_continue
     };
     CmdTAGKlassProto.check_tag = function(index, tag)
@@ -777,31 +805,34 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.scenario = scenario;
     };
     var CmdGOTOKlassProto = CmdGOTOKlass.prototype;    
-    CmdGOTOKlassProto.on_parsing = function(index, cmd_pack) 
-	{
-	};
+    CmdGOTOKlassProto.on_reset = function() {}; 
+    CmdGOTOKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdGOTOKlassProto.on_executing = function(cmd_pack)
     {	   
+        if (this.scenario.is_debug_mode)
+            log ("GOTO tag "+cmd_pack[1]); 
+            
         var tag = this.scenario.param_get(cmd_pack[1]);
         var index = this.scenario.cmd_handler_get("tag").tag2index(tag);
         if (index == null)
-	    {
-	        assert2(index, "Scenario: Could not find tag "+tag);
-	        return;
-	    }
-	    this.scenario.table_index_set(index);        
-	    this.scenario._reset_abs_time();
+        {
+            assert2(index, "Scenario: Could not find tag "+tag);
+            return;
+        }
+        this.scenario.table_index_set(index);        
+        this.scenario._reset_abs_time();
         return true;  // is_continue
     };   
     
-	var INDEX_NEXTIF = 2;
-	var INDEX_ENDIF = 3;
+    var INDEX_NEXTIF = 2;
+    var INDEX_ENDIF = 3;
     // extra command : IF
     var CmdIFKlass = function(scenario) 
     {
          this.scenario = scenario;
     };
-    var CmdIFKlassProto = CmdIFKlass.prototype;    
+    var CmdIFKlassProto = CmdIFKlass.prototype;   
+    CmdIFKlassProto.on_reset = function() {};  
     CmdIFKlassProto.on_parsing = function(index, cmd_pack) 
     {
         var CmdENDIF = this.scenario.cmd_handler_get("end if");
@@ -810,13 +841,16 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     CmdIFKlassProto.on_executing = function(cmd_pack) 
     {
+        if (this.scenario.is_debug_mode)
+            log ("IF "+cmd_pack[1]);
+            
         var cond = this.scenario.param_get(cmd_pack[1]);
         var CmdENDIF = this.scenario.cmd_handler_get("end if");
         CmdENDIF.goto_end_flag = cond;
         if (cond)
         {
             // goto next line
-	        this.scenario._reset_abs_time();
+            this.scenario._reset_abs_time();
             return true;  // is_continue    
         }
         else
@@ -827,7 +861,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
                 index = cmd_pack[INDEX_ENDIF];
             assert2(index, "Scenario: Error at IF block, line "+index);
             this.scenario.table_index_set(index);
-	        this.scenario._reset_abs_time();
+            this.scenario._reset_abs_time();
             return true;  // is_continue 
         }
     };      
@@ -837,7 +871,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
          this.scenario = scenario;
     };
-    var CmdELSEIFKlassProto = CmdELSEIFKlass.prototype;    
+    var CmdELSEIFKlassProto = CmdELSEIFKlass.prototype; 
+    CmdELSEIFKlassProto.on_reset = function() {};     
     CmdELSEIFKlassProto.on_parsing = function(index, cmd_pack) 
     {
         var CmdENDIF = this.scenario.cmd_handler_get("end if");
@@ -845,16 +880,19 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     CmdELSEIFKlassProto.on_executing = function(cmd_pack) 
     {
-		// go to end
-		var goto_end_flag = this.scenario.cmd_handler_get("end if").goto_end_flag;
-		if (goto_end_flag)
-		{
-		    var index = cmd_pack[INDEX_ENDIF];
-		    assert2(index, "Scenario: Error at IF block, line "+index);
+        if (this.scenario.is_debug_mode)
+            log ("ELSE IF "+cmd_pack[1]);    
+            
+        // go to end
+        var goto_end_flag = this.scenario.cmd_handler_get("end if").goto_end_flag;
+        if (goto_end_flag)
+        {
+            var index = cmd_pack[INDEX_ENDIF];
+            assert2(index, "Scenario: Error at IF block, line "+index);
             this.scenario.table_index_set(index);
-	        this.scenario._reset_abs_time();
+            this.scenario._reset_abs_time();
             return true;  // is_continue 
-		}	
+        }	
 
         // test condition
         var cond = this.scenario.param_get(cmd_pack[1]);
@@ -863,7 +901,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (cond)
         {
             // goto next line
-	        this.scenario._reset_abs_time();
+            this.scenario._reset_abs_time();
             return true;  // is_continue    
         }
         else
@@ -874,7 +912,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
                 index = cmd_pack[INDEX_ENDIF];
             assert2(index, "Scenario: Error at IF block, line "+index);
             this.scenario.table_index_set(index);
-	        this.scenario._reset_abs_time();
+            this.scenario._reset_abs_time();
             return true;  // is_continue 
         }
     };
@@ -884,7 +922,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
          this.scenario = scenario;
     };
-    var CmdELSEKlassProto = CmdELSEKlass.prototype;    
+    var CmdELSEKlassProto = CmdELSEKlass.prototype; 
+    CmdELSEKlassProto.on_reset = function() {};            
     CmdELSEKlassProto.on_parsing = function(index, cmd_pack) 
     {
         var CmdENDIF = this.scenario.cmd_handler_get("end if");
@@ -892,19 +931,22 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     CmdELSEKlassProto.on_executing = function(cmd_pack) 
     {
-		// go to end
-		var goto_end_flag = this.scenario.cmd_handler_get("end if").goto_end_flag;
-		if (goto_end_flag)
-		{
-		    var index = cmd_pack[INDEX_ENDIF];
-		    assert2(index, "Scenario: Error at IF block, line "+index);
+        if (this.scenario.is_debug_mode)
+            log ("ELSE");        
+            
+        // go to end
+        var goto_end_flag = this.scenario.cmd_handler_get("end if").goto_end_flag;
+        if (goto_end_flag)
+        {
+            var index = cmd_pack[INDEX_ENDIF];
+            assert2(index, "Scenario: Error at IF block, line "+index);
             this.scenario.table_index_set(index);
-	        this.scenario._reset_abs_time();
+            this.scenario._reset_abs_time();
             return true;  // is_continue 
-		}	
+        }	
 
         // goto next line
-	    this.scenario._reset_abs_time();
+        this.scenario._reset_abs_time();
         return true;  // is_continue  
     };    
         
@@ -918,7 +960,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
         // on_executing
         this.goto_end_flag = false;
     };
-    var CmdENDIFKlassProto = CmdENDIFKlass.prototype;    
+    var CmdENDIFKlassProto = CmdENDIFKlass.prototype; 
+    CmdENDIFKlassProto.on_reset = function() 
+    {
+        this.pendding_cmds.length = 0;
+        this.goto_end_flag = false;
+    };          
     CmdENDIFKlassProto.on_parsing = function(index, cmd_pack) 
     {
         assert2(this.pendding_enable, "Scenario: Error at IF block, line "+index);
@@ -932,9 +979,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     CmdENDIFKlassProto.on_executing = function(cmd_pack) 
     {
-	    this.goto_end_flag = false;
+        if (this.scenario.is_debug_mode)
+            log ("END IF ");    
+            
+        this.goto_end_flag = false;
         // goto next line
-	    this.scenario._reset_abs_time();
+        this.scenario._reset_abs_time();
         return true;  // is_continue        
     };
     CmdENDIFKlassProto.ifblock_enable = function(index) 
@@ -949,9 +999,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdENDIFKlassProto.push_ifcmd = function(index, cmd_pack) 
     {        
         assert2(this.pendding_enable, "Scenario: Error at IF block, line "+index);
-		cmd_pack.length = 4;    // [if , cond, next_if_line, end_if_line]
-		cmd_pack[INDEX_NEXTIF] = null;
-		cmd_pack[INDEX_ENDIF] = null;
+        cmd_pack.length = 4;    // [if , cond, next_if_line, end_if_line]
+        cmd_pack[INDEX_NEXTIF] = null;
+        cmd_pack[INDEX_ENDIF] = null;
         if (this.pendding_cmds.length >= 1)
         {
             // assign index of next if line
@@ -960,19 +1010,20 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
         this.pendding_cmds.push(cmd_pack);
     };  
-	CmdENDIFKlassProto.saveToJSON = function ()
-	{    
-		return { "gef": this.goto_end_flag
+    CmdENDIFKlassProto.saveToJSON = function ()
+    {    
+        return { "gef": this.goto_end_flag
                 };
-	};
-	CmdENDIFKlassProto.loadFromJSON = function (o)
-	{    
+    };
+    CmdENDIFKlassProto.loadFromJSON = function (o)
+    {    
         this.goto_end_flag = o["gef"];
-	}; 		
-  	
+    }; 		
+      
     // template
     //var CmdHandlerKlass = function(scenario) {};
     //var CmdHandlerKlassProto = CmdHandlerKlass.prototype;    
+    //CmdHandlerKlassProto.on_reset = function() {};
     //CmdHandlerKlassProto.on_parsing = function(index, cmd_pack) {};
     //CmdHandlerKlassProto.on_executing = function(cmd_pack) {};
     
