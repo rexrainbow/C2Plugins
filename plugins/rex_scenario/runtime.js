@@ -61,14 +61,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (this.timeline != null)
             return this.timeline;
     
+        assert2(cr.plugins_.Rex_TimeLine, "Scenario: Can not find timeline oject.");
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_TimeLine.prototype.Instance)
             {
-                this.timeline = obj;
+                this.timeline = inst;
                 return this.timeline;
             }
         }
@@ -187,13 +188,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
     Acts.prototype.Setup = function (timeline_objs, fn_objs)
     {  
         var timeline = timeline_objs.instances[0];
-        if (timeline.check_name == "TIMELINE")
+        if ((cr.plugins_.Rex_TimeLine) && (timeline instanceof cr.plugins_.Rex_TimeLine.prototype.Instance))
             this.timeline = timeline;        
         else
             alert ("Scenario should connect to a timeline object");          
         
         var callback = fn_objs.instances[0];
-        if (callback.check_name == "FUNCTION")
+        if ((cr.plugins_.Rex_Function) && (callback instanceof cr.plugins_.Rex_Function.prototype.Instance))
             this.callback = callback;        
         else
             alert ("Scenario should connect to a function object");
@@ -258,7 +259,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     Acts.prototype.Setup2 = function (timeline_objs)
     {  
         var timeline = timeline_objs.instances[0];
-        if (timeline.check_name == "TIMELINE")
+        if ((cr.plugins_.Rex_TimeLine) && (timeline instanceof cr.plugins_.Rex_TimeLine.prototype.Instance))
             this.timeline = timeline;        
         else
             alert ("Scenario should connect to a timeline object");

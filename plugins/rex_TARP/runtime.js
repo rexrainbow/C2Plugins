@@ -51,26 +51,26 @@ cr.plugins_.Rex_TARP = function(runtime)
 	{
         this.player.Stop();
 	};    
-	
-	instanceProto._timeline_get = function ()
-	{
+    instanceProto._timeline_get = function ()
+    {
         if (this.timeline != null)
             return this.timeline;
     
+        assert2(cr.plugins_.Rex_TimeLine, "TARP: Can not find timeline oject.");
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_TimeLine.prototype.Instance)
             {
-                this.timeline = obj;
+                this.timeline = inst;
                 return this.timeline;
             }
         }
         assert2(this.timeline, "TARP: Can not find timeline oject.");
         return null;	
-	};
+    };
 
 	instanceProto.saveToJSON = function ()
 	{    
