@@ -197,7 +197,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 	    this.duration = duration;
 	};
 	
-    Acts.prototype.SetValue = function (duration)
+    Acts.prototype.SetValue = function (value)
 	{
 	    this.value = value;
         if (this.timer)
