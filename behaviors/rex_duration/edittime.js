@@ -35,7 +35,7 @@ AddObjectParam("Function", "Function object for callback");
 AddAction(0, af_deprecated, "Setup", "Z: Deprecated", 
           "{my} get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");          
-AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');
+AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');
 AddNumberParam("Duration", "Duration time", 1);
 AddNumberParam("Interval", "Interval time", 0.1);
 AddStringParam("On start", "Callback at duration starting", '""');
@@ -46,21 +46,21 @@ AddAction(2, af_deprecated, "Start duration", "Z: Deprecated",
           "Start duration.", "Start_deprecated");
 // ---- deprecated ----
 
-AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');
+AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');
 AddNumberParam("Duration", "Duration time", 1);
 AddNumberParam("Interval", "Interval time", 0.1);
 AddAction(1, 0, "Start", "Control", 
           "{my} start <i>{0}</i> with duration to <i>{1}</i> second, interval to <i>{2}</i> second", 
           "Start duration.", "Start");
-AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');      
+AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');      
 AddAction(3, 0, "Pause", "Control", 
           "{my} pause <i>{0}</i>", 
           "Pause duration.", "Pause"); 
-AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');      
+AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');      
 AddAction(4, 0, "Resume", "Control", 
           "{my} resume <i>{0}</i>", 
           "Resume duration.", "Resume"); 
-AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');        
+AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');        
 AddAction(5, 0, "Stop", "Control", 
           "{my} stop <i>{0}</i>", 
           "Stop duration.", "Stop");
