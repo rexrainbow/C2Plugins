@@ -87,17 +87,38 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
         var layer = (typeof _layer == "number")? this.runtime.getLayerByNumber(_layer):
                     (typeof _layer == "string")? this.runtime.getLayerByName(_layer):  
                                                  _layer;
-        var inst = this.runtime.createInstance(objtype, layer, x, y ); 
-		if (inst == null)
-		    return null;
+                                                 
+        if (!layer || !objtype)
+            return;
+
+        var inst = this.runtime.createInstance(objtype, layer, x, y);
+
+		if (!inst)
+			return null;
 		
-        var sol = inst.type.getCurrentSol();
+		this.runtime.isInOnDestroy++;
+		
+		var i, len, s;
+		this.runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
+		
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				this.runtime.trigger(Object.getPrototypeOf(s.type.plugin).cnds.OnCreated, s);
+			}
+		}
+		
+		this.runtime.isInOnDestroy--;
+
+        // Pick just this instance
+        var sol = objtype.getCurrentSol();
         sol.select_all = false;
 		sol.instances.length = 1;
 		sol.instances[0] = inst;
 		
 		// Siblings aren't in instance lists yet, pick them manually
-		var i, len, s;
 		if (inst.is_contained)
 		{
 			for (i = 0, len = inst.siblings.length; i < len; i++)
@@ -109,11 +130,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 				sol.instances[0] = s;
 			}
 		}
-        
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(inst.type.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
-        
+		
 	    return inst;
 	}; 	
 
