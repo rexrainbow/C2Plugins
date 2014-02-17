@@ -64,13 +64,15 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 
 	var behinstProto = behaviorProto.Instance.prototype;
 
+	var trig_behavior_inst = null;
 	behinstProto.onCreate = function()
 	{      
         this.timer = null;
         this.activated = (this.properties[0] == 1);
         this.cd_interval = this.properties[1];
+        this.is_request = false;
         this.is_accept = false;
-        this.is_my_call = false;
+        this.pre_is_at_cooldown = false;
         this.timer_save = null;        
 	};
     
@@ -85,24 +87,30 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
 	behinstProto.tick = function ()
 	{        
-        var is_at_cooldown = (this.timer)?
-                             this.timer.IsActive():
-                             false;
+        var is_at_cooldown = this.is_at_cooldown();
 
         if (is_at_cooldown)
         {
-            this.is_my_call = true;
+            trig_behavior_inst = this;
             this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCD, this.inst); 
-            this.is_my_call = false;
+            trig_behavior_inst = null;
         }
+        this.pre_is_at_cooldown = is_at_cooldown;
+        this.is_request = false;
 	};
-    
+	
+    behinstProto.is_at_cooldown = function()
+    {     
+        return(this.timer)? this.timer.IsActive():false; 
+    }; 
+       
     behinstProto._on_cooldown_finished = function()
     {    
-        this.is_my_call = true;
+        trig_behavior_inst = this;
         this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCD, this.inst); 
+        trig_behavior_inst = this;
         this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCDFinished, this.inst); 
-        this.is_my_call = false;
+        trig_behavior_inst = null;
     };
     
 	behinstProto.saveToJSON = function ()
@@ -144,6 +152,30 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         }     
         this.timers_save = null;        
 	}; 
+	
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "Cooldown interval", "value": this.cd_interval},
+				{"name": "Remain time", "value": (this.timer)? this.timer.RemainderTimeGet():0}
+			]
+		});
+	};
+	
+	behinstProto.onDebugValueEdited = function (header, name, value)
+	{
+		switch (name) 
+		{
+		    case "Cooldown interval": 
+		        this.cd_interval = value; 
+		        break;
+		}
+	};
+	/**END-PREVIEWONLY**/
+	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -151,38 +183,39 @@ cr.behaviors.Rex_Cooldown = function(runtime)
     
 	Cnds.prototype.OnCallAccepted = function ()
 	{  
-		return (this.is_my_call);  
+	    var flg = (trig_behavior_inst == this) && this.is_accept;	    
+		return flg;  
 	};
     
 	Cnds.prototype.OnCallRejected = function ()
 	{  
-		return (this.is_my_call);  
+	    var flg = (trig_behavior_inst == this) && (!this.is_accept);
+		return flg;  
 	}; 
     
 	Cnds.prototype.OnCD = function ()
 	{  
-		return (this.is_my_call);  
+		return (trig_behavior_inst == this);  
 	};    
 
 	Cnds.prototype.OnCDFinished = function ()
-	{  
-		return (this.is_my_call);  
+	{
+		return (trig_behavior_inst == this);  
 	};
     
 	Cnds.prototype.IsCallAccepted = function ()
 	{  
-		return (this.is_accept && (this.is_my_call));  
+		return (this.is_request && this.is_accept);
 	};
     
 	Cnds.prototype.IsCallRejected = function ()
 	{  
-		return ((!this.is_accept) & (this.is_my_call)); 
+		return (this.is_request && (!this.is_accept)); 
 	}; 
     
 	Cnds.prototype.IsAtCD = function ()
 	{         
-        var is_at_cooldown = (this.timer)? this.timer.IsActive():false; 
-		return ((this.is_my_call) & is_at_cooldown);
+		return (this.pre_is_at_cooldown || this.is_at_cooldown());
 	};  
     
 	//////////////////////////////////////
@@ -206,6 +239,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         if (!this.activated)
             return;
             
+        this.is_request = true;
         if ( this.timer == null )
         {
             this.is_accept = true;
@@ -213,21 +247,22 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         }
         else 
         {
-           this.is_accept = (!this.timer.IsActive());
+           this.is_accept = (!this.timer.IsActive());                    
         }
-        
+      
         if ( this.is_accept )
         {
-            this.is_my_call = true;
+            trig_behavior_inst = this;
             this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCallAccepted, this.inst); 
-            this.is_my_call = false;
+            trig_behavior_inst = null;
             this.timer.Start(this.cd_interval);
         }
         else
         {
-            this.is_my_call = true;
+            // this.is_accept = false
+            trig_behavior_inst = this;
             this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCallRejected, this.inst); 
-            this.is_my_call = false;
+            trig_behavior_inst = null;
         }
 	}; 
     
