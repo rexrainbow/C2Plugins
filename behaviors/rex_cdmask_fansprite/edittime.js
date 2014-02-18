@@ -39,6 +39,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_float, "Start angle", -90, "Start angle, in degree."),
+    new cr.Property(ept_combo, "Direction", "Anti-clockwise", "Select clockwise or anticlockwise rotation.", "Anti-clockwise|Clockwise"),
     //new cr.Property(ept_combo, "Z order", "Front", "Z order of mask.", "Front|Back"),    
 	];
 	

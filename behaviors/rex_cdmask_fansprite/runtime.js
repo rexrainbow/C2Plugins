@@ -33,9 +33,10 @@ cr.behaviors.Rex_cdmask_fansprite = function(runtime)
         this.set_anim_speed = cr.plugins_.Sprite.prototype.acts.SetAnimSpeed;
         this.set_sprite_angle = cr.plugins_.Sprite.prototype.acts.SetAngle;
         this.set_sprite_visible = cr.plugins_.Sprite.prototype.acts.SetVisible;
+        this.set_sprite_flipped = cr.plugins_.Sprite.prototype.acts.SetFlipped;
 	};
 	
-	behtypeProto.CreateInst = function (x, y, layer, frame_index)
+	behtypeProto.CreateInst = function (x, y, layer, is_flipped, frame_index)
 	{
 	    if (this.fan_type == null)
 	        return null;
@@ -44,7 +45,9 @@ cr.behaviors.Rex_cdmask_fansprite = function(runtime)
 	        return null;
 	      
 	    this.set_anim_frame.call(inst, frame_index);  
-	    this.set_anim_speed.call(inst, 0);	    
+	    this.set_anim_speed.call(inst, 0);
+	    if (is_flipped)
+	        this.set_sprite_flipped.call(inst, 0);
 	    return inst;
 	};	
 	/////////////////////////////////////
@@ -62,6 +65,8 @@ cr.behaviors.Rex_cdmask_fansprite = function(runtime)
     var _frame2angle = [256, 128, 64, 32, 16, 8, 4, 2, 1];    
 	behinstProto.onCreate = function()
 	{        
+        this.start_angle = this.properties[0];
+        this.is_clockwise = (this.properties[1] == 1);
         this.is_back = (this.properties[0] == 1);
         this.fan_insts = [-1,-1,-1,-1,-1,-1,-1,-1,-1];  // uid
 	};  
@@ -133,14 +138,16 @@ cr.behaviors.Rex_cdmask_fansprite = function(runtime)
 	        	    
 	    var a = Math.floor(percentage * 360), f2a;
 	    var i, cnt=this.fan_insts.length, j=-1;
-	    var fan_angle=0, fan_inst;
+	    var fan_angle=this.start_angle;
+	    var fan_inst;
 	    
 	    for (i=0; i<cnt; i++)
 	    {
 	        fan_inst = this._uid2inst(this.fan_insts[i]);	        
 	        if (fan_inst == null)
 	        {
-	            fan_inst = this.type.CreateInst(this.inst.x, this.inst.y, this.inst.layer, i);
+	            fan_inst = this.type.CreateInst(this.inst.x, this.inst.y, this.inst.layer, 
+	                                            (!this.is_clockwise), i);
 	            if (fan_inst == null)
 	                return;
 	            this.fan_insts[i] = fan_inst.uid;
@@ -151,8 +158,8 @@ cr.behaviors.Rex_cdmask_fansprite = function(runtime)
 	        {	            
 	            a -= f2a;	            
 	            this.type.set_sprite_visible.call(fan_inst, true);
-	            this.type.set_sprite_angle.call(fan_inst, fan_angle);	 
-	            fan_angle += f2a;  
+	            this.type.set_sprite_angle.call(fan_inst, fan_angle);
+	            fan_angle += (this.is_clockwise)? (f2a):(-f2a);
 	        }
 	        else
 	        {
