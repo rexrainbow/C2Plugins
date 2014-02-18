@@ -126,7 +126,58 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 		var self = this;
 		
-		if (window.navigator["msPointerEnabled"])
+		// IE11-style standard pointer events
+		if (window.navigator["pointerEnabled"])
+		{
+			elem.addEventListener("pointerdown",
+				function(info) {
+					self.onPointerStart(info);
+				},
+				false
+			);
+			
+			elem.addEventListener("pointermove",
+				function(info) {
+					self.onPointerMove(info);
+				},
+				false
+			);
+			
+			// Always attach up/cancel events to document (note elem2),
+			// otherwise touches dragged off the canvas could get lost
+			elem2.addEventListener("pointerup",
+				function(info) {
+					self.onPointerEnd(info);
+				},
+				false
+			);
+			
+			// Treat pointer cancellation the same as a touch end
+			elem2.addEventListener("pointercancel",
+				function(info) {
+					self.onPointerEnd(info);
+				},
+				false
+			);
+			
+			if (this.runtime.canvas)
+			{
+				this.runtime.canvas.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+				document.addEventListener("MSGestureHold", function(e) {
+					e.preventDefault();
+				}, false);
+				this.runtime.canvas.addEventListener("gesturehold", function(e) {
+					e.preventDefault();
+				}, false);
+				document.addEventListener("gesturehold", function(e) {
+					e.preventDefault();
+				}, false);
+			}
+		}
+		// IE10-style MS prefixed pointer events
+		else if (window.navigator["msPointerEnabled"])
 		{
 			elem.addEventListener("MSPointerDown",
 				function(info) {
@@ -169,6 +220,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				}, false);
 			}
 		}
+		// otherwise old style touch events
 		else
 		{
 			elem.addEventListener("touchstart",
@@ -266,16 +318,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 				if (eventData["accelerationIncludingGravity"])
 				{
-					self.acc_g_x = eventData["accelerationIncludingGravity"]["x"];
-					self.acc_g_y = eventData["accelerationIncludingGravity"]["y"];
-					self.acc_g_z = eventData["accelerationIncludingGravity"]["z"];
+					self.acc_g_x = eventData["accelerationIncludingGravity"]["x"] || 0;
+					self.acc_g_y = eventData["accelerationIncludingGravity"]["y"] || 0;
+					self.acc_g_z = eventData["accelerationIncludingGravity"]["z"] || 0;
 				}
 				
 				if (eventData["acceleration"])
 				{
-					self.acc_x = eventData["acceleration"]["x"];
-					self.acc_y = eventData["acceleration"]["y"];
-					self.acc_z = eventData["acceleration"]["z"];
+					self.acc_x = eventData["acceleration"]["x"] || 0;
+					self.acc_y = eventData["acceleration"]["y"] || 0;
+					self.acc_z = eventData["acceleration"]["z"] || 0;
 				}
 				
 			}, false);
@@ -324,8 +376,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    if (!this.enable)
 	        return;
 	        
-		// Ignore mouse events
-		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
+		// Ignore mouse events (note check for both IE10 and IE11 style pointerType values)
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 			
 	    this._is_mouse_mode = false;			
@@ -359,8 +411,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    if (!this.enable)
 	        return;
 	        	    
-		// Ignore mouse events
-		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
+		// Ignore mouse events (note check for both IE10 and IE11 style pointerType values)
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 	
 	    this._is_mouse_mode = false;			
@@ -385,6 +437,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 							startindex: this.trigger_index
 						});
 		
+		this.runtime.isInUserInputEvent = true;
+		
 		// Trigger OnNthTouchStart then OnTouchStart
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchStart, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchStart, this);
@@ -400,6 +454,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			if (this._plugins_hook[hooki].OnTouchStart)
                 this._plugins_hook[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
 	    }
+	    this.runtime.isInUserInputEvent = false;
 	};
 
 	instanceProto.onPointerEnd = function (info)
@@ -407,8 +462,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    if (!this.enable)
 	        return;
 	        	    
-		// Ignore mouse events
-		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"])
+		// Ignore mouse events (note check for both IE10 and IE11 style pointerType values)
+		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 	
         this._is_mouse_mode = false;			
@@ -418,7 +473,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var i = this.findTouch(info["pointerId"]);
 		this.trigger_index = (i >= 0 ? this.touches[i].startindex : -1);
 		this.trigger_id = (i >= 0 ? this.touches[i]["id"] : -1);
-
+		
+		this.runtime.isInUserInputEvent = true;
+		
 		// Trigger OnNthTouchEnd & OnTouchEnd
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
@@ -429,6 +486,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		    if (this._plugins_hook[hooki].OnTouchEnd)
                 this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
 		}
+		this.runtime.isInUserInputEvent = false;
 		
 		// Remove touch
 		if (i >= 0)
@@ -485,11 +543,21 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
 		var nowtime = cr.performance_now();
 		
-		var i, len, t;
+		this.runtime.isInUserInputEvent = true;
+		
+		var i, len, t, j;
         var cnt=this._plugins_hook.length, hooki;        
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
+			
+			// WORKAROUND Chrome for Android bug: touchstart sometimes fires twice with same id.
+			// If there is already a touch with this id, ignore this event.
+			j = this.findTouch(t["identifier"]);
+			
+			if (j !== -1)
+				continue;
+			// END WORKAROUND
 			
 			var touchx = t.pageX - offset.left;
 			var touchy = t.pageY - offset.top;
@@ -522,6 +590,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
                     this._plugins_hook[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
 			}
 		}		
+		this.runtime.isInUserInputEvent = false;
 	};
 
 	instanceProto.onTouchEnd = function (info)
@@ -531,33 +600,40 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	        	    
 		if (info.preventDefault)
 			info.preventDefault();
+			
+		this.runtime.isInUserInputEvent = true;
 		
-		var i, len, t;
+		var i, len, t, j;
         var cnt=this._plugins_hook.length, hooki;
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
-			
-			var j = this.findTouch(t["identifier"]);
-			this.trigger_index = (j >= 0 ? this.touches[j].startindex : -1);
-			this.trigger_id = (j >= 0 ? this.touches[j]["id"] : -1);
-			
-			// Trigger OnNthTouchEnd & OnTouchEnd
-			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
-			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
-
-            for (hooki=0; hooki<cnt; hooki++)
-			{
-			    if (this._plugins_hook[hooki].OnTouchEnd)
-                    this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
-			}
+			j = this.findTouch(t["identifier"]);
 			
 			// Remove touch
 			if (j >= 0)
 			{
+				// Trigger OnNthTouchEnd & OnTouchEnd
+				// NOTE: Android stock browser is total garbage and fires touchend twice
+				// when a single touch ends. So we only fire these events when we found the
+				// touch identifier exists.
+				this.trigger_index = this.touches[j].startindex;
+				this.trigger_id = this.touches[j]["id"];
+			
+				this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
+				this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+			
+                for (hooki=0; hooki<cnt; hooki++)
+			    {
+			        if (this._plugins_hook[hooki].OnTouchEnd)
+                        this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
+			    }
+						
 				this.touches.splice(j, 1);
 			}
 		}
+		
+		this.runtime.isInUserInputEvent = false;
 	};
 	
 	instanceProto.getAlpha = function ()
@@ -666,6 +742,40 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				t.lasttime = nowtime;
 		}
 	};
+	
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+		var props = [], i, len, t;
+		
+		for (i = 0, len = this.touches.length; i < len; ++i)
+		{
+			t = this.touches[i];
+			
+			props.push({"name": i.toString(), "value": "(" + t.x + ", " + t.y + "), ID: " + t["id"], "readonly": true});
+		}
+		
+		propsections.push({
+			"title": "Touches",
+			"properties": props
+		});
+		
+		propsections.push({
+			"title": "Orientation & motion",
+			"properties": [
+				{"name": "Alpha", "value": this.getAlpha(), "readonly": true},
+				{"name": "Beta", "value": this.getBeta(), "readonly": true},
+				{"name": "Gamma", "value": this.getGamma(), "readonly": true},
+				{"name": "X acceleration", "value": this.acc_x, "readonly": true},
+				{"name": "Y acceleration", "value": this.acc_y, "readonly": true},
+				{"name": "Z acceleration", "value": this.acc_z, "readonly": true},
+				{"name": "X acceleration with gravity", "value": this.acc_g_x, "readonly": true},
+				{"name": "Y acceleration with gravity", "value": this.acc_g_y, "readonly": true},
+				{"name": "Z acceleration with gravity", "value": this.acc_g_z, "readonly": true}
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/
 
 	//////////////////////////////////////
 	// Conditions
@@ -731,6 +841,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		{
 			sol.select_all = false;
 			sol.instances = touching;
+			type.applySolToContainer();
 			return true;
 		}
 		else
