@@ -26,7 +26,7 @@ AddCondition(1, cf_none, "Compare parameter", "Function", "Parameter {0} {1} {2}
 
 AddStringParam("Name", "Parameter's name", '""');
 AddAnyTypeParam("Value", "The default value.");
-AddCondition(50, 0, "Declare parameter", "Input parameter", "Declare parameter <i>{0}</i>, default to <i>{1}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
+AddCondition(50, 0, "Declare parameter", "Input parameter", "Parameter <i>{0}</i>, default to <i>{1}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -41,6 +41,10 @@ AddAnyTypeParam("Name", "Name of parameter", '""');
 AddAnyTypeParam("Value", "Value", "0");
 AddAction(50, 0, "Set parameter", "Input parameter", "Set parameter <i>{0}</i> to <i>{1}</i>", "Set a parameter pass into function.", "SetParameter");
 
+AddStringParam("Name", "Parameter's name", '""');
+AddAnyTypeParam("Value", "The default value.");
+AddAction(51, 0, "Declare parameter", "Input parameter", "Parameter <i>{0}</i>, default to <i>{1}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_any, "", "Function", "ReturnValue", "Get the value set by 'Set return value'.");
@@ -52,6 +56,10 @@ AddExpression(2, ef_return_any, "", "Function", "Param", "Get the value of a par
 
 AddStringParam("Name", "The name of the function to call.");
 AddExpression(3, ef_return_any | ef_variadic_parameters, "", "Function", "Call", "Call a function with parameters and return its return value.");
+
+AddStringParam("Name", "The name of the function to call.");
+AddExpression(50, ef_return_any | ef_variadic_parameters, "", "Function", "CallByNameParams", "Call a function with name parameters and return its return value.");
+
 
 ACESDone();
 
