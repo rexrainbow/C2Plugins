@@ -5,7 +5,7 @@
 		"id":			"Rex_Function2",
 		"version":		"0.1",
 		"description":	"Run other events in an action, like functions in programming languages.",
-		"author":		"Scirra",
+		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function2.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout

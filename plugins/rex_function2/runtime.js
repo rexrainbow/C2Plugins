@@ -133,6 +133,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
             fs.params[this.param_index] = value;
         }
         this.param_index += 1;
+        return true;
     };     
     //////////////////////////////////////
     // Conditions
@@ -175,8 +176,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
     
     Cnds.prototype.DefineParam = function (name, default_value)
     {
-        this.define_param(name, default_value);
-        return true;
+        return this.define_param(name, default_value);
     };    
     
     pluginProto.cnds = new Cnds();
