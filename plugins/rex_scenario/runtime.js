@@ -522,6 +522,35 @@ cr.plugins_.Rex_Scenario = function(runtime)
         return (deltaT == 0);  // is_continue
     }; 
     
+    // expression:Call in function object
+    var fake_ret = {value:0,
+                    set_any: function(value){this.value=value;},
+                    set_int: function(value){this.value=value;},	 
+                    set_float: function(value){this.value=value;},	                          
+                   };    
+    var _params = [];
+    var _thisArg = null;
+    ScenarioKlassProto._getvalue_from_c2fn = function()
+    {
+        _params.length = 0;
+        _params.push(fake_ret);
+        var i, cnt=arguments.length;
+        for (i=0; i<cnt; i++)
+            _params.push(arguments[i]);
+            
+        var plugin = _thisArg.plugin;
+        var has_rex_function = (plugin.callback != null);
+        if (has_rex_function)
+            cr.plugins_.Rex_Function.prototype.exps.Call.apply(plugin.callback, _params);
+        else    // run official function
+        {
+            var has_fnobj = plugin._timeline_get().Call(_params, true);     
+            assert2(has_fnobj, "Scenario: Can not find callback object.");
+        }
+        return fake_ret.value;
+    };	
+    
+    // expression:Call in function object	
     var re = new RegExp("\n", "gm");
     ScenarioKlassProto.param_get = function(param)
     {
@@ -531,10 +560,10 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var code_string = "function(scenario)\
             {\
                 var MEM = scenario.Mem;\
-                var Call = _getvalue_from_c2fn;\
-                _thisArg = scenario;\
+                var Call = scenario._getvalue_from_c2fn;\
                 return "+param+"\
             }";
+            _thisArg = this;
             var fn = eval("("+code_string+")");
             param = fn(this);
         }
@@ -573,36 +602,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var has_fnobj = plugin._timeline_get().RunCallback(name, params, true);     
             assert2(has_fnobj, "Scenario: Can not find callback oject.");
         }
-    };	
-    
-    // expression:Call in function object
-    var fake_ret = {value:0,
-                    set_any: function(value){this.value=value;},
-                    set_int: function(value){this.value=value;},	 
-                    set_float: function(value){this.value=value;},	                          
-                   };    
-    var _params = [];
-    var _thisArg = null;
-    var _getvalue_from_c2fn = function()
-    {
-        _params.length = 0;
-        _params.push(fake_ret);
-        var i, cnt=arguments.length;
-        for (i=0; i<cnt; i++)
-            _params.push(arguments[i]);
-            
-        var plugin = _thisArg.plugin;
-        var has_rex_function = (plugin.callback != null);
-        if (has_rex_function)
-            cr.plugins_.Rex_Function.prototype.exps.Call.apply(plugin.callback, _params);
-        else    // run official function
-        {
-            var has_fnobj = plugin._timeline_get().Call(_params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback object.");
-        }
-        return fake_ret.value;
-    };	
-    // expression:Call in function object	
+    };	   
     
     ScenarioKlassProto._delay_execute_c2fn = function(name, params)
     {
