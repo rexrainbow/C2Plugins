@@ -20,28 +20,28 @@
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Name", "Input variable name.", '""');
-AddStringParam("---", 'Range setting of Negative Big. Empty string is ignored.', '"0, 25"');
-AddStringParam("--", 'Range setting of Negative Medium. Empty string is ignored.', '"13, 25, 38"');
-AddStringParam("-", 'Range setting of Negative Small. Empty string is ignored.', '"25, 33, 50"');
-AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"38, 50, 63"');
-AddStringParam("+", 'Range setting of Positive Small. Empty string is ignored.', '"50, 66, 75"');
-AddStringParam("++", 'Range setting of Positive Medium. Empty string is ignored.', '"63, 75, 88"');
-AddStringParam("+++", 'Range setting of Positive Big. Empty string is ignored.', '"75, 100"');
+AddStringParam("---", 'Range setting of Negative Big. Empty string is ignored.', '"0, 17"');
+AddStringParam("--", 'Range setting of Negative Medium. Empty string is ignored.', '"0, 17, 33"');
+AddStringParam("-", 'Range setting of Negative Small. Empty string is ignored.', '"17, 33, 50"');
+AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"33, 50, 66"');
+AddStringParam("+", 'Range setting of Positive Small. Empty string is ignored.', '"50, 66, 83"');
+AddStringParam("++", 'Range setting of Positive Medium. Empty string is ignored.', '"66, 83, 100"');
+AddStringParam("+++", 'Range setting of Positive Big. Empty string is ignored.', '"83, 100"');
 AddAction(1, 0, "0. Define membership (7 levels)", "0. Define membership", 
           "Define membership <i>{0}</i>: NB to <i>{1}</i>, NM to <i>{2}</i>, NS to <i>{3}</i>, ZO to <i>{4}</i>, PS to <i>{5}</i>, PM to <i>{6}</i>, PB to <i>{7}</i>", 
           "Define membership.", "DefineMembership_7levles");
 AddStringParam("Name", "Input variable name.", '""');
-AddStringParam("--", 'Range setting of Negative Medium. Empty string is ignored.', '"0, 33"');
-AddStringParam("-", 'Range setting of Negative Small. Empty string is ignored.', '"17, 33, 50"');
-AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"33, 50, 66"');
-AddStringParam("+", 'Range setting of Positive Small. Empty string is ignored.', '"50, 66, 83"');
-AddStringParam("++", 'Range setting of Positive Medium. Empty string is ignored.', '"66, 100"');
+AddStringParam("--", 'Range setting of Negative Medium. Empty string is ignored.', '"0, 25"');
+AddStringParam("-", 'Range setting of Negative Small. Empty string is ignored.', '"0, 25, 50"');
+AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"25, 50, 75"');
+AddStringParam("+", 'Range setting of Positive Small. Empty string is ignored.', '"50, 75, 100"');
+AddStringParam("++", 'Range setting of Positive Medium. Empty string is ignored.', '"75, 100"');
 AddAction(2, 0, "0. Define membership (5 levels)", "0. Define membership", 
           "Define membership <i>{0}</i>: NB to <i>{1}</i>, NS to <i>{2}</i>, ZO to <i>{3}</i>, PS to <i>{4}</i>, PB to <i>{5}</i>", 
           "Define membership.", "DefineMembership_5levles");    
 AddStringParam("Name", "Input variable name.", '""');
 AddStringParam("-", 'Range setting of Negative Small. Empty string is ignored.', '"0, 50"');
-AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"25, 50, 75"');
+AddStringParam("", 'Range setting of Zero. Empty string is ignored.', '"0, 50, 100"');
 AddStringParam("+", 'Range setting of Positive Small. Empty string is ignored.', '"50, 100"');
 AddAction(3, 0, "0. Define membership (3 levels)", "0. Define membership", 
           "Define membership <i>{0}</i>: N to <i>{1}</i>, ZO to <i>{2}</i>, P to <i>{3}</i>", 

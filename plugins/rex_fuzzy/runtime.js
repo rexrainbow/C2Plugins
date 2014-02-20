@@ -357,7 +357,9 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	}; 
     
     FRuleBankProto.set_variable_value = function (var_name, value)
-    {    
+    {   
+        var in_var = this.in_vars[var_name];
+        assert2(in_var, "Fuzzy: Could set variable "+ var_name);
         this.in_vars[var_name].value = value;
     };    
     
