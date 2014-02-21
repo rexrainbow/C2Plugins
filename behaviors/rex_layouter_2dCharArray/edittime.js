@@ -44,7 +44,12 @@ AddExpression(1, ef_return_number,
 AddExpression(2, ef_return_string,
               "Get mapped character", "Character", "Char",
               "Get mapped character.");
-
+AddExpression(3, ef_return_number,
+              "Get logic X of layouted instance", "Layout", "LX",
+              "Get logic X of layouted instance.");
+AddExpression(4, ef_return_number,
+              "Get logic Y of layouted instance", "Layout", "LY",
+              "Get logic Y of layouted instance.");              
 ACESDone();
 
 // Property grid properties for this plugin

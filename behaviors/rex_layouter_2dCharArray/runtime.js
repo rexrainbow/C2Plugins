@@ -49,6 +49,8 @@ cr.behaviors.Rex_layouter_2dCharArray = function(runtime)
         this.cell_height = this.properties[1];
         this._mapped_char = "";
         this._mapped_inst_uid = 0;
+        this._logic_x = 0;
+        this._logic_y = 0;
         this._insts = [];    // temp list
         
         // implement handlers
@@ -89,6 +91,8 @@ cr.behaviors.Rex_layouter_2dCharArray = function(runtime)
 	            if (inst == null)
 	                continue;
 	            this._mapped_inst_uid = inst.uid;
+	            this._logic_x = ci;
+	            this._logic_y = li;
 	            this._insts.push(inst);
 	            this._mapped_char = c;	                
 	            params = {x:px,
@@ -157,5 +161,15 @@ cr.behaviors.Rex_layouter_2dCharArray = function(runtime)
 	Exps.prototype.Char = function (ret)
 	{
 		ret.set_string(this._mapped_char);
+	};		
+
+	Exps.prototype.LX = function (ret)
+	{
+		ret.set_int(this._logic_x);
 	};	
+
+	Exps.prototype.LY = function (ret)
+	{
+		ret.set_int(this._logic_y);
+	};		
 }());
