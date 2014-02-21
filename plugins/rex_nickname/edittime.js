@@ -41,14 +41,14 @@ AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddAction(2, 0, "Create instance", "Create", "Create <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
-          "Create instance by nickname.", "CreateInsts");  
+          "Create instance by nickname.", "CreateInst");  
 AddStringParam("Nickname", "Nickname of object.", '""');   
 AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
 AddAnyTypeParam("Layer", "Layer name of number.", 0);
 AddObjectParam("Family", "Family object for SOL.");
 AddAction(3, 0, "Create instance into family", "Create", "Create <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>, then put into family <i>{4}</i>", 
-          "Create instance by nicknamem then put into family.", "CreateInsts");            
+          "Create instance by nicknamem then put into family.", "CreateInst");            
 AddStringParam("Nickname", "Nickname of object.", '""');  
 AddObjectParam("Family", "Family object for SOL."); 
 AddAction(10, 0, "Pick all instances", "SOL", 

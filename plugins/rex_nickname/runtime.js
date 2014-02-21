@@ -47,6 +47,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	instanceProto.onCreate = function()
 	{	    
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
+	    this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
 	};
     
 	// export		
@@ -88,50 +89,16 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
                     (typeof _layer == "string")? this.runtime.getLayerByName(_layer):  
                                                  _layer;
                                                  
-        if (!layer || !objtype)
-            return;
-
-        var inst = this.runtime.createInstance(objtype, layer, x, y);
-
-		if (!inst)
-			return null;
-		
-		this.runtime.isInOnDestroy++;
-		
-		var i, len, s;
-		this.runtime.trigger(Object.getPrototypeOf(objtype.plugin).cnds.OnCreated, inst);
-		
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				this.runtime.trigger(Object.getPrototypeOf(s.type.plugin).cnds.OnCreated, s);
-			}
-		}
-		
-		this.runtime.isInOnDestroy--;
-
-        // Pick just this instance
-        var sol = objtype.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
-		
-		// Siblings aren't in instance lists yet, pick them manually
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
-		
-	    return inst;
+        // call system action: Create instance
+        this.ActCreateInstance.call(
+            this.runtime.system,
+            objtype,
+            layer,
+            x,
+            y
+        );
+                           
+	    return objtype.getFirstPicked();
 	}; 	
 
     // export
@@ -245,7 +212,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
         cr.plugins_.Rex_Nickname.AddNickname(nickname, objtype);
 	};
 	
-	Acts.prototype.CreateInsts = function (nickname,x,y,_layer, family_objtype)
+	Acts.prototype.CreateInst = function (nickname,x,y,_layer, family_objtype)
 	{
         var inst = this.CreateInst(nickname,x,y,_layer);
 		

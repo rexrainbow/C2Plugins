@@ -47,6 +47,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
         this._removed_uids = [];
         this.pin_status = {};
         this.pin_mode = this.properties[0];
+        this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
             
         this._opactiy_save = this.opacity;
 	    this._visible_save = this.visible;            
@@ -200,42 +201,28 @@ cr.plugins_.Rex_Layouter = function(runtime)
                                         };
         }
 	};	
-    
-	instanceProto.create_inst = function (obj_type,x,y,_layer)
+
+	instanceProto.create_inst = function (objtype,x,y,_layer)
 	{
-        if (obj_type == null)
+        if (objtype == null)
             return;
         var layer = (_layer == null)? this.layer:
                     (typeof _layer == "number")?
                     this.runtime.getLayerByNumber(_layer):
                     this.runtime.getLayerByName(_layer);  
-        var inst = this.runtime.createInstance(obj_type, layer, x, y ); 
-        // Pick just this instance
-        var sol = inst.type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;  
-
-		// Siblings aren't in instance lists yet, pick them manually
-		var i, len, s;
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
-        
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
-
-	    return inst;
-	};    
+                    
+        // call system action: Create instance
+        this.ActCreateInstance.call(
+            this.runtime.system,
+            objtype,
+            layer,
+            x,
+            y
+        );
+                           
+	    return objtype.getFirstPicked();
+	}; 	
+	  
 
     instanceProto._remove_uid = function (uid)
 	{
