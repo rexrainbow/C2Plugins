@@ -21,8 +21,8 @@
 // Actions
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(1, 0, "Load layout", "Load layout", 
-          "Goto saved layout and load all non-global instances", 
-          "Goto saved layout and load all non-global instances.", "LoadLayout");
+          "Goto saved layout and load saved instances from <i>{0}</i>", 
+          "Goto saved layout and load saved instances.", "LoadLayout");
 
 //////////////////////////////////////////////////////////////
 // Expressions

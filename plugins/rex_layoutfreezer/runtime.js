@@ -50,27 +50,37 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
         */
     };
 
-    instanceProto.IsNonSaveable = function (type)
+    instanceProto.IsNoSave = function (type)
 	{
-        return (type.global || type.is_family || this.runtime.typeHasNoSaveBehavior(type));
-	};
+        return (type.global || 
+                type.is_family || 
+                this.runtime.typeHasNoSaveBehavior(type) ||
+                type.plugin.singleglobal);
+	};    
     
     instanceProto.SaveLayout = function ()
     {
-        // save layout
-        var bank = {"running_layout":this.runtime.running_layout.sid,
+        this.runtime.ClearDeathRow();
+        
+        // save layout        
+        var bank = {"running_layout": {"sid": this.runtime.running_layout.sid,
+                                       "layout": this.runtime.running_layout.saveToJSON()
+                                      },
                     "types":{}
                     };
+
+        var max_uid = null;
+        var min_uid = null;                    
 
         // save all instances
         var saved_types = bank["types"];
         var types=this.runtime.types_by_index;
         var i, type_cnt=types.length, type, table;
-        var j, inst_cnt;
+        var j, inst, inst_cnt;
         for (i=0; i<type_cnt; i++)
         {
             type = types[i];
-            if (this.IsNonSaveable(type))
+            if (this.IsNoSave(type))
 				continue;
 			
 			table = {
@@ -80,19 +90,26 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
             inst_cnt = type.instances.length;
             for (j=0; j<inst_cnt; j++)
 			{
-				table["instances"].push(this.runtime.saveInstanceToJSON(type.instances[j]));
+			    inst = type.instances[j];
+			    max_uid = (max_uid == null)? inst.uid : Math.max(max_uid, inst.uid); 
+			    min_uid = (min_uid == null)? inst.uid : Math.min(min_uid, inst.uid); 
+				table["instances"].push(this.runtime.saveInstanceToJSON(inst));
 			}
 			
 			saved_types[type.sid.toString()] = table;				
         }
         
+        bank["max_uid"] = max_uid;
+        bank["min_uid"] = min_uid;     
         return bank;
     };
 
     instanceProto.LoadLayout = function (bank)
     {          
+        this.runtime.ClearDeathRow();
+        
         // goto layout
-		var layout_sid = bank["running_layout"];
+		var layout_sid = bank["running_layout"]["sid"];
 		
 		// Need to change to different layout
 		if (layout_sid !== this.runtime.running_layout.sid)
@@ -104,8 +121,17 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
 			else
 				return;		// layout that was saved on has gone missing (deleted?)
 		}
-        
+                
         // then restore all instances
+        
+        // reset next uid
+        //log("Start: " + this.runtime.next_uid);
+        var next_uid_save = this.runtime.next_uid;
+        var min_uid = bank["min_uid"];        
+        if (min_uid != null)
+            this.runtime.next_uid = min_uid;
+        //log("Reset: " + this.runtime.next_uid);
+            
         var saved_types = bank["types"];
         var types=this.runtime.types_by_index;
         var i, type_cnt=types.length, type, table;
@@ -116,7 +142,7 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
         {
             type = types[i];
             // not saveable
-            if (this.IsNonSaveable(type))
+            if (this.IsNoSave(type))
 				continue;
             
             sid = type.sid.toString();            
@@ -155,7 +181,7 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
 				
 				if (type.plugin.is_world)
 				{
-					layer = this.running_layout.getLayerBySid(load_insts[j]["w"]["l"]);
+					layer = this.runtime.running_layout.getLayerBySid(load_insts[j]["w"]["l"]);
 					
 					// layer's gone missing - just skip creating this instance
 					if (!layer)
@@ -165,6 +191,7 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
 				// create an instance then load the state in to it
 				// skip creating siblings; they will have been saved as well, we'll link them up later
 				inst = this.runtime.createInstanceFromInit(type.default_instance, layer, false, 0, 0, true);
+				//log("Create: " + this.runtime.next_uid);
 				this.runtime.loadInstanceFromJSON(inst, load_insts[j]);
 			}
 			
@@ -177,6 +204,13 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
 		// they were created with
 		this.runtime.refreshUidMap();
         
+        this.runtime.running_layout.loadFromJSON(bank["running_layout"]["layout"]);
+        
+        // reset next uid
+        var max_uid = bank["max_uid"];
+        if (max_uid != null)
+            this.runtime.next_uid = Math.max(next_uid_save, max_uid+1);        
+        
 		// Loop again and call afterLoad() on everything now that UIDs and all states are available
 		// Also link together containers now that all objects are created
         var iid, k, sibling_cnt, t, b_cnt, binst;
@@ -184,7 +218,7 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
         {
             type = types[i];
             // not saveable
-            if (this.IsNonSaveable(type))
+            if (this.IsNoSave(type))
 				continue;
             
             sid = type.sid.toString();            
@@ -235,19 +269,11 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
 				}
             }
         }
-
-        // reorder all layers
-        var layer, layers = this.runtime.running_layout.layers;
-        var layer_cnt=layers.length;
-        for (i=0; i<layer_cnt; i++)
-        {
-            layer = layers[i];
-            layer.instances.sort(sortInstanceByZIndex);
-            layer.zindices_stale = true;
-        }
+        
+		this.runtime.redraw = true;	           
         
 
-		this.runtime.redraw = true;	        
+        //log("End: " + this.runtime.next_uid);             
     };
     
 	function sortInstanceByZIndex(a, b)
@@ -272,12 +298,6 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
     // Actions
     function Acts() {};
     pluginProto.acts = new Acts();
-
-    Acts.prototype.SaveLayout = function ()
-    {
-        this.CleanBank();
-        this.SaveLayout();
-    };
 
     Acts.prototype.LoadLayout = function (JSON_string)
     {  
