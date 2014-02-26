@@ -42,7 +42,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     instanceProto.onCreate = function()
     {
         this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);  
-        this._scenario.is_debug_mode = (this.properties[0] == 1);
+        this._scenario.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] == 1);
         this._scenario.is_accT_mode = (this.properties[1] == 0);
         this._scenario.is_eval_mode = (this.properties[2] == 1);
       
@@ -134,7 +134,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         var i,cnt=debugger_info.length;
         for (i=0;i<cnt;i++)
             this.propsections.push(debugger_info[i]);
-        var k,mem=this._scenario.Mem;
+        var k,mem=this._scenario["Mem"];
         for (k in mem)
             this.propsections.push({"name": "MEM-"+k, "value": mem[k]});
             
@@ -156,7 +156,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else if (name.substring(0,4) == "MEM-") // set mem value
         {	   
             var k = name.substring(4);
-            this._scenario.Mem[k] = value;
+            this._scenario["Mem"][k] = value;
         }
     };
     /**END-PREVIEWONLY**/	
@@ -248,12 +248,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
         
     Acts.prototype.SetMemory = function (index, value)
     {
-        this._scenario.Mem[index] = value;
+        this._scenario["Mem"][index] = value;
     };
         
     Acts.prototype.StringToMEM = function (JSON_string)
     {	
-        this._scenario.Mem = JSON.parse(JSON_string);;
+        this._scenario["Mem"] = JSON.parse(JSON_string);;
     };
     
     Acts.prototype.Setup2 = function (timeline_objs)
@@ -277,12 +277,14 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Exps.prototype.Mem = function(ret, index)
     {
-        ret.set_any(this._scenario.Mem[index]);
+        var val = (this._scenario["Mem"].hasOwnProperty(index))?
+                  this._scenario["Mem"][index]: 0;
+        ret.set_any(val);
     };   
     
     Exps.prototype.MEMToString = function(ret)
     {
-        ret.set_string(JSON.stringify(this._scenario.Mem));
+        ret.set_string(JSON.stringify(this._scenario["Mem"]));
     };  	
      
 }());
@@ -316,7 +318,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
                                     "end if":new CmdENDIFKlass(this),
                                     };
         // variablies pool
-        this.Mem = {};		
+        this["Mem"] = {};		
         this.timer_save = null;
         
         /**BEGIN-PREVIEWONLY**/
@@ -530,7 +532,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
                    };    
     var _params = [];
     var _thisArg = null;
-    ScenarioKlassProto._getvalue_from_c2fn = function()
+    ScenarioKlassProto["_getvalue_from_c2fn"] = function()
     {
         _params.length = 0;
         _params.push(fake_ret);
@@ -559,8 +561,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
             param = param.replace(re, "\\n");    // replace "\n" to "\\n"
             var code_string = "function(scenario)\
             {\
-                var MEM = scenario.Mem;\
-                var Call = scenario._getvalue_from_c2fn;\
+                var MEM = scenario['Mem'];\
+                var Call = scenario['_getvalue_from_c2fn'];\
                 return "+param+"\
             }";
             _thisArg = this;
@@ -624,7 +626,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
                  "tim" : timer_save,
                  "pa": this.pre_abs_time,	       
                  "off": this.offset,
-                 "mem": this.Mem,
+                 "mem": this["Mem"],
                  "CmdENDIF": this.cmd_handler_get("end if").saveToJSON(),
                 };
     };
@@ -636,7 +638,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.timer_save = o["tim"];
         this.pre_abs_time = o["pa"];
         this.offset = o["off"];
-        this.Mem = o["mem"];
+        this["Mem"] = o["mem"];
         if (o["CmdENDIF"])
             this.cmd_handler_get("end if").loadFromJSON(o["CmdENDIF"]);
     };	
