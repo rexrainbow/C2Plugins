@@ -482,9 +482,8 @@
         }
         return str.slice(0, i + 1);
     };       
-    
-    window["CanvasText"] = CanvasText;  
-    
+
+// ----
     var ObjCacheKlass = function ()
     {        
         this.lines = [];       
@@ -687,4 +686,8 @@
 			
 		return _wrap_text(text, lines, ctx, width, wrapbyword, offset_x);
 	};	
+	
+    
+    window["canvas_text"] = CanvasText;  
+    	
 }()); 

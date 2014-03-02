@@ -4,8 +4,8 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
-// load socket.io.min.js
-document.write('<script src="CanvasText-0.4.1.js"></script>');
+// load CanvasText-0.4.1.js
+//document.write('<script src="CanvasText-0.4.1.js"></script>');
 
 /////////////////////////////////////
 // Plugin class
@@ -126,7 +126,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this._tag = null;
         if (!this.recycled)
         {
-		    this.canvas_text = new window["CanvasText"];
+		    this.canvas_text = new window["canvas_text"]();
         }
 		this.canvas_text["wrapbyword"] = this.wrapbyword;
 		this.canvas_text["halign"] = this.halign;
@@ -615,8 +615,12 @@ cr.plugins_.rex_TagText = function(runtime)
 	};
 	
 	Acts.prototype.SetFontColor = function (rgb)
-	{
-	    var newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";
+	{        
+	    var newcolor;
+        if (typeof(rgb) == "number")        
+            newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";        
+        else
+            newcolor = rgb;
 	    if (this._tag != null)  // <class> ... </class>
 	    {
 	        this._tag["fontColor"] = newcolor;

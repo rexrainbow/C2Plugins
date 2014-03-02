@@ -42,7 +42,7 @@ AddAction(2, 0, "Set font face", "Appearance", "Set font face to <i>{0}</i> (<i>
 AddNumberParam("Size (pt)", "The new font size.", "12");
 AddAction(3, 0, "Set font size", "Appearance", "Set font size to <i>{0}</i> pt", "Set the font size.", "SetFontSize");
 
-AddNumberParam("Color", "The new font color, in the form rgb(r, g, b).", "rgb(0, 0, 0)");
+AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", "rgb(0, 0, 0)");
 AddAction(4, 0, "Set font color", "Appearance", "Set font color to <i>{0}</i>", "Set the font color.", "SetFontColor");
 
 AddStringParam("Family name", "Enter the font family name.");
