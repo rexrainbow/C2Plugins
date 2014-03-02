@@ -57,10 +57,11 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 		this.rdiff = this.runtime.original_width - this.inst.bbox.right;
 		this.bdiff = this.runtime.original_height - this.inst.bbox.bottom;
 		
-		this.enabled = true;
+		this.enabled = (this.properties[4] !== 0);
 		
 		// extend
-		this.set_once = (this.properties[4]==1);
+		this.set_once = (this.properties[5] == 1);
+		this.update_cnt = 0;
 		this.viewLeft_saved = null;
 		this.viewRight_saved = null;
 		this.viewTop_saved = null;
@@ -77,12 +78,28 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 	};	
 
 	behinstProto.tick = function ()
-	{
-	    if (this.set_once &&  this.is_layer_size_changed())
-	        this.enabled = true;
-	    
+	{	   
 		if (!this.enabled)
-			return;
+			return;  
+			
+        if (this.set_once)
+        {            
+            if (this.is_layer_size_changed())
+            {
+                var layer = this.inst.layer;
+		        this.viewLeft_saved = layer.viewLeft;
+		        this.viewRight_saved = layer.viewRight;
+		        this.viewTop_saved = layer.viewTop;
+		        this.viewBottom_saved = layer.viewBottom;
+		        this.update_cnt = 2;
+            }
+            
+            if (this.update_cnt == 0)  // no need to update
+                return;
+            else                       // update once
+                this.update_cnt -= 1;
+        }
+
 		
 		var n;
 		var layer = this.inst.layer;
@@ -175,31 +192,37 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 			}
 		}
 		
-		this.runtime.trigger(cr.behaviors.rex_Anchor_mod.prototype.cnds.OnAnchored, this.inst); 
-		
+		log("OnAnchored");
 		if (this.set_once)
-		{
-		    this.viewLeft_saved = layer.viewLeft;
-		    this.viewRight_saved = layer.viewRight;
-		    this.viewTop_saved = layer.viewTop;
-		    this.viewBottom_saved = layer.viewBottom;	
-		    this.enabled = false;
-		}
+		    this.runtime.trigger(cr.behaviors.rex_Anchor_mod.prototype.cnds.OnAnchored, this.inst); 
 	};
 	
 	behinstProto.saveToJSON = function ()
 	{
-		return { "en": this.enabled };
+		return {
+			"xleft": this.xleft,
+			"ytop": this.ytop,
+			"xright": this.xright,
+			"ybottom": this.ybottom,
+			"rdiff": this.rdiff,
+			"bdiff": this.bdiff,
+			"enabled": this.enabled
+		};
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-		this.enabled = o["en"];
+		this.xleft = o["xleft"];
+		this.ytop = o["ytop"];
+		this.xright = o["xright"];
+		this.ybottom = o["ybottom"];
+		this.rdiff = o["rdiff"];
+		this.bdiff = o["bdiff"];
+		this.enabled = o["enabled"];
 	};
 	//////////////////////////////////////
 	// Conditions
-	//////////////////////////////////////
-	// Conditions
+
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
 	    
@@ -215,7 +238,21 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 
 	Acts.prototype.SetEnabled = function (e)
 	{
-		this.enabled = (e !== 0);
+		// Is enabled and disabling
+		if (this.enabled && e === 0)
+			this.enabled = false;
+		// Is disabled and enabling
+		else if (!this.enabled && e !== 0)
+		{
+			this.inst.update_bbox();
+			this.xleft = this.inst.bbox.left;
+			this.ytop = this.inst.bbox.top;
+			this.xright = this.runtime.original_width - this.inst.bbox.left;
+			this.ybottom = this.runtime.original_height - this.inst.bbox.top;
+			this.rdiff = this.runtime.original_width - this.inst.bbox.right;
+			this.bdiff = this.runtime.original_height - this.inst.bbox.bottom;
+			this.enabled = true;
+		}
 	};
 	
 	//////////////////////////////////////
