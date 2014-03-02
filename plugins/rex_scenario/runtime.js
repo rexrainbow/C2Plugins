@@ -179,7 +179,13 @@ cr.plugins_.Rex_Scenario = function(runtime)
     Cnds.prototype.OnTagChanged = function ()
     {
         return true;
-    }; 	   
+    }; 	  
+
+    Cnds.prototype.IsTagExisted = function (tag)
+    {
+        return this._scenario.has_tag(tag);
+    }; 
+    
     //////////////////////////////////////
     // Actions
     function Acts() {};
@@ -202,6 +208,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Acts.prototype.LoadCmds = function (csv_string)
     {  
+        debugger;
         this._scenario.load(csv_string);
     };
     
@@ -335,7 +342,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
         for(extra_cmd_handler in this._extra_cmd_handlers)
             this._extra_cmd_handlers[extra_cmd_handler].on_reset();
             
-        this.cmd_table.reset(CSVToArray(csv_string));
+        var _arr = (csv_string != "")? CSVToArray(csv_string):[];
+        this.cmd_table.reset(_arr);
         var queue = this.cmd_table.queue;
         // check vaild
         var i, cmd;        

@@ -21,7 +21,11 @@ AddCondition(0, cf_trigger, "On execution completed", "Control", "On completed",
 AddCondition(1, 0, "Is running", "Control", "Is running", 
              "Is scenario running.", "IsRunning");
 AddCondition(2, cf_trigger, "On tag changed", "Tag", "On tag changed", 
-             "Triggered when tag changed.", "OnTagChanged");   
+             "Triggered when tag changed.", "OnTagChanged");  
+AddStringParam("Tag", 'Tag in csv table. "" is start from 1st command.', "");             
+AddCondition(3, 0, "Is tag existed", "Tag", "Is tag <i>{0}</i> existed", 
+             "Return true if tag is existed.", "IsTagExisted");
+             
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Timeline", "Timeline object to get timer");
@@ -88,7 +92,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show error message.", "Off|On"),
+    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show log.", "Off|On"),
     new cr.Property(ept_combo, "Time stamp", "Differential", "Time stamp type.", "Accumulation|Differential"),
     new cr.Property(ept_combo, "Eval mode", "Yes", 'Enable "Eval mode" for parameters. "Mem" feature only could be used in eval mode.', "No|Yes"),
 	];
