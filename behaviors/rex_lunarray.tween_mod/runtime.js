@@ -1615,6 +1615,13 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 
 	acts.SetParameter = function (tweened, playmode, easefunction, initial, target, duration, wait, cmode)
 	{
+        if (typeof(easefunction) == "string")
+        {
+            easefunction = alias_map[easefunction];
+            if (easefunction == null)
+                easefunction = 0;
+        }
+    
 		this.tweened = tweened;
 		this.playmode = playmode;
 		this.easing = easefunction;
@@ -1626,6 +1633,13 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 		this.saveState();
 		//this.init();
 	};
+
+    var alias_map = {};
+	acts.SetEasingAlias = function (alias, easefunction)
+	{
+		alias_map[alias] = easefunction;
+	};
+    
 
 	//////////////////////////////////////
 	// Expressions

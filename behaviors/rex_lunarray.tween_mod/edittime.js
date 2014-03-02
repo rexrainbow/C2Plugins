@@ -245,10 +245,76 @@ AddStringParam("Wait", "The time in seconds to wait before and after tweening.")
 AddComboParamOption("Absolute");
 AddComboParamOption("Relative");
 AddComboParam("Mode", "Select the coordinate mode.");
-AddAction(26, af_none, "Parameter set", "Parameter", "Set all tween param {my}", "Set all parameter at once.", "SetParameter");
+AddAction(26, af_none, "Parameter set", "Parameter", 
+          "Set {my}: tweened property to <b>{0}</b>, playback mode to <b>{1}</b>, easing function to <b>{2}</b>, value from <b>{3}</b> to <b>{4}</b>, duration to <b>{5}</b>, wait to <b>{6}</b>, coordinate mode to <b>{7}</b>", 
+          "Set all parameter at once.", "SetParameter");
 
 AddObjectParam("Set target object", "Choose the object to follow as target to.");
 AddAction(27, af_none, "Set target object", "Parameter", "Set {my} target object to {0}", "Set the target object of the tween.", "SetTargetObject");
+
+
+// -----
+AddStringParam("Alias", "Alias of easing function.");
+AddComboParamOption("Linear");
+AddComboParamOption("EaseInQuad");
+AddComboParamOption("EaseOutQuad");
+AddComboParamOption("EaseInOutQuad");
+AddComboParamOption("EaseInCubic");
+AddComboParamOption("EaseOutCubic");
+AddComboParamOption("EaseInOutCubic");
+AddComboParamOption("EaseInQuart");
+AddComboParamOption("EaseOutQuart");
+AddComboParamOption("EaseInOutQuart");
+AddComboParamOption("EaseInQuint");
+AddComboParamOption("EaseOutQuint");
+AddComboParamOption("EaseInOutQuint");
+AddComboParamOption("EaseInCircle");
+AddComboParamOption("EaseOutCircle");
+AddComboParamOption("EaseInOutCircle");
+AddComboParamOption("EaseInBack");
+AddComboParamOption("EaseOutBack");
+AddComboParamOption("EaseInOutBack");
+AddComboParamOption("EaseInElastic");
+AddComboParamOption("EaseOutElastic");
+AddComboParamOption("EaseInOutElastic");
+AddComboParamOption("EaseInBounce");
+AddComboParamOption("EaseOutBounce");
+AddComboParamOption("EaseInOutBounce");
+AddComboParamOption("EaseInSmoothstep");
+AddComboParamOption("EaseOutSmoothstep");
+AddComboParamOption("EaseInOutSmoothstep");
+AddComboParam("Function", "Select the easing function to apply.");
+AddAction(50, af_none, "Set alias of easing function", "Alias", "Set alias <b>{0}</b> to easing function <b>{1}</b>", "Set the alias of easing function.", "SetEasingAlias");
+
+
+AddComboParamOption("Position");
+AddComboParamOption("Size (Ratio)");
+AddComboParamOption("Width");
+AddComboParamOption("Height");
+AddComboParamOption("Angle");
+AddComboParamOption("Opacity");
+AddComboParamOption("Value");
+AddComboParamOption("Size (Pixel)");
+AddComboParam("Tweened property", "Select the tweened property to.");
+AddComboParamOption("Play Once");
+AddComboParamOption("Repeat");
+AddComboParamOption("Ping Pong");
+AddComboParamOption("Play once and destroy");
+AddComboParamOption("Loop");
+AddComboParamOption("Ping Pong Stop");
+AddComboParamOption("Play and Stop");
+AddComboParam("Playback Mode", "Set the playback mode of the tween.");
+AddStringParam("Function", "The easing function to apply by alias.");
+AddStringParam("Initial", "Initial value of position, angle, or whatever to tween from (for position it is x,y).");
+AddStringParam("Target", "Target value of position, angle, or whatever to tween to (for position it is x,y).");
+AddNumberParam("Duration", "The time in seconds for the duration of the tween.");
+AddStringParam("Wait", "The time in seconds to wait before and after tweening.");
+AddComboParamOption("Absolute");
+AddComboParamOption("Relative");
+AddComboParam("Mode", "Select the coordinate mode.");
+AddAction(51, af_none, "Parameter set", "Alias", 
+          "Set {my}: tweened property to <b>{0}</b>, playback mode to <b>{1}</b>, easing function to <b>{2}</b>, value from <b>{3}</b> to <b>{4}</b>, duration to <b>{5}</b>, wait to <b>{6}</b>, coordinate mode to <b>{7}</b>", 
+          "Set all parameter at once.", "SetParameter");
 
 ////////////////////////////////////////
 // Expressions
