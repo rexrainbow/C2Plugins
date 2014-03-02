@@ -135,6 +135,46 @@ cr.plugins_.Rex_Function2 = function(runtime)
         this.param_index += 1;
         return true;
     };     
+    
+    instanceProto.param_get = function (param_index_)
+    {
+        var fs = getCurrentFuncStack();
+        if (!fs)
+        {
+            log("[Construct 2] Rex_Function2 object: used 'Param' expression when not in a function call", "warn");
+            return null;
+        }
+        
+        var index_;
+        if (typeof(param_index_) == "string")
+        {
+            index_ = fs.name_map[param_index_];
+            if (index_ == null)
+            {
+                log("[Construct 2] Rex_Function2 object: in function '" + fs.name + "', could not find parameter " + param_index_ , "warn");
+                return null;
+            }
+        }
+        else
+            index_ = cr.floor(param_index_);
+            
+        if (index_ >= 0 && index_ < fs.params.length)
+        {
+            var value = fs.params[index_];
+            if (value == null)
+            {
+                // warn 
+                value = 0;
+            }
+            return value;
+        }
+        else
+        {
+            log("[Construct 2] Rex_Function2 object: in function '" + fs.name + "', accessed parameter out of bounds (accessed index " + index_ + ", " + fs.params.length + " params available)", "warn");
+            return null;      
+        }
+        
+    };    
     //////////////////////////////////////
     // Conditions
     function Cnds() {};
@@ -152,31 +192,25 @@ cr.plugins_.Rex_Function2 = function(runtime)
     
     Cnds.prototype.CompareParam = function (param_index_, cmp_, value_)
     {
-        var fs = getCurrentFuncStack();
-        
-        if (!fs)
+        var param_value = this.param_get(param_index_);
+        if (param_value == null)
             return false;
-        
-        var index_;
-        if (typeof(param_index_) == "string")
-        {
-            // fs.name_map[name] is a parameter number index (indexed by name)
-            index_ = fs.name_map[param_index_];
-            if (index_ == null)                            
-                return false;            
-        }
-        else
-            index_ = cr.floor(param_index_);
-        
-        if (index_ < 0 || index_ >= fs.params.length)
-            return false;
-
-        return cr.do_cmp(fs.params[index_], cmp_, value_);
+        return cr.do_cmp(param_value, cmp_, value_);
     };
     
     Cnds.prototype.DefineParam = function (name, default_value)
     {
         return this.define_param(name, default_value);
+    };    
+    
+    Cnds.prototype.TypeOfParam = function (param_index_, type_cmp)
+    {        
+        var param_value = this.param_get(param_index_);
+        if (param_value == null)
+            return false;
+            
+        var t = (type_cmp == 0)? "number":"string";        
+        return (typeof(param_value) == t);
     };    
     
     pluginProto.cnds = new Cnds();
@@ -258,44 +292,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
     
     Exps.prototype.Param = function (ret, param_index_)
     {
-        var fs = getCurrentFuncStack();
-        if (!fs)
-        {
-            log("[Construct 2] Rex_Function2 object: used 'Param' expression when not in a function call", "warn");
-            ret.set_int(0);
-            return;
-        }
-        
-        var index_;
-        if (typeof(param_index_) == "string")
-        {
-            index_ = fs.name_map[param_index_];
-            if (index_ == null)
-            {
-                log("[Construct 2] Rex_Function2 object: in function '" + fs.name + "', could not find parameter " + param_index_ , "warn");
-                ret.set_int(0);
-                return;
-            }
-        }
-        else
-            index_ = cr.floor(param_index_);
-            
-        if (index_ >= 0 && index_ < fs.params.length)
-        {
-            var value = fs.params[index_];
-            if (value == null)
-            {
-                // warn 
-                value = 0;
-            }
-            ret.set_any(value);
-        }
-        else
-        {
-            log("[Construct 2] Rex_Function2 object: in function '" + fs.name + "', accessed parameter out of bounds (accessed index " + index_ + ", " + fs.params.length + " params available)", "warn");
-            ret.set_int(0);
-        }
-        
+        ret.set_any(this.param_get(param_index_));
     };
     
     Exps.prototype.Call = function (ret, name_)

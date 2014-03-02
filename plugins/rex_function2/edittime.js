@@ -3,7 +3,7 @@
 	return {
 		"name":			"Function2",
 		"id":			"Rex_Function2",
-		"version":		"0.1",
+		"version":		"1.0",
 		"description":	"Run other events in an action, like functions in programming languages.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function2.html",
@@ -27,6 +27,12 @@ AddCondition(1, cf_none, "Compare parameter", "Function", "Parameter {0} {1} {2}
 AddStringParam("Name", "Parameter's name", '""');
 AddAnyTypeParam("Value", "The default value.");
 AddCondition(50, 0, "Declare parameter", "Input parameter", "Parameter <i>{0}</i>, default to <i>{1}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
+
+AddAnyTypeParam("Index", "The zero-based index of the parameter to get, or name in string.");
+AddComboParamOption("Number");
+AddComboParamOption("String");
+AddComboParam("Type", "The type of value.", 0);
+AddCondition(51, cf_none, "Type of parameter", "Function", "Parameter {0} is a {1}", "Test the type of parameter.", "TypeOfParam");
 
 //////////////////////////////////////////////////////////////
 // Actions
