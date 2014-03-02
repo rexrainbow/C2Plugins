@@ -63,36 +63,49 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 
 	instanceProto.tick2 = function()
 	{
+        var layer = this.layer;
 	    if ((this.width != this._width_save) || (this.height != this._height_save))
 	    {
 	        var wscale = this.width/this._width_init;
 	        var hscale = this.height/this._height_init;
 	        var scale = Math.min(wscale, hscale);
-            this.layer.scale = scale;
-            this.runtime.redraw = true;	    
+            if (layer.scale != scale)
+            {
+                layer.scale = scale;
+                this.runtime.redraw = true;	    
+            }
 	        this._width_save = this.width;
 	        this._height_save = this.height;
 	    }
 	    
 	    if (this._angle_save != this.angle)
 	    {
-	        this.layer.angle = this.angle;
-	        this.runtime.redraw = true;
+            if (layer.angle != this.angle)
+            {
+	            layer.angle = this.angle;
+	            this.runtime.redraw = true;
+            }
 	        this._angle_save = this.angle;
 	    }
 	    
 	    if (this._opactiy_save != this.opacity)
 	    {
 	        var opacity_ = cr.clamp(this.opacity, 0, 1);
-	        this.layer.opacity = opacity_;
-	        this.runtime.redraw = true;
+            if (layer.opacity != opacity_)
+            {
+	            layer.opacity = opacity_;
+	            this.runtime.redraw = true;
+            }
 	        this._opactiy_save = opacity_; 
 	    }
 	    
 	    if (this._visible_save != this.visible)
 	    {
-	        this.layer.visible = this.visible;
-	        this.runtime.redraw = true;
+            if (layer.visible != this.visible)
+            {
+	            layer.visible = this.visible;
+	            this.runtime.redraw = true;
+            }
 	        this._visible_save = this.visible;	  
 	    }	    
 	};	
