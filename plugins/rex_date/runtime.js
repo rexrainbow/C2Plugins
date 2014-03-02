@@ -144,7 +144,14 @@ cr.plugins_.Rex_Date = function(runtime)
 	};
 
 	Exps.prototype.Date2UnixTimestamp = function (ret, year, month, day, hours, minutes, seconds, milliseconds)
-	{
+	{        
+        year = year || 2000;
+        month = month || 1;
+        day = day || 1;
+        hours = hours || 0;
+        minutes = minutes || 0;
+        seconds = seconds || 0;
+        milliseconds = milliseconds || 0;
         var timestamp = new Date(year, month-1, day, hours, minutes, seconds, milliseconds); // build Date object
         ret.set_float(timestamp.getTime());
 	};

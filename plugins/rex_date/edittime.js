@@ -47,11 +47,12 @@ AddExpression(10, ef_return_number, "Get current unix timestamp", "UnixTimestamp
 AddNumberParam("Year", "Year, start with 0.", 0);
 AddNumberParam("Month", "Month, start with 1.", 1);
 AddNumberParam("Day", "Day, start with 1.", 1);
-AddNumberParam("Hours", "Hours, start with 0.", 0);
-AddNumberParam("Minutes", "Minutes, start with 0.", 0);
-AddNumberParam("Seconds", "Seconds, start with 0.", 0);
-AddNumberParam("Milliseconds", "Milliseconds, start with 0.", 0);
-AddExpression(11, ef_return_number, "Convert date to unix timestamp", "UnixTimestamp", "Date2UnixTimestamp", "Convert date to unix timestamp.");
+//AddNumberParam("Hours", "Hours, start with 0.", 0);
+//AddNumberParam("Minutes", "Minutes, start with 0.", 0);
+//AddNumberParam("Seconds", "Seconds, start with 0.", 0);
+//AddNumberParam("Milliseconds", "Milliseconds, start with 0.", 0);
+AddExpression(11, ef_return_number | ef_variadic_parameters, "Convert date to unix timestamp", "UnixTimestamp", "Date2UnixTimestamp", 
+              'Convert date to unix timestamp, the full parameters are "Year,Month,Day,Hours,Minutes,Seconds,Milliseconds"');
 
 ACESDone();
 
