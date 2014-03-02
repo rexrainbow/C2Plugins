@@ -42,8 +42,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	var FNTYPE_UK = 0;          // unknow 
 	var FNTYPE_NA = 1;	        // not avaiable
 	var FNTYPE_REXFNEX = 2;     // rex_functionext
-	var FNTYPE_OFFICIALFN = 3;  // official function
-	var FNTYPE_REXFN = 4;       // rex_function
+    var FNTYPE_REXFN2 = 3;     // rex_function2
+	var FNTYPE_OFFICIALFN = 4;  // official function
+	var FNTYPE_REXFN = 5;       // rex_function
 	instanceProto.onCreate = function()
 	{     
         this.update_with_game_time = (this.properties[0] == 1);
@@ -155,8 +156,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         if (raise_assert_when_not_fnobj_avaiable)
         {
-            var has_func = (cr.plugins_.Rex_FnExt != null)   || 
-                           (cr.plugins_.Function != null)    ||
+            var has_func = (cr.plugins_.Rex_FnExt != null)      || 
+                           (cr.plugins_.Rex_Function2 != null)  ||
+                           (cr.plugins_.Function != null)       ||
                            (cr.plugins_.Rex_Function != null);
             assert2(has_func, "Function extension or official function, or rex_function was not found.");
         }
@@ -179,6 +181,25 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                 }                                          
             }
 		}
+        
+        var plugins = this.runtime.types;			
+        var name, plugin;
+		// try to get callback from rex_function2
+		if (cr.plugins_.Rex_Function2 != null)
+		{
+            this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
+			this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
+            for (name in plugins)
+            {
+                plugin = plugins[name];
+                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
+                {
+                    this._fnobj = plugin.instances[0];
+				    this._fnobj_type = FNTYPE_REXFN2;
+                    return;
+                }                                          
+            }
+		}        
         
         // try to get callback from official function
 		if (cr.plugins_.Function != null)    
@@ -227,6 +248,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		case FNTYPE_REXFNEX:     // rex_functionext
 		    this._fnobj.CallFunction(name, params);
 			break;
+        case FNTYPE_REXFN2:      // rex_function2            
 	    case FNTYPE_OFFICIALFN:  // official function
             this._act_call_fn.call(this._fnobj, name, params);
 			break;
@@ -247,6 +269,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	    switch (this._fnobj_type)
 		{
 		case FNTYPE_REXFNEX:     // rex_functionext
+        case FNTYPE_REXFN2:      // rex_function2
 		case FNTYPE_OFFICIALFN:  // official function
 		case FNTYPE_REXFN:       // rex_function	 
 		    this._exp_call.apply(this._fnobj, params);
