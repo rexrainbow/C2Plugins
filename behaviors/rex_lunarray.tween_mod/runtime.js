@@ -1053,6 +1053,7 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 				this.active = false;
 				this.reverse = false;
 				this.i = this.duration + this.initiating + this.cooldown;
+                this.onCountEnd = true;
 				//this.saveState();
 			} else if (this.playmode == 1) {
 				//repeat
@@ -1121,6 +1122,7 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 				this.reverse = false;
 				this.i = this.duration + this.initiating + this.cooldown;
 				this.active = false;
+                this.onCountEnd = true;
 			}
 			//end of playmode if
 		}

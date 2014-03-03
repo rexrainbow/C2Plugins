@@ -54,7 +54,7 @@ AddCmpParam("Comparison", "Select how to compare the group tweening progress.");
 AddNumberParam("Value", "Value to compare the progress to.");
 AddCondition(6, 0, "Compare group progress", "", "{my} group progress at least {0} {1}", "Compare the slowest in tween group progress to a value .", "CompareGroupProgress");
 
-AddCondition(30, cf_trigger, "On count end", "", "On {my} count end", "Triggered when the tween counting finished and is entering cooldown state.", "OnCountEnd");
+AddCondition(30, cf_trigger, "On count end", "Finish", "On {my} count end", "Triggered when the tween counting finished and is entering cooldown state.", "OnCountEnd");
 ////////////////////////////////////////
 // Actions
 
