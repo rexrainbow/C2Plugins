@@ -522,16 +522,16 @@ cr.plugins_.rex_TagText = function(runtime)
 		this._tag = {};
 		if (solModifierAfterCnds)
 		{
-		    this.plugin.runtime.pushCopySol(current_event.solModifiers);
+		    this.runtime.pushCopySol(current_event.solModifiers);
 		    current_event.retrigger();
-		    this.plugin.runtime.popSol(current_event.solModifiers);
+		    this.runtime.popSol(current_event.solModifiers);
 		}
 		else
 		{
 		    current_event.retrigger();
 		}
 		
-		this.canvas_text["defineClass"](name, this._tag);    
+		this.canvas_text["defineClass"](name, this._tag);           
 		return false;
 	};	
 	
@@ -746,9 +746,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		ret.set_int(this.lines.length * (this.pxHeight + this.line_height_offset) - this.line_height_offset);
 	};
 
-	Exps.prototype.Text = function(ret)
+	Exps.prototype.RawText = function(ret)
 	{
 		ret.set_string(this.canvas_text["rawTextGet"]());
 	};
-	
 }());
