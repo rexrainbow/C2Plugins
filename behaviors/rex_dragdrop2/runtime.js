@@ -42,14 +42,15 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         if (this.touchwrap != null)
             return;
             
+        assert2(cr.plugins_.rex_TouchWrap, "Drag drop behavior: Can not find touchWrap oject.");
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.rex_TouchWrap.prototype.Instance)
             {
-                this.touchwrap = obj;
+                this.touchwrap = inst;
                 this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
                 this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;
                 this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteXForID;
@@ -58,7 +59,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                 break;
             }
         }
-        assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
+        assert2(this.touchwrap, "Drag drop behavior: Can not find touchWrap oject.");
 	};  
     
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
