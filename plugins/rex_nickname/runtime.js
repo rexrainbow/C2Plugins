@@ -10,10 +10,12 @@ cr.plugins_.Rex_Nickname = function(runtime)
 {
 	this.runtime = runtime;
 };
-cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_index[_index]}
+cr.plugins_.Rex_Nickname.nickname2objtype = {};  // {sid:_sid, index:types_by_index[_index
+cr.plugins_.Rex_Nickname.sid2nickname = {};  // {sid:nickname}
 cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 {
     cr.plugins_.Rex_Nickname.nickname2objtype[nickname] = {sid:objtype.sid, index:-1};
+    cr.plugins_.Rex_Nickname.sid2nickname[objtype.sid.toString()] = nickname;
 };
 
 (function ()
@@ -47,6 +49,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	instanceProto.onCreate = function()
 	{	    
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
+        this.sid2nickname = cr.plugins_.Rex_Nickname.sid2nickname;
 	    this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
 	};
     
@@ -179,6 +182,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	    {
 	        name = sid2name[sid];
             this.nickname2objtype[name] = {sid:parseInt(sid, 10), index:-1};
+            this.sid2nickname[sid.toString()] = name;
 	    }
 	};
 	//////////////////////////////////////
