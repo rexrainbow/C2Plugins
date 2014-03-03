@@ -192,7 +192,6 @@ cr.behaviors.rex_Anchor_mod = function(runtime)
 			}
 		}
 		
-		log("OnAnchored");
 		if (this.set_once)
 		    this.runtime.trigger(cr.behaviors.rex_Anchor_mod.prototype.cnds.OnAnchored, this.inst); 
 	};
