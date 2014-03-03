@@ -55,12 +55,23 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	{
 	    if (cr.plugins_.Rex_Nickname == null)
 		    return;
-        if (cr.plugins_.Rex_Nickname.nickname2objtype[nickname] != null)
-            return;
+            
         var nickname = (_mode == 1)? this.inst.type.sid:
                                      _nickname;
-	    this.nickname = nickname;                                     
-        cr.plugins_.Rex_Nickname.AddNickname(nickname, this.inst.type);
+        if (nickname == "")
+        {
+            nickname = cr.plugins_.Rex_Nickname.sid2nickname[this.inst.type.sid.toString()];  // try to get nickname from nickname plugin
+            if (nickname != null)
+                this.nickname = nickname;
+            else
+                this.nickname = "";
+        }
+        else
+        {
+	        this.nickname = nickname;                                     
+            cr.plugins_.Rex_Nickname.AddNickname(nickname, this.inst.type);        
+        }
+        
 	};  	
 	//////////////////////////////////////
 	// Conditions
