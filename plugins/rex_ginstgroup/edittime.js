@@ -181,7 +181,10 @@ AddObjectParam("Instances", "Instances to be set into group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(28, 0, "Clean & Add", "Group: Set", "Clean and Add <i>{0}</i> into group <i>{1}</i>", 
           "Clean and Add instances into group.", "CleanAdddInsts");
-          
+AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddStringParam("Name", "Group name.", '""');
+AddAction(29, 0, "Clean & Add by UID", "Group: Set", "Clean and Add instance UID: <i>{0}</i> into group <i>{1}</i>", 
+          "Clean and Add instances into group.", "CleanAdddInstByUID");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

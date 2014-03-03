@@ -611,7 +611,13 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
         cr.plugins_.Rex_gInstGroup.prototype.acts.Clean.call(this, name);
         cr.plugins_.Rex_gInstGroup.prototype.acts.AddInsts.call(this, objtype, name);
-	};	    
+	};
+	
+    Acts.prototype.CleanAdddInstByUID = function (uid, name)
+	{
+        cr.plugins_.Rex_gInstGroup.prototype.acts.Clean.call(this, name);  
+        cr.plugins_.Rex_gInstGroup.prototype.acts.AddInstByUID.call(this, uid, name);        
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
