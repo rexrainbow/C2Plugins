@@ -95,17 +95,22 @@ cr.behaviors.Rex_Button2 = function(runtime)
     {
         if (this.behavior_index == null )
             return;
-			
+	    
 		var insts = this.objtype.instances;
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
         {
 		    inst = insts[i];
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }
             behavior_inst = inst.behavior_insts[this.behavior_index];
 			if ((behavior_inst._touch_src == touch_src) && (behavior_inst._state == CLICK_DETECTING_STATE))
                 behavior_inst.finish_click_detecting();            
         }	    
-    };  
+    };
 
 	/////////////////////////////////////
 	// Behavior instance class
@@ -192,13 +197,14 @@ cr.behaviors.Rex_Button2 = function(runtime)
 
 	behinstProto._set_animation = function(display, name)
 	{      
-	    if (display == "")
-	        return;
-	        
        if (typeof(display) == "number")
+       {
            this._display_frame(display);
-       else
+       }
+       else if (display != "")
+       {
            this._display_animation(display);
+       }
        this._display.cur_name = name;        
 	}; 
     
