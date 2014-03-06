@@ -63,6 +63,16 @@ AddComboParamOption("Destination atop");
 AddComboParam("Blend mode", "Choose the new blend mode for this object.");
 AddAction(6, 0, "Set blend mode", "Appearance", "Set blend mode to <i>{0}</i>", "Set the background blend mode for this object.", "SetEffect");
 
+AddComboParamOption("normal");
+AddComboParamOption("bold");
+AddComboParamOption("italic");
+AddComboParamOption("bold and italic");
+AddComboParam("Style", "Choose the style for the given font face.");
+AddAction(50, 0, "Set font style", "Appearance", "Set font style <i>{0}</i>", "Set the font style.", "SetFontStyle");
+
+AddStringParam("Font face", "The new font face name to set.", "\"Arial\"");
+AddAction(51, 0, "Set font face only", "Appearance", "Set font face to <i>{0}</i>", "Set the font face.", "SetFontFace2");
+
 ////////////////////////
 AddExpression(0,	ef_return_string,	"Get text",			"Text",			"Text",		"Get the object's text.");
 AddExpression(1,	ef_return_string,	"Get face name",	"Appearance",	"FaceName",	"Get the current font face name.");
@@ -75,16 +85,17 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_text,		"Text",		lang("project\\misc\\text-initialtext"), "Text to display."),
-	new cr.Property(ept_combo, "Initial visibility",	"Visible",	"Choose whether the object is visible when the layout starts.", "Visible|Invisible"),
-	new cr.Property(ept_font, 		"Font",		"Arial,-16",	"Choose the font to display.  This applies to all instances of this type."),
-	new cr.Property(ept_color,		"Color",	cr.RGB(0, 0, 0),	"Color of the text."),
-	new cr.Property(ept_combo,		"Horizontal alignment", "Left", "Horizontal alignment of the text.", "Left|Center|Right"),
-	new cr.Property(ept_combo,		"Vertical alignment", "Top", "Vertical alignment of the text.", "Top|Center|Bottom"),
-	new cr.Property(ept_combo,	"Hotspot",				"Top-left",	"Choose the location of the hot spot in the object.", "Top-left|Center"),
-	new cr.Property(ept_combo,	"Wrapping",		"Word", "Wrap text by space-separated words or nearest character.", "Word|Character"),
-	new cr.Property(ept_float,	"Line height",	0, "Offset to the default line height, in pixels. 0 is default line height."),
-	new cr.Property(ept_float,	"Shift down",	13, "Shift the text down, in pixels.")
+	new cr.Property(ept_text, "Text", lang("project\\misc\\text-initialtext"), "Text to display."),
+	new cr.Property(ept_combo, "Initial visibility", "Visible",	"Choose whether the object is visible when the layout starts.", "Visible|Invisible"),
+	new cr.Property(ept_font, "Font", "Arial,-16",	"Choose the font to display.  This applies to all instances of this type."),
+	new cr.Property(ept_color, "Color", cr.RGB(0, 0, 0),	"Color of the text."),
+	new cr.Property(ept_combo, "Horizontal alignment", "Left", "Horizontal alignment of the text.", "Left|Center|Right"),
+	new cr.Property(ept_combo, "Vertical alignment", "Top", "Vertical alignment of the text.", "Top|Center|Bottom"),
+	new cr.Property(ept_combo, "Hotspot", "Top-left",	"Choose the location of the hot spot in the object.", "Top-left|Center"),
+	new cr.Property(ept_combo, "Wrapping", "Word", "Wrap text by space-separated words or nearest character.", "Word|Character"),
+	new cr.Property(ept_float, "Line height", 0, "Offset to the default line height, in pixels. 0 is default line height."),
+	new cr.Property(ept_combo, "Baseline", "Top", "Baseline of text alignment.", "Alphabetic|Top"),
+	new cr.Property(ept_float, "Shift down", 13, "Shift the text down for alphabetic baseline, in pixels."),	
 	];
 	
 // Called by IDE when a new object type is to be created

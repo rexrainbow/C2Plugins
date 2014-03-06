@@ -305,27 +305,35 @@ cr.plugins_.Rex_Layouter = function(runtime)
         return  (sol.instances.length >0);       
 	};
  	     
+    var name2type = {};  // private global object
 	instanceProto._pick_all_insts = function ()
-	{
-	    var type_name, _container, uid, inst, objtype, sol;
-        for (type_name in this.insts_group)
-        {
-            _container = this.insts_group[type_name];
-            objtype = null;
-            for (uid in _container)
-            {
-                inst = _container[uid];
-                if (objtype == null)
-                {
-                    objtype = inst.type;
-                    sol = objtype.getCurrentSol();
-                    sol.select_all = false;
-                    sol.instances.length = 0;
-                }
-                sol.instances.push(inst);
-            }
-        }
-	}; 	
+	{	    
+	    var uid, inst, objtype, sol;
+	    var uids = this._uids;
+	    hash_clean(name2type);
+	    var has_inst = false;    
+	    for (uid in uids)
+	    {
+	        inst = this._uid2inst(uid);
+            if (inst == null)
+                continue;
+	        objtype = inst.type; 
+	        sol = objtype.getCurrentSol();
+	        if (!(objtype.name in name2type))
+	        {
+	            sol.select_all = false;
+	            sol.instances.length = 0;
+	            name2type[objtype.name] = objtype;
+	        }
+	        sol.instances.push(inst);  
+	        has_inst = true;
+	    }
+	    var name;
+	    for (name in name2type)
+	        name2type[name].applySolToContainer();
+	    hash_clean(name2type);
+	    return has_inst;
+	}; 
 	
 	instanceProto._destory_all_insts = function ()
 	{
@@ -433,6 +441,23 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    return (bbox.top+bbox.bottom)/2;            
 	};
     
+	var hash_clean = function (obj)
+	{
+	    var k;
+	    for (k in obj)
+	        delete obj[k];
+	};  
+    
+	var is_hash_empty = function (obj)
+	{
+	    var k;
+	    for (k in obj)
+        {
+            return false;
+        }
+        return true;
+	};
+	
 	instanceProto.saveToJSON = function ()
 	{
 		return { "uids": this._uids, 
@@ -502,8 +527,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	Cnds.prototype.PickAllInsts = function ()
 	{
         this._remove_invalid_insts();	
-	    this._pick_all_insts();
-	    return true;
+	    return this._pick_all_insts();
 	};
  
 			

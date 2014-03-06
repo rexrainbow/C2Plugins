@@ -45,7 +45,7 @@
         this.fontFamily = "Verdana";
         this.fontWeight = "normal";
         this.fontSize = "12px";
-        this.fontColor = "#000";
+        this.fontColor = "#000000";
         this.fontStyle = "normal";
         this.textAlign = "start";
         this.textBaseline = "alphabetic";
@@ -173,13 +173,18 @@
         var i,l,lcnt = pens.length;
         var j,w,wcnt, last_word, line_width;
         var offset_x=0, offset_y=0;
-        
-        offset_y += this.vshift;  // shift line down    
+
 		// vertical alignment
 		if (this.valign === 1)		// center
 			offset_y = Math.max( (boxHeight - (lcnt * this.lineHeight)) / 2, 0);
 		else if (this.valign === 2)	// bottom
 			offset_y = Math.max(boxHeight - (lcnt * this.lineHeight) - 2, 0);
+        else
+            offset_y = 0;
+        
+        if (this.textBaseline == "alphabetic")
+            offset_y += this.vshift;  // shift line down    
+        
 			
         for(i=0; i<lcnt; i++)
         {

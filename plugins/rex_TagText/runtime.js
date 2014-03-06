@@ -93,7 +93,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.lastheight = this.height;
 		
 		this.line_height_offset = this.properties[8];
-		this.vshift = this.properties[9];
+		this.vshift = this.properties[10];
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
@@ -132,6 +132,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.canvas_text["halign"] = this.halign;
 		this.canvas_text["valign"] = this.valign;
 		this.canvas_text["vshift"] = this.vshift * this.runtime.devicePixelRatio;
+		this.canvas_text["textBaseline"] = (this.properties[9] == 0)? "alphabetic":"top";
 		this.lines = this.canvas_text["rawTextLine"];
 	};
 	
@@ -469,7 +470,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			"properties": [
 				{"name": "Text", "value": this.text},
 				{"name": "Font", "value": this.font},
-				{"name": "Line height", "value": this.line_height_offset}
+				{"name": "Line height", "value": this.line_height_offset},
+				{"name": "Baseline", "value": this.canvas_text["textBaseline"]},
 			]
 		});
 	};
@@ -705,7 +707,48 @@ cr.plugins_.rex_TagText = function(runtime)
 		cr.setGLBlend(this, effect, this.runtime.gl);
 		this.runtime.redraw = true;
 	};
-
+	
+	Acts.prototype.SetFontStyle = function (style_)
+	{
+		var newstyle = "";
+		
+		switch (style_) {
+		case 1: newstyle = "bold"; break;
+		case 2: newstyle = "italic"; break;
+		case 3: newstyle = "bold italic"; break;
+		}
+		    	    
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+	        this._tag["fontStyle"] = newstyle;	       
+	    }
+	    else    // global
+	    {
+	            	    
+		    if (newstyle === this.fontstyle)
+		    	return;		// no change
+		    	
+		    this.fontstyle = newstyle;
+		    this.updateFont();
+	    }
+	};
+	
+	Acts.prototype.SetFontFace2 = function (face_)
+	{    
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+	        this._tag["fontFamily"] = face_;	       
+	    }
+	    else    // global
+	    {
+	            	    
+		    if (face_ === this.facename)
+		    	return;		// no change
+		    	
+		    this.facename = face_;
+		    this.updateFont();
+	    }
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
