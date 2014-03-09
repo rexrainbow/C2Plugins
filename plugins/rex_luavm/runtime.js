@@ -5,7 +5,8 @@ assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
 // load lua.vm.js
-document.write('<script src="lua.vm.js"></script>');
+// document.write('<script src="lua.vm.js"></script>');
+
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_luaVM = function(runtime)
@@ -219,27 +220,28 @@ end\n\
 		_thisArg = this;   
         run_init_code();        
 	};
-	
-	instanceProto._timeline_get = function ()
-	{
+    
+    instanceProto._timeline_get = function ()
+    {
         if (this.timeline != null)
             return this.timeline;
     
+        assert2(cr.plugins_.Rex_TimeLine, "Luavm: Can not find timeline oject.");
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TIMELINE"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_TimeLine.prototype.Instance)
             {
-                this.timeline = obj;
+                this.timeline = inst;
                 return this.timeline;
             }
         }
-        assert2(this.timeline, "Scenario: Can not find timeline oject.");
+        assert2(this.timeline, "Luavm: Can not find timeline oject.");
         return null;	
-	};
-	
+    };
+        
 	var _timer_start = function (delay_time, task_name)
 	{
         var timer = _thisArg.timer_cache.alloc(_thisArg, _thisArg._on_timeout);
