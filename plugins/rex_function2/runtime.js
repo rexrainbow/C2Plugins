@@ -246,8 +246,11 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
         if (this.is_debug_mode)
         {
-            log(fs.name + " : " + fs.params.toString());
-        }
+            var i, lead = "+";
+            for(i=1; i<funcStackPtr; i++)
+                lead += "-";             
+            log(lead + fs.name + " : " + fs.params.toString());
+        }      
         this.function_call_prelude();
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
@@ -320,8 +323,11 @@ cr.plugins_.Rex_Function2 = function(runtime)
             var str_name2value = "";
             for(n in fs.name2value)
                 str_name2value += (n + "=" + fs.name2value[n]+ ", ");
-            log(fs.name + " : " + str_name2value);
-        }             
+            var i, lead = "+";
+            for(i=1; i<funcStackPtr; i++)
+                lead += "-";  
+            log(lead+ fs.name + " : " + str_name2value);
+        }                   
         this.function_call_prelude();
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
@@ -384,8 +390,11 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
         if (this.is_debug_mode)
         {
-            log(fs.name + " : " + fs.params.toString());
-        }         
+            var i, lead = "+";
+            for(i=1; i<funcStackPtr; i++)
+                lead += "-";                 
+            log(lead+ fs.name + " : " + fs.params.toString());
+        }        
         this.function_call_prelude();       
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
@@ -419,8 +428,11 @@ cr.plugins_.Rex_Function2 = function(runtime)
             var str_name2value = "";
             for(n in fs.name2value)
                 str_name2value += (n + "=" + fs.name2value[n]+ ", ");
-            log(fs.name + " : " + str_name2value);
-        }       
+            var i, lead = "+";
+            for(i=1; i<funcStackPtr; i++)
+                lead += "-";  
+            log(lead+ fs.name + " : " + str_name2value);
+        }
         this.function_call_prelude(); 
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
