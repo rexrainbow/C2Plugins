@@ -208,7 +208,6 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Acts.prototype.LoadCmds = function (csv_string)
     {  
-        debugger;
         this._scenario.load(csv_string);
     };
     
@@ -243,9 +242,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this._scenario.offset = offset;
     }; 
     
-    Acts.prototype.Continue = function ()
+    Acts.prototype.Continue = function (key)
     {
-        this._scenario.resume();
+        this._scenario.resume(key);
     };
     
     Acts.prototype.GoToTag = function (tag)
@@ -469,7 +468,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     ScenarioKlassProto._exit = function ()
     {      
         if (this.is_debug_mode)
-            log ("Scenario finished");  
+            log ("Scenario: Scenario finished");  
             
         this.is_running = false;
         var inst = this.plugin;
@@ -480,9 +479,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this.is_pause = true;
     };
-    ScenarioKlassProto.resume = function()
+    ScenarioKlassProto.resume = function(key)
     {
         if (!(this.is_pause && this.is_running))
+            return;
+        var is_unlock = this.cmd_handler_get("wait").unlock(key);
+        if (!is_unlock)
             return;
         this.is_pause = false;
         this._reset_abs_time();
@@ -597,7 +599,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         /**END-PREVIEWONLY**/	
         
         if (this.is_debug_mode)
-            log (name+":"+params.toString());  
+            log ("Scenario: "+name+":"+params.toString());  
         this._execute_c2fn(name, params);
     };
     
@@ -698,6 +700,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     // extra command : WAIT
     var CmdWAITKlass = function(scenario)
     {
+        this.locked = null;
         this.scenario = scenario;
     };
     var CmdWAITKlassProto = CmdWAITKlass.prototype;    
@@ -705,18 +708,37 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdWAITKlassProto.on_parsing = function(index, cmd_pack) {};
     CmdWAITKlassProto.on_executing = function(cmd_pack)
     {
+        var locked = cmd_pack[1];
+        if (locked != null)
+        {
+            locked = this.scenario.param_get(locked);
+            this.locked = locked;
+        }    
+        else
+        {    
+            locked = "";
+            this.locked = null;
+        }   
+        
         /**BEGIN-PREVIEWONLY**/
         var debugger_info=this.scenario.debugger_info;
         debugger_info.length = 0;
-        debugger_info.push({"name": "WAIT", "value": ""});	
+        debugger_info.push({"name": "WAIT", "value": locked});	
         /**END-PREVIEWONLY**/	
         
-        if (this.scenario.is_debug_mode)
-            log ("WAIT");
+        if (this.scenario.is_debug_mode)                    
+            log ("Scenario: WAIT "+ locked);        
             
         this.scenario.pause();
         return false;  // is_continue
     }; 
+    CmdWAITKlassProto.unlock = function(key) 
+    {
+        if (key == null)   // null could unlock all
+            return true;
+        
+        return (key == this.locked)
+    };
     
     // extra command : TIMESTAMP
     var CmdTIMESTAMPKlass = function(scenario)
@@ -750,7 +772,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         /**END-PREVIEWONLY**/	
         
         if (this.scenario.is_debug_mode)
-            log ("EXIT"); 
+            log ("Scenario: EXIT"); 
         this.scenario._exit();
         return false;  // is_continue
     };
@@ -780,7 +802,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdTAGKlassProto.on_executing = function(cmd_pack)
     {	   
         if (this.scenario.is_debug_mode)
-            log ("TAG "+cmd_pack[1]); 
+            log ("Scenario: TAG "+cmd_pack[1]); 
             
         this.last_tag = cmd_pack[1];
         this.scenario._reset_abs_time();
@@ -821,7 +843,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdGOTOKlassProto.on_executing = function(cmd_pack)
     {	   
         if (this.scenario.is_debug_mode)
-            log ("GOTO tag "+cmd_pack[1]); 
+            log ("Scenario: GOTO tag "+cmd_pack[1]); 
             
         var tag = this.scenario.param_get(cmd_pack[1]);
         var index = this.scenario.cmd_handler_get("tag").tag2index(tag);
@@ -853,7 +875,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdIFKlassProto.on_executing = function(cmd_pack) 
     {
         if (this.scenario.is_debug_mode)
-            log ("IF "+cmd_pack[1]);
+            log ("Scenario: IF "+cmd_pack[1]);
             
         var cond = this.scenario.param_get(cmd_pack[1]);
         var CmdENDIF = this.scenario.cmd_handler_get("end if");
@@ -892,7 +914,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdELSEIFKlassProto.on_executing = function(cmd_pack) 
     {
         if (this.scenario.is_debug_mode)
-            log ("ELSE IF "+cmd_pack[1]);    
+            log ("Scenario: ELSE IF "+cmd_pack[1]);    
             
         // go to end
         var goto_end_flag = this.scenario.cmd_handler_get("end if").goto_end_flag;
@@ -943,7 +965,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdELSEKlassProto.on_executing = function(cmd_pack) 
     {
         if (this.scenario.is_debug_mode)
-            log ("ELSE");        
+            log ("Scenario: ELSE");        
             
         // go to end
         var goto_end_flag = this.scenario.cmd_handler_get("end if").goto_end_flag;
@@ -991,7 +1013,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     CmdENDIFKlassProto.on_executing = function(cmd_pack) 
     {
         if (this.scenario.is_debug_mode)
-            log ("END IF ");    
+            log ("Scenario: END IF ");    
             
         this.goto_end_flag = false;
         // goto next line

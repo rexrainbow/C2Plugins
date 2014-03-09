@@ -55,7 +55,7 @@ AddNumberParam("Offset", "Time offset at start", 0);
 AddAction(7, 0, "Set time offset", "Setting", 
           "Set offset to <i>{1}</i>", 
           "Set time offset.", "SetOffset");   
-AddAction(20, 0, "Continue", "Response - Wait", 
+AddAction(20, 0, "Continue all", "Response - Wait", 
           "Continue scenario (response of wait command)", 
           "Continue scenario, response of wait command.", "Continue");  
 AddStringParam("Tag", "Tag in csv table", "");
@@ -71,6 +71,10 @@ AddAction(31, 0, "Set value", "Memory",
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(32, 0, "Load from JSON", "Memory", "Load MEM form JSON string to <i>{0}</i>",
          "Load memory from JSON string.", "StringToMEM");
+AddAnyTypeParam("Key", "Key of locked-wait command", "");         
+AddAction(33, 0, "Continue with key", "Response - Wait", 
+          "Continue scenario (response of wait <i>{0}</i> command)", 
+          "Continue scenario, response of locked-wait command.", "Continue");           
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 
