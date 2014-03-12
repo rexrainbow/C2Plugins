@@ -23,18 +23,31 @@ AddAudioFileParam("Audio file", "Choose the audio file to play.");
 AddComboParamOption("not looping");
 AddComboParamOption("looping");
 AddComboParam("Loop", "Whether or not to initially play the sound in a loop (repeating).", 0);
-AddNumberParam("Volume", "1 is original volume, 0 is the minimum.", 1);
+AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
 AddStringParam("Tag (optional)", "A tag, which can be anything you like, to use to reference this sound in future.", '""');
 AddNumberParam("Fade-in", "The duration of fade-in, in second.", 1);
-AddAction(1, 0, "Play", "General", "Play <b>{0}</b> {1} at volume to {2} (tag <i>{3}</i>) with fade-in to <b>{4}</b> second", "Play an audio file with fade-in.", "Play");    
+AddAction(1, 0, "Play", "Playback", "Play <b>{0}</b> {1} at volume to {2} (tag <i>{3}</i>) with fade-in to <b>{4}</b> second", "Play an audio file with fade-in.", "Play");    
 
 AddStringParam("Tag", "The tag identifying the sound to stop.  Leave empty to affect the last played sound.", '""');
 AddNumberParam("Fade-out", "The duration of fade-out, in second.", 1);
-AddAction(2, 0, "Stop", "General", "Stop <b>{0}</b> with fade-out to <b>{1}</b> second", "Stop a sound from playing with fade-out.", "Stop");
+AddAction(2, 0, "Stop", "Playback", "Stop <b>{0}</b> with fade-out to <b>{1}</b> second", "Stop a sound from playing with fade-out.", "Stop");
 
 AddStringParam("Tag", "The tag identifying the sound to loop.  Leave empty to affect the last played sound.", '""');
-AddNumberParam("Volume", "1 is original volume, 0 is the minimum.", 1);
-AddAction(3, 0, "Set volume", "General", "Set <i>{0}</i> volume to <b>{1}</b>", "Set the volume (loudness) of a sound.", "SetVolume");
+AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
+AddNumberParam("Fade", "The duration of fade, in second.", 1);
+AddAction(3, 0, "Set volume", "Volume", "Set <i>{0}</i> volume to <b>{1}</b> with fade to <b>{2}</b> second", "Set the volume (loudness) of a sound with fade.", "SetVolume");
+
+AddComboParamOption("Sounds");
+AddComboParamOption("Music");
+AddComboParam("Folder", "Choose the folder which contains the audio file.");
+AddStringParam("Audio file name", "A string with the name of the audio file to play, without the file extension.  For example, to play myfile.ogg, use only \"myfile\".");
+AddComboParamOption("not looping");
+AddComboParamOption("looping");
+AddComboParam("Loop", "Whether or not to initially play the sound in a loop (repeating).", 0);
+AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
+AddStringParam("Tag (optional)", "A tag, which can be anything you like, to use to reference this sound in future.", '""');
+AddNumberParam("Fade-in", "The duration of fade-in, in second.", 1);
+AddAction(4, 0, "Play (by name)", "Playback", "Play <b>{1}</b> {2} from {0} at volume to {3} (tag <i>{4}</i>) with fade-in to <b>{5}</b> second", "Play an audio file using a string for the filename.", "PlayByName");
 
 AddStringParam("Audio file", "Audio file string", "");
 AddAction(50, 0, "Preload", "Preload", "Preload <b>{0}</b>", 
