@@ -1,7 +1,7 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"MP Hub",
+		"name":			"MP wrap",
 		"id":			"Rex_MPwrap",
 		"version":		"0.1",        
 		"description":	"A hub of official multi-player plugin",

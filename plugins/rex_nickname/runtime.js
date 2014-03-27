@@ -166,23 +166,19 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 
 	instanceProto.saveToJSON = function ()
 	{    
-	    var sid2name = {};
-	    var name, objtype;
-	    for (name in this.nickname2objtype)
-	        sid2name[this.nickname2objtype[name][sid]] = name;
-		return { "sid2name": sid2name,
+		return { "sid2name": this.sid2nickname,
 		         };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{   
-	    var sid2name = o["sid2name"];	   
+	    var sid2name = o["sid2name"];
+	    this.sid2nickname = sid2name; 	   
 	    var sid, name, objtype;
 	    for (sid in sid2name)
 	    {
 	        name = sid2name[sid];
             this.nickname2objtype[name] = {sid:parseInt(sid, 10), index:-1};
-            this.sid2nickname[sid.toString()] = name;
 	    }
 	};
 	//////////////////////////////////////

@@ -56,6 +56,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
         /**END-PREVIEWONLY**/	
     };
     
+	instanceProto.onDestroy = function ()
+	{
+        this._scenario.onDestroy();
+	};     
+    
     instanceProto._timeline_get = function ()
     {
         if (this.timeline != null)
@@ -303,7 +308,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.is_debug_mode = true;
         this.is_eval_mode = true;          
         this.is_accT_mode = false;
-        this.cmd_table = new CmdQueueKlass();        
+        this.cmd_table = new CmdQueueKlass(this);        
         // default is the same as worksheet 
         // -status-
         this.is_running = false;
@@ -333,6 +338,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     var ScenarioKlassProto = cr.plugins_.Rex_Scenario.ScenarioKlass.prototype;
     
+	ScenarioKlassProto.onDestroy = function ()
+	{
+        if (this.timer)
+            this.timer.Remove();
+	};
+	    
     // export methods
     ScenarioKlassProto.load = function (csv_string)
     {        
@@ -416,6 +427,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
             assert2(index, "Scenario: Could not find tag "+tag);
             return;
         }
+        
+        if (this.is_debug_mode)
+            log ("Scenario: Start at tag: "+ tag + " , index = " + index);  
         this._run_next_cmd(index);
     };  
     
@@ -663,8 +677,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     
     // CmdQueueKlass
-    var CmdQueueKlass = function(queue)
+    var CmdQueueKlass = function(scenario, queue)
     {
+        this.scenario = scenario;
         this.queue = null;
         this.reset(queue);
     };
@@ -682,6 +697,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (index == null)
             index = this.current_index+1;
         var cmd = this.queue[index];
+        if (this.scenario.is_debug_mode)
+            log ("Scenario: Get command from index = "+index);  
+                    
         this.current_index = index;
         return cmd;
     };
@@ -695,6 +713,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {    
         this.queue = o["q"];
         this.current_index = o["i"];  
+        
+        if (this.scenario.is_debug_mode)
+            log ("Scenario: Load, start at index = "+this.current_index);  
     }; 	
     
     // extra command : WAIT

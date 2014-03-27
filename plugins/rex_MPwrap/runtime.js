@@ -46,11 +46,19 @@ cr.plugins_.Rex_MPwrap = function(runtime)
         this.MP_IsHost = null;
         //this.MP_HostBroadcastMessage = null;        
         this.MP_SendPeerMessage = null;
-        
+                
         this.msg_router = new cr.plugins_.Rex_MPwrap.MsgRouterKlass();
-        this._override();
+        
+        // initial at tick()
+        this.runtime.tickMe(this);        
 	};
-    
+        
+    instanceProto.tick = function()
+    {         
+        this._multiplayer_get();    // connect to mpwrap
+        this.runtime.untickMe(this);
+    };
+        
     instanceProto._multiplayer_get = function ()
     {
         if (this.multiplayer != null)
@@ -65,6 +73,7 @@ cr.plugins_.Rex_MPwrap = function(runtime)
             if (inst instanceof cr.plugins_.Multiplayer.prototype.Instance)
             {
                 this.multiplayer = inst;
+                this._override(inst.mp);
                 this.MP_IsHost = cr.plugins_.Multiplayer.prototype.cnds.IsHost;                
                 //this.MP_HostBroadcastMessage = cr.plugins_.Multiplayer.prototype.acts.HostBroadcastMessage;
                 this.MP_SendPeerMessage = cr.plugins_.Multiplayer.prototype.acts.SendPeerMessage;
@@ -78,9 +87,8 @@ cr.plugins_.Rex_MPwrap = function(runtime)
         return null; 
     };
     
-    instanceProto._override = function ()
+    instanceProto._override = function (mp)
     {
-        var mp = this._multiplayer_get().mp;
         var onpeermessage = mp["onpeermessage"];
         var msg_router = this.msg_router;
         mp["onpeermessage"] = function (peer, o)
