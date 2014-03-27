@@ -246,12 +246,6 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.line_pos_percent = o["lper"];
         this.start_line_index = o["start"];
 	};
-		
-	behinstProto.afterLoad = function ()
-	{
-		this.text_changed = false;
-        cr.behaviors.Rex_text_scrolling.prototype.acts.ScrollByPercent.apply(this, [this.line_pos_percent]);
-	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
