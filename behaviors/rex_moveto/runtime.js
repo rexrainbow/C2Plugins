@@ -45,7 +45,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.activated = (this.properties[0] == 1);
+        this.enabled = (this.properties[0] == 1);
         this.move = {"max":this.properties[1],
                      "acc":this.properties[2],
                      "dec":this.properties[3]};
@@ -70,7 +70,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
             this.is_hit_target = false;
         }
         
-        if ( (!this.activated) || (!this.is_moving) ) 
+        if ( (!this.enabled) || (!this.is_moving) ) 
         {
             return;
         }
@@ -186,7 +186,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-		return { "en": this.activated,
+		return { "en": this.enabled,
 		         "v": this.move,
                  "t": this.target,
                  "is_m": this.is_moving,
@@ -201,7 +201,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	
 	behinstProto.loadFromJSON = function (o)
 	{  
-		this.activated = o["en"];
+		this.enabled = o["en"];
 		this.move = o["v"]; 
 		this.target = o["t"];
 		this.is_moving = o["is_m"]; 
@@ -234,7 +234,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
     
 	Cnds.prototype.IsMoving = function ()
 	{
-		return (this.activated && this.is_moving);
+		return (this.enabled && this.is_moving);
 	};
 
 	Cnds.prototype.CompareMovingAngle = function (cmp, s)
@@ -250,10 +250,10 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.SetActivated = function (s)
+	Acts.prototype.SetEnabled = function (en)
 	{
-		this.activated = (s == 1);
-	};  
+		this.enabled = (en === 1);
+	};
 
 	Acts.prototype.SetMaxSpeed = function (s)
 	{
@@ -316,7 +316,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
     
 	Exps.prototype.Activated = function (ret)
 	{
-		ret.set_int((this.activated)? 1:0);
+		ret.set_int((this.enabled)? 1:0);
 	};    
     
 	Exps.prototype.Speed = function (ret)

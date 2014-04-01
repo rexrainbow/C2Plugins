@@ -35,12 +35,11 @@ AddCondition(4, 0, "Compare moving angle", "Moving angle",
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddComboParamOption("No");
-AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", 
-          "Set {my} activated to <i>{0}</i>", 
-          "Enable the object's MoveTo behavior.", "SetActivated");
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
+AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>", 
+          "Set whether this behavior is enabled.", "SetEnabled");
 
 AddNumberParam("Max speed", "Maximum speed, in pixel per second.");
 AddAction(1, 0, "Set maximum speed", "Speed", 

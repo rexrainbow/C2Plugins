@@ -16,13 +16,11 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddComboParamOption("No");
-AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
-         "Enable the object's push out solid behavior.", "SetActivated");
-
-
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
+AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>", 
+          "Set whether this behavior is enabled.", "SetEnabled");
 
 //////////////////////////////////////////////////////////////
 // Expressions

@@ -45,7 +45,7 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
     
 	behinstProto.onCreate = function()
 	{        
-	    this.activated = (this.properties[0] == 1);
+	    this.enabled = (this.properties[0] == 1);
 	};  
     
 	behinstProto.onDestroy = function()
@@ -54,7 +54,7 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
     
 	behinstProto.tick = function ()
 	{
-	    if (!this.activated)
+	    if (!this.enabled)
 	        return;
 	        
 		// Is already overlapping solid: must have moved itself in (e.g. by rotating or being crushed),
@@ -69,12 +69,12 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-		return { "en": this.activated };
+		return { "en": this.enabled };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-		this.activated = o["en"];
+		this.enabled = o["en"];
 	};		
 	//////////////////////////////////////
 	// Conditions
@@ -85,12 +85,12 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
-	
-	Acts.prototype.SetActivated = function (s)
-	{
-		this.activated = (s==1);
-	}; 
     
+	Acts.prototype.SetEnabled = function (en)
+	{
+		this.enabled = (en === 1);
+	};
+	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
