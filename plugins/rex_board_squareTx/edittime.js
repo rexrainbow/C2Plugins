@@ -46,7 +46,22 @@ AddExpression(1, ef_return_number, "Cell width", "Cell", "Width", "Get cell widt
 AddExpression(2, ef_return_number, "Cell height", "Cell", "Height", "Get cell height in pixels.");
 AddExpression(3, ef_return_number, "X co-ordinate at (0,0)", "Offset", "POX", "Get physical X co-ordinate at logic (0,0).");
 AddExpression(4, ef_return_number, "Y co-ordinate at (0,0)", "Offset", "POY", "Get physical Y co-ordinate at logic (0,0).");
+AddExpression(11, ef_return_number, 
+              "Direction code of right", "Direction code", "DIRRIGHT", 
+              "Direction code of right.");
+AddExpression(12, ef_return_number, 
+              "Direction code of down", "Direction code", "DIRDOWN", 
+              "Direction code of down.");
+AddExpression(13, ef_return_number, 
+              "Direction code of left", "Direction code", "DIRLEFT", 
+              "Direction code of left.");  
+AddExpression(14, ef_return_number, 
+              "Direction code of up", "Direction code", "DIRUP", 
+              "Direction code of up.");
 
+
+
+			  
 ACESDone();
 
 // Property grid properties for this plugin

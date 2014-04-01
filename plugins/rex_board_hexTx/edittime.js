@@ -36,8 +36,43 @@ AddExpression(1, ef_return_number, "Cell width", "Cell", "Width", "Get cell widt
 AddExpression(2, ef_return_number, "Cell height", "Cell", "Height", "Get cell height in pixels.");
 AddExpression(3, ef_return_number, "X co-ordinate at (0,0)", "Offset", "POX", "Get physical X co-ordinate at logic (0,0).");
 AddExpression(4, ef_return_number, "Y co-ordinate at (0,0)", "Offset", "POY", "Get physical Y co-ordinate at logic (0,0).");
-
-
+AddExpression(11, ef_return_number, 
+              "Direction code of right", "Direction code (Left-Right)", "DIRLRRIGHT", 
+              "Direction code of right.");
+AddExpression(12, ef_return_number, 
+              "Direction code of down-right", "Direction code (Left-Right)", "DIRLRDOWNRIGHT", 
+              "Direction code of down-right.");
+AddExpression(13, ef_return_number, 
+              "Direction code of down-left", "Direction code (Left-Right)", "DIRLRDOWNLEFT", 
+              "Direction code of down-left.");  
+AddExpression(14, ef_return_number, 
+              "Direction code of left", "Direction code (Left-Right)", "DIRLRLEFT", 
+              "Direction code of left.");
+AddExpression(15, ef_return_number, 
+              "Direction code of up-left", "Direction code (Left-Right)", "DIRLRUPLEFT", 
+              "Direction code of up-left.");
+AddExpression(16, ef_return_number, 
+              "Direction code of up-right", "Direction code (Left-Right)", "DIRLRUPRIGHT", 
+              "Direction code of up-right."); 
+AddExpression(17, ef_return_number, 
+              "Direction code of down-right", "Direction code (Up-Down)", "DIRUDDOWNRIGHT", 
+              "Direction code of down-right.");
+AddExpression(18, ef_return_number, 
+              "Direction code of down", "Direction code (Up-Down)", "DIRUDDOWN", 
+              "Direction code of down.");
+AddExpression(19, ef_return_number, 
+              "Direction code of down-left", "Direction code (Up-Down)", "DIRUDDOWNLEFT", 
+              "Direction code of down-left.");  
+AddExpression(20, ef_return_number, 
+              "Direction code of up-left", "Direction code (Up-Down)", "DIRUDUPLEFT", 
+              "Direction code of up-left.");
+AddExpression(21, ef_return_number, 
+              "Direction code of up", "Direction code (Up-Down)", "DIRUDUP", 
+              "Direction code of up.");
+AddExpression(22, ef_return_number, 
+              "Direction code of up-right", "Direction code (Up-Down)", "DIRUDUPRIGHT", 
+              "Direction code of up-right."); 
+			  
 ACESDone();
 
 // Property grid properties for this plugin

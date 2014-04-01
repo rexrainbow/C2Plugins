@@ -221,4 +221,20 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
     {
 	    ret.set_float(this.PositionOY);
 	};	
+	Exps.prototype.DIRRIGHT = function (ret)
+    {
+	    ret.set_int(0);
+	};		
+	Exps.prototype.DIRDOWN = function (ret)
+    {
+	    ret.set_int(1);
+	};		
+	Exps.prototype.DIRLEFT = function (ret)
+    {
+	    ret.set_int(2);
+	};		
+	Exps.prototype.DIRUP = function (ret)
+    {
+	    ret.set_int(3);
+	};	
 }());

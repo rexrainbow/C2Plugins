@@ -443,6 +443,49 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
 	};	
     
+    var _uids = [];  // private global object
+	instanceProto.pickuids = function (uids, chess_type)
+	{
+        var sol = chess_type.getCurrentSol();
+        sol.instances.length = 0;
+        sol.select_all = false;
+        var is_family = chess_type.is_family;
+        var members,member_cnt,i;
+        if (is_family)
+        {
+            members = chess_type.members;
+            member_cnt = members.length;
+        }
+        var i,uid_cnt=uids.length, inst, type_name;
+        for (i=0; i<uid_cnt; i++)
+        {
+            inst = this.uid2inst(uids[i]);	
+            if (inst == null)
+                continue;
+            type_name = inst.type.name;
+            if (is_family)
+            {
+                for (i=0; i<member_cnt; i++)
+                {
+                    if (type_name == members[i].name)
+                    {
+                        sol.instances.push(inst); 
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if (type_name == chess_type.name)
+                {
+                    sol.instances.push(inst);
+                }
+            }            
+        }
+        chess_type.applySolToContainer();
+	    return (sol.instances.length > 0);	    
+	};
+    
     var name2type = {};  // private global object
 	instanceProto._pick_all_insts = function ()
 	{	    
@@ -452,7 +495,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var has_inst = false;    
 	    for (uid in uids)
 	    {
-	        inst = this.uid2inst(uid);
+	        inst = this.uid2inst(uid);	        
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
 	        if (!(objtype.name in name2type))
@@ -476,94 +519,40 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var z_hash = this.xy2zhash(lx, ly);
         if (z_hash == null)
             return false;
-            
-        var inst, z_index, type_name;
-        var sol = chess_type.getCurrentSol();
-        sol.instances.length = 0;
-        sol.select_all = false;
-        var is_family = chess_type.is_family;
-        var members,member_cnt,i;
-        if (is_family)
-        {
-            members = chess_type.members;
-            member_cnt = members.length;
-        }
+        
+        _uids.length = 0;
+		var z_index;
         for (z_index in z_hash)
         {
-            inst = this.uid2inst(z_hash[z_index]);
-            type_name = inst.type.name;
-            if (is_family)
-            {
-                for (i=0; i<member_cnt; i++)
-                {
-                    if (type_name == members[i].name)
-                    {
-                        sol.instances.push(inst); 
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                if (type_name == chess_type.name)
-                    sol.instances.push(inst); 
-            }
+            _uids.push(z_hash[z_index]);
         }
-        chess_type.applySolToContainer();
-        return (sol.instances.length != 0);
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;
 	};
 	instanceProto._pick_chess_on_tiles = function (chess_type, tiles)
-	{	    
-        var inst, z_hash, z_index;
-        var sol = chess_type.getCurrentSol();
-        sol.instances.length = 0;
-        sol.select_all = false;
-        var is_family = chess_type.is_family;
-        var members, member_cnt, i;
-        if (is_family)
-        {
-            members = chess_type.members;
-            member_cnt = members.length;
-        }
-        
-        var tiles_cnt = tiles.length;
-        var t, tile, uid, _xyz;
+	{	
+	    _uids.length = 0;
+	    var tiles_cnt = tiles.length;
+	    var t, tile, uid, _xyz, z_hash, z_index;
         for (t=0; t<tiles_cnt; t++)
         {
             tile = tiles[t];
             uid = (typeof tile == "number")? tile:tile.uid;
             _xyz = this.uid2xyz(uid);
             if (_xyz == null)
-                continue;
-                
+                continue; 
             z_hash = this.xy2zhash(_xyz.x, _xyz.y);
             if (z_hash == null)
-                continue;
-                
+                continue;   
             for (z_index in z_hash)
             {
-                inst = this.uid2inst(z_hash[z_index]);
-                if (is_family)
-                {
-                    for (i=0; i<member_cnt; i++)
-                    {
-                        if (inst.type == members[i])
-                        {
-                            sol.instances.push(inst); 
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    if (inst.type == chess_type)
-                        sol.instances.push(inst); 
-                }
-            }
-        
+                _uids.push(z_hash[z_index]);
+            }                             
         }
-        chess_type.applySolToContainer();
-        return (sol.instances.length != 0);
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;
 	};
 
 	instanceProto.point_is_in_board = function (px, py)
@@ -578,11 +567,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var uid = this.xyz2uid(lx, ly, lz);
         if (uid == null)
             return false;
-        var inst = this.uid2inst(uid);
-        var chess_type = inst.type;
-        chess_type.getCurrentSol().pick_one(inst);
-        chess_type.applySolToContainer();
-        return true;            
+        _uids.length = 0;
+        _uids.push(uid);
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;          
 	};
 	
 	instanceProto.saveToJSON = function ()
@@ -764,6 +753,32 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return false;
         return this._pick_chess_on_LXYZ(chess_type, lx, ly, lz);            
 	};
+	
+	Cnds.prototype.PickNeighborChess = function (origin, dir, chess_type)
+	{
+        if ((!chess_type)||(!origin))
+            return false;
+            
+        var inst = origin.getFirstPicked();
+        if (inst == null)
+            return false;
+        var origin_uid = inst.uid;
+        var tile_uid = [], i, cnt;
+        if (dir == (-1))
+        {
+            var i, cnt = this.layout.GetDirCount();            
+            for (i=0; i<cnt; i++)
+            {
+                tile_uid.push(this.dir2uid(origin_uid, i, 0));
+            }
+        }    
+        else
+        {
+            tile_uid.push(this.dir2uid(origin_uid, dir, 0));
+        }
+
+        return this._pick_chess_on_tiles(chess_type, tile_uid);;            
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

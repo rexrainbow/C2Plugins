@@ -323,4 +323,53 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
     {
 	    ret.set_float(this.PositionOY);
 	};	
+	
+	Exps.prototype.DIRLRRIGHT = function (ret)
+    {
+	    ret.set_int(0);
+	};		
+	Exps.prototype.DIRLRDOWNRIGHT = function (ret)
+    {
+	    ret.set_int(1);
+	};		
+	Exps.prototype.DIRLRDOWNLEFT = function (ret)
+    {
+	    ret.set_int(2);
+	};		
+	Exps.prototype.DIRLRLEFT = function (ret)
+    {
+	    ret.set_int(3);
+	};	
+	Exps.prototype.DIRLRUPLEFT = function (ret)
+    {
+	    ret.set_int(4);
+	};		
+	Exps.prototype.DIRLRUPRIGHT = function (ret)
+    {
+	    ret.set_int(5);
+	};	
+	Exps.prototype.DIRUDDOWNRIGHT = function (ret)
+    {
+	    ret.set_int(0);
+	};		
+	Exps.prototype.DIRUDDOWN = function (ret)
+    {
+	    ret.set_int(1);
+	};		
+	Exps.prototype.DIRUDDOWNLEFT = function (ret)
+    {
+	    ret.set_int(2);
+	};		
+	Exps.prototype.DIRUDUPLEFT = function (ret)
+    {
+	    ret.set_int(3);
+	};	
+	Exps.prototype.DIRUDUP = function (ret)
+    {
+	    ret.set_int(4);
+	};		
+	Exps.prototype.DIRUDUPRIGHT = function (ret)
+    {
+	    ret.set_int(5);
+	};	
 }());

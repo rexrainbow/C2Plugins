@@ -63,8 +63,13 @@ AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Z", "The Z index (0-based) of the tile to set.", 0);
 AddCondition(16, cf_not_invertible, "Pick chess at Logic X,Y,Z", "SOL", 
-             "Pick <i>{0}</i> at [<i>{1}</i>,<i>{2}</i>,<i>{3}</i>]", "Pick chess at Logic X,Y,Z.", "PickChessAtLXYZ");           
-
+             "Pick <i>{0}</i> at [<i>{1}</i>,<i>{2}</i>,<i>{3}</i>]", "Pick chess at Logic X,Y,Z.", "PickChessAtLXYZ");            
+AddObjectParam("Origin", "Origin chess.");
+AddAnyTypeParam("Direction", "Direction of neighbor. (-1) for all directions", -1);
+AddObjectParam("Neighbor", "Neighbor chess object for pickking");
+AddCondition(17, cf_not_invertible, "Pick neighbor chess", "SOL", 
+             "Pick neighbor chess {2} by origin to {0} , direction to <i>{1}</i>", "Pick neighbor chess.", "PickNeighborChess");  
+             
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
