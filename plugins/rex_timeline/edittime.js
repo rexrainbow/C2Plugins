@@ -62,7 +62,7 @@ AddAction(7, 0, "Stop", "Timer: Control",
 AddAction(8, 0, "Clean", "TimeLine", 
           "Clean timeline", 
           "Clean timeline.", "CleanTimeLine");  
-AddStringParam("Name", "Timer's name.", '""');      
+AddStringParam("Name", "Timer's name.", '""');
 AddAction(9, 0, "Delete", "Timer", 
           "Delete timer <i>{0}</i>", 
           "Delete timer.", "DeleteTimer"); 

@@ -52,6 +52,7 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
         this._save_fn = null;
         this._load_fn = null;
         this._key_exist_fn = null;
+        this._remove_entry = null;
 	    this.fake_ret = {value:0,
 	                     set_any: function(value){this.value=value;},
 	                     set_int: function(value){this.value=value;},	 
@@ -116,23 +117,24 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
         if (this._webstorage_obj != null)
             return this._webstorage_obj;      
             
-	    assert2(cr.plugins_.WebStorage, "Webstorage Ext: Could not find webstorage.");
+	    assert2(cr.plugins_.WebStorage, "SaveDataIndex: Could not find official webstorage oject.");
         var plugins = this.runtime.types;
         this._save_fn = cr.plugins_.WebStorage.prototype.acts.StoreLocal;
         this._load_fn = cr.plugins_.WebStorage.prototype.exps.LocalValue;
         this._key_exist_fn = cr.plugins_.WebStorage.prototype.cnds.LocalStorageExists;
-        var name, plugin;
+        this._remove_entry = cr.plugins_.WebStorage.prototype.cnds.RemoveLocal;
+        var name, inst;
         for (name in plugins)
         {
-            plugin = plugins[name];
-            if (plugin.plugin.acts.StoreLocal == this._save_fn)
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.WebStorage.prototype.Instance)
             {
-                this._webstorage_obj = plugin.instances[0];
-                break;
+                this._webstorage_obj = inst;
+                return this._webstorage_obj;
             }                                          
         }
-        
-        return this._webstorage_obj;
+        assert2(this._webstorage_obj, "SaveDataIndex: Could not find official webstorage oject.");
+        return null;         
 	};
     
     instanceProto.load_value = function (key)
@@ -152,7 +154,13 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
     {
         var webstorage_obj = this.webstorage_get();
         return this._key_exist_fn.call(webstorage_obj, key);
-    };    
+    }; 
+    
+    instanceProto.remove_entry = function (key)
+    {
+        var webstorage_obj = this.webstorage_get();
+        this._remove_entry.call(webstorage_obj, key);
+    };       
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -168,7 +176,7 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
             has_key = true;
             break;
         }
-		return has_key;
+		return (!has_key);
 	};
     
 	Cnds.prototype.IsOccupied = function (index)
@@ -200,8 +208,8 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
         this.initialize_index();    
 	    // save slot
         var slotname = this.saveslot_mgr.savedslot_register(index);
-	    var entry = { "ex" : this.extra_data
-	                };        
+	    var entry = { "ex" : this.extra_data,
+	                };
 	    this.save_value(this.key_get(index), JSON.stringify(entry));
         // save index
         var o = this.saveslot_mgr.saveToJSON();
@@ -210,7 +218,7 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
 	}; 
     
     Acts.prototype.LoadGame = function (index)
-	{
+	{	    
         this.initialize_index();    
 	    this.saveslot_mgr.load(index);   
 	};    
@@ -220,7 +228,14 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
         this.initialize_index();
 	    this.saveslot_mgr.load();   
 	};		
-	
+	  
+    Acts.prototype.CleanSlot = function (index)
+	{
+        this.initialize_index();  
+        var has_entry = this.saveslot_mgr.clean_entry(index); 
+        if (has_entry)
+            this.remove_entry(this.key_get(index));
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -286,7 +301,7 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
     };
     
     SaveSlotMgrKlassProto.load = function(index)
-    {            
+    {
         var slotname = (index == null)? this.current_slotname : this.index2slotname[index];
         if (slotname == null)
             return;
@@ -328,7 +343,26 @@ cr.plugins_.Rex_SaveDataIndex = function(runtime)
             index_list.push(index);
         }
         return this.current_slotname;
+    };  
+    
+    SaveSlotMgrKlassProto.clean_entry = function(index)
+    {
+        var slotname = this.index2slotname[index];
+        if (slotname == null)
+            return false;
+            
+        delete this.index2slotname[index];
+        var index_list = this.slotname2index[slotname];
+        cr.arrayFindRemove(index_list, index);
+        if (index_list.length == 0)
+        {
+            // recyle slotname
+            delete this.slotname2index[slotname];
+            this.recyle_slotname.push(slotname);            
+        } 
+        return true;    
     };    
+             
     
 	SaveSlotMgrKlassProto.saveToJSON = function ()
 	{    

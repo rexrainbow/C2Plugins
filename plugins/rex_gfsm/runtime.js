@@ -45,7 +45,9 @@ cr.plugins_.Rex_FSM = function(runtime)
 		var previous_state = "Off";		
 		var current_state = this.properties[1];		
         current_state = (current_state!="")? current_state:"Off";
-        this.fsm = new cr.plugins_.Rex_FSM.FSMKlass(this, previous_state, current_state); 
+        this.fsm = new cr.plugins_.Rex_FSM.FSMKlass(this, previous_state, current_state);
+        this.check_state = null; 
+        this.check_state2 = null;
         this.is_echo = false;
         this.next_state = null;
 	};  
@@ -95,8 +97,9 @@ cr.plugins_.Rex_FSM = function(runtime)
 
 	Cnds.prototype.OnEnter = function (name)
 	{
+	    var is_my_handler = (this.check_state == name);
         this.is_echo = true;
-		return (this.fsm.CurState == name);
+		return is_my_handler;
 	};
 
 	Cnds.prototype.OnDefaultEnter = function ()
@@ -106,8 +109,9 @@ cr.plugins_.Rex_FSM = function(runtime)
 	
 	Cnds.prototype.OnExit = function (name)
 	{
+	    var is_my_handler = (this.check_state == name);
         this.is_echo = true;
-		return (this.fsm.PreState == name);
+		return is_my_handler;
 	};	
     
 	Cnds.prototype.OnDefaultExit = function ()
@@ -117,8 +121,9 @@ cr.plugins_.Rex_FSM = function(runtime)
 
 	Cnds.prototype.OnTransfer = function (name_from, name_to)
 	{
+	    var is_my_handler = (this.check_state == name_from) && (this.check_state1 == name_to);
         this.is_echo = true;
-		return ((this.fsm.PreState == name_from) && (this.fsm.CurState == name_to));
+		return is_my_handler;
 	};	
 	Cnds.prototype.OnStateChanged = function ()
 	{
@@ -153,8 +158,10 @@ cr.plugins_.Rex_FSM = function(runtime)
     
     Acts.prototype.GotoState = function (new_state)
 	{
-        if (this.activated)    
-	        this.fsm.Request(new_state);
+        if (!this.activated)
+            return;
+   
+	    this.fsm.Request(new_state);
 	};     
 
 	Acts.prototype.NextStateSet = function (state)
@@ -207,7 +214,7 @@ cr.plugins_.Rex_FSM = function(runtime)
 		this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnStateChanged);
                         
         // try to run transfer_action
-        var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnTransfer);
+        var is_echo = this._run_transfer_action(pre_state, cur_state);     
         if (is_echo)
             return;
          
@@ -215,23 +222,41 @@ cr.plugins_.Rex_FSM = function(runtime)
         this._run_exit_action(pre_state);
         this._run_enter_action(cur_state);
     };
+    
+    FSMKlassProto._run_transfer_action = function(pre_state, cur_state)
+    {
+        this.plugin.check_state = pre_state;
+        this.plugin.check_state2 = cur_state;
+        var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnTransfer);
+        this.plugin.check_state = null;
+        this.plugin.check_state2 = null; 
+        return is_echo;
+    };    
 
     FSMKlassProto._run_exit_action = function(pre_state)
     {
+        this.plugin.check_state = pre_state;
 	    var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnExit);
+	    this.plugin.check_state = null;	    
         // no exit handle event, try to trigger default exit event
 		if (is_echo)
+		{
 		    return;
-	    this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultExit);  
+		}
+	    this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultExit);
     };
     
     FSMKlassProto._run_enter_action = function(cur_state)
     {
+        this.plugin.check_state = cur_state;
 	    var is_echo = this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnEnter);
+	    this.plugin.check_state = null;
         // no enter handle event, try to trigger default enter event
 		if (is_echo)
+		{
 		    return;
-	    this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultEnter);    
+		}
+	    this.plugin.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultEnter); 
     };  
 	
 	FSMKlassProto.saveToJSON = function ()

@@ -675,7 +675,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	        	    
 	    this._is_mouse_mode = true;
 		this.mouseDown = true;	    
-		if (info.preventDefault && this.runtime.had_a_click)
+		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
 			info.preventDefault();
 		
 		// Send a fake touch start event
@@ -713,7 +713,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	        	    
 	    this._is_mouse_mode = true;	    
 		this.mouseDown = false;			    
-		if (info.preventDefault && this.runtime.had_a_click)
+		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
 			info.preventDefault();
 			
 		this.runtime.had_a_click = true;

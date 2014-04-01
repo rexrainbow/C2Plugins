@@ -38,7 +38,11 @@ AddAction(4, 0, "Load game", "Slot",
           'Load game from slot using official "system action:load"', "LoadGame");
 AddAction(5, 0, "Load game", "Temporary", 
           "Load game from temporary slot", 
-          'Save game from temporary slot using official "system action:load".', "TemporaryLoadGame");          
+          'Save game from temporary slot using official "system action:load".', "TemporaryLoadGame");
+AddAnyTypeParam("Index", "Index of slot.", 0);
+AddAction(6, 0, "Clean slot", "Slot", 
+          "Clean slot <i>{0}</i>", 
+          'Clean slot by removing index', "CleanSlot");                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "Parameter's name", '""');

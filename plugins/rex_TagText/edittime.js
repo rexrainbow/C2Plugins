@@ -4,7 +4,7 @@
 		"name":			"Tag Text",
 		"id":			"rex_TagText",
 		"version":		"0.1",
-		"description":	"Displays some text on the screen with tag <class>.",
+		"description":	"Displays text with multi-color, font face, or font size with tags.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"General",

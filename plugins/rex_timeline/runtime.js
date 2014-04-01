@@ -42,7 +42,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	var FNTYPE_UK = 0;          // unknow 
 	var FNTYPE_NA = 1;	        // not avaiable
 	var FNTYPE_REXFNEX = 2;     // rex_functionext
-    var FNTYPE_REXFN2 = 3;     // rex_function2
+    var FNTYPE_REXFN2 = 3;      // rex_function2
 	var FNTYPE_OFFICIALFN = 4;  // official function
 	var FNTYPE_REXFN = 5;       // rex_function
 	instanceProto.onCreate = function()
@@ -59,6 +59,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             this.last_real_time = null;
         }
+        
+        this.my_timescale = -1.0;
         
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
@@ -88,7 +90,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
         if (this.update_with_game_time)
         {
-            this.timeline.Dispatch(this.runtime.dt);
+            var dt = this.runtime.getDt(this);
+            this.timeline.Dispatch(dt);
         }
         else if (this.update_with_real_time)
         {
@@ -806,6 +809,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             return;
              
         var remainder_time = cr.clamp(_t, 0, this.delay_time);
+        this._remainder_time = remainder_time;
         this.abs_time = this.timeline.CurrentTimeGet() + remainder_time;         
     };
     TimerProto.ElapsedTimeGet = function()
@@ -854,9 +858,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // export to save/load timer
 	TimerProto.saveToJSON = function ()
 	{
+	    var remainder_time = this.RemainderTimeGet();
 		return { "dt": this.delay_time,
-                 "rt": this._remainder_time,
-                 "at": this.abs_time,
+                 "rt": remainder_time,                 
                  "alive": this._is_alive,
                  "active": this._is_active,
                  "ex": this.extra
@@ -865,12 +869,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
 	TimerProto.loadFromJSON = function (o)
 	{
-        this.delay_time = o["dt"];
-        this._remainder_time = o["rt"];
-        this.abs_time = o["at"];        
+        this.delay_time = o["dt"];     
         this._is_alive = o["alive"];
         this._is_active = o["active"];
-        this.extra = o["ex"];
+        this.extra = o["ex"];          
+        this.RemainderTimeSet(o["rt"]);  // set remaind_time and abs_time    
         // this._handler will be set at timer created
 	};     
 	
