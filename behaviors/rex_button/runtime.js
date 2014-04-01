@@ -56,6 +56,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
         assert2(this.touchwrap, "You need put a Touchwrap object for button behavior");
 	};  
     
+	var _behavior_insts = [];
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
         var sol = this.objtype.getCurrentSol(); 
@@ -77,18 +78,39 @@ cr.behaviors.Rex_Button2 = function(runtime)
             
         // 1. get all valid behavior instances            
         var ovl_insts = sol.getObjects();
-        var i, cnt, inst, behavior_inst;          
-        cnt = ovl_insts.length;           
+        var i, cnt, inst, behavior_inst;                  
+        cnt = ovl_insts.length;
+        _behavior_insts.length = 0; 		
         for (i=0; i<cnt; i++ )
         {
 		    inst = ovl_insts[i];
             behavior_inst = inst.behavior_insts[this.behavior_index];
             if (behavior_inst.is_enable())
-                behavior_inst.start_click_detecting(touch_src);
+			    _behavior_insts.push(behavior_inst);
         }
-        
+		
+		// 2. get the max z-order inst
+        cnt = _behavior_insts.length;
+		if (cnt == 0)  // no inst match
+		{
+            // recover to select_all_save
+            sol.select_all = select_all_save;
+            return false;  // get drag inst 
+		}
+        var target_inst_behavior = _behavior_insts[0];
+        for (i=1; i<cnt; i++ )
+        {
+            behavior_inst = _behavior_insts[i];
+            if ( behavior_inst.inst.zindex > target_inst_behavior.inst.zindex )
+                target_inst_behavior = behavior_inst;
+        }		
+		target_inst_behavior.start_click_detecting(touch_src);
+
         // recover to select_all_save
         sol.select_all = select_all_save;
+        _behavior_insts.length = 0; 
+        
+        return true;  // get drag inst  
     };
     
     behtypeProto.OnTouchEnd = function (touch_src)

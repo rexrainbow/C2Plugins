@@ -129,6 +129,7 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 				inst.canvas.height = inst.height;                
 			}
             
+            inst.ctx.clearRect(0,0, inst.canvas.width, inst.canvas.height);
 		    inst.ctx.drawImage(img, 0, 0, inst.width, inst.height);
 			
 			// WebGL renderer: need to create texture (canvas2D just draws with img directly)
@@ -141,6 +142,7 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 			}
 			
 			self.runtime.redraw = true;
+            inst.update_tex = true; 
 			self.runtime.trigger(cr.behaviors.Rex_CanvasExt.prototype.cnds.OnURLLoaded, inst);
 		};
 		
