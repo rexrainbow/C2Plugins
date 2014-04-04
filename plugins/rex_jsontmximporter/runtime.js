@@ -4,7 +4,7 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
-// load socket.io.min.js
+// load zlib_and_gzip.min.js
 //document.write('<script src="zlib_and_gzip.min.js"></script>');
 
 /////////////////////////////////////
@@ -891,7 +891,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 (function ()
 {
     cr.plugins_.Rex_JSONTMXImporter.TMXKlass = function(JSON_string, isIE)
-    {
+    {          
         var dict_obj= JSON.parse(JSON_string);;
         this.map = _get_map(dict_obj);
         this.tilesets = _get_tilesets(dict_obj);
@@ -929,7 +929,9 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     var _get_map = function (dict_obj)
     {     
         var map = {};  
-        dict_obj = dict_obj["map"];
+        if (dict_obj.hasOwnProperty("map"))    // !official json
+            dict_obj = dict_obj["map"];
+            
         map.orientation = _get_string_value(dict_obj, "@orientation");
         map.width =  _get_number_value(dict_obj, "@width");
         map.height = _get_number_value(dict_obj, "@height");
@@ -941,8 +943,14 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     };
     var _get_tilesets = function (dict_obj)
     {  
-        dict_obj = dict_obj["map"]["tileset"];
-        if (dict_obj == null)
+        if (dict_obj.hasOwnProperty("map"))    // !official json
+            dict_obj = dict_obj["map"]; 
+            
+        if (dict_obj.hasOwnProperty("tileset"))    // !official json
+            dict_obj = dict_obj["tileset"];
+        else if (dict_obj.hasOwnProperty("tilesets"))    // official json
+            dict_obj = dict_obj["tilesets"];
+        else
             return {};
                     
         var tileset, tilesets = [];        
@@ -980,28 +988,42 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     };
     var _get_tiles = function(dict_obj, gid_offset)
     {
-        dict_obj = dict_obj["tile"];
-        if (dict_obj == null)
-            return {};
-            
-        var id, tiles = {};  
-        if (dict_obj.length)
+        if (dict_obj.hasOwnProperty("tile"))            // !official json
         {
-            var tile_cnt = dict_obj.length;
-            var tile, i;
-            for (i=0; i<tile_cnt; i++)
+            dict_obj = dict_obj["tile"];
+            var id, tiles = {};  
+            if (dict_obj.length)
             {
-                tile = dict_obj[i];
-                id = _get_number_value(tile, "@id") + gid_offset;
-                tiles[id] = _get_tile(tile);
+                var tile_cnt = dict_obj.length;
+                var tile, i;
+                for (i=0; i<tile_cnt; i++)
+                {
+                    tile = dict_obj[i];
+                    id = _get_number_value(tile, "@id") + gid_offset;
+                    tiles[id] = _get_tile(tile);
+                }
             }
+            else
+            {
+                id = _get_number_value(dict_obj, "@id") + gid_offset;
+                tiles[id] = _get_tile(dict_obj);
+            }
+            return tiles;
+        }
+        else if (dict_obj.hasOwnProperty("tileproperties"))  // official json
+        {
+            dict_obj = dict_obj["tileproperties"];
+            var id, tiles = {}; 
+            for (id in dict_obj)
+            {
+                tiles[parseInt(id)+ gid_offset] = _get_tile(dict_obj[id]);
+            }
+            return tiles;
         }
         else
-        {
-            id = _get_number_value(dict_obj, "@id") + gid_offset;
-            tiles[id] = _get_tile(dict_obj);
-        }
-        return tiles;
+            return {};
+            
+
     };
     var _get_tile = function(dict_obj, xml_tile)
     {    
@@ -1011,8 +1033,14 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     };
     var _get_layers = function (dict_obj)
     {       
-        dict_obj = dict_obj["map"]["layer"];
-        if (dict_obj == null)
+        if (dict_obj.hasOwnProperty("map"))    // !official json
+            dict_obj = dict_obj["map"];   
+          
+        if (dict_obj.hasOwnProperty("layer"))  // !official json
+            dict_obj = dict_obj["layer"];
+        else if (dict_obj.hasOwnProperty("layers"))  // official json
+            dict_obj = dict_obj["layers"];
+        else
             return {};
         
         var layer, layers = [];        
@@ -1055,6 +1083,10 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     {
         var encoding = _get_string_value(dict_obj, "@encoding");
         var compression = _get_string_value(dict_obj, "@compression");      
+        
+        if ((encoding == null) && (compression == null) && (dict_obj.length!=null))  // official json
+           return dict_obj;
+           
         var data = _get_string_value(dict_obj, "#text");
         
         if(typeof(String.prototype.trim) === "undefined")
@@ -1069,20 +1101,21 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         if (encoding == "base64")
         {
             data = atob(data);
-            data = data.split('').map(function(e) {
+            data = data.split('').map(function(e) 
+            {
                 return e.charCodeAt(0);
             });
             
             if (compression == "zlib")
             {
-                //var inflate = new window["Zlib"]["Inflate"](data);
-                //data = inflate["decompress"]();
+                var inflate = new window["Zlib"]["Inflate"](data);
+                data = inflate["decompress"]();
 			    log("JSONTMXImporter: zlib was not supported");
             }
             else if (compression == "gzip")
             {
-                //var gunzip = new window["Zlib"]["Gunzip"](data);
-                //data = gunzip["decompress"]();
+                var gunzip = new window["Zlib"]["Gunzip"](data);
+                data = gunzip["decompress"]();
                 log("JSONTMXImporter: gzip was not supported");				
             }
             data = _array_merge(data);
@@ -1095,7 +1128,9 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     };
     var _get_objectgroups = function (dict_obj)
     {
-        dict_obj = dict_obj["map"]["objectgroup"];
+        if (dict_obj.hasOwnProperty("map"))    // !official json
+            dict_obj = dict_obj["map"];  
+        dict_obj = dict_obj["objectgroup"];
         if (dict_obj == null)
             return [];        
         var objectgroup, objectgroups = [];        
@@ -1127,7 +1162,12 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
     };
     var _get_objects = function(dict_obj)
     {
-        dict_obj = dict_obj["object"];
+        if (dict_obj.hasOwnProperty("object"))
+            dict_obj = dict_obj["object"];  
+
+        if (dict_obj == null)
+            return [];
+            
         var object, objects = [];        
         if (dict_obj.length)
         {
@@ -1161,27 +1201,34 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 
     var _get_properties = function (dict_obj)
     {  
-        if (dict_obj["properties"] == null)
-            return {};
-            
-        dict_obj = dict_obj["properties"]["property"];
-        var properties = {};
-        var name, value;    
-        if (dict_obj.length)
+        if (dict_obj.hasOwnProperty("properties"))   // !official json
+            dict_obj = dict_obj["properties"];  
+
+        var properties = {}, name, value;
+        if (dict_obj.hasOwnProperty("property"))    // !official json
         {
-            var i, prop_cnt=dict_obj.length; 
-            for (i=0; i<prop_cnt; i++)
+            dict_obj = dict_obj["property"];
+            if (dict_obj.length)
             {
-                name = _get_string_value(dict_obj[i], "@name");
-                value = _get_string_value(dict_obj[i], "@value");
+                var i, prop_cnt=dict_obj.length; 
+                for (i=0; i<prop_cnt; i++)
+                {
+                    name = _get_string_value(dict_obj[i], "@name");
+                    value = _get_string_value(dict_obj[i], "@value");
+                    properties[name] = value;
+                }
+            }
+            else
+            {
+                name = _get_string_value(dict_obj, "@name");
+                value = _get_string_value(dict_obj, "@value");
                 properties[name] = value;
             }
         }
-        else
+        else                                       // official json
         {
-            name = _get_string_value(dict_obj, "@name");
-            value = _get_string_value(dict_obj, "@value");
-            properties[name] = value;
+            for(name in dict_obj)
+                properties[name] = dict_obj[name]; 
         }
         return properties;
     };
@@ -1261,18 +1308,36 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 
     var _get_string_value = function (obj, key, default_value)
     {
-        var val = obj[key];
-        if (val == null)
-            val = default_value;
-        return val;
+        var val;
+        val = obj[key];
+        if (val != null)     // !official json
+            return val;
+            
+        var prefix = key[0];
+        if ((prefix == "@") || (prefix == "#"))
+            key = key.substring(1);
+            
+        val = obj[key];
+        if (val != null)    // official json
+            return val;
+            
+        return default_value;
     };
     var _get_number_value = function (obj, key, default_value)
     {
-        var val = obj[key];
-        if (val == null)
-            val = default_value;
-        else
-            val = parseInt(val);
-        return val;
+        var val;
+        val = obj[key];
+        if (val != null)     // !official json
+            return parseInt(val);
+            
+        var prefix = key[0];
+        if ((prefix == "@") || (prefix == "#"))
+            key = key.substring(1);
+            
+        val = obj[key];
+        if (val != null)   // official json
+            return parseInt(val);
+            
+        return default_value;
     };    
 }());    
