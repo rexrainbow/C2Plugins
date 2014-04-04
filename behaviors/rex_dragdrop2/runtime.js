@@ -34,7 +34,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         this.GetAbsoluteX = null;
         this.GetAbsoluteY = null;
         this.behavior_index = null;
-        this._behavior_insts = [];
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -86,6 +85,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         }    
     };
     
+	var _behavior_insts = [];
     // drag detecting
 	behtypeProto.DragDetecting = function(touchX, touchY, touch_src)
 	{
@@ -110,27 +110,27 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         var ovl_insts = sol.getObjects();
         var i, cnt, inst, behavior_inst;          
         cnt = ovl_insts.length;   
-        this._behavior_insts.length = 0;          
+        _behavior_insts.length = 0;          
         for (i=0; i<cnt; i++ )
         {
 		    inst = ovl_insts[i];
             behavior_inst = inst.behavior_insts[this.behavior_index];
             if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_dragged))
-                this._behavior_insts.push(behavior_inst);
+                _behavior_insts.push(behavior_inst);
         }
             
         // 2. get the max z-order inst
-        cnt = this._behavior_insts.length;
+        cnt = _behavior_insts.length;
 		if (cnt == 0)  // no inst match
 		{
             // recover to select_all_save
             sol.select_all = select_all_save;
             return false;  // get drag inst 
 		}
-        var target_inst_behavior = this._behavior_insts[0];
+        var target_inst_behavior = _behavior_insts[0];
         for (i=1; i<cnt; i++ )
         {
-            behavior_inst = this._behavior_insts[i];
+            behavior_inst = _behavior_insts[i];
             if ( behavior_inst.inst.zindex > target_inst_behavior.inst.zindex )
                 target_inst_behavior = behavior_inst;
         }
@@ -140,7 +140,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
         // recover to select_all_save
         sol.select_all = select_all_save;
-        this._behavior_insts.length = 0; 
+        _behavior_insts.length = 0; 
         
         return true;  // get drag inst  
 	}; 

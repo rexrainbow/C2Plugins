@@ -4,7 +4,7 @@
 		"name":			"Button",
 		"id":			"Rex_Button2",
 		"version":		"0.1",        
-		"description":	'Get click event from "touch end".',
+		"description":	'Get click event while "touch end".',
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_button.html",
 		"category":		"Object",
