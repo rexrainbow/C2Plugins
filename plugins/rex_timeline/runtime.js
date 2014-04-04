@@ -47,6 +47,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	var FNTYPE_REXFN = 5;       // rex_function
 	instanceProto.onCreate = function()
 	{     
+        this.update_manually       = (this.properties[0] == 0);
         this.update_with_game_time = (this.properties[0] == 1);
         this.update_with_real_time = (this.properties[0] == 2);
         
@@ -64,11 +65,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
-        this.runtime.tickMe(this);
+        if (this.update_with_game_time || this.update_with_real_time)
+            this.runtime.tickMe(this);
         this.check_name = "TIMELINE";
-        // push manual
-        this.manual_push = false;
-        this.manual_delta_time = 0;
         
         // timers    
         this.timers = {}; 
@@ -84,6 +83,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this._fnobj_type = FNTYPE_UK;
 	    this._act_call_fn = null;
 		this._exp_call = null;
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];      
+        /**END-PREVIEWONLY**/          
 	};
 
     instanceProto.tick = function()
@@ -100,11 +103,6 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             var dt = (last_real_time - this.last_real_time)/1000;
             this.timeline.Dispatch(dt);
             this.last_real_time = last_real_time;
-        }
-        else if (this.manual_push)  // !this.update_with_game_time
-        {
-            this.timeline.Dispatch(this.manual_delta_time);
-            this.manual_push = false;
         }
     };
     
@@ -340,7 +338,25 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 			this._fnobj_type = FNTYPE_REXFN;      			
 		}		
 		this.rex_function_objUid = -1;        
-	};    
+	};  
+
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    this.propsections.length = 0;
+	    this.propsections.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
+
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.propsections
+		});
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -359,9 +375,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     Acts.prototype.PushTimeLine = function (delta_time)
 	{
+        if (!this.update_manually)
+            return;
+            
         // push manually
-        this.manual_delta_time = delta_time;
-        this.manual_push = true;        
+        this.timeline.Dispatch(delta_time);
 	};   
     
     Acts.prototype.Setup = function (fn_objs)

@@ -96,7 +96,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Debug mode", "Off", "Enable to show log.", "Off|On"),
+    new cr.Property(ept_combo, "Debug mode", "No", "Enable to show log.", "No|Yes"),
     new cr.Property(ept_combo, "Time stamp", "Differential", "Time stamp type.", "Accumulation|Differential"),
     new cr.Property(ept_combo, "Eval mode", "Yes", 'Enable "Eval mode" for parameters. "Mem" feature only could be used in eval mode.', "No|Yes"),
 	];

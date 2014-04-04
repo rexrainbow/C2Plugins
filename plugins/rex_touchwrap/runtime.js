@@ -361,7 +361,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		}
 		
 		// Use PhoneGap in case browser does not support accelerometer but device does
-		if (this.runtime.isPhoneGap)
+		if (this.runtime.isPhoneGap && navigator["accelerometer"] && navigator["accelerometer"]["watchAcceleration"])
 		{
 			navigator["accelerometer"]["watchAcceleration"](PhoneGapGetAcceleration, null, { "frequency": 40 });
 		}
