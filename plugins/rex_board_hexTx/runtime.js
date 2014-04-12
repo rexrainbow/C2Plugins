@@ -265,18 +265,21 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	
 	instanceProto.saveToJSON = function ()
 	{
-		return { "w": this.width,
+		return { "isud": this.is_up2down,
+                 "w": this.width,
                  "h": this.height,
                  "ox": this.PositionOX,
-                 "oy": this.PositionOY};
+                 "oy": this.PositionOY
+                 };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
+        this.is_up2down = o["isud"];    
         this.SetWidth(o["w"]);
-        this.SetHeight(o["h"]);   
+        this.SetHeight(o["h"]);
         this.SetPOX(o["ox"]);
-        this.SetPOY(o["oy"]);          
+        this.SetPOY(o["oy"]);    
 	};	    
 	//////////////////////////////////////
 	// Conditions

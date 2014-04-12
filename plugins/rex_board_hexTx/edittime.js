@@ -4,7 +4,7 @@
 		"name":			"Hex Tx",
 		"id":			"Rex_SLGHexTx",
 		"version":		"0.1",   		
-		"description":	"Transfer logic position to physical position with hexagon layout",
+		"description":	"Transfer logic position to physical position with hexagonal layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board_hexTx.html",
 		"category":		"Board",
