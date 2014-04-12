@@ -50,6 +50,10 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this._pat_rank = [];
         this._shadow_patterns = {};
         this.start_gen(); 	     
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];      
+        /**END-PREVIEWONLY**/           
 	};
 	cr.plugins_.Rex_PatternGen._random_gen = null;  // random generator for Shuffing
 
@@ -177,6 +181,27 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this._shadow_patterns = o["spats"];
 	    this.restart_gen_flg = o["rstf"];
 	};	
+    
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    this.propsections.length = 0;
+        var pat;
+        var pat_list = (this.restart_gen_flg)? this.patterns : this._shadow_patterns
+        for (pat in pat_list)
+        {
+	        this.propsections.push({"name": pat, "value": pat_list[pat]});
+        }
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.propsections
+		});
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
