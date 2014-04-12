@@ -112,11 +112,6 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		    ly = (physical_y - this.PositionOY)/this.height;
         return ly;
 	}; 
-	
-	instanceProto.CreateItem = function(obj_type,x,y,z,layer)
-	{
-        return this.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y,z),this.LXYZ2PY(x,y,z) );        
-	};
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
         var dx = (dir==0)? 1:

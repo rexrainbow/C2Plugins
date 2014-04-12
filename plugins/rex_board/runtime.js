@@ -43,6 +43,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.check_name = "BOARD";
+        this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
 	    this.board = [];
 	    this.reset_board(this.properties[0]-1,
 	                     this.properties[1]-1);
@@ -242,41 +243,29 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    else
 	        return this.runtime.getObjectByUID(uid);
 	};
-    
-	instanceProto.CreateItem = function(obj,x,y,z,_layer)
+
+	instanceProto.CreateItem = function (objtype,lx,ly,lz,_layer)
 	{
+        if (objtype == null)
+            return;
         var layer = (typeof _layer == "number")?
                     this.runtime.getLayerByNumber(_layer):
-                    this.runtime.getLayerByName(_layer);
-        var inst = this.layout.CreateItem(obj, x, y, z, layer);
-        if (!inst)
+                    this.runtime.getLayerByName(_layer);  
+        if (layer == null)
             return;
-
-        // Pick just this instance
-        var sol = obj.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
-		
-		// Siblings aren't in instance lists yet, pick them manually
-		var i, len, s;
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
-        
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(obj.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
-        
-        return inst;
+                    
+        var px = this.layout.LXYZ2PX(lx,ly,lz);
+        var py = this.layout.LXYZ2PY(lx,ly,lz);
+        // call system action: Create instance
+        this.ActCreateInstance.call(
+            this.runtime.system,
+            objtype,
+            layer,
+            px,
+            py
+        );
+                           
+	    return objtype.getFirstPicked();
 	};
 		
 	instanceProto.SwapChess = function (uidA, uidB)
@@ -574,6 +563,32 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return has_inst;          
 	};
 	
+	instanceProto._pick_neighbor_chess = function (origin, dir, chess_type)
+	{
+        if ((!chess_type)||(!origin))
+            return false;
+            
+        var inst = origin.getFirstPicked();
+        if (inst == null)
+            return false;
+        var origin_uid = inst.uid;
+        var tile_uid = [], i, cnt;
+        if (dir == (-1))
+        {
+            var i, cnt = this.layout.GetDirCount();            
+            for (i=0; i<cnt; i++)
+            {
+                tile_uid.push(this.dir2uid(origin_uid, i, 0));
+            }
+        }    
+        else
+        {
+            tile_uid.push(this.dir2uid(origin_uid, dir, 0));
+        }
+
+        return this._pick_chess_on_tiles(chess_type, tile_uid);;            
+	};
+		
 	instanceProto.saveToJSON = function ()
 	{    
 	    // wrap: copy from this.items
@@ -756,28 +771,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Cnds.prototype.PickNeighborChess = function (origin, dir, chess_type)
 	{
-        if ((!chess_type)||(!origin))
-            return false;
-            
-        var inst = origin.getFirstPicked();
-        if (inst == null)
-            return false;
-        var origin_uid = inst.uid;
-        var tile_uid = [], i, cnt;
-        if (dir == (-1))
-        {
-            var i, cnt = this.layout.GetDirCount();            
-            for (i=0; i<cnt; i++)
-            {
-                tile_uid.push(this.dir2uid(origin_uid, i, 0));
-            }
-        }    
-        else
-        {
-            tile_uid.push(this.dir2uid(origin_uid, dir, 0));
-        }
-
-        return this._pick_chess_on_tiles(chess_type, tile_uid);;            
+        return this._pick_neighbor_chess(origin, dir, chess_type);            
 	};	
 	//////////////////////////////////////
 	// Actions
@@ -924,6 +918,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 	    this.set_board_height(height-1);
 	};
+
+	Acts.prototype.PickNeighborChess = function (origin, dir, chess_type)
+	{        
+        this._pick_neighbor_chess(origin, dir, chess_type);            
+	};		
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
