@@ -388,6 +388,13 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts(); 
 	
+    Acts.prototype.DestroyAll = function ()
+	{
+	    var name;
+	    for (name in this.groups)
+	        delete this.groups[name];
+	};  	
+	
     Acts.prototype.Clean = function (name)
 	{
 	    this.GetGroup(name).Clean();
@@ -681,9 +688,15 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
 	Exps.prototype.Pop = function (ret, name, index)
 	{
-	    var uid_list = this.GetGroup(name).GetList();
+	    var group = this.GetGroup(name);
+	    var uid_list = group.GetList();
+	    if (index == -1)
+	        index = uid_list.length -1;
 	    var uid = uid_list[index];
-	    cr.arrayRemove(uid_list, index);
+	    if (uid == null)
+	        uid = -1;
+	    else
+	        group.RemoveUID(uid);	
 	    ret.set_int(uid);
 	};
 	  

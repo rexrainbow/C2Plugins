@@ -51,7 +51,9 @@ AddCondition(7, 0, "Is a subset", "Group: Set operation", "<i>{0}</i> is a subse
              "Test if group is a subset of another group.", "IsSubset");    
              
 //////////////////////////////////////////////////////////////
-// Actions      
+// Actions
+AddAction(0, 0, "Destroy all", "Group", "Destroy all groups", 
+          "Destroy all groups.", "DestroyAll");      
 AddStringParam("Name", "Group name.", '""');
 AddAction(1, 0, "Clean group", "Group", "Clean group <i>{0}</i>", 
           "Clean group to empty.", "Clean");
@@ -101,8 +103,8 @@ AddStringParam("Result", "Group result.", '""');
 AddAction(12, 0, "A AND B", "Group: Set operation", "Set group <i>{2}</i> to (group <i>{0}</i> AND group <i>{1}</i>)", 
           "Set group by intersection operation.", "Intersection");            
 AddStringParam("Name", "Group name.", '""');
-AddAction(13, 0, "Shuffe", "List: Sort", "Shuffe group <i>{0}</i>", 
-          "Shuffe group.", "Shuffle"); 
+AddAction(13, 0, "Shuffle", "List: Sort", "Shuffle group <i>{0}</i>", 
+          "Shuffle group.", "Shuffle"); 
 AddStringParam("Name", "Group name.", '""');
 AddStringParam("Sorting function", "Sorting function of group", '""');
 AddAction(14, 0, "Sort by function", "List: Sort", "Sort group <i>{0}</i> by function <i>{1}</i>", 
@@ -179,11 +181,11 @@ AddAction(27, 0, "Insert instance by UID", "List: Push & Insert", "Insert instan
           "Insert instances into group.", "InsertInstByUID");
 AddObjectParam("Instances", "Instances to be set into group.");
 AddStringParam("Name", "Group name.", '""');
-AddAction(28, 0, "Clean & Add", "Group: Set", "Clean and Add <i>{0}</i> into group <i>{1}</i>", 
+AddAction(28, 0, "Clean & Add instances", "Group: Add instances", "Clean and Add <i>{0}</i> into group <i>{1}</i>", 
           "Clean and Add instances into group.", "CleanAdddInsts");
 AddNumberParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
-AddAction(29, 0, "Clean & Add by UID", "Group: Set", "Clean and Add instance UID: <i>{0}</i> into group <i>{1}</i>", 
+AddAction(29, 0, "Clean & Add instance by UID", "Group: Add instances", "Clean and Add instance UID: <i>{0}</i> into group <i>{1}</i>", 
           "Clean and Add instances into group.", "CleanAdddInstByUID");
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -220,7 +222,7 @@ AddExpression(10, ef_return_string | ef_variadic_parameters,
 AddStringParam("Name", "Group name.", '""'); 
 AddNumberParam("Index", "Pop index.", 0);
 AddExpression(11, ef_return_number | ef_variadic_parameters, 
-              "Pop UID by index", "List", "Pop", "Pop UID by index.");
+              "Pop UID by index", "List", "Pop", "Pop UID by index. Index=-1 is the last one.");
 
 ACESDone();
 
