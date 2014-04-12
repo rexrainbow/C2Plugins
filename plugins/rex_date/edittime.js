@@ -4,7 +4,7 @@
 		"name":			"Date",
 		"id":			"Rex_Date",
 		"version":		"1.0",
-		"description":	"Data and time",
+		"description":	"Get system data and time",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_date.html",
 		"category":		"Time",
