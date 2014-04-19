@@ -4,7 +4,7 @@
 		"name":			"Matcher",
 		"id":			"Rex_Matcher",
 		"version":		"0.1",   		
-		"description":	"Logic of matched game. Could be used in square or hex board.",
+		"description":	"Get tiles with matched patterns.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_matcher.html",
 		"category":		"Board: logic",
@@ -17,21 +17,21 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, cf_trigger, "On get symbol", "Symbol", 
-             "On get symbol", 'Trigger by "Action:Get matched tiles" to get symbol.', "OnGetSymbol");
+             "On get symbol", 'Get symbol of a tile.', "OnGetSymbol");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_trigger, "On 1d pattern ", "Get matched tiles: 1D Patern", 
+AddCondition(2, cf_deprecated | cf_trigger, "On 1d pattern ", "Get matched tiles: 1D Patern", 
              "On 1d pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles" when 1d pattern matched.', "OnMatchPattern");    
-AddCondition(3, cf_trigger, "On no pattern", "Get matched tiles: No matched", 
+AddCondition(3, cf_deprecated | cf_trigger, "On no pattern", "Get matched tiles: No matched", 
              "On no pattern matched", 'Trigger by "Action:Get matched tiles" when no pattern matched.', "OnNoMatchPattern");    
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(4, cf_trigger, "On 2D pattern", "Get matched tiles: 2D Patern", 
+AddCondition(4, cf_deprecated | cf_trigger, "On 2D pattern", "Get matched tiles: 2D Patern", 
              "On 2D pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles with 2d pattern" when 2D pattern matched.', "OnMatchPattern2D");    
 AddNumberParam("Count", "Continuous symbols count.", 3);
-AddCondition(5, cf_trigger, "On N symbols", "Get matched tiles: 1D Patern", 
+AddCondition(5, cf_deprecated | cf_trigger, "On N symbols", "Get matched tiles: 1D Patern", 
              "On <i>{0}</i> continuous symbols matched", 
              'Trigger by "Action:Get matched tiles" when N continuous symbols matched.', "OnMatchPattern");
 AddStringParam("Template", "Pattern template.", '""');
-AddCondition(6, cf_trigger, "On 2D template pattern", "Get matched tiles: 2D Patern", 
+AddCondition(6, cf_deprecated | cf_trigger, "On 2D template pattern", "Get matched tiles: 2D Patern", 
              "On 2D template pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles with 2d pattern" when 2D template pattern matched.', "OnMatchTemplatePattern2D");			 
 AddCondition(7, 0, "No pattern" , "If: No matched", 
              "Has no matched pattern", 'Return true if no matched pattern in latest "action:Get matched tiles".', "HasNoMatchPattern");
@@ -69,18 +69,18 @@ AddCondition(15, cf_looping | cf_not_invertible, "For each 2D template pattern",
 // Actions     
 AddObjectParam("Board", "Board object");
 AddObjectParam("Group", "Instance group object");
-AddAction(1, 0, "Setup", "0: Setup", 
+AddAction(1, 0, "Setup", "Setup", 
           "Set board object to <i>{0}</i>, instance group object to <i>{1}</i>", 
           "Set board object and instance group object.", "Setup");         
 AddStringParam("Group", "Put result in this group", '""');
-AddAction(2, 0, "Get matched tiles", "Request: matched tiles", 
+AddAction(2, af_deprecated, "Get matched tiles", "Request: matched tiles", 
           "Get matched tiles to group <i>{0}</i>", 
           "Get matched tiles.", "GetMatchTiles");
 AddStringParam("Symbol", 'Symbol. "" is null symbol.', "");
 AddAction(3, 0, "Set symbol", "Request: Symbol", "Set symbol to <i>{0}</i>", 
           'Set symbol. Used in "Condition: On get symbol function".', "SetSymbol");          
 AddStringParam("Group", "Put result in this group", '""');
-AddAction(4, 0, "Get matched tiles with 2d pattern", "Request: matched tiles (2d pattern)", 
+AddAction(4, af_deprecated, "Get matched tiles with 2d pattern", "Request: matched tiles (2d pattern)", 
           "Get matched tiles to group <i>{0}</i> with 2d pattern", 
           "Get matched tiles with 2d pattern.", "GetMatchTiles2D");
 AddAction(5, 0, "Force updating symbol array", "Symbol array", 
@@ -115,7 +115,10 @@ AddExpression(2, ef_return_number,
               "Get logic X of target tile.");
 AddExpression(3, ef_return_number,
               "Get logic Y of target tile", "Request", "TileY",
-              "Get logic Y of target tile.");              
+              "Get logic Y of target tile.");
+AddExpression(4, ef_return_string,
+              "Value of NOSYMBOL", "Symbol", "NOSYMBOL",
+              "Get value of NOSYMBOL.");                            
 
 ACESDone();
 

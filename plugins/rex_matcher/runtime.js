@@ -62,6 +62,48 @@ cr.plugins_.Rex_Matcher = function(runtime)
                               (this.properties[2] == 1),  // isometric-1
                               ];  
 	};
+	
+	instanceProto.board_get = function()
+	{
+        if (this.board != null)
+            return this.board;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if (cr.plugins_.Rex_SLGBoard && (inst instanceof cr.plugins_.Rex_SLGBoard.prototype.Instance))
+            {
+                this.board = inst;
+                return this.board;
+            }            
+        }
+        assert2(this.board, "Matcher plugin: Can not find board oject.");
+        return null;
+	};
+	
+	instanceProto.instgroup_get = function()
+	{
+        if (this.group != null)
+            return this.group;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if (cr.plugins_.Rex_gInstGroup && (inst instanceof cr.plugins_.Rex_gInstGroup.prototype.Instance))
+            {
+                this.group = inst;
+                return this.group;
+            }            
+        }
+        assert2(this.group, "Matcher plugin: Can not find instance group oject.");
+        return null;
+	};	
     
     instanceProto._clean_symbol_cache = function ()
     {
@@ -84,7 +126,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
     
     instanceProto._write_symbol_cache = function (_x,_y)
     {
-        var tile_uid = this.board.xyz2uid(_x,_y,0);
+        var tile_uid = this.board_get().xyz2uid(_x,_y,0);
         if (tile_uid == null)
             return;
 	    this.exp_TileUID = tile_uid;
@@ -102,17 +144,23 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var s = this._symbol_cache[x];
 	    return (s==null)? s:s[y];
 	};
+	instanceProto._is_valid_symbol = function(s)
+	{
+	    return ((s==null) || (s.symbol == ""))? false:true;	    
+	};	
 	instanceProto.refilled_symbol_array = function(x,y)
 	{
         this._clean_symbol_cache();
         var x,y,uid;
-        var x_max= this.board.x_max;
-        var y_max= this.board.y_max;
+        var board = this.board_get();
+        var x_max= board.x_max;
+        var y_max= board.y_max;
         for (y=0; y<=y_max; y++)
         {
             for (x=0; x<=x_max; x++)
                 this._write_symbol_cache(x,y);
         }
+        this._last_tick = this.runtime.tickcount;
 	};	
 	instanceProto.get_match_tiles = function(group_name,pattern_dimation)
 	{
@@ -137,7 +185,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{
         this._tiles_groups.length = 0;
         if (this._dir == null)
-            this._dir = this.board.layout.GetDirCount();
+            this._dir = this.board_get().GetLayout().GetDirCount();
         if (this._dir == 4)
             this.pattern_search_square(pattern, is_any_pattern_mode);
         else if (this._dir == 6)
@@ -155,8 +203,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
         var is_matchN_mode = (typeof(pattern) == "number");        
 	    var x,y,i,c,s,is_matched,matched_tiles=[];
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;
-	    var x_max=this.board.x_max;
-	    var y_max=this.board.y_max;
+	    var board = this.board_get();
+	    var x_max=board.x_max;
+	    var y_max=board.y_max;
 	    var m, mode_cnt=this._square_modes.length;
 	    for (m=0; m<mode_cnt; m++)
 	    {
@@ -191,7 +240,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        s = null;
 	                        break;
 	                    }
-	                    if ((s==null) || (s.symbol == ""))
+	                    if (!this._is_valid_symbol(s))
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -210,7 +259,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                }
 	                if (is_matched)
 					{
-	                    this._tiles_groups.push(matched2uid(matched_tiles));            
+	                    this._tiles_groups.push({"uid":matched2uid(matched_tiles),
+	                                             "dir":m});            
 						if (is_any_pattern_mode)
 						    return;
 				    }
@@ -222,9 +272,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{	  
         var is_matchN_mode = (typeof(pattern) == "number");   
         var dir,x,y,i,c,s,is_matched,matched_tiles=[];
-	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;      
-	    var x_max=this.board.x_max;
-	    var y_max=this.board.y_max;       
+	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;     
+	    var board = this.board_get();
+	    var layout = board.GetLayout();
+	    var x_max=board.x_max;
+	    var y_max=board.y_max;       
         var cur_x,cur_y,next_x,next_y;
         for(dir=0;dir<3;dir++)  // dir = 0,1,2
         {
@@ -241,7 +293,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                for(i=0;i<pattern_length;i++)
 	                {	                                        
 	                    s = this._symbol_at(cur_x,cur_y);
-	                    if ((s==null) || (s.symbol == ""))
+	                    if (!this._is_valid_symbol(s))
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -257,14 +309,15 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        break;
 	                    }
                         matched_tiles.push(s);                        
-                        next_x = this.board.layout.GetNeighborLX(cur_x,cur_y,dir);
-	                    next_y = this.board.layout.GetNeighborLY(cur_x,cur_y,dir);
+                        next_x = layout.GetNeighborLX(cur_x,cur_y,dir);
+	                    next_y = layout.GetNeighborLY(cur_x,cur_y,dir);
 	                    cur_x = next_x;
 	                    cur_y = next_y;
 	                }
 	                if (is_matched)
 					{
-	                    this._tiles_groups.push(matched2uid(matched_tiles)); 
+	                    this._tiles_groups.push({"uid":matched2uid(matched_tiles),
+	                                             "dir":dir}); 
 						if (is_any_pattern_mode)
 						    return;						
 				    }
@@ -293,8 +346,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
         pattern = csv2array(pattern);
         this._tiles_groups.length = 0;
         var x,y,i,j,c,s,is_matched,matched_tiles=[];
-	    var x_max=this.board.x_max;
-	    var y_max=this.board.y_max;
+        var board = this.board_get();
+	    var x_max=board.x_max;
+	    var y_max=board.y_max;
         var pattern_row=pattern.length,pattern_col;
         var is_template_pattern;
 	    for(y=0;y<=y_max;y++)
@@ -312,7 +366,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                for(j=0;j<pattern_col;j++)
 	                {
 	                    s = this._symbol_at(x+j,y+i);
-	                    if (s==null)
+	                    if (!this._is_valid_symbol(s))
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -342,7 +396,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	            
 	            if (is_matched)     
                 {				
-	                this._tiles_groups.push(matched2uid(matched_tiles));   
+	                this._tiles_groups.push({"uid":matched2uid(matched_tiles),
+	                                         "dir":null});   
 					if (is_any_pattern_mode)
 						    return this._tiles_groups;	
 			    }
@@ -355,15 +410,31 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{       
         var i,cnt=tiles_groups.length;
         var runtime = this.runtime;
-        var current_event = runtime.getCurrentEventStack().current_event;
-        var _group=this.group.GetGroup(this._group_name)
-        for (i=0;i<cnt;i++)
-        {              
-            _group.SetByUIDList(tiles_groups[i]);            
-            runtime.pushCopySol(current_event.solModifiers);
-            current_event.retrigger();
-            runtime.popSol(current_event.solModifiers);        
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+        var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+        var _group=this.instgroup_get().GetGroup(this._group_name)
+
+        if (solModifierAfterCnds)
+        {
+            for (i=0;i<cnt;i++)
+            {                
+                runtime.pushCopySol(current_event.solModifiers);
+                _group.SetByUIDList(tiles_groups[i]["uid"]);
+                current_event.retrigger();
+                runtime.popSol(current_event.solModifiers);        
+            }            
         }
+        else
+        {
+            for (i=0;i<cnt;i++)
+            {
+                _group.SetByUIDList(tiles_groups[i]["uid"]);
+                current_event.retrigger();        
+            }             
+        }
+        
+
         this._has_matched_pattern |= (cnt>0);
 	};	
 	
@@ -503,8 +574,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 		    this.refilled_symbol_array();
 	    var tiles_groups = this.pattern_search(pattern, false);
 	    this._has_matched_pattern = (tiles_groups.length != 0);
-	    this._group_name = group_name;
-	    this.on_match_pattern(tiles_groups);
+	    if (this._has_matched_pattern)
+	    {
+	        this._group_name = group_name;
+	        this.on_match_pattern(tiles_groups);
+	    }
         return false;
 	};	
 	
@@ -514,8 +588,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 		    this.refilled_symbol_array();
 	    var tiles_groups = this.pattern_search_2d(pattern, false, false);
 	    this._has_matched_pattern = (tiles_groups.length != 0);
-	    this._group_name = group_name;
-	    this.on_match_pattern(tiles_groups);
+	    if (this._has_matched_pattern)
+	    {
+	        this._group_name = group_name;
+	        this.on_match_pattern(tiles_groups);
+	    }
         return false;
 	};		
 	
@@ -525,8 +602,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 		    this.refilled_symbol_array();		
 	    var tiles_groups = this.pattern_search_2d(pattern, true, false);
 	    this._has_matched_pattern = (tiles_groups.length != 0);
-	    this._group_name = group_name;
-	    this.on_match_pattern(tiles_groups);
+	    if (this._has_matched_pattern)
+	    {
+	        this._group_name = group_name;
+	        this.on_match_pattern(tiles_groups);
+	    }
         return false;
 	};			
 	
@@ -551,7 +631,6 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};  
 	Acts.prototype.GetMatchTiles = function (group_name)	
 	{
-        assert2(this.board, "Matcher should connect to a board object");
         this.get_match_tiles(group_name,1);
 	};
     Acts.prototype.SetSymbol = function (symbol_value)
@@ -560,7 +639,6 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};
 	Acts.prototype.GetMatchTiles2D = function (group_name)	
 	{
-        assert2(this.board, "Matcher should connect to a board object");
         this.get_match_tiles(group_name,2);
 	};
 	Acts.prototype.ForceUpdaeSymbolArray = function ()	
@@ -600,4 +678,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
     {
         ret.set_int(this.exp_TileY);
     };
+    	
+    Exps.prototype.NOSYMBOL = function (ret)
+    {
+        ret.set_string("");
+    };    
 }());
