@@ -28,7 +28,7 @@ AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Keep");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Keep or pop", 0);
-AddCondition(3, 0, "Pick instances", "SOL", 
+AddCondition(3, cf_not_invertible, "Pick instances", "SOL", 
              "Pick and <i>{2}</i> <i>{1}</i> from group <i>{0}</i>", "Pick instances from group.", "PickInsts");
 AddNumberParam("UID", "The UID of instance to be tested.", 0);
 AddStringParam("Name", "Group name.", '""');
@@ -43,7 +43,7 @@ AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Get");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
-AddCondition(6, 0, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
+AddCondition(6, cf_not_invertible, "Pop one instance", "SOL: List", "<i>{3}</i> one instance <i>{2}</i> from group <i>{0}</i>[<i>{1}</i>]", 
              "Get or pop one instance from group.", "PopOneInstance");             
 AddStringParam("Subset", "Group name.", '""'); 
 AddStringParam("Main set", "Group name.", '""'); 
