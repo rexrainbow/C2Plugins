@@ -121,7 +121,7 @@ AddAction(10, 0, "Move chess to xyz by UID", "Logic: Move",
           "Move chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Move chess to xyz index by UID on the board.", "MoveChess2Index");              
 AddObjectParam("Layout", "Layout to transfer logic index to physical position");
-AddAction(11, 0, "Setup layout", "0: Setup", 
+AddAction(11, 0, "Setup layout", "Setup", 
           "Set layout to <i>{0}</i>", 
           "Setup layout to transfer logic index to physical position.", "SetupLayout");         
 AddObjectParam("Tile", "Tile object.");        
