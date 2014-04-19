@@ -41,33 +41,29 @@ cr.plugins_.Rex_layout2board = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.cell_width = this.properties[0];
-        this.cell_height = this.properties[1];
         this.boards = {};
 	};
     
     instanceProto.board_setup = function(board, instances)
     {      
-        var board_layout = board.layout;
+        var board_layout = board.GetLayout();
         assert2(board_layout, "[Layout to Board] please add squareTx or hexTx plugin into project.");
         var board_info = this.boards[board.uid];        
         var i, cnt=instances.length, chess;
         // assume OXY is at first instance
         chess = instances[0];
         board_layout.SetPOX(chess.x);
-        board_layout.SetPOY(chess.y);
-        board_layout.SetWidth(this.cell_width);
-        board_layout.SetHeight(this.cell_height);
+        board_layout.SetPOY(chess.y);        
         var lxmin=0, lymin=0, lxmax=0, lymax=0;
         var lx,ly;
-        var error;
+        var error_flg;
         for (i=1; i<cnt; i++)
         {
             chess = instances[i];
             lx = board_layout.PXY2LX(chess.x, chess.y);
             ly = board_layout.PXY2LY(chess.x, chess.y);
-            error = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly));
-            assert2(!error, "[Layout to Board] Error! Check the setting of cell width or cell height.");  
+            error_flg = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly))? null:true;
+            assert2(error_flg, "[Layout to Board] Error! Check the setting of cell width or cell height.");  
             if (lxmin > lx)
                 lxmin = lx;
             if (lymin > ly)
@@ -125,15 +121,17 @@ cr.plugins_.Rex_layout2board = function(runtime)
         var i, cnt=instances.length, chess; 
         var lx, ly;       
         var board_info = this.boards[board.uid];
-        var board_layout = board.layout;
-        var error;
+        var board_layout = board.GetLayout();
+        var error_flg;
         for (i=0; i<cnt; i++)
         {
             chess = instances[i];
             lx = board_layout.PXY2LX(chess.x, chess.y);
             ly = board_layout.PXY2LY(chess.x, chess.y); 
-            error = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly));
-            assert2(!error, "[Layout to Board] Error! The index of LX or LY is not an integer.");              
+            error_flg = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly))? null:true;       
+            assert2(error_flg, "[Layout to Board] Error! The index of LX or LY is not an integer.");
+            error_flg = (board.xyz2uid(lx, ly, lz) != null)? null:true;
+            assert2(error_flg, "[Layout to Board] Error! ("+lx+","+ly+","+lz+") had been occupied.");
             board.add_item(chess, lx, ly, lz);
         }
 	};

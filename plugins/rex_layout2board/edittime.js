@@ -38,8 +38,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_float, "Width", 32, "Cell width in pixels."),
-	new cr.Property(ept_float, "Height", 32, "Cell height in pixels.")
 	];
 	
 // Called by IDE when a new object type is to be created
