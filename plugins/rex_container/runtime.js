@@ -28,13 +28,6 @@ cr.plugins_.Rex_Container.tag2container = {};
 
 	typeProto.onCreate = function()
 	{
-		if (this.is_family)
-			return;
-			
-        var frame = this.animations[0][7][0];
-        this.hotspotX = frame[7];
-	    this.hotspotY = frame[8];        
-        this.image_points = frame[9];
 	};
 	/////////////////////////////////////
 	// Instance class
@@ -363,46 +356,6 @@ cr.plugins_.Rex_Container.tag2container = {};
         }     	
 	};	
 	
-	instanceProto.getImagePointIndexByName = function(name)
-	{
-        name = name.toLowerCase();
-        var image_points = this.type.image_points;
-        var i, cnt=image_points.length;
-        for (i=0; i<cnt; i++)
-        {
-            if (name=== image_points[i][0].toLowerCase())
-				return i;
-        }		
-		return -1;
-	};
-    
-	instanceProto.getImagePoint = function(imgpt, getX)
-	{
-        var image_points = this.type.image_points;
-        var index;
-        if (cr.is_string(imgpt))
-			index = this.getImagePointIndexByName(imgpt);
-		else
-			index = imgpt -1;	// 0 is origin		
-		index = cr.floor(index);
-		if (index < 0 || index >= image_points.length)
-			return getX ? this.x : this.y;	// return origin
-	    
-		// get position scaled and relative to origin in pixels
-		var x = (image_points[index][1] - this.type.hotspotX) * this.width;
-		var y = (image_points[index][2] - this.type.hotspotY) * this.height;
-		
-		// rotate by object angle
-		var cosa = Math.cos(this.angle);
-		var sina = Math.sin(this.angle);
-		var x_temp = (x * cosa) - (y * sina);
-		y = (y * cosa) + (x * sina);
-		x = x_temp;
-		x += this.x;
-		y += this.y;
-		return getX ? x : y;
-	};
-    
 	var hash_clean = function (obj)
 	{
 	    var k;
@@ -545,11 +498,11 @@ cr.plugins_.Rex_Container.tag2container = {};
     
 	Exps.prototype.ImagePointX = function (ret, imgpt)
 	{    
-		ret.set_float(this.getImagePoint(imgpt, true));
+		ret.set_float(0);
 	};
 	
 	Exps.prototype.ImagePointY = function (ret, imgpt)
 	{
-		ret.set_float(this.getImagePoint(imgpt, false));
+		ret.set_float(0);
 	};    
 }());

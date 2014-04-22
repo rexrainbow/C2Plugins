@@ -10,7 +10,7 @@
 		"category":		"Data & Storage",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
-		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_animations
+		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces
 	};
 };
 
@@ -54,9 +54,9 @@ AddAction(20, 0, "Set scale", "Size & Position", "Set scale to <i>{0}</i>", "Set
 AddExpression(3, ef_return_string, "Get tag", "Tag", "Tag", "Get tag.");
 // image points
 AddAnyTypeParam("ImagePoint", "Name or number of image point to get.");
-AddExpression(4, ef_return_number, "Get image point X",		"Size & Position",	"ImagePointX", "The X position of one of the object's image points.");
+AddExpression(4, ef_deprecated | ef_return_number, "Get image point X",		"Size & Position",	"ImagePointX", "The X position of one of the object's image points.");
 AddAnyTypeParam("ImagePoint", "Name or number of image point to get.");
-AddExpression(5, ef_return_number, "Get image point Y",		"Size & Position",	"ImagePointY", "The Y position of one of the object's image points.");
+AddExpression(5, ef_deprecated | ef_return_number, "Get image point Y",		"Size & Position",	"ImagePointY", "The Y position of one of the object's image points.");
 
 ACESDone();
 
