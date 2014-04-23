@@ -64,6 +64,17 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	{
 	    this._symbol_buffer.loadFromJSON(o["d"]);    
 	};	
+	
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Buffer", "value": this._symbol_buffer.content2string("")},
+			              ]
+		});
+	};
+	/**END-PREVIEWONLY**/	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -167,5 +178,10 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	{
 	    this._buf = o["b"];
 	    this.set_max_length(o["l"]);
+	};
+	
+	BufferKlassProto.content2string = function (separator)
+	{
+	    return this._buf.join(separator);
 	};		
 }());    
