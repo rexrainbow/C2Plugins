@@ -32,7 +32,27 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
         this.group = null;  
 	};
-
+    
+	behtypeProto.instgroup_get = function()
+	{
+        if (this.group != null)
+            return this.group;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if (cr.plugins_.Rex_gInstGroup && (inst instanceof cr.plugins_.Rex_gInstGroup.prototype.Instance))
+            {
+                this.group = inst;
+                return this.group;
+            }            
+        }
+        assert2(this.group, "Grid move behavior: Can not find instance group oject.");
+        return null;
+	};
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -96,17 +116,17 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         }
             
         var plugins = this.runtime.types;
-        var name, obj;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "BOARD"))
+            inst = plugins[name].instances[0];
+            if (cr.plugins_.Rex_SLGBoard && (inst instanceof cr.plugins_.Rex_SLGBoard.prototype.Instance))
             {
-                _xyz = obj.uid2xyz(this.inst.uid)
+                _xyz = inst.uid2xyz(this.inst.uid)
                 if (_xyz != null)
                 { 
-                    this.board = obj;
-					_dir_sequence_init(this._dir_sequence, obj.layout.GetDirCount());
+                    this.board = inst;
+					_dir_sequence_init(this._dir_sequence, inst.GetLayout().GetDirCount());
 					this._wander["o"]["x"] = _xyz.x;
 					this._wander["o"]["y"] = _xyz.y;
 					this._wander["o"]["z"] = _xyz.z;
@@ -336,8 +356,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	    var test_insts = _sol.getObjects(); 
         var test_insts_cnt = test_insts.length;     
         var i, test_uid;
-
-        var result_group = this.type.group.GetGroup(group_name);
+       
+        var result_group = this.type.instgroup_get().GetGroup(group_name);
         result_group.Clean();
         for (i=0; i<test_insts_cnt; i++)
         {
@@ -741,6 +761,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         }
         if (target_insts.length == 0)
             return;  
+            
+        if ((is_depart ==0) && 
+            (target_insts.length == 1) && 
+            this._board_get().are_neighbor(this.inst.uid, target_insts[0].uid))
+            return;
         // ----            
         var _layout = this._board_get().layout;
         var i, dir_count=this._dir_sequence.length;
@@ -756,21 +781,38 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             opx = _layout.LXYZ2PX(tx, ty, tz);
             opy = _layout.LXYZ2PY(tx, ty, tz);
             pd = _physical_distance_get(target_insts, opx, opy);
-            _ApproachOrDepart_dist2lxy.push({d:pd, lx:tx, ly:ty, can_move:true});
-	    }        
-        if (_ApproachOrDepart_dist2lxy.length == 0)
+            _ApproachOrDepart_dist2lxy.push({d:pd, lx:tx, ly:ty});
+	    } 
+        var dist2lxy;
+        var cnt = _ApproachOrDepart_dist2lxy.length;        
+        if (cnt == 0)
             return;
-        opx = _layout.LXYZ2PX(_xyz.x, _xyz.y, tz);
-        opy = _layout.LXYZ2PY(_xyz.x, _xyz.y, tz);
-        pd = _physical_distance_get(target_insts, opx, opy);
-        _ApproachOrDepart_dist2lxy.push({d:pd, lx:_xyz.x, ly:_xyz.y, can_move:false});
-        //_shuffle(_ApproachOrDepart_dist2lxy);     
-        _ApproachOrDepart_dist2lxy.sort(_ApproachOrDepart_dist2lxy_sort_fn);
-        var dist2lxy = (is_depart==1)? 
-            _ApproachOrDepart_dist2lxy[_ApproachOrDepart_dist2lxy.length-1]:
-            _ApproachOrDepart_dist2lxy[0];
-        if (dist2lxy.can_move)
-            this._move_to_target(dist2lxy.lx, dist2lxy.ly, tz);	
+        else
+        {
+            if (cnt > 1)
+            {
+                _shuffle(_ApproachOrDepart_dist2lxy);
+            }
+            dist2lxy = _ApproachOrDepart_dist2lxy[0];
+            var i;
+            if (is_depart==0)  // find min
+            {
+                for (i=1; i<cnt; i++)
+                {
+                    if (dist2lxy.d > _ApproachOrDepart_dist2lxy[i].d)
+                        dist2lxy = _ApproachOrDepart_dist2lxy[i];
+                }
+            }
+            else  // find max
+            {
+                for (i=1; i<cnt; i++)
+                {
+                    if (dist2lxy.d < _ApproachOrDepart_dist2lxy[i].d)
+                        dist2lxy = _ApproachOrDepart_dist2lxy[i];
+                }            
+            }
+        }
+        this._move_to_target(dist2lxy.lx, dist2lxy.ly, tz);	
         _ApproachOrDepart_dist2lxy.length = 0;
 	};    
     // AI - Approach / Depart
