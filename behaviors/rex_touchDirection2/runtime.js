@@ -133,8 +133,8 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
              
         // this.activated && this.is_on_drag                        
         var inst = this.inst;
-        var cur_x = this.GetABSX();
-        var cur_y = this.GetABSY();
+        var cur_x = this.GetX();
+        var cur_y = this.GetY();
         var dx = cur_x - this.pre_x;
         var dy = cur_y - this.pre_y;             
         if ( (dx!=0) || (dy!=0) )
@@ -170,8 +170,8 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	{   
         this.is_on_drag = true;
         this._dir = null;
-        this.pre_x = this.GetABSX();
-        this.pre_y = this.GetABSY();
+        this.pre_x = this.GetX();
+        this.pre_y = this.GetY();
         this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStart, this.inst);
 	};
 
