@@ -50,6 +50,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.layout = null;
         this.layoutUid = -1;    // for loading
         this._kicked_chess_inst = null;
+        this._exp_EmptyLX = -1;
+        this._exp_EmptyLY = -1;
         
 		// Need to know if pinned object gets destroyed
 		this.myDestroyCallback = (function (self) {
@@ -191,6 +193,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    if (is_in_board && (z != null))
 	        is_in_board = (z in this.board[x][y]);
 	    return is_in_board;
+	};	
+	
+	instanceProto.is_empty = function (x,y,z)
+	{
+	    if (!this.is_inside_board(x,y))
+	        return false;
+
+	    return (z==0)? (this.board[x][y][0] == null):
+	                   ((this.board[x][y][0] != null) && (this.board[x][y][z] == null));
 	};	
 	
 	var _get_uid = function(objs)
@@ -683,9 +694,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();        
 	  
+	Cnds.prototype.IsOccupied = function (x,y,z)
+	{
+	    if (!this.is_inside_board(x,y))
+	        return false;	    
+	        
+		return (this.board[x][y][z] != null);
+	};	
+	  
 	Cnds.prototype.IsEmpty = function (x,y,z)
 	{
-		return (this.board[x][y][z] == null);
+		return this.is_empty(x,y,z);
 	}; 
 	
 	Cnds.prototype.OnCollided = function (objA, objB)
@@ -803,6 +822,51 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Cnds.prototype.PickNeighborChess = function (origin, dir, chess_type)
 	{
         return this._pick_neighbor_chess(origin, dir, chess_type);            
+	};
+	
+	var empty_cells=[];
+	Cnds.prototype.PickEmptyCell = function (z)
+	{
+        var x, y;
+        empty_cells.length = 0;
+        for(x=0; x<=this.x_max; x++)
+        {
+            for(y=0; y<=this.y_max; y++)
+            {                
+                if (this.is_empty(x,y,z))
+                {
+                    empty_cells.push([x,y]);
+                }
+            }
+        }
+        var cnt = empty_cells.length;
+        if (cnt > 0)
+        {
+             var i = cr.floor(Math.random() * cnt);      
+             var empty_cellXY = empty_cells[i];
+             this._exp_EmptyLX = empty_cellXY[0];
+             this._exp_EmptyLY = empty_cellXY[1];
+             empty_cells.length = 0;
+        }
+        return (cnt > 0);
+	};
+	
+	Cnds.prototype.HasEmptyCell = function (z)
+	{
+        var x, y;
+        for(x=0; x<=this.x_max; x++)
+        {
+            for(y=0; y<=this.y_max; y++)
+            {                
+                if (this.is_empty(x,y,z))
+                {
+                    this._exp_EmptyLX = x;
+                    this._exp_EmptyLY = y;
+                    return true;
+                }
+            }
+        }
+        return false;
 	};	
 	//////////////////////////////////////
 	// Actions
@@ -1144,5 +1208,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             distanc = Math.sqrt(dx*dx + dy*dy);
         }
 	    ret.set_float(distanc);
-	};	    
+	};	 
+
+	Exps.prototype.EmptyLX = function (ret)
+	{
+	    ret.set_int(this._exp_EmptyLX);
+	};   
+    
+	Exps.prototype.EmptyLY = function (ret)
+	{
+	    ret.set_int(this._exp_EmptyLY);
+	};     
 }());

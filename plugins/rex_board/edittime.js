@@ -19,7 +19,12 @@
 AddNumberParam("Logic X", "The X index (0-based).", 0);
 AddNumberParam("Logic Y", "The Y index (0-based).", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based).", 0);
-AddCondition(5, 0, "Empty", "Board", 
+AddCondition(4, 0, "Is occupied", "Empty", 
+             "Cell [<i>{0}</i>,<i>{1}</i>,<i>{2}</i>] is occupied", "Testing if cell is occupied.", "IsOccupied");
+AddNumberParam("Logic X", "The X index (0-based).", 0);
+AddNumberParam("Logic Y", "The Y index (0-based).", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based).", 0);
+AddCondition(5, 0, "Is empty", "Empty", 
              "Cell [<i>{0}</i>,<i>{1}</i>,<i>{2}</i>] is empty", "Testing if cell is empty.", "IsEmpty");
 AddObjectParam("Chess", "Chess object A.");
 AddObjectParam("Chess", "Chess object B.");             
@@ -69,7 +74,13 @@ AddAnyTypeParam("Direction", "Direction of neighbor. (-1) for all directions", -
 AddObjectParam("Neighbor", "Neighbor chess object for pickking");
 AddCondition(17, cf_not_invertible, "Pick neighbor chess", "SOL", 
              "Pick neighbor chess {2} by origin to {0} , direction to <i>{1}</i>", "Pick neighbor chess.", "PickNeighborChess");  
-             
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);          
+AddCondition(18, 0, "Pick an empty cell", "Empty", 
+            "Pick an empty cell with logic Z to <i>{0}</i>", "Pick an empty cell randomly, return false if all cells are occupied.", "PickEmptyCell");
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);          
+AddCondition(19, 0, "Has any empty cell", "Empty", 
+            "Has any empty cell with logic Z to <i>{0}</i>", "Return true if there has any empty cell.", "HasEmptyCell");            
+            
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -277,7 +288,13 @@ AddNumberParam("UID", "The UID of chess A.", 0);
 AddNumberParam("UID", "The UID of chess B.", 0);    
 AddExpression(22, ef_return_number,
               "Get logic distance of two chess", "Logic", "LogicDistance",
-              "Get logic distance of two chess. Return (-1) if one of chess is not on the board.");
+              "Get logic distance of two chess. Return (-1) if one of chess is not on the board."); 
+AddExpression(23, ef_return_number,
+              "Get X co-ordinate of an empty cell", "Empty", "EmptyLX",
+              'Get X co-ordinate of an empty cell under "Condition:Pick an empty cell". or "Condition:Has any empty cell".');
+AddExpression(24, ef_return_number,
+              "Get Y co-ordinate of an empty cell", "Empty", "EmptyLY",
+              'Get Y co-ordinate of an empty cell under "Condition:Pick an empty cell". or "Condition:Has any empty cell".');
               
 ACESDone();
 
