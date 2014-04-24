@@ -837,7 +837,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 		}
 		
-		if (touching.length)
+		if (touching.length && this.IsInTouch())
 		{
 			sol.select_all = false;
 			sol.instances = touching;

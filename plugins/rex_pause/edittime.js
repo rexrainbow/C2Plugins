@@ -7,7 +7,7 @@
 		"description":	"Pause timescale",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pause.html",
-		"category":		"General",
+		"category":		"Logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal
@@ -16,9 +16,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On pause", "Event", "On pause", "", "OnPause");
-AddCondition(1, cf_trigger, "On resume", "Event", "On resume", "", "OnResume");
-AddCondition(2, 0, "Is pause", "If", "Is pause", "", "IsPause");
+AddCondition(0, cf_trigger, "On pause", "Event", "On pause", "Trigger when game is pausing", "OnPause");
+AddCondition(1, cf_trigger, "On resume", "Event", "On resume", "Trigger when game is resuming", "OnResume");
+AddCondition(2, 0, "Is pause", "If", "Is pause", "Return true if it is in pause state.", "IsPause");
 
 //////////////////////////////////////////////////////////////
 // Actions

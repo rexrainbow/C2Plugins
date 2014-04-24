@@ -27,7 +27,7 @@ AddCondition(2, cf_trigger, "On filter", "Filter",
 // Actions 
 AddObjectParam("Board", "Board object");
 AddObjectParam("Group", "Instance group object");
-AddAction(0, 0, "Setup", "0: Setup", 
+AddAction(0, 0, "Setup", "Setup", 
           "Set board object to <i>{0}</i>, instance group object to <i>{1}</i>", 
           "Set board object and instance group object.", "Setup");  
 AddNumberParam("Cost", "Cost", 0);

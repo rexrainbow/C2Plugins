@@ -69,10 +69,51 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._hit_dist_tile = false; 
 	};
 
+	instanceProto.board_get = function()
+	{
+        if (this.board != null)
+            return this.board;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if (cr.plugins_.Rex_SLGBoard && (inst instanceof cr.plugins_.Rex_SLGBoard.prototype.Instance))
+            {
+                this.board = inst;
+                return this.board;
+            }            
+        }
+        assert2(this.board, "SLG movement plugin: Can not find board oject.");
+        return null;
+	};
+	
+	instanceProto.instgroup_get = function()
+	{
+        if (this.group != null)
+            return this.group;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if (cr.plugins_.Rex_gInstGroup && (inst instanceof cr.plugins_.Rex_gInstGroup.prototype.Instance))
+            {
+                this.group = inst;
+                return this.group;
+            }            
+        }
+        assert2(this.group, "SLG movement plugin: Can not find instance group oject.");
+        return null;
+	};
+	
 	instanceProto.is_inside_board = function (x,y,z)
 	{
-        assert2(this.board, "SLG movement should connect to a board object");
-	    return this.board.is_inside_board(x,y,z);
+	    return this.board_get().is_inside_board(x,y,z);
 	};	
 	
 	var _get_uid = function(objs)
@@ -93,20 +134,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
    
 	instanceProto.xyz2uid = function(x, y, z)
 	{
-        assert2(this.board, "SLG movement should connect to a board object");
-	    return this.board.xyz2uid(x, y, z);
+	    return this.board_get().xyz2uid(x, y, z);
 	};
 	
 	instanceProto.uid2xyz = function(uid)
 	{
-        assert2(this.board, "SLG movement should connect to a board object");
-	    return this.board.uid2xyz(uid);
+	    return this.board_get().uid2xyz(uid);
 	};
 	
 	instanceProto.lz2uid = function(uid,lz)
 	{
-        assert2(this.board, "SLG movement should connect to a board object");
-	    return this.board.lz2uid(uid,lz);
+	    return this.board_get().lz2uid(uid,lz);
 	};	
 	
 	var prop_BLOCKING = -1;
@@ -142,10 +180,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	instanceProto._get_neighbors = function(_x,_y)
 	{
+	    var layout = this.board_get().GetLayout();
 	    if (this._neighbors.length == 0)
-	        this._neighbors_init(this.board.layout.GetDirCount());
+	        this._neighbors_init(layout.GetDirCount());
 	    var dir;
-	    var layout = this.board.layout;
 	    var neighbors_cnt = this._neighbors.length;	    
         for (dir=0; dir<neighbors_cnt; dir++)
         {
@@ -441,10 +479,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	}; 	   
 	 
 	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
-	{	        	
-	    assert2(this.board, "SLG movement should connect to a board object");
-	    assert2(this.group, "SLG movement should connect to a instance group object"); 
-	       
+	{	  
+	    var group = this.instgroup_get(); 
+	    var board = this.board_get();
+	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
 	    if ((_xyz == null) || (moving_points<=0))
@@ -466,14 +504,14 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	        else
 	            this._filter_uid_list.push(uid);
 		}
-		this.group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);
+		group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);
 	};  
 		
 	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
-	{        
-	    assert2(this.board, "SLG movement should connect to a board object");
-	    assert2(this.group, "SLG movement should connect to a instance group object"); 
-	      	    
+	{     
+	    var group = this.instgroup_get(); 
+	    var board = this.board_get();  
+	    
 	    var chess_uid = _get_uid(chess_objs);
 	    var tile_uid = _get_uid(tile_objs);
 	    if ((chess_uid == null) || (tile_uid == null) || (moving_points<=0))
@@ -487,9 +525,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.exp_ChessUID = chess_uid;
 	    var path_tiles_uids = this.get_moving_path(chess_uid,tile_uid,moving_points, cost);
         if (path_tiles_uids != null)
-	        this.group.GetGroup(group_name).SetByUIDList(path_tiles_uids);	  
+	        group.GetGroup(group_name).SetByUIDList(path_tiles_uids);	  
         else
-            this.group.GetGroup(group_name).Clean();	  
+            group.GetGroup(group_name).Clean();	  
 	};	  	
 	
     Acts.prototype.SetRandomGenerator = function (randomGen_objs)
