@@ -6,7 +6,7 @@
 		"description":	"Dump fps infomation.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_text_fpsmonitor.html",
-		"category":		"Text",
+		"category":		"Text / Sprite font",
 		"flags":		bf_onlyone
 	};
 };
@@ -19,7 +19,7 @@
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParamOption("Toggle");
-AddComboParam("Activated", "Enable the rotation behavior.",1);
+AddComboParam("Activated", "Enable this behavior.",1);
 AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the fps moniter.", "SetActivated");
               
 //////////////////////////////////////////////////////////////
