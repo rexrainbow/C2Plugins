@@ -33,7 +33,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         this.GetY = null;
         this.GetAbsoluteX = null;
         this.GetAbsoluteY = null;
-        this.behavior_index = null;
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -60,7 +59,18 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         }
         assert2(this.touchwrap, "Drag drop behavior: Can not find touchWrap oject.");
 	};  
-    
+	
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
         this.DragDetecting(touchX, touchY, touch_src);
@@ -68,15 +78,19 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
     behtypeProto.OnTouchEnd = function (touch_src)
     {
-        if (this.behavior_index == null )
-            return;
-
 		var insts = this.objtype.instances;
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
         {
 		    inst = insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }			    
+            behavior_inst = GetThisBehavior(inst);
+            if (behavior_inst == null)
+                continue;
 			if ((behavior_inst.drag_info.touch_src == touch_src) && behavior_inst.drag_info.is_on_dragged)
             {
 			    behavior_inst.drag_info.is_on_dragged = false;
@@ -102,10 +116,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         
         // overlap_cnt > 0
         // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
-            
-            
+   
         // 1. get all valid behavior instances            
         var ovl_insts = sol.getObjects();
         var i, cnt, inst, behavior_inst;          
@@ -114,7 +125,14 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         for (i=0; i<cnt; i++ )
         {
 		    inst = ovl_insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }		    
+            behavior_inst = GetThisBehavior(inst);
+            if (behavior_inst == null)
+                continue;
             if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_dragged))
                 _behavior_insts.push(behavior_inst);
         }

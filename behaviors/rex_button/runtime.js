@@ -31,7 +31,6 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this.touchwrap = null;
         this.GetX = null;
         this.GetY = null;
-        this.behavior_index = null;
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -55,6 +54,18 @@ cr.behaviors.Rex_Button2 = function(runtime)
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for button behavior");
 	};  
+	
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};	
     
 	var _behavior_insts = [];
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
@@ -71,20 +82,24 @@ cr.behaviors.Rex_Button2 = function(runtime)
         }
         
         // overlap_cnt > 0
-        // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
-            
+        // 0. find out index of behavior instance          
             
         // 1. get all valid behavior instances            
         var ovl_insts = sol.getObjects();
-        var i, cnt, inst, behavior_inst;                  
+        var i, cnt, inst, behavior_inst;                 
         cnt = ovl_insts.length;
         _behavior_insts.length = 0; 		
         for (i=0; i<cnt; i++ )
         {
 		    inst = ovl_insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }		    
+            behavior_inst = GetThisBehavior(inst);
+            if (behavior_inst == null)
+                continue;
             if (behavior_inst.is_enable())
 			    _behavior_insts.push(behavior_inst);
         }
@@ -115,9 +130,6 @@ cr.behaviors.Rex_Button2 = function(runtime)
     
     behtypeProto.OnTouchEnd = function (touch_src)
     {
-        if (this.behavior_index == null )
-            return;
-	    
 		var insts = this.objtype.instances;
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
@@ -128,7 +140,9 @@ cr.behaviors.Rex_Button2 = function(runtime)
 		        continue;
 		        // insts might be removed
 		    }
-            behavior_inst = inst.behavior_insts[this.behavior_index];
+            behavior_inst = GetThisBehavior(inst);
+            if (behavior_inst == null)
+                continue;            
 			if ((behavior_inst._touch_src == touch_src) && (behavior_inst._state == CLICK_DETECTING_STATE))
                 behavior_inst.finish_click_detecting();            
         }	    
@@ -159,7 +173,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
     var INACTIVE_DISPLAY = 2;
     var ROLLINGIN_DISPLAY = 3;
 	behinstProto.onCreate = function()
-	{   
+	{
 	    this._init_activated = (this.properties[0]==1);
         this._click_mode = this.properties[1];      
         this._auto_CLICK2ACTIVE = (this.properties[2]==1);
