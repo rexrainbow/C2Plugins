@@ -13,6 +13,17 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
+AddCmpParam("Comparison", "Choose the way to compare the logical X.");
+AddNumberParam("LX", "Logical X.");
+AddCondition(0, 0, "Compare LX", "Logical position", "{my} LX {0} {1}", "Compare the logical X.", "CompareLX");
+AddCmpParam("Comparison", "Choose the way to compare the logical Y.");
+AddNumberParam("LY", "Logical Y.");
+AddCondition(1, 0, "Compare LY", "Logical position", "{my} LY {0} {1}", "Compare the logical Y.", "CompareLY");
+AddCmpParam("Comparison", "Choose the way to compare the logical Z.");
+AddNumberParam("LZ", "Logical Z.");
+AddCondition(2, 0, "Compare LZ", "Logical position", "{my} LZ {0} {1}", "Compare the logical Z.", "CompareLZ");
+AddCondition(3, 0, "Is a tile", "Chess", 
+             "{my} is a tile", "Return true if z-index of this chess is 0.", "IsTile");             
 AddObjectParam("Board", "Board object");
 AddCondition(4, 0, "On the board", "Board", 
              "Is {my} on <i>{0}</i>", "Return true if the chess is on the board.", "IsOnTheBoard");                         
@@ -23,9 +34,13 @@ AddObjectParam("Chess", "Chess object B.");
 AddCondition(7, 0, "Is overlapping", "Collisions", 
             "Is {my} overlapping with <i>{0}</i>", "Test if the object is overlapping another object.", "IsOverlapping");
 AddNumberParam("UID of chess", "UID of chess B.", 0);
-AddCondition(9, 0, "Are neighbor (UID)", "Board", 
+AddCondition(9, 0, "Are neighbor (UID)", "Chess", 
              "Are {my} and <i>{0}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
- 
+AddCondition(10, 0, "No chess above", "Empty", 
+             "{my} has no chess above", "Return true if there has no chess above this tile.", "NoChessAbove");  
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 1);             
+AddCondition(11, 0, "No chess at LZ", "Empty", 
+             "{my} has no chess at LZ to <i>{0}</i>", "Return true if there has no chess above this tile at logical Z.", "NoChessAboveLZ");  
 	  			 		 
 //////////////////////////////////////////////////////////////
 // Actions

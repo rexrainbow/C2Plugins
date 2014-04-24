@@ -107,6 +107,43 @@ cr.behaviors.Rex_chess = function(runtime)
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
 	
+
+	Cnds.prototype.CompareLX = function (cmp, lx)
+	{
+	    var board = this._board_get();
+	    if (board == null)  // not at any board
+	        return false;
+	    var _xyz = board.uid2xyz(this.inst.uid);    
+		return cr.do_cmp(_xyz.x, cmp, lx);
+	};
+	
+	Cnds.prototype.CompareLY = function (cmp, lY)
+	{
+	    var board = this._board_get();
+	    if (board == null)  // not at any board
+	        return false;
+	    var _xyz = board.uid2xyz(this.inst.uid);    
+		return cr.do_cmp(_xyz.y, cmp, ly);
+	};
+	
+	Cnds.prototype.CompareLZ = function (cmp, lz)
+	{
+	    var board = this._board_get();
+	    if (board == null)  // not at any board
+	        return false;
+	    var _xyz = board.uid2xyz(this.inst.uid);    
+		return cr.do_cmp(_xyz.z, cmp, ly);
+	};	
+		
+	Cnds.prototype.IsTile = function ()
+	{
+	    var board = this._board_get();
+	    if (board == null)  // not at any board
+	        return false;
+	    var _xyz = board.uid2xyz(this.inst.uid);	    
+		return (_xyz.z == 0);
+	};
+	
 	Cnds.prototype.IsOnTheBoard = function (board_objs)
 	{
 		if (!board_objs)
@@ -149,6 +186,31 @@ cr.behaviors.Rex_chess = function(runtime)
 	        return false;
 	    else
 		    return board.are_neighbor(chess_uid, uidB);
+	};	
+	
+	Cnds.prototype.NoChessAbove = function ()
+	{
+	    var board = this._board_get();
+	    if (board == null)  // not at any board
+	        return false;
+	    else
+	    {
+	        var _xyz = board.uid2xyz(this.inst.uid);
+	        var cnt = board.xy2zcnt(_xyz.x, _xyz.y);
+		    return (cnt == 1);
+		}
+	};	
+
+	Cnds.prototype.NoChessAboveLZ = function (lz)
+	{
+	    var board = this._board_get();
+	    if (board == null)  // not at any board
+	        return false;
+	    else
+	    {
+	        var _xyz = board.uid2xyz(this.inst.uid);
+		    return board.is_empty(_xyz.x, _xyz.y, lz);
+		}
 	};		
 	//////////////////////////////////////
 	// Actions
