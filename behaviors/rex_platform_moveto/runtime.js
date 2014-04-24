@@ -113,10 +113,10 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
         
         if (is_hit_target)
         {            
+            this.is_moving = false;
             this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.Rex_Platform_MoveTo.prototype.cnds.OnHitTarget, this.inst); 
             this.is_my_call = false;            
-            this.is_moving = false;
         }   
 	}; 
 
