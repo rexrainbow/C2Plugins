@@ -34,14 +34,13 @@ AddObjectParam("Chess", "Chess object B.");
 AddCondition(7, 0, "Is overlapping", "Collisions", 
             "Is {my} overlapping with <i>{0}</i>", "Test if the object is overlapping another object.", "IsOverlapping");
 AddNumberParam("UID of chess", "UID of chess B.", 0);
-AddCondition(9, 0, "Are neighbor (UID)", "Chess", 
-             "Are {my} and <i>{0}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
+AddCondition(9, 0, "Are neighbors (UID)", "Chess", 
+             "Are {my} and <i>{0}</i> neighbors", "Testing if two chess are neighbors.", "AreNeighbors");             
 AddCondition(10, 0, "No chess above", "Empty", 
              "{my} has no chess above", "Return true if there has no chess above this tile.", "NoChessAbove");  
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 1);             
 AddCondition(11, 0, "No chess at LZ", "Empty", 
-             "{my} has no chess at LZ to <i>{0}</i>", "Return true if there has no chess above this tile at logical Z.", "NoChessAboveLZ");  
-	  			 		 
+             "{my} has no chess at LZ to <i>{0}</i>", "Return true if there has no chess above this tile at logical Z.", "NoChessAboveLZ");  		 
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Board", "Board object.");   
@@ -101,7 +100,7 @@ AddExpression(13, ef_return_number,
 AddAnyTypeParam("Direction", "The direction.", 0);            
 AddExpression(17, ef_return_number | ef_variadic_parameters,
               "Get neighbor UID by direction", "Chess", "DIR2UID",
-              "Get neighbor UID by direction.");                                      
+              "Get neighbor UID by direction. Add 2nd parameter to indicate z-index. Return (-1) if no chess picked.");                                      
 ACESDone();
 
 // Property grid properties for this plugin

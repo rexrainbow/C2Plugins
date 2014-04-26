@@ -764,7 +764,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             
         if ((is_depart ==0) && 
             (target_insts.length == 1) && 
-            this._board_get().are_neighbor(this.inst.uid, target_insts[0].uid))
+            this._board_get().are_neighbors(this.inst.uid, target_insts[0].uid))
             return;
         // ----            
         var _layout = this._board_get().layout;

@@ -117,7 +117,7 @@ cr.behaviors.Rex_chess = function(runtime)
 		return cr.do_cmp(_xyz.x, cmp, lx);
 	};
 	
-	Cnds.prototype.CompareLY = function (cmp, lY)
+	Cnds.prototype.CompareLY = function (cmp, ly)
 	{
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
@@ -160,6 +160,7 @@ cr.behaviors.Rex_chess = function(runtime)
 		var board = this._board_get();
 		if (board == null)
 		    return false;
+            
 	    board._overlap_test(objA, objB);
 		// We've aleady run the event by now.
 		return false;
@@ -174,18 +175,19 @@ cr.behaviors.Rex_chess = function(runtime)
 		var board = this._board_get();
 		if (board == null)
 		    return false;
+            
 	    board._overlap_test(objA, objB);
 		// We've aleady run the event by now.
 		return false;
 	};	
 	
-	Cnds.prototype.AreNeighbor = function (uidB)
+	Cnds.prototype.AreNeighbors = function (uidB)
 	{
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
 	        return false;
-	    else
-		    return board.are_neighbor(chess_uid, uidB);
+	   
+        return board.are_neighbors(chess_uid, uidB);
 	};	
 	
 	Cnds.prototype.NoChessAbove = function ()
@@ -193,12 +195,10 @@ cr.behaviors.Rex_chess = function(runtime)
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
 	        return false;
-	    else
-	    {
-	        var _xyz = board.uid2xyz(this.inst.uid);
-	        var cnt = board.xy2zcnt(_xyz.x, _xyz.y);
-		    return (cnt == 1);
-		}
+	    
+        var _xyz = board.uid2xyz(this.inst.uid);
+	    var cnt = board.xy2zcnt(_xyz.x, _xyz.y);
+		return (cnt == 1);		
 	};	
 
 	Cnds.prototype.NoChessAboveLZ = function (lz)
@@ -206,12 +206,10 @@ cr.behaviors.Rex_chess = function(runtime)
 	    var board = this._board_get();
 	    if (board == null)  // not at any board
 	        return false;
-	    else
-	    {
-	        var _xyz = board.uid2xyz(this.inst.uid);
-		    return board.is_empty(_xyz.x, _xyz.y, lz);
-		}
-	};		
+	    
+        var _xyz = board.uid2xyz(this.inst.uid);
+		return board.is_empty(_xyz.x, _xyz.y, lz);	
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
