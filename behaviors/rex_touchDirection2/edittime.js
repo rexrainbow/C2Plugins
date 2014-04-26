@@ -25,10 +25,10 @@ AddAction(1, 0, "Set proportion", "", "Set {my} proportion to <i>{0}</i>",
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On moving start", "", "On {my} moving start", "Triggered when object moving start.", "OnMovingStart");
-AddCondition(1,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");             
-AddCondition(2,	cf_trigger, "On moving stop", "", "On {my} moving stop", "Triggered when object moving stop.", "OnMovingStop"); 
-AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");
+AddCondition(0,	cf_trigger, "On dragging start", "", "On {my} dragging start", "Triggered when object dragging start.", "OnDraggingStart");
+AddCondition(1,	cf_deprecated | cf_trigger, "On dragging", "", "On {my} dragging", "Triggered when object dragging.", "OnDragging");             
+AddCondition(2,	cf_trigger, "On dragging stop", "", "On {my} dragging stop", "Triggered when object dragging stop.", "OnDraggingStop"); 
+AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.", "IsDragging");
 
 //////////////////////////////////////////////////////////////
 // Expressions

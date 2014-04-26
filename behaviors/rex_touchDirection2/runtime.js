@@ -172,13 +172,13 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         this._dir = null;
         this.pre_x = this.GetX();
         this.pre_y = this.GetY();
-        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStart, this.inst);
+        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnDraggingStart, this.inst);
 	};
 
 	behinstProto.on_moving_end = function()
 	{   
         this.is_on_drag = false;
-        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnMovingStop, this.inst);
+        this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnDraggingStop, this.inst);
 	};
 	  
 	behinstProto.GetABSX = function ()
@@ -233,22 +233,22 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();    
     
-	Cnds.prototype.OnMovingStart = function ()
+	Cnds.prototype.OnDraggingStart = function ()
 	{
         return true;
 	};
     
-	Cnds.prototype.OnMovingStop = function ()
+	Cnds.prototype.OnDraggingStop = function ()
 	{
 		return true;
 	}; 
 
- 	Cnds.prototype.OnMoving = function ()
+ 	Cnds.prototype.OnDragging = function ()
 	{   
         return true;
     }
     
- 	Cnds.prototype.IsMoving = function ()
+ 	Cnds.prototype.IsDragging = function ()
 	{   
         return (this.is_on_drag);
     }    
