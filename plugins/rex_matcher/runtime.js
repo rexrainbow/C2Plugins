@@ -104,7 +104,23 @@ cr.plugins_.Rex_Matcher = function(runtime)
         assert2(this.group, "Matcher plugin: Can not find instance group oject.");
         return null;
 	};	
-    
+
+	var _get_uid = function(objs)
+	{
+        var uid;
+	    if (objs == null)
+	        uid = null;
+	    else if (typeof(objs) != "number")
+	    {
+	        var inst = objs.getFirstPicked();
+	        uid = (inst!=null)? inst.uid:null;
+	    }
+	    else
+	        uid = objs;
+            
+        return uid;
+	};
+	    
     instanceProto._clean_symbol_cache = function ()
     {
         var x,y,z,_entry,_cell;
@@ -124,7 +140,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         }
     };    
     
-    instanceProto._write_symbol_cache = function (_x,_y)
+    instanceProto.write_symbol_cache = function (_x,_y)
     {
         var tile_uid = this.board_get().xyz2uid(_x,_y,0);
         if (tile_uid == null)
@@ -148,7 +164,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{
 	    return ((s==null) || (s.symbol == ""))? false:true;	    
 	};	
-	instanceProto.refilled_symbol_array = function(x,y)
+	instanceProto.refilled_symbol_array = function()
 	{
         this._clean_symbol_cache();
         var x,y,uid;
@@ -158,7 +174,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         for (y=0; y<=y_max; y++)
         {
             for (x=0; x<=x_max; x++)
-                this._write_symbol_cache(x,y);
+                this.write_symbol_cache(x,y);
         }
         this._last_tick = this.runtime.tickcount;
 	};	
@@ -658,7 +674,29 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{	     
         this._square_modes[2] = (enable==1);
         this._square_modes[3] = (enable==1);        
-	};	 	
+	};
+	Acts.prototype.ForceUpdaeCellByLXY = function (lx, ly)	
+	{	     
+        this.write_symbol_cache(lx, ly);       
+	};		
+	Acts.prototype.ForceUpdaeCellByTileUID = function (uid)	
+	{
+	    var _xyz = this.board_get().uid2xyz(uid);
+        this.write_symbol_cache(_xyz.x, _xyz.y);       
+	};	
+	Acts.prototype.ForceUpdaeCellByTile = function (chess_type)	
+	{
+        if (!chess_type)
+            return;  
+        var chess = chess_type.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+		var _xyz, board=this.board_get();
+        for (i=0; i<chess_cnt; i++)
+        {
+		    _xyz = board.uid2xyz(chess[i].uid);
+			this.write_symbol_cache(_xyz.x, _xyz.y);    
+		}      
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
