@@ -212,6 +212,34 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this._moving_angle_info = o["ma"];
         this._last_tick = o["lt"];      
 	};	    
+	
+    /**BEGIN-PREVIEWONLY**/
+    behinstProto.getDebuggerValues = function (propsections)
+    {
+        propsections.push({
+            "title": this.type.name,
+            "properties": [
+                {"name": "Target X", "value": this.target["x"]},
+                {"name": "Target Y", "value": this.target["y"]},
+                {"name": "Current speed", "value": this.current_speed},
+                {"name": "Remaining distance", "value": this.remain_distance},
+                {"name": "Hit target", "value": this.is_hit_target, "readonly": true},
+            ]
+        });
+    };
+          
+    behinstProto.onDebugValueEdited = function (header, name, value)
+    {
+        var a, s;
+          
+        switch (name) {
+          case "Target X": this.target["x"] = value; break;
+          case "Target Y": this.target["y"] = value; break;
+          case "Current speed": this.current_speed = value; break;
+          case "Remaining distance": this.remain_distance = value; break;
+        }
+    };
+    /**END-PREVIEWONLY**/	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
