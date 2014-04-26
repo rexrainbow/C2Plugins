@@ -40,8 +40,8 @@ AddCondition(8, 0, "Point is in board", "Board",
              "Point (<i>{0}</i>,<i>{1}</i>) is in board", "Testing if point is in board.", "PointIsInBoard");
 AddNumberParam("UID of chess", "UID of chess A.", 0);
 AddNumberParam("UID of chess", "UID of chess B.", 0);
-AddCondition(9, 0, "Are neighbor (UID)", "Board", 
-             "Are <i>{0}</i> and <i>{1}</i> neighbor", "Testing if two chess are neighbor.", "AreNeighbor");             
+AddCondition(9, 0, "Are neighbors (UID)", "Board", 
+             "Are <i>{0}</i> and <i>{1}</i> neighbors", "Testing if two chess are neighbors.", "AreNeighbors");             
 AddCondition(10, cf_not_invertible, "Pick all chess", "SOL", 
              "Pick all chess on the board", "Pick all chess on the board.", "PickAllChess");  
 AddObjectParam("Chess", "Kicked chess object.");

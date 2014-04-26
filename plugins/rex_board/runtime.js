@@ -366,7 +366,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.add_item(chess_inst, target_x, target_y, target_z); 
 	}; 
     
-	instanceProto.are_neighbor = function (uidA, uidB)
+	instanceProto.are_neighbors = function (uidA, uidB)
 	{
         var xyzA=this.uid2xyz(uidA);
         var xyzB=this.uid2xyz(uidB);
@@ -375,17 +375,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         
         var layout = this.GetLayout();
         var dir,dir_cnt=layout.GetDirCount();
-        var _are_neighbor = false;
+        var _are_neighbors = false;
         for(dir=0;dir<dir_cnt;dir++)
         {
             if ((layout.GetNeighborLX(xyzA.x,xyzA.y,dir) == xyzB.x) &&
                 (layout.GetNeighborLY(xyzA.x,xyzA.y,dir) == xyzB.y)    )
             {
-                _are_neighbor = true;
+                _are_neighbors = true;
                 break;
             }
         }
-        return _are_neighbor;
+        return _are_neighbors;
 	};    
 
 	instanceProto.CreateChess = function(obj_type,x,y,z,_layer)
@@ -602,32 +602,32 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return has_inst;          
 	};
 	
-	instanceProto._pick_neighbor_chess = function (origin, dir, chess_type)
+	instanceProto.pick_neighbor_chess = function (origin_inst, dir, chess_type)
 	{
-        if ((!chess_type)||(!origin))
-            return false;
-            
-        var inst = origin.getFirstPicked();
-        if (inst == null)
+        if (origin_inst == null)
             return false;
         
         var layout = this.GetLayout();
-        var origin_uid = inst.uid;
-        var tile_uid = [], i, cnt;
+        var origin_uid = origin_inst.uid;
+        var tiles_uid = [], i, cnt, neighbor_uid;
         if (dir == (-1))
         {
             var i, cnt = layout.GetDirCount();            
             for (i=0; i<cnt; i++)
             {
-                tile_uid.push(this.dir2uid(origin_uid, i, 0));
+                neighbor_uid = this.dir2uid(origin_uid, i, 0);
+                if (neighbor_uid != null)
+                    tiles_uid.push(neighbor_uid);
             }
         }    
         else
         {
-            tile_uid.push(this.dir2uid(origin_uid, dir, 0));
+            neighbor_uid = this.dir2uid(origin_uid, dir, 0);
+            if (neighbor_uid != null)
+                tiles_uid.push(this.dir2uid(origin_uid, dir, 0));
         }
 
-        return this._pick_chess_on_tiles(chess_type, tile_uid);;            
+        return this._pick_chess_on_tiles(chess_type, tiles_uid);;            
 	};
 		
 	instanceProto.saveToJSON = function ()
@@ -726,9 +726,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		return this.point_is_in_board(physical_x,physical_y);
 	}; 
 	
-	Cnds.prototype.AreNeighbor = function (uidA, uidB)
+	Cnds.prototype.AreNeighbors = function (uidA, uidB)
 	{
-		return this.are_neighbor(uidA, uidB);
+		return this.are_neighbors(uidA, uidB);
 	};	
 
 	Cnds.prototype.PickAllChess = function ()
@@ -821,7 +821,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Cnds.prototype.PickNeighborChess = function (origin, dir, chess_type)
 	{
-        return this._pick_neighbor_chess(origin, dir, chess_type);            
+        if (!origin)
+            return false;
+               
+        return this.pick_neighbor_chess(origin.getFirstPicked(), dir, chess_type);            
 	};
 	
 	var empty_cells=[];
@@ -1016,8 +1019,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
 	Acts.prototype.PickNeighborChess = function (origin, dir, chess_type)
 	{        
-        this._pick_neighbor_chess(origin, dir, chess_type);            
-	};		
+        if (!origin)
+            return false;
+               
+        this.pick_neighbor_chess(origin.getFirstPicked(), dir, chess_type);      
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
