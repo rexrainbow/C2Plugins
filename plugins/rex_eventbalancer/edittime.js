@@ -36,10 +36,10 @@ AddAction(1,0,"Start","Procedure",
 AddAction(2,0,"Stop","Procedure",
           "Stop procedure",
           'Stop procedure. It will trigger Condition:"On Stop"',"Stop");  
-AddNumberParam("Procressing time", "Procressing time per tick in percentage. A tick time is (1/60), 1 is using full tick time.", 0.5);          
-AddAction(3,0,"Set procressing time","Dynamic mode",
-          "Set procressing time to <i>{0}</i>",
-          "Set procressing time","SetProcressingTime"); 
+AddNumberParam("Processing time", "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time.", 0.5);          
+AddAction(3,0,"Set processing time","Dynamic mode",
+          "Set processing time to <i>{0}</i>",
+          "Set processing time","SetProcessingTime"); 
 AddNumberParam("Repeat count", 'Repeat count of triggering condition:"On processing" each tick.', 10);          
 AddAction(4,0,"Set repeat count","Static mode",
           "Set repeat count to <i>{0}</i>",
@@ -47,8 +47,8 @@ AddAction(4,0,"Set repeat count","Static mode",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
-              "Get procressing time", "Procressing time", "ProcressingTime", 
-              "Procressing time per tick in percentage."); 
+              "Get Processing time", "Processing time", "ProcessingTime", 
+              "Processing time per tick in percentage."); 
               
 ACESDone();
 
@@ -57,7 +57,7 @@ var property_list = [
     new cr.Property(ept_combo, "Mode", "Dynamic", 'Mode of trigger condition:"On processing".', 
                     "Dynamic|Static"),    
     new cr.Property(ept_section, "Dynamic", "",	"Setting when using dynamic mode."),
-    new cr.Property(ept_float, "Procressing time", 0.5, "Procressing time per tick in percentage. A tick time is (1/60), 1 is using full tick time."),
+    new cr.Property(ept_float, "Processing time", 1, "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time."),
     new cr.Property(ept_section, "Static", "",	"Setting when using static mode."),
     new cr.Property(ept_integer, "Repeat count", 10, 'Repeat count of triggering condition:"On processing" each tick.'),    
 	];
@@ -104,10 +104,8 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
-    if (this.properties["Procressing time"] > 1)
-        this.properties["Procressing time"] = 1;
-    if (this.properties["Procressing time"] < 0.01)
-        this.properties["Procressing time"] = 0.01; 
+    if (this.properties["Processing time"] < 0.01)
+        this.properties["Processing time"] = 0.01; 
     if (this.properties["Repeat count"] < 1)
         this.properties["Repeat count"] = 1;         
                

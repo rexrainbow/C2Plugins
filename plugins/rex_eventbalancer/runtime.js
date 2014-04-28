@@ -42,11 +42,18 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.is_dynamic_mode = (this.properties[0] == 0);
-        this.procressing_time = (1/60)*1000*this.properties[1];
+        this.processing_time = percentage2time(this.properties[1]);
         this.repeat_count = this.properties[2];
         this.cmd_stop = true;
         this.is_running = false;
-	};   
+	};
+
+    var percentage2time = function (percentage)
+    {
+	    if (percentage < 0.01)
+		    percentage = 0.01;
+	    return (1/60)*1000*percentage;
+    };
     
     instanceProto.tick = function()
     {         
@@ -72,7 +79,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	instanceProto._run_dynamic_mode = function()
 	{
         var start_time = Date.now();
-        while ((Date.now() - start_time) <= this.procressing_time)
+        while ((Date.now() - start_time) <= this.processing_time)
         {
             this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnProcessing, this);
             if (this.cmd_stop)
@@ -94,7 +101,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
     instanceProto.saveToJSON = function ()
 	{    
 		return { "dm": this.is_dynamic_mode,
-                 "pt": this.procressing_time,
+                 "pt": this.processing_time,
                  "rc": this.repeat_count,
                  "stop": this.cmd_stop,
                  "isrun": this.is_running,
@@ -103,7 +110,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	instanceProto.loadFromJSON = function (o)
 	{	    
 	    this.is_dynamic_mode = o["dm"];
-        this.procressing_time = o["pt"];
+        this.processing_time = o["pt"];
         this.repeat_count = o["rc"];
         this.cmd_stop = o["stop"];
         this.is_running = o["isrun"];
@@ -155,9 +162,9 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         this.cmd_stop = true;
 	}; 
 
-	Acts.prototype.SetProcressingTime = function(procressing_time)
-	{       
-        this.procressing_time = cr.clamp(procressing_time, 0.01, 1);
+	Acts.prototype.SetProcessingTime = function(percentage)
+	{
+        this.processing_time = percentage2time(percentage);
 	};
 
 	Acts.prototype.SetRepeatCount = function(repeat_count)
@@ -174,6 +181,6 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
     
 	Exps.prototype.ProcressingTime = function (ret)
 	{  
-        ret.set_any(this.procressing_time);
+        ret.set_any(this.processing_time);
 	}; 
 }());
