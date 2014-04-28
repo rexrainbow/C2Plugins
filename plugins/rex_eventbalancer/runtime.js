@@ -46,6 +46,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         this.repeat_count = this.properties[2];
         this.cmd_stop = true;
         this.is_running = false;
+        this.elapsed_ticks = 0;
 	};
 
     var percentage2time = function (percentage)
@@ -67,6 +68,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         {
             this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStop, this);
         }
+        this.elapsed_ticks += 1;
     }; 
     
     // close is_running
@@ -117,8 +119,23 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         
         if (this.is_running)
             this.runtime.tickMe(this);
-	};	
+	};
+		
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Is processing", "value": this.is_running, "readonly": true},
+			               {"name": "Elapsed ticks", "value": this.elapsed_ticks, "readonly": true},  
+			               ]
+		});
+	};
 	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -149,7 +166,8 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	pluginProto.acts = new Acts();
 
 	Acts.prototype.Start = function()
-	{       
+	{
+	    this.elapsed_ticks = 0;
         this.cmd_stop = false;    
         this.runtime.tickMe(this);
         this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStart, this);
@@ -181,6 +199,12 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
     
 	Exps.prototype.ProcressingTime = function (ret)
 	{  
-        ret.set_any(this.processing_time);
+        ret.set_float(this.processing_time);
 	}; 
+    
+	Exps.prototype.ElapsedTicks = function (ret)
+	{  
+        ret.set_int(this.elapsed_ticks);
+	}; 	
+	
 }());

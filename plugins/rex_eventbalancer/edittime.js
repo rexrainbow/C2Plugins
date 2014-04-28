@@ -49,7 +49,10 @@ AddAction(4,0,"Set repeat count","Static mode",
 AddExpression(1, ef_return_number, 
               "Get Processing time", "Processing time", "ProcessingTime", 
               "Processing time per tick in percentage."); 
-              
+AddExpression(2, ef_return_number, 
+              "Get elapsed ticks", "Processing", "ElapsedTicks", 
+              "Get elapsed ticks from processing start.");
+                                       
 ACESDone();
 
 // Property grid properties for this plugin
