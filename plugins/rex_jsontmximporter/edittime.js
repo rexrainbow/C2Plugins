@@ -7,11 +7,10 @@
 		"description":	"Create sprites according to json string transfered from tmx.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_jsontmximporter.html",
-		"category":		"Board",
+		"category":		"TMX Importer 1.x",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-        //"dependency":	"zlib_and_gzip.min.js"
 	};
 };
 

@@ -4,9 +4,6 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
-// load zlib_and_gzip.min.js
-//document.write('<script src="zlib_and_gzip.min.js"></script>');
-
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_JSONTMXImporter = function(runtime)
@@ -184,12 +181,20 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 this.exp_LogicY = y;
                 this.exp_PhysicalX = this.layout.LXYZ2PX(x,y);
                 this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
-                this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
-                this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
                 tile_rotateID = (_gid >> 29) & 0x7;
                 this.exp_TileAngle = (tile_rotateID == 5)? 90:
                                      (tile_rotateID == 6)? 180:
                                      (tile_rotateID == 3)? 270: 0;
+                if (this.exp_TileAngle == 0)
+                {
+                    this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
+                    this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                }
+                else
+                {
+                    this.exp_IsMirrored = 0;
+                    this.exp_IsFlipped = 0;
+                }
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 				this.exp_TilesetName = tileset_obj.name;
                 this.exp_TilesetProperties = tileset_obj.properties;
@@ -213,10 +218,10 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
         cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, this.exp_Frame);
         inst.opacity = this.exp_LayerOpacity;          
         inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
-        if ((this.exp_TileAngle == 0) && (this.exp_IsMirrored ==1))
+        if (this.exp_IsMirrored ==1)
             inst.width = -inst.width;
-        if ((this.exp_TileAngle == 0) && (this.exp_IsFlipped ==1))
-            inst.height = -inst.height;           
+        if (this.exp_IsFlipped ==1)
+            inst.height = -inst.height;         
         
         this.exp_InstUID = inst.uid; 
         return inst        
@@ -384,12 +389,20 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
                 this.exp_LogicY = y;
                 this.exp_PhysicalX = this.layout.LXYZ2PX(x,y);
                 this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
-                this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
-                this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
                 tile_rotateID = (_gid >> 29) & 0x7;
                 this.exp_TileAngle = (tile_rotateID == 5)? 90:
                                      (tile_rotateID == 6)? 180:
-                                     (tile_rotateID == 3)? 270: 0;                
+                                     (tile_rotateID == 3)? 270: 0;
+                if (this.exp_TileAngle == 0)
+                {
+                    this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
+                    this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+                }
+                else
+                {
+                    this.exp_IsMirrored = 0;
+                    this.exp_IsFlipped = 0;
+                }            
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 		        this.exp_TilesetName = tileset_obj.name;
                 this.exp_TilesetProperties = tileset_obj.properties;
@@ -834,7 +847,7 @@ cr.plugins_.Rex_JSONTMXImporter = function(runtime)
 	    ret.set_int(this.exp_ObjectPY);
 	};	
 	Exps.prototype.ObjectProp = function (ret, name, default_value)
-	{   
+	{       
         var value;
         if (this.exp_ObjectProperties == null)
             value = default_value;

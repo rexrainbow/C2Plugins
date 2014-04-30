@@ -83,7 +83,7 @@ cr.plugins_.Rex_TMXImporter = function(runtime)
         this.exp_ObjectLY = 0; 
         this.exp_ObjectPX = 0;
         this.exp_ObjectPY = 0;         
-        this.exp_ObjectProperties = null;
+        this.exp_ObjectProperties = {};
 
         // for each property
         this.exp_CurLayerPropName = "";
