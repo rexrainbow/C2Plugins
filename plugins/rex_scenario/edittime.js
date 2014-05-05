@@ -59,7 +59,7 @@ AddAction(20, 0, "Continue all", "Response - Wait",
           "Continue scenario (response of wait command)", 
           "Continue scenario, response of wait command.", "Continue");  
 AddStringParam("Tag", "Tag in csv table", "");
-AddAction(21, 0, "Goto tag", "Flow control", 
+AddAction(21, af_deprecated, "Goto tag", "Flow control", 
           "Goto tag <i>{0}</i>", 
           "Set current table index to tag.", "GoToTag");		
 AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
