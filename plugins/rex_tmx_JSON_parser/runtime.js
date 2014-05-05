@@ -41,13 +41,11 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        var isIE = this.runtime.isIE;
 	};
     
 	instanceProto.TMXObjGet = function(tmx_content)
 	{
-        var isIE = this.runtime.isIE;
-        var tmx_obj = new cr.plugins_.Rex_tmx_JSON_parser.TMXKlass(tmx_content, isIE);
+        var tmx_obj = new cr.plugins_.Rex_tmx_JSON_parser.TMXKlass(tmx_content);
         return tmx_obj;
 	};
 	//////////////////////////////////////
@@ -69,9 +67,8 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
 
 (function ()
 {
-    cr.plugins_.Rex_tmx_JSON_parser.TMXKlass = function(JSON_string, isIE)
-    {          
-        debugger;
+    cr.plugins_.Rex_tmx_JSON_parser.TMXKlass = function(JSON_string)
+    {
         var dict_obj= JSON.parse(JSON_string);;
         this.map = _get_map(dict_obj);
         this.tilesets = _get_tilesets(dict_obj);
@@ -109,13 +106,13 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     var _get_map = function (dict_obj)
     {     
         var map = {};  
-        map.orientation = _get_string_value(dict_obj, "orientation");
-        map.width =  _get_number_value(dict_obj, "width");
-        map.height = _get_number_value(dict_obj, "height");
-        map.tilewidth = _get_number_value(dict_obj, "tilewidth");
-        map.tileheight = _get_number_value(dict_obj, "tileheight");
-        map.backgroundcolor = _get_C2_color_number(_get_string_value(dict_obj, "backgroundcolor", ""));
-        map.properties = _get_properties(dict_obj);
+        map.orientation = _get_value(dict_obj, "orientation");
+        map.width =  _get_value(dict_obj, "width");
+        map.height = _get_value(dict_obj, "height");
+        map.tilewidth = _get_value(dict_obj, "tilewidth");
+        map.tileheight = _get_value(dict_obj, "tileheight");
+        map.backgroundcolor = _get_C2_color_number(_get_value(dict_obj, "backgroundcolor", ""));
+        map.properties = _get_properties(dict_obj, "properties");
         return map;           
     };
     var _get_tilesets = function (dict_obj)
@@ -139,14 +136,14 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     var _get_tileset = function(dict_obj)
     {
         var tileset = {};    
-        tileset.name = _get_string_value(dict_obj, "name");
-        tileset.firstgid = _get_number_value(dict_obj, "firstgid");
-        tileset.tilewidth = _get_number_value(dict_obj, "tilewidth");
-        tileset.tileheight = _get_number_value(dict_obj, "tileheight");
-        tileset.spacing = _get_number_value(dict_obj, "spacing");
-        tileset.margin = _get_number_value(dict_obj, "margin"); 
+        tileset.name = _get_value(dict_obj, "name");
+        tileset.firstgid = _get_value(dict_obj, "firstgid");
+        tileset.tilewidth = _get_value(dict_obj, "tilewidth");
+        tileset.tileheight = _get_value(dict_obj, "tileheight");
+        tileset.spacing = _get_value(dict_obj, "spacing");
+        tileset.margin = _get_value(dict_obj, "margin"); 
         tileset.tiles = _get_tiles(dict_obj, tileset.firstgid);
-        tileset.properties = _get_properties(dict_obj);
+        tileset.properties = _get_properties(dict_obj, "properties");
         return tileset;
     };
     var _get_tiles = function(dict_obj, gid_offset)
@@ -189,20 +186,20 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     };    
     var _get_layer = function (dict_obj)
     {        
-        var type = _get_string_value(dict_obj, "type");
+        var type = _get_value(dict_obj, "type");
         if (type != "tilelayer")
             return null;
-        var visible = _get_string_value(dict_obj, "visible");
+        var visible = _get_value(dict_obj, "visible");
         if (visible == "0")
             return null;
             
         var layer = {};    
        
-        layer.name = _get_string_value(dict_obj, "name");
-        layer.width = _get_number_value(dict_obj, "width");
-        layer.height = _get_number_value(dict_obj, "height");        
-        layer.opacity = _get_number_value(dict_obj, "opacity", 1);
-        layer.properties = _get_properties(dict_obj);
+        layer.name = _get_value(dict_obj, "name");
+        layer.width = _get_value(dict_obj, "width");
+        layer.height = _get_value(dict_obj, "height");        
+        layer.opacity = _get_value(dict_obj, "opacity", 1);
+        layer.properties = _get_properties(dict_obj, "properties");
         layer.data = dict_obj["data"];
         return layer;
     };
@@ -226,14 +223,14 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     };
     var _get_objectgroup = function (dict_obj)
     {
-        var type = _get_string_value(dict_obj, "type");
+        var type = _get_value(dict_obj, "type");
         if (type != "objectgroup")
             return null;
             
         var objectgroup = {};    
-        objectgroup.name = _get_string_value(dict_obj, "name");
-        objectgroup.width = _get_number_value(dict_obj, "width");
-        objectgroup.height = _get_number_value(dict_obj, "height");       
+        objectgroup.name = _get_value(dict_obj, "name");
+        objectgroup.width = _get_value(dict_obj, "width");
+        objectgroup.height = _get_value(dict_obj, "height");       
         objectgroup.objects = _get_objects(dict_obj);    
         return objectgroup;
     };
@@ -257,22 +254,27 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     var _get_object = function(dict_obj)
     {    
         var object = {};
-        object.name = _get_string_value(dict_obj, "name");
-        object.type = _get_string_value(dict_obj, "type"); 
-        object.x = _get_number_value(dict_obj, "x");
-        object.y = _get_number_value(dict_obj, "y");          
-        object.width = _get_number_value(dict_obj, "width");
-        object.height = _get_number_value(dict_obj, "height");
-        object.properties = _get_properties(dict_obj);
+        object.name = _get_value(dict_obj, "name");
+        object.type = _get_value(dict_obj, "type"); 
+        object.x = _get_value(dict_obj, "x");
+        object.y = _get_value(dict_obj, "y");          
+        object.width = _get_value(dict_obj, "width");
+        object.height = _get_value(dict_obj, "height");
+        object.is_ellipse = _get_value(dict_obj, "ellipse", false);
+        object.properties = _get_properties(dict_obj, "properties");
         return object;
     };    
 
-    var _get_properties = function (dict_obj)
-    {
-        if (dict_obj.hasOwnProperty("properties")) 
-            dict_obj = dict_obj["properties"];
-        else
-            return {};
+    var _get_properties = function (dict_obj, prop_key)
+    {    
+        if (prop_key != null)
+        {
+            if (dict_obj.hasOwnProperty(prop_key)) 
+                dict_obj = dict_obj[prop_key];
+            else
+                return {};
+        }
+
             
         var properties = {}, name;
         for(name in dict_obj)
@@ -280,20 +282,13 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
         return properties;
     };
 
-    var _get_string_value = function (obj, key, default_value)
+    var _get_value = function (obj, key, default_value)
     {
         var val = obj[key];
         if (val != null)
             return val;
             
         return default_value;
-    };
-    var _get_number_value = function (obj, key, default_value)
-    {
-        var val = obj[key];
-        if (val != null)
-            return parseInt(val);
-            
-        return default_value;
-    };     
+    }; 
+    
 }());    
