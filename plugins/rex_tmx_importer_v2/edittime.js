@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, cf_trigger, "On each tile cell", "Callback: Create tiless", 
-             "On each tile cell", "Triggered when retrieving each avaiable tile cell.", "OnEachTileCell");
+             "On each tile cell", "Triggered when retrieving each available tile cell.", "OnEachTileCell");
 AddCondition(2, cf_trigger, "On each object", "Callback: Create tiless", 
              "On each object", "Triggered when retrieving each avaiable object on 'object layer'.", "OnEachObject");
              
@@ -57,9 +57,13 @@ AddAction(10, 0, "Set instance position of (0,0)", "Setup", "Set instance positi
 
 // duration mode         
 AddObjectParam("Tile", "Tile object.");
-AddAction(20, 0, "Create tiles in a duration", "Duration mode", "Create tiles <i>{0}</i> in a duration",
+AddNumberParam("Processing time", "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time.", 0.5);  
+AddAction(20, 0, "Create tiles in a duration", "Duration mode", 
+         "Create tiles <i>{0}</i> in a duration",
          'Retrieve tile array and creating tiles in a duration. It will trigger "Condition:On each tile cell".', "CreateTilesDuration");
-AddAction(21, 0, "Retrieve tile array in a duration", "Duration mode", "Retrieve tile array in a duration",
+AddNumberParam("Processing time", "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time.", 0.5);           
+AddAction(21, 0, "Retrieve tile array in a duration", "Duration mode", 
+         "Retrieve tile array in a duration",
          'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
          
 //////////////////////////////////////////////////////////////
@@ -159,9 +163,9 @@ AddExpression(55, ef_return_number,
 AddStringParam("Name", "Property name.", '""');
 AddExpression(56, ef_return_any | ef_variadic_parameters,
               "Get object properties", "Object: Object", "ObjectProp", "Get object properties.  Add second parameters to set default value.");
-AddExpression(57, ef_return_number, 
+AddExpression(57, ef_return_number | ef_deprecated, 
               "Get physical X position of object", "Object: Object", "ObjectPX", "Get physical X position (in pixel) of object.");
-AddExpression(58, ef_return_number, 
+AddExpression(58, ef_return_number | ef_deprecated, 
               "Get physical Y position of object", "Object: Object", "ObjectPY", "Get physical Y position (in pixel) of object.");
 
 // duration

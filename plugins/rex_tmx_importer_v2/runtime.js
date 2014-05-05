@@ -74,8 +74,8 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_ObjGroupHeight = 0;  
 		this.exp_ObjectName = "";  
 		this.exp_ObjectType = "";         
-        this.exp_ObjectWidth = 0;
-        this.exp_ObjectHeight = 0; 
+        this.exp_ObjectPWidth = 0;
+        this.exp_ObjectPHeight = 0; 
         this.exp_ObjectLX = 0;
         this.exp_ObjectLY = 0; 
         this.exp_ObjectPX = 0;
@@ -93,7 +93,8 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_CurMapPropValue ="";        
         
         // duration
-        this.exp_RetrievingPercent = 0;      
+        this.processing_time = 0.5;
+        this.exp_RetrievingPercent = 0;         
               
         this._tmx_obj = null;  
         this._obj_type = null;
@@ -250,14 +251,10 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
                 obj = objs[j];
                 this.exp_ObjectName = obj.name;
                 this.exp_ObjectType = obj.type;
-                this.exp_ObjectWidth = obj.width / this.exp_TileWidth;
-                this.exp_ObjectHeight = obj.height / this.exp_TileHeight;
-                x = obj.x / this.exp_TileWidth;
-                y = obj.y / this.exp_TileHeight;
-                this.exp_ObjectLX = x;
-                this.exp_ObjectLY = y;                
-                this.exp_ObjectPX = this.layout.LXYZ2PX(x,y);
-                this.exp_ObjectPY = this.layout.LXYZ2PY(x,y);                
+                this.exp_ObjectPWidth = obj.width;
+                this.exp_ObjectPHeight = obj.height;             
+                this.exp_ObjectPX = obj.x;
+                this.exp_ObjectPY = obj.y ;                
                 this.exp_ObjectProperties = obj.properties;
                 this.runtime.trigger(cr.plugins_.Rex_tmx_importer_v2.prototype.cnds.OnEachObject, this); 
             }
@@ -276,7 +273,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
     }; 
     instanceProto._duration_reset = function()
     {
-        this._duration_info = {working_time:(1/60)*1000*0.5,
+        this._duration_info = {working_time:(1/60)*1000*this.processing_time,
                                state:0, // 0=idle, 1=retrieve tile layer, 2=retrieve object layer
                                goto_next_state:false,
                                total_objects_count:0,
@@ -453,8 +450,8 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         var obj = group.objects[object_index];
         this.exp_ObjectName = obj.name;
         this.exp_ObjectType = obj.type;
-        this.exp_ObjectWidth = obj.width / this.exp_TileWidth;
-        this.exp_ObjectHeight = obj.height / this.exp_TileHeight;
+        this.exp_ObjectPWidth = obj.width / this.exp_TileWidth;
+        this.exp_ObjectPHeight = obj.height / this.exp_TileHeight;
         var x = obj.x / this.exp_TileWidth;
         var y = obj.y / this.exp_TileHeight;
         this.exp_ObjectLX = x;
@@ -655,12 +652,14 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{	  
         this.RetrieveTileArray();
 	}; 
-    Acts.prototype.CreateTilesDuration = function (obj_type)
+    Acts.prototype.CreateTilesDuration = function (obj_type, processing_time)
 	{
+        this.processing_time = processing_time;
 	    this._duration_start(obj_type);
 	};    
-    Acts.prototype.RetrieveTileArrayDuration = function ()
+    Acts.prototype.RetrieveTileArrayDuration = function (processing_time)
 	{
+        this.processing_time = processing_time;
 	    this._duration_start();	    
 	};     
 	//////////////////////////////////////
@@ -832,19 +831,19 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};     
 	Exps.prototype.ObjectWidth = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectWidth);
+	    ret.set_int(this.exp_ObjectPWidth);
 	};
 	Exps.prototype.ObjectHeight = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectHeight);
+	    ret.set_int(this.exp_ObjectPHeight);
 	};
 	Exps.prototype.ObjectX = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectLX);
+	    ret.set_int(this.exp_ObjectPX);
 	};
 	Exps.prototype.ObjectY = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectLY);
+	    ret.set_int(this.exp_ObjectPY);
 	};
 	Exps.prototype.ObjectPX = function (ret)
 	{     
