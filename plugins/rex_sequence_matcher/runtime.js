@@ -92,6 +92,10 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
         return true;
 	};
 
+	Cnds.prototype.IsMatchPattern = function (pattern)
+	{
+        return this._symbol_buffer.is_matched(pattern);
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
