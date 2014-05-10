@@ -107,6 +107,23 @@ cr.behaviors.Rex_Slowdown = function(runtime)
 		this.cur_speed = o["spd"];  			
 		this.cur_angle = o["a"];  	       
 	};	
+	
+    /**BEGIN-PREVIEWONLY**/
+    behinstProto.getDebuggerValues = function (propsections)
+    {
+        propsections.push({
+            "title": this.type.name,
+            "properties": [
+                {"name": "Current speed", "value": this.cur_speed},
+                {"name": "Deceleration", "value": this.dec},
+            ]
+        });
+    };
+          
+    behinstProto.onDebugValueEdited = function (header, name, value)
+    {
+    };
+    /**END-PREVIEWONLY**/		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -134,7 +151,12 @@ cr.behaviors.Rex_Slowdown = function(runtime)
 	Acts.prototype.Start = function (speed, angle)
 	{
 	    this.start(speed, angle);
-	}; 
+	}; 	
+	Acts.prototype.SetDeceleration = function (a)
+	{
+		this.dec = a;
+	};
+    	
 	Acts.prototype.Stop = function ()
 	{	
         this.stop();

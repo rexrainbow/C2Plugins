@@ -3,7 +3,7 @@
 	return {
 		"name":			"Speed moinitor",
 		"id":			"Rex_SpeedMoinitor",
-		"description":	"Get current speed of sprite.",
+		"description":	"Get current speed of instance.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_speedmoinitor.html",
 		"category":		"Attributes",
@@ -19,16 +19,21 @@ AddCondition(3, cf_trigger, "On moving start", "Moving", "On {my} moving start",
              "Triggered when sprite is moving start.", "OnMovingStart");
 AddCondition(4, cf_trigger, "On moving stop", "Moving", "On {my} moving stop", 
              "Triggered when sprite is moving stop.", "OnMovingStop");
-
+AddCmpParam("Comparison", "Choose the way to compare the current speed.");
+AddNumberParam("Speed", "The current speed, in pixels per second, to compare the current speed to.");
+AddCondition(5, 0, "Compare speed", "Compare", "{my} speed {0} {1}", "Compare the current speed of the object.", "CompareSpeed");
+AddCmpParam("Comparison", "Choose the way to compare the current speed.");
+AddNumberParam("Angle", "The current angle, in degree, to compare the current angle to.");
+AddCondition(6, 0, "Compare angle", "Compare", "{my} angle {0} {1}", "Compare the current angle of the object.", "CompareAngle");
 //////////////////////////////////////////////////////////////
 // Actions 
   		  
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "Current speed", "Speed", "Speed", "Get current moving speed.");
-AddExpression(2, ef_return_number, "Current angle", "Speed", "Angle", "Get current moving angle.");
-AddExpression(10, ef_return_number, "Last speed", "Last", "LastSpeed", "Get last non-zero moving speed.");
-AddExpression(11, ef_return_number, "Last angle", "Last", "LastAngle", "Get last non-zero moving angle.");
+AddExpression(1, ef_return_number, "Current speed", "Speed", "Speed", "Get current moving speed, in pixels per second");
+AddExpression(2, ef_return_number, "Current angle", "Speed", "Angle", "Get current moving angle, in degree");
+AddExpression(10, ef_return_number, "Last speed", "Last", "LastSpeed", "Get last non-zero moving speed, in pixels per second");
+AddExpression(11, ef_return_number, "Last angle", "Last", "LastAngle", "Get last non-zero moving angle, in degree");
 
 
 ACESDone();

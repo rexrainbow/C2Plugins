@@ -26,6 +26,11 @@ AddAction(1, 0, "Start", "Start",
           "{my} start with speed to <i>{0}</i>, angle to <i>{1}</i>", 
           "Slow down start.", "Start"); 
                     
+AddNumberParam("Deceleration", "The deceleration setting, in pixels per second per second.");
+AddAction(2, 0, "Set deceleration", "Speed", 
+          "Set {my} deceleration to <i>{0}</i>", 
+          "Set the object's deceleration.", "SetDeceleration");
+		  
 AddAction(10, 0, "Stop", "Stop", "{my} stop", 
           "Slow down stop.", "Stop");  
 

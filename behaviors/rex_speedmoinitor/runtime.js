@@ -144,6 +144,16 @@ cr.behaviors.Rex_SpeedMoinitor = function(runtime)
 		return true;
 	};
 	
+	Cnds.prototype.CompareSpeed = function (cmp, s)
+	{
+		return cr.do_cmp(this._speed, cmp, s);
+	};
+	
+	Cnds.prototype.CompareAngle = function (cmp, s)
+	{
+		return cr.do_cmp(this._angle, cmp, s);
+	};	
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

@@ -61,22 +61,28 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
     {
         if (this.platform_behavior_inst != null)
             return this.platform_behavior_inst;
-            
-        var i = this.type.objtype.getBehaviorIndexByName("Platform");   
-        if (i != (-1))
-        {
-            this.platform_behavior_inst = this.inst.behavior_insts[i];
-            return this.platform_behavior_inst;
-        }
-        else
-            assert2("You should add a physics for gravitation behavior.");
+
+	    if (!cr.behaviors.Platform)
+		{
+		    assert2("No platfrom behavior found in this object "+this.inst.type.name);
+	    }
+		var behavior_insts = this.inst.behavior_insts;
+		var i, len=behavior_insts.length;
+		for (i=0; i<len; i++)
+		{
+			if (behavior_insts[i] instanceof cr.behaviors.Platform.prototype.Instance)
+			{
+			    this.platform_behavior_inst = behavior_insts[i];
+				return this.platform_behavior_inst;
+	        }
+		}
+		
+		assert2("No platfrom behavior found in this object."+this.inst.type.name);
     };
     	
 	behinstProto._move = function (dir)   // 0: left , 1: right
     {
-        var platform_behavior_inst = this._get_platform_behavior_inst();
-        assert2(platform_behavior_inst, "Platform MoveTo: You should add a platform behavior");
-        
+        var platform_behavior_inst = this._get_platform_behavior_inst();        
         cr.behaviors.Platform.prototype.acts.SimulateControl.call(platform_behavior_inst, dir);        
     };
     
@@ -191,7 +197,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
 			return;
 		var inst = objtype.getFirstPicked();
         if (inst != null)
-            this.SetTargetPos(this.inst.x);
+            this.SetTargetPos(inst.x);
 	};
     
 	Acts.prototype.SetTargetPosByDeltaX = function (_x)
