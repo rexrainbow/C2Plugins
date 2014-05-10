@@ -350,6 +350,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         var target_uids = this._zhash2uids(this.board.xy2zhash(this._colliding_xyz.x, 
                                                                this._colliding_xyz.y));
         
+        // TODO:
         var _sol = objtype.getCurrentSol();
         var select_all_save = _sol.select_all;
         _sol.select_all = true;         
@@ -444,7 +445,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	};
     Cnds.prototype.IsMovingRequestAccepted = function ()
 	{
-		return (this.is_my_call && this._is_moving_request_accepted);
+		return this._is_moving_request_accepted;
 	};
     Cnds.prototype.TestMoveToOffset = function (dx, dy)
 	{
