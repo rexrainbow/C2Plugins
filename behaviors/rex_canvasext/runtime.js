@@ -106,7 +106,8 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 		
 		this.draw_instances(instances, canvas_inst, "destination-out");
 		
-		this.runtime.redraw = true;
+		this.inst.runtime.redraw = true;
+        this.inst.update_tex = true;  
 	};
 	
 	Acts.prototype.LoadURL = function (url_, resize_)
