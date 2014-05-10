@@ -91,7 +91,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 	    if (!this.init_start)
 	        return;
 	       
-	    this._scenario.load(this.init_cmds);
+	    this._scenario.load(this.init_cmds, true);
 	    this._scenario.start(this.init_offset, this.init_tag, this.init_repeat); 	      
 	    this.init_start = false; 
 	};
@@ -188,17 +188,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         }
         
     }; 	
-	// -------- command --------    
-	    
-    behinstProto.value_get = function(v)
-    {
-        if (v == null)
-            v = 0;
-        else if (this.is_eval_mode)
-            v = eval("("+v+")");
-        
-        return v;
-    };	
+	// -------- command --------    	    
 
     behinstProto.saveToJSON = function ()
     { 
@@ -324,7 +314,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
     
-    Acts.prototype.LoadCmds = function (csv_string)
+    Acts.prototype.LoadCSVCmds = function (csv_string)
     {  
         this._scenario.load(csv_string);
     };
@@ -382,6 +372,11 @@ cr.behaviors.rex_bScenario = function(runtime)
         this._scenario["Mem"] = JSON.parse(JSON_string);;
     };
     
+    Acts.prototype.LoadJSONCmds = function (json_string)
+    {  
+        this._scenario.load(csv_string, true);
+    };       
+    
     Acts.prototype.Setup2 = function (timeline_objs)
     {  
         var timeline = timeline_objs.instances[0];
@@ -429,7 +424,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.plugin = plugin;     
         this.is_debug_mode = true;
         this.is_eval_mode = true;          
-        this.is_accT_mode = false;
+        this.is_accT_mode = false;        
         this.cmd_table = new CmdQueueKlass(this);        
         // default is the same as worksheet 
         // -status-
@@ -471,14 +466,25 @@ cr.behaviors.rex_bScenario = function(runtime)
 	};
 	    
     // export methods
-    ScenarioKlassProto.load = function (csv_string)
+    ScenarioKlassProto.load = function (cmd_string, is_json)
     {        
         // reset all extra cmd handler
         var extra_cmd_handler;
         for(extra_cmd_handler in this._extra_cmd_handlers)
             this._extra_cmd_handlers[extra_cmd_handler].on_reset();
             
-        var _arr = (csv_string != "")? CSVToArray(csv_string):[];
+        var _arr;
+        if (cmd_string == null)
+        {
+            _arr = [];
+        }
+        else
+        {
+            _arr = (is_json == true)?  JSON.parse(cmd_string):
+                                       CSVToArray(cmd_string); 
+        }
+        debugger;
+        
         this.cmd_table.reset(_arr);
         var queue = this.cmd_table.queue;
         // check vaild
@@ -488,6 +494,10 @@ cr.behaviors.rex_bScenario = function(runtime)
         for (i=0;i<cnt;i++)
         {
             cmd = queue[i][0];
+            
+            if (typeof(cmd) =="number")
+                continue;
+                
             if (isNaN(cmd) || (cmd == ""))  // might be other command
             {
                 if (!(cmd.toLowerCase() in this._extra_cmd_handlers))
@@ -530,7 +540,11 @@ cr.behaviors.rex_bScenario = function(runtime)
         for (i=0;i<cnt;i++)
         {
             cmd_pack = queue[i];
-            cmd = cmd_pack[0];             
+            cmd = cmd_pack[0];  
+            
+            if (typeof(cmd) =="number")
+                continue;
+                      
             if (isNaN(cmd) || (cmd == ""))  // might be other command
                 this.cmd_handler_get(cmd).on_parsing(i, cmd_pack);
         }
@@ -738,6 +752,10 @@ cr.behaviors.rex_bScenario = function(runtime)
     var re = new RegExp("\n", "gm");
     ScenarioKlassProto.param_get = function(param)
     {
+        if (typeof(param) != "string")
+            return param;
+            
+        // string
         if (this.is_eval_mode)
         {
             param = param.replace(re, "\\n");    // replace "\n" to "\\n"

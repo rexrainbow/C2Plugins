@@ -46,9 +46,9 @@ AddCondition(12, cf_none, "Type of parameter", "Command",
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Commands", "Commands in CSV format", "");
-AddAction(2, 0, "Load commands", "0: Load", 
-          "Load commands <i>{0}</i>", 
-          "Load commands.", "LoadCmds");
+AddAction(2, 0, "Load CSV commands", "0: Load", 
+          "Load csv commands <i>{0}</i>", 
+          "Load commands in CSV format.", "LoadCSVCmds");
 AddNumberParam("Offset", "Time offset at start", 0);
 AddStringParam("Tag", 'Tag in csv table. "" is start from 1st command.', "");
 AddNumberParam("Repeat", "Repeat count. 0 is infinity.", 1);
@@ -87,7 +87,11 @@ AddAction(32, 0, "Load from JSON", "Memory", "Load MEM form JSON string to <i>{0
 AddAnyTypeParam("Key", "Key of locked-wait command", "");         
 AddAction(33, 0, "Continue with key", "Response - Wait", 
           "Continue scenario (response of wait <i>{0}</i> command)", 
-          "Continue scenario, response of locked-wait command.", "Continue");           
+          "Continue scenario, response of locked-wait command.", "Continue");
+AddStringParam("Commands", "Commands in JSON format", "");
+AddAction(34, 0, "Load JSON commands", "0: Load", 
+          "Load json commands <i>{0}</i>", 
+          "Load commands in JSON format.", "LoadJSONCmds");                        
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 
@@ -121,7 +125,7 @@ var property_list = [
     new cr.Property(ept_combo, "Eval mode", "Yes", 'Enable "Eval mode" for parameters. "Mem" feature only could be used in eval mode.', "No|Yes"),
     // auto start command
     new cr.Property(ept_combo, "Activated", "No", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),                
-    new cr.Property(ept_text, "Commands", "", "Commands in CSV format"),  
+    new cr.Property(ept_text, "Commands", "[]", "Commands in JSON format"),  
     new cr.Property(ept_float, "Offset", 0, "Time offset at start"),      
     new cr.Property(ept_text, "Tag", "", 'Tag in csv table. "" is start from 1st command.'),  
     new cr.Property(ept_integer, "Repeat count", 0, "The times to execute commands repeatly. 0 is infinity."),      
