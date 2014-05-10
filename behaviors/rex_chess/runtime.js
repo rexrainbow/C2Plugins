@@ -132,7 +132,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	    if (board == null)  // not at any board
 	        return false;
 	    var _xyz = board.uid2xyz(this.inst.uid);    
-		return cr.do_cmp(_xyz.z, cmp, ly);
+		return cr.do_cmp(_xyz.z, cmp, lz);
 	};	
 		
 	Cnds.prototype.IsTile = function ()

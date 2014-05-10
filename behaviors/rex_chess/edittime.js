@@ -48,26 +48,26 @@ AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(1, 0, "Add chess", "Logic: Add", "Add {my} on <i>{0}</i>, at [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
-          "Add chess on the board.", "AddChess");
+          "{my} add chess on the board.", "AddChess");
 AddAction(2, 0, "Remove chess", "Logic: Remove", "Remove {my} from board", 
-          "Remove chess from the board.", "RemoveChess"); 
+          "{my} remove chess from the board.", "RemoveChess"); 
 AddObjectParam("Tile", "Tile object.");
 AddAction(3, 0, "Move chess", "Logic: Move", 
-          "Move {my} to tile <i>{0}</i>", 
+          "{my} move to tile <i>{0}</i>", 
           "Move chess on the board.", "MoveChess");   
 AddNumberParam("Tile UID", "The UID of tile", 0);
 AddAction(4, 0, "Move chess by UID", "Logic: Move", 
-          "Move {my} to tile UID:<i>{0}</i>", 
+          "{my} move to tile UID:<i>{0}</i>", 
           "Move chess by UID on the board.", "MoveChess");   
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(5, 0, "Move chess to xyz", "Logic: Move", 
-          "Move {my} to [<i>{0}</i>, <i>{1}</i>, <i>{2}</i>]", 
+          "{my} move to [<i>{0}</i>, <i>{1}</i>, <i>{2}</i>]", 
           "Move chess on the board.", "MoveChess2Index");  
 AddNumberParam("UID of chess", "UID of chess B.", 0);
 AddAction(6, 0, "Swap chess by UID", "Logic: Swap", 
-          "Swap {my} with chess UID:<i>{1}</i>", 
+          "{my} swap with chess UID:<i>{1}</i>", 
           "Swap two chess by UID.", "SwapChess");                                                     
 //////////////////////////////////////////////////////////////
 // Expressions
