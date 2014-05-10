@@ -64,9 +64,13 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	{
         if (this.is_hit_target)
         {
-            this.is_my_call = true;
-            this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnHitTarget, this.inst); 
-            this.is_my_call = false;
+		    if ((this.inst.x == this.target["x"]) && (this.inst.y == this.target["y"]))
+			{
+                this.is_my_call = true;
+                this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnHitTarget, this.inst); 
+                this.is_my_call = false;
+	        }
+            // target position had been reset			
             this.is_hit_target = false;
         }
         
