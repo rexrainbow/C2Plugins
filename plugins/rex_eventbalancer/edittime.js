@@ -28,6 +28,11 @@ AddCondition(3,cf_trigger,"On stop","Procedure",
 AddCondition(4,0 ,"Is processing","Procedure",
              "Is procedure processing",
              "Return true if procedure processing.","IsProcessing");
+
+// for loop             
+AddCondition(11, cf_looping | cf_not_invertible, "Dynamic looping", "Dynamic looping", 
+             "Dynamic looping", 
+			 'Repeat the event until time-out.', "Looping"); 
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1,0,"Start","Procedure",
@@ -43,7 +48,11 @@ AddAction(3,0,"Set processing time","Dynamic mode",
 AddNumberParam("Repeat count", 'Repeat count of triggering condition:"On processing" each tick.', 10);          
 AddAction(4,0,"Set repeat count","Static mode",
           "Set repeat count to <i>{0}</i>",
-          "Set repeat count","SetRepeatCount");            	  
+          "Set repeat count","SetRepeatCount");
+          
+AddAction(11,0,"Stop","Dynamic looping",
+          "Stop looping",
+          "Stop looping.","StopLooping");                      	  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

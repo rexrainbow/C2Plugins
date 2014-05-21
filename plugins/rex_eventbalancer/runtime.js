@@ -44,9 +44,13 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	    this.is_dynamic_mode = (this.properties[0] == 0);
         this.processing_time = percentage2time(this.properties[1]);
         this.repeat_count = this.properties[2];
-        this.cmd_stop = true;
         this.is_running = false;
         this.elapsed_ticks = 0;
+        this.trigger_mode_init = false;
+        
+        // looping
+        this.is_looping = false;
+        
 	};
 
     var percentage2time = function (percentage)
@@ -58,25 +62,16 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
     
     instanceProto.tick = function()
     {         
-        this.is_running = true;
+        if (!this.is_running)
+            return;
+
+        this.elapsed_ticks += 1;            
         if (this.is_dynamic_mode)
             this._run_dynamic_mode()
         else
             this._run_static_mode()
             
-        if (this.cmd_stop)
-        {
-            this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStop, this);
-        }
-        this.elapsed_ticks += 1;
-    }; 
-    
-    // close is_running
-	instanceProto.tick2 = function ()
-	{	    
-	    this.is_running = false;
-	    this.runtime.untick2Me(this);
-	};    
+    };
 	
 	instanceProto._run_dynamic_mode = function()
 	{
@@ -84,7 +79,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         while ((Date.now() - start_time) <= this.processing_time)
         {
             this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnProcessing, this);
-            if (this.cmd_stop)
+            if (!this.is_running)
                 break;
         }
 	};  
@@ -95,7 +90,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	    for (i=0; i<this.repeat_count; i++)
 	    {
             this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnProcessing, this);
-            if (this.cmd_stop)	        
+            if (!this.is_running)
                 break;
 	    }
 	};    
@@ -105,7 +100,6 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 		return { "dm": this.is_dynamic_mode,
                  "pt": this.processing_time,
                  "rc": this.repeat_count,
-                 "stop": this.cmd_stop,
                  "isrun": this.is_running,
                  };
 	};
@@ -114,7 +108,6 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	    this.is_dynamic_mode = o["dm"];
         this.processing_time = o["pt"];
         this.repeat_count = o["rc"];
-        this.cmd_stop = o["stop"];
         this.is_running = o["isrun"];
         
         if (this.is_running)
@@ -159,7 +152,40 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	Cnds.prototype.IsProcessing = function()
 	{    
 		return this.is_running;
-	};    
+	}; 
+
+	Cnds.prototype.Looping = function()
+	{    
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		
+		var start_time = Date.now();
+		this.is_looping = true;
+		if (solModifierAfterCnds)
+		{
+            while ((Date.now() - start_time) <= this.processing_time)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+                current_event.retrigger();
+                this.runtime.popSol(current_event.solModifiers);
+                if (!this.is_looping)
+                    break;
+            }		    
+	    }
+	    else
+	    {
+            while ((Date.now() - start_time) <= this.processing_time)
+            {
+                current_event.retrigger();
+                if (!this.is_looping)
+                    break;
+            } 
+	    }
+
+		return false;  
+	}; 	
+	   
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -167,17 +193,23 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 
 	Acts.prototype.Start = function()
 	{
+	    if (!this.trigger_mode_init)
+	    {
+            this.runtime.tickMe(this);
+            this.trigger_mode_init = true;
+        }
+            
+        this.is_running = true;    
 	    this.elapsed_ticks = 0;
-        this.cmd_stop = false;    
-        this.runtime.tickMe(this);
         this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStart, this);
 	}; 
 
 	Acts.prototype.Stop = function()
-	{       
-        this.runtime.untickMe(this);
-        this.runtime.tick2Me(this);
-        this.cmd_stop = true;
+	{
+	    if (!this.is_running)
+	        return;
+        this.is_running = false;
+        this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnStop, this);
 	}; 
 
 	Acts.prototype.SetProcessingTime = function(percentage)
@@ -190,8 +222,12 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	    if (repeat_count < 1)
 	        repeat_count = 1;	        
         this.repeat_count = repeat_count;
-	};	
-	     
+	};
+		
+	Acts.prototype.StopLooping = function()
+	{
+	    this.is_looping = false;
+	}; 	     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
