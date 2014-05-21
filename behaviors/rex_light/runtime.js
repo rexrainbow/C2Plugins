@@ -46,9 +46,8 @@ cr.behaviors.Rex_light = function(runtime)
 	behinstProto.onCreate = function()
 	{     	    
         this.enabled = (this.properties[0] !== 0);
-        this.max_dist = this.properties[1];
+        this.max_width = this.properties[1];
         this.obstacleMode = this.properties[2];		// 0 = solids, 1 = custom
-        this.is_hit = false;
         this.exp_HitUID = -1;
 	};
 
@@ -79,7 +78,7 @@ cr.behaviors.Rex_light = function(runtime)
     var candidates = [];
 	behinstProto.candidates_update = function (types)
 	{
-        candidates.lenght = 0;    
+        candidates.length = 0;    
         if (types == null)  // use solids
         {
             var solid = this.runtime.getSolidBehavior();
@@ -126,8 +125,7 @@ cr.behaviors.Rex_light = function(runtime)
         var has_any_candidate = this.candidates_update(types);
         if (!has_any_candidate)
         {
-            this.width_set(this.max_dist);
-            this.is_hit = false;
+            this.width_set(this.max_width);
             this.exp_HitUID = -1;
             return;
         }
@@ -164,11 +162,10 @@ cr.behaviors.Rex_light = function(runtime)
         while(1)
         {
             w += dw;
-            out_of_range = (w > this.max_dist);
-            this.width_set((out_of_range)? this.max_dist:w);
+            out_of_range = (w > this.max_width);
+            this.width_set((out_of_range)? this.max_width:w);
             if (out_of_range)
             {
-                this.is_hit = false;
                 this.exp_HitUID = -1;
                 return;
             }
@@ -179,8 +176,7 @@ cr.behaviors.Rex_light = function(runtime)
                 {
                     // done
                     //log("Hit");
-                    this.is_hit = true;
-                    this.exp_HitUID = hit_uid;
+                    this.exp_HitUID = hit_uid;   
                     return;
                 }
                 else
@@ -196,6 +192,22 @@ cr.behaviors.Rex_light = function(runtime)
             }
         } 
 	};    
+
+	behinstProto.saveToJSON = function ()
+	{    
+		return { "en": this.enabled,
+		         "mw": this.max_width,
+		         "hU": this.exp_HitUID
+		         };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+	    this.enabled = o["en"];
+	    this.max_width = o["mw"];
+	    this.exp_HitUID = o["hU"];
+	};
+		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -203,7 +215,7 @@ cr.behaviors.Rex_light = function(runtime)
     
 	Cnds.prototype.IsHit = function ()
 	{
-		return this.is_hit;
+		return (this.exp_HitUID != -1);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -226,6 +238,12 @@ cr.behaviors.Rex_light = function(runtime)
 		this.PointTo(types);
 	};  
     
+	Acts.prototype.SetMaxWidth = function (w)
+	{
+	    if (w < 0)
+	        w = 0;
+		this.max_width = w;
+	};	
 	
 	Acts.prototype.SetEnabled = function (en)
 	{
@@ -252,6 +270,11 @@ cr.behaviors.Rex_light = function(runtime)
 		
 		obstacleTypes.push(obj_);
 	};    
+	
+	Acts.prototype.ClearObstacles = function ()
+	{
+		this.type.obstacleTypes.length = 0;
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -273,7 +296,13 @@ cr.behaviors.Rex_light = function(runtime)
 	{
 	    ret.set_int(this.exp_HitUID);
 	};
-	Exps.prototype.RefectionAngle = function (ret, normal)
+
+    Exps.prototype.MaxWidth = function (ret)
+	{
+	    ret.set_int(this.max_width);
+	};	
+	
+	Exps.prototype.ReflectionAngle = function (ret, normal)
 	{    
         var normalangle = cr.to_radians(normal);
         var startangle = this.inst.angle;

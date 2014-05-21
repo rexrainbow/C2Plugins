@@ -3,7 +3,7 @@
 	return {
 		"name":			"Light",
 		"id":			"Rex_light",
-		"description":	"Extend width until hit object.",
+		"description":	"Adjust width until hit obstacle.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_light.html",
 		"category":		"General",
@@ -23,10 +23,14 @@ AddCondition(1, 0, "Hit", "Hit",
 AddAction(1, af_none, "Point to solids", "Manually", 
           "{my} point to solids", 
           "Extend width until hit any solid object.", "PointToSolid");
-AddObjectParam("Obstacle", "Choose an object to add as an obstacle, obstructing line-of-sight.");
+AddObjectParam("Obstacle", "Choose an object to add as an obstacle.");
 AddAction(2, af_none, "Point to object", "Manually", 
           "{my} point to {0}", 
-          "Extend width until hit any solid object.", "PointToObject");
+          "Extend width until hit any specfic object.", "PointToObject");
+
+AddNumberParam("Width", "Maximum width in pixels.");
+AddAction(6, 0, "Set maximum width", "Configure", 
+          "Set {my} maximum width to <i>{0}</i>", "Set the maximum width in pixels.", "SetMaxWidth");   
 
 AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
@@ -38,20 +42,25 @@ AddAction(11, af_none, "Add obstacle", "Tick",
            "Add {my} obstacle {0}", 
            "Add a custom object as an obstacle to line-of-sight.", "AddObstacle");
 
+AddAction(12, af_none, "Clear obstacles", "Tick", 
+          "Clear {my} obstacles", 
+          "Remove all added obstacle objects.", "ClearObstacles");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Hit X position", "Hit", "HitX", "Get hit X co-ordinate.");
 AddExpression(2, ef_return_number, "Hit Y position", "Hit", "HitY", "Get hit Y co-ordinate.");
 AddExpression(3, ef_return_number, "Hit object UID", "Hit", "HitUID", "Get UID of hit object.");
+AddExpression(6, ef_return_number, "Max width", "Configure", "MaxWidth", "Get maximum width setting.");
 AddNumberParam("Normal", "Angle of normal", 90);
-AddExpression(11, ef_return_number, "Angle of reflection", "Refection", "RefectionAngle", "Get angle of refection.");
+AddExpression(11, ef_return_number, "Angle of reflection", "Reflection", "ReflectionAngle", "Get angle of refection.");
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [ 
     new cr.Property(ept_combo, "Initial state", "Enabled", "Whether to initially have the behavior enabled or disabled.", "Disabled|Enabled"),
-    new cr.Property(ept_float, "Range", 10000, "The maximum distance in pixels."),
+    new cr.Property(ept_float, "Max width", 10000, "The maximum width in pixels."),
     new cr.Property(ept_combo, "Obstacles", "Solids", "Choose whether solids obstruct or if to use custom objects added by events.", "Solids|Custom"),
 	];
 	
@@ -97,4 +106,6 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {	
+	if (this.properties["Range"] < 0)
+		this.properties["Range"] = 0;    
 }
