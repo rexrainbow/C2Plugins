@@ -94,6 +94,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 	    this._scenario.load(this.init_cmds, true);
 	    this._scenario.start(this.init_offset, this.init_tag, this.init_repeat); 	      
 	    this.init_start = false; 
+        this.init_cmds = null;
 	};
 	
 	behinstProto.onDestroy = function ()
@@ -369,7 +370,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         
     Acts.prototype.StringToMEM = function (JSON_string)
     {	
-        this._scenario["Mem"] = JSON.parse(JSON_string);;
+        this._scenario["Mem"] = JSON.parse(JSON_string);
     };
     
     Acts.prototype.LoadJSONCmds = function (json_string)
