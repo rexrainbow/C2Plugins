@@ -3,7 +3,7 @@
 	return {
 		"name":			"Tween to Effect",
 		"id":			"Rex_Tween2Effect",
-		"description":	"Set effect parameter from tween behavior. Pleaase put this behavior under tween behavior.",
+		"description":	"Set effect parameter from tween behavior. Put this behavior under tween behavior.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tween2effect.html",
 		"category":		"General",

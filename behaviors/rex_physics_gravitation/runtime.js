@@ -134,13 +134,24 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	
 	behinstProto._get_physics_behavior_inst = function ()
     {
-        var i = this.type.objtype.getBehaviorIndexByName("Physics");   
-        if (i != (-1))
-            return this.inst.behavior_insts[i];
-        else
-            alert("You should add a physics for gravitation behavior.");
+	    if (!cr.behaviors.Physics)
+		{
+		    assert2("No physics behavior found in this object "+this.inst.type.name);
+	    }
+		var behavior_insts = this.inst.behavior_insts;
+		var i, len=behavior_insts.length;
+		for (i=0; i<len; i++)
+		{
+			if (behavior_insts[i] instanceof cr.behaviors.Physics.prototype.Instance)
+			{
+				return behavior_insts[i];
+	        }
+		}
+		
+		assert2("No physics behavior found in this object."+this.inst.type.name);
     };
-  
+    	
+		
 	behinstProto.tick = function ()
 	{
         if (!this.is_target)

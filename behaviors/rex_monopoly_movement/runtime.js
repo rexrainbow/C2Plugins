@@ -47,15 +47,18 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	behinstProto.onCreate = function()
 	{     
         this.square_dir = this.properties[0];
-        this.hex_dir = this.properties[1];   
-        this.forked_selection_mode = this.properties[2];		
+        this.hex_dir_ud = this.properties[1];
+        this.hex_dir_lr = this.properties[2];   
+        this.forked_selection_mode = this.properties[3];
+		this._on_get_forked_direction_condition = false;
         this.board = null; 
         this.randomGenUid = -1;    // for loading
 		this._is_square_grid = true;
+        this._is_hex_up2down = true;
         this._target_tile_uids = []; 
 		this._dir_sequence = [];
         this._tile_info = {uid:0, dir:0};
-		this.path_tiles_uid = [];
+		this.path_tiles = [];  // {uid, cost}
 		this._forkedroad_dir = null;
 		this._moving_cost = 1;
 		
@@ -103,29 +106,34 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
                 if (_xyz != null)
                 { 
                     this.board = obj;
-					dir_cnt = obj.layout.GetDirCount();
+                    var layout = obj.GetLayout();
+					dir_cnt = layout.GetDirCount();
 					_dir_sequence_init(this._dir_sequence, dir_cnt);
 					this._target_tile_uids.length = dir_cnt;
 					this._is_square_grid = (dir_cnt == 4);
+                    if (!this._is_square_grid)  // hex
+                    {
+                       this._is_hex_up2down = layout.is_up2down;
+                    }
                     this.exp_TargetFaceDir = this._current_dir_get();
                     this.exp_TargetLX = _xyz.x;
-                    this.exp_TargetLY = _xyz.y;
+                    this.exp_TargetLY = _xyz.y;					
                     return this.board;
                 }
             }
         }
         return null;	
 	};
-	
+
     behinstProto._custom_solid_get = function (target_tile_uid)
     {
         this.exp_CustomSolid = null;	
 		this.exp_TileUID = target_tile_uid;
 		var tile_xyz = this.board.uid2xyz(target_tile_uid);
 		this.exp_TileLX = tile_xyz.x;
-		this.exp_TileLY = tile_xyz.y;			
+		this.exp_TileLY = tile_xyz.y;
         this.runtime.trigger(cr.behaviors.Rex_MonopolyMovement.prototype.cnds.OnGetSolid, this.inst);
-        return this.exp_CustomSolid;
+		return this.exp_CustomSolid;
     };
     
     var _solid_get = function(inst)
@@ -184,7 +192,9 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     
     behinstProto._current_dir_get = function ()	
     {
-        return (this._is_square_grid)?  this.square_dir:this.hex_dir;  
+        return (this._is_square_grid)?  this.square_dir:  // square
+               (this._is_hex_up2down)?  this.hex_dir_ud:  // hex - Up-Down
+                                        this.hex_dir_lr;  // hex - Left-Right
     };
     
     behinstProto._current_dir_set = function (dir)	
@@ -192,7 +202,16 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         if (this._is_square_grid)
             this.square_dir = dir;
         else
-            this.hex_dir = dir;
+        {
+            if (this._is_hex_up2down)
+            {
+                this.hex_dir_ud = dir;
+            }
+            else
+            {
+                this.hex_dir_lr = dir;
+            }
+        }
     };
     
     behinstProto._get_backward_dir = function (dir)	
@@ -258,10 +277,14 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		this.exp_TileUID = tile_info.uid;
 		var tile_xyz = this.board.uid2xyz(tile_info.uid);
 		this.exp_TileLX = tile_xyz.x;
-		this.exp_TileLY = tile_xyz.y;			
+		this.exp_TileLY = tile_xyz.y;		
+
+		this._on_get_forked_direction_condition = true;		
 		this.runtime.trigger(cr.behaviors.Rex_MonopolyMovement.prototype.cnds.OnForkedRoad, this.inst);
+		this._on_get_forked_direction_condition = false;		
 		if ((this._forkedroad_dir != null) && (target_tile_uids[this._forkedroad_dir] == null))
 		    this._forkedroad_dir = null;
+			
 	    return this._forkedroad_dir;
     };
 	
@@ -336,11 +359,11 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         this.exp_TargetFaceDir = current_dir;
 		return this._tile_info;
     };	
-    behinstProto._targetLXY_set = function (path_tiles_uid)	
+    behinstProto._targetLXY_set = function (path_tiles)	
     {
         var xyz;
-        if (path_tiles_uid.length > 0)
-            xyz = this.board.uid2xyz( path_tiles_uid[ path_tiles_uid.length-1 ] );
+        if (path_tiles.length > 0)
+            xyz = this.board.uid2xyz( path_tiles[ path_tiles.length-1 ]["uid"] );
         else
             xyz = this.board.uid2xyz( this.inst.uid );
         this.exp_TargetLX = xyz.x;
@@ -348,7 +371,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     };	    
     behinstProto.get_moving_path = function (moving_points)	
     {
-		this.path_tiles_uid.length = 0;
+		this.path_tiles.length = 0;
         var tile_info, cost;
 		var tile_info = this._tile_info_init();
         while (moving_points > 0)
@@ -365,11 +388,25 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
             moving_points -= cost;
             if (moving_points < 0)
                 break;
-            this.path_tiles_uid.push(tile_info.uid); 
+	        var tile_save = {"uid":tile_info.uid, 
+			                 "cost":cost,
+							 "dir":tile_info.dir};
+            this.path_tiles.push(tile_save); 
             this.exp_TargetFaceDir = tile_info.dir;
         }
-        this._targetLXY_set(this.path_tiles_uid);
-        // output: this.path_tiles_uid;
+		// remove cost = 0 at tail
+		var cnt=this.path_tiles.length;
+		var i;
+		for (i=cnt-1; i>=0; i--)
+		{
+			if (this.path_tiles[i]["cost"] == 0)		
+			    this.path_tiles.length = i;
+			else
+			    break;
+		}
+		
+        this._targetLXY_set(this.path_tiles);
+        // output: this.path_tiles;
     };
 	
 	var _shuffle = function (arr)
@@ -396,7 +433,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		         "de": this.hex_dir,
                  "fm": this.forked_selection_mode,
                  "ruid": randomGenUid,
-                 "p" : this.path_tiles_uid
+                 "p" : this.path_tiles
                };
 	};
 	
@@ -406,7 +443,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		this.hex_dir = o["de"]; 
 		this.forked_selection_mode = o["fm"];
 		this.randomGenUid = o["ruid"]; 
-		this.path_tiles_uid = o["p"];	
+		this.path_tiles = o["p"];	
 	};	
     
 	behinstProto.afterLoad = function ()
@@ -432,59 +469,32 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	Cnds.prototype.PopInstance = function (objtype)
 	{
         if (!objtype)
-            return;	    
-		if  (this.path_tiles_uid.length > 0)
-		{		    
-		    var tile_uid = this.path_tiles_uid.shift();
-			var insts = objtype.instances;
-			var i, cnt=insts.length, inst;
-			for (i=0; i<cnt; i++)
-			{
-			    inst = insts[i];
-			    if (inst.uid == tile_uid)
-				{
-				    objtype.getCurrentSol().pick_one(inst);
-                    objtype.applySolToContainer();
-					return true;
-				}
-			}
-			// can not pick
-			return false;
-		}
-		else
-		    return false;
+            return;	
+        var board = this._board_get();
+		if (board == null)
+		    return;
+			
+	    var tile_info = this.path_tiles.shift();
+	    var uids = (tile_info != null)? [tile_info["uid"]]: [];
+        return 	board.pickuids(uids, objtype);
 	};
     
 	Cnds.prototype.PopLastInstance = function (objtype)
 	{
         if (!objtype)
-            return;	    
-		if  (this.path_tiles_uid.length > 0)
-		{		    
-		    var tile_uid = this.path_tiles_uid.pop();
-			var insts = objtype.instances;
-			var i, cnt=insts.length, inst;
-			for (i=0; i<cnt; i++)
-			{
-			    inst = insts[i];
-			    if (inst.uid == tile_uid)
-				{
-				    objtype.getCurrentSol().pick_one(inst);
-                    objtype.applySolToContainer();
-                    this.path_tiles_uid.length = 0;
-					return true;
-				}
-			}
-			// can not pick
-			return false;
-		}
-		else
-		    return false;
+            return;	
+        var board = this._board_get();
+		if (board == null)
+		    return;
+			
+	    var tile_info = this.path_tiles[this.path_tiles.length-1];
+	    var uids = (tile_info != null)? [tile_info["uid"]]: [];
+        return 	board.pickuids(uids, objtype);
 	};  
 
 	Cnds.prototype.IsForwardingPathEmpty = function ()
 	{
-        return (this.path_tiles_uid.length == 0);
+        return (this.path_tiles.length == 0);
 	}; 
 	
 	Cnds.prototype.OnGetMovingCost = function ()
@@ -512,12 +522,15 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         if (this._board_get() == null)
             return;
 	    this.get_moving_path(moving_points);
-		// output: this.path_tiles_uid
+		// output: this.path_tiles
 	};	  	
 
 	Acts.prototype.SetFace = function (dir)	
 	{
-        this._current_dir_set(dir);    
+	    if (this._on_get_forked_direction_condition)
+		    this._forkedroad_dir = dir;	
+	    else
+            this._current_dir_set(dir);    
 	};	
 	
 	Acts.prototype.SetMovingCost = function (cost)	
