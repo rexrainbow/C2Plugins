@@ -26,10 +26,116 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
 	
 	var behtypeProto = behaviorProto.Type.prototype;
 
+	var FNTYPE_UK = 0;          // unknow 
+	var FNTYPE_NA = 1;	        // not avaiable
+	var FNTYPE_REXFNEX = 2;     // rex_functionext
+    var FNTYPE_REXFN2 = 3;      // rex_function2
+	var FNTYPE_OFFICIALFN = 4;  // official function
 	behtypeProto.onCreate = function()
 	{
+        this._fnobj = null;
+        this._fnobj_type = FNTYPE_UK;
+	    this._act_call_fn = null;
+	    this._act_set_param = null; // for rex_function2
+		this._exp_call = null;	    
 	};
+	
+	behtypeProto._setup_cmdhandler = function ()
+	{
+        var plugins = this.runtime.types;			
+        var name, inst;
+		//// try to get cmdhandler from function extension
+		//if (cr.plugins_.Rex_FnExt != null)
+		//{
+        //    for (name in plugins)
+        //    {
+        //        inst = plugins[name].instances[0];
+        //        if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
+        //        {
+        //            this._fnobj = inst;
+        //            this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+		//	        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
+		//		    this._fnobj_type = FNTYPE_REXFNEX;
+        //            return;
+        //        }                                          
+        //    }
+		//}
+        
+               
+		// try to get cmdhandler from rex_function2
+		if (cr.plugins_.Rex_Function2 != null)
+		{
+            
+            for (name in plugins)
+            {
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
+                {
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunctionwPT;  // with parameter table
+			        this._act_set_param = cr.plugins_.Rex_Function2.prototype.acts.SetParameter;
+			        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
+				    this._fnobj_type = FNTYPE_REXFN2;
+                    return;
+                }                                          
+            }
+		}        
+        
+        // try to get cmdhandler from official function
+		if (cr.plugins_.Function != null)    
+		{	
+            for (name in plugins)
+            {
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Function.prototype.Instance)
+                {
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+                    this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
+				    this._fnobj_type = FNTYPE_OFFICIALFN;
+                    return;
+                }                                          
+            }
+		}
+		        
+        this._fnobj_type = FNTYPE_NA;  // function object is not avaiable
+	};   
     
+    var param_list = [];  // for official function object
+	behtypeProto.call_function = function(uid, cmd)
+	{	  
+	    if (this._fnobj_type == FNTYPE_NA)
+	        return;
+	        
+	    if (this._fnobj_type == FNTYPE_UK)
+	        this._setup_cmdhandler();	    
+	    
+	    var name = cmd[0];
+	    var param = cmd[1];  // hash table
+	    
+	    if (this._fnobj_type == FNTYPE_OFFICIALFN)
+	    {
+	        // transfer hash table to array
+	        param_list.length = 0;
+	        //param_list.push(uid);   // add uid at param(0)
+	        var i=0;
+	        while (param.hasOwnProperty(i))
+	        {
+	            param_list.push(param[i]);
+	            i += 1;
+	        }
+	        this._act_call_fn.call(this._fnobj, name, param_list);
+	    }
+	    else if (this._fnobj_type == FNTYPE_REXFN2) 	    
+	    {
+	        var table_name = "_bcmdqueue";
+	        this._act_set_param.call(this._fnobj, "uid", uid, table_name);
+	        var k;
+	        for (k in param)
+	            this._act_set_param.call(this._fnobj, k, param[k], table_name);
+	        this._act_call_fn.call(this._fnobj, name, table_name);
+	    }
+	};    
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -49,9 +155,14 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
                                                                      0);
 	    this.pendding_params = {};
 	    this.current_cmd = null;
+	    this.current_cmd_save = null;
         
         this.init_start = (this.properties[1] == 1);
         this.init_cmds = this.properties[2];
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];
+        /**END-PREVIEWONLY**/	        
 	};
 
 	behinstProto.tick = function ()
@@ -77,10 +188,13 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     {
         if (cmd == null)
             return;
-            
+                   
         this.current_cmd = cmd;
+        this.current_cmd_save = cmd;
         this.runtime.trigger(cr.behaviors.Rex_bCmdqueue.prototype.cnds.OnCommand, this.inst);
         this.current_cmd = null;              
+        
+        this.type.call_function(this.inst.uid, cmd);
     }; 	
 	behinstProto.saveToJSON = function ()
 	{
@@ -96,6 +210,33 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
 		this.pendding_params = o["pp"];
         this.current_cmd = o["cc"];
 	};    
+	
+    /**BEGIN-PREVIEWONLY**/
+    behinstProto.getDebuggerValues = function (propsections)
+    {
+        this.propsections.length = 0;
+        this.propsections.push({"name": "Command count", "value": this.CmdQueue.GetCmdCount()});
+        this.propsections.push({"name": "Current index", "value": this.CmdQueue.GetCurCmdIndex()});
+        
+        if (this.current_cmd_save != null)
+        {
+            this.propsections.push({"name": "Command name", "value": this.current_cmd_save[0]});
+            var k, param = this.current_cmd_save[1];           
+            for (k in param)
+            {
+                this.propsections.push({"name": "Parameter "+k.toString(), "value": param[k]});
+            }
+        }
+        propsections.push({
+            "title": this.type.name,
+            "properties": this.propsections
+        });
+    };
+    
+    behinstProto.onDebugValueEdited = function (header, name, value)
+    {
+    };
+    /**END-PREVIEWONLY**/		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -106,7 +247,9 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     {       
         if (this.current_cmd == null)
             return false;
-        return cr.equals_nocase(name_, this.current_cmd[0]);
+            
+        var is_my_call = cr.equals_nocase(name_, this.current_cmd[0]);
+        return is_my_call;
     }; 
     Cnds.prototype.CompareParam = function (param_index_, cmp_, value_)
     {
@@ -127,7 +270,19 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     Cnds.prototype.IsEmpty = function ()
     {
         return this.CmdQueue.IsEmpty();
-    };           
+    };
+    Cnds.prototype.IsLast = function ()
+    {
+        if (this.CmdQueue.IsEmpty())
+            return false;
+        return ( this.CmdQueue.GetCurCmdIndex() == (this.CmdQueue.GetCmdCount()-1) );
+    };   
+    Cnds.prototype.IsFirst = function ()
+    {
+        if (this.CmdQueue.IsEmpty())
+            return false;    
+        return (this.CmdQueue.GetCurCmdIndex() == 0);
+    };    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -155,6 +310,7 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     Acts.prototype.CleanCmds = function ()
     {
         this.CmdQueue.Clean();
+        this.current_cmd_save = null;
     }; 
 
     Acts.prototype.NextCmd = function ()
@@ -172,13 +328,26 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     
     Acts.prototype.LoadJSONCmds = function (json_string)
     {  
-        this.CmdQueue.JSON2Queue(json_string);  
+        this.CmdQueue.JSON2Queue(json_string); 
+        this.current_cmd_save = null; 
     };
     
     Acts.prototype.LoadCSVCmds = function (csv_string)
     {  
         this.CmdQueue.CSV2Queue(csv_string);  
+        this.current_cmd_save = null;
     };
+    
+    Acts.prototype.SetNextIndex = function (index)
+    {
+        this.CmdQueue.SetNextIndex(Math.floor(index));  
+    };  
+    
+    Acts.prototype.InsertCmdAt = function (fn_name, index)
+    {   
+        this.CmdQueue.InsertAt([fn_name, this.pendding_params], Math.floor(index));
+        this.pendding_params = {};
+    }; 
     
 	//////////////////////////////////////
 	// Expressions
@@ -197,7 +366,21 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     {
         ret.set_string(this.CmdQueue.CmdToString());
     };    
-    
+			
+    Exps.prototype.CmdCount = function (ret)
+    {
+        ret.set_int(this.CmdQueue.GetCmdCount());
+    };  
+			
+    Exps.prototype.CurIndex = function (ret)
+    {
+        ret.set_int(this.CmdQueue.GetCurCmdIndex());
+    };   
+			
+    Exps.prototype.LastIndex = function (ret)
+    {
+        ret.set_int(this.CmdQueue.GetCmdCount()-1);
+    };    
 }());
 
 (function ()
@@ -208,7 +391,8 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
 	    this.cmd_queue = [];
         this.repeat_mode = rm;  // 0=Ring, 1=Ping-pong
         this.queue_index = 0;
-        this.dir = dir;  // 0=Increase, 1=Decrease
+        this.execute_index = 0;
+        this.dir = dir;  // 0=Increase, 1=Decrease       
     };
     var CmdQueueKlassProto = cr.behaviors.Rex_bCmdqueue.CmdQueueKlass.prototype;
 
@@ -216,6 +400,16 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     {        
         return (this.cmd_queue.length == 0);
     };   
+
+    CmdQueueKlassProto.GetCmdCount = function ()
+    {        
+        return this.cmd_queue.length;
+    };  
+
+    CmdQueueKlassProto.GetCurCmdIndex = function ()
+    {        
+        return this.execute_index;
+    };  
     
 	CmdQueueKlassProto.index_get = function ()
 	{        
@@ -240,7 +434,7 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
             this.queue_index = 1;
             this.dir = 0;
         }
-        var ret_index = this.queue_index;
+        this.execute_index = this.queue_index;
         
         
         // get next index
@@ -253,7 +447,7 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
             this.queue_index -= 1;
         }
         
-        return ret_index;
+        return this.execute_index;
 	}; 
 
     CmdQueueKlassProto.Push = function (cmd)
@@ -261,6 +455,13 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
         this.cmd_queue.push(cmd);
     }; 
 
+    CmdQueueKlassProto.InsertAt = function (cmd, index)
+    {
+        if (index >= this.cmd_queue.length)
+            this.cmd_queue.push(cmd);
+        else
+            this.cmd_queue.splice(index, 0, cmd);
+    }; 
     CmdQueueKlassProto.Pop = function ()
     {
         return this.cmd_queue.shift();
@@ -283,7 +484,12 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     {
         this.repeat_mode = rm;            
     }; 
-
+    
+    CmdQueueKlassProto.SetNextIndex = function (index)
+    {
+        this.queue_index = index;            
+    };
+    
     CmdQueueKlassProto.CmdToString = function ()
     {
         return JSON.stringify(this.cmd_queue);

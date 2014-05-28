@@ -484,7 +484,6 @@ cr.behaviors.rex_bScenario = function(runtime)
             _arr = (is_json == true)?  JSON.parse(cmd_string):
                                        CSVToArray(cmd_string); 
         }
-        debugger;
         
         this.cmd_table.reset(_arr);
         var queue = this.cmd_table.queue;

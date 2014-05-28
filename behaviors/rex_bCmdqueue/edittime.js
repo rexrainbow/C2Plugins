@@ -33,7 +33,13 @@ AddCondition(3, cf_none, "Type of parameter", "Parameter",
              "Test the type of parameter.", "TypeOfParam");
 AddCondition(4, cf_none, "Empty", "Queue", 
              "{my} Is empty", 
-             "Return true if the queue is empty.", "IsEmpty");       		 
+             "Return true if the queue is empty.", "IsEmpty");
+AddCondition(5, cf_none, "Last", "Queue", 
+             "{my} Is last command", 
+             "Return true if running last command.", "IsLast");  
+AddCondition(6, cf_none, "First", "Queue", 
+             "{my} Is first command", 
+             "Return true if running first command.", "IsFirst");               
 //////////////////////////////////////////////////////////////
 // Actions
 AddAnyTypeParam("Index", "The index of the parameter to get.", 0);
@@ -44,21 +50,21 @@ AddAction(1, 0, "Set parameter", "Add",
           "SetParameter");
 AddStringParam("Name", "Command name.", '""');
 AddAction(2, 0, "Push", "Add", 
-          "{my} Push command <b>{0}</b>", 
+          "{my} Push command <i>{0}</i>", 
           "Push a command with current parameters into back of queue.", "PushCmd");
-AddAction(3, 0, "Pop", "Run", 
+AddAction(3, 0, "Pop", "Run - Pop", 
           "{my} Pop command", 
           'Pop and run a command from front of queue, it will trigger "Condition:On command".', "PopCmd");  
 AddAction(4, 0, "Clean", "Clean", 
           "{my} Clean all pendding commands", 
           "Clean all pendding commands", "CleanCmds");  
-AddAction(5, 0, "Next", "Run", 
+AddAction(5, 0, "Next", "Run - Next", 
           "{my} next command", 
           'Run next command, it will trigger "Condition:On command".', "NextCmd");  
 AddComboParamOption("Ring");
 AddComboParamOption("Ping-pong");
 AddComboParam("Mode", "Repeat mode.", 0);
-AddAction(6, 0, "Set repeat mode", "Run", "Set {my} repeat mode to <b>{0}</b>", 
+AddAction(6, 0, "Set repeat mode", "Configure", "Set {my} repeat mode to <b>{0}</b>", 
           "Set repeat mode.", "SetRepeatMode");     
 AddStringParam("Commands", "Commands in JSON format", "");
 AddAction(7, 0, "Load JSON commands", "Load", 
@@ -67,7 +73,16 @@ AddAction(7, 0, "Load JSON commands", "Load",
 AddStringParam("Commands", "Commands in CSV format", "");
 AddAction(8, 0, "Load CSV commands", "Load", 
           "Load csv commands <i>{0}</i>", 
-          "Load commands in CSV format.", "LoadCSVCmds");          
+          "Load commands in CSV format.", "LoadCSVCmds");
+AddNumberParam("Index", "Next index", 0);
+AddAction(9, 0, "Set next index", "Run - Next", 
+          "Set next index to <i>{0}</i>", 
+          'Set next index for "action:Next".', "SetNextIndex");
+AddStringParam("Name", "Command name.", '""');
+AddNumberParam("Index", "Next index, zero-based index.", 0);
+AddAction(10, 0, "Insert at", "Add", 
+          "{my} Insert command <i>{0}</i> at index to <i>{1}</i>", 
+          "Insert command at specific index.", "InsertCmdAt");        
 //////////////////////////////////////////////////////////////
 // Expressions
 // function behavior
@@ -78,7 +93,15 @@ AddExpression(1, ef_return_any, "Get parameter value", "Parameter",
 AddExpression(2, ef_return_string, "Get commands in JSON string", "JSON", 
               "CmdToString", 
               "Get commands in JSON string.");
-              
+AddExpression(3, ef_return_number, "Get count of commands", "Queue", 
+              "CmdCount", 
+              "Get count of commands, i.e. length of queue.");          
+AddExpression(4, ef_return_number, "Get current index", "Run", 
+              "CurIndex", 
+              "Get current index of executed command.");
+AddExpression(5, ef_return_number, "Get last index", "Queue", 
+              "LastIndex", 
+              "Get last index of queue.");            
 ACESDone();
 
 // Property grid properties for this plugin
