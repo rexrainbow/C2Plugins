@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"2D-char-array layout",
+		"name":			"2D-Char-Array layout",
 		"id":			"Rex_layouter_2dCharArray",
 		"description":	"Map/create sprites by a 2d-char-array on layouter.",
 		"author":		"Rex.Rainbow",

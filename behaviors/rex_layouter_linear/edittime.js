@@ -37,10 +37,10 @@ AddComboParam("Alignment", "Alignment of layout instances.",0);
 AddAction(2, 0, "Set alignment", "Mode", 
           "Set {my} alignment to <i>{0}</i>", 
           "Set alignment of instances. It only uses in Fix mode.", "SetAlignment");
-AddNumberParam("Delta distance", "Delta distance of each instance, in pixel.");
-AddAction(3, 0, "Set delta distance", "Fix mode", 
-          "Set {my} delta distance to <i>{0}</i>", 
-          "Set delta distance of each instance, in pixel. It only uses in Fix mode.", "SetDeltaDist");
+AddNumberParam("Spacing", "Spacing (delta distance) of each instance, in pixels.", 40);
+AddAction(3, 0, "Set spacing", "Fix mode", 
+          "Set {my} spacing to <i>{0}</i>", 
+          "Set spacing (delta distance) of each instance, in pixels. It only uses in Fix mode.", "SetDeltaDist");
                 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -50,10 +50,10 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [ 
-new cr.Property(ept_combo, "Mode", "Fix", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix angle.", "Average|Fix"),
+new cr.Property(ept_combo, "Mode", "Fix", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix distance.", "Average|Fix"),
     new cr.Property(ept_combo, "Direction", "Left to right", "Direction from start to end.", "Left to right|Right to left|Top to bottom|Bottom to top"),
     new cr.Property(ept_combo, "Alignment", "Start", "Alignment. It only uses in Fix mode.", "Start|Center|End"),        
-    new cr.Property(ept_float, "Spacing", 40, "Spacing of each instance, in pixel. It only uses in Fix mode."),
+    new cr.Property(ept_float, "Spacing", 40, "Spacing (delta distance) of each instance, in pixels. It only uses in Fix mode."),
 	];
 	
 // Called by IDE when a new behavior type is to be created

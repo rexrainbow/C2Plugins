@@ -3,7 +3,7 @@
 	return {
 		"name":			"Cyclic layout",
 		"id":			"Rex_layouter_cyclic",
-		"description":	"Put sprite cyclic on layouter.",
+		"description":	"Put instnces cyclic on layouter.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_cyclic.html",
 		"category":		"Layouter",
@@ -94,4 +94,6 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {	
+    if (this.properties["Range angle"] > 360)
+        this.properties["Range angle"] = 360;
 }
