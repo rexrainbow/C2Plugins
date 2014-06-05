@@ -28,6 +28,10 @@ AddCondition(1, cf_none, "Compare parameter", "Parameter",
              "Parameter {0} {1} {2}", 
              "Compare the value of a parameter in a function call.", "CompareParam");
 
+AddCondition(2,	cf_trigger, "On any function", "Function", 
+             "On any function", 
+             "Triggered when any function is called. Dump the trace.", "OnAnyFunction");             
+
 AddAnyTypeParam("Index", "The zero-based index of the parameter to get, or name in string.");
 AddComboParamOption("Number");
 AddComboParamOption("String");
@@ -42,7 +46,7 @@ AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
 AddAction(0, 0, "Call function", "Parameter list",
           "Call <b>{0}</b> (<i>{...}</i>)", 
-          "Call a function, running its 'On function' event.", "CallFunction");
+          "Call a function, running its 'On function' event.", "CallFunction");         
 
 AddStringParam("Name", "Parameter's name", '""');
 AddAnyTypeParam("Value", "The default value.");
@@ -60,6 +64,25 @@ AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddAction(54, 0, "Call function", "Parameter table", 
           "Call <b>{0}</b> with parameter table", 
           "Call a function, running its 'On function' event with parameter table.", "CallFunctionwPT");     
+          
+          
+AddStringParam("Name", "The name of the function.", "\"\"");
+AddAction(70, 0, "Add", "Pending - ignored list", 
+          "Add function <b>{0}</b> to ignored list of blocking", 
+          "Add a function by name to to ignored list of blocking", "AddIgnored");
+AddAction(71, 0, "Accept", "Pending", 
+          "Accept one command", 
+          "Accept one command. Execute command if there has any pending command.", "AcceptOne");  
+AddStringParam("Name", "The name of the function.", "\"\"");
+AddAction(72, 0, "Remove", "Pending - ignored list", 
+          "Remove function <b>{0}</b> from ignored list of blocking", 
+          "Remove the function by name from to ignored list of blocking", "RemoveIgnored"); 
+AddAction(73, 0, "Close", "Pending", 
+          "Close acceptance", 
+          "Close acceptance.", "Close");   
+AddAction(74, 0, "Discard&Close", "Pending", 
+          "Discard all pending commands and close acceptance", 
+          "Discard all pending commands and close acceptance.", "Discard");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "", "Function", "ParamCount", "Get the number of parameters passed to this function.");
@@ -69,7 +92,11 @@ AddExpression(2, ef_return_any, "", "Function", "Param", "Get the value of a par
 
 AddExpression(3, ef_return_string, "Sender Alias", "Function", "SenderAlias", 
               'The alias of sender, used under callback "Condition:On function".');
-              
+
+AddExpression(11, ef_return_string, "Function name", "Debug", "FunctionName", 
+              'Function name for dubug, used under "Condition:On any function".');
+AddExpression(12, ef_return_string, "Function parameters", "Debug", "FunctionParams", 
+              'Function parameters for dubug, used under "Condition:On any function".');              
 ACESDone();
 
 // Property grid properties for this plugin
@@ -77,6 +104,7 @@ var property_list = [
     new cr.Property(ept_text, "Tag prefix", "_syncfn", "Tag prefix for sending and receiving message.", "", "readonly"),
     new cr.Property(ept_combo, "Response", "Sendback", 
                     "Run function immediately or wait for host sendback.", "Immediate|Sendback"),
+    new cr.Property(ept_combo, "Pending mode", "No", "Enable to pending command execution until accepted. Turn off to run command directly.", "No|Yes"),                   
 	];
 	
 // Called by IDE when a new object type is to be created

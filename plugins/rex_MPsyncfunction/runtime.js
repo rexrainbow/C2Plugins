@@ -46,14 +46,12 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.tag = this.properties[0];
-        this.mode = this.properties[1]; // 0=Response immediately , 1=wait for host sendback 
+        this.response_mode = this.properties[1]; // 0=Response immediately , 1=wait for host sendback 
+        this.accept_cmd_cnt = (this.properties[2] == 0)? (-1):0;  // (-1) is Blocking = No
         this.mpwrap = null;
         
         this.sender_alias = "";
-        this.cmdparams = {"n":"",
-                          "l":[],
-                          "t":{},						  
-                         };
+        this.cmdparams = new_cmdparams();
         this.param_index = 0;
         this.name2index = {};
 		
@@ -65,7 +63,19 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
         
         // initial at tick()
         this.runtime.tickMe(this);
+        
+        // blocking
+        this.blocking_command_list = [];
+        this.blocking_ignored_list = {};
 	};
+	
+    var new_cmdparams = function()
+    {         
+        return {"n":"",
+                "l":[],
+                "t":{},						  
+               };
+    }; 	
     
     instanceProto.tick = function()
     {         
@@ -101,12 +111,12 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 	    var mpwrap_obj = this._mpwrap_get();
 	    if (mpwrap_obj.IsHost())  // host
 	    {
-	        mpwrap_obj.HostBroadcastMessage(fromId, this.tag, content, 0, (this.mode==1));
-	        this._execute_function(content, fromAlias);
+	        mpwrap_obj.HostBroadcastMessage(fromId, this.tag, content, 0, (this.response_mode==1));
+	        this.run_command(content, fromAlias);
 	    }
 	    else  // peer
 	    {
-	        this._execute_function(content, fromAlias);
+	        this.run_command(content, fromAlias);
 	    }
 	};  
 	
@@ -116,18 +126,27 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 	    if (cmdparams != null)
 	        this.cmdparams = cmdparams;	    
 	    var mpwrap_obj = this._mpwrap_get();
+	    
+	    // single player
+	    if (!mpwrap_obj.IsConnected())
+	    {
+	        this.run_command();
+	        return;
+	    }
+	    
+	    // mutli-player
 	    var is_host = mpwrap_obj.IsHost();
 	    if (is_host)
 	    {
 	        mpwrap_obj.HostBroadcastMessage(null, this.tag, this.cmdparams);
-	        this._execute_function();
+	        this.run_command();
 	    }
 	    else
 	    {
 	        mpwrap_obj.SendMessage(null, this.tag, this.cmdparams);
-	        if (this.mode==0)
+	        if (this.response_mode==0)
 	        {
-	            this._execute_function();
+	            this.run_command();
 	        }
 	    }
 	};  
@@ -172,10 +191,10 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 		}
 		
         this._fnobj_type = FNTYPE_NA;  // function object is not avaiable
-	};   
-	
-	instanceProto._execute_function = function(cmdparams, sender_alias)
-	{            
+	}; 
+		  
+	instanceProto.run_command = function(cmdparams, sender_alias)
+	{	   	    
 	    if (cmdparams != null)
 	        this.cmdparams = cmdparams;
 	        
@@ -184,10 +203,33 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 	        this.sender_alias = this._mpwrap_get().GetMyAlias();	    
 	    else
 	        this.sender_alias = sender_alias;
-        
-        var fn_name = this.cmdparams["n"];
+	 
+        var fn_name = this.cmdparams["n"].toLowerCase();
 		var param_list = this.cmdparams["l"];
 		var param_table = this.cmdparams["t"];
+		        		  	       
+	    // block command
+	    if ((this.accept_cmd_cnt >= 0) &&
+	        (!this.blocking_ignored_list.hasOwnProperty(fn_name))
+	       )
+	    {
+	        // pendding
+	        if (this.accept_cmd_cnt == 0)
+	        {
+	            this.blocking_command_list.push([this.cmdparams, this.sender_alias]);
+	            this.cmdparams = new_cmdparams();
+	            return;
+	        }
+	        
+	        // accept
+	        if (this.accept_cmd_cnt > 0)
+	        {
+	            this.accept_cmd_cnt -= 1;
+	        }
+	    }
+        
+        // execute command        		
+        this.runtime.trigger(cr.plugins_.Rex_MPsyncfunction.prototype.cnds.OnAnyFunction, this);
         this.runtime.trigger(cr.plugins_.Rex_MPsyncfunction.prototype.cnds.OnFunction, this, fn_name);
 
         if (this._fnobj_type == FNTYPE_REXFN2)
@@ -204,7 +246,7 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 				this._act_call_fn_wpt.call(this._fnobj, fn_name, "_");
 			}
 		}		
-		else if (this._fnobj_type == FNTYPE_OFFICIALFN)
+		if (this._fnobj_type == FNTYPE_OFFICIALFN)
 		{
 		    this._act_call_fn.call(this._fnobj, fn_name, param_list);
 		}
@@ -287,7 +329,7 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 
 	Cnds.prototype.OnFunction = function (cmd_name_)
 	{
-		return (this.cmdparams["n"] == cmd_name_);
+		return cr.equals_nocase(cmd_name_, this.cmdparams["n"]);
 	};
 	
     Cnds.prototype.CompareParam = function (param_index_, cmp_, value_)
@@ -306,7 +348,12 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
             
         var t = (type_cmp == 0)? "number":"string";        
         return (typeof(param_value) == t);
-    };    	
+    };   
+
+	Cnds.prototype.OnAnyFunction = function ()
+	{
+		return true;
+	};    	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -334,7 +381,45 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
     {
         this.define_param(name, default_value);
     }; 
+
+    Acts.prototype.AddIgnored = function (name_)
+    {
+        this.blocking_ignored_list[name_.toLowerCase()] = true;
+    };
+
+    Acts.prototype.AcceptOne = function ()
+    {
+        if (this.accept_cmd_cnt == (-1))
+            return;
+            
+        this.accept_cmd_cnt = 1;
+        if (this.blocking_command_list.length == 0)
+            return;
         
+        var cmd_saved = this.blocking_command_list.shift();
+        this.run_command(cmd_saved[0], cmd_saved[1]);
+    };
+        
+    Acts.prototype.RemoveIgnored = function (name_)
+    {        
+        delete this.blocking_ignored_list[name_.toLowerCase()];
+    };   
+
+    Acts.prototype.Close = function ()
+    {
+        if (this.accept_cmd_cnt == (-1))
+            return;
+        this.accept_cmd_cnt = 0;
+    };
+    
+    Acts.prototype.Discard = function ()
+    {
+        if (this.accept_cmd_cnt == (-1))
+            return;
+            
+        this.blocking_command_list.length = 0;
+        this.accept_cmd_cnt = 0;
+    };    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -354,4 +439,17 @@ cr.plugins_.Rex_MPsyncfunction = function(runtime)
 	{
 	    ret.set_string( this.sender_alias );
 	}; 
+
+    Exps.prototype.FunctionName = function (ret)
+	{
+	    ret.set_string( this.cmdparams["n"] );
+	};	
+
+    Exps.prototype.FunctionParams = function (ret)
+	{
+	    var _p = (this.cmdparams["l"].length>0)? this.cmdparams["l"]:this.cmdparams["t"];
+	    ret.set_string( JSON.stringify(_p) );
+	};	
+	
+		
 }());
