@@ -24,7 +24,7 @@ AddCondition(21, 0, "Is playing", "Player", "Is playing",
 //////////////////////////////////////////////////////////////
 // Actions  
 AddObjectParam("Timeline", "Timeline object for getting timer");
-AddAction(0, 0, "Setup", "0: Setup", 
+AddAction(0, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 
           "Setup TARP.", "Setup");  
 AddAction(1, 0, "Start", "Recorder: Control", 
@@ -76,6 +76,9 @@ AddExpression(10, ef_return_string, "Get recorder list", "Recorder", "RecorderLi
               "Get recorder list in JSON format.");
 AddExpression(20, ef_return_number, "Get offset", "Player", "Offset", "Get offset time.");
 
+// exporter
+AddExpression(50, ef_return_string, "Export to scenario", "Exporter", "Export2Scenario", 
+              "Export recorder list to scenario in JSON format.");
 
 ACESDone();
 

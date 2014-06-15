@@ -156,10 +156,12 @@ function TaskRun(tn, fn, ...)\n\
     else\n\
         Tasks.on_task_started(tn)\n\
     end\n\
-    is_alive, delay_time = coroutine.resume(t, ...)\n\
+    is_alive, key = coroutine.resume(t, ...)\n\
     Tasks.on_task_suspended(tn)\n\
-    if type(delay_time) == 'number' then\n\
-        Tasks.timer_start(delay_time, tn)\n\
+    if type(key) == 'number' then\n\
+        Tasks.timer_start(key, tn)\n\
+    elseif type(key) == 'string' then\n\
+        Tasks.waiting_tasks[tn] = key\n\
     else\n\
         Tasks.waiting_tasks[tn] = true\n\
     end\n\
@@ -172,9 +174,11 @@ end\n\
 function TaskStart(tn, fn, ...)\n\
     TaskRun(tn, fn, ...)\n\
 end\n\
-function TaskResume(tn)\n\
+function TaskResume(tn, key)\n\
     if Tasks.tasks[tn] == nil then return end\n\
-    if Tasks.waiting_tasks[tn] == nil then return end\n\
+    local k = Tasks.waiting_tasks[tn]\n\
+    if k == nil then return end\n\
+    if key ~= nil and type(k) == 'string' and k ~= key then return end\n\
     Tasks.waiting_tasks[tn] = nil\n\
     TaskRun(tn, nil)\n\
 end\n\
@@ -411,9 +415,14 @@ end\n\
         window["Lua"]["execute"](s);
 	};	
     
-    Acts.prototype.TaskResume = function (task_name)
+    Acts.prototype.TaskResume = function (task_name, key)
 	{
-	    var s = "TaskResume('" + task_name + "', nil)";
+	    if (key == null)
+	        key = "nil";
+	    else
+	        key = "'" + key + "'";
+	    var s = "TaskResume('" + task_name + "', " + key +")";
+	    log(s);
         window["Lua"]["execute"](s);
 	};	
     

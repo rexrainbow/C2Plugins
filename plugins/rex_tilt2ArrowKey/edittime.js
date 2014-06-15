@@ -72,8 +72,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Calibration", "0", "Calibration zero angle.", "0|Current angle"),
     new cr.Property(ept_combo, "Directions", "8 directions", "The number of directions of movement available.", "Up & down|Left & right|4 directions|8 directions"),
-    new cr.Property(ept_float, "Sensitivity", 5, "Sensitivity of tilt angle, in degree."),   
+    new cr.Property(ept_float, "Sensitivity", 5, "Sensitivity of tilt angle, in degree."),
 	];
 	
 // Called by IDE when a new object type is to be created

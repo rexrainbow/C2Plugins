@@ -103,6 +103,21 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	{    
 		return (this._current_finished_tag == tag);
 	};
+
+	Cnds.prototype.NoWaitEvent = function(tag)
+	{    
+	    debugger;
+		var e=this.events[tag];
+		if (e == null)
+		    return true;
+		var k;
+		for (k in e)
+		{
+		    return false;
+		}
+		return true;
+	};	
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

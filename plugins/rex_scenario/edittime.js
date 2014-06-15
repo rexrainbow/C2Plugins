@@ -30,7 +30,7 @@ AddCondition(3, 0, "Is tag existed", "Tag", "Is tag <i>{0}</i> existed",
 // Actions     
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddObjectParam("Function", "Function object for callback");
-AddAction(1, 0, "Setup", "Z: Deprecated", 
+AddAction(1, af_deprecated, "Setup", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
 AddStringParam("Commands", "Commands in CSV format", "");

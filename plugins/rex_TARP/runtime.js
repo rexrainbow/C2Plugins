@@ -204,7 +204,29 @@ cr.plugins_.Rex_TARP = function(runtime)
     Exps.prototype.Offset = function (ret)
 	{
 	    ret.set_float( this.player.offset );
-	};	
+	};
+	
+	
+    Exps.prototype.Export2Scenario = function (ret)
+	{
+	    var raw_list = this.recorder.recorder_list, raw_line;
+	    var out_list=[], out_line;
+	    var i, raw_cnt=raw_list.length;
+	    var j, params, p_cnt;
+	    for (i=0; i<raw_cnt; i++)
+	    {
+	        raw_line = raw_list[i];
+	        out_line = [raw_line[0], raw_line[1]];
+	        params = raw_line[2];
+	        p_cnt = params.length;
+	        for (j=0; j<p_cnt; j++)
+	        {
+	            out_line.push(params[j]);
+	        }
+	        out_list.push(out_line);
+	    }
+	    ret.set_string( JSON.stringify(out_list) );
+	};		
 }());
 
 (function ()
@@ -355,9 +377,10 @@ cr.plugins_.Rex_TARP = function(runtime)
 	};
 	PlayerKlassProto._run = function()
 	{
-        var name = this.current_cmd[1], params = this.current_cmd[2];
+        var name = this.current_cmd[1];
+        var params = this.current_cmd[2];
         var has_fnobj = this.plugin._timeline_get().RunCallback(name, params, true);
-        assert2(has_fnobj, "Worksheet: Can not find callback oject.");
+        assert2(has_fnobj, "TARP: Can not find callback oject.");
         this._start_cmd();        
 	};	
 	PlayerKlassProto.saveToJSON = function ()

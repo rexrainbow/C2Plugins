@@ -67,7 +67,7 @@ AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(6, 0, "Load one table", "0: Load", "Load table form JSON string <i>{0}</i>",
+AddAction(6, 0, "Load one table", "0: Load", "Load table from JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");  
 AddStringParam("Col index", "Column index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
@@ -87,7 +87,7 @@ AddStringParam("Delimiter", "Set delimiter for splitting items.", ",");
 AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
          "Set delimiter for splitting items.", "SetDelimiter");
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(12, 0, "Load all tables", "0: Load", "Load all tables form JSON string <i>{0}</i>",
+AddAction(12, 0, "Load all tables", "0: Load", "Load all tables from JSON string <i>{0}</i>",
          "Load all tables from JSON string.", "StringToAllTables"); 
 AddStringParam("Col index", "Col index.", '""');
 AddComboParamOption("Increasing");

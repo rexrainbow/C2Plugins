@@ -41,8 +41,9 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this._directions = this.properties[0];
-        this._sensitivity = this.properties[1]; 
+        this.init_calibration_mode = this.properties[0];
+        this._directions = this.properties[1];
+        this._sensitivity = this.properties[2]; 
         this.runtime.tickMe(this);
      
         this.setup_stage = true;
@@ -111,11 +112,17 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
             return;
         
         this.TouchWrapGet();  
-        this.setup_stage = false;
         if (this.touchwrap == null)
-            assert("Tilt to Arrowkey: please put touchwrap object into project file.");
-        else        
-            this._degree_ZERO_set();        
+            assert("Tilt to Arrowkey: No Touchwrap object found.");
+        else
+        {
+            if (this.init_calibration_mode == 0)  // 0
+                this._degree_ZERO_set(0,0);
+            else                                  // current angle
+                this._degree_ZERO_set();             
+        }
+            
+        this.setup_stage = false;            
 	};
 	
 	instanceProto._degree_ZERO_set = function (ZERO_UD, ZERO_LR)
@@ -284,7 +291,7 @@ cr.plugins_.Rex_Tilt2ArrowKey = function(runtime)
 	};
 	Cnds.prototype.IsRIGHTDown = function()
 	{
-        return (this.keyLR == 2)
+        return (this.keyLR == 2);
 	};    
     
 	Cnds.prototype.OnUPPressed = function()

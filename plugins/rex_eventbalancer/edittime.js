@@ -30,9 +30,9 @@ AddCondition(4,0 ,"Is processing","Procedure",
              "Return true if procedure processing.","IsProcessing");
 
 // for loop             
-AddCondition(11, cf_looping | cf_not_invertible, "Dynamic looping", "Dynamic looping", 
-             "Dynamic looping", 
-			 'Repeat the event until time-out.', "Looping"); 
+AddCondition(11, cf_looping | cf_not_invertible, "Dynamic loop", "Dynamic loop", 
+             "Dynamic loop", 
+			 'Repeat the event until time-out.', "DynamicLoop"); 
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1,0,"Start","Procedure",
@@ -50,9 +50,9 @@ AddAction(4,0,"Set repeat count","Static mode",
           "Set repeat count to <i>{0}</i>",
           "Set repeat count","SetRepeatCount");
           
-AddAction(11,0,"Stop","Dynamic looping",
-          "Stop looping",
-          "Stop looping.","StopLooping");                      	  
+AddAction(11,0,"Stop","Dynamic loop",
+          "Stop loop",
+          "Stop loop.","StopLoop");                      	  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

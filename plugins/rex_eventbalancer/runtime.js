@@ -154,7 +154,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 		return this.is_running;
 	}; 
 
-	Cnds.prototype.Looping = function()
+	Cnds.prototype.DynamicLoop = function()
 	{    
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
@@ -224,7 +224,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
         this.repeat_count = repeat_count;
 	};
 		
-	Acts.prototype.StopLooping = function()
+	Acts.prototype.StopLoop = function()
 	{
 	    this.is_looping = false;
 	}; 	     

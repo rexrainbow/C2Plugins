@@ -46,6 +46,7 @@ cr.plugins_.Rex_MPwrap = function(runtime)
         this.MP_IsHost = null;
         //this.MP_HostBroadcastMessage = null;        
         this.MP_SendPeerMessage = null;
+        this.MP_IsConnected = null;
                 
         this.msg_router = new cr.plugins_.Rex_MPwrap.MsgRouterKlass();
         
@@ -77,6 +78,7 @@ cr.plugins_.Rex_MPwrap = function(runtime)
                 this.MP_IsHost = cr.plugins_.Multiplayer.prototype.cnds.IsHost;                
                 //this.MP_HostBroadcastMessage = cr.plugins_.Multiplayer.prototype.acts.HostBroadcastMessage;
                 this.MP_SendPeerMessage = cr.plugins_.Multiplayer.prototype.acts.SendPeerMessage;
+                this.MP_IsConnected = cr.plugins_.Multiplayer.prototype.cnds.SignallingIsConnected;  
                 
                 isSupported = inst.mp["isSupported"]();
                 this.msg_router.mp = inst.mp;
@@ -115,6 +117,11 @@ cr.plugins_.Rex_MPwrap = function(runtime)
         var multiplayer_obj = this._multiplayer_get();
         return this.MP_IsHost.call(multiplayer_obj);
     }; 
+    instanceProto.IsConnected = function ()
+    {
+        var multiplayer_obj = this._multiplayer_get();
+        return this.MP_IsConnected.call(multiplayer_obj);
+    };     
 
     instanceProto.GetMyAlias = function ()
     {

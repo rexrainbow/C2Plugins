@@ -24,7 +24,10 @@ AddStringParam("Tag","Event tag.","");
 AddCondition(2,cf_trigger,"On any event finished","Finsihed",
              "On any event with tag <b>{0}</b> has finished",
              "Triggered when any event with tag has finished.","OnAnyEventFinished");
-			 
+AddStringParam("Tag","Event tag.","");
+AddCondition(3,0,"No wait event","Wait",
+             "No wait event in tag <b>{0}</b>",
+             "Return true if no wait event in tag.","NoWaitEvent");		 
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Event name","Event name.","");     

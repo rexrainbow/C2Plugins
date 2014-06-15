@@ -36,20 +36,25 @@ AddAction(1, 0, "Run script", "Run",
 AddStringParam("Task", "Task name", "");
 AddStringParam("Function", "Function name", "");
 AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
-AddAction(10, 0, "Start ", "Task", 
+AddAction(10, 0, "Start ", "Task - Start", 
           "Start task: <i>{0}</i> with function: <i>{1}</i> (<i>{...}</i>)", 
           "Start task with a lua function.", "TaskStart");	
 AddStringParam("Task", "Task name", "");
-AddAction(11, 0, "Resume", "Task", 
+AddAction(11, 0, "Resume", "Task - Resume", 
           "Resume task: <i>{0}</i>", 
           "Resume task.", "TaskResume");	
 AddStringParam("Task", "Task name", "");
-AddAction(12, 0, "Kill", "Task", 
+AddAction(12, 0, "Kill", "Task - Kill", 
           "Kill task: <i>{0}</i>", 
           "Kill task.", "TaskKill");   
-AddAction(13, 0, "Kill all", "Task", 
+AddAction(13, 0, "Kill all", "Task - Kill", 
           "Kill all tasks", 
-          "Kill all tasks.", "TaskKillAll");           
+          "Kill all tasks.", "TaskKillAll");
+AddStringParam("Task", "Task name", "");
+AddStringParam("Key", "Key", "");
+AddAction(14, 0, "Resume with key", "Task - Resume", 
+          "Resume task: <i>{0}</i> with key to <i>{1}</i>", 
+          "Resume task with key.", "TaskResume");                     
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup", "Setup", 
           "Get timer from <i>{0}</i>", 

@@ -558,7 +558,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	};	
 	
 	Acts.prototype.CreateInsts = function (obj_type,x,y,_layer)
-	{    
+	{
         var inst = this.create_inst(obj_type,x,y,_layer);
         if (inst==null)
             return;

@@ -165,37 +165,37 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
 
         var plugins = this.runtime.types;			
-        var name, plugin;
+        var name, inst;
 		// try to get callback from function extension
 		if (cr.plugins_.Rex_FnExt != null)
 		{
-            this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
-			this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
             for (name in plugins)
             {
-                plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
                 {
-                    this._fnobj = plugin.instances[0];
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+			        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
 				    this._fnobj_type = FNTYPE_REXFNEX;
                     return;
                 }                                          
             }
 		}
         
-        var plugins = this.runtime.types;			
-        var name, plugin;
+               
 		// try to get callback from rex_function2
 		if (cr.plugins_.Rex_Function2 != null)
 		{
-            this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
-			this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
+            
             for (name in plugins)
             {
-                plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
                 {
-                    this._fnobj = plugin.instances[0];
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
+			        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
 				    this._fnobj_type = FNTYPE_REXFN2;
                     return;
                 }                                          
@@ -205,14 +205,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // try to get callback from official function
 		if (cr.plugins_.Function != null)    
 		{	
-            this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-            this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
             for (name in plugins)
             {
-                plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Function.prototype.Instance)
                 {
-                    this._fnobj = plugin.instances[0];
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+                    this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
 				    this._fnobj_type = FNTYPE_OFFICIALFN;
                     return;
                 }                                          
@@ -221,15 +221,15 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		
         // try to get callback from rex_function
 		if (cr.plugins_.Rex_Function != null)    
-		{	
-            this._act_call_fn = cr.plugins_.Rex_Function.prototype.acts.CallFunction;
-			this._exp_call = cr.plugins_.Rex_Function.prototype.exps.Call;		
+		{	 		
             for (name in plugins)
             {
-                plugin = plugins[name];
-                if (plugin.plugin.acts.CallFunction == this._act_call_fn)
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Rex_Function.prototype.Instance)
                 {
-                    this._fnobj = plugin.instances[0];
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Rex_Function.prototype.acts.CallFunction;
+			        this._exp_call = cr.plugins_.Rex_Function.prototype.exps.Call;
 				    this._fnobj_type = FNTYPE_REXFN;
                     return;
                 }

@@ -248,8 +248,8 @@ cr.plugins_.Rex_Hash = function(runtime)
 	};  
     
     Acts.prototype.PickKeysToArray = function (key, array_objs)
-	{  
-	    if (!array_obj)
+	{   
+	    if (!array_objs)
 	        return;
 	        
         var array_obj = array_objs.getFirstPicked();

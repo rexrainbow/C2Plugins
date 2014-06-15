@@ -4,7 +4,7 @@
 		"name":			"Prompt wrap",
 		"id":			"Rex_PromptWrap",
 		"version":		"0.1",        
-		"description":	"Prompt wrap ffor web and cocoonJS",
+		"description":	"Prompt wrap for web and cocoonJS",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_inputwrap.html",
 		"category":		"General",
