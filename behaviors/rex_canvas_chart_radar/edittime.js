@@ -153,16 +153,5 @@ IDEInstance.prototype.OnCreate = function()
 
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
-{
-	// Clamp values
-	if (this.properties["Start angle"] < 0)
-		this.properties["Start value"] = 0;  
-	if (this.properties["Start angle"] > 359)
-		this.properties["Start value"] = 359;  
-	if (this.properties["Delta angle"] < -180)
-		this.properties["Delta angle"] = -180;  
-	if (this.properties["Delta angle"] > 180)
-		this.properties["Delta angle"] = 180; 
-	if (this.properties["Duration"] < 0)
-		this.properties["Duration"] = 0;  			 		    
+{			 		    
 }
