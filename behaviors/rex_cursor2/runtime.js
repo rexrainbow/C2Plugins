@@ -91,7 +91,7 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
             var cur_x = this.GetX();
             var cur_y = this.GetY();
             var is_moving = (this.pre_x != cur_x) ||
-                            (this.pre_x != cur_y);
+                            (this.pre_y != cur_y);            
             if ( is_moving )
             {
                 switch (this.move_axis)
@@ -109,10 +109,15 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
                 }
                 inst.set_bbox_changed();
                 this.pre_x = cur_x;
-                this.pre_x = cur_y;
-                // Trigger OnMoving
-                this.runtime.trigger(cr.behaviors.Rex_Cursor2.prototype.cnds.OnMoving, inst);
+                this.pre_y = cur_y;              
             }
+        
+            if ((!this.is_moving) && is_moving)
+                this.runtime.trigger(cr.behaviors.Rex_Cursor2.prototype.cnds.OnMovingStart, inst);
+            else if (this.is_moving && (!is_moving))
+                this.runtime.trigger(cr.behaviors.Rex_Cursor2.prototype.cnds.OnMovingEnd, inst);
+            
+            this.is_moving = is_moving;            
         }
         
         if (this.invisible)
@@ -124,6 +129,7 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
                 this.runtime.redraw = true;
             }
         }
+
 	};
   
 	behinstProto.GetABSX = function ()
@@ -174,7 +180,7 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();   
     
-	Cnds.prototype.OnMoving = function ()
+	Cnds.prototype.OnMovingStart = function ()
 	{
 		return true;
 	};
@@ -184,6 +190,10 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 		return (this.is_moving);
 	};    
     
+	Cnds.prototype.OnMovingEnd = function ()
+	{
+		return true;
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

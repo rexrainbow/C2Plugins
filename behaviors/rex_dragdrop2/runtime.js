@@ -146,11 +146,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             return false;  // get drag inst 
 		}
         var target_inst_behavior = _behavior_insts[0];
+        var instB=target_inst_behavior.inst, instA;
         for (i=1; i<cnt; i++ )
         {
             behavior_inst = _behavior_insts[i];
-            if ( behavior_inst.inst.zindex > target_inst_behavior.inst.zindex )
+            instA = behavior_inst.inst;
+            if ( ( instA.layer.index > instB.layer.index) ||
+                 ( (instA.layer.index == instB.layer.index) && (instA.get_zindex() > instB.get_zindex()) ) )               
+            {
                 target_inst_behavior = behavior_inst;
+                instB = instA;
+            } 
         }
 
 		target_inst_behavior.DragInfoSet(touch_src);

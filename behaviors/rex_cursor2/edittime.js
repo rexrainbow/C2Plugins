@@ -22,8 +22,9 @@ AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0,	cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");             
-AddCondition(1,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");             
+AddCondition(0,	cf_trigger, "On moving start", "Moving", "On {my} moving start", "Triggered when object moving start.", "OnMovingStart");             
+AddCondition(1,	0, "Is moving", "Moving", "Is {my} moving", "Is object moving.", "IsMoving");             
+AddCondition(2,	cf_trigger, "On moving end", "Moving", "On {my} moving end", "Triggered when object moving end.", "OnMovingEnd");             
 
 
 //////////////////////////////////////////////////////////////

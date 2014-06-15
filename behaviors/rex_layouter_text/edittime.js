@@ -3,7 +3,7 @@
 	return {
 		"name":			"Text",
 		"id":			"Rex_layouter_text",
-		"description":	"Show text using spriters in layouter.",
+		"description":	"Show text using sprites in layouter.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_text.html",
 		"category":		"Layouter",
