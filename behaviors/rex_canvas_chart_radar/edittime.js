@@ -16,7 +16,9 @@
 AddCondition(1,	cf_trigger, "On drawing finished", "Drawing", 
              "On {my} drawing finished", "Triggered when drawing finished.", 
              "OnDrawingFinished");           
-           
+AddCondition(2,	0, "Is drawing", "Drawing", 
+             "Is {my} drawing", "Return true while drawing.", 
+             "IsDrawing");            
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1, 0, "Draw", "Draw", 

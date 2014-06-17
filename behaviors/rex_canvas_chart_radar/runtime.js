@@ -283,7 +283,11 @@ cr.behaviors.Rex_canvas_chart_radar = function(runtime)
 	{        
 		return this.is_my_call;
 	};
-	
+	  
+	Cnds.prototype.IsDrawing = function ()
+	{        
+		return this.is_drawing;
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
