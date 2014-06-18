@@ -215,8 +215,6 @@ cr.behaviors.Rex_canvas_chart_radar = function(runtime)
 		         "ds": this.datasets,
                  "dc": this.datasets_color,                 
                  "d": this.data,
-                 "hp": this.horizontal_pin_instance,
-                 "vp": this.vertical_pin_instance,
                  "op": options
                 };
 	};

@@ -1,11 +1,11 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Line chart",
-		"id":			"Rex_canvas_chart_line",
-		"description":	"Draw a line chart on the canvas. The api of chart - http://www.chartjs.org/",
+		"name":			"Bar chart",
+		"id":			"Rex_canvas_chart_bar",
+		"description":	"Draw a bar chart on the canvas. The api of chart - http://www.chartjs.org/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_line.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_bar.html",
 		"category":		"Canvas",
 		"flags":		0,	
 	};
@@ -31,10 +31,8 @@ AddAction(2, 0, "Add label", "Chart - label",
 AddStringParam("Data set", "Data set", '"Row"');
 AddStringParam("Fill color", "Fill color, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" ", '"rgba(220,220,220,0.5)"');
 AddStringParam("Stroke color", "Stroke color, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" ", '"rgba(220,220,220,1)"');
-AddStringParam("Point color", "Point color, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" ", '"rgba(220,220,220,1)"');
-AddStringParam("Point stroke color", "Point stroke color, hex \"#FFA500\", \"rgb(0-255,0-255,0-255)\", \"rgba(0-255,0-255,0-255,0-1)\", \"hsl(0-360,0-100%,0-100%)\", or \"hsla(0-360,0-100%,0-100%,0-1)\" ", '"#fff"');
 AddAction(3, 0, "Add dataset", "Chart - dataset", 
-          "{my} Add dataset, name to <i>{0}</i>, fill color to <i>{1}</i>, stroke color to <i>{2}</i>, point color to <i>{3}</i>, point stroke color to <i>{4}</i>", 
+          "{my} Add dataset, name to <i>{0}</i>, fill color to <i>{1}</i>, stroke color to <i>{2}</i>", 
           "Add dataset name and colors.", "AddDataSetCfg");  
 AddStringParam("Data set", "Data set", '"Row"');
 AddStringParam("Label", "Label", '"Col"');
@@ -116,44 +114,21 @@ AddAction(58, 0, "Set scale grid lines", "Configure - Scale grid lines",
           "Set {my} scale grid lines color to <b>{0}</b>, scale width to <b>{1}</b>", 
           "Set scale grid lines.", 
           "SetScaleGridLines");		  
-// bezier curve
+// bar stroke
 AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
-AddComboParam("State", "Set whether to enable or disable the bezier curve.", 1);  
-AddAction(59, 0, "Enable point dot", "Configure - Bezier curve", 
-          "Set {my} bezier curve to <b>{0}</b>", 
-          "Set whether the bezier curve is enabled.", 
-          "SetEnabledBezierCurve");
-// point dot
-AddComboParamOption("Disabled");
-AddComboParamOption("Enabled");
-AddComboParam("State", "Set whether to enable or disable the point dot.", 1);  
-AddAction(62, 0, "Enable point dot", "Configure - Point dot", 
-          "Set {my} point dot to <b>{0}</b>", 
-          "Set whether the point dot is enabled.", 
-          "SetEnabledPointDot");
-AddNumberParam("Radius", "Radius of each point dot in pixels.", 3);    
-AddNumberParam("Stroke width", "Pixel width of point dot stroke.", 1);    
-AddAction(63, 0, "Set point dot", "Configure - Point dot", 
-          "Set {my} point dot radius to <b>{0}</b>, dot stroke width to <b>{1}</b>", 
-          "Set point dot.", 
-          "SetPointDot");
-// dataset
-AddComboParamOption("Disabled");
-AddComboParamOption("Enabled");
-AddComboParam("State", "Set whether to enable or disable the dataset stroke.", 1);  
-AddAction(64, 0, "Enable dataset stroke", "Configure - Dataset stroke", 
-          "Set {my} dataset stroke to <b>{0}</b>", 
-          "Set whether the dataset stroke is enabled.", 
-          "SetEnabledDatasetStroke");
-AddNumberParam("Stroke width", "Pixel width of dataset stroke.", 2);
-AddComboParamOption("No");
-AddComboParamOption("Yes");
-AddComboParam("Fill", "Fill the dataset with a colour.", 1);  
-AddAction(65, 0, "Set dataset stroke", "Configure - Dataset stroke", 
-          "Set {my} dataset stroke width to <b>{0}</b>, fill to <b>{1}</b>", 
-          "Set dataset stroke.", 
-          "SetDatasetStroke");
+AddComboParam("State", "Set whether to enable or disable the bar stroke.", 1);  
+AddAction(59, 0, "Enable bar stroke", "Configure - Bar stroke", 
+          "Set {my} bar stroke to <b>{0}</b>", 
+          "Set whether the bar stroke is enabled.", 
+          "SetEnabledBarStroke");
+AddNumberParam("Stroke width", "Pixel width of the bar stroke.", 2);
+AddNumberParam("Value spacing", "Spacing between each of the X value sets.", 5);
+AddNumberParam("Dataset spacing", "Spacing between data sets within X values.", 1);                 
+AddAction(60, 0, "Set bar stroke", "Configure - Bar stroke", 
+          "Set {my} bar stroke width to <b>{0}</b>, value spacing to <b>{1}</b>, dataset spacing to <b>{2}</b>", 
+          "Set scale properties.", 
+          "SetBarStroke");          
 // animation
 AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
@@ -204,20 +179,13 @@ var property_list = [
 	new cr.Property(ept_combo, "Scale show grid lines", "Yes", "Whether grid lines are shown across the chart.", "No|Yes"),
     new cr.Property(ept_text, "Scale grid line color", "rgba(0,0,0,.05)", "Colour of the grid lines."),
     new cr.Property(ept_float, "Scale grid line width", 1, "Width of the grid lines."),
-    
-    // bezier curve
-    new cr.Property(ept_combo, "Bezier curve", "Yes", "Whether the line is curved between points.", "No|Yes"),    	
-	
-	// point dot
-    new cr.Property(ept_combo, "Point dot", "Yes", "Show a dot for each point.", "No|Yes"),	
-    new cr.Property(ept_float, "Point dot radius", 3, "Radius of each point dot in pixels."),
-    new cr.Property(ept_float, "Point dot stroke width", 1, "Pixel width of point dot stroke."),
-    
-	// dataset
-	new cr.Property(ept_combo, "Dataset stroke", "Yes", "Show a stroke for datasets.", "No|Yes"),	
-    new cr.Property(ept_float, "Dataset stroke width", 2, "Pixel width of dataset stroke."),
-	new cr.Property(ept_combo, "Dataset fill", "Yes", "Fill the dataset with a colour.", "No|Yes"),
-	
+
+	// bar stroke
+    new cr.Property(ept_combo, "Bar stroke", "Yes", "Show a stroke on each bar.", "No|Yes"),	
+    new cr.Property(ept_float, "Bar stroke width", 2, "Pixel width of the bar stroke."),
+    new cr.Property(ept_float, "Bar value spacing", 5, "Spacing between each of the X value sets."),
+    new cr.Property(ept_float, "Bar dataset spacing", 1, "Spacing between data sets within X values."),
+        
 	// animation
 	new cr.Property(ept_combo, "Animation", "Yes", "Animate the chart.", "No|Yes"),	
 	new cr.Property(ept_combo, "Animation easing", "EaseOutQuart", "Animate the chart.", "Linear|EaseInQuad|EaseOutQuad|EaseInOutQuad|EaseInCubic|EaseOutCubic|EaseInOutCubic|EaseInQuart|EaseOutQuart|EaseInOutQuart|EaseInQuint|EaseOutQuint|EaseInOutQuint|EaseInSine|EaseOutSine|EaseInOutSine|EaseInExpo|EaseOutExpo|EaseInOutExpo|EaseInCirc|EaseOutCirc|EaseInOutCirc|EaseInElastic|EaseOutElastic|EaseInOutElastic|EaseInBack|EaseOutBack|EaseInOutBack|EaseInBounce|EaseOutBounce|EaseInOutBounce"),

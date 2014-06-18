@@ -6,14 +6,14 @@ assert2(cr.behaviors, "cr.behaviors not created");
 
 /////////////////////////////////////
 // Behavior class
-cr.behaviors.Rex_canvas_chart_line = function(runtime)
+cr.behaviors.Rex_canvas_chart_bar = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var behaviorProto = cr.behaviors.Rex_canvas_chart_line.prototype;
+	var behaviorProto = cr.behaviors.Rex_canvas_chart_bar.prototype;
 		
 	/////////////////////////////////////
 	// Behavior type class
@@ -65,22 +65,17 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 						 scaleShowGridLines: (this.properties[13] === 1),
 						 scaleGridLineColor: this.properties[14],
 						 scaleGridLineWidth: this.properties[15],
-						 // bezier curve
-                         bezierCurve: (this.properties[16] === 1),
-						 // point dot
-						 pointDot: (this.properties[17] === 1),
-						 pointDotRadius: this.properties[18],
-						 pointDotStrokeWidth: this.properties[19],
-						 // dataset
-						 datasetStroke: (this.properties[20] === 1),
-						 datasetStrokeWidth: this.properties[21],
-						 datasetFill: (this.properties[22] === 1),	
+						 // bar stroke
+						 barShowStroke: (this.properties[16] === 1),
+						 barStrokeWidth: this.properties[17],
+						 barValueSpacing: this.properties[18],
+						 barDatasetSpacing: this.properties[19],
 						 // animation					 						
-		                 animation: (this.properties[23] === 1),
-		                 animationEasing : get_easing_function_name(this.properties[24]),		                 
+		                 animation: (this.properties[20] === 1),
+		                 animationEasing : get_easing_function_name(this.properties[21]),		                 
 		};
 
-        this.animation_duration = this.properties[25];
+        this.animation_duration = this.properties[22];
         this.acc_duration = 0;
         this.chart = null;
 	    this.labels = [];
@@ -126,7 +121,7 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	    if (!this.is_drawing) 
 	    {
 	        this.is_my_call = true;
-	        this.runtime.trigger(cr.behaviors.Rex_canvas_chart_line.prototype.cnds.OnDrawingFinished, this.inst); 
+	        this.runtime.trigger(cr.behaviors.Rex_canvas_chart_bar.prototype.cnds.OnDrawingFinished, this.inst); 
 	        this.is_my_call = false;
 	    }
 	};
@@ -143,7 +138,7 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	{
 	    if (this.inst.extra.chartjs == null)
 		    this.inst.extra.chartjs = new window["chartjs"](this.inst.ctx);
-	    this.chart = this.inst.extra.chartjs.Line(data, this.options);
+	    this.chart = this.inst.extra.chartjs.Bar(data, this.options);
 	    this.is_drawing = true;
 	    this.acc_duration = 0;
 	};  	
@@ -178,16 +173,11 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 					   this.options.scaleShowGridLines,
 					   this.options.scaleGridLineColor,
 					   this.options.scaleGridLineWidth,
-					   // bezier curve
-                       this.options.bezierCurve,
-					   // point dot
-					   this.options.pointDot,
-					   this.options.pointDotRadius,
-					   this.options.pointDotStrokeWidth,
-					   // dataset
-					   this.options.datasetStroke,
-					   this.options.datasetStrokeWidth,
-					   this.options.datasetFill,	
+	                   // bar stroke  
+	                   this.options.barShowStroke,
+	                   this.options.barStrokeWidth,
+	                   this.options.barValueSpacing,
+	                   this.options.barDatasetSpacing,
 					   // animation
 					   this.options.animation,
 					   this.options.animationEasing,
@@ -229,21 +219,16 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 		// scale grid lines
 		this.options.scaleShowGridLines= options[13];
 		this.options.scaleGridLineColor= options[14];
-		this.options.scaleGridLineWidth= options[15];
-		// bezier curve
-        this.options.bezierCurve= options[16];
-	    // point dot
-	    this.options.pointDot= options[17];
-	    this.options.pointDotRadius= options[18];
-	    this.options.pointDotStrokeWidth= options[19];
-	    // dataset
-	    this.options.datasetStroke= options[20];
-	    this.options.datasetStrokeWidth= options[21];
-	    this.options.datasetFill= options[22];
+		this.options.scaleGridLineWidth= options[15];	    
+	    // bar stroke  
+	    this.options.barShowStroke= options[16];
+	    this.options.barStrokeWidth= options[17];
+	    this.options.barValueSpacing= options[18];
+	    this.options.barDatasetSpacing= options[19];	    
 		// animation
-		this.options.animation= options[23];
-		this.options.animationEasing= options[24];	  
-        this.animation_duration= options[25];
+		this.options.animation= options[20];
+		this.options.animationEasing= options[21];	  
+        this.animation_duration= options[22];
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -280,8 +265,6 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	            
 	        datasets.push({fillColor: this.datasets_color[i][0],
 	                       strokeColor: this.datasets_color[i][1],
-        			       pointColor: this.datasets_color[i][2],
-        			       pointStrokeColor: this.datasets_color[i][3],
 	                       data : _data
 	                       });
 	    }
@@ -295,10 +278,10 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	{   
 	    this.labels.push(label_name);
 	}; 	
-	Acts.prototype.AddDataSetCfg = function(dataset_name, fill_color, stroke_color, point_color, point_stroke_color)
+	Acts.prototype.AddDataSetCfg = function(dataset_name, fill_color, stroke_color)
 	{
 	    this.datasets.push(dataset_name);	    
-	    this.datasets_color.push([fill_color, stroke_color, point_color, point_stroke_color]);
+	    this.datasets_color.push([fill_color, stroke_color]);
 	};
 	Acts.prototype.SetData = function(dataset_name, label_name, value)
 	{
@@ -362,28 +345,16 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	{
 	    this.options.scaleGridLineColor= line_color;
 	    this.options.scaleGridLineWidth= line_width;
-	};	
-	Acts.prototype.SetEnabledBezierCurve = function(s)
-	{
-		this.options.bezierCurve = (s===1);
-	}; 	
-	Acts.prototype.SetEnabledPointDot = function(s)
-	{
-		this.options.pointDot = (s===1);
-	}; 	
-	Acts.prototype.SetPointDot = function(dot_radius, dot_stroke_width)
-	{
-	    this.options.pointDotRadius= dot_radius;
-	    this.options.pointDotStrokeWidth= dot_stroke_width;
 	};		
-	Acts.prototype.SetEnabledDatasetStroke = function(s)
+	Acts.prototype.SetEnabledBarStroke = function(s)
 	{
-		this.options.datasetStroke= (s===1);
+		this.options.barShowStroke = (s===1);
 	}; 	
-	Acts.prototype.SetDatasetStroke = function(stroke_width, fill)
+	Acts.prototype.SetBarStroke = function(stroke_width, value_spacing, dataset_spacing)
 	{
-	    this.options.datasetStrokeWidth= stroke_width;
-	    this.options.datasetFill= (fill===1);
+	    this.options.barStrokeWidth = stroke_width;
+	    this.options.barValueSpacing = value_spacing;
+	    this.options.barDatasetSpacing = dataset_spacing;	    
 	};	
 	Acts.prototype.SetEnabledAnimation = function(s)
 	{

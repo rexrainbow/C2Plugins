@@ -6,14 +6,14 @@ assert2(cr.behaviors, "cr.behaviors not created");
 
 /////////////////////////////////////
 // Behavior class
-cr.behaviors.Rex_canvas_chart_line = function(runtime)
+cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var behaviorProto = cr.behaviors.Rex_canvas_chart_line.prototype;
+	var behaviorProto = cr.behaviors.Rex_canvas_chart_pie.prototype;
 		
 	/////////////////////////////////////
 	// Behavior type class
@@ -44,49 +44,21 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.options = { // scaleOverlay
-		                 scaleOverlay: (this.properties[0] === 1),
-		                 // scaleOverride
-						 scaleOverride: (this.properties[1] === 1),
-						 scaleSteps: (this.properties[1] === 1)? this.properties[2]:null,
-						 scaleStepWidth: (this.properties[1] === 1)? this.properties[3]:null,
-						 scaleStartValue: (this.properties[1] === 1)? this.properties[4]:null,	
-                         // scale line
-		                 scaleLineColor: this.properties[5],
-		                 scaleLineWidth: this.properties[6],
-						 // scale labels
-		                 scaleShowLabels: (this.properties[7] === 1),
-						 scaleLabel: this.properties[8],
-						 scaleFontFamily: this.properties[9],
-						 scaleFontSize: this.properties[10],
-						 scaleFontStyle: get_font_style(this.properties[11]),
-						 scaleFontColor: this.properties[12],
-						 // scale grid lines
-						 scaleShowGridLines: (this.properties[13] === 1),
-						 scaleGridLineColor: this.properties[14],
-						 scaleGridLineWidth: this.properties[15],
-						 // bezier curve
-                         bezierCurve: (this.properties[16] === 1),
-						 // point dot
-						 pointDot: (this.properties[17] === 1),
-						 pointDotRadius: this.properties[18],
-						 pointDotStrokeWidth: this.properties[19],
-						 // dataset
-						 datasetStroke: (this.properties[20] === 1),
-						 datasetStrokeWidth: this.properties[21],
-						 datasetFill: (this.properties[22] === 1),	
+	    this.options = { // segment stroke
+						 segmentShowStroke : (this.properties[0] === 1),
+						 segmentStrokeColor : this.properties[1],
+						 segmentStrokeWidth : this.properties[2],
 						 // animation					 						
-		                 animation: (this.properties[23] === 1),
-		                 animationEasing : get_easing_function_name(this.properties[24]),		                 
+		                 animation: (this.properties[3] === 1),
+		                 animationEasing : get_easing_function_name(this.properties[4]),
+		                 animateRotate: (this.properties[5] === 1),
+		                 animateScale: (this.properties[6] === 1),	                 
 		};
 
-        this.animation_duration = this.properties[25];
+        this.animation_duration = this.properties[7];
         this.acc_duration = 0;
         this.chart = null;
-	    this.labels = [];
-	    this.datasets = [];
-	    this.datasets_color = [];
-	    this.data = {};
+	    this.data = [];
 	    this.is_drawing = false;
 	    this.is_my_call = false;
 	};  
@@ -126,7 +98,7 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	    if (!this.is_drawing) 
 	    {
 	        this.is_my_call = true;
-	        this.runtime.trigger(cr.behaviors.Rex_canvas_chart_line.prototype.cnds.OnDrawingFinished, this.inst); 
+	        this.runtime.trigger(cr.behaviors.Rex_canvas_chart_pie.prototype.cnds.OnDrawingFinished, this.inst); 
 	        this.is_my_call = false;
 	    }
 	};
@@ -143,7 +115,7 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	{
 	    if (this.inst.extra.chartjs == null)
 		    this.inst.extra.chartjs = new window["chartjs"](this.inst.ctx);
-	    this.chart = this.inst.extra.chartjs.Line(data, this.options);
+	    this.chart = this.inst.extra.chartjs.Pie(data, this.options);
 	    this.is_drawing = true;
 	    this.acc_duration = 0;
 	};  	
@@ -157,93 +129,34 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-	    var options = [// scaleOverlay
-	                   this.options.scaleOverlay,
-	                   // scaleOverride
-	                   this.options.scaleOverride,
-	                   this.options.scaleSteps,
-	                   this.options.scaleStepWidth,
-	                   this.options.scaleStartValue,
-	                   // scale line
-		               this.options.scaleLineColor,
-		               this.options.scaleLineWidth,
-		               // scale labels
-		               this.options.scaleShowLabels,
-					   this.options.scaleLabel,
-					   this.options.scaleFontFamily,
-					   this.options.scaleFontSize,
-					   this.options.scaleFontStyle,
-					   this.options.scaleFontColor,
-					   // scale grid lines
-					   this.options.scaleShowGridLines,
-					   this.options.scaleGridLineColor,
-					   this.options.scaleGridLineWidth,
-					   // bezier curve
-                       this.options.bezierCurve,
-					   // point dot
-					   this.options.pointDot,
-					   this.options.pointDotRadius,
-					   this.options.pointDotStrokeWidth,
-					   // dataset
-					   this.options.datasetStroke,
-					   this.options.datasetStrokeWidth,
-					   this.options.datasetFill,	
+	    var options = [// segment stroke 
+	                   this.options.segmentShowStroke,
+	                   this.options.segmentStrokeColor,
+	                   this.options.segmentStrokeWidth,
 					   // animation
 					   this.options.animation,
 					   this.options.animationEasing,
+					   this.options.animateRotate,
+					   this.options.animateScale,
                        this.animation_duration					   
 	                   ];
-		return { "l": this.labels,
-		         "ds": this.datasets,
-                 "dc": this.datasets_color,                 
-                 "d": this.data,
-                 "op": options
+		return { "op": options
                 };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-	    this.labels = o["l"];
-	    this.datasets = o["ds"];
-	    this.datasets_color = o["dc"];
-	    this.data = o["d"];
-	    
-	    var options = o["op"];
-	    // scaleOverlay
-	    this.options.scaleOverlay= options[0];
-	    // scaleOverride
-	    this.options.scaleOverride= options[1];
-	    this.options.scaleSteps= options[2];
-	    this.options.scaleStepWidth= options[3];
-	    this.options.scaleStartValue= options[4];
-        // scale line
-	    this.options.scaleLineColor= options[5];
-	    this.options.scaleLineWidth= options[6];
-	    // scale labels
-	    this.options.scaleShowLabels= options[7];
-	    this.options.scaleLabel= options[8];
-	    this.options.scaleFontFamily= options[9];
-	    this.options.scaleFontSize= options[10];
-	    this.options.scaleFontStyle= options[11];
-	    this.options.scaleFontColor= options[12];
-		// scale grid lines
-		this.options.scaleShowGridLines= options[13];
-		this.options.scaleGridLineColor= options[14];
-		this.options.scaleGridLineWidth= options[15];
-		// bezier curve
-        this.options.bezierCurve= options[16];
-	    // point dot
-	    this.options.pointDot= options[17];
-	    this.options.pointDotRadius= options[18];
-	    this.options.pointDotStrokeWidth= options[19];
-	    // dataset
-	    this.options.datasetStroke= options[20];
-	    this.options.datasetStrokeWidth= options[21];
-	    this.options.datasetFill= options[22];
+	    var options = o["op"];	    
+	    // segment stroke
+	    this.options.segmentShowStroke= options[0];
+	    this.options.segmentStrokeColor= options[1];
+	    this.options.segmentStrokeWidth= options[2];	    
 		// animation
-		this.options.animation= options[23];
-		this.options.animationEasing= options[24];	  
-        this.animation_duration= options[25];
+		this.options.animation= options[3];
+		this.options.animationEasing= options[4];	
+		this.options.animateRotate= options[5];
+		this.options.animateScale= options[6];		  
+        this.animation_duration= options[7];
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -263,127 +176,28 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
-	
-	var datasets = [];
+	 
 	Acts.prototype.DrawChart = function()
 	{
-	    datasets.length = 0;
-	    var i, cnti=this.datasets.length;
-	    var j, cntj=this.labels.length;
-	    var dataset_name;
-	    for (i=0; i<cnti; i++)
-	    {
-	        dataset_name = this.datasets[i]; 
-	        var _data = [];
-	        for (j=0; j<cntj; j++)
-	            _data.push(this.get_data(this.datasets[i],this.labels[j]));
-	            
-	        datasets.push({fillColor: this.datasets_color[i][0],
-	                       strokeColor: this.datasets_color[i][1],
-        			       pointColor: this.datasets_color[i][2],
-        			       pointStrokeColor: this.datasets_color[i][3],
-	                       data : _data
-	                       });
-	    }
-        var _data = {
-        	labels : this.labels,
-        	datasets : datasets
-        }
-	    this.draw_chart(_data);
+	    this.draw_chart(this.data);
 	}; 
-	Acts.prototype.Addlabel = function(label_name)
+	Acts.prototype.AddData = function(_value, _color)
 	{   
-	    this.labels.push(label_name);
-	}; 	
-	Acts.prototype.AddDataSetCfg = function(dataset_name, fill_color, stroke_color, point_color, point_stroke_color)
-	{
-	    this.datasets.push(dataset_name);	    
-	    this.datasets_color.push([fill_color, stroke_color, point_color, point_stroke_color]);
-	};
-	Acts.prototype.SetData = function(dataset_name, label_name, value)
-	{
-	    if (!this.data.hasOwnProperty(dataset_name))
-	        this.data[dataset_name] = {};
-	    var row = this.data[dataset_name];
-	    if (!row.hasOwnProperty(label_name))
-	        row[label_name] = {};	    
-	    row[label_name] = value;
-	};
-	Acts.prototype.CleanLabels = function()
-	{
-	    this.labels.length = 0;
-	}; 
-	Acts.prototype.CleanDatasets = function()
-	{
-	    this.datasets.length = 0;
-		this.datasets_color.length = 0;
+	    this.data.push({value:_value, color:_color});
 	}; 	
 	Acts.prototype.CleanData = function()
 	{
-		hashtable_clean(this.data);
+		this.data.length = 0;
 	}; 	
-	
-	
-	Acts.prototype.SetEnabledScaleOverlay = function(s)
+		
+	Acts.prototype.SetEnabledSegmentStroke = function(s)
 	{
-		this.options.scaleOverlay = (s===1);
+		this.options.segmentShowStroke = (s===1);
 	}; 	
-	Acts.prototype.SetEnabledScaleOverride = function(s)
+	Acts.prototype.SetSegmentStroke = function(color, width)
 	{
-		this.options.scaleOverride = (s===1);
-	};
-	Acts.prototype.SetScaleOverride = function(steps, step_width, start_value)
-	{
-	    this.options.scaleSteps= steps;
-	    this.options.scaleStepWidth= step_width;
-	    this.options.scaleStartValue= start_value;
-	};		
-	Acts.prototype.SetScaleLine = function(line_color, line_width)
-	{
-	    this.options.scaleLineColor= line_color;
-	    this.options.scaleLineWidth= line_width;
-	};	
-	Acts.prototype.SetEnabledScaleLabels = function(s)
-	{
-		this.options.scaleShowLabels = (s===1);
-	}; 	
-	Acts.prototype.SetScaleLabelsFont = function(font_family, font_size, font_style, font_color)
-	{
-	    this.options.scaleFontFamily= font_family;
-	    this.options.scaleFontSize= font_size;
-	    this.options.scaleFontStyle= get_font_style(font_style),
-	    this.options.scaleFontColor= font_color;
-	};
-	Acts.prototype.SetEnabledScaleGridLines = function(s)
-	{
-		this.options.scaleShowGridLines = (s===1);
-	}; 	
-	Acts.prototype.SetScaleGridLines = function(line_color, line_width)
-	{
-	    this.options.scaleGridLineColor= line_color;
-	    this.options.scaleGridLineWidth= line_width;
-	};	
-	Acts.prototype.SetEnabledBezierCurve = function(s)
-	{
-		this.options.bezierCurve = (s===1);
-	}; 	
-	Acts.prototype.SetEnabledPointDot = function(s)
-	{
-		this.options.pointDot = (s===1);
-	}; 	
-	Acts.prototype.SetPointDot = function(dot_radius, dot_stroke_width)
-	{
-	    this.options.pointDotRadius= dot_radius;
-	    this.options.pointDotStrokeWidth= dot_stroke_width;
-	};		
-	Acts.prototype.SetEnabledDatasetStroke = function(s)
-	{
-		this.options.datasetStroke= (s===1);
-	}; 	
-	Acts.prototype.SetDatasetStroke = function(stroke_width, fill)
-	{
-	    this.options.datasetStrokeWidth= stroke_width;
-	    this.options.datasetFill= (fill===1);
+	    this.options.segmentStrokeColor = color;
+	    this.options.segmentStrokeWidth = width;	    
 	};	
 	Acts.prototype.SetEnabledAnimation = function(s)
 	{
@@ -393,16 +207,15 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	{
 	    this.animation_duration= t;
 	};	
-	
+	Acts.prototype.SetEnabledAnimationType = function(r, s)
+	{
+		this.options.animateRotate= (r===1);
+		this.options.animateScale= (s===1);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-
-    Exps.prototype.StartAngle = function (ret, dataset_name, label_name)
-	{       
-	    ret.set_float(this.get_data(dataset_name, label_name));
-	};
 	
 }());
 
