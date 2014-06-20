@@ -620,9 +620,9 @@ window["chartjs"] = function(context){
 		context.scale(window.devicePixelRatio, window.devicePixelRatio);
 	}
 
-	this["PolarArea"] = function(data,options){
+	this.PolarArea = function(data,options){
 	
-		chart["PolarArea"].defaults = {
+		chart.PolarArea.defaults = {
 			scaleOverlay : true,
 			scaleOverride : false,
 			scaleSteps : null,
@@ -652,7 +652,7 @@ window["chartjs"] = function(context){
 			onAnimationComplete : null
 		};
 		
-		var config = (options)? mergeChartConfig(chart["PolarArea"].defaults,options) : chart["PolarArea"].defaults;
+		var config = (options)? mergeChartConfig(chart.PolarArea.defaults,options) : chart.PolarArea.defaults;
 		
 		return new PolarArea(data,config,context);
 	};

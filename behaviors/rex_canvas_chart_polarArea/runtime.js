@@ -6,14 +6,14 @@ assert2(cr.behaviors, "cr.behaviors not created");
 
 /////////////////////////////////////
 // Behavior class
-cr.behaviors.Rex_canvas_chart_pie = function(runtime)
+cr.behaviors.Rex_canvas_chart_polarArea = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var behaviorProto = cr.behaviors.Rex_canvas_chart_pie.prototype;
+	var behaviorProto = cr.behaviors.Rex_canvas_chart_polarArea.prototype;
 		
 	/////////////////////////////////////
 	// Behavior type class
@@ -44,18 +44,41 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.options = { // segment stroke
-						 segmentShowStroke : (this.properties[0] === 1),
-						 segmentStrokeColor : this.properties[1],
-						 segmentStrokeWidth : this.properties[2],
+	    this.options = { // scaleOverlay
+		                 scaleOverlay: (this.properties[0] === 1),
+		                 // scaleOverride
+						 scaleOverride: (this.properties[1] === 1),
+						 scaleSteps: (this.properties[1] === 1)? this.properties[2]:null,
+						 scaleStepWidth: (this.properties[1] === 1)? this.properties[3]:null,
+						 scaleStartValue: (this.properties[1] === 1)? this.properties[4]:null,	
+                         // scale line
+		                 scaleShowLine: (this.properties[5] === 1),
+		                 scaleLineColor: this.properties[6],
+		                 scaleLineWidth: this.properties[7],
+						 // scale labels
+		                 scaleShowLabels: (this.properties[8] === 1),
+						 scaleLabel: this.properties[9],
+						 scaleFontFamily: this.properties[10],
+						 scaleFontSize: this.properties[11],
+						 scaleFontStyle: get_font_style(this.properties[12]),
+						 scaleFontColor: this.properties[13],
+						 scaleShowLabelBackdrop: (this.properties[14] === 1),
+						 // scale backdrop
+						 scaleBackdropColor: this.properties[15],
+						 scaleBackdropPaddingX: this.properties[16],
+						 scaleBackdropPaddingY: this.properties[17],
+	                     // segment stroke
+						 segmentShowStroke : (this.properties[18] === 1),
+						 segmentStrokeColor : this.properties[19],
+						 segmentStrokeWidth : this.properties[20],
 						 // animation					 						
-		                 animation: (this.properties[3] === 1),
-		                 animationEasing : get_easing_function_name(this.properties[4]),
-		                 animateRotate: (this.properties[5] === 1),
-		                 animateScale: (this.properties[6] === 1),	                 
+		                 animation: (this.properties[21] === 1),
+		                 animationEasing : get_easing_function_name(this.properties[22]),
+		                 animateRotate: (this.properties[23] === 1),
+		                 animateScale: (this.properties[24] === 1),	                 
 		};
 
-        this.animation_duration = this.properties[7];
+        this.animation_duration = this.properties[25];
         this.acc_duration = 0;
         this.chart = null;
 	    this.data = [];
@@ -98,7 +121,7 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 	    if (!this.is_drawing) 
 	    {
 	        this.is_my_call = true;
-	        this.runtime.trigger(cr.behaviors.Rex_canvas_chart_pie.prototype.cnds.OnDrawingFinished, this.inst); 
+	        this.runtime.trigger(cr.behaviors.Rex_canvas_chart_polarArea.prototype.cnds.OnDrawingFinished, this.inst); 
 	        this.is_my_call = false;
 	    }
 	};
@@ -115,7 +138,7 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 	{
 	    if (this.inst.extra.chartjs == null)
 		    this.inst.extra.chartjs = new window["chartjs"](this.inst.ctx);
-	    this.chart = this.inst.extra.chartjs.Pie(data, this.options);
+	    this.chart = this.inst.extra.chartjs.PolarArea(data, this.options);
 	    this.is_drawing = true;
 	    this.acc_duration = 0;
 	};  	
@@ -129,7 +152,30 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-	    var options = [// segment stroke 
+	    var options = [// scaleOverlay
+	                   this.options.scaleOverlay,
+	                   // scaleOverride
+	                   this.options.scaleOverride,
+	                   this.options.scaleSteps,
+	                   this.options.scaleStepWidth,
+	                   this.options.scaleStartValue,
+	                   // scale line
+		               this.options.scaleShowLine,
+		               this.options.scaleLineColor,
+		               this.options.scaleLineWidth,
+		               // scale labels
+		               this.options.scaleShowLabels,
+					   this.options.scaleLabel,
+					   this.options.scaleFontFamily,
+					   this.options.scaleFontSize,
+					   this.options.scaleFontStyle,
+					   this.options.scaleFontColor,
+					   // scale backdrop					   
+					   this.options.scaleShowLabelBackdrop,
+					   this.options.scaleBackdropColor,
+					   this.options.scaleBackdropPaddingX,
+					   this.options.scaleBackdropPaddingY,
+					   // segment stroke 
 	                   this.options.segmentShowStroke,
 	                   this.options.segmentStrokeColor,
 	                   this.options.segmentStrokeWidth,
@@ -146,17 +192,40 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-	    var options = o["op"];	    
+	    var options = o["op"];
+	    // scaleOverlay
+	    this.options.scaleOverlay= options[0];
+	    // scaleOverride
+	    this.options.scaleOverride= options[1];
+	    this.options.scaleSteps= options[2];
+	    this.options.scaleStepWidth= options[3];
+	    this.options.scaleStartValue= options[4];
+        // scale line
+	    this.options.scaleShowLine= options[5];
+	    this.options.scaleLineColor= options[6];
+	    this.options.scaleLineWidth= options[7];
+	    // scale labels
+	    this.options.scaleShowLabels= options[8];
+	    this.options.scaleLabel= options[9];
+	    this.options.scaleFontFamily= options[10];
+	    this.options.scaleFontSize= options[11];
+	    this.options.scaleFontStyle= options[12];
+	    this.options.scaleFontColor= options[13];
+	    // scale backdrop	    
+	    this.options.scaleShowLabelBackdrop= options[14];
+	    this.options.scaleBackdropColor= options[15];
+	    this.options.scaleBackdropPaddingX= options[16];
+	    this.options.scaleBackdropPaddingY= options[17];
 	    // segment stroke
-	    this.options.segmentShowStroke= options[0];
-	    this.options.segmentStrokeColor= options[1];
-	    this.options.segmentStrokeWidth= options[2];	    
+	    this.options.segmentShowStroke= options[18];
+	    this.options.segmentStrokeColor= options[19];
+	    this.options.segmentStrokeWidth= options[20];	    
 		// animation
-		this.options.animation= options[3];
-		this.options.animationEasing= options[4];	
-		this.options.animateRotate= options[5];
-		this.options.animateScale= options[6];		  
-        this.animation_duration= options[7];
+		this.options.animation= options[21];
+		this.options.animationEasing= options[22];	
+		this.options.animateRotate= options[23];
+		this.options.animateScale= options[24];		  
+        this.animation_duration= options[25];
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -189,7 +258,51 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 	{
 		this.data.length = 0;
 	}; 	
-		
+
+	Acts.prototype.SetEnabledScaleOverlay = function(s)
+	{
+		this.options.scaleOverlay = (s===1);
+	}; 	
+	Acts.prototype.SetEnabledScaleOverride = function(s)
+	{
+		this.options.scaleOverride = (s===1);
+	};
+	Acts.prototype.SetScaleOverride = function(steps, step_width, start_value)
+	{
+	    this.options.scaleSteps= steps;
+	    this.options.scaleStepWidth= step_width;
+	    this.options.scaleStartValue= start_value;
+	};	
+	Acts.prototype.SetEnabledScaleLine = function(s)
+	{
+		this.options.scaleShowLine = (s===1);
+	}; 			
+	Acts.prototype.SetScaleLine = function(line_color, line_width)
+	{
+	    this.options.scaleLineColor= line_color;
+	    this.options.scaleLineWidth= line_width;
+	};	
+	Acts.prototype.SetEnabledScaleLabels = function(s)
+	{
+		this.options.scaleShowLabels = (s===1);
+	}; 	
+	Acts.prototype.SetScaleLabelsFont = function(font_family, font_size, font_style, font_color)
+	{
+	    this.options.scaleFontFamily= font_family;
+	    this.options.scaleFontSize= font_size;
+	    this.options.scaleFontStyle= get_font_style(font_style),
+	    this.options.scaleFontColor= font_color;
+	};	
+	Acts.prototype.SetEnabledScaleLabelBackdrop = function(s)
+	{
+		this.options.scaleShowLabelBackdrop = (s===1);
+	}; 	
+	Acts.prototype.SetScaleLabelBackdrop = function(color, padding_x, padding_y)
+	{
+	    this.options.scaleBackdropColor= color;
+	    this.options.scaleBackdropPaddingX= padding_x;
+	    this.options.scaleBackdropPaddingY= padding_y;
+	};		
 	Acts.prototype.SetEnabledSegmentStroke = function(s)
 	{
 		this.options.segmentShowStroke = (s===1);
