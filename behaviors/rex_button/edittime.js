@@ -14,18 +14,30 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(1, 0, "Goto ACTIVE state", "Request", "{my} goto ACTIVE state", 
+AddAction(1, 0, "Activate", "Request - Activate", 
+          "{my} goto ACTIVE state", 
           "Goto ACTIVE state.", "GotoACTIVE");   
-AddAction(2, 0, "Goto INACTIVE state", "Request", "{my} goto INACTIVE state", 
+AddAction(2, 0, "Deactivate", "Request - Deactivate", 
+          "{my} goto INACTIVE state", 
           "Goto INACTIVE state.", "GotoINACTIVE");                       
 AddAnyTypeParam("Normal", 'Frame index (number) or animation name (string) at normal state, "" is ignored.', '""');
 AddAnyTypeParam("Click", 'Frame index (number) or animation name (string) at click state, "" is ignored.', '""');
 AddAnyTypeParam("INACTIVE", 'Frame index (number) or animation name (string) at INACTIVE state, "" is ignored.', '""');
 AddAnyTypeParam("Rolling-in", 'Frame index (number) or animation name (string) at rolling-un state, "" is ignored.', '""');
-AddAction(3, 0, "Set display of states", "Display", "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, INACTIVE: <i>{2}</i>, rolling-in: <i>{3}</i>", 
+AddAction(3, 0, "Set display of states", "Display", 
+          "Set display of state, normal: <i>{0}</i>, click: <i>{1}</i>, INACTIVE: <i>{2}</i>, rolling-in: <i>{3}</i>", 
           "Set display of states.", "SetDisplay");        
-AddAction(4, 0, "Cancel click detecting", "Click detecting state", "Cancel {my} click detecting", 
-          "Cancel click detecting at click detecting state.", "GotoACTIVE");		  
+AddAction(4, 0, "Cancel click detecting", "Click detecting state", 
+          "Cancel {my} click detecting", 
+          "Cancel click detecting at click detecting state.", "GotoACTIVE");
+AddLayerParam("Layer", "Layer name of number."); 	
+AddAction(5, 0, "Activate in layer", "Request - Activate", 
+          "{my} goto ACTIVE state if in layer <i>{0}</i>, else goto INACTIVE state", 
+          "Goto ACTIVE state if in layer, else goto INACTIVE state.", "GotoACTIVE");
+AddLayerParam("Layer", "Layer name of number.");           
+AddAction(6, 0, "Deactivate in layer", "Request - Deactivate", 
+          "{my} goto INACTIVE state if in layer <i>{0}</i>, else goto ACTIVE state", 
+          "Goto INACTIVE state if in layer, else goto ACTIVE state.", "GotoINACTIVE");          	  
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1,	cf_trigger, "On clicked", "Click", "On {my} clicked", "Triggered when clicked.", "OnClick");

@@ -160,7 +160,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         if (!this.activated)
             return;
 
-	        this.fsm.Request();
+	    this.fsm.Request();
 	};  
     
     Acts.prototype.GotoState = function (new_state)
@@ -168,7 +168,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         if (!this.activated)
             return;
    
-	        this.fsm.Request(new_state);
+	    this.fsm.Request(new_state);
 	};     
 
 	Acts.prototype.NextStateSet = function (state)

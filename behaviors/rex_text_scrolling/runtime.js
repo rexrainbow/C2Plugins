@@ -109,16 +109,9 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	        if (this.start_line_index == end_index)
 		        return "";
             var start_char_index, end_char_index;
-            start_char_index = this.content_lines[this.start_line_index].index;
-            if (this.start_line_index == end_index-1)
-            {
-                var l = this.content_lines[this.start_line_index];                
-                end_char_index = l.index + l.text.length;
-            }
-            else
-            {
-			    end_char_index = this.content_lines[end_index-1].index;
-            }
+            start_char_index = this.content_lines[this.start_line_index].index;            
+            var l = this.content_lines[end_index-1];
+            end_char_index = l.index + l.text.length;
 			text = this.inst.subTextGet(this.content, start_char_index, end_char_index);
 		}
         return text;

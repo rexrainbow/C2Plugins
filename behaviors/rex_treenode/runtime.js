@@ -80,11 +80,8 @@ cr.behaviors.rex_treenode = function(runtime)
 	        this.children.push(child_uid);
 	};	
 	
-	behinstProto.CreateChildInst = function (objtype,x,y,_layer)
-	{
-        var layer = (typeof _layer == "number")?
-                    this.runtime.getLayerByNumber(_layer):
-                    this.runtime.getLayerByName(_layer);  
+	behinstProto.CreateChildInst = function (objtype,x,y,layer)
+	{ 
         var inst = this.runtime.createInstance(objtype, layer, x, y ); 
 		if (inst == null)
 		    return null;

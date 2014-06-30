@@ -169,10 +169,12 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
     // state
-    var INACTIVE_STATE = "INACTIVE";
-    var ACTIVE_STATE = "ACTIVE";
-    var CLICK_DETECTING_STATE = "CLICK DETECTING";
-    var CLICKED_STATE = "CLICKED";
+    var OFF_STATE = 0;
+    var INACTIVE_STATE = 1;
+    var ACTIVE_STATE = 2;
+    var CLICK_DETECTING_STATE = 3;
+    var CLICKED_STATE = 4;
+    var state2name = ["OFF","INACTIVE","ACTIVE","CLICK DETECTING","CLICKED"];    
     // display
     var NORMAL_DISPLAY = 0;
     var CLICKED_DISPLAY = 1;
@@ -184,9 +186,9 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this._click_mode = this.properties[1];      
         this._auto_CLICK2ACTIVE = (this.properties[2]==1);
 		this._is_visible_checking = (this.properties[3]==1);
-        this._touch_src = null;
-        this._state = ACTIVE_STATE; 
-        this._pre_state = ACTIVE_STATE;       
+        this._touch_src = OFF_STATE;
+        this._state = OFF_STATE; 
+        this._pre_state = null;       
         this._init_flag = true;
         this._rollingover_flag = false;
         this._display = {normal:"", 
@@ -256,10 +258,13 @@ cr.behaviors.Rex_Button2 = function(runtime)
             return;
             
         this._display.frame_speed_save = this.inst.cur_anim_speed;
-        if (this._init_activated)        
-            this._goto_active_state();    
-        else
-            this._goto_inactive_state();         
+        if (this._init_activated != null)
+        {
+            if (this._init_activated)        
+                this._goto_active_state();    
+            else
+                this._goto_inactive_state();         
+        }
         this._init_flag = false;
 	};    
 	behinstProto._is_touch_inside = function ()
@@ -319,6 +324,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	};
 	behinstProto._goto_active_state = function ()
 	{
+	    this._init_activated = null;
         this._touch_src = null;
         this._set_state(ACTIVE_STATE);
         this._set_animation(this._display.normal, NORMAL_DISPLAY);  
@@ -326,6 +332,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	};  	
 	behinstProto._goto_inactive_state = function ()
 	{
+	    this._init_activated = null;	    
         this._touch_src = null;
         this._set_state(INACTIVE_STATE);
         this._set_animation(this._display.inactive, INACTIVE_DISPLAY);      
@@ -387,6 +394,31 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this._display.inactive = o["fi"];
         this._display.rollingin = o["fr"];           
 	};
+	
+	behinstProto._cmd_goto_state = function (state)
+	{
+	    if (state == this._state)  // state does not change
+	        return;
+	    if (this._state == CLICK_DETECTING_STATE)
+	        this.cancel_click_detecting();	
+	        
+	    if (state == ACTIVE_STATE)       
+	        this._goto_active_state();
+	    else    
+	        this._goto_inactive_state();
+	};	
+	
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "State", "value": state2name[this._state]},
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -431,22 +463,20 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.GotoACTIVE = function ()
-	{		
-	    if (this._state == ACTIVE_STATE)  // state does not change
-	        return;
-	    if (this._state == CLICK_DETECTING_STATE)
-	        this.cancel_click_detecting();	        
-	    this._goto_active_state();
+	Acts.prototype.GotoACTIVE = function (_layer)
+	{
+	    var state = ACTIVE_STATE;
+	    if ((_layer!= null) && (this.inst.layer != _layer))
+	        state = INACTIVE_STATE;	    
+	    this._cmd_goto_state(state);
 	}; 
 	
-	Acts.prototype.GotoINACTIVE = function ()
+	Acts.prototype.GotoINACTIVE = function (_layer)
 	{	
-	    if (this._state == INACTIVE_STATE)  // state does not change
-	        return;
-	    if (this._state == CLICK_DETECTING_STATE)
-	        this.cancel_click_detecting();	        
-	    this._goto_inactive_state();   	
+	    var state = INACTIVE_STATE;
+	    if ((_layer!= null) && (this.inst.layer != _layer))
+	        state = ACTIVE_STATE;	  	    
+	    this._cmd_goto_state(state);
 	}; 
 	 
 	Acts.prototype.SetDisplay = function (display_normal, display_click, display_inactive, display_rollingin)
@@ -466,11 +496,11 @@ cr.behaviors.Rex_Button2 = function(runtime)
 
 	Exps.prototype.CurState = function (ret)
 	{
-	    ret.set_string(this._state);
+	    ret.set_string(state2name[this._state]);
 	};	
 	
 	Exps.prototype.PreState = function (ret)
 	{
-	    ret.set_string(this._pre_state);
+	    ret.set_string(state2name[this._pre_state]);
 	};
 }());

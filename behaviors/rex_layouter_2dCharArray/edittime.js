@@ -19,7 +19,7 @@ AddCondition(1, cf_trigger, "On each character", "Character",
 //////////////////////////////////////////////////////////////
 // Actions  
 AddObjectParam("Object type", "Mapped object type.");
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number.");
 AddStringParam("Strings", "Strings for creating a 2d char-array, seprated by newline.");
 AddAction(1, 0, "Map content", "Map", 
           "Map {my} <i>{0}</i> on layer <i>{1}</i>, content to <i>{2}</i>, ", 

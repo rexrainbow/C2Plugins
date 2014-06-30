@@ -33,7 +33,7 @@ AddAction(1, 0, "Assign parent", "Parent",
 AddObjectParam("Object", "Object type."); 
 AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number.");
 AddAction(2, 0, "Create child", "Child", 
           "Create {my} child <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
           "Create child instance.", "CreateChild");
