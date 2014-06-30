@@ -4,7 +4,7 @@
 		"name":			"Function call package",
 		"id":			"Rex_fnCallPkg",
 		"version":		"0.1",        
-		"description":	"Pack function call into JSON string, or call function by this JSON string.",
+		"description":	"Pack function call(s) into JSON string, or call function(s) by this JSON string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_fncallpkg.html",
 		"category":		"Logic",
@@ -23,7 +23,14 @@ AddStringParam("Package", "Function call package in json string.", "\"\"");
 AddAction(1, 0, "Call function", "Function", 
           "Call function by package to <i>{0}</i>","Call function by package.", "CallFunction");  
        
-
+// function queue
+AddAction(11, 0, "Clean", "Function queue", 
+          "Clean queue","Clean function queue.", "CleanFnQueue");
+AddStringParam("Name", "The name of the function to call.", "\"\"");
+AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
+AddAction(12, 0, "Push", "Function queue", 
+          "Push function call <b>{0}</b> (<i>{...}</i>) into queue", 
+          "Push function call into function queue.", "PushToFnQueue");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "The name of the function to call.");
@@ -32,7 +39,10 @@ AddExpression(1, ef_return_string | ef_variadic_parameters, "Function call packa
 AddStringParam("Package", "Function call package in json string.", "\"\"");
 AddExpression(3, ef_return_any, "Call a function then get return value", "Function", "Call", 
               "Call a function with parameters and return its return value.");
-
+// function queue              
+AddExpression(11, ef_return_string, "Function queue package", "Function queue", "FnQueuePkg", 
+              "Get function queue package in json format.");
+              
 ACESDone();
 
 // Property grid properties for this plugin

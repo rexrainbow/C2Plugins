@@ -51,7 +51,10 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	    this._act_call_fn = null;
 	    //this._act_set_param = null; // for rex_function2
 		this._exp_call = null;
-		this._exp_retvalue = null;	  	    
+		this._exp_retvalue = null;	
+
+        // function queue
+        this.fn_queue = [];  	    
 	};
 	var fake_ret = {value:0,
 	                set_any: function(value){this.value=value;},
@@ -126,7 +129,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         this._fnobj_type = FNTYPE_NA;  // function object is not avaiable
 	};  
     	 
-	instanceProto.call_function = function(pkg)
+	instanceProto.execute_package = function(pkg)
 	{	  
 	    if (this._fnobj_type == FNTYPE_NA)
 	        return;
@@ -134,9 +137,26 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	    if (this._fnobj_type == FNTYPE_UK)
 	        this._setup_cmdhandler();	    
 	    
+        var is_one_function = (typeof(pkg[0]) == "string");
+        if (is_one_function)
+        {
+	        this.call_function(pkg);
+        }
+        else
+        {
+            var i,cnt=pkg.length;
+            for(i=0; i<cnt; i++)
+            {
+                this.call_function(pkg[i]);
+            }
+        }
+	};  
+
+	instanceProto.call_function = function(pkg)
+	{	  
 	    var name = pkg.shift();
 	    this._act_call_fn.call(this._fnobj, name, pkg);
-	};  
+	};    
  	
     instanceProto.return_value_get = function ()
     {
@@ -161,14 +181,28 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
     Acts.prototype.CallFunction = function (pkg)
 	{
+        if (pkg == "")
+            return;
+            
 		try {
 			pkg = JSON.parse(pkg);
 		}
 		catch(e) { return; }
 		
-		this.call_function(pkg);
+		this.execute_package(pkg);
 	}; 
-
+    
+    Acts.prototype.CleanFnQueue = function ()
+	{
+		this.fn_queue.length = 0;
+	}; 
+    
+    Acts.prototype.PushToFnQueue = function (name, params)
+	{   
+        var pkg = [name];
+        pkg.push.apply(pkg, params);
+	    this.fn_queue.push(pkg);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -187,6 +221,12 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	
     Exps.prototype.Call = function (ret, pkg)
 	{
+        if (pkg == "")
+        {
+            ret.set_any( 0 );
+            return;
+        }
+        
 		try {
 			pkg = JSON.parse(pkg);
 		}
@@ -196,7 +236,12 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		     return;
 	    }
 	    
-		this.call_function(pkg);		   
+		this.execute_package(pkg);		   
 	    ret.set_any( this.return_value_get() );
-	};    
+	};
+
+    Exps.prototype.FnQueuePkg = function (ret)
+	{
+	    ret.set_string( JSON.stringify(this.fn_queue) );
+	};
 }());
