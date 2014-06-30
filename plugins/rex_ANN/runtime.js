@@ -134,6 +134,7 @@ cr.plugins_.Rex_ANN = function(runtime)
 (function ()
 {
     // reference http://programmermagazine.github.io/201404/book/pmag.html#%E4%BA%BA%E5%B7%A5%E7%A5%9E%E7%B6%93%E7%B6%B2%E8%B7%AF-artificial-neural-network-%E4%BD%9C%E8%80%85bridan
+    // author: 陳鍾誠
     // reference http://arctrix.com/nas/python/bpnn.py
     
     cr.plugins_.Rex_ANN.ANNKlass = function(ni, nh, no)
