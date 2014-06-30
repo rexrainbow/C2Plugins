@@ -81,17 +81,13 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	};    
 	
 	// export
-	instanceProto.CreateInst = function (nickname,x,y,_layer)
+	instanceProto.CreateInst = function (nickname,x,y,layer)
 	{
 	    var objtype = (typeof(nickname) == "string")? this.Nickname2Type(nickname):
 	                                                  nickname;
         if (objtype == null)
             return null;
-                        
-        var layer = (typeof _layer == "number")? this.runtime.getLayerByNumber(_layer):
-                    (typeof _layer == "string")? this.runtime.getLayerByName(_layer):  
-                                                 _layer;
-                                                 
+                                                                         
         // call system action: Create instance
         this.ActCreateInstance.call(
             this.runtime.system,

@@ -745,6 +745,11 @@ cr.plugins_.rex_TagText = function(runtime)
 		    this.updateFont();
 	    }
 	};	
+    
+	Acts.prototype.SetLineHeight = function(line_height_offset)
+	{
+        this.line_height_offset = line_height_offset;
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -1083,7 +1088,7 @@ cr.plugins_.rex_TagText = function(runtime)
             // save pen info
             var lcnt=textLines.length, txt;         
             var last_line_index=this.rawTextLine.length-1; 
-            var cur_line, cur_line_char_cnt, is_new_line;           
+            var cur_line, cur_line_char_cnt, is_new_line;         
             for (n = 0; n < lcnt; n++) {
                 cur_line = textLines[n];
                 txt = cur_line.text;
@@ -1097,16 +1102,17 @@ cr.plugins_.rex_TagText = function(runtime)
                 _word_pen.color = text_prop.color;
                 //_word_pen.shadow = text_prop.shadow; 
                 pens[last_line_index].push(_word_pen);
-                    
-				cursor_x = (cur_line.new_line)? textInfo["x"] : (cursor_x+cur_line.width);
-				if (cur_line.new_line)
+                
+                is_new_line = (cur_line.new_line == RAW_NEWLINE) || (cur_line.new_line == WRAPPED_NEWLINE);
+				cursor_x = (is_new_line)? textInfo["x"]:(cursor_x+cur_line.width);
+				if (is_new_line)
 				    y += this.lineHeight;
 								                
 				this.rawTextLine[last_line_index].text += txt;				
-				if (cur_line.new_line) // not the last line
+				if (is_new_line) // not the last line
 				{
 				    cur_line_char_cnt = this.rawTextLine[last_line_index].text.length;
-				    if (cur_line.new_line)   // has "\n"
+				    if (cur_line.new_line == RAW_NEWLINE)   // has "\n"
 				        cur_line_char_cnt ++;
 				    acc_line_len += cur_line_char_cnt;
 					this.rawTextLine.push(pkgCache.allocLine("", null, acc_line_len));  
@@ -1267,13 +1273,16 @@ cr.plugins_.rex_TagText = function(runtime)
 		return pkg;
 	};
 	
+	var NO_NEWLINE = 0;
+	var RAW_NEWLINE = 1;
+	var WRAPPED_NEWLINE = 2;
 	var lineCache = new ObjCacheKlass();
-    lineCache.allocLine = function(_text, _width, _new_line)
+    lineCache.allocLine = function(_text, _width, new_line_type)
 	{
 	    var l = this._allocLine();
 		l.text = _text;
 		l.width = _width;
-		l.new_line = _new_line;     // for "\n" char
+		l.new_line = new_line_type; // 0= no new line, 1=raw "\n", 2=wrapped "\n"
 		return l;
 	};	
     
@@ -1356,7 +1365,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			{
 				// Flush line.  Recycle a line if possible
 				if (lineIndex >= lines.length)
-					lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, true));
+					lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, RAW_NEWLINE));
 					
 				lineIndex++;
 				cur_line = "";
@@ -1375,7 +1384,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			{
 				// Append the last line's width to the string object
 				if (lineIndex >= lines.length)
-					lines.push(lineCache.allocLine(prev_line, ctx.measureText(prev_line).width, true));
+					lines.push(lineCache.allocLine(prev_line, ctx.measureText(prev_line).width, WRAPPED_NEWLINE));
 					
 				lineIndex++;
 				cur_line = wordArray[i];
@@ -1392,7 +1401,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		if (cur_line.length)
 		{
 			if (lineIndex >= lines.length)
-				lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, false));
+				lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, NO_NEWLINE));
 					
 			lineIndex++;
 		}
@@ -1430,7 +1439,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			{
 				// fits on one line
 				lineCache.freeAllLines(lines);
-				lines.push(lineCache.allocLine(text, all_width, false));
+				lines.push(lineCache.allocLine(text, all_width, NO_NEWLINE));
 				return lines;
 			}
 		}

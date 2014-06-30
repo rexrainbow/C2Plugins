@@ -35,7 +35,7 @@ AddAction(3, 0, "Add instances", "Add/Remove", "Add instances <i>{0}</i>",
 AddObjectParam("Instances", "Add instances into layouter.");       
 AddNumberParam("X", "X co-ordinate.", 0);
 AddNumberParam("Y", "Y co-ordinate.", 0);
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number.");
 AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i> at (<i>{1}</i>,<i>{2}</i>) on layer <i>{3}</i>", 
           "Create and Add instances.", "CreateInsts");            
 AddObjectParam("Instances", "Remove instances from layouter.");          

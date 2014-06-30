@@ -48,66 +48,40 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 	    this._width_init = this.width;
 	    this._height_init = this.height;
  
-	    this._init();
 	    this.runtime.tick2Me(this);        
 	};
-	
-	instanceProto._init = function()
-	{
-	    this._width_save = this.width;
-	    this._height_save = this.height;
-	    this._angle_save = this.angle;
-	    this._opactiy_save = this.opacity;
-	    this._visible_save = this.visible;
-	};	
 
 	instanceProto.tick2 = function()
 	{
         var layer = this.layer;
-	    if ((this.width != this._width_save) || (this.height != this._height_save))
-	    {
-	        var wscale = this.width/this._width_init;
-	        var hscale = this.height/this._height_init;
-	        var scale = Math.min(wscale, hscale);
-            if (layer.scale != scale)
-            {
-                layer.scale = scale;
-                this.runtime.redraw = true;	    
-            }
-	        this._width_save = this.width;
-	        this._height_save = this.height;
-	    }
+        
+	    var wscale = this.width/this._width_init;
+	    var hscale = this.height/this._height_init;
+	    var scale = Math.min(wscale, hscale);
+        if (layer.scale != scale)
+        {
+            layer.scale = scale;
+            this.runtime.redraw = true;	    
+        }
 	    
-	    if (this._angle_save != this.angle)
-	    {
-            if (layer.angle != this.angle)
-            {
-	            layer.angle = this.angle;
-	            this.runtime.redraw = true;
-            }
-	        this._angle_save = this.angle;
-	    }
+	    if (layer.angle != this.angle)
+        {
+	        layer.angle = this.angle;
+	        this.runtime.redraw = true;
+        }
 	    
-	    if (this._opactiy_save != this.opacity)
-	    {
-	        var opacity_ = cr.clamp(this.opacity, 0, 1);
-            if (layer.opacity != opacity_)
-            {
-	            layer.opacity = opacity_;
-	            this.runtime.redraw = true;
-            }
-	        this._opactiy_save = opacity_; 
-	    }
+	    var opacity_ = cr.clamp(this.opacity, 0, 1);
+        if (layer.opacity != opacity_)
+        {
+	        layer.opacity = opacity_;
+	        this.runtime.redraw = true;
+        }
 	    
-	    if (this._visible_save != this.visible)
-	    {
-            if (layer.visible != this.visible)
-            {
-	            layer.visible = this.visible;
-	            this.runtime.redraw = true;
-            }
-	        this._visible_save = this.visible;	  
-	    }	    
+	    if (layer.visible != this.visible)
+        {
+	        layer.visible = this.visible;
+	        this.runtime.redraw = true;
+        }	    
 	};	
 	
 	// only called if a layout object
@@ -118,29 +92,18 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 	instanceProto.drawGL = function(glw)
 	{
 	};
-	
+    
 	instanceProto.saveToJSON = function ()
 	{    
-		return { "w" : this.width,
-		         "wi": this._width_init,
-                 "h" : this.height,
-                 "hi": this._height_init,
-                 "a" : this.angle,
-	             "o" : this.opacity,
-	             "v" : this.visible,
+		return { "wi": this._width_init,
+                 "hi": this._height_init
 	            };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-	    this.width = o["w"];
 		this._width_init = o["wi"];
-        this.height = o["h"]; 
         this._height_init = o["hi"];
-        this.angle = o["a"];
-        this.opacity = o["o"];
-        this.visible = o["v"];
-        this._init();       
 	};	
 	//////////////////////////////////////
 	// Conditions

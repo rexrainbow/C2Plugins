@@ -22,7 +22,7 @@ AddCondition(1, cf_trigger, "On sorting", "Custom sorting: sorting function",
              
 ////////////////////////////////////////
 // Actions
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number.");
 AddAction(0, 0, "Sort all Objects in layer by Y", "Default sorting", 
           "Sort all Objects in Layer <i>{0}</i> by Y", "Sort All Objects in Layer By Y", "SortObjsLayerByY");
 AddComboParamOption("Increasing");
@@ -30,7 +30,7 @@ AddComboParamOption("Decreasing");
 AddComboParam("X order", "Sorting order of x co-ordinate.", 0);   
 AddAction(1, 0, "Set X order", "Default sorting", "Set sorting order of x co-ordinate to <i>{0}</i>", 
           "Set sorting order of x co-ordinate.", "SetXorder");
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number.");
 AddStringParam("Sorting function", "Sorting function", '""');
 AddAction(2, 0, "Sort by function", "Custom sorting", "Sort all objects in layer <i>{0}</i> by function <i>{1}</i>", 
           "Sort z order by function.", "SortByFn");     

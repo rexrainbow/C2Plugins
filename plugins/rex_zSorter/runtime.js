@@ -56,12 +56,6 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	// only called if a layout object
 	instanceProto.draw = function(ctx)
 	{
-	};
-	instanceProto.get_layer = function(layerparam)
-	{
-        return (typeof layerparam == "number")?
-               this.runtime.getLayerByNumber(layerparam):
-               this.runtime.getLayerByName(layerparam);
 	};    
     
     var _thisArg  = null;
@@ -119,9 +113,8 @@ cr.plugins_.Rex_ZSorter = function(runtime)
     }
 
     //Z-Sort all objects in current layer by their Y position
-	Acts.prototype.SortObjsLayerByY = function (layerparam)
-	{
-        var layer = this.get_layer(layerparam);        
+	Acts.prototype.SortObjsLayerByY = function (layer)
+	{     
         if (layer == null)
         {
             alart("Z Sort: Can not find layer  " + layerparam);
@@ -137,9 +130,8 @@ cr.plugins_.Rex_ZSorter = function(runtime)
         x_increasing = (x_order == 0);
 	};    
     
-	Acts.prototype.SortByFn = function (layerparam, fn_name)
+	Acts.prototype.SortByFn = function (layer, fn_name)
 	{
-        var layer = this.get_layer(layerparam);  
         if (layer == null)
         {
             alert("Z Sort: Can not find layer  " + layerparam);

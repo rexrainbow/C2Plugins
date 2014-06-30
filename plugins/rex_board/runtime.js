@@ -280,13 +280,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	        return this.runtime.getObjectByUID(uid);
 	};
 
-	instanceProto.CreateItem = function (objtype,lx,ly,lz,_layer)
+	instanceProto.CreateItem = function (objtype,lx,ly,lz,layer)
 	{
         if (objtype == null)
             return;
-        var layer = (typeof _layer == "number")?
-                    this.runtime.getLayerByNumber(_layer):
-                    this.runtime.getLayerByName(_layer);  
         if (layer == null)
             return;
          

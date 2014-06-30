@@ -222,13 +222,10 @@ cr.plugins_.Rex_Container.tag2container = {};
         }
 	};		
     
-	instanceProto.create_insts = function (obj_type,x,y,_layer)
+	instanceProto.create_insts = function (obj_type,x,y,layer)
 	{
         if (obj_type == null)
-            return;
-        var layer = (typeof _layer == "number")?
-                    this.runtime.getLayerByNumber(_layer):
-                    this.runtime.getLayerByName(_layer);  
+            return; 
         var inst = this.runtime.createInstance(obj_type, layer, x, y ); 
         // Pick just this instance
         var sol = inst.type.getCurrentSol();

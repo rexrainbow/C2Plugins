@@ -72,6 +72,11 @@ AddAction(50, 0, "Set font style", "Appearance", "Set font style <i>{0}</i>", "S
 AddStringParam("Font face", "The new font face name to set.", "\"Arial\"");
 AddAction(51, 0, "Set font face only", "Appearance", "Set font face to <i>{0}</i>", "Set the font face.", "SetFontFace2");
 
+AddNumberParam("Line height", "Offset to the default line height, in pixels. 0 is default line height", 0);      
+AddAction(52, 0, "Set line height", "Properties", 
+          "Set line height to <i>{0}</i>", 
+          "Set line height.", "SetLineHeight");
+
 ////////////////////////
 AddExpression(0,	ef_return_string,	"Get text",			"Text",			"Text",		"Get the object's text.");
 AddExpression(1,	ef_return_string,	"Get face name",	"Appearance",	"FaceName",	"Get the current font face name.");

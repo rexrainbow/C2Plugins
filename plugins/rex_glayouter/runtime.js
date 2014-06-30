@@ -206,10 +206,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	{
         if (objtype == null)
             return;
-        var layer = (_layer == null)? this.layer:
-                    (typeof _layer == "number")?
-                    this.runtime.getLayerByNumber(_layer):
-                    this.runtime.getLayerByName(_layer);  
+        var layer = (_layer == null)? this.layer : _layer; 
                     
         // call system action: Create instance
         this.ActCreateInstance.call(

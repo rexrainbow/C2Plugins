@@ -28,9 +28,55 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	typeProto.onCreate = function()
 	{
 	    this.layout = null;	
-	    this.layoutUid = -1;	
+	    this.layoutUid = -1;
+	    this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;	
 	};
 
+    typeProto.GetLayout = function()
+    {
+        if (this.layout != null)
+            return this.layout;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if ( (cr.plugins_.Rex_SLGSquareTx && (inst instanceof cr.plugins_.Rex_SLGSquareTx.prototype.Instance)) ||
+                 (cr.plugins_.Rex_SLGHexTx && (inst instanceof cr.plugins_.Rex_SLGHexTx.prototype.Instance))       ||
+                 (cr.plugins_.Rex_SLGCubeTx && (inst instanceof cr.plugins_.Rex_SLGCubeTx.prototype.Instance)) 
+                )
+            {
+                this.layout = inst;
+                return this.layout;
+            }            
+        }
+        assert2(this.layout, "Mini board: Can not find layout oject.");
+        return null;
+    };   
+    
+	typeProto.CreateItem = function (objtype,lx,ly,lz,layer)
+	{
+        if (objtype == null)
+            return;
+        if (layer == null)
+            return;
+         
+        var layout = this.GetLayout();         
+        var px = layout.LXYZ2PX(lx,ly,lz);
+        var py = layout.LXYZ2PY(lx,ly,lz);
+        // call system action: Create instance
+        this.ActCreateInstance.call(
+            this.runtime.system,
+            objtype,
+            layer,
+            px,
+            py
+        );
+                           
+	    return objtype.getFirstPicked();
+	};    
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -143,12 +189,6 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
             
         return uid;
 	};
-    instanceProto._get_layer = function(layerparam)
-    {
-        return (typeof layerparam == "number")?
-               this.runtime.getLayerByNumber(layerparam):
-               this.runtime.getLayerByName(layerparam);
-    };
 	instanceProto.xyz2uid = function(x, y, z)
 	{
 	    var tmp = this.board[x];
@@ -218,50 +258,17 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         //this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnCollided, this);                                           
 	};
 	
-	instanceProto.CreateItem = function(obj_type,x,y,z,_layer)
-	{
-        var layer = this._get_layer(_layer);
-        var inst = this.type.layout.CreateItem(obj_type,x,y,z,layer);
-        if (!inst)
-            return;
-        
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(obj_type.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
-
-        // Pick just this instance
-        var sol = obj_type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
-		
-		// Siblings aren't in instance lists yet, pick them manually
-		var i, len, s;
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
-
-        return inst;
-	};	
 	instanceProto.CreateChess = function(obj_type,x,y,z,layer)
 	{
-        if ( (obj_type ==null) || (this.type.layout == null) )
+	    var layout = this.type.GetLayout();
+        if ( (obj_type ==null) || (layout == null) )
             return;
 
-        var layout = this.type.layout;
 	    var pox_save = layout.GetPOX();
 		var poy_save = layout.GetPOY();
 		layout.SetPOX(this.x);
 		layout.SetPOY(this.y);
-        var inst = this.CreateItem(obj_type,x,y,z,layer);
+        var inst = this.type.CreateItem(obj_type,x,y,z,layer);
 		if (inst != null)
 	        this.add_item(inst,x,y,z);  
 		layout.SetPOX(pox_save);

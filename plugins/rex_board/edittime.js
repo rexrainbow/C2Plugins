@@ -138,7 +138,7 @@ AddAction(11, 0, "Setup layout", "Setup",
 AddObjectParam("Tile", "Tile object.");        
 AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number."); 
 AddAction(12, 0, "Create tile", "Physical: Create", "Create tile <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, 0] on layer <i>{3}</i>", 
           "Create tile on the board.", "CreateTile");
 AddObjectParam("Chess", "Chess object.");
@@ -151,7 +151,7 @@ AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
-AddAnyTypeParam("Layer", "Layer name of number.", 0);
+AddLayerParam("Layer", "Layer name of number."); 
 AddAction(14, 0, "Create chess", "Physical: Create", "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>", 
           "Create chess on the board.", "CreateChess");  
 AddNumberParam("UID of chess", "UID of chess A.", 0);
