@@ -48,15 +48,19 @@ AddAction(3, 0, "0. Define membership (3 levels)", "0. Define membership",
           "Define membership.", "DefineMembership_3levles");           
 AddStringParam("Rule", "Rule name.", '""');   
 AddStringParam("Expression", "Expression of memberships.", '""');
-AddAction(10, 0, "1. Add rule", "0. Define rule", 
+AddAction(10, 0, "Add", "0. Define rule", 
           "Add rule <i>{0}</i> <- <i>{1}</i>", "Add rule.", "AddRule");  
-AddAction(11, 0, "Execute rules", "Rule", 
+AddAction(11, 0, "Execute rules", "Output", 
           "Execute rules", "Execute rules.", "ExecuteRules");          
 AddStringParam("Name", "Variable name.", '""');
 AddNumberParam("Value", "Variable value.", 0);
 AddAction(12, 0, "Set variable value", "Input", 
           "Set variable <i>{0}</i> value to <i>{1}</i>", "Set variable value.", "SetVarValue");
-          
+AddAction(13, 0, "Clean all", "0. Define rule", 
+          "Clean all rules", "Clean all rules.", "CleanAllRules");  
+AddStringParam("Rule", "Rule name.", '""');   
+AddAction(14, 0, "Clean", "0. Define rule", 
+          "Clean rule <i>{0}</i>", "Clean rule.", "CleanRule"); 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Output", "Output name.", '""');

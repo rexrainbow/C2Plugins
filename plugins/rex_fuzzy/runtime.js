@@ -45,7 +45,11 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         this.exp_tool = new cr.plugins_.Rex_Fuzzy.FExp();
         this.err = null;
         this.raw_exp_save = [];  
-        this.raw_memship_save = [];      
+        this.raw_memship_save = [];
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];     
+        /**END-PREVIEWONLY**/                
 	};
     var has_string = function(main, sub)
     {
@@ -144,6 +148,29 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	    // restore output values in rule bank
         this.rule_bank.loadFromJSON(o["rb"]);
 	};    
+
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    this.propsections.length = 0;
+	    this.rule_bank.getDebuggerValues(this.propsections);        
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.propsections
+		});
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+		if (name.substring(0,2) == "I-") // set input variable
+		{	 
+		    var n = name.substring(2);  
+		    this.rule_bank.set_variable_value(n, value);
+		    this.rule_bank.execute();
+	    }
+	};
+	/**END-PREVIEWONLY**/
+		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -215,8 +242,30 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	Acts.prototype.ExecuteRules = function ()
 	{
 		this.rule_bank.execute();
-	};     
+	};    
+	
+ 	Acts.prototype.CleanAllRules = function ()
+	{	    
+		this.rule_bank.clean_rule();
+		this.raw_exp_save.length = 0;   		   	
+	};   	 
     
+    var tmp_raw_exp_save = [];
+ 	Acts.prototype.CleanRule = function (r)
+	{	    
+		this.rule_bank.clean_rule(r);
+			    
+		cr.shallowAssignArray(tmp_raw_exp_save, this.raw_exp_save);
+	    this.raw_exp_save.length = 0;
+	    var i,cnt=tmp_raw_exp_save.length;
+	    for(i=0; i<cnt; i++)
+	    {
+	        if (tmp_raw_exp_save[i][0] != r)
+	            this.raw_exp_save.push(tmp_raw_exp_save[i]);
+	    }
+	    tmp_raw_exp_save.length = 0;   	
+		   	
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -253,6 +302,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 		ret.set_string(code_string);        
 	}; 
     
+    var pre_filt = [];
 	Exps.prototype.OR = function (ret, expA, expB)
 	{    
         // number
@@ -265,16 +315,23 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         
         // string: expression        
         var i, exp, cnt = arguments.length;
-        var code_string = 'exp["OR"](';
+        pre_filt.length = 0;
         for (i=1; i<cnt; i++)
         {
             exp = arguments[i];
+            if (exp == "")    // ignored ""
+                continue;
             exp = exp_grade_gen(exp);
-            code_string += exp;
-             if (i != (cnt-1))
-                code_string += ",";
+            pre_filt.push(exp);
         }
-        code_string += ')';
+        if ( pre_filt.length == 0) // no valid item, ignore this expresion
+        {
+            ret.set_string("");
+            return;
+        }
+        
+        var code_string = 'exp["OR"]('+ pre_filt.join(",")+')';
+        pre_filt.length = 0;
 		ret.set_string(code_string);
 	};   
 	
@@ -288,18 +345,25 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
             return;
         }
         
-        // string: expression            
+        // string: expression        
         var i, exp, cnt = arguments.length;
-        var code_string = 'exp["AND"](';
+        pre_filt.length = 0;
         for (i=1; i<cnt; i++)
         {
             exp = arguments[i];
+            if (exp == "")    // ignored ""
+                continue;
             exp = exp_grade_gen(exp);
-            code_string += exp;
-            if (i != (cnt-1))
-                code_string += ",";
+            pre_filt.push(exp);
         }
-        code_string += ')';
+        if ( pre_filt.length == 0) // no valid item, ignore this expresion
+        {
+            ret.set_string("");
+            return;
+        }
+        
+        var code_string = 'exp["AND"]('+ pre_filt.join(",")+')';
+        pre_filt.length = 0;
 		ret.set_string(code_string);
 	};  
 	
@@ -332,6 +396,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     {
         this.rules = {};
         this.in_vars = {};
+        this.rules_order = [];
         this.exps = new cr.plugins_.Rex_Fuzzy.FExp(this.in_vars);       
     };
     var FRuleBankProto = cr.plugins_.Rex_Fuzzy.FRuleBank.prototype;
@@ -354,26 +419,54 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
             this.rules[rule_name] = rule;
         }
         rule.push(handler);
+        
+        if (this.rules_order[ this.rules_order.length-1 ] != rule_name)
+        {
+            cr.arrayFindRemove(this.rules_order, rule_name);
+            this.rules_order.push(rule_name);
+        }
+        
 	}; 
+	FRuleBankProto.clean_rule = function (r)
+	{    
+	    if (r == null)
+        {            
+            // clean all
+            var k;
+            for (k in this.rules)
+                delete this.rules[k];
+            this.rules_order.length = 0;
+        }
+        else
+        {
+            if (this.rules.hasOwnProperty(r))
+                delete this.rules[r];     
+            cr.arrayFindRemove(this.rules_order, r);
+        }
+	};     
     
     FRuleBankProto.set_variable_value = function (var_name, value)
     {   
-        var in_var = this.in_vars[var_name];
-        assert2(in_var, "Fuzzy: Could set variable "+ var_name);
+        if (!this.in_vars.hasOwnProperty(var_name))
+            return;
+
         this.in_vars[var_name].value = value;
     };    
     
     FRuleBankProto.execute = function ()
     {
-        var name, item, i, cnt, value;
-        for (name in this.rules)
+        var ri, rcnt=this.rules_order.length;
+        var name, item, value, i, icnt;
+        for (ri=0; ri<rcnt; ri++)
         {
+            name = this.rules_order[ri];
             item = this.rules[name];
             value = -1;
-            cnt = item.length;
-            for (i=1; i<cnt; i++)
+            icnt = item.length;
+            for (i=1; i<icnt; i++)
                 value = Math.max(value, item[i](this.exps));
             item[0] = value;
+            this.set_variable_value(name, value);
         }
     }; 
 	
@@ -392,6 +485,20 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         for (name in this.rules)
             this.rules[name][0] = cur_outputs[name];
 	}; 
+	
+	FRuleBankProto.getDebuggerValues = function (propsections)
+	{
+	    var n;
+	    for (n in this.in_vars)
+	    {
+	        propsections.push({"name": "I-"+n, "value": this.in_vars[n].value});
+	    }
+	    var ri, rcnt=this.rules_order.length;
+	    for (ri=0; ri<rcnt; ri++)
+	    {
+	        propsections.push({"name": "O-"+this.rules_order[ri], "value": this.rules[this.rules_order[ri]][0]});
+	    }
+	}; 	
     
         
     cr.plugins_.Rex_Fuzzy.FExp = function(in_vars)
