@@ -62,7 +62,9 @@ cr.plugins_.Rex_FSM = function(runtime)
     instanceProto.get_next_state = function()
     {
         this.next_state = null;
-		this.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnLogic);
+		var is_echo = this.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnLogic);
+		if (!is_echo)
+		    this.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultLogic);
         return this.next_state;
     }; 
 
@@ -98,7 +100,7 @@ cr.plugins_.Rex_FSM = function(runtime)
 	Cnds.prototype.OnEnter = function (name)
 	{
 	    var is_my_handler = (this.check_state == name);
-        this.is_echo = true;
+        this.is_echo |= is_my_handler;
 		return is_my_handler;
 	};
 
@@ -110,7 +112,7 @@ cr.plugins_.Rex_FSM = function(runtime)
 	Cnds.prototype.OnExit = function (name)
 	{
 	    var is_my_handler = (this.check_state == name);
-        this.is_echo = true;
+        this.is_echo |= is_my_handler;
 		return is_my_handler;
 	};	
     
@@ -122,21 +124,34 @@ cr.plugins_.Rex_FSM = function(runtime)
 	Cnds.prototype.OnTransfer = function (name_from, name_to)
 	{
 	    var is_my_handler = (this.check_state == name_from) && (this.check_state1 == name_to);
-        this.is_echo = true;
+        this.is_echo |= is_my_handler;
 		return is_my_handler;
 	};	
+	
 	Cnds.prototype.OnStateChanged = function ()
 	{
 		return true;
 	};     
 	Cnds.prototype.OnLogic = function (name)
 	{
-        this.is_echo = true;
-		return (this.fsm.CurState == name);
+        var is_my_handler = (this.fsm.CurState == name);
+        this.is_echo |= is_my_handler;
+		return is_my_handler;
 	}; 
+	
 	Cnds.prototype.IsCurState = function (name)
 	{
 		return (this.fsm.CurState == name);
+	};
+	   
+	Cnds.prototype.IsPreState = function (name)
+	{
+		return (this.fsm.PreState == name);
+	};   
+
+	Cnds.prototype.OnDefaultLogic = function ()
+	{
+		return true;
 	};    
 	//////////////////////////////////////
 	// Actions

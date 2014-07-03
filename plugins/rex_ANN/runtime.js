@@ -64,6 +64,16 @@ cr.plugins_.Rex_ANN = function(runtime)
 	    }	     
 	};
 
+	instanceProto.saveToJSON = function ()
+	{
+		return { "ann": this.ann.saveToJSON(),
+		          };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.ann.loadFromJSON(o["ann"]);
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -115,6 +125,22 @@ cr.plugins_.Rex_ANN = function(runtime)
 	    this.ann.Recall(); 	                                  
 	};	
 	
+	Acts.prototype.ResetWeight = function ()
+	{   
+	    this.ann.ResetWeight(); 	                                  
+	};	
+	
+	Acts.prototype.JSONLoad = function (json_)
+	{
+		var o;
+		
+		try {
+			o = JSON.parse(json_);
+		}
+		catch(e) { return; }
+		
+		this.loadFromJSON(o);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -128,7 +154,18 @@ cr.plugins_.Rex_ANN = function(runtime)
 	Exps.prototype.TrainErr = function (ret)
 	{
 		ret.set_float(this.ann.TrainErr);
-	};  	   
+	};
+	
+	Exps.prototype.Input = function (ret, var_name)
+	{
+		ret.set_float(this.ann.GetInput(var_name));
+	};	
+
+	Exps.prototype.AsJSON = function (ret)
+	{
+		ret.set_string(JSON.stringify( this.saveToJSON() ));
+	};
+		  	   
 }());
 
 (function ()
@@ -245,10 +282,26 @@ cr.plugins_.Rex_ANN = function(runtime)
 	   return this.ao[this.out_name2index[name_]];	                                            
 	};	
 	
+	ANNKlassProto.GetInput = function (name_)
+	{  
+	   if (!this.in_name2index.hasOwnProperty(name_))
+	       return 0;
+	   
+	   return this.ai[this.in_name2index[name_]];	                                            
+	};	
+	
+	ANNKlassProto.ResetWeight = function ()
+	{   
+	    if (!this.reset_flg)
+	        return;
+	        
+	    this.reset_nn(); 
+	    this.reset_flg = false;	                             
+	};	
+	
 	ANNKlassProto.Train = function ()
 	{
-	    if (this.reset_flg)
-	        this.reset_nn();
+	    this.ResetWeight();
 	        
 	    this.update();	 
 	    this.TrainErr = this.back_propagate(this._at, this.rate, this.moment);             
@@ -256,8 +309,7 @@ cr.plugins_.Rex_ANN = function(runtime)
 	
 	ANNKlassProto.Recall = function ()
 	{   
-	    if (this.reset_flg)
-	        this.reset_nn();
+	    this.ResetWeight();
 	        
 	    this.update();                                  
 	};
@@ -293,9 +345,7 @@ cr.plugins_.Rex_ANN = function(runtime)
         this.ci = MatrixFill(this.ci, 0, this.ni, this.nh);
         this.co = MatrixFill(this.co, 0, this.nh, this.no);  
                 
-        this._at = ArrayFill(this._at, 1, this.no);
-         
-        this.reset_flg = false;                           
+        this._at = ArrayFill(this._at, 1, this.no);                                  
 	};
 	
 	ANNKlassProto.update = function ()
@@ -381,6 +431,63 @@ cr.plugins_.Rex_ANN = function(runtime)
         }
         return error;
     };
+
+    
+	ANNKlassProto.saveToJSON = function ()
+	{
+		return { "in_name2index": this.in_name2index,
+		         "hidden_node_count": this.hidden_node_count,
+		         "out_name2index": this.out_name2index,
+		         "reset_flg": this.reset_flg,
+		         "ni": this.ni,
+		         "nh": this.nh,
+		         "no": this.no,
+		         "ai": this.ai,
+		         "ah": this.ah,
+		         "ao": this.ao,
+		         "wi": this.wi,
+		         "wo": this.wo,
+		         "ci": this.ci,
+		         "co": this.co,
+		         "_at": this._at,
+                 "rate": this.rate,
+                 "moment": this.moment,
+                 "TrainErr": this.TrainErr,  
+		          };
+	};
+	
+	ANNKlassProto.loadFromJSON = function (o)
+	{
+        this.in_name2index = o["in_name2index"];
+        this.hidden_node_count = o["hidden_node_count"];
+        this.out_name2index = o["out_name2index"];
+        this.reset_flg = o["reset_flg"];
+        
+        // number of input, hidden, and output nodes
+        this.ni = o["ni"]; // +1 for bias node
+        this.nh = o["nh"];
+        this.no = o["no"];
+        
+        // activations for nodes
+        this.ai = o["ai"];
+        this.ah = o["ah"];
+        this.ao = o["ao"]; 
+        
+        // create weights
+        this.wi = o["wi"];
+        this.wo = o["wo"];
+        
+        // last change in weights for momentum
+        this.ci = o["ci"];
+        this.co = o["co"];  
+        
+        // target
+        this._at = o["_at"];   
+        
+        this.rate = o["rate"];   
+        this.moment = o["moment"]; 
+        this.TrainErr = o["TrainErr"];    
+	};   
     	
     // rand()
     var rand=function(a, b) 

@@ -71,7 +71,15 @@ AddCondition(7, 0, "Compare current state", "State",
              "Current state = <i>{0}</i>", 
 			 "Compare current state.", 
 			 "IsCurState");
-
+AddStringParam("Name", "State name", '""');             
+AddCondition(8, 0, "Compare previous state", "State", 
+             "Previous state = <i>{0}</i>", 
+			 "Compare previous state.", 
+			 "IsPreState");
+AddCondition(9, cf_trigger, "On default logic", "Logic", 
+             "On {my} default transfer logic", 
+			 'Triggered to get next state if no matched "condition:On transfer logic" fired.', 
+			 "OnDefaultLogic");				 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current state.");

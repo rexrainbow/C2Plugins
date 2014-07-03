@@ -4,7 +4,7 @@
 		"name":			"ANN",
 		"id":			"Rex_ANN",
 		"version":		"0.1",   		
-		"description":	"Artificial Neural Networ, using back-Propagation and one hidden layer.",
+		"description":	"Artificial Neural Network, using back-propagation and one hidden layer.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ann.html",
 		"category":		"AI",
@@ -56,11 +56,21 @@ AddAction(7, 0, "Recall", "Recall",
           "Recall by current inputs", 
           'Recall by current inputs, get output from "expression:Output".', "Recall");                  
 
+AddAction(8, 0, "Reset", "Reset", 
+          "Reset weights", 
+          "Reset weights", "ResetWeight");  
+
+AddStringParam("JSON", "A string of the JSON data to load.");
+AddAction(9, 0, "Load", "JSON", "Load from JSON string <i>{0}</i>", "Load from an ANN previously encoded in JSON format.", "JSONLoad");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Output", "Output name.", '""');
 AddExpression(1, ef_return_number, "Get output value", "Recall", "Output", "Get output value.");
 AddExpression(2, ef_return_number, "Get error", "Train", "TrainErr", "Get error result of training.");
+AddStringParam("Input", "Input name.", '""');
+AddExpression(3, ef_return_number, "Get input value", "Input", "Input", "Get input value.");
+AddExpression(4, ef_return_string, "Get as JSON", "JSON", "AsJSON", "Return the contents of the ANN in JSON format.");
 
 ACESDone();
 

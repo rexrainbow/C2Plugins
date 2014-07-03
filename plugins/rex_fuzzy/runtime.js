@@ -124,18 +124,19 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 		          };
 	};
 	
+	var _cb = {"7": cr.plugins_.Rex_Fuzzy.prototype.acts.DefineMembership_7levles,
+	           "5": cr.plugins_.Rex_Fuzzy.prototype.acts.DefineMembership_5levles,
+	           "3": cr.plugins_.Rex_Fuzzy.prototype.acts.DefineMembership_3levles};	
 	instanceProto.loadFromJSON = function (o)
 	{
 	    // restore membership
 	    this.raw_memship_save = o["rm"];
 	    var i, cnt=this.raw_memship_save.length, raw_item;
-	    var cb = {"7": cr.plugins_.Rex_Fuzzy.prototype.acts.DefineMembership_7levles,
-	              "5": cr.plugins_.Rex_Fuzzy.prototype.acts.DefineMembership_5levles,
-	              "3": cr.plugins_.Rex_Fuzzy.prototype.acts.DefineMembership_3levles}
+
 	    for (i=0; i<cnt; i++)
 	    {
 	        raw_item = this.raw_memship_save[i];
-	        cb[raw_item[0]].apply(this, raw_item[1]);
+	        _cb[raw_item[0]].apply(this, raw_item[1]);
 	    }
 	    
 	    // restore expression
@@ -273,12 +274,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	
 	Exps.prototype.OutputGrade = function (ret, var_name)
 	{
-        var grade_out, rule = this.rule_bank.rules[var_name];
-        if (rule == null)
-            grade_out = 0;
-        else
-            grade_out = rule[0];
-		ret.set_float(grade_out);
+		ret.set_float(this.rule_bank.output_get(var_name));
 	}; 
 	
 	Exps.prototype.InputGrade = function (ret, var_name)
@@ -408,7 +404,15 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
     FRuleBankProto.input_grade_get = function (name, grade)
     {
         return this.exps["grade"](name, grade);
-    };    
+    };  
+	FRuleBankProto.output_get = function (name)
+	{
+        var rule = this.rules[name];
+        if (rule == null)
+            return 0;
+
+		return rule[0];
+	};      
     
 	FRuleBankProto.add_rule = function (rule_name, handler)
 	{    
