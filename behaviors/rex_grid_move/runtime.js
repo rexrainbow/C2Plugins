@@ -68,7 +68,11 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	behinstProto.onCreate = function()
 	{
         this.board = null;
-        this._cmd_move_to = new cr.behaviors.Rex_GridMove.CmdMoveTo(this);
+        if (!this.recycled)
+        {
+            this._cmd_move_to = new cr.behaviors.Rex_GridMove.CmdMoveTo(this);
+        }        
+        this._cmd_move_to.Reset(this);
    
         this._is_moving_request_accepted = false;
         this.is_my_call = false;
@@ -78,14 +82,33 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.exp_DestinationLY = (-1);
         this.exp_DestinationLZ = (-1);
         this.is_customSolid = null;
-		this._wander = {"rx":this.properties[4],
-		                "ry":this.properties[5],
-		                "o": {"x":0, "y":0, "z":0}
-		               };
-        this._dir_sequence = [];						
-        this.force_move = (this.properties[6] == 1);
-        this._colliding_xyz = {};
-        this._colliding_zhash2uids = {};
+        
+        if (!this.recycled)
+        {
+		    this._wander = {"rx":0,
+		                    "ry":0,
+		                    "o": {"x":0, "y":0, "z":0}
+		                   };
+        }
+        this._wander["rx"] = this.properties[4];
+        this._wander["ry"] = this.properties[5];
+
+        this.force_move = (this.properties[6] == 1);    
+        if (!this.recycled)
+        {        
+            this._dir_sequence = [];						
+            this._colliding_xyz = {};
+            this._colliding_zhash2uids = {};
+        }
+        else
+        {
+            this._dir_sequence.length = 0;
+            var k;
+            for (k in this._colliding_xyz)
+                delete this._colliding_xyz[k];
+            for (k in this._colliding_zhash2uids)
+                delete this._colliding_zhash2uids[k];                
+        }
         this._target_uid = null;
         this._z_saved = null;
 	};       
@@ -896,11 +919,20 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 {
     cr.behaviors.Rex_GridMove.CmdMoveTo = function(plugin)
     {     
-        this.activated = plugin.properties[0];
-        this.move = {"max":plugin.properties[1],
-                     "acc":plugin.properties[2],
-                     "dec":plugin.properties[3]};
+        this.move = {"max":0,
+                     "acc":0,
+                     "dec":0};
         this.target = {"x":0 , "y":0, "a":0};
+    };
+    var CmdMoveToProto = cr.behaviors.Rex_GridMove.CmdMoveTo.prototype;
+    
+	CmdMoveToProto.Reset = function(plugin)
+	{
+        this.activated = plugin.properties[0];
+        this.move["max"] = plugin.properties[1];
+        this.move["acc"] = plugin.properties[2];
+        this.move["dec"] = plugin.properties[3];                     
+        //this.target = {"x":0 , "y":0, "a":0};
         this.is_moving = false;  
         this.current_speed = 0;       
         this.remain_distance = 0;
@@ -909,8 +941,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         
         this.inst = plugin.inst;
         this.runtime = plugin.runtime;
-    };
-    var CmdMoveToProto = cr.behaviors.Rex_GridMove.CmdMoveTo.prototype;
+	};
     
     CmdMoveToProto.tick = function ()
 	{

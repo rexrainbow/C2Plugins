@@ -46,16 +46,38 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.enabled = (this.properties[0] == 1);
-        this.move = {"max":this.properties[1],
-                     "acc":this.properties[2],
-                     "dec":this.properties[3]};
-        this.target = {"x":0 , "y":0, "a":0};
+        if (!this.recycled)
+        {
+            this.move = {"max":0,
+                         "acc":0,
+                         "dec":0};
+        }        
+        this.move["max"] = this.properties[1];
+        this.move["acc"] = this.properties[2];
+        this.move["dec"] = this.properties[3];
+        
+        if (!this.recycled)
+        {        
+            this.target = {"x":0 , "y":0, "a":0};
+        }
         this.is_moving = false;  
         this.current_speed = 0;
         this.remain_distance = 0;
         this.is_hit_target = false;
-        this._pre_pos = {"x":0,"y":0};
-        this._moving_angle_info = {"x":0,"y":0,"a":(-1)};
+
+        if (!this.recycled)
+        {         
+            this._pre_pos = {"x":0,"y":0};
+        }
+        this._pre_pos["x"] = 0;
+        this._pre_pos["y"] = 0;
+        if (!this.recycled)
+        {
+            this._moving_angle_info = {"x":0,"y":0,"a":(-1)};
+        }
+        this._moving_angle_info["x"] = 0;
+        this._moving_angle_info["y"] = 0;
+        this._moving_angle_info["a"] = -1;
         this._last_tick = null;
         this.is_my_call = false;
 	};
