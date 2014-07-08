@@ -200,7 +200,13 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.CSV2Array = function (csv_string, array_objs, map_mode)
+	var fake_ret = {value:0,
+	                set_any: function(value){this.value=value;},
+	                set_int: function(value){this.value=value;},	 
+                    set_float: function(value){this.value=value;},	 
+                    set_string: function(value){this.value=value;},	    
+	               }; 
+    Acts.prototype.CSV2Array = function (csv_string, array_objs, map_mode, z_index)
 	{  
 	    assert2(cr.plugins_.Arr, "[CSV2Array] Error:No Array object found.");
 	    	    
@@ -211,10 +217,27 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         var table = CSVToArray(csv_string);        
 		var x_cnt = table.length;
 		var y_cnt = table[0].length;
-		if (map_mode == 0)
-		    cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [x_cnt,y_cnt,1]);
-	    else
-		    cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [y_cnt, x_cnt,1]);
+		
+		if (z_index == null)
+		{
+		    z_index = 0;
+		    if (map_mode == 0)
+		        cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [x_cnt, y_cnt, z_index+1]);
+	        else
+		        cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [y_cnt, x_cnt, z_index+1]);
+		}
+		else
+		{
+		    if (z_index < 0)
+		        z_index = 0;
+		    cr.plugins_.Arr.prototype.exps.Depth.call(array_obj, fake_ret);		    
+		    var z_cnt = Math.max(fake_ret.value, z_index+1);
+		    if (map_mode == 0)
+		        cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [x_cnt, y_cnt, z_cnt]);
+	        else
+		        cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [y_cnt, x_cnt, z_cnt]);
+		}
+		    
         var i,j,v;
 		var array_set = cr.plugins_.Arr.prototype.acts.SetXYZ;
 		
@@ -225,7 +248,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 		        for(i=0;i<x_cnt;i++)
 			    {
 			        v = this.value_get(table[i][j]);
-			        array_set.apply(array_obj, [i,j,0, v]);
+			        array_set.apply(array_obj, [i,j,z_index, v]);
 			    }
 		    }
         }	
@@ -236,7 +259,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 		        for(i=0;i<x_cnt;i++)
 			    {
 			        v = this.value_get(table[i][j]);
-			        array_set.apply(array_obj, [j,i,0, v]);
+			        array_set.apply(array_obj, [j,i,z_index, v]);
 			    }
 		    }
         }		

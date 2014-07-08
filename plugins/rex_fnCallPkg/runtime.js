@@ -54,7 +54,10 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		this._exp_retvalue = null;	
 
         // function queue
-        this.fn_queue = [];  	    
+        this.fn_queue = []; 
+        
+        // for each pkg
+        this.Exp_pkg = null; 	    
 	};
 	var fake_ret = {value:0,
 	                set_any: function(value){this.value=value;},
@@ -172,8 +175,49 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
-	pluginProto.cnds = new Cnds();    
+	pluginProto.cnds = new Cnds();  
+	  
+	Cnds.prototype.ForEachPkg = function ()
+	{
+	    var i,cnt=this.fn_queue.length;
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+			    
+        if (solModifierAfterCnds)
+        {
+            for (i=0; i<cnt; i++)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+                
+                this.Exp_pkg = this.fn_queue[i];
+                
+                current_event.retrigger();
+		    	this.runtime.popSol(current_event.solModifiers);
+            }            	
+	    }
+	    else
+	    {
+            for (i=0; i<cnt; i++)
+            {
+                this.Exp_pkg = this.fn_queue[i];
+                
+                current_event.retrigger();
+            }	        
+	    }
+	    this.Exp_pkg = null;
 
+		return false;
+	}; 
+	
+	  
+	Cnds.prototype.IsCurName = function (name_)
+	{
+	    if (this.Exp_pkg == null)	        
+		    return false;
+		
+		return cr.equals_nocase(name_, this.Exp_pkg[0]);
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -203,6 +247,55 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         pkg.push.apply(pkg, params);
 	    this.fn_queue.push(pkg);
 	};
+	
+    Acts.prototype.LoadFnQueue = function (pkg)
+	{
+	    this.fn_queue.length = 0;
+        if (pkg == "")
+            return;
+            
+		try {
+			pkg = JSON.parse(pkg);
+		}
+		catch(e) { return; }
+				
+		var is_one_function = (typeof(pkg[0]) == "string");
+		if (is_one_function)
+		{
+		    this.fn_queue.push(pkg);
+		}
+		else
+		{
+		    this.fn_queue.push.apply(this.fn_queue, pkg);
+		}
+		
+	};
+    
+    Acts.prototype.CurPkgOverwriteParam = function (index_, value_)
+	{
+	    if (this.Exp_pkg == null)
+	        return;
+	    
+	    var param_cnt = this.Exp_pkg.length -1;
+	    var param_index = index_+1;
+
+	    if (index_ >= param_cnt)
+	    {
+	        this.Exp_pkg.length = param_index+1;
+	        var i;
+	        for (i=param_cnt+1; i<param_index; i++)
+	        {
+	            this.Exp_pkg[i] = 0;
+	        }
+	    }
+
+	    this.Exp_pkg[param_index] = value_;
+	};
+    
+    Acts.prototype.CallFunctionInQueue = function ()
+	{   
+	    this.execute_package(this.fn_queue);
+	};		
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -210,13 +303,14 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
     var pkg=[];
     Exps.prototype.FnCallPkg = function (ret)
-	{
-	    pkg.length = 0;	   
+	{	   
 		var i, cnt=arguments.length;
 		for (i=1; i < cnt; i++)
 		    pkg.push(arguments[i]);
-		    
-	    ret.set_string( JSON.stringify(pkg) );
+		
+		var s = JSON.stringify(pkg);
+		pkg.length = 0;	
+	    ret.set_string( s );
 	};
 	
     Exps.prototype.Call = function (ret, pkg)
@@ -244,4 +338,24 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	{
 	    ret.set_string( JSON.stringify(this.fn_queue) );
 	};
+
+    Exps.prototype.CurName = function (ret)
+	{
+	    var n = (this.Exp_pkg == null)? "" : this.Exp_pkg[0];
+	    ret.set_string( n );
+	};	
+
+    Exps.prototype.CurParam = function (ret, index_)
+	{
+	    var p;
+	    if (this.Exp_pkg == null)
+	        p = 0;
+	    else
+	    {
+	        p = this.Exp_pkg[index_ + 1];
+	        if (p == null)
+	            p = 0;
+	    }
+	    ret.set_any( p );
+	};	
 }());

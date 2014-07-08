@@ -736,13 +736,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
 
     // Timer
-    cr.plugins_.Rex_TimeLine.Timer = function(timeline, thisArgs, call_back_fn, args)
+    cr.plugins_.Rex_TimeLine.Timer = function(timeline, thisArg, call_back_fn, args)
     {
         this.timeline = timeline;
         this.delay_time = 0; //delay_time
         this._remainder_time = 0;
         this.abs_time = 0;      
-        this._handler = new this._TimerHandler(thisArgs, call_back_fn, args);
+        this._handler = new this._TimerHandler(thisArg, call_back_fn, args);
         this.extra = {};
         this._idle();
         this._abs_timeout_set(0); // delay_time
@@ -855,7 +855,19 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     TimerProto.DelayTimeGet = function()
     {    
         return this.delay_time;
-    };    
+    }; 
+
+    TimerProto.SetCallback = function(thisArg, call_back_fn, args)
+    {    
+        this._handler.thisArg = thisArg;
+        this._handler.call_back_fn = call_back_fn;
+        
+        if (args != null)
+            cr.shallowAssignArray(this._handler.args, args);
+        else
+            this._handler.args.length = 0;
+    }; 
+    
     TimerProto.SetCallbackArgs = function(args)
     {    
         cr.shallowAssignArray(this._handler.args, args);

@@ -62,9 +62,9 @@ cr.plugins_.Rex_FSM = function(runtime)
     instanceProto.get_next_state = function()
     {
         this.next_state = null;
-		var is_echo = this.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnLogic);
+		var is_echo = this.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnLogic);
 		if (!is_echo)
-		    this.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultLogic);
+		    this.run_trigger(cr.plugins_.Rex_FSM.prototype.cnds.OnDefaultLogic);
         return this.next_state;
     }; 
 

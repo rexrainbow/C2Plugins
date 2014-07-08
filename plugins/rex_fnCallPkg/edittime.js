@@ -16,21 +16,42 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(1, cf_looping | cf_not_invertible, "For each package", "Function queue : For each", 
+             "For each package in function queue", 
+             "Repeat the event for each package in function queue.", "ForEachPkg");
+AddStringParam("Name", "Function name", '""');
+AddCondition(2, 0, "Compare function name", "Function queue : For each", 
+             "Function name = <i>{0}</i>", 
+             'Compare function name, used in "Condition: For each package".', "IsCurName"); 
+                         
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Package", "Function call package in json string.", "\"\"");
 AddAction(1, 0, "Call function", "Function", 
-          "Call function by package to <i>{0}</i>","Call function by package.", "CallFunction");  
+          "Call function by package to <i>{0}</i>",
+          "Call function by package.", "CallFunction");  
        
 // function queue
 AddAction(11, 0, "Clean", "Function queue", 
           "Clean queue","Clean function queue.", "CleanFnQueue");
 AddStringParam("Name", "The name of the function to call.", "\"\"");
-AddVariadicParams("Parameter {n}", "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
+AddVariadicParams("Parameter {n}", 
+                  "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
 AddAction(12, 0, "Push", "Function queue", 
           "Push function call <b>{0}</b> (<i>{...}</i>) into queue", 
-          "Push function call into function queue.", "PushToFnQueue");          
+          "Push function call into function queue.", "PushToFnQueue");
+AddStringParam("Package", "Function call package in json string.", "\"\"");
+AddAction(13, 0, "Load", "Function queue", 
+          "Load function queue by <i>{0}</i>",
+          "Load function queue.", "LoadFnQueue"); 
+AddNumberParam("Index", "Index of parameter.", 0);
+AddAnyTypeParam("Value", "Value of paramete", 0); 
+AddAction(14, 0, "Overwrite parameter", "Function queue : For each", 
+          "Overwrite parameter[<i>{0}</i>] to <i>{1}</i>",
+          'Overwrite parameter of current package in function queuem in a For Each package.', "CurPkgOverwriteParam");
+AddAction(15, 0, "Call function", "Function queue", 
+          "Call function in function queue",
+          "Call function in function queue.", "CallFunctionInQueue");                              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "The name of the function to call.");
@@ -41,11 +62,14 @@ AddExpression(3, ef_return_any, "Call a function then get return value", "Functi
               "Call a function with parameters and return its return value.");
 // function queue              
 AddExpression(11, ef_return_string, "Function queue package", "Function queue", "FnQueuePkg", 
-              "Get function queue package in json format.");
+              "Get function queue package in json format.");              
+AddExpression(12, ef_return_string, "Current function name", "Function queue : For each", "CurName", 
+              "Get the current function name in a For Each package.");
+AddNumberParam("Index", "The index of the parameter in current function package.", 0);              
+AddExpression(13, ef_return_any, "Current Parameter", "Function queue : For each", "CurParam", 
+              "Get the current function parameter in a For Each package.");              
               
 ACESDone();
-
-// Property grid properties for this plugin
 var property_list = [
 	];
 	
