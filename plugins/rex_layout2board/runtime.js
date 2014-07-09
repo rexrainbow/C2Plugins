@@ -61,9 +61,7 @@ cr.plugins_.Rex_layout2board = function(runtime)
         {
             chess = instances[i];
             lx = board_layout.PXY2LX(chess.x, chess.y);
-            ly = board_layout.PXY2LY(chess.x, chess.y);
-            error_flg = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly))? null:true;
-            assert2(error_flg, "[Layout to Board] Error! Check the setting of cell width or cell height.");  
+            ly = board_layout.PXY2LY(chess.x, chess.y);        
             if (lxmin > lx)
                 lxmin = lx;
             if (lymin > ly)
@@ -127,9 +125,7 @@ cr.plugins_.Rex_layout2board = function(runtime)
         {
             chess = instances[i];
             lx = board_layout.PXY2LX(chess.x, chess.y);
-            ly = board_layout.PXY2LY(chess.x, chess.y); 
-            error_flg = ((Math.floor(lx) != lx) || (Math.floor(ly) != ly))? null:true;       
-            assert2(error_flg, "[Layout to Board] Error! The index of LX or LY is not an integer.");
+            ly = board_layout.PXY2LY(chess.x, chess.y);            
             error_flg = (board.xyz2uid(lx, ly, lz) != null)? null:true;
             assert2(error_flg, "[Layout to Board] Error! ("+lx+","+ly+","+lz+") had been occupied.");
             board.add_item(chess, lx, ly, lz);

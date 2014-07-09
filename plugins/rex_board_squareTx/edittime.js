@@ -21,6 +21,7 @@
 // Actions  
 AddComboParamOption("Orthogonal");
 AddComboParamOption("Isometric");
+AddComboParamOption("Staggered");
 AddComboParam("Orientation", "orientation of map", 0);
 AddAction(1, 0, "Set orientation", "Orientation", 
           "Set orientation to <i>{0}</i>", 
@@ -66,7 +67,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Orientation", "Orthogonal", "Map orientation.", "Orthogonal|Isometric"),      
+    new cr.Property(ept_combo, "Orientation", "Orthogonal", "Map orientation.", "Orthogonal|Isometric|Staggered"),      
     new cr.Property(ept_float, "X at (0,0)", 0, "Physical X co-ordinate at logic (0,0)."),
     new cr.Property(ept_float, "Y at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
 	new cr.Property(ept_float, "Width", 32, "Cell width in pixels."),

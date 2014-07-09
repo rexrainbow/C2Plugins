@@ -115,56 +115,40 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    else
 	        ly = Math.round((physical_y-this.PositionOY)/this.height);
 	    return ly;
-	};		
+	};
+	
+	var nlx_map_ud = [1, 0, -1, -1, 0, 1];
+	var nlx_map_lr_0 = [1, 0, -1, -1, -1, 0];
+	var nlx_map_lr_1 = [1, 1, 0, -1, 0, 1];		
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
 	    var dx;
 	    if (this.is_up2down)
 	    {
-	        dx = ((dir==0) || (dir==5))? 1:
-			     ((dir==2) || (dir==3))? (-1):
-                                         0;  
+	        dx = nlx_map_ud[dor];  
 	    }
 	    else
 	    {
-	        if ((y%2) == 1)
-		    {
-		        dx = ((dir==0) || (dir==1) || (dir==5))? 1:
-		    	     (dir==3)?                          (-1):
-                                                       0;
-            }												  
-            else
-		    {
-		        dx = ((dir==2) || (dir==3) || (dir==4))? (-1):
-		    	     (dir==0)?                           1:
-                                                         0;
-            }
+	        dx = ((y%2) == 0)? nlx_map_lr_0[dir]:
+	                           nlx_map_lr_1[dir];
 	    }	   
 		return (x+dx);
 	};
+	
+	var nly_map_ud_0 = [0, 1, 0, -1, -1, -1];
+	var nly_map_ud_1 = [1, 1, 1, 0, -1, 0];
+	var nly_map_lr = [0, 1, 1, 0, -1, -1];	
 	instanceProto.GetNeighborLY = function(x, y, dir)
 	{
 	    var dy;
 	    if (this.is_up2down)
 	    {
-	        if ((x%2) == 1)
-		    {
-		        dy = ((dir==0) || (dir==1) || (dir==2))? 1:
-		    	     (dir==4)?                          (-1):
-                                                       0;
-            }												  
-            else
-		    {
-		        dy = ((dir==3) || (dir==4) || (dir==5))? (-1):
-		    	     (dir==1)?                           1:
-                                                         0;
-            }	        
+	        dy = ((x%2) == 0)? nly_map_ud_0[dir]:
+	                           nly_map_ud_1[dir];        
 	    }
 		else
 		{
-		    dy = ((dir==1) || (dir==2))? 1:
-			     ((dir==4) || (dir==5))? (-1):
-                                         0;
+		    dy = nly_map_lr[dir];
 		}          
         return (y+dy);						 
 	};	

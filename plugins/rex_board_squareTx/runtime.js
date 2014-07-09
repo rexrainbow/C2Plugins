@@ -42,7 +42,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.onCreate = function()
 	{        
         this.check_name = "LAYOUT";
-        this.is_isometric = (this.properties[0]==1);
+        this.layout_mode = this.properties[0];
         this.SetPOX(this.properties[1]);
         this.SetPOY(this.properties[2]);
         this.SetWidth(this.properties[3]);
@@ -74,89 +74,200 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         this.height = height;
         this.half_height = height/2;        
 	};     
-	instanceProto.LXYZ2PX = function(logic_x, logic_y, logic_z)
+	instanceProto.LXYZ2PX = function(lx, ly, lz)
 	{
-        var x = (this.is_isometric)? ((logic_x - logic_y)*this.half_width):
-                                     (logic_x*this.width);
+	    var x;
+	    if (this.layout_mode == 0)  // Orthogonal
+	    {
+	        x = lx * this.width;
+	    }
+	    else if (this.layout_mode == 1)  // Isometric
+	    {
+	        x = (lx - ly) * this.half_width;
+	    }
+	    else if (this.layout_mode == 2)  // Staggered
+	    {
+	        x = (lx * this.width) + ((ly%2) * this.half_width);
+	    }
+
         return x+this.PositionOX;
 	};
-	instanceProto.LXYZ2PY = function(logic_x, logic_y, logic_z)
+	instanceProto.LXYZ2PY = function(lx, ly, lz)
 	{
-        var y = (this.is_isometric)? ((logic_x + logic_y)*this.half_height):
-                                     (logic_y*this.height);
+	    var y;
+	    if (this.layout_mode == 0)  // Orthogonal
+	    {
+	        y = ly * this.height;
+	    }
+	    else if (this.layout_mode == 1)  // Isometric
+	    {
+	        y = (lx + ly) * this.half_height;
+	    }
+	    else if (this.layout_mode == 2)  // Staggered
+	    {
+	        y = ly * this.half_height;
+	    }
+
         return y+this.PositionOY;
 	};   
-	instanceProto.PXY2LX = function(physical_x,physical_y)
+	instanceProto.PXY2LX = function(px, py)
 	{
 	    var lx;
-	    if (this.is_isometric)
+	    if (this.layout_mode == 0)   // Orthogonal
+	    {
+	        px -= this.PositionOX;
+	        lx = Math.round(px/this.width);
+	    }
+	    else if (this.layout_mode == 1)   // Isometric
 		{
-		    physical_x -= this.PositionOX;
-		    physical_y -= this.PositionOY;
-		    lx = 0.5*(Math.round(physical_y/this.half_height)+Math.round(physical_x/this.half_width));
+		    px -= this.PositionOX;
+		    py -= this.PositionOY;
+		    lx = 0.5 * (Math.round(py/this.half_height) + Math.round(px/this.half_width));
 		}
-		else
-		    lx = (physical_x - this.PositionOX)/this.width;
+		else if (this.layout_mode == 2)  // Staggered
+		{
+		    var ly = Math.round((py - this.PositionOY)/this.half_height);
+		    px = px - this.PositionOX - ((ly%2) * this.half_width);
+		    lx = Math.round(px/this.width);
+		}
+		    
         return lx;
 	};
-	instanceProto.PXY2LY = function(physical_x,physical_y)
+	instanceProto.PXY2LY = function(px,py)
 	{
 	    var ly;
-	    if (this.is_isometric)
+	    if (this.layout_mode == 0)   // Orthogonal
+	    {
+	        py -= this.PositionOY;
+	        ly = Math.round(py/this.height);
+	    }
+	    else if (this.layout_mode == 1)   // Isometric
 		{
-		    physical_x -= this.PositionOX;
-		    physical_y -= this.PositionOY;
-		    ly = 0.5*(Math.round(physical_y/this.half_height)-Math.round(physical_x/this.half_width));
+		    px -= this.PositionOX;
+		    py -= this.PositionOY;
+		    ly = 0.5 * (Math.round(py/this.half_height) - Math.round(px/this.half_width));
 		}
-		else
-		    ly = (physical_y - this.PositionOY)/this.height;
+		else if (this.layout_mode == 2)  // Staggered
+	    {
+		    ly = Math.round((py - this.PositionOY)/this.half_height);
+		}
+		    
         return ly;
-	}; 
+	};
+	 
+	var nlx_map_01 = [1, 0, -1, 0];   // Orthogonal or Isometric
+	var nlx_map_2_0 = [0, 0, -1, -1]; // Staggered (y%2==0)
+	var nlx_map_2_1 = [1, 1, 0, 0]; // Staggered (y%2==1)
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
-        var dx = (dir==0)? 1:
-		         (dir==2)? (-1):
-				          0;
+	    var dx;
+	    if (this.layout_mode == 0)   // Orthogonal
+	    {
+	        dx = nlx_map_01[dir];
+	    }
+	    else if (this.layout_mode == 1)   // Isometric
+		{
+	        dx = nlx_map_01[dir];
+		}
+		else if (this.layout_mode == 2)  // Staggered
+	    {
+	        dx = ((y%2) == 0)? nlx_map_2_0[dir]:
+	                           nlx_map_2_1[dir];
+		}
+		
 		return (x+dx);
 	};
+	
+	var nly_map_01 = [0, 1, 0, -1];   // Orthogonal or Isometric
+	var nly_map_2 = [-1, 1, 1, -1];  // Staggered
 	instanceProto.GetNeighborLY = function(x, y, dir)
 	{
-        var dy = (dir==1)? 1:
-		        (dir==3)? (-1):
-				          0;       
+	    var dy;
+	    if (this.layout_mode == 0)   // Orthogonal
+	    {
+	        dy = nly_map_01[dir];
+	    }
+	    else if (this.layout_mode == 1)   // Isometric
+		{
+	        dy = nly_map_01[dir];
+		}
+		else if (this.layout_mode == 2)  // Staggered
+	    {
+	        dy = nly_map_2[dir];
+		} 
         return (y+dy);
 	};
+	
 	instanceProto.GetDirCount = function()
 	{  
         return 4;						 
 	};
+	
+	var dxy2dir = function (dx, dy, x, y, layout_mode)
+	{
+	    var dir;
+	    if (layout_mode == 0)   // Orthogonal
+	    {
+	        dir = ((dx==1) && (dy==0))?  0:
+	              ((dx==0) && (dy==1))?  1:
+	              ((dx==-1) && (dy==0))? 2:
+	              ((dx==0) && (dy==-1))? 3:
+	                                     null;
+	    }
+	    else if (layout_mode == 1)   // Isometric
+		{
+	        dir = ((dx==1) && (dy==0))?  0:
+	              ((dx==0) && (dy==1))?  1:
+	              ((dx==-1) && (dy==0))? 2:
+	              ((dx==0) && (dy==-1))? 3:
+	                                     null;
+		}
+		else if (this.layout_mode == 2)  // Staggered
+	    {
+	        if ((y%2) == 0)
+	        {
+	            dir = ((dx==0) && (dy==-1))?  0:
+	                  ((dx==0) && (dy==1))?   1:
+	                  ((dx==-1) && (dy==1))?  2:
+	                  ((dx==-1) && (dy==-1))? 3:
+	                                          null;	            
+	        }
+	        else
+	        {
+	            dir = ((dx==1) && (dy==-1))?  0:
+	                  ((dx==1) && (dy==1))?   1:
+	                  ((dx==0) && (dy==1))?   2:
+	                  ((dx==0) && (dy==-1))?  3:
+	                                          null;	            
+	        }
+		} 
+		return dir;			   
+	};
+		
 	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
 	{  
-	    var dx = xyz_to.x - xyz_o.x;
-	    var dy = xyz_to.y - xyz_o.y;
-	    var angle;
-        if (dy == 0)
-            angle = (dx>0)? 0: 180;
-        else if (dx == 0)
-            angle = (dy>0)? 90: 270;
-        else
-            angle = cr.to_clamped_degrees(Math.atan2(dy,dx));	
-        return angle;				 
+	    var dir = this.XYZ2Dir(xyz_o, xyz_to); 	    
+	    var angle = (dir != null)? (dir*90) : (-1);
+        return angle;			 
 	};
+	
 	instanceProto.XYZ2Dir = function(xyz_o, xyz_to)
 	{  
-	    var angle = this.XYZ2LA(xyz_o, xyz_to);
-	    var dir = (angle==0)?   0:
-	              (angle==90)?  1:
-	              (angle==180)? 2:
-	              (angle==270)? 3: 
-	              null;  //fixme
+	    var dx = xyz_to.x - xyz_o.x;
+	    var dy = xyz_to.y - xyz_o.y;	    
+	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
+	    if (vmax != 0)
+	    {
+	        dx = dx/vmax;
+	        dy = dy/vmax;
+	    }
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
         return dir;				 
 	};
 	
 	instanceProto.saveToJSON = function ()
 	{
-		return { "iso": this.is_isometric,
+		return { "iso": this.layout_mode,
                  "w": this.width,
                  "h": this.height,
                  "ox": this.PositionOX,
@@ -165,7 +276,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-		this.is_isometric = o["iso"];
+		this.layout_mode = o["iso"];
         this.SetWidth(o["w"]);
         this.SetHeight(o["h"]);   
         this.SetPOX(o["ox"]);
@@ -181,9 +292,9 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-    Acts.prototype.SetOrientation = function (orientation)
+    Acts.prototype.SetOrientation = function (m)
     {        
-        this.is_isometric = (orientation == 1);
+        this.layout_mode = m;
 	};
     Acts.prototype.SetCellSize = function (width, height)
     {        
