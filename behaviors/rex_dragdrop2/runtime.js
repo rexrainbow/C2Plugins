@@ -38,7 +38,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	behtypeProto.TouchWrapGet = function ()
 	{
         if (this.touchwrap != null)
-            return;
+            return this.touchwrap;
             
         assert2(cr.plugins_.rex_TouchWrap, "Drag drop behavior: Can not find touchWrap oject.");
         var plugins = this.runtime.types;
@@ -54,7 +54,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                 this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteXForID;
                 this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteYForID;
                 this.touchwrap.HookMe(this);
-                break;
+                return this.touchwrap;
             }
         }
         assert2(this.touchwrap, "Drag drop behavior: Can not find touchWrap oject.");
@@ -363,7 +363,36 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		    this.drag_info.is_on_dragged = false;            
             this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.inst); 
         }
-	};      
+	};  
+
+	Acts.prototype.TryDrag = function ()
+	{
+        if (this.drag_info.is_on_dragged)  // always dragged
+            return;
+        
+            
+        if (!this.type.touchwrap.IsInTouch())       // no touched
+            return;
+        
+        var touch_pts = this.type.touchwrap.touches;
+        var cnt=touch_pts.length;            
+        var i, touch_pt, tx, ty;
+        var inst = this.inst;
+        inst.update_bbox();        
+        for (i=0; i<cnt; i++)
+        {
+            touch_pt = touch_pts[i];
+            tx = inst.layer.canvasToLayer(touch_pt.x, touch_pt.y, true);
+            ty = inst.layer.canvasToLayer(touch_pt.x, touch_pt.y, false);   		    
+            if (inst.contains_pt(tx,ty))     // has touched object
+            {
+		        this.DragInfoSet(i);
+                this.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, this.inst);     
+                break;
+            }
+        }        
+	};  
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
