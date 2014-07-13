@@ -34,7 +34,10 @@ AddCondition(5,	0, "Is call rejected", "If",
              "IsCallRejected");
 AddCondition(6, 0, "Is at cool down", "State", 
              "Is {my} at cool down", "", "IsAtCD");             
-
+AddCondition(11, cf_trigger, "On acceptable checking", "Acceptable", 
+             "On {my} acceptable checking", 
+             "Custom acceptable checking.", 
+             "OnAcceptableChecking");
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Timeline", "Timeline object for getting timer");
@@ -66,6 +69,16 @@ AddNumberParam("Time", "Cooldown remainder time, in seconds", 0.1);
 AddAction(7, 0, "Set Cooldown remainder time", "Time", 
           "Set cooldown remainder time to <i>{0}</i> second", 
           "Set cooldown remainder time, in second. This value should smaller then cooldown interval.", "SetRemainerTime");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Accepted", "Accept this request.",1);
+AddAction(11, 0, "Set acceptable", "Acceptable", 
+          "Set acceptable to <i>{0}</i>", 
+          'Set acceptable. This action is used under "condition: On acceptable checking".', "SetAcceptable");          
+AddNumberParam("Is accepted", "1 is accepted", 1);
+AddAction(12, 0, "Set acceptable by number", "Acceptable", 
+          "Set acceptable to <i>{0}</i>", 
+          'Set acceptable. This action is used under "condition: On acceptable checking".', "SetAcceptable");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get remainder time", 

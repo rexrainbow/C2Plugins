@@ -3,7 +3,7 @@
 	return {
 		"name":			"Bet Counter",
 		"id":			"Rex_betCounter",
-		"description":	"Get bet count in an interval",
+		"description":	"Get bet count in latest duration.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_betCounter.html",
 		"category":		"Variable",

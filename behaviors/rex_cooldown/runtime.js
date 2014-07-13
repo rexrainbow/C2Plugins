@@ -72,8 +72,9 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.cd_interval = this.properties[1];
         this.is_request = false;
         this.is_accept = false;
-        this.pre_is_at_cooldown = false;
-        this.timer_save = null;        
+        this.pre_is_at_cooldown = false;        
+        this.timer_save = null;
+        this.is_custom_accept = false;
 	};
     
 	behinstProto.onDestroy = function()
@@ -112,6 +113,17 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCDFinished, this.inst); 
         trig_behavior_inst = null;
     };
+    
+    behinstProto.custom_acceptable_check = function()    
+    {
+        this.is_custom_accept = null;
+        trig_behavior_inst = this;
+        this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnAcceptableChecking, this.inst); 
+        trig_behavior_inst = null;
+        
+        if (this.is_custom_accept != null)
+            this.is_accept = this.is_custom_accept;
+    };     
     
 	behinstProto.saveToJSON = function ()
 	{ 
@@ -217,6 +229,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 	{         
 		return (this.pre_is_at_cooldown || this.is_at_cooldown());
 	};  
+	
+	Cnds.prototype.OnAcceptableChecking = function ()
+	{  
+		return (trig_behavior_inst == this);
+	};	
     
 	//////////////////////////////////////
 	// Actions
@@ -240,18 +257,23 @@ cr.behaviors.Rex_Cooldown = function(runtime)
             return;
             
         this.is_request = true;
+        
         if ( this.timer == null )
-        {
             this.is_accept = true;
-            this.timer = this.type._timeline_get().CreateTimer(this, this._on_cooldown_finished);
-        }
         else 
-        {
            this.is_accept = (!this.timer.IsActive());                    
-        }
+        
+        // custom acceptable checking
+        if (this.is_accept)
+            this.custom_acceptable_check();
       
         if ( this.is_accept )
         {
+            if ( this.timer == null )
+            {
+                this.timer = this.type._timeline_get().CreateTimer(this, this._on_cooldown_finished);
+            }
+            
             trig_behavior_inst = this;
             this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCallAccepted, this.inst); 
             trig_behavior_inst = null;
@@ -301,7 +323,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
             return;	    
         this.timer.RemainderTimeSet(remainder_time);            
 	};	
-	     
+
+    Acts.prototype.SetAcceptable = function (a)
+	{
+        this.is_custom_accept = (a===1);          
+	};		     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
