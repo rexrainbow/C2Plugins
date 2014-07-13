@@ -47,6 +47,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.SetWidth(this.properties[2]);
         this.SetHeight(this.properties[3]);
         this.is_up2down = (this.properties[4]==1);
+        this.indent_first = this.properties[5];
 	};
 	instanceProto.SetPOX = function(pox)
 	{
@@ -125,7 +126,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    var dx;
 	    if (this.is_up2down)
 	    {
-	        dx = nlx_map_ud[dor];  
+	        dx = nlx_map_ud[dir];  
 	    }
 	    else
 	    {
@@ -206,6 +207,8 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	                  null;	 //fixme
 	        }     
 	    }	
+        
+        return dir;
 	};
 	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
 	{  

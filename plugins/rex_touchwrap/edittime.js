@@ -63,6 +63,20 @@ AddCondition(11, cf_trigger, "On Nth touch end", "Touch", "On touch {0} end", "T
 AddNumberParam("Touch number", "Enter a zero-based index of the touch to test, e.g. 0 for first touch, 1 for second, etc.");
 AddCondition(12, 0,			"Has Nth touch", "Touch", "Has touch {0}", "True if a particular touch is currently in contact with the device.", "HasNthTouch");
 
+AddCondition(13, cf_trigger, "On hold",		"Gestures", "On hold gesture", "Triggered when a touch held in the same place for a time.", "OnHoldGesture");
+
+AddCondition(14, cf_trigger, "On tap",		"Gestures", "On tap gesture", "Triggered when a touch is quickly released from its start location.", "OnTapGesture");
+
+AddCondition(15, cf_trigger, "On double-tap",	"Gestures", "On double-tap gesture", "Triggered when two taps occur in quick succession.", "OnDoubleTapGesture");
+
+AddObjectParam("Object", "Choose the object to check.");
+AddCondition(16, cf_trigger, "On hold over object",		"Gestures", "On hold gesture over {0}", "Triggered when a hold gesture is made over an object.", "OnHoldGestureObject");
+
+AddObjectParam("Object", "Choose the object to check.");
+AddCondition(17, cf_trigger, "On tap object",		"Gestures", "On tap gesture on {0}", "Triggered when a tap gesture is made on an object.", "OnTapGestureObject");
+
+AddObjectParam("Object", "Choose the object to check.");
+AddCondition(18, cf_trigger, "On double-tap object",	"Gestures", "On double-tap gesture on {0}", "Triggered when a double-tap gesture is made on an object.", "OnDoubleTapGestureObject");
 
 ////////////////////////
 AddComboParamOption("Off");

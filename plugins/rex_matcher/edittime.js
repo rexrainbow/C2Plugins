@@ -19,7 +19,7 @@
 AddCondition(1, cf_trigger, "On get symbol", "Symbol", 
              "On get symbol", 'Get symbol of a tile.', "OnGetSymbol");
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_deprecated | cf_trigger, "On 1d pattern ", "Get matched tiles: 1D Patern", 
+AddCondition(2, cf_deprecated | cf_trigger, "On 1d pattern", "Get matched tiles: 1D Patern", 
              "On 1d pattern <i>{0}</i> matched", 'Trigger by "Action:Get matched tiles" when 1d pattern matched.', "OnMatchPattern");    
 AddCondition(3, cf_deprecated | cf_trigger, "On no pattern", "Get matched tiles: No matched", 
              "On no pattern matched", 'Trigger by "Action:Get matched tiles" when no pattern matched.', "OnNoMatchPattern");    
@@ -74,7 +74,19 @@ AddStringParam("Template", "Pattern template.", '""');
 AddStringParam("Group", "Put result in this group", '""');
 AddCondition(15, cf_looping | cf_not_invertible, "For each 2D template pattern", "For each: 2D Patern", 
              "For each 2D template pattern <i>{0}</i>, put result in group <i>{1}</i>", 
-			 'Repeat the event for each 2d template pattern matched.', "ForEachMatchTemplatePattern2D");	 
+			 'Repeat the event for each 2d template pattern matched.', "ForEachMatchTemplatePattern2D");
+// match direction
+AddComboParamOption("Horizontal");
+AddComboParamOption("Vertical");
+AddComboParamOption("Isometric");
+AddComboParam("Axis", "Matched axis.",0);
+AddCondition(21, 0, "Matched axis (Square)" , "Matched axis", 
+             "Matched at <i>{0}</i> axis", 
+             'Return true if matched at specifics axis, used under "condition: On N symbols", or "condition: On 1d pattern".', "IsMatchAxisSquare");
+AddNumberParam("Axis", "Axis index, in 0,1,2.", 0);
+AddCondition(22, 0, "Matched axis (Hex)" , "Matched axis", 
+             "Matched at <i>{0}</i> axis", 
+             'Return true if matched at specifics axis, used under "condition: On N symbols", or "condition: On 1d pattern".', "IsMatchAxisHex");             
 //////////////////////////////////////////////////////////////
 // Actions     
 AddObjectParam("Board", "Board object");

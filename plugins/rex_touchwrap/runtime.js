@@ -87,6 +87,163 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	};
 	
 	var theInstance = null;
+	
+	var touchinfo_cache = [];
+	
+	function AllocTouchInfo(x, y, id, index)
+	{
+		var ret;
+		
+		if (touchinfo_cache.length)
+			ret = touchinfo_cache.pop();
+		else
+			ret = new TouchInfo();
+		
+		ret.init(x, y, id, index);
+		return ret;
+	};
+	
+	function ReleaseTouchInfo(ti)
+	{
+		if (touchinfo_cache.length < 100)
+			touchinfo_cache.push(ti);
+	};
+	
+	var GESTURE_HOLD_THRESHOLD = 15;		// max px motion for hold gesture to register
+	var GESTURE_HOLD_TIMEOUT = 500;			// time for hold gesture to register
+	var GESTURE_TAP_TIMEOUT = 333;			// time for tap gesture to register
+	var GESTURE_DOUBLETAP_THRESHOLD = 25;	// max distance apart for taps to be
+	
+	function TouchInfo()
+	{
+		this.starttime = 0;
+		this.time = 0;
+		this.lasttime = 0;
+		
+		this.startx = 0;
+		this.starty = 0;
+		this.x = 0;
+		this.y = 0;
+		this.lastx = 0;
+		this.lasty = 0;
+		
+		this["id"] = 0;
+		this.startindex = 0;
+		
+		this.triggeredHold = false;
+		this.tooFarForHold = false;
+	};
+	
+	TouchInfo.prototype.init = function (x, y, id, index)
+	{
+		var nowtime = cr.performance_now();
+		this.time = nowtime;
+		this.lasttime = nowtime;
+		this.starttime = nowtime;
+		
+		this.startx = x;
+		this.starty = y;
+		this.x = x;
+		this.y = y;
+		this.lastx = x;
+		this.lasty = y;
+		
+		this["id"] = id;
+		this.startindex = index;
+		
+		this.triggeredHold = false;
+		this.tooFarForHold = false;
+	};
+	
+	TouchInfo.prototype.update = function (nowtime, x, y)
+	{
+		this.lasttime = this.time;
+		this.time = nowtime;
+		
+		this.lastx = this.x;
+		this.lasty = this.y;
+		this.x = x;
+		this.y = y;
+		
+		if (!this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) >= GESTURE_HOLD_THRESHOLD)
+		{
+			this.tooFarForHold = true;
+		}
+	};
+	
+	TouchInfo.prototype.maybeTriggerHold = function (inst, index)
+	{
+		if (this.triggeredHold)
+			return;		// already triggered this gesture
+		
+		var nowtime = cr.performance_now();
+		
+		// Is within 10px after 500ms
+		if (nowtime - this.starttime >= GESTURE_HOLD_TIMEOUT && !this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) < GESTURE_HOLD_THRESHOLD)
+		{
+			this.triggeredHold = true;
+			
+			inst.trigger_index = this.startindex;
+			inst.trigger_id = this["id"];
+			inst.getTouchIndex = index;
+			inst.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnHoldGesture, inst);
+			
+			inst.curTouchX = this.x;
+			inst.curTouchY = this.y;
+			inst.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnHoldGestureObject, inst);
+			
+			inst.getTouchIndex = 0;
+		}
+	};
+	
+	var lastTapX = -1000;
+	var lastTapY = -1000;
+	var lastTapTime = -10000;
+	
+	TouchInfo.prototype.maybeTriggerTap = function (inst, index)
+	{
+		if (this.triggeredHold)
+			return;
+		
+		var nowtime = cr.performance_now();
+		
+		// Must also come within the hold threshold
+		if (nowtime - this.starttime <= GESTURE_TAP_TIMEOUT && !this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) < GESTURE_HOLD_THRESHOLD)
+		{
+			inst.trigger_index = this.startindex;
+			inst.trigger_id = this["id"];
+			inst.getTouchIndex = index;
+			
+			// Is within the distance and time of last tap: trigger a double tap
+			if ((nowtime - lastTapTime <= GESTURE_TAP_TIMEOUT * 2) && cr.distanceTo(lastTapX, lastTapY, this.x, this.y) < GESTURE_DOUBLETAP_THRESHOLD)
+			{
+				inst.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnDoubleTapGesture, inst);
+				
+				inst.curTouchX = this.x;
+				inst.curTouchY = this.y;
+				inst.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnDoubleTapGestureObject, inst);
+				
+				lastTapX = -1000;
+				lastTapY = -1000;
+				lastTapTime = -10000;
+			}
+			// Otherwise trigger single tap
+			else
+			{
+				inst.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTapGesture, inst);
+				
+				inst.curTouchX = this.x;
+				inst.curTouchY = this.y;
+				inst.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTapGestureObject, inst);
+				
+				lastTapX = this.x;
+				lastTapY = this.y;
+				lastTapTime = nowtime;
+			}
+			
+			inst.getTouchIndex = 0;
+		}
+	};
 
 	instanceProto.onCreate = function()
 	{
@@ -109,6 +266,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.trigger_index = 0;
 		this.trigger_id = 0;
+		
+		// For returning correct position for TouchX and TouchY expressions in a trigger
+		this.getTouchIndex = 0;
 		
 		this.useMouseInput = (this.properties[0] !== 0);
 		
@@ -147,7 +307,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// otherwise touches dragged off the canvas could get lost
 			elem2.addEventListener("pointerup",
 				function(info) {
-					self.onPointerEnd(info);
+					self.onPointerEnd(info, false);
 				},
 				false
 			);
@@ -155,7 +315,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// Treat pointer cancellation the same as a touch end
 			elem2.addEventListener("pointercancel",
 				function(info) {
-					self.onPointerEnd(info);
+					self.onPointerEnd(info, true);
 				},
 				false
 			);
@@ -197,7 +357,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// otherwise touches dragged off the canvas could get lost
 			elem2.addEventListener("MSPointerUp",
 				function(info) {
-					self.onPointerEnd(info);
+					self.onPointerEnd(info, false);
 				},
 				false
 			);
@@ -205,7 +365,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// Treat pointer cancellation the same as a touch end
 			elem2.addEventListener("MSPointerCancel",
 				function(info) {
-					self.onPointerEnd(info);
+					self.onPointerEnd(info, true);
 				},
 				false
 			);
@@ -241,7 +401,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// otherwise touches dragged off the canvas could get lost
 			elem2.addEventListener("touchend",
 				function(info) {
-					self.onTouchEnd(info);
+					self.onTouchEnd(info, false);
 				},
 				false
 			);
@@ -249,7 +409,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// Treat touch cancellation the same as a touch end
 			elem2.addEventListener("touchcancel",
 				function(info) {
-					self.onTouchEnd(info);
+					self.onTouchEnd(info, true);
 				},
 				false
 			);
@@ -397,12 +557,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			if (nowtime - t.time < 2)
 				return;
 			
-			t.lasttime = t.time;
-			t.lastx = t.x;
-			t.lasty = t.y;
-			t.time = nowtime;
-			t.x = info.pageX - offset.left;
-			t.y = info.pageY - offset.top;
+			t.update(nowtime, info.pageX - offset.left, info.pageY - offset.top);
 		}
 	};
 
@@ -427,15 +582,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.trigger_index = this.touches.length;
 		this.trigger_id = info["pointerId"];
 		
-		this.touches.push({ time: nowtime,
-							x: touchx,
-							y: touchy,
-							lasttime: nowtime,
-							lastx: touchx,
-							lasty: touchy,
-							"id": info["pointerId"],
-							startindex: this.trigger_index
-						});
+		this.touches.push(AllocTouchInfo(touchx, touchy, info["pointerId"], this.trigger_index));
 		
 		this.runtime.isInUserInputEvent = true;
 		
@@ -457,7 +604,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    this.runtime.isInUserInputEvent = false;
 	};
 
-	instanceProto.onPointerEnd = function (info)
+	instanceProto.onPointerEnd = function (info, isCancel)
 	{
 	    if (!this.enable)
 	        return;
@@ -486,13 +633,18 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		    if (this._plugins_hook[hooki].OnTouchEnd)
                 this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
 		}
-		this.runtime.isInUserInputEvent = false;
 		
 		// Remove touch
 		if (i >= 0)
 		{
+			if (!isCancel)
+				this.touches[i].maybeTriggerTap(this, i);
+			
+			ReleaseTouchInfo(this.touches[i]);
 			this.touches.splice(i, 1);
 		}
+		
+		this.runtime.isInUserInputEvent = false;
 	};
 
 	instanceProto.onTouchMove = function (info)
@@ -521,13 +673,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				// very close which throws off speed measurements
 				if (nowtime - u.time < 2)
 					continue;
-				
-				u.lasttime = u.time;
-				u.lastx = u.x;
-				u.lasty = u.y;
-				u.time = nowtime;
-				u.x = t.pageX - offset.left;
-				u.y = t.pageY - offset.top;
+					
+				u.update(nowtime, t.pageX - offset.left, t.pageY - offset.top);
 			}
 		}
 	};
@@ -565,15 +712,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			this.trigger_index = this.touches.length;
 			this.trigger_id = t["identifier"];
 			
-			this.touches.push({ time: nowtime,
-								x: touchx,
-								y: touchy,
-								lasttime: nowtime,
-								lastx: touchx,
-								lasty: touchy,
-								"id": t["identifier"],
-								startindex: this.trigger_index
-							});
+			this.touches.push(AllocTouchInfo(touchx, touchy, t["identifier"], this.trigger_index));
 			
 			// Trigger OnNthTouchStart then OnTouchStart
 			this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchStart, this);
@@ -593,7 +732,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.isInUserInputEvent = false;
 	};
 
-	instanceProto.onTouchEnd = function (info)
+	instanceProto.onTouchEnd = function (info, isCancel)
 	{
 	    if (!this.enable)
 	        return;
@@ -629,6 +768,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
                         this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
 			    }
 						
+
+				if (!isCancel)
+					this.touches[j].maybeTriggerTap(this, j);
+				
+				ReleaseTouchInfo(this.touches[j]);
 				this.touches.splice(j, 1);
 			}
 		}
@@ -691,8 +835,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	        return;
 	        	    
         this._is_mouse_mode = true;
-		if (info.preventDefault && this.runtime.had_a_click)
-			info.preventDefault();
+		//if (info.preventDefault && this.runtime.had_a_click)
+		//	info.preventDefault();
 			
 		//if (!this.mouseDown)
 		//	return;
@@ -733,13 +877,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var i, len, t;
 		var nowtime = cr.performance_now();
 		
-		for (i = 0, len = this.touches.length; i < len; i++)
+		for (i = 0, len = this.touches.length; i < len; ++i)
 		{
 			// Update speed for touches which haven't moved for 50ms
 			t = this.touches[i];
 			
 			if (t.time <= nowtime - 50)
 				t.lasttime = nowtime;
+			
+			// Gesture detection
+			t.maybeTriggerHold(this, i);
 		}
 	};
 	
@@ -804,16 +951,19 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
 	};
 	
+	var touching = [];
+	
 	Cnds.prototype.IsTouchingObject = function (type)
-	{
+	{        
+        if (!this.IsInTouch())
+            return;
+            
 		if (!type)
 			return false;
 			
 		var sol = type.getCurrentSol();
 		var instances = sol.getObjects();
 		var px, py;
-		
-		var touching = [];
 			
 		// Check all touches for overlap with any instance
 		var i, leni, j, lenj;
@@ -837,11 +987,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			}
 		}
 		
-		if (touching.length && this.IsInTouch())
+		if (touching.length)
 		{
 			sol.select_all = false;
-			sol.instances = touching;
+			cr.shallowAssignArray(sol.instances, touching);
 			type.applySolToContainer();
+			touching.length = 0;
 			return true;
 		}
 		else
@@ -928,18 +1079,47 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		return this.touches.length >= touch_ + 1;
 	};
 	
+	Cnds.prototype.OnHoldGesture = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.OnTapGesture = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.OnDoubleTapGesture = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.OnHoldGestureObject = function (type)
+	{
+		if (!type)
+			return false;
+		
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	
+	Cnds.prototype.OnTapGestureObject = function (type)
+	{
+		if (!type)
+			return false;
+		
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	
+	Cnds.prototype.OnDoubleTapGestureObject = function (type)
+	{
+		if (!type)
+			return false;
+		
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
+	};
+	
 	pluginProto.cnds = new Cnds();
 
-
-	//////////////////////////////////////
-	// Actions
-	function Acts() {};
-	pluginProto.acts = new Acts();
-        
-	Acts.prototype.SetEnable = function(en)
-	{
-		this.enable = (en==1);
-	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -951,44 +1131,47 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	Exps.prototype.X = function (ret, layerparam)
 	{
-		if (this.touches.length)
-		{
-			var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+		var index = this.getTouchIndex;
 		
-			if (cr.is_undefined(layerparam))
-			{
-				// calculate X position on bottom layer as if its scale were 1.0
-				layer = this.runtime.getLayerByNumber(0);
-				oldScale = layer.scale;
-				oldZoomRate = layer.zoomRate;
-				oldParallaxX = layer.parallaxX;
-				oldAngle = layer.angle;
-				layer.scale = this.runtime.running_layout.scale;
-				layer.zoomRate = 1.0;
-				layer.parallaxX = 1.0;
-				layer.angle = this.runtime.running_layout.angle;
-				ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true));
-				layer.scale = oldScale;
-				layer.zoomRate = oldZoomRate;
-				layer.parallaxX = oldParallaxX;
-				layer.angle = oldAngle;
-			}
-			else
-			{
-				// use given layer param
-				if (cr.is_number(layerparam))
-					layer = this.runtime.getLayerByNumber(layerparam);
-				else
-					layer = this.runtime.getLayerByName(layerparam);
-					
-				if (layer)
-					ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, true));
-				else
-					ret.set_float(0);
-			}
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = this.runtime.running_layout.scale;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = this.runtime.running_layout.angle;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
 		}
 		else
-			ret.set_float(0);
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
+			else
+				ret.set_float(0);
+		}
 	};
 	
 	Exps.prototype.XAt = function (ret, index, layerparam)
@@ -1085,44 +1268,47 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	Exps.prototype.Y = function (ret, layerparam)
 	{
-		if (this.touches.length)
-		{
-			var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
+		var index = this.getTouchIndex;
 		
-			if (cr.is_undefined(layerparam))
-			{
-				// calculate X position on bottom layer as if its scale were 1.0
-				layer = this.runtime.getLayerByNumber(0);
-				oldScale = layer.scale;
-				oldZoomRate = layer.zoomRate;
-				oldParallaxY = layer.parallaxY;
-				oldAngle = layer.angle;
-				layer.scale = this.runtime.running_layout.scale;
-				layer.zoomRate = 1.0;
-				layer.parallaxY = 1.0;
-				layer.angle = this.runtime.running_layout.angle;
-				ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false));
-				layer.scale = oldScale;
-				layer.zoomRate = oldZoomRate;
-				layer.parallaxY = oldParallaxY;
-				layer.angle = oldAngle;
-			}
-			else
-			{
-				// use given layer param
-				if (cr.is_number(layerparam))
-					layer = this.runtime.getLayerByNumber(layerparam);
-				else
-					layer = this.runtime.getLayerByName(layerparam);
-					
-				if (layer)
-					ret.set_float(layer.canvasToLayer(this.touches[0].x, this.touches[0].y, false));
-				else
-					ret.set_float(0);
-			}
+		if (index < 0 || index >= this.touches.length)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var layer, oldScale, oldZoomRate, oldParallaxY, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxY = layer.parallaxY;
+			oldAngle = layer.angle;
+			layer.scale = this.runtime.running_layout.scale;
+			layer.zoomRate = 1.0;
+			layer.parallaxY = 1.0;
+			layer.angle = this.runtime.running_layout.angle;
+			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxY = oldParallaxY;
+			layer.angle = oldAngle;
 		}
 		else
-			ret.set_float(0);
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
+			else
+				ret.set_float(0);
+		}
 	};
 	
 	Exps.prototype.YAt = function (ret, index, layerparam)
@@ -1435,16 +1621,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			var touchy = t.pageY - offset.top;
 			
 			this.trigger_index = this.touches.length;
-			
-			this.touches.push({ time: nowtime,
-								x: touchx,
-								y: touchy,
-								lasttime: nowtime,
-								lastx: touchx,
-								lasty: touchy,
-								"id": t["identifier"],
-								startindex: this.trigger_index
-							});
+            
+            this.touches.push(AllocTouchInfo(touchx, touchy, t["identifier"], this.trigger_index));
 		}		
 	};
 

@@ -53,6 +53,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._symbol_value = "";        	    	    
         this._symbol_cache = {}; 
         this._tiles_groups = [];
+        this._matched_axis = null;        
         this._has_matched_pattern = false;
 		this._last_tick = null;
         
@@ -436,7 +437,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
             for (i=0;i<cnt;i++)
             {                
                 runtime.pushCopySol(current_event.solModifiers);
+                
                 _group.SetByUIDList(tiles_groups[i]["uid"]);
+                this._matched_axis = tiles_groups[i]["dir"];                
+                
                 current_event.retrigger();
                 runtime.popSol(current_event.solModifiers);        
             }            
@@ -450,8 +454,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
             }             
         }
         
-
-        this._has_matched_pattern |= (cnt>0);
+        this._matched_axis = null;  
 	};	
 	
 	var matched2uid = function(matched_tiles)
@@ -624,7 +627,30 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	        this.on_match_pattern(tiles_groups);
 	    }
         return false;
-	};			
+	};	
+	
+	Cnds.prototype.IsMatchAxisSquare = function (axis)
+	{
+        if (this._matched_axis == null)
+            return false;
+        
+        var matched;
+        if ((this._matched_axis == 0) && (axis == 0))
+            matched = true;
+        else if ((this._matched_axis == 1) && (axis == 1))
+            matched = true;
+        else if (( (this._matched_axis == 2) || (this._matched_axis == 3) ) && (axis == 2))
+            matched = true;
+        else
+            matched = false;
+        
+        return matched;
+	};
+	
+	Cnds.prototype.IsMatchAxisHex = function (axis)
+	{
+        return (this._matched_axis === axis);
+	};    
 	
 	//////////////////////////////////////
 	// Actions

@@ -67,7 +67,14 @@ AddAction(5, 0, "Get moving path by UID", "Request: Moving path",
           "Get moving path.", "GetMovingPath");      
 AddNumberParam("UID", "Filter result", 0);
 AddAction(6, 0, "Append filter result", "Filter", "Append filter result to UID:<i>{0}</i>", 
-          "Append filter result in UID.", "AppendFilter");
+          "Append filter result in UID.", "AppendFilter");   
+AddComboParamOption("Random");
+AddComboParamOption("Diagonal");
+AddComboParamOption("Straight");
+AddComboParamOption("A*");
+AddComboParam("Path mode", "Geometry of moving path.", 0);
+AddAction(7, 0, "Set path mode", "Setup", "Set path mode to <i>{0}</i>", 
+          "Set path mode.", "SetPathMode");
 AddObjectParam("Random generator", "Random generator object");
 AddAction(11, 0, "Set random generator", "Setup", 
           "Set random generator object to <i>{0}</i>", 
@@ -81,7 +88,7 @@ AddExpression(2, ef_return_number,
               "Get UID of target tile", "Request", "TileUID",
               "Get UID of target tile.");
 AddExpression(3, ef_return_number,
-              "Blocking property used in cost function", "Cost", "BLOCKING",
+              "Blocking", "Cost", "BLOCKING",
               'Blocking property used in cost function, used in action:"Set cost". The value is (-1)');              
 AddExpression(4, ef_return_number,
               "Get logic X of target tile", "Request", "TileX",
@@ -89,11 +96,15 @@ AddExpression(4, ef_return_number,
 AddExpression(5, ef_return_number,
               "Get logic Y of target tile", "Request", "TileY",
               "Get logic Y of target tile."); 
+AddExpression(6, ef_return_number,
+              "Infinity property", "Moving point", "INFINITY",
+              'Infinity property used in moving point, used in Moving point. The value is (-1)'); 
+              
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Path mode", "Diagonal", "Geometry of moving path.", "Random|Diagonal|Straight"),  
+    new cr.Property(ept_combo, "Path mode", "A*", "Geometry of moving path.", "Random|Diagonal|Straight|A*"),  
 	];
 	
 // Called by IDE when a new object type is to be created

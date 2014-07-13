@@ -222,7 +222,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	              ((dx==0) && (dy==-1))? 3:
 	                                     null;
 		}
-		else if (this.layout_mode == 2)  // Staggered
+		else if (layout_mode == 2)  // Staggered
 	    {
 	        if ((y%2) == 0)
 	        {

@@ -40,6 +40,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+    var GLOBOL_NODES = {};
 	instanceProto.onCreate = function()
 	{
 	    this.exp_ChessUID = -1;
@@ -55,15 +56,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.groupUid = -1;    // for loading        
         this.randomGen = null;
         this.randomGenUid = -1;    // for loading
-        this._skip_first = null;
         this._cost_fn_name = null;
         this._filter_fn_name = null;
         this._cost_value = 0;
         this._filter_uid_list = [];
-        this._is_cost_fn = null;
-        this._tiles = {};
-        this._tile2cost = {};
+        this._is_cost_fn = null;  
 		this._neighbors = [];  // call this._neighbors_init at action:Setup
+        this.astar_heuristic_enable = false;
 
         this._chess_xyz = null;
         this._hit_dist_tile = false; 
@@ -148,21 +147,18 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	};	
 	
 	var prop_BLOCKING = -1;
-	instanceProto._get_cost = function(tile_uid, tile_x, tile_y)
+    var prop_INFINITY = -1; 
+	instanceProto.cost_get_from_event = function(tile_uid, tile_x, tile_y)
 	{
 	    var cost;
 	    if (this._is_cost_fn)
-	    {
-            cost = this._tile2cost[tile_uid];
-            if (cost != null)
-                return cost;            
+	    {           
 	        this.exp_TileUID = tile_uid;
 	        this.exp_TileX = tile_x;
 	        this.exp_TileY = tile_y;              
 	        this._cost_value = prop_BLOCKING;
 	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
-	        cost = this._cost_value;
-            this._tile2cost[tile_uid] = cost;
+	        cost = this._cost_value
 	    }
 	    else
 	        cost = this._cost_fn_name;        
@@ -178,7 +174,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		}
 	};	
 	
-	instanceProto._get_neighbors = function(_x,_y)
+	instanceProto.get_neighborsLXY = function(_x,_y)
 	{
 	    var layout = this.board_get().GetLayout();
 	    if (this._neighbors.length == 0)
@@ -192,208 +188,486 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         }
         return this._neighbors;
 	};	
-	
-	instanceProto._get_pre_tile = function(pre_tiles, pre_dir)
-	{
-	    var pre_tiles_cnt = pre_tiles.length;
-	    var pre_tile;
-	    if (pre_tiles_cnt == 1)
-	        pre_tile = pre_tiles[0];
-	    else
-	    {
-	        switch (this.path_mode)
-	        {
-	        case 0:  
-                var random_value = (this.randomGen == null)?
-			                        Math.random(): this.randomGen.random();
-	            var i = Math.floor(random_value*pre_tiles_cnt);
-	            pre_tile = pre_tiles[i];
-	            break;
-	        case 1:  
-	            var i;
-	            for(i=0;i<pre_tiles_cnt;i++)
-	            {
-	                pre_tile = pre_tiles[i];
-	                if (pre_dir != pre_tile.dir)
-	                    break;
-	            }	            
-	            break;
-	        case 2:  
-	            var i;
-	            for(i=0;i<pre_tiles_cnt;i++)
-	            {
-	                pre_tile = pre_tiles[i];
-	                if (pre_dir == pre_tile.dir)
-	                    break;
-	            }	            
-	            break;	            
-	        }
-	    }
-	    return pre_tile;
-	};
-	
-	instanceProto.get_path_tiles = function(tiles, start_uid, end_uid)
-	{
-	    var path_tiles = [];
-	    var _uid = end_uid;	
-	    var pre_tile;    
-	    var pre_dir = null;
-	    while (_uid != start_uid)
-	    {
-	        path_tiles.push(_uid);
-	        pre_tile = this._get_pre_tile(tiles[_uid].pre_tile, pre_dir);
-	        _uid = pre_tile.uid;
-	        pre_dir = pre_tile.dir;
-	    }
-	    return path_tiles.reverse();
-	};
-	
-    instanceProto._get_moveable_tile_setup = function(cost)
-    {
-	    this._cost_fn_name = cost;
-	    this._is_cost_fn = (typeof cost == "string");        
-	    this._skip_first = true;        
-        this._hit_dist_tile = false;          
-        var uid;
-        for (uid in this._tiles)
-	        delete this._tiles[uid];
-        for (uid in this._tile2cost)
-            delete this._tile2cost[uid];
-    };
-    
-	instanceProto._get_moveable_tile = function(start_tile_uid, end_tile_uid, moving_points, cost)
-	{
-        //debugger;
-        var tile_xyz;
-	    this._get_moveable_tile_setup(cost);        
-        if (start_tile_uid == null)
-            return; 
-        
-        if (end_tile_uid != null)
-        {
-            tile_xyz = this.uid2xyz(end_tile_uid);
-            if (this._get_cost(end_tile_uid, tile_xyz.x, tile_xyz.y) == prop_BLOCKING)
-                return;
-        }
 
-        var tile_uid, at_chess_xy, tile_cost, node, remain_cost, next_tile_uid, neighbors, pre_tile_uid, direction, remain;
-        var tile_obj = {remain_moving_points:moving_points, 
-                        tile_uid:start_tile_uid, 
-                        pre_tile_uid:null, direction:null};
-        var tile_queue = [tile_obj];
+    instanceProto.RandomInt = function (a, b)
+    {
+        var v = (this.randomGen == null)?
+			    Math.random(): this.randomGen.random();    
+        return Math.floor(v * (b - a) + a);
+    };
         
-        while (tile_queue.length>0)
-        {
-            tile_obj = tile_queue.shift();
-            tile_uid = tile_obj.tile_uid;
-            pre_tile_uid = tile_obj.pre_tile_uid;
-            direction = tile_obj.direction;
-            remain = tile_obj.remain_moving_points;
-                
-            tile_xyz = this.uid2xyz(tile_uid);
-            at_chess_xy = ((tile_xyz.x==this._chess_xyz.x) && (tile_xyz.y==this._chess_xyz.y));
-            if (this._skip_first)  // start from chess's tile
-                this._skip_first = false;
-            else if (!at_chess_xy)  // try to move to this tile
-            {
-                tile_cost = this._get_cost(tile_uid, tile_xyz.x, tile_xyz.y);
-	            if (tile_cost == prop_BLOCKING)  // is a blocking property tile
-	                continue;
-                remain -= tile_cost;
-	        
-                if (remain >= 0)  // can move to this tile
-	            {
-	                //console.log(pre_tile_uid+"->"+tile_uid+":remain="+remain);
-	                node = this._tiles[tile_uid];
-	                if (node == null)
-	                {
-    	                //console.log("Create:["+tile_uid+"]="+pre_tile_uid);
-	                    node = {cost:remain, pre_tile:[ {uid:pre_tile_uid, dir:direction} ] };	
-	                    this._tiles[tile_uid] = node;                
-	                }
-	                else
-	                {
-	                    remain_cost = node.cost;
-	                    if (remain > remain_cost)  // move to the same tile and pay less cost
-	                    {
-	                        //console.log("Reset:["+tile_uid+"]="+pre_tile_uid);
-                            node.cost = remain;
-	                        node.pre_tile.length = 1;
-	                        node.pre_tile[0] = {uid:pre_tile_uid, dir:direction};
-	                    }
-	                    else if (remain == remain_cost)  // move to the same tile and pay the same cost
-	                    {
-	                        //console.log("Push:["+tile_uid+"]+="+pre_tile_uid);
-	                        node.pre_tile.push({uid:pre_tile_uid, dir:direction});
-	                        continue;   // leave
-	                    }   
-	                    else  // move to the same tile but pay more cost
-	                        continue;
-	                }
-	            }                 
-            }
-            else
-                continue;
-                
-      	    // arrive distance tile
-      	    if ((tile_uid == end_tile_uid) && (remain >= 0))
-            {
-                //console.log("Hit target "+tile_uid);
-      	        this._hit_dist_tile = true;
-      	        return;
-      	    }
-      	    // get next moveable tiles
-      	    else if (remain > 0)
-	        {
- 	            neighbors = this._get_neighbors(tile_xyz.x, tile_xyz.y);
-	            var neighbors_cnt = neighbors.length;
-	            var i, neighbor_xy;
-	            for(i=0;i<neighbors_cnt;i++)
-	            {
-    	            neighbor_xy = neighbors[i];
-	                next_tile_uid = this.xyz2uid(neighbor_xy.x, neighbor_xy.y, 0);
-	                if ((next_tile_uid != null) && (pre_tile_uid != next_tile_uid))
-                    {
-                        tile_obj = {remain_moving_points:remain, 
-                                    tile_uid:next_tile_uid, 
-                                    pre_tile_uid:tile_uid, direction:neighbor_xy.dir};
-                        tile_queue.push(tile_obj);
-                    }
-	            }
-                
-                continue;
-    	    }
-              
-        }
-	};
+    instanceProto.UID2DIR = function (t0_uid, t1_uid)
+    {
+        var t0_xyz = this.uid2xyz(t0_uid);
+        var t1_xyz = this.uid2xyz(t1_uid);
+        var dir = this.board_get().GetLayout().XYZ2Dir(t0_xyz, t1_xyz);
+        return dir;
+    };    
 	
+	instanceProto.cost_function_setup = function(cost)
+	{
+	    this._cost_fn_name = cost;
+	    this._is_cost_fn = (typeof cost == "string");
+	};
+    
 	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
 	    this._chess_xyz = this.uid2xyz(chess_uid);
 	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_tile(start_tile_uid, null, moving_points, cost);
-	    return this._tiles;
+        var nodes = this.ASTAR_search(start_tile_uid, null, moving_points, cost, CMD_AREA);
+        if (nodes == null)
+            return [];
+        
+        var area_uids = this.ASTAR_closed_nodes_to_uid_get(nodes);
+        cr.arrayFindRemove(area_uids, start_tile_uid);
+        this.ASTAR_nodes_release();     
+	    return area_uids;
 	};
 	
 	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost)
 	{
 	    this._chess_xyz = this.uid2xyz(chess_uid);
 	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
-	    this._get_moveable_tile(start_tile_uid, end_tile_uid, moving_points, cost);
-	    var path_tiles = (this._hit_dist_tile)? 
-	                      this.get_path_tiles(this._tiles, start_tile_uid, end_tile_uid): null;
-	    return path_tiles;
+        var nodes = this.ASTAR_search(start_tile_uid, end_tile_uid, moving_points, cost, CMD_PATH);
+        if (nodes == null)
+            return [];
+
+        var path_uids = nodes[end_tile_uid].path_to_root();
+        this.ASTAR_nodes_release();     
+	    return path_uids;
 	};
+	
+// ----
+// javascript-astar 0.3.0
+// http://github.com/bgrins/javascript-astar
+// Freely distributable under the MIT License.
+// Implements the astar search algorithm in javascript using a Binary Heap.
+// Includes Binary Heap (with modifications) from Marijn Haverbeke.
+// http://eloquentjavascript.net/appendix2.html    
+// ----
+    var CMD_PATH = 0;
+    var CMD_AREA = 1;
+	instanceProto.ASTAR_search = function (start_tile_uid, end_tile_uid, moving_points, cost, search_cmd)
+	{ 
+        var IS_PATH_SEARCH = (search_cmd == CMD_PATH);
+        var IS_AREA_SEARCH = (search_cmd == CMD_AREA);        
+        this.astar_heuristic_enable = IS_PATH_SEARCH && (this.path_mode == 3);
+        var shortest_path_enable = IS_PATH_SEARCH && (this.path_mode != 3);
+        
+	    this.cost_function_setup(cost);
+
+        var end = (end_tile_uid != null)? this.ASTAR_node_get(end_tile_uid): null;
+        // fix me
+        if ((end != null) && end.is_wall())
+            return;
+
+        var start = this.ASTAR_node_get(start_tile_uid);        
+        start.h = start.manhattan(end); 
+        
+        openHeap.push(start);
+        while(openHeap.size() > 0) 
+        {
+            // Grab the lowest f(x) to process next.  Heap keeps this sorted for us.
+            var currentNode = openHeap.pop();
+            
+            // End case -- result has been found, return the traced path.
+            if (currentNode === end)
+            {
+                break;
+                //return GLOBOL_NODES;
+            }
+            
+            // Normal case -- move currentNode from open to closed, process each of its neighbors.
+            currentNode.closed = true;
+            
+            // Find all neighbors for the current node.
+            var neighbors = currentNode.neighbor_nodes_get();
+
+            var il = neighbors.length;
+            for(var i=0; i<il; ++i) 
+            {
+                var neighbor = neighbors[i];
+                
+                if(neighbor.closed || neighbor.is_wall()) 
+                {
+                    // Not a valid node to process, skip to next neighbor.
+                    continue;
+                }
+
+                // The g score is the shortest distance from start to current node.
+                // We need to check if the path we have arrived at this neighbor is the shortest one we have seen yet.
+                var gScore = currentNode.g + neighbor.cost_get(),
+                    beenVisited = neighbor.visited;
+                    
+                if ((moving_points != prop_INFINITY) && (gScore > moving_points))
+                {
+                    continue;
+                }
+
+                if(!beenVisited || gScore < neighbor.g) 
+                {
+
+                    // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
+                    neighbor.visited = true;                    
+                    neighbor.parent.length = 0;
+                    neighbor.parent.push(currentNode.uid);                   
+                    neighbor.h = neighbor.h || neighbor.manhattan(end);
+                    neighbor.g = gScore;
+                    neighbor.f = neighbor.g + neighbor.h;
+
+                    if (!beenVisited) 
+                    {
+                        // Pushing to heap will put it in proper place based on the 'f' value.
+                        openHeap.push(neighbor);
+                    }
+                    else 
+                    {
+                        // Already seen the node, but since it has been rescored we need to reorder it in the heap
+                        openHeap.rescoreElement(neighbor);
+                    }
+                }
+                else if ((gScore == neighbor.g) && shortest_path_enable)
+                {
+                    neighbor.parent.push(currentNode.uid);
+                    
+                    //if (neighbor.parent.indexOf(currentNode.uid) == -1)                    
+                    //    neighbor.parent.push(currentNode.uid);                    
+                    //else                    
+                    //    debugger;                    
+                }
+            }            
+            
+        }
+        
+        openHeap.clean();
+        return GLOBOL_NODES;
+	};
+
+    var ObjCacheKlass = function ()
+    {        
+        this.lines = [];       
+    };
+    var ObjCacheKlassProto = ObjCacheKlass.prototype;       
+	ObjCacheKlassProto.allocLine = function()
+	{
+		return (this.lines.length > 0)? this.lines.pop(): null;
+	};
+	ObjCacheKlassProto.freeLine = function (l)
+	{
+		this.lines.push(l);
+	};	
+    var nodeCache = new ObjCacheKlass();
+
+	instanceProto.ASTAR_node_get = function (uid)
+	{
+	    if (GLOBOL_NODES[uid] == null)
+	    {
+            var node = nodeCache.allocLine();
+            if (node == null)
+                node = new nodeKlass(this, uid);
+            else
+                node.init(this, uid);
+	        GLOBOL_NODES[uid] = node;
+	    }
+	    return GLOBOL_NODES[uid];
+	};
+	instanceProto.ASTAR_closed_nodes_to_uid_get = function (nodes)
+	{
+        var closed_uids = [];
+        var uid;
+        for (uid in nodes)
+        {
+            if (nodes[uid].closed)
+                closed_uids.push(parseInt(uid));
+        }
+        return closed_uids;
+	};
+	instanceProto.ASTAR_nodes_release = function ()
+	{
+        var uid;
+        for (uid in GLOBOL_NODES)
+        {
+            nodeCache.freeLine(GLOBOL_NODES[uid]);
+	        delete GLOBOL_NODES[uid];  
+        }        
+	};
+	
+    var nodeKlass = function (plugin, uid)
+    {
+        this.parent = [];
+        this.init(plugin, uid);        
+    };    
+    var nodeKlassProto = nodeKlass.prototype;
+    nodeKlassProto.init = function (plugin, uid)
+    {
+        var _xyz = plugin.uid2xyz(uid);        
+        this.plugin = plugin;  
+        this.uid = uid;      
+        this.x = _xyz.x;  
+        this.y = _xyz.y;
+        this.cost = null;
+        this.f = 0;   
+        this.g = 0;   
+        this.h = 0;  
+        this.visited = false;      
+        this.closed = false;
+        this.parent.length = 0;
+    };
+    nodeKlassProto.manhattan = function (end_node)
+    {
+        if (!this.plugin.astar_heuristic_enable)
+            return 0;
+        
+        return Math.abs(this.x - end_node.x) + Math.abs(this.y - end_node.y);
+    };
+    nodeKlassProto.neighbor_nodes_get = function()
+    {
+        var _neighbors = this.plugin.get_neighborsLXY(this.x, this.y);
+        var _n, _uid;
+        var neighbor_nodes = []; 
+        var i, cnt=_neighbors.length;
+        for (i=0; i<cnt; i++)
+        {        
+            _n = _neighbors[i];
+            _uid = this.plugin.xyz2uid(_n.x, _n.y, 0);
+            if ( _uid != null )
+            {
+                neighbor_nodes.push( this.plugin.ASTAR_node_get(_uid) );
+            }
+        }
+
+        return neighbor_nodes;        
+    };       
+    nodeKlassProto.cost_get = function ()
+    {
+        if (this.cost == null)
+        {
+            this.cost = this.plugin.cost_get_from_event(this.uid, this.x, this.y);
+        }        
+        return this.cost;       
+    };
+    nodeKlassProto.is_wall = function ()
+    {
+        return (this.cost_get() == prop_BLOCKING);        
+    };
+    nodeKlassProto.path_to_root = function ()
+    {       
+        var is_astar_mode = (this.plugin.path_mode == 3);
+        var is_shortest_random_mode = (this.plugin.path_mode == 0);
+        var is_shortest_diagonal_mode = (this.plugin.path_mode == 1);
+        var is_shortest_straight_mode = (this.plugin.path_mode == 2);
+        
+        var parent_index, cur_dir = null, parent_dir, i, cnt;
+        
+        var curr = this, path = [];
+        while (curr.parent.length > 0)
+        {
+            path.push(curr.uid);
+            
+            // get parent
+            if (is_astar_mode)            
+                curr =  GLOBOL_NODES[ curr.parent[0].toString() ];
+            else if (is_shortest_random_mode)
+            {
+                parent_index = this.plugin.RandomInt(0, curr.parent.length);
+                curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
+            }
+            else if (is_shortest_diagonal_mode)
+            {
+                cnt = curr.parent.length;
+                for (i=0; i<cnt; i++)
+                {
+                    parent_dir = this.plugin.UID2DIR(curr.uid, curr.parent[i]);
+                    if ( (parent_dir != cur_dir) || 
+                         (i == (cnt -1))            )   // the last one
+                    {
+                        parent_index = i;
+                        cur_dir = parent_dir;
+                        break;
+                    }
+                }             
+                curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
+            }     
+            else if (is_shortest_straight_mode)
+            {
+                cnt = curr.parent.length;
+                for (i=0; i<cnt; i++)
+                {
+                    parent_dir = this.plugin.UID2DIR(curr.uid, curr.parent[i]);
+                    if ( (parent_dir == cur_dir) || 
+                         (i == (cnt -1))            )   // the last one
+                    {
+                        parent_index = i;
+                        cur_dir = parent_dir;
+                        break;
+                    }
+                }             
+                curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
+            }             
+        } 
+        return path.reverse();   
+    };  
+
+    var openHeap;
+    var BinaryHeapKlass = function (scoreFunction)
+    {
+        this.content = [];
+        this.scoreFunction = scoreFunction;
+    }
+    var BinaryHeapKlassProto = BinaryHeapKlass.prototype;
+    BinaryHeapKlassProto.clean = function ()
+    {
+        this.content.length = 0;
+    };       
+    BinaryHeapKlassProto.push = function (element)
+    {
+        // Add the new element to the end of the array.
+        this.content.push(element);
+    
+        // Allow it to sink down.
+        this.sinkDown(this.content.length - 1);
+    };
+    BinaryHeapKlassProto.pop = function () 
+    {
+        // Store the first element so we can return it later.
+        var result = this.content[0];
+        // Get the element at the end of the array.
+        var end = this.content.pop();
+        // If there are any elements left, put the end element at the
+        // start, and let it bubble up.
+        if (this.content.length > 0) 
+        {
+            this.content[0] = end;
+            this.bubbleUp(0);
+        }
+        return result;
+    };
+    BinaryHeapKlassProto.remove = function(node) 
+    {
+        var i = this.content.indexOf(node);
+        
+        // When it is found, the process seen in 'pop' is repeated
+        // to fill up the hole.
+        var end = this.content.pop();
+        
+        if (i !== this.content.length - 1) {
+            this.content[i] = end;
+        
+            if (this.scoreFunction(end) < this.scoreFunction(node)) 
+            {
+                this.sinkDown(i);
+            }
+            else 
+            {
+                this.bubbleUp(i);
+            }
+        }
+    };
+    BinaryHeapKlassProto.size = function() 
+    {
+        return this.content.length;
+    };
+    BinaryHeapKlassProto.rescoreElement = function(node) 
+    {
+        this.sinkDown(this.content.indexOf(node));
+    };
+    BinaryHeapKlassProto.sinkDown = function(n) 
+    {
+        // Fetch the element that has to be sunk.
+        var element = this.content[n];
+        
+        // When at 0, an element can not sink any further.
+        while (n > 0) 
+        {
+        
+            // Compute the parent element's index, and fetch it.
+            var parentN = ((n + 1) >> 1) - 1,
+                parent = this.content[parentN];
+            // Swap the elements if the parent is greater.
+            if (this.scoreFunction(element) < this.scoreFunction(parent)) 
+            {
+                this.content[parentN] = element;
+                this.content[n] = parent;
+                // Update 'n' to continue at the new position.
+                n = parentN;
+            }
+            // Found a parent that is less, no need to sink any further.
+            else 
+            {
+                break;
+            }
+        }
+    };
+    BinaryHeapKlassProto.bubbleUp = function(n) 
+    {
+        // Look up the target element and its score.
+        var length = this.content.length,
+            element = this.content[n],
+            elemScore = this.scoreFunction(element);
+        
+        while(true) 
+        {
+            // Compute the indices of the child elements.
+            var child2N = (n + 1) << 1,
+                child1N = child2N - 1;
+            // This is used to store the new position of the element, if any.
+            var swap = null,
+                child1Score;
+            // If the first child exists (is inside the array)...
+            if (child1N < length) 
+            {
+                // Look it up and compute its score.
+                var child1 = this.content[child1N];
+                child1Score = this.scoreFunction(child1);
+        
+                // If the score is less than our element's, we need to swap.
+                if (child1Score < elemScore)
+                {
+                    swap = child1N;
+                }
+            }
+        
+            // Do the same checks for the other child.
+            if (child2N < length) 
+            {
+                var child2 = this.content[child2N],
+                    child2Score = this.scoreFunction(child2);
+                if (child2Score < (swap === null ? elemScore : child1Score)) 
+                {
+                    swap = child2N;
+                }
+            }
+        
+            // If the element needs to be moved, swap it, and continue.
+            if (swap !== null) 
+            {
+                this.content[n] = this.content[swap];
+                this.content[swap] = element;
+                n = swap;
+            }
+            // Otherwise, we are done.
+            else 
+            {
+                break;
+            }
+        }
+    }; 
+    openHeap = new BinaryHeapKlass( function(node) { return node.f; } );
+	// a star
+	
+	
 	
 	instanceProto.saveToJSON = function ()
 	{    
-		return { "boarduid": (this.board != null)? this.board.uid:(-1),
+		return { "pm" : this.path_mode,
+		         "boarduid": (this.board != null)? this.board.uid:(-1),
 		         "groupuid": (this.group != null)? this.group.uid:(-1),
 		         "randomuid": (this.randomGen != null)? this.randomGen.uid:(-1), };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
+	    this.path_mode = o["pm"];
 	    this.boardUid = o["boarduid"];
 		this.groupUid = o["groupuid"];
 		this.randomGenUid = o["randomuid"];		       
@@ -483,26 +757,36 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    var group = this.instgroup_get(); 
 	    var board = this.board_get();
 	    
+	    group.GetGroup(group_name).Clean();	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
-	    if ((_xyz == null) || (moving_points<=0))
+        if (_xyz == null)
+            return;
+	    if ((moving_points != prop_INFINITY) && (moving_points<=0))
 	        return;
 	    
 	    this.exp_ChessUID = chess_uid;
 		var tiles_uids = this.get_moveable_area(chess_uid, moving_points, cost);
-	    var uid, _xyz;
-	    this._filter_uid_list.length = 0;	    
+        
+        // no filter applied
+        if (filter_name == "")
+        {
+            group.GetGroup(group_name).SetByUIDList(tiles_uids);
+            return;
+        }
+        
+        // filter applied
+	    var i, cnt=tiles_uids.length ,uid, _xyz;	    
         this._filter_fn_name = filter_name;
-	    for(uid in tiles_uids)
+	    this._filter_uid_list.length = 0;        
+	    for (i=0; i<cnt; i++)
 		{
+            uid = tiles_uids[i];
 		    this.exp_TileUID = parseInt(uid);
             _xyz = this.uid2xyz(this.exp_TileUID);
 	        this.exp_TileX = _xyz.x;
-	        this.exp_TileY = _xyz.y;             
-	        if (filter_name != "")
-	            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
-	        else
-	            this._filter_uid_list.push(uid);
+	        this.exp_TileY = _xyz.y;
+            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
 		}
 		group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);
 	};  
@@ -512,9 +796,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    var group = this.instgroup_get(); 
 	    var board = this.board_get();  
 	    
+	    group.GetGroup(group_name).Clean();
 	    var chess_uid = _get_uid(chess_objs);
 	    var tile_uid = _get_uid(tile_objs);
-	    if ((chess_uid == null) || (tile_uid == null) || (moving_points<=0))
+        if ((chess_uid == null) || (tile_uid == null))
+            return;
+	    if ((moving_points != prop_INFINITY) && (moving_points<=0))
 	        return;
 	    if (this.uid2xyz(chess_uid) == null)
 		    return;		
@@ -523,12 +810,15 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		    return;
 			
         this.exp_ChessUID = chess_uid;
-	    var path_tiles_uids = this.get_moving_path(chess_uid,tile_uid,moving_points, cost);
-        if (path_tiles_uids != null)
-	        group.GetGroup(group_name).SetByUIDList(path_tiles_uids);	  
-        else
-            group.GetGroup(group_name).Clean();	  
-	};	  	
+	    var path_tiles_uids = this.get_moving_path(chess_uid, tile_uid, moving_points, cost);
+        if (path_tiles_uids.length > 0)
+	        group.GetGroup(group_name).SetByUIDList(path_tiles_uids);
+	};	 
+
+    Acts.prototype.SetPathMode = function (m)
+	{
+        this.path_mode = m;
+	};
 	
     Acts.prototype.SetRandomGenerator = function (randomGen_objs)
 	{
@@ -566,5 +856,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     Exps.prototype.TileY = function (ret)
     {
         ret.set_int(this.exp_TileY);
-    };    
+    }; 
+	
+    Exps.prototype.INFINITY = function (ret)
+    {
+        ret.set_int(prop_INFINITY);
+    };	
 }());
