@@ -263,6 +263,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
         var start = this.ASTAR_node_get(start_tile_uid);        
         start.h = start.manhattan(end); 
+        //var closestNode = star;
         
         openHeap.push(start);
         while(openHeap.size() > 0) 
@@ -314,6 +315,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     neighbor.h = neighbor.h || neighbor.manhattan(end);
                     neighbor.g = gScore;
                     neighbor.f = neighbor.g + neighbor.h;
+                    
+                    //if ( (neighbor.h < closestNode.h) || 
+                    //     ( (neighbor.h === closestNode.h) && (neighbor.g < closestNode.g) ) 
+                    //   ) 
+                    //{
+                    //    closestNode = neighbor;
+                    //}                    
 
                     if (!beenVisited) 
                     {

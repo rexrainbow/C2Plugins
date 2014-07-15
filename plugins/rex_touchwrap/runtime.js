@@ -529,6 +529,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.tick2Me(this);
 		
 		this.enable = (this.properties[1] == 1);
+		this.lastTouchX = null;
+		this.lastTouchY = null;		
 	};
 	
 	instanceProto.onPointerMove = function (info)
@@ -626,6 +628,13 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Trigger OnNthTouchEnd & OnTouchEnd
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+
+        if (i >= 0)
+        {
+		    this.lastTouchX = this.touches[i].x;
+		    this.lastTouchY = this.touches[i].y;
+		    this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchReleasedObject, this);		
+		}
         
         var cnt=this._plugins_hook.length, hooki; 
         for (hooki=0; hooki<cnt; hooki++)
@@ -761,6 +770,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 				this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnNthTouchEnd, this);
 				this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchEnd, this);
+
+		        this.lastTouchX = this.touches[j].x;
+		        this.lastTouchY = this.touches[j].y;	
+				this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchReleasedObject, this);
 			
                 for (hooki=0; hooki<cnt; hooki++)
 			    {
@@ -888,6 +901,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			// Gesture detection
 			t.maybeTriggerHold(this, i);
 		}
+		
+		this.lastTouchX = null;
+		this.lastTouchY = null;		
 	};
 	
 	/**BEGIN-PREVIEWONLY**/
@@ -1118,7 +1134,26 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		return this.runtime.testAndSelectCanvasPointOverlap(type, this.curTouchX, this.curTouchY, false);
 	};
 	
+	// ----	
+	Cnds.prototype.OnTouchReleasedObject = function (type)
+	{
+		if (!type)
+			return false;
+
+		return this.runtime.testAndSelectCanvasPointOverlap(type, this.lastTouchX, this.lastTouchY, false);
+	};
+
 	pluginProto.cnds = new Cnds();
+	
+	//////////////////////////////////////
+    // Actions
+    function Acts() {};
+    pluginProto.acts = new Acts();
+            
+    Acts.prototype.SetEnable = function(en)
+    {
+        this.enable = (en==1);
+    };	
 
 	//////////////////////////////////////
 	// Expressions

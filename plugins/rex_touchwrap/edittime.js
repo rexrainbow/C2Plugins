@@ -78,6 +78,11 @@ AddCondition(17, cf_trigger, "On tap object",		"Gestures", "On tap gesture on {0
 AddObjectParam("Object", "Choose the object to check.");
 AddCondition(18, cf_trigger, "On double-tap object",	"Gestures", "On double-tap gesture on {0}", "Triggered when a double-tap gesture is made on an object.", "OnDoubleTapGestureObject");
 
+// ----
+AddObjectParam("Object", "Choose the object to check for touch released.");
+AddCondition(101, cf_trigger, "On touch released at object", "Touch released", "On touch released at {0}", 
+             "Triggered when an object is touch released.", "OnTouchReleasedObject");
+
 ////////////////////////
 AddComboParamOption("Off");
 AddComboParamOption("On");

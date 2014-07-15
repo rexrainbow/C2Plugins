@@ -64,6 +64,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
                               ];  
 	};
 	
+	instanceProto.onDestroy = function ()
+	{
+		this._clean_symbol_cache();
+	};
+		
 	instanceProto.board_get = function()
 	{
         if (this.board != null)
@@ -122,39 +127,65 @@ cr.plugins_.Rex_Matcher = function(runtime)
         return uid;
 	};
 	    
+    // symbol cache
+    var ObjCacheKlass = function ()
+    {        
+        this.lines = [];       
+    };
+    var ObjCacheKlassProto = ObjCacheKlass.prototype;       
+	ObjCacheKlassProto.allocLine = function()
+	{
+		return (this.lines.length > 0)? this.lines.pop(): null;
+	};
+	ObjCacheKlassProto.freeLine = function (l)
+	{
+		this.lines.push(l);
+	};	
+    var nodeCache = new ObjCacheKlass();
+    
     instanceProto._clean_symbol_cache = function ()
     {
-        var x,y,z,_entry,_cell;
+        var x,y,entry;
         for (x in this._symbol_cache)
         {
-            _entry = this._symbol_cache[x];
-            for (y in _entry)
+            entry = this._symbol_cache[x];
+            for (y in entry)
             {
-                _cell = _entry[y];
-                for (z in _cell)
-                {
-                    delete _cell[z];
-                }
-                delete _entry[y];
+                nodeCache.freeLine(entry[y]);
             }
-            delete this._symbol_cache[x];
         }
+        this._symbol_cache = {};
     };    
     
-    instanceProto.write_symbol_cache = function (_x,_y)
+    instanceProto.write_symbol_cache = function (x,y)
     {
-        var tile_uid = this.board_get().xyz2uid(_x,_y,0);
+        var tile_uid = this.board_get().xyz2uid(x,y,0);
         if (tile_uid == null)
             return;
 	    this.exp_TileUID = tile_uid;
-	    this.exp_TileX=_x;
-	    this.exp_TileY=_y;
+	    this.exp_TileX=x;
+	    this.exp_TileY=y;
 	    this._symbol_value = "";
 	    this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnGetSymbol, this);
-        if (this._symbol_cache[_x] == null)
-            this._symbol_cache[_x] = {};
-        this._symbol_cache[_x][_y] = {symbol:this._symbol_value, 
-                                      uid:tile_uid};
+	    
+	    // index x	    
+        if (this._symbol_cache[x] == null)
+            this._symbol_cache[x] = {};
+        // index y
+        var entry = this._symbol_cache[x];
+        if (entry[y] == null)
+        {
+            var cell = nodeCache.allocLine();
+            if (cell == null)
+                cell = {};
+            entry[y] = cell;
+        }        
+        var cell = entry[y];
+        // write
+        cell.symbol = this._symbol_value;
+        cell.uid = tile_uid;
+        
+        this._last_tick = this.runtime.tickcount;
     };    
 	instanceProto._symbol_at = function(x,y)
 	{
@@ -177,8 +208,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
             for (x=0; x<=x_max; x++)
                 this.write_symbol_cache(x,y);
         }
-        this._last_tick = this.runtime.tickcount;
 	};	
+	// ----
+	
 	instanceProto.get_match_tiles = function(group_name,pattern_dimation)
 	{
         this._group_name = group_name;
@@ -193,8 +225,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchTemplatePattern2D, this);
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchPattern2D, this);
         }
-
-        if (!this._has_matched_pattern)
+    if (!this._has_matched_pattern)
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnNoMatchPattern, this);
 	};
     
@@ -703,7 +734,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};
 	Acts.prototype.ForceUpdaeCellByLXY = function (lx, ly)	
 	{	     
-        this.write_symbol_cache(lx, ly);       
+        this.write_symbol_cache(lx, ly);   
 	};		
 	Acts.prototype.ForceUpdaeCellByTileUID = function (uid)	
 	{

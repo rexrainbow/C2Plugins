@@ -123,7 +123,7 @@ cr.plugins_.Rex_FSM = function(runtime)
 
 	Cnds.prototype.OnTransfer = function (name_from, name_to)
 	{
-	    var is_my_handler = (this.check_state == name_from) && (this.check_state1 == name_to);
+	    var is_my_handler = (this.check_state == name_from) && (this.check_state2 == name_to);
         this.is_echo |= is_my_handler;
 		return is_my_handler;
 	};	
