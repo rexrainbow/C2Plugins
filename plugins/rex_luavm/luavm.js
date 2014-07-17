@@ -1,3 +1,6 @@
+(function ()
+{
+    
 // Note: For maximum-speed code, see "Optimizing Code" on the Emscripten wiki, https://github.com/kripken/emscripten/wiki/Optimizing-Code
 // Note: Some Emscripten settings may limit the speed of the generated code.
 // The Module object: Our interface to the outside world. We import
@@ -6650,3 +6653,6 @@ var Lua = {
 
 if (!Module.noInitialRun) Lua.init();
 
+window["Lua"] = Lua;
+
+}());
