@@ -47,6 +47,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         this.SetPOY(this.properties[2]);
         this.SetWidth(this.properties[3]);
         this.SetHeight(this.properties[4]);
+        this.is_8dir = (this.properties[5] == 1);
 	};
 	instanceProto.SetPOX = function(pox)
 	{
@@ -155,9 +156,9 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         return ly;
 	};
 	 
-	var nlx_map_01 = [1, 0, -1, 0];   // Orthogonal or Isometric
-	var nlx_map_2_0 = [0, 0, -1, -1]; // Staggered (y%2==0)
-	var nlx_map_2_1 = [1, 1, 0, 0]; // Staggered (y%2==1)
+	var nlx_map_01 = [1, 0, -1, 0, 1, -1, -1, 1];   // Orthogonal or Isometric
+	var nlx_map_2_0 = [0, -1, -1, 0, 0, -1, 0, 1]; // Staggered (y%2==0)
+	var nlx_map_2_1 = [1, 0, 0, 1, 0, -1, 0, 1]; // Staggered (y%2==1)
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
 	    var dx;
@@ -178,8 +179,8 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		return (x+dx);
 	};
 	
-	var nly_map_01 = [0, 1, 0, -1];   // Orthogonal or Isometric
-	var nly_map_2 = [-1, 1, 1, -1];  // Staggered
+	var nly_map_01 = [0, 1, 0, -1, 1, 1, -1, -1];   // Orthogonal or Isometric
+	var nly_map_2 = [1, 1, -1, -1, 2, 0, -2, 0];  // Staggered
 	instanceProto.GetNeighborLY = function(x, y, dir)
 	{
 	    var dy;
@@ -200,7 +201,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	
 	instanceProto.GetDirCount = function()
 	{  
-        return 4;						 
+        return (!this.is_8dir)? 4:8;						 
 	};
 	
 	var dxy2dir = function (dx, dy, x, y, layout_mode)
@@ -212,6 +213,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	              ((dx==0) && (dy==1))?  1:
 	              ((dx==-1) && (dy==0))? 2:
 	              ((dx==0) && (dy==-1))? 3:
+                  ((dx==1) && (dy==1))?  4:
+	              ((dx==-1) && (dy==1))?  5:
+	              ((dx==-1) && (dy==-1))? 6:
+	              ((dx==1) && (dy==-1))? 7:
 	                                     null;
 	    }
 	    else if (layout_mode == 1)   // Isometric
@@ -220,6 +225,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	              ((dx==0) && (dy==1))?  1:
 	              ((dx==-1) && (dy==0))? 2:
 	              ((dx==0) && (dy==-1))? 3:
+                  ((dx==1) && (dy==1))?  4:
+	              ((dx==-1) && (dy==1))?  5:
+	              ((dx==-1) && (dy==-1))? 6:
+	              ((dx==1) && (dy==-1))? 7:
 	                                     null;
 		}
 		else if (layout_mode == 2)  // Staggered
@@ -230,6 +239,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	                  ((dx==0) && (dy==1))?   1:
 	                  ((dx==-1) && (dy==1))?  2:
 	                  ((dx==-1) && (dy==-1))? 3:
+	                  ((dx==0) && (dy==2))?  4:
+	                  ((dx==-1) && (dy==0))?  5:
+	                  ((dx==0) && (dy==-2))? 6:
+	                  ((dx==1) && (dy==-0))? 7:
 	                                          null;	            
 	        }
 	        else
@@ -238,7 +251,11 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	                  ((dx==1) && (dy==1))?   1:
 	                  ((dx==0) && (dy==1))?   2:
 	                  ((dx==0) && (dy==-1))?  3:
-	                                          null;	            
+	                  ((dx==0) && (dy==2))?  4:
+	                  ((dx==-1) && (dy==0))?  5:
+	                  ((dx==0) && (dy==-2))? 6:
+	                  ((dx==1) && (dy==-0))? 7:
+	                                          null;           
 	        }
 		} 
 		return dir;			   
@@ -246,8 +263,17 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		
 	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
 	{  
-	    var dir = this.XYZ2Dir(xyz_o, xyz_to); 	    
-	    var angle = (dir != null)? (dir*90) : (-1);
+	    var dir = this.XYZ2Dir(xyz_o, xyz_to); 
+        var angle;
+        if (dir == null)
+            angle = -1;
+        else
+        {
+            if (dir < 4)
+                angle = dir*90;
+            else
+                angle = (dir - 4)*90 + 45;
+        }
         return angle;			 
 	};
 	
@@ -271,7 +297,8 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
                  "w": this.width,
                  "h": this.height,
                  "ox": this.PositionOX,
-                 "oy": this.PositionOY};
+                 "oy": this.PositionOY,
+                 "is8d": this.is_8dir};
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -280,7 +307,8 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         this.SetWidth(o["w"]);
         this.SetHeight(o["h"]);   
         this.SetPOX(o["ox"]);
-        this.SetPOY(o["oy"]);          
+        this.SetPOY(o["oy"]); 
+        this.is_8dir = o["is8d"];         
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -305,7 +333,12 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
     {        
         this.SetPOX(x);
         this.SetPOY(y);
-	};    
+	}; 
+    Acts.prototype.SetDirections = function (d)
+    {        
+        this.is_8dir = (d==1);
+	}; 	
+	   
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -342,5 +375,21 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	Exps.prototype.DIRUP = function (ret)
     {
 	    ret.set_int(3);
+	};
+	Exps.prototype.DIRRIGHTDOWN = function (ret)
+    {
+	    ret.set_int(4);
+	};		
+	Exps.prototype.DIRLEFTDOWN = function (ret)
+    {
+	    ret.set_int(5);
+	};		
+	Exps.prototype.DIRLEFTUP = function (ret)
+    {
+	    ret.set_int(6);
+	};		
+	Exps.prototype.DIRRIGHTUP = function (ret)
+    {
+	    ret.set_int(7);
 	};	
 }());

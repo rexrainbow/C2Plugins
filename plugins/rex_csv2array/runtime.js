@@ -41,7 +41,8 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-	    this.is_eval_mode = (this.properties[0] == 1);
+        this.strDelimiter = this.properties[0];
+        this.is_eval_mode = (this.properties[1] == 1);
 	    this.exp_CurX = 0;
 	    this.exp_CurY = 0;
 	    this.exp_CurValue = "";
@@ -152,7 +153,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
     
 	Cnds.prototype.ForEachCell = function (csv_string)
 	{
-	    var table = CSVToArray(csv_string);
+	    var table = CSVToArray(csv_string, this.strDelimiter);
 		var y_cnt = table.length;
 		var x_cnt = table[0].length;
 		var i,j;
@@ -214,7 +215,7 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         var is_array_inst = (array_obj instanceof cr.plugins_.Arr.prototype.Instance);
         assert2(is_array_inst, "[CSV2Array] Error:Need an array object.");
 
-        var table = CSVToArray(csv_string);        
+        var table = CSVToArray(csv_string, this.strDelimiter);        
 		var x_cnt = table.length;
 		var y_cnt = table[0].length;
 		

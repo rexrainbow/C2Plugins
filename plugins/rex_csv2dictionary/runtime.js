@@ -41,7 +41,8 @@ cr.plugins_.Rex_CSV2Dictionary = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-	    this.is_eval_mode = (this.properties[0] == 1);
+        this.strDelimiter = this.properties[0];
+        this.is_eval_mode = (this.properties[1] == 1);
 	    this.exp_CurKey = "";
 	    this.exp_CurValue = "";
 	};
@@ -151,7 +152,7 @@ cr.plugins_.Rex_CSV2Dictionary = function(runtime)
     
 	Cnds.prototype.ForEachCell = function (csv_string)
 	{
-	    var table = CSVToArray(csv_string);
+	    var table = CSVToArray(csv_string, this.strDelimiter);
 		var i, cnt = table.length;
 		if (cnt == 0)
 		    return false;			
@@ -203,7 +204,7 @@ cr.plugins_.Rex_CSV2Dictionary = function(runtime)
         var is_dict_inst = (dict_obj instanceof cr.plugins_.Dictionary.prototype.Instance);
         assert2(is_dict_inst, "[CSV2Dictionary] Error:Need an dictionary object.");
 
-        var table = CSVToArray(csv_string);        
+        var table = CSVToArray(csv_string, this.strDelimiter);        
 		var i, cnt = table.length;
 		if (cnt == 0)
 		    return;	

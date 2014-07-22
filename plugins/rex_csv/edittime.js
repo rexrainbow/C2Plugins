@@ -126,6 +126,7 @@ AddExpression(9, ef_return_number | ef_variadic_parameters, "Get col count", "Ta
 AddExpression(10, ef_return_number | ef_variadic_parameters, "Get row count", "Table: Count", "RowCnt", "Get row count.");
 AddExpression(11, ef_return_string, "Get delimiter", "Delimiter", "Delimiter", "Get delimiter.");
 AddExpression(12, ef_return_string, "Transfer all tables to string", "JSON", "AllTalbesToString", "Transfer all tables to a JSON string.");
+AddExpression(13, ef_return_string, "Transfer page to csv string", "CSV", "TableToCSV", "Transfer current table to csv string.");
 
 ACESDone();
 

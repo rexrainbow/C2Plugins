@@ -492,7 +492,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		ret.set_int(this.GetRowCnt(page));
 	}; 
 	
-	Exps.prototype.Delimiter = function (ret, page)
+	Exps.prototype.Delimiter = function (ret)
 	{ 
 		ret.set_string(this.strDelimiter);
 	}; 
@@ -503,7 +503,14 @@ cr.plugins_.Rex_CSV = function(runtime)
 	    for (page in this._tables)	    
 	        table2string[page] = this.TableToString(page);        
 		ret.set_string(JSON.stringify(table2string));
-	};  	
+	};
+	
+	Exps.prototype.TableToCSV = function (ret)
+	{ 
+		ret.set_string(this.current_table.ToCSVString());
+	}; 	
+	
+	  	
 }());
 
 (function ()
@@ -933,7 +940,68 @@ cr.plugins_.Rex_CSV = function(runtime)
         _sort_row_name = row;
         _sort_is_increasing = (is_increasing == 0);      
         this.keys.sort(_row_sort); 
-    };    
+    };  
+    
+    var dump_lines = [];
+    CSVKlassProto.ToCSVString = function ()
+    {
+        var strDelimiter = this.plugin.strDelimiter;
+        var is_eval_mode = this.plugin.is_eval_mode;
+        
+        // first line = col name        
+        var l = "";
+        var k, kcnt = this.keys.length;        
+        for (k=0; k<kcnt; k++)
+        {
+            l += (strDelimiter + cell_string_get(this.keys[k], false, strDelimiter));
+        }
+        dump_lines.push(l);
+        
+        // other lines
+        var i, icnt = this.items.length;
+        for (i=0; i<icnt; i++)
+        {
+            l = cell_string_get(this.items[i], false, strDelimiter);
+            for (k=0; k<kcnt; k++)
+            {
+                l += (strDelimiter + cell_string_get(this.table[this.keys[k]][this.items[i]], is_eval_mode, strDelimiter));
+            }
+            dump_lines.push(l);
+        }
+        return dump_lines.join("\n");
+    };  
+    
+    var cell_string_get = function (value_, is_eval_mode, strDelimiter)
+    {
+        if (typeof(value_) == "number")
+            value_ = value_.toString();
+        else
+        {
+            if (is_eval_mode)
+                value_ = '"' + value_ + '"';
+                
+            if (strDelimiter == null)
+                strDelimiter = ",";
+                
+            var need_add_quotes = (value_.indexOf(strDelimiter) != (-1)) ||
+                                  (value_.indexOf("\n") != (-1));
+            // replace " to ""
+            if (value_.indexOf('"') != (-1))
+            {
+                var re = new RegExp('"', 'g');
+                value_ = value_.replace(re, '""');
+                need_add_quotes = true;
+            }
+            
+            // add ".." in these cases
+            if ( need_add_quotes)
+            {
+                value_ = '"' + value_ + '"';
+            }
+        }
+        
+        return value_;
+    };        
     
 	
     // copy from    
@@ -1022,5 +1090,6 @@ cr.plugins_.Rex_CSV = function(runtime)
 
         // Return the parsed data.
         return( arrData );
-    };       
+    };  
+    
 }());    

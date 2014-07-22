@@ -40,7 +40,12 @@ AddNumberParam("Y", "Physical Y co-ordinate at logic (0,0).", 0);
 AddAction(4, 0, "Set position offset", "Offset", 
           "Set offset to (<i>{0}</i>, <i>{1}</i>)", 
           "Set Physical position offset (position of logic (0,0)).", "SetOffset");          
-          
+AddComboParamOption("4 directions");
+AddComboParamOption("8 directions");
+AddComboParam("Directions", "Directions of neighbots", 0);
+AddAction(5, 0, "Set directions", "Directions", 
+          "Set directions to <i>{0}</i>", 
+          "Set directions.", "SetDirections");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Cell width", "Cell", "Width", "Get cell width in pixels.");
@@ -59,6 +64,18 @@ AddExpression(13, ef_return_number,
 AddExpression(14, ef_return_number, 
               "Direction code of up", "Direction code", "DIRUP", 
               "Direction code of up.");
+AddExpression(15, ef_return_number, 
+              "Direction code of right-down", "Direction code", "DIRRIGHTDOWN", 
+              "Direction code of right-down.");
+AddExpression(16, ef_return_number, 
+              "Direction code of left-down", "Direction code", "DIRLEFTDOWN", 
+              "Direction code of left-down.");
+AddExpression(17, ef_return_number, 
+              "Direction code of left-up", "Direction code", "DIRLEFTUP", 
+              "Direction code of left-up.");  
+AddExpression(18, ef_return_number, 
+              "Direction code of right-up", "Direction code", "DIRRIGHTUP", 
+              "Direction code of right-up.");              
 
 
 
@@ -71,7 +88,8 @@ var property_list = [
     new cr.Property(ept_float, "X at (0,0)", 0, "Physical X co-ordinate at logic (0,0)."),
     new cr.Property(ept_float, "Y at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
 	new cr.Property(ept_float, "Width", 32, "Cell width in pixels."),
-	new cr.Property(ept_float, "Height", 32, "Cell height in pixels.")
+	new cr.Property(ept_float, "Height", 32, "Cell height in pixels."),
+    new cr.Property(ept_combo, "Directions", "4 directions", "Directions of neighbots.", "4 directions|8 directions"),    
 	];
 	
 // Called by IDE when a new object type is to be created
