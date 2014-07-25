@@ -61,7 +61,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._cost_value = 0;
         this._filter_uid_list = [];
         this._is_cost_fn = null;  
-		this._neighbors = [];  // call this._neighbors_init at action:Setup
+		this._neighbors_lxy = [];
         this.astar_heuristic_enable = false;
 
         this._chess_xyz = null;
@@ -165,28 +165,33 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return cost; 
 	};
 	
-	instanceProto._neighbors_init = function(dir_count)
-	{
-	    var i;
-		for (i=0; i<dir_count; i++)
-		{
-		    this._neighbors.push({dir:i, x:0, y:0});
-		}
+	instanceProto._neighbors_lxy_init = function(dir_count)
+	{	    
+	    if (this._neighbors_lxy.length > dir_count)
+	    {
+	        this._neighbors_lxy.length = dir_count;
+	    }
+	    else if (this._neighbors_lxy.length < dir_count)
+	    {
+		    for (var i=this._neighbors_lxy.length; i<dir_count; i++)
+		    {
+		        this._neighbors_lxy.push({x:0, y:0});
+		    }
+	    }
 	};	
 	
-	instanceProto.get_neighborsLXY = function(_x,_y)
+	instanceProto.neighborsLXY_get = function(_x,_y)
 	{
 	    var layout = this.board_get().GetLayout();
-	    if (this._neighbors.length == 0)
-	        this._neighbors_init(layout.GetDirCount());
+	    this._neighbors_lxy_init(layout.GetDirCount());
 	    var dir;
-	    var neighbors_cnt = this._neighbors.length;	    
+	    var neighbors_cnt = this._neighbors_lxy.length;	    
         for (dir=0; dir<neighbors_cnt; dir++)
         {
-            this._neighbors[dir].x = layout.GetNeighborLX(_x,_y, dir);
-            this._neighbors[dir].y = layout.GetNeighborLY(_x,_y, dir);
+            this._neighbors_lxy[dir].x = layout.GetNeighborLX(_x,_y, dir);
+            this._neighbors_lxy[dir].y = layout.GetNeighborLY(_x,_y, dir);
         }
-        return this._neighbors;
+        return this._neighbors_lxy;
 	};	
 
     instanceProto.RandomInt = function (a, b)
@@ -430,13 +435,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     };
     nodeKlassProto.neighbor_nodes_get = function()
     {
-        var _neighbors = this.plugin.get_neighborsLXY(this.x, this.y);
+        var _neighbors_lxy = this.plugin.neighborsLXY_get(this.x, this.y);
         var _n, _uid;
         var neighbor_nodes = []; 
-        var i, cnt=_neighbors.length;
+        var i, cnt=_neighbors_lxy.length;
         for (i=0; i<cnt; i++)
         {        
-            _n = _neighbors[i];
+            _n = _neighbors_lxy[i];
             _uid = this.plugin.xyz2uid(_n.x, _n.y, 0);
             if ( _uid != null )
             {

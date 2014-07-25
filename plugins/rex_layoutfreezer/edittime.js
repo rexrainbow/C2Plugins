@@ -20,9 +20,12 @@
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("JSON string", "JSON string.", '""');
+AddComboParamOption("Saved layout");
+AddComboParamOption("Current layout");
+AddComboParam("Layout", "Target layout", 0);
 AddAction(1, 0, "Load layout", "Load layout", 
-          "Goto saved layout and load saved instances from <i>{0}</i>", 
-          "Goto saved layout and load saved instances.", "LoadLayout");
+          "Load instances from <i>{0}</i> at <i>{1}</i>", 
+          "Load instances at layout.", "LoadLayout");
 
 //////////////////////////////////////////////////////////////
 // Expressions

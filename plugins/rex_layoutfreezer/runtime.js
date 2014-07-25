@@ -104,23 +104,20 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
         return bank;
     };
 
-    instanceProto.LoadLayout = function (bank)
+    instanceProto.LoadLayout = function (bank, goto_saved_layout)
     {          
         this.runtime.ClearDeathRow();
         
+
         // goto layout
-		var layout_sid = bank["running_layout"]["sid"];
-		
-		// Need to change to different layout
-		if (layout_sid !== this.runtime.running_layout.sid)
-		{
-			var changeToLayout = this.runtime.getLayoutBySid(layout_sid);
-			
-			if (changeToLayout)
-				this.runtime.doChangeLayout(changeToLayout);
-			else
-				return;		// layout that was saved on has gone missing (deleted?)
-		}
+		var layout_sid = (goto_saved_layout)? bank["running_layout"]["sid"]:
+		                                      this.runtime.running_layout.sid;
+		                                      
+		var changeToLayout = this.runtime.getLayoutBySid(layout_sid);		
+		if (changeToLayout)
+			this.runtime.doChangeLayout(changeToLayout);
+		else
+			return;		// layout that was saved on has gone missing (deleted?)
                 
         // then restore all instances
         
@@ -299,12 +296,13 @@ cr.plugins_.Rex_LayoutFreezer = function(runtime)
     function Acts() {};
     pluginProto.acts = new Acts();
 
-    Acts.prototype.LoadLayout = function (JSON_string)
+    Acts.prototype.LoadLayout = function (JSON_string, layout_target)
     {  
 	    if (JSON_string == "")
 	        return;            
         var bank = JSON.parse(JSON_string);     
-        this.LoadLayout(bank);
+        var goto_saved_layout = (layout_target == 0);
+        this.LoadLayout(bank, goto_saved_layout);
     };
 
 
