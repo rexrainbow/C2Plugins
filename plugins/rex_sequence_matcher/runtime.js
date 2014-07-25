@@ -153,7 +153,13 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	{
 	    if (pattern == "")
 	        return false;
-	        
+	   
+	    var has_comma = (pattern.indexOf(",") != -1);
+	    if (has_comma)
+	    {
+	        pattern = pattern.split(",");
+	    }
+	         
 	    var pattern_len=pattern.length;
 	    var buf_len=this._buf.length;
 	    if (pattern_len > buf_len)
