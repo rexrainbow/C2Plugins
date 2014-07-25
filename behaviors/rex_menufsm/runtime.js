@@ -57,11 +57,21 @@ cr.behaviors.Rex_menufsm = function(runtime)
                      (this.properties[0] == 2)? STATE_CLOSED:
                                                 STATE_OFF;
         this.has_transition_state = (this.properties[1] == 1);                                               
+        this.pending_cmd = null;
         this.waiting_event_count = 0;        
 	};
 
 	behinstProto.tick = function ()
 	{
+        if (this.pending_cmd != null)
+        {
+            if ( (this.state == CMD_OPEN) || (this.state == STATE_CLOSED) )
+            {
+                var cmd = this.pending_cmd;
+                this.pending_cmd = null;
+                this._on_logic(cmd);
+            }
+        }    
 	};  
     
 	behinstProto._on_logic = function (cmd)
@@ -87,7 +97,11 @@ cr.behaviors.Rex_menufsm = function(runtime)
             {
                 this.waiting_event_count = 0;
                 this.state = STATE_OPENED;
-            }            
+            }
+            else if (cmd == CMD_CLOSE)
+            {
+                this.pending_cmd = cmd;
+            }
         break;
         case STATE_OPENED:
             if (cmd == CMD_CLOSE)
@@ -106,6 +120,10 @@ cr.behaviors.Rex_menufsm = function(runtime)
                 this.waiting_event_count = 0;
                 this.state = STATE_CLOSED;
             }                   
+            else if (cmd == CMD_OPEN)
+            {
+                this.pending_cmd = cmd;
+            }            
         break;
         case STATE_CLOSED:
             if (cmd == CMD_OPEN)
@@ -122,7 +140,7 @@ cr.behaviors.Rex_menufsm = function(runtime)
                                                         null;
             if (handler != null)
                 this.runtime.trigger(handler, this.inst);      
-        }
+        }        
 	};    
 
 	behinstProto._inc_waiting_event_count = function ()
@@ -136,6 +154,7 @@ cr.behaviors.Rex_menufsm = function(runtime)
 	{
 		return { "s": this.state,
                  "wec": this.waiting_event_count,
+                 "pc" : this.pending_cmd
                };
 	};
 	

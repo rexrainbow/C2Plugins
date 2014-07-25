@@ -3,7 +3,7 @@
 	return {
 		"name":			"Menu FSM",
 		"id":			"Rex_menufsm",
-		"description":	"FSM to contorl the behavior of menu.",
+		"description":	"FSM to control the behavior of menu.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_menufsm.html",
 		"category":		"General",

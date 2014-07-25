@@ -84,14 +84,14 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
         
         var is_touched = false;
         var inst = this.inst;
+        inst.update_bbox();
         var pre_tx = this.cur_touchX;
         var pre_ty = this.cur_touchY;
         if (touch_obj.IsInTouch())
         {
             var i, touch_pt, tx, ty;
             for (i=0; i<cnt; i++)
-            {
-                inst.update_bbox();
+            {                
                 touch_pt = touch_pts[i];
                 tx = inst.layer.canvasToLayer(touch_pt.x, touch_pt.y, true);
                 ty = inst.layer.canvasToLayer(touch_pt.x, touch_pt.y, false);   		    

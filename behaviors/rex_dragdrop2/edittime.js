@@ -4,7 +4,7 @@
 		"name":			"Drag & Drop2",
 		"id":			"Rex_DragDrop2",
 		"version":		"1.0",        
-		"description":	"Use the mouse to drag and drop an object",
+		"description":	"Drag and drop this object",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_dragdrop2.html",
 		"category":		"Movements",
@@ -14,11 +14,11 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddComboParamOption("No");
-AddComboParamOption("Yes");
-AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "Actived", "Set {my} activated to <i>{0}</i>", 
-          "Enable the object's drag&drop behavior.", "SetActivated");
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Choose whether to enable or disable the behavior.");
+AddAction(0, af_none, "Set enabled", "", "Set {my} {0}", "Enable or disable the drag and drop behavior.", "SetEnabled");
+          
 AddAction(1, 0, "Drop", "Drop", "Drop {my}", 
           "If currently being dragged, force the object to be dropped.", 
           "ForceDrop");          
@@ -28,23 +28,33 @@ AddAction(2, 0, "Try drag", "Drag", "Try drag {my}",
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
-AddCondition(1,	cf_deprecated, "Is dragging", "Drag", "Is {my} dragging", "Is object dragging.", "IsDragging");             
+AddCondition(1,	cf_deprecated, "On dragging", "Drag", "On {my} dragging", "On object dragging.", "IsDragging");             
 AddCondition(2,	cf_trigger, "On dropped", "Drop", "On {my} drop", "Triggered when object dropped.", "OnDrop"); 
 AddCondition(3,	0, "Is dragging", "Drag", "Is {my} dragging", "Is object dragging.", "IsDragging");
-AddCondition(4,	cf_trigger, "On dragging moving start", "Dragging moving", "On {my} dragging moving start", "Triggered when object dragging moving start.", "OnDragMoveStart"); 
-AddCondition(5,	cf_trigger, "On dragging moving", "Dragging moving", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
-
+AddCondition(4,	cf_trigger, "On dragging moving start", "Dragging moving", 
+             "On {my} dragging moving start", 
+             "Triggered when object dragging moving start.", "OnDragMoveStart"); 
+AddCondition(5,	cf_deprecated, "On dragging moving", "Dragging moving", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
+AddCondition(6,	0, "Is dragging moving", "Dragging moving", 
+             "Is {my} dragging moving", 
+             "Is object dragging moving.", "IsDraggingMoving");
+AddCondition(7,	cf_trigger, "On dragging moving end", "Dragging moving", 
+             "On {my} dragging moving end", 
+             "Triggered when object dragging moving end.", "OnDragMoveEnd"); 
+             
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number | ef_variadic_parameters, "Mouse X position", "Position", "X", "Get the mouse cursor X co-ordinate in the layout.");
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", "Position", "Y", "Get the mouse cursor Y co-ordinate in the layout.");
-AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
-AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Mouse X position", "Position", "X", "Get the touch X co-ordinate in the layout.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", "Position", "Y", "Get the touch Y co-ordinate in the layout.");
+AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the touch X co-ordinate on the canvas.");
+AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the touch Y co-ordinate on the canvas.");
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
-AddExpression(5, ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's dragging start position.");
-AddExpression(6, ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's dragging start position.");
+AddExpression(5, ef_deprecated | ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's position at dragging start.");
+AddExpression(6, ef_deprecated | ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's position at dragging start.");
 AddExpression(7, ef_return_number, "X co-ordinate of dragging start position", "Start", "DragStartX", "Get X co-ordinate of dragging start position.");
 AddExpression(8, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");
+AddExpression(9, ef_return_number, "X co-ordinate of object's dragging start position", "Instance start", "InstStartX", "Get X co-ordinate of object's position at dragging start.");
+AddExpression(10, ef_return_number, "Y co-ordinate of object's dragging start position", "Instance start", "InstStartY", "Get Y co-ordinate of object's position at dragging start.");
 
 ACESDone();
 

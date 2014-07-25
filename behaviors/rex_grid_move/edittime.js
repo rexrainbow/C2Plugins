@@ -37,6 +37,10 @@ AddComboParamOption("Right");
 AddComboParamOption("Down");
 AddComboParamOption("Left");
 AddComboParamOption("Up");
+AddComboParamOption("Right-down");		  
+AddComboParamOption("Left-down");
+AddComboParamOption("Left-up");
+AddComboParamOption("Right-up");
 AddComboParam("Direction", "Moving direction.", 0);              
 AddCondition(9,	0, "Can move to neighbor", "Test: Square grid", "{my} can move to <i>{0}</i>", 
              "Test if object can move to neighbor.", "TestMoveToNeighbor");   
@@ -78,6 +82,10 @@ AddComboParamOption("Right");
 AddComboParamOption("Down");
 AddComboParamOption("Left");
 AddComboParamOption("Up");
+AddComboParamOption("Right-down");		  
+AddComboParamOption("Left-down");
+AddComboParamOption("Left-up");
+AddComboParamOption("Right-up");
 AddComboParam("Direction", "Moving direction.", 0);
 AddAction(1, 0, "Move to neighbor", "Request: Square grid", "{my} move to <i>{0}</i>", 
           "Move to neighbor.", "MoveToNeighbor"); 
