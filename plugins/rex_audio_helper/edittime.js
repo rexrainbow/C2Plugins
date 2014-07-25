@@ -26,16 +26,22 @@ AddComboParam("Loop", "Whether or not to initially play the sound in a loop (rep
 AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
 AddStringParam("Tag (optional)", "A tag, which can be anything you like, to use to reference this sound in future.", '""');
 AddNumberParam("Fade-in", "The duration of fade-in, in second.", 1);
-AddAction(1, 0, "Play", "Playback", "Play <b>{0}</b> {1} at volume to {2} (tag <i>{3}</i>) with fade-in to <b>{4}</b> second", "Play an audio file with fade-in.", "Play");    
+AddAction(1, 0, "Play", "Playback", 
+          "Play <b>{0}</b> {1} at volume to {2} (tag <i>{3}</i>) with fade-in to <b>{4}</b> second", 
+          "Play an audio file with fade-in.", "Play");    
 
 AddStringParam("Tag", "The tag identifying the sound to stop.  Leave empty to affect the last played sound.", '""');
 AddNumberParam("Fade-out", "The duration of fade-out, in second.", 1);
-AddAction(2, 0, "Stop", "Playback", "Stop <b>{0}</b> with fade-out to <b>{1}</b> second", "Stop a sound from playing with fade-out.", "Stop");
+AddAction(2, 0, "Stop", "Playback", 
+         "Stop <b>{0}</b> with fade-out to <b>{1}</b> second", 
+         "Stop a sound from playing with fade-out.", "Stop");
 
 AddStringParam("Tag", "The tag identifying the sound to loop.  Leave empty to affect the last played sound.", '""');
 AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
 AddNumberParam("Fade", "The duration of fade, in second.", 1);
-AddAction(3, 0, "Set volume", "Volume", "Set <i>{0}</i> volume to <b>{1}</b> with fade to <b>{2}</b> second", "Set the volume (loudness) of a sound with fade.", "SetVolume");
+AddAction(3, 0, "Set volume", "Volume", 
+          "Set <i>{0}</i> volume to <b>{1}</b> with fade to <b>{2}</b> second", 
+          "Set the volume (loudness) of a sound with fade.", "SetVolume");
 
 AddComboParamOption("Sounds");
 AddComboParamOption("Music");
@@ -47,11 +53,23 @@ AddComboParam("Loop", "Whether or not to initially play the sound in a loop (rep
 AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
 AddStringParam("Tag (optional)", "A tag, which can be anything you like, to use to reference this sound in future.", '""');
 AddNumberParam("Fade-in", "The duration of fade-in, in second.", 1);
-AddAction(4, 0, "Play (by name)", "Playback", "Play <b>{1}</b> {2} from {0} at volume to {3} (tag <i>{4}</i>) with fade-in to <b>{5}</b> second", "Play an audio file using a string for the filename.", "PlayByName");
+AddAction(4, 0, "Play (by name)", "Playback", 
+          "Play <b>{1}</b> {2} from {0} at volume to {3} (tag <i>{4}</i>) with fade-in to <b>{5}</b> second", 
+          "Play an audio file using a string for the filename with fade.", "PlayByName");
+
+AddStringParam("Tag", "The audio tag to pause or resume.");
+AddComboParamOption("Pause");
+AddComboParamOption("Resume");
+AddComboParam("State", "Whether to pause or resume the sound with the given tag.");
+AddNumberParam("Fade", "The duration of fade, in second.", 1);
+AddAction(5, 0, "Set paused", "Playback", 
+          "{1} tag <i>{0}</i> with fade to <b>{2}</b> second", 
+          "Pause or resume audio with a given tag with fade.", "SetPaused");
 
 AddStringParam("Audio file", "Audio file string", "");
-AddAction(50, 0, "Preload", "Preload", "Preload <b>{0}</b>", 
-          "Download an audio file from the server without playing it.  This ensures it will play immediately.", "Preload");      
+AddAction(50, 0, "Preload", "Preload", 
+          "Preload <b>{0}</b>", 
+          "Download an audio file from the server without playing it. This ensures it will play immediately.", "Preload");      
 //////////////////////////////////////////////////////////////
 // Expressions
 
