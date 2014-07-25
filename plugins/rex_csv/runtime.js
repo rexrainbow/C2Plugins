@@ -771,6 +771,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             log("[CSV] Condition:For each row in col - Can not find col index " + col+" in table.");
             return;	    
         }
+        this.forCol = col;
             
         // current_entry is valid
         var current_frame = this.plugin.runtime.getCurrentEventStack();
@@ -849,6 +850,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             log("[CSV] Condition:For each row in col - Can not find row index "+row+" in table.");
             return; 	    
         }
+        this.forRow = row;
             
         // current_entry is valid
         var current_frame = this.plugin.runtime.getCurrentEventStack();
