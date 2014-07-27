@@ -108,15 +108,16 @@ cr.behaviors.Rex_bFuzzy = function(runtime)
 		          };
 	};	
 	
-	var _cb = {"7": cr.behaviors.Rex_bFuzzy.prototype.acts.DefineMembership_7levles,
-	           "5": cr.behaviors.Rex_bFuzzy.prototype.acts.DefineMembership_5levles,
-	           "3": cr.behaviors.Rex_bFuzzy.prototype.acts.DefineMembership_3levles};
+
 	behtypeProto.loadFromJSON = function (o)
 	{
 	    // restore membership
 	    this.raw_memship_save = o["rm"];
 	    var i, cnt=this.raw_memship_save.length, raw_item;
 
+		var _cb = {"7": cr.behaviors.Rex_bFuzzy.prototype.acts.DefineMembership_7levles,
+	               "5": cr.behaviors.Rex_bFuzzy.prototype.acts.DefineMembership_5levles,
+	               "3": cr.behaviors.Rex_bFuzzy.prototype.acts.DefineMembership_3levles};
 	    for (i=0; i<cnt; i++)
 	    {
 	        raw_item = this.raw_memship_save[i];
