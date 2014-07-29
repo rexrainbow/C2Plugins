@@ -120,8 +120,14 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             assert2(has_fnobj, "Worksheet: Can not find callback oject.");
         }    
 	}; 
-	    
-	instanceProto._delay_run = function()
+	   
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.delay_run();
+    };
+    	    
+	instanceProto.delay_run = function()
 	{
 	    this._execute_cmd();
         var is_continue = true;
@@ -183,7 +189,8 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             {
                 if (this.timer== null)
                 {
-                    this.timer = this._timeline_get().CreateTimer(this, this._delay_run);
+                    this.timer = this._timeline_get().CreateTimer(on_timeout);
+                    this.timer.plugin = this;
                 }
                             
                 this.timer.Start(next_abs_time - this.pre_abs_time);
@@ -337,7 +344,8 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.timeline.LoadTimer(this, this._delay_run, null, this.timer_save);
+            this.timer = this.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer.plugin = this;
         }     
         this.timers_save = null;        
 	}; 

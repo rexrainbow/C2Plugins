@@ -164,7 +164,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
         {
             var timeline = this.type._timeline_get();
             assert2(timeline, "Text typing need a timeline object");
-            timer = timeline.CreateTimer(this, this.text_typing_handler);
+            timer = timeline.CreateTimer(on_timeout);
+            timer.plugin = this;
         }
         return timer;
     };
@@ -189,6 +190,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
         }
     };
     
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.text_typing_handler();
+    };
+        
 	behinstProto.text_typing_handler = function()
 	{  
         this.SetText(this.content, 0, this.typing_index);
@@ -243,7 +250,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
             this.typing_timer = null;
         else
         {
-            this.typing_timer = this.type.timeline.LoadTimer(this, this.text_typing_handler, null, this.timer_save);
+            this.typing_timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.typing_timer.plugin = this;
         }     
         this.timers_save = null;        
 	}; 	

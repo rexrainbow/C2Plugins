@@ -88,7 +88,13 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 	{
 	};
 	
-    behinstProto._timer_handle = function()
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.timer_handle();
+    };
+    
+    behinstProto.timer_handle = function()
     {
         var is_inc = (this.target_value >= this.value);
         this.value += ((is_inc)? this.step : -this.step);
@@ -148,7 +154,8 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this, this._timer_handle, null, this.timer_save);
+            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer.plugin = this;
         }     
         this.timers_save = null;        
 	}; 
@@ -181,7 +188,10 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 	{
 	    this.target_value = target_value;
         if (this.timer == null)        
-            this.timer = this.type._timeline_get().CreateTimer(this, this._timer_handle);
+        {
+            this.timer = this.type._timeline_get().CreateTimer(on_timeout);
+            this.timer.plugin = this;
+        }
             
         if ((this.timer) && (!this.timer.IsActive()))
             this.timer.Start(this.duration);

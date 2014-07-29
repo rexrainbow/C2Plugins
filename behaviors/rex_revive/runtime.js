@@ -13,6 +13,9 @@ cr.behaviors.Rex_Revive = function(runtime)
 
 (function ()
 {
+    // global for all instances
+    var _SID2Objtype = {};  
+        
 	var behaviorProto = cr.behaviors.Rex_Revive.prototype;
 		
 	/////////////////////////////////////
@@ -53,34 +56,54 @@ cr.behaviors.Rex_Revive = function(runtime)
         return null;	
     };
     
-	behtypeProto._revive_hanlder = function(custom_data,
-                                            layer_name, x, y, 
-                                            angle, width, height, opacity, visible, 
-                                            cur_frame, cur_anim_speed,
-                                            inst_vars, cur_anim_name)
-	{
-        var inst = this.runtime.createInstance(this.objtype, 
-                                               this.runtime.getLayerByNumber(layer_name),
-                                               x, y);
-        if (angle != null)
+    behtypeProto.SID2Type = function(sid)
+    {
+        if (_SID2Objtype[sid] == null)
         {
-            inst.cur_anim_speed = cur_anim_speed;  
-            cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, cur_frame); 
-            inst.changeAnimName = cur_anim_name;
-            inst.doChangeAnim();              
-            inst.angle = angle;
-            inst.width = width;
-            inst.height = height;
-            inst.opacity = opacity;
-            inst.visible = visible; 
-            inst.instance_vars = inst_vars.slice();          
+            _SID2Objtype[sid] = this.runtime.getObjectTypeBySid(sid);
         }
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);            
-        var behavior_inst = inst.behavior_insts[this.behavior_index];
-        behavior_inst._mem = hash_copy(custom_data);
+        return _SID2Objtype[sid];
+    };    
+    
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.revive_inst(this.revive_data, this.custom_data);
+    };
+    
+	behtypeProto.revive_inst = function(revive_data, custom_data)
+	{
+	    revive_data = JSON.parse(revive_data);
+	    custom_data = JSON.parse(custom_data);
+	     	    
+	    var objtype = this.SID2Type(revive_data["sid"]);
+        var layer = null;
+        if (objtype.plugin.is_world)
+        {
+            layer = this.runtime.running_layout.getLayerBySid(revive_data["w"]["l"]);						
+            if (!layer)
+                return;
+        }  
+        
+        var inst = this.runtime.createInstance(objtype, layer, 0, 0);                                            
+        this.runtime.loadInstanceFromJSON(inst, revive_data, true); 
+      
+        var behavior_inst = GetThisBehavior(inst);
+        behavior_inst._mem = custom_data;
         this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnRevive, inst); 
 	};
+	
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};	
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -98,11 +121,9 @@ cr.behaviors.Rex_Revive = function(runtime)
         this.activated = (this.properties[0]==1);
         this.revive_time = this.properties[1];
         this._revive_at = this.properties[2];
-        this._revive_args = [];
         if (this._revive_at==0)
         {
-            var inst = this.inst;
-            this._revive_args = [inst.layer.index, inst.x, inst.y];
+            this.revive_data = JSON.stringify(this.status_get());
         }
         this._mem = {};
 	};
@@ -112,41 +133,31 @@ cr.behaviors.Rex_Revive = function(runtime)
         if (!this.activated)
             return;
             
-        this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnDestroy, this.inst);             
-        var inst = this.inst;
-        var args;
-        var custom_data = hash_copy(this._mem);
+        this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnDestroy, this.inst);
         if (this._revive_at == 1)
         {
-            args = [custom_data, 
-                    inst.layer.index, inst.x, inst.y, 
-                    inst.angle, inst.width, inst.height, inst.opacity, inst.visible, 
-                    inst.cur_frame, inst.cur_anim_speed,
-                    inst.instance_vars.slice(), inst.cur_animation.name];
-        }
-        else
-        {
-            args = [custom_data];
-            args.push.apply(args, this._revive_args.slice());
+            this.revive_data = JSON.stringify(this.status_get());
         }
         var timeline = this.type._timeline_get();
-        var timer = timeline.CreateTimer(this.type, this.type._revive_hanlder, args);
+        var timer = timeline.CreateTimer(on_timeout);
+        timer.plugin = this.type;
+        timer.revive_data = this.revive_data;
+        timer.custom_data = JSON.stringify(this._mem);
         timer.Start(this.revive_time);  
+	};
+
+	behinstProto.status_get = function()
+	{
+        var status = this.runtime.saveInstanceToJSON(this.inst, true);
+        var sid = this.inst.type.sid;
+        status["sid"] = sid;
+        _SID2Objtype[sid] = this.inst.type;
+        return status;
 	};
 	
 	behinstProto.tick = function ()
 	{
 	};
-    
-    var hash_copy = function (obj_in, obj_src)
-    {
-        var obj_out = (obj_src == null)? {}:obj_src;
-        var key;
-        for (key in obj_in)
-            obj_out[key] = obj_in[key];
-            
-        return obj_out;
-    };
 
 	//////////////////////////////////////
 	// Conditions

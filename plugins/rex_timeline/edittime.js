@@ -25,23 +25,25 @@ AddNumberParam("Time", "Delta-time in seconds", 0);
 AddAction(0, 0, "Push timeline forward", "TimeLine", 
           "Push timeline forward with delta-time to <i>{0}</i>", 
           "Push timeline forward with delta-time.", "PushTimeLine");
+          
 // 	af_deprecated	  
 AddObjectParam("Function", "Function object for timer's callback");
 AddAction(1, af_deprecated, "Setup timer", "Z: Deprecated", 
           "Set timer's callback to <i>{0}</i>", 
-          "Setup timer.", "Setup");
+          "Setup timer.", "Setup_deprecated");
 		  
 // 	af_deprecated	  
 AddStringParam("Timer", "Timer's name", '""');
 AddStringParam("Commands", "Execute commands when timer's time-out", '""');
 AddAction(2, af_deprecated, "Create timer", "Z: Deprecated", 
           "Create timer <i>{0}</i> with callback <i>{1}</i>", 
-          "Create timer.", "CreateTimer");
+          "Create timer.", "CreateTimer_deprecated");
 		  
 AddStringParam("Name", "Timer's name.", '""');      
 AddNumberParam("Time", "Time-out in seconds", 0);
+AddNumberParam("Repeat", "Repeat count, 0 is infinity.", 1);
 AddAction(3, 0, "Start", "Timer: Control", 
-          "Start timer <i>{0}</i>, time-out is <i>{1}</i> seconds", 
+          "Start timer <i>{0}</i>, time-out to <i>{1}</i> seconds, repeat count to <i>{2}</i>", 
           "Start timer.", "StartTimer");
 AddNumberParam("Time", "Time-out in seconds", 0);
 AddAction(4, 0, "Start triggered timer", "Timer: Triggered timer", 
@@ -86,7 +88,9 @@ AddAction(21, 0, "Resume timeline", "TimeLine",
 AddStringParam("Timer", "Timer's name", '""');
 AddStringParam("Name", "The name of the callback.", "\"\"");
 AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
-AddAction(30, 0, "Create timer", "Timer", "Create timer <i>{0}</i> with callback <i>{1}</i> (<i>{...}</i>)", "Create timer.", "CreateTimer2");
+AddAction(30, 0, "Create timer", "Timer", 
+          "Create timer <i>{0}</i> with callback <i>{1}</i> (<i>{...}</i>)", 
+          "Create timer.", "CreateTimer");
 AddStringParam("Name", "Timer's name.", '""');          
 AddVariadicParams("Parameter {n}", "A parameter to pass for the callback, which can be accessed with Function.Param({n}).");
 AddAction(31, 0, "Set parameters", "Timer", 

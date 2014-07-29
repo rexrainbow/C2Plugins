@@ -88,7 +88,13 @@ cr.behaviors.Rex_Timer = function(runtime)
 	{
 	};
     
-    behinstProto._timer_handle = function()
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.timer_handle();
+    };
+        
+    behinstProto.timer_handle = function()
     {
         if (this.command == null)
         {
@@ -159,7 +165,8 @@ cr.behaviors.Rex_Timer = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this, this._timer_handle, null, this.timer_save);
+            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer.plugin = this;
         }     
         this.timers_save = null;        
 	}; 
@@ -208,14 +215,20 @@ cr.behaviors.Rex_Timer = function(runtime)
         if (this.timer)  // timer exist
             this.timer.Remove();
         else            // create new timer instance
-            this.timer = this.type._timeline_get().CreateTimer(this, this._timer_handle);   
+        {
+            this.timer = this.type._timeline_get().CreateTimer(on_timeout);   
+            this.timer.plugin = this;
+        }
 	}; 
 	// ---- deprecated ----
     
     Acts.prototype.Start = function (delay_time)
 	{
         if ((this.timer == null) && (this.command == null))        
-            this.timer = this.type._timeline_get().CreateTimer(this, this._timer_handle);
+        {
+            this.timer = this.type._timeline_get().CreateTimer(on_timeout);
+            this.timer.plugin = this;
+        }
             
         if (this.timer)
             this.timer.Start(delay_time);

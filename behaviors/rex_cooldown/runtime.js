@@ -105,7 +105,13 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         return(this.timer)? this.timer.IsActive():false; 
     }; 
        
-    behinstProto._on_cooldown_finished = function()
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.on_cooldown_finished();
+    };
+    
+    behinstProto.on_cooldown_finished = function()
     {    
         trig_behavior_inst = this;
         this.runtime.trigger(cr.behaviors.Rex_Cooldown.prototype.cnds.OnCD, this.inst); 
@@ -160,7 +166,8 @@ cr.behaviors.Rex_Cooldown = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this, this._on_cooldown_finished, null, this.timer_save);
+            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer.plugin = this;
         }     
         this.timers_save = null;        
 	}; 
@@ -271,7 +278,8 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         {
             if ( this.timer == null )
             {
-                this.timer = this.type._timeline_get().CreateTimer(this, this._on_cooldown_finished);
+                this.timer = this.type._timeline_get().CreateTimer(on_timeout);
+                this.timer.plugin = this;
             }
             
             trig_behavior_inst = this;

@@ -365,7 +365,8 @@ cr.plugins_.Rex_TARP = function(runtime)
             this.play_index += 1;
             if (this.timer== null)
             {
-                this.timer = this.plugin._timeline_get().CreateTimer(this, this._run);
+                this.timer = this.plugin._timeline_get().CreateTimer(on_timeout);
+                this.timer.plugin = this;
             }
             this.timer.Start(this.current_cmd[0] + this.offset);
 			this.wallclock.current_time_get();
@@ -375,7 +376,14 @@ cr.plugins_.Rex_TARP = function(runtime)
             this.plugin.runtime.trigger(cr.plugins_.Rex_TARP.prototype.cnds.OnEnd, this.plugin);
         }
 	};
-	PlayerKlassProto._run = function()
+	
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.run();
+    };
+    
+	PlayerKlassProto.run = function()
 	{
         var name = this.current_cmd[1];
         var params = this.current_cmd[2];
@@ -408,7 +416,8 @@ cr.plugins_.Rex_TARP = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.plugin._timeline_get().LoadTimer(this, this._run, null, this.timer_save);
+            this.timer = this.plugin._timeline_get().LoadTimer(this.timer_save, on_timeout);
+            this.timer.plugin = this;
         }     
         this.timers_save = null;
         

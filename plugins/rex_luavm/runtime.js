@@ -230,9 +230,9 @@ end\n\
 	    this._act_call_fn = null;
 		this._exp_call = null;              
 
-        // timers
-	    this.timer_cache = new TimerCacheKlass(this);        
+        // timers     
         this.timers = {};  // map task name to timer
+        this.timer_cache = new TimerCacheKlass(this);           
         this.timers_save = null;     
  
         // save/load 
@@ -269,10 +269,8 @@ end\n\
         
 	var _timer_start = function (delay_time, task_name)
 	{
-        var timer = _thisArg.timer_cache.alloc(_thisArg, _thisArg._on_timeout);
+        var timer = _thisArg.timer_cache.alloc(on_timeout, task_name);
         _thisArg.timers[task_name] = timer;
-        var args = timer.GetCallbackArgs();
-        args.push(task_name);
         timer.Start(delay_time);
 	};
     
@@ -285,17 +283,17 @@ end\n\
         timer.Remove();
         _thisArg.timer_cache.free(timer);
         delete _thisArg.timers[task_name];
-	};     
-    
-	instanceProto._on_timeout = function (task_name)
-	{  
-        var timer = this.timers[task_name];
-        this.timer_cache.free(timer);
-        delete this.timers[task_name];
-	    var s = "TaskRun('" + task_name + "', nil)";
+	};
+
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        var task_name = this.task_name;
+        _timer_remove(task_name);
+        var s = "TaskRun('" + task_name + "', nil)";
         window["Lua"].execute(s);
-	};   
-    
+    };
+       
     var _on_task_started = function (task_name)
     {
         _thisArg.exp_TaskName = task_name;
@@ -328,20 +326,20 @@ end\n\
 
 	instanceProto.saveToJSON = function ()
 	{ 
-        var name, timer_save = {};        
-        for (name in this.timers)
+        var task_name, timer_save = {};        
+        for (task_name in this.timers)
         {
-            timer_save[name] = this.timers[name].saveToJSON();
+            timer_save[task_name] = this.timers[task_name].saveToJSON();
         }
 		return { "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
-                 "timers": timer_save,
+                 "tims": timer_save,
                  };
 	};
     
 	instanceProto.loadFromJSON = function (o)
 	{
 	    this.timelineUid = o["tlUid"];
-        this.timers_save = o["timers"];
+        this.timers_save = o["tims"];
 	};  
 
 	instanceProto.afterLoad = function ()
@@ -353,15 +351,13 @@ end\n\
 			this.timeline = this.runtime.getObjectByUID(this.timelineUid);
 			assert2(this.timeline, "Lua VM: Failed to find timeline object by UID");
 		}
-        var name, timer, args;
-        for (name in this.timers_save)
+        var task_name, timer, args;
+        for (task_name in this.timers_save)
         {
-            timer = this.timer_cache.alloc(this, this._on_timeout);
-            args = timer.GetCallbackArgs();
-            args.push(name);
-            timer.loadFromJSON(this.timers_save[name]);            
+            timer = this.timer_cache.alloc(on_timeout, task_name);
+            timer.loadFromJSON(this.timers_save[task_name]);            
             timer.afterLoad();
-            this.timers[name] = timer;            
+            this.timers[task_name] = timer;            
         }
         this.timers_save = null;        
 	}; 	
@@ -369,24 +365,30 @@ end\n\
     var TimerCacheKlass = function (plugin)
     {        
         this.plugin = plugin;
-        this.timer_cache = [];  
+        this.lines = [];  
     };
     var TimerCacheKlassProto = TimerCacheKlass.prototype;   
-    
-	TimerCacheKlassProto.alloc = function(thisArg, timeout_handler)
+         
+	TimerCacheKlassProto.alloc = function(on_timeout, task_name)
 	{
         var timer;
-        if (this.timer_cache.length > 0)
-            timer = this.timer_cache.pop();
+        if (this.lines.length > 0)
+        {
+            timer = this.lines.pop();
+            timer.task_name = task_name;
+        }
         else
-            timer = this.plugin._timeline_get().CreateTimer(thisArg, timeout_handler);
+        {
+            timer = this.plugin._timeline_get().CreateTimer(on_timeout);
+            timer.task_name = task_name;
+        }
             
 		return timer;
 	};
 
 	TimerCacheKlassProto.free = function(timer)
 	{
-        this.timer_cache.push(timer);
+        this.lines.push(timer);
 	};
 	//////////////////////////////////////
 	// Conditions

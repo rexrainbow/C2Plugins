@@ -47,6 +47,9 @@ AddExpression(2, ef_return_string,
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddExpression(3, ef_return_number, 
               "Get count of pattern", "Pattern", "TotalCount", "Get total count of pattern.");
+AddStringParam("Pattern", "Pattern in gererator.", '""');
+AddExpression(4, ef_return_number, 
+              "Manual pick pattern", "Generator", "ManualPick", 'Manual pick pattern. Return pattern if success, else return ""');
               
 ACESDone();
 

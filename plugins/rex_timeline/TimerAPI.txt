@@ -1,6 +1,6 @@
 1. get a new timer
-- timeline_obj.CreateTimer(thisArg, call_back_fn, args);
-(In timer, use "call_back_fn.apply(thisArg, args)" to do callback)
+- timer = timeline_obj.CreateTimer(on_timeout_fn);
+this=timer, in on_timeout_fn
 
 
 2. timer api
@@ -25,5 +25,18 @@ C. time
 - timer.ElapsedTimePercentGet()
 - timer.DeltaErrorTickGet()
 
-3. load timer (for save/load system)
-- timeline_obj.LoadTimer(thisArg, call_back_fn, args, load_info);
+D. time out handelr
+- timer.TimeoutHandlerSet(on_timeout_fn)
+
+
+3. save/load timer (for save/load system)
+A. save
+- save_data = timer.saveToJSON()
+
+B. load
+- timer = timeline_obj.LoadTimer(save_data, on_timeout_fn);
+or
+
+var timer = timeline_obj.CreateTimer(on_timeout_fn); 
+timer.loadFromJSON(save_data);
+timer.afterLoad();

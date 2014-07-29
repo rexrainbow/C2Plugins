@@ -136,30 +136,48 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    return is_empty;
 	};
 		
-	instanceProto.get_pattern = function()
+	instanceProto.get_pattern = function(pattern)
 	{
-	    var pattern;
 	    if (this.restart_gen_flg)
-	        this.start_gen();
-	    if (this.mode == 0) // shuffle mode
-	    {
-	        this._reset_pat_rank(this._shadow_patterns);
-	        pattern = this._get_rand_pattern(this._pat_rank);
-	        if (pattern != null)
+	        this.start_gen();	
+	    if (pattern == null)
+		{
+	        if (this.mode == 0) // shuffle mode
 	        {
-	            var count = this._shadow_patterns[pattern] - 1;	            
-	            if (count <= 0)
-	                delete this._shadow_patterns[pattern];
-	            else
-	                this._shadow_patterns[pattern] = count;
+	            this._reset_pat_rank(this._shadow_patterns);
+	            pattern = this._get_rand_pattern(this._pat_rank);
+	            if (pattern != null)
+	            {
+	                var count = this._shadow_patterns[pattern] - 1;	            
+	                if (count <= 0)
+	                    delete this._shadow_patterns[pattern];
+	                else
+	                    this._shadow_patterns[pattern] = count;
+	            }
+	            if (is_hash_empty(this._shadow_patterns))
+	                this.restart_gen_flg = true;	        
 	        }
-	        if (is_hash_empty(this._shadow_patterns))
-	            this.restart_gen_flg = true;	        
-	    }
-	    else  // random mode
-	    {
-	        pattern = this._get_rand_pattern(this._pat_rank);
-	    }
+	        else  // random mode
+	        {
+	            pattern = this._get_rand_pattern(this._pat_rank);
+	        }
+		}
+		else  // force pick
+		{
+			if (!this._shadow_patterns.hasOwnProperty(pattern))
+				pattern = "";	
+            else
+            {
+			    if (this.mode == 0) // shuffle mode
+	            {			    
+	                var count = this._shadow_patterns[pattern] - 1;	            
+	                if (count <= 0)
+	                    delete this._shadow_patterns[pattern];
+	                else
+	                    this._shadow_patterns[pattern] = count;
+			    }
+			}
+		}
 	    return pattern;
 	};
 
@@ -270,5 +288,11 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    if (count == null)
 	        count = 0;
 		ret.set_float(count);
-	};	
+	};
+	
+	Exps.prototype.ManualPick = function (ret, pattern)
+	{
+		ret.set_string(this.get_pattern(pattern));
+	};
+	
 }());

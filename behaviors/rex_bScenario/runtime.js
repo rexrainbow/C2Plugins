@@ -557,7 +557,10 @@ cr.behaviors.rex_bScenario = function(runtime)
         if (offset != null)
             this.offset = offset;
         if (this.timer == null)
-            this.timer = this.plugin.type._timeline_get().CreateTimer(this, this._delay_execute_c2fn);
+        {
+            this.timer = this.plugin.type._timeline_get().CreateTimer(on_timeout);
+            this.timer.plugin = this;
+        }
         else
             this.timer.Remove();  // stop timer
         this.cmd_table.reset();
@@ -714,7 +717,8 @@ cr.behaviors.rex_bScenario = function(runtime)
         }
         else
         {
-            this.timer.SetCallbackArgs([fn_name, fn_params]);
+            this.timer._cb_name = fn_name;
+            this.timer._cb_params = fn_params;
             this.timer.Start(deltaT);
         }
         return (deltaT == 0);  // is_continue
@@ -793,7 +797,13 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.plugin.run_command(name, params);
     };
     
-    ScenarioKlassProto._delay_execute_c2fn = function(name, params)
+    // handler of timeout for timers in this plugin, this=timer   
+    var on_timeout = function ()
+    {
+        this.plugin.delay_execute_c2fn(this._cb_name, this._cb_params);
+    };
+    
+    ScenarioKlassProto.delay_execute_c2fn = function(name, params)
     {
         this.execute_cmd(name, params);
         this._run_next_cmd();
@@ -805,7 +815,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         if (this.timer != null)
         {
             timer_save = this.timer.saveToJSON();
-            timer_save["__cbargs"] = this.timer.GetCallbackArgs();
+            timer_save["__cbargs"] = [this.timer._cb_name, this.timer._cb_params];
         }
         return { "q": this.cmd_table.saveToJSON(),
                  "isrun": this.is_running,
@@ -834,7 +844,10 @@ cr.behaviors.rex_bScenario = function(runtime)
         if (this.timer_save != null)
         {
             var timeline = this.plugin.type._timeline_get();
-            timeline.LoadTimer(this, this._delay_execute_c2fn, this.timer_save["__cbargs"],  this.timer_save);
+            this.timer = timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer.plugin = this;
+            this.timer._cb_name = this.timer_save["__cbargs"][0];
+            this.timer._cb_params = this.timer_save["__cbargs"][1];               
             this.timer_save = null;
         }
     };
