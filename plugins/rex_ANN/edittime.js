@@ -21,20 +21,20 @@
 // Actions     
 AddNumberParam("Rate", "Learning rate", 0.5);
 AddNumberParam("Moment", "Momentum factor", 0.1);  
-AddAction(0, 0, "Define hidden node count", "Define", 
+AddAction(0, 0, "Define learning rate and momentum factor", "Define", 
           "Set learning rate to <i>{0}</i>, momentum factor to <i>{1}</i>", 
           "Set learning rate and momentum factor.", "SetRateMoment");
           
 AddVariadicParams("Input {n}", "Name of input variables.");
-AddAction(1, 0, "Define inputs", "Define", 
+AddAction(1, 0, "Define inputs", "Define: input", 
           "Define inputs (<i>{...}</i>)", 
           "Define input variables by name.", "DefineInput");
 AddVariadicParams("Output {n}", "Name of output variables.");
-AddAction(2, 0, "Define outputs", "Define", 
+AddAction(2, 0, "Define outputs", "Define: output", 
           "Define outputs (<i>{...}</i>)", 
           "Define outputs variables by name.", "DefineOutput");
 AddNumberParam("Node count", "Node count of hidden layer", 0);
-AddAction(3, 0, "Define hidden node count", "Define", 
+AddAction(3, 0, "Define hidden node count", "Define: hidden layer", 
           "Define node count of hidden layer to <i>{0}</i>", 
           "Define node count of hidden layer.", "DefineHiddenNode");
           
@@ -62,6 +62,15 @@ AddAction(8, 0, "Reset", "Reset",
 
 AddStringParam("JSON", "A string of the JSON data to load.");
 AddAction(9, 0, "Load", "JSON", "Load from JSON string <i>{0}</i>", "Load from an ANN previously encoded in JSON format.", "JSONLoad");
+
+AddObjectParam("Dictionary", "Dictionary object");
+AddAction(10, 0, "Define inputs by dictionary", "Define: input", 
+          "Define inputs by the keys of dictionary <i>{0}</i>", 
+          "Define input variables by the keys of dictionary.", "DefineInputByDict");
+AddObjectParam("Dictionary", "Dictionary object");
+AddAction(11, 0, "Define outputs by dictionary", "Define: output", 
+          "Define outputs by the keys dictionary <i>{0}</i>", 
+          "Define outputs variables by the keys of dictionary.", "DefineOutputByDict");
           
 //////////////////////////////////////////////////////////////
 // Expressions

@@ -140,7 +140,32 @@ cr.plugins_.Rex_ANN = function(runtime)
 		catch(e) { return; }
 		
 		this.loadFromJSON(o);
-	};	
+	};
+	
+	
+	var _dict2names = function (dict_objs)
+	{
+	    assert2(cr.plugins_.Dictionary, "[rex_ANN] Error:No Dictionary object found.");
+        var dict_obj = dict_objs.getFirstPicked();
+        var is_dict_inst = (dict_obj instanceof cr.plugins_.Dictionary.prototype.Instance);
+        assert2(is_dict_inst, "[rex_ANN] Error: Need an dictionary object.");
+        
+        var d = dict_obj.dictionary, k;
+        var names = [];
+        for (k in d)
+            names.push(k);
+            
+        return names;
+	};
+	Acts.prototype.DefineInputByDict = function (dict_objs)
+	{
+	    this.ann.DefineInput(_dict2names(dict_objs));           
+	};
+	
+	Acts.prototype.DefineOutputByDict = function (dict_objs)
+	{
+	    this.ann.DefineOutput(_dict2names(dict_objs));                                  
+	};			
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
