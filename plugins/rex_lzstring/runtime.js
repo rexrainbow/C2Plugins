@@ -709,8 +709,60 @@ if( typeof module !== 'undefined' && module != null ) {
 
 	instanceProto.onCreate = function()
 	{
+        this._webstorage_obj = null;
+        this._save_fn = null;
+        this._load_fn = null;
+        this._key_exist_fn = null;
+	    this.fake_ret = {value:0,
+	                     set_any: function(value){this.value=value;},
+	                     set_int: function(value){this.value=value;},	 
+                         set_float: function(value){this.value=value;},	 
+                         set_string: function(value){this.value=value;},	    
+	                    };  	
 	};
-
+	
+	instanceProto.webstorage_get = function ()
+	{   	 
+        if (this._webstorage_obj != null)
+            return this._webstorage_obj;      
+            
+	    assert2(cr.plugins_.WebStorage, "Webstorage Ext: Could not find webstorage.");
+        var plugins = this.runtime.types;
+        this._save_fn = cr.plugins_.WebStorage.prototype.acts.StoreLocal;
+        this._load_fn = cr.plugins_.WebStorage.prototype.exps.LocalValue;
+        this._key_exist_fn = cr.plugins_.WebStorage.prototype.cnds.LocalStorageExists;
+        var name, plugin;
+        for (name in plugins)
+        {
+            plugin = plugins[name];
+            if (plugin.plugin.acts.StoreLocal == this._save_fn)
+            {
+                this._webstorage_obj = plugin.instances[0];
+                break;
+            }                                          
+        }
+        
+        return this._webstorage_obj;
+	};
+    
+    instanceProto.load_value = function (key)
+    {
+        var webstorage_obj = this.webstorage_get();
+        this._load_fn.call(webstorage_obj, this.fake_ret, key);
+        return this.fake_ret.value;
+    };
+    
+    instanceProto.save_value = function (key, value)
+    {
+        var webstorage_obj = this.webstorage_get();
+        this._save_fn.call(webstorage_obj, key, value);
+    };	
+    
+    instanceProto.key_exist = function (key)
+    {
+        var webstorage_obj = this.webstorage_get();
+        return this._key_exist_fn.call(webstorage_obj, key);
+    };  
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -720,7 +772,11 @@ if( typeof module !== 'undefined' && module != null ) {
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-
+	
+	Acts.prototype.StoreLocal = function(key, data)
+	{
+		this.save_value(key, LZString.compress(data));
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -734,4 +790,19 @@ if( typeof module !== 'undefined' && module != null ) {
 	{
 	    ret.set_string( LZString.decompress(s) );
 	};    
+	
+    Exps.prototype.LocalValue = function (ret, _key, _default)
+	{
+	    var v;
+	    if (this.key_exist(_key))
+	    {
+			v = LZString.decompress( this.load_value(_key) );
+	    }
+	    else
+	    {
+	        v = _default;
+	        this.save_value(_key, LZString.compress(_default));
+	    }
+	    ret.set_any( v );
+	};	
 }());

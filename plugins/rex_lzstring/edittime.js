@@ -19,14 +19,20 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-        
+AddStringParam("Key","Enter the name of the key to associate the value with.", "\"\"");
+AddAnyTypeParam("Value","Enter the value to store.", "\"\"");
+AddAction(11,0,"Set local value","Local","Set local key {0} to {1}","Store a value in local storage (available in any session).","StoreLocal");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Source", "Source string to compress", '""');
 AddExpression(1, ef_return_string, "Compress", "Compress", "Compress", "Compress source string.");
 AddStringParam("Result", "Result string to decompress", '""');
 AddExpression(2, ef_return_string, "Decompress", "Decompress", "Decompress", "Decompress result string.");
-
+AddStringParam("Key", "Key name", "\"\"");
+AddAnyTypeParam("Default","The default value if the key does not existed.", 0);
+AddExpression(11, ef_return_any, "Get local value", "Local", "LocalValue", 
+              "Get the value from a key in local storage. Return the default value if the key does not existed, and save the default value to webstorage.");
 
 ACESDone();
 

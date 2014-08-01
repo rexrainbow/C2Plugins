@@ -7,12 +7,9 @@ this=timer, in on_timeout_fn
 A. action
 - timer.Start(delay_time)
 - timer.Restart(delay_time)
-- timer.SetCallbackArgs(args)        // args is an array
-- timer.GetCallbackArgs()            // return an array
 - timer.Suspend()                    // paused, still in timeline
 - timer.Resume()
 - timer.Remove()                     // remove from timeline
-- timer.ChangeRate(rate)
 
 B. status
 - timer.IsAlive()                    // count-down or suspend

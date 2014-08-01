@@ -375,6 +375,7 @@ end\n\
         if (this.lines.length > 0)
         {
             timer = this.lines.pop();
+			timer.Reset();
             timer.task_name = task_name;
         }
         else
