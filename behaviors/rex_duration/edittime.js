@@ -47,10 +47,10 @@ AddAction(2, af_deprecated, "Start duration", "Z: Deprecated",
 // ---- deprecated ----
 
 AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');
-AddNumberParam("Duration", "Duration time", 1);
+AddNumberParam("Duration", "Persist duration time", 1);
 AddNumberParam("Interval", "Interval time", 0.1);
 AddAction(1, 0, "Start", "Control", 
-          "{my} start <i>{0}</i> with duration to <i>{1}</i> second, interval to <i>{2}</i> second", 
+          "{my} run <i>{0}</i> each <i>{2}</i> second, persist <i>{1}</i> second",
           "Start duration.", "Start");
 AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');      
 AddAction(3, 0, "Pause", "Control", 
@@ -61,18 +61,22 @@ AddAction(4, 0, "Resume", "Control",
           "{my} resume <i>{0}</i>", 
           "Resume duration.", "Resume"); 
 AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');        
-AddAction(5, 0, "Stop", "Control", 
-          "{my} stop <i>{0}</i>", 
-          "Stop duration.", "Stop");
+AddAction(5, 0, "Force to end", "Control", 
+          "{my} force <i>{0}</i> to end", 
+          'Force duration to end. "Condition:On end" will be triggered if "Condition:On start" had been triggered before.', "ForceToEnd");
 AddAction(6, 0, "Pause all", "Control: All", 
           "{my} pause all durations", 
           "Pause all durations.", "PauseAll");                    
 AddAction(7, 0, "Resume all", "Control: All", 
           "{my} resume all durations", 
           "Resume all durations.", "ResumeAll"); 
-AddAction(8, 0, "Stop all", "Control: All", 
-          "{my} stop all durations", 
-          "Stop all durations.", "StopAll");          
+AddAction(8, 0, "Force to end all", "Control: All", 
+          "{my} force all durations to end", 
+          'Force all durations to end. "Condition:On end" will be triggered if "Condition:On start" had been triggered before.', "ForceToEndAll");    
+AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');        
+AddAction(9, 0, "Cancel", "Control", 
+          "{my} cancel <i>{0}</i>", 
+          "Cancel duration.", "Cancel");		  
 
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(10, 0, "Setup", "Setup", 
@@ -116,6 +120,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),
 	];
 	
 // Called by IDE when a new behavior type is to be created

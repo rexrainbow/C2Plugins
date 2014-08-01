@@ -27,6 +27,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         if (this.lines.length > 0)
         {
             timer = this.lines.pop();
+			timer.Reset();
         }
         else
         {
@@ -117,10 +118,12 @@ cr.behaviors.Rex_Duration = function(runtime)
 	    {
             this.timers = {};
         }
+		this.sync_timescale = (this.properties[0] == 1);
         this._trigger_duration_name = "";
         this.is_my_call = false;
         this.timers_save = null;
         this.timer_cache = cr.behaviors.Rex_Duration.timer_cache; 
+        this.pre_ts = 1;
 	};
     
 	behinstProto.onDestroy = function()
@@ -162,8 +165,19 @@ cr.behaviors.Rex_Duration = function(runtime)
 
 	behinstProto.tick = function ()
 	{
+	    if (!this.sync_timescale)
+		    return;
+			
+	    var ts = this.get_timescale();
+	    if (this.pre_ts == ts)
+	        return;
+	    
+	    var n;
+	    for (n in this.timers)
+	        this.timers[n].SetTimescale(ts);
+	        
+	    this.pre_ts = ts;
 	};
-
     
     // handler of timeout for timers in this plugin, this=timer   
     var on_timeout = function ()
@@ -179,9 +193,9 @@ cr.behaviors.Rex_Duration = function(runtime)
         var interval = timer._interval_time;
                 
         // run start callback
-        if (timer._is_start)
+        if (timer.run_start)
         {
-            timer._is_start = false;
+            timer.run_start = false;
             this.run_callback(cr.behaviors.Rex_Duration.prototype.cnds.OnStart);
         }
         else  // others
@@ -202,7 +216,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         }
         
         if (timer._duration_remain_time > 0)
-            timer.Start(Math.min(duration_remain, interval)); 
+            timer.Start(Math.min(duration_remain, interval));
         else
             this.destroy_timer(duration_name);
     };
@@ -218,6 +232,14 @@ cr.behaviors.Rex_Duration = function(runtime)
     {
         return timer._duration_remain_time - timer.ElapsedTimeGet();
     };
+
+	behinstProto.get_timescale = function ()
+	{
+	    var ts = this.inst.my_timescale;
+	    if (ts == -1)
+	        ts = 1;	    
+	    return ts;
+	};
 	
 	behinstProto.saveToJSON = function ()
 	{ 
@@ -230,7 +252,7 @@ cr.behaviors.Rex_Duration = function(runtime)
             timer_save["_dt"] = timer._duration_time;
             timer_save["_it"] = timer._interval_time;
             timer_save["_drt"] = timer._duration_remain_time;
-            timer_save["_iss"] = timer._is_start;
+            timer_save["_iss"] = timer.run_start;
             tims_save[name] = timer_save;   
                          
         }
@@ -270,7 +292,7 @@ cr.behaviors.Rex_Duration = function(runtime)
                 timer._duration_time = timer_save["_dt"];
                 timer._interval_time = timer_save["_it"];
                 timer._duration_remain_time = timer_save["_drt"];   
-                timer._is_start = timer_save["_iss"];    
+                timer.run_start = timer_save["_iss"];    
                 
                 timer.loadFromJSON(timer_save);
                 timer.afterLoad();                
@@ -321,8 +343,13 @@ cr.behaviors.Rex_Duration = function(runtime)
         timer._duration_time = duration_time;
         timer._interval_time = interval_time;
         timer._duration_remain_time = duration_time;       
-        timer._is_start = true;
-        timer.Start(0);        
+        timer.run_start = true;
+        timer.Start(0);
+		
+		if (this.sync_timescale)
+		{
+            timer.SetTimescale(this.get_timescale());
+	    }
 	};
         
     Acts.prototype.Pause = function (duration_name)
@@ -339,8 +366,14 @@ cr.behaviors.Rex_Duration = function(runtime)
             this.timer.Resume();
 	};       
     
-    Acts.prototype.Stop = function (duration_name)
+    Acts.prototype.ForceToEnd = function (duration_name)
 	{
+	    var timer = this.timers[duration_name];
+	    if ((timer != null) && (!timer.run_start))
+		{
+		    this._trigger_duration_name = duration_name;
+		    this.run_callback(cr.behaviors.Rex_Duration.prototype.cnds.OnEnd); 
+		}
 	    this.destroy_timer(duration_name);
 	};
 
@@ -366,14 +399,24 @@ cr.behaviors.Rex_Duration = function(runtime)
         }
 	};       
     
-    Acts.prototype.StopAll = function ()
+    Acts.prototype.ForceToEndAll = function ()
 	{
         var name, timer;
         for (name in this.timers)
         {
+		    if (!this.timers[name].run_start)
+			{
+			    this._trigger_duration_name = name;
+			    this.run_callback(cr.behaviors.Rex_Duration.prototype.cnds.OnEnd); 
+			}
             this.destroy_timer(name);
         }
 	};
+    
+    Acts.prototype.Cancel = function (duration_name)
+	{
+	    this.destroy_timer(duration_name);
+	};	
 
     Acts.prototype.Setup2 = function (timeline_objs)
 	{
