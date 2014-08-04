@@ -480,7 +480,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             members = chess_type.members;
             member_cnt = members.length;
         }
-        var i,uid_cnt=uids.length, inst, type_name;
+        var i,j,uid_cnt=uids.length, inst, type_name;
         for (i=0; i<uid_cnt; i++)
         {
             inst = this.uid2inst(uids[i]);	
@@ -489,9 +489,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             type_name = inst.type.name;
             if (is_family)
             {
-                for (i=0; i<member_cnt; i++)
+                for (j=0; j<member_cnt; j++)
                 {
-                    if (type_name == members[i].name)
+                    if (type_name == members[j].name)
                     {
                         sol.instances.push(inst); 
                         break;
