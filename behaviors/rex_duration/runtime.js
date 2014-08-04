@@ -84,13 +84,16 @@ cr.behaviors.Rex_Duration = function(runtime)
         return null;	
     }; 
 
-	behtypeProto.timer_create = function(on_timeout)
+	behtypeProto.timer_create = function(on_timeout, plugin)
 	{
-        return this.timer_cache.alloc(this._timeline_get(), on_timeout);
+	    var timer = this.timer_cache.alloc(this._timeline_get(), on_timeout);
+		timer.plugin = plugin; 
+        return timer;
 	}; 
 	
 	behtypeProto.timer_free = function(timer)
 	{
+	    timer.plugin = null; 
         this.timer_cache.free(timer);
 	}; 	 
 	
@@ -145,8 +148,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	        return timer;
 	    }
         
-        timer = this.type.timer_create(on_timeout);
-        timer.plugin = this; 
+        timer = this.type.timer_create(on_timeout, this);
         timer._duration_name = duration_name;
         this.timers[duration_name] = timer;    
         return timer;
