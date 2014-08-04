@@ -24,7 +24,7 @@ AddAction(1, 0, "Drop", "Drop", "Drop {my}",
           "ForceDrop");          
 AddAction(2, 0, "Try drag", "Drag", "Try drag {my}", 
           "Try to drag this object if is in touched.", "TryDrag"); 
-
+                    
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
@@ -41,11 +41,20 @@ AddCondition(6,	0, "Is dragging moving", "Dragging moving",
 AddCondition(7,	cf_trigger, "On dragging moving end", "Dragging moving", 
              "On {my} dragging moving end", 
              "Triggered when object dragging moving end.", "OnDragMoveEnd"); 
-             
+AddCmpParam("Comparison", "Choose the way to compare drag-distance.");
+AddNumberParam("Length", "The length to compare the drag-distance to, in pixels.");
+AddCondition(8, 0, "Compare drag-distance", "Drag-distance", 
+             "{my} drag-distance {0} {1}", 
+             "Compare drag-distance.", "CompareDragDistance");	
+AddCmpParam("Comparison", "Choose the way to compare drag-distance.");
+AddNumberParam("Angle", "The angle to compare the drag-angle to, in degrees.");
+AddCondition(9, 0, "Compare drag-angle", "Drag-angle", 
+             "{my} drag-angle {0} {1}", 
+             "Compare drag-angle.", "CompareDragAngle");				 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number | ef_variadic_parameters, "Mouse X position", "Position", "X", "Get the touch X co-ordinate in the layout.");
-AddExpression(1, ef_return_number | ef_variadic_parameters, "Mouse Y position", "Position", "Y", "Get the touch Y co-ordinate in the layout.");
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Touch X position", "Position", "X", "Get the touch X co-ordinate in the layout.");
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Touch Y position", "Position", "Y", "Get the touch Y co-ordinate in the layout.");
 AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the touch X co-ordinate on the canvas.");
 AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the touch Y co-ordinate on the canvas.");
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
@@ -55,6 +64,8 @@ AddExpression(7, ef_return_number, "X co-ordinate of dragging start position", "
 AddExpression(8, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");
 AddExpression(9, ef_return_number, "X co-ordinate of object's dragging start position", "Instance start", "InstStartX", "Get X co-ordinate of object's position at dragging start.");
 AddExpression(10, ef_return_number, "Y co-ordinate of object's dragging start position", "Instance start", "InstStartY", "Get Y co-ordinate of object's position at dragging start.");
+AddExpression(11, ef_return_number, "Distance between current touch position to drag-start position", "Drag-distance", "DragDistance", "Get distance between current touch position to drag-start position.");
+AddExpression(12, ef_return_number, "Angle of dragging", "Drag-angle", "DragAngle", "Get angle of dragging.");
 
 ACESDone();
 

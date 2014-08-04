@@ -361,6 +361,33 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         this.is_moving = is_moving;     
 	};
 	
+	DragInfoKlassProto.DragDistance = function ()
+	{
+	    if (!this.is_on_dragged)
+	        return 0;
+	        
+	    var startx = this.drag_start_x;
+	    var starty = this.drag_start_y;
+	    var endx = this.plugin.GetX();
+	    var endy = this.plugin.GetY();
+	    var d = cr.distanceTo(startx,starty,endx,endy);
+	    return d;
+	};
+	
+	DragInfoKlassProto.DragAngle = function ()
+	{
+	    if (!this.is_on_dragged)
+	        return 0;
+	        
+	    var startx = this.drag_start_x;
+	    var starty = this.drag_start_y;
+	    var endx = this.plugin.GetX();
+	    var endy = this.plugin.GetY();
+	    var a = cr.angleTo(startx,starty,endx,endy);
+		a = cr.to_clamped_degrees(a);
+	    return a;
+	};	
+	
 	behinstProto.saveToJSON = function ()
 	{
 		return { "en": this.enabled };
@@ -409,6 +436,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{   
         return true;
     };           
+
+	Cnds.prototype.CompareDragDistance = function (cmp, s)
+	{
+		return cr.do_cmp(this.drag_info.DragDistance(), cmp, s);
+	}; 
+
+	Cnds.prototype.CompareDragAngle = function (cmp, s)
+	{
+		return cr.do_cmp(this.drag_info.DragAngle(), cmp, s);
+	}; 
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -512,5 +550,15 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	Exps.prototype.InstStartY = function (ret)
 	{
 	    ret.set_float( this.drag_info.inst_start_y );
-	};     
+	};  
+	
+	Exps.prototype.DragDistance = function (ret)
+	{
+	    ret.set_float( this.drag_info.DragDistance() );
+	}; 	
+	
+	Exps.prototype.DragAngle = function (ret)
+	{
+	    ret.set_float( this.drag_info.DragAngle() );
+	}; 	   
 }());
