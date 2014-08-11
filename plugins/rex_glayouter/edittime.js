@@ -43,6 +43,8 @@ AddAction(5, 0, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>",
           "Remove instances.", "RemoveInsts"); 	
 AddAction(6, 0, "Force layout", "Layout", "Force layout instances", 
           "Force layout instances.", "ForceLayout");          
+AddAction(7, 0, "Remove all", "Add/Remove", "Remove all instances", 
+          "Remove all instances.", "RemoveAllInsts"); 	                   
 AddObjectParam("Object", "Object for picking");
 AddAction(10, 0, "Pick instances", "SOL: instances", 
           "Pick <i>{0}</i>", "Pick instances.", "PickInsts");

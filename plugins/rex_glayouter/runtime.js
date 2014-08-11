@@ -581,6 +581,18 @@ cr.plugins_.Rex_Layouter = function(runtime)
         this._remove_invalid_insts();	    
         this._do_layout([], true);
 	};    
+	
+	Acts.prototype.RemoveAllInsts = function ()
+	{
+	    var uid;
+	    for(uid in this._uids)
+	    {
+	         delete this._uids[uid];
+	         if (uid in this.pin_inst)
+	              delete this.pin_inst[uid];
+	    }
+	    this.sprites.length = 0;
+	};    
     
 	//////////////////////////////////////
 	// Expressions

@@ -43,17 +43,21 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	{
         this._directions = this.properties[0]; 
         this._sensitivity = this.properties[1]; 
+	    this._reset_origin = (this.properties[2] == 1); 
+	            
         this.runtime.tickMe(this);
      
         this.setup_stage = true;
         // touch   
         this.touchwrap = null;
-        this.GetAbsoluteX = null;
-        this.GetAbsoluteY = null; 
+        this.GetX = null;
+        this.GetY = null; 
         this.touch_src = null;        
-		this.pre_x = 0;
-		this.pre_y = 0;
-        this.is_on_moving = false;  
+		this.origin_x = 0;
+		this.origin_y = 0;
+		this.curr_x = 0;
+		this.curr_y = 0;		
+        this.is_on_moving = false;
         this.cmd_cancel = false;
         this.keyMap = [false, false, false, false];
         this.pre_key_id = 0;
@@ -80,8 +84,8 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
-                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteXForID;
-                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteYForID;                
+                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
+                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;                
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -97,8 +101,9 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         }
         this.is_on_moving = true;
         this.touch_src = touch_src;    
-        this.pre_x = this.get_touch_x();
-        this.pre_y = this.get_touch_y(); 
+        this.origin_x = this.get_touch_x();
+        this.origin_y = this.get_touch_y(); 
+        this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingStart, this);
     };
     
     instanceProto.OnTouchEnd = function (touch_src)
@@ -109,21 +114,20 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this.touch_src = null; 
         this.is_on_moving = false;
         this._keydown(0);
+        this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
     };
     
 	instanceProto.get_touch_x = function ()
 	{
         var touch_obj = this.touchwrap;
-        this.GetAbsoluteX.call(touch_obj, 
-                               touch_obj.fake_ret, this.touch_src);
+        this.GetX.call(touch_obj, touch_obj.fake_ret, this.touch_src);
         return touch_obj.fake_ret.value;
 	};  
 
 	instanceProto.get_touch_y = function ()
 	{
         var touch_obj = this.touchwrap;
-        this.GetAbsoluteY.call(touch_obj, 
-                               touch_obj.fake_ret, this.touch_src);
+        this.GetY.call(touch_obj, touch_obj.fake_ret, this.touch_src);
         return touch_obj.fake_ret.value;   
 	};
     
@@ -149,23 +153,22 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     var LEFTKEY = 0x4;
     var UPKEY = 0x8;
 	instanceProto._touch_arrow = function ()
-	{    
-        if ((this.touchwrap == null) || (!this.is_on_moving) || this.cmd_cancel) 
-        {
-            this.diff_x = 0;
-            this.diff_y = 0;
-            this.cmd_cancel = false;
+	{
+	    if (this.cmd_cancel)
+	        this.cmd_cancel = false;
+	        
+        if ((this.touchwrap == null) || (!this.is_on_moving)) 
             return;
-        }
-        
-        var cur_x = this.get_touch_x();
-        var cur_y = this.get_touch_y();
-        var dx = cur_x - this.pre_x;
-        var dy = cur_y - this.pre_y;
+
+		this.curr_x = this.get_touch_x();
+		this.curr_y = this.get_touch_y();        
+        var dx = this.curr_x - this.origin_x;
+        var dy = this.curr_y - this.origin_y;
         this.diff_x = dx;
-        this.diff_y = dy;        
+        this.diff_y = dy;
+        var dist_o2c = Math.sqrt(dx*dx + dy*dy);
         
-        if ( Math.sqrt(dx*dx + dy*dy) >= this._sensitivity )
+        if ( dist_o2c >= this._sensitivity )
         {
             var angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
             switch (this._directions)
@@ -194,9 +197,20 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
                              ((angle>292.5) && (angle<=337.5))? (UPKEY | RIGHTKEY): RIGHTKEY;                          
                 this._keydown(key_id);
                 break;                
-            }         
-            this.pre_x = cur_x;
-            this.pre_y = cur_y;                    
+            }    
+            
+            if (this._reset_origin)
+            {
+                this.origin_x = this.curr_x;
+                this.origin_y = this.curr_y;                    
+            }
+        }
+        else
+        {
+            if (!this._reset_origin)
+            {
+                this._keydown(0);
+            }
         }
 	}; 
     
@@ -244,7 +258,9 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
             key_name += "Up ";                
 		propsections.push({
 			"title": this.type.name,
-			"properties": [{"name": "Pressed key", "value": key_name},			               
+			"properties": [{"name": "Origin (floor)", "value": "("+Math.floor(this.origin_x)+","+Math.floor(this.origin_y)+")"},	
+			               {"name": "Current (floor)", "value": "("+Math.floor(this.curr_x)+","+Math.floor(this.curr_y)+")"},	
+			               {"name": "Pressed key", "value": key_name},			               
                            ]
 		});
 	};
@@ -270,7 +286,11 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	{
         return this.keyMap[0];
 	};    
-    
+	Cnds.prototype.IsAnyDown = function()
+	{
+        return this.keyMap[3] | this.keyMap[2] | this.keyMap[1] | this.keyMap[0];
+	};     
+	
 	Cnds.prototype.OnUPPressed = function()
 	{
         return true;
@@ -308,24 +328,51 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	Cnds.prototype.OnRIGHTReleased = function()
 	{
         return true;    
+	}; 
+	    
+	Cnds.prototype.OnDetectingStart = function()
+	{
+        return true;    
 	};     
-    
+	Cnds.prototype.OnDetectingEnd = function()
+	{
+        return true;    
+	};
+
+	Cnds.prototype.IsInDetecting = function()
+	{
+        return this.is_on_moving;
+	};		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
 		
 	Acts.prototype.Cancel = function ()
-	{        
+	{
+	    var is_on_moving = this.is_on_moving;
+	    
 	    this.touch_src = null;
 	    this.is_on_moving = false;
         this.cmd_cancel = true;
+        
+        if (is_on_moving)
+            this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
 	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
+	Exps.prototype.OX = function (ret)
+	{
+		ret.set_float(this.origin_x);
+	};
+	Exps.prototype.OY = function (ret)
+	{
+		ret.set_float(this.origin_y);
+	};
+	    
 	Exps.prototype.DistX = function (ret)
 	{
 		ret.set_float(this.diff_x);
@@ -334,4 +381,13 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	{
 		ret.set_float(this.diff_y);
 	};
+	
+	Exps.prototype.CurrX = function (ret)
+	{
+		ret.set_float(this.curr_x);
+	};
+	Exps.prototype.CurrY = function (ret)
+	{
+		ret.set_float(this.curr_y);
+	};	
 }());

@@ -35,7 +35,9 @@ AddCondition(13, 0,	"Left arrow is down", "Is down", "Left arrow is down",
              "Return true if Left arrow is currently held down.", "IsLEFTDown");
 AddCondition(14, 0,	"Right arrow is down", "Is down", "Right arrow is down", 
              "Return true if Right arrow is currently held down.", "IsRIGHTDown");
-
+AddCondition(15, 0,	"Any arrow is down",	"Is down", "Any arrow is down", 
+             "Return true if Any arrow is currently held down.", "IsAnyDown");
+             
 AddCondition(21, cf_trigger, "On Up arrow released", "Released", "On Up arrow released", 
              "Triggered when Up arrow is released.", "OnUPReleased");
 AddCondition(22, cf_trigger, "On Down arrow released", "Released", "On Down arrow released", 
@@ -45,6 +47,12 @@ AddCondition(23, cf_trigger, "On Left arrow released", "Released", "On Left arro
 AddCondition(24, cf_trigger, "On Right arrow released", "Released", "On Right arrow released", 
              "Triggered when Right arrow is released.", "OnRIGHTReleased");
 
+AddCondition(31, cf_trigger, "On detecting start", "Detecting", "On detecting start", 
+             "Triggered when detecting start.", "OnDetectingStart");
+AddCondition(32, cf_trigger, "On detecting end", "Detecting", "On detecting end", 
+             "Triggered when detecting end.", "OnDetectingEnd");  
+AddCondition(33, 0,	"Is in detecting", "Detecting", "In detecting", 
+             "Return true if is in detecting.", "IsInDetecting");                        
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1, 0, "Cancel", "Detector", 
@@ -53,16 +61,20 @@ AddAction(1, 0, "Cancel", "Detector",
           
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Position X of origin point", "Origin", "OX", "Position X of origin point.");
+AddExpression(2, ef_return_number, "Position Y of origin point", "Origin", "OY", "Position Y of origin point.");
 AddExpression(3, ef_return_number, "Distance of dragging at X coordinate", "Distance", "DistX", "Distance of dragging at X coordinate.");
 AddExpression(4, ef_return_number, "Distance of dragging at Y coordinate", "Distance", "DistY", "Distance of dragging at Y coordinate.");
-
+AddExpression(5, ef_return_number, "Position X of current point", "Current", "CurrX", "Position X of current point.");
+AddExpression(6, ef_return_number, "Position Y of current point", "Current", "CurrY", "Position Y of current point.");
 
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [
+var property_list = [    
     new cr.Property(ept_combo, "Directions", "8 directions", "The number of directions of movement available.", "Up & down|Left & right|4 directions|8 directions"),
-    new cr.Property(ept_float, "Sensitivity", 10, "Sensitivity of touch movment, in pixel."),    
+    new cr.Property(ept_float, "Sensitivity", 50, "Sensitivity of touch movment, in pixel."),    
+    new cr.Property(ept_combo, "Reset origin", "No", 'Reset origin when pressing changing. Set "No" for virtual joystick.', "No|Yes"),    
 	];
 	
 // Called by IDE when a new object type is to be created
