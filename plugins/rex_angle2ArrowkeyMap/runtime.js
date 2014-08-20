@@ -47,6 +47,7 @@ cr.plugins_.Rex_angle2ArrowKeyMap = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this._directions = this.properties[0];
+        this._sensitivity = this.properties[1]; 
         
         this.keyMap = [false, false, false, false];  //[RIGHTKEY,DOWNKEY,LEFTKEY,UPKEY]
         this._curkeyMap = [false, false, false, false];
@@ -183,6 +184,10 @@ cr.plugins_.Rex_angle2ArrowKeyMap = function(runtime)
 	{
         return this.keyMap[0];
 	};    
+	Cnds.prototype.IsAnyDown = function()
+	{
+        return this.keyMap[3] | this.keyMap[2] | this.keyMap[1] | this.keyMap[0];
+	};     
     
 	Cnds.prototype.OnUPPressed = function()
 	{
@@ -235,9 +240,12 @@ cr.plugins_.Rex_angle2ArrowKeyMap = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-	Acts.prototype.SetAngle = function (angle)
+	Acts.prototype.SetInput = function (angle, distance)
 	{
-        this.angle_set(angle);
+        if (distance >= this._sensitivity)
+            this.angle_set(angle);
+        else
+            this._keydown(INVALIDKEY);
 	};
     
 	Acts.prototype.Release = function ()

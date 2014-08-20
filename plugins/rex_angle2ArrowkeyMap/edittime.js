@@ -1,7 +1,7 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Angle to ArrowKey mapping",
+		"name":			"Angle to ArrowKey",
 		"id":			"Rex_angle2ArrowKeyMap",
 		"version":		"0.1",   		
 		"description":	"Mapping angle input to arrow key event.",
@@ -35,7 +35,9 @@ AddCondition(13, 0,	"Left key is down", "Is down", "Left key is down",
              "Return true if Left key is currently held down.", "IsLEFTDown");
 AddCondition(14, 0,	"Right key is down", "Is down", "Right key is down", 
              "Return true if Right key is currently held down.", "IsRIGHTDown");
-
+AddCondition(15, 0,	"Any arrow is down", "Is down", "Any arrow is down", 
+             "Return true if Any arrow is currently held down.", "IsAnyDown");
+             
 AddCondition(21, cf_trigger, "On Up key released", "Released", "On Up key released", 
              "Triggered when Up key is released.", "OnUPReleased");
 AddCondition(22, cf_trigger, "On Down key released", "Released", "On Down key released", 
@@ -47,10 +49,11 @@ AddCondition(24, cf_trigger, "On Right key released", "Released", "On Right key 
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddNumberParam("Angle", "Pressing angle in degree.", 0);
-AddAction(1, 0, "Set angle", "Key-down", 
-          "Set input angle to <i>{0}</i>", 
-          "Set pressing angle.", "SetAngle");  
+AddNumberParam("Angle", "Angle, from origin to current, in degree.", 0);
+AddNumberParam("Distance", "Distance, from origin to current.", 50);
+AddAction(1, 0, "Set input", "Key-down", 
+          "Set input angle to <i>{0}</i>, distance to <i>{1}</i>", 
+          "Set pressing angle and distance, which is from origin to current.", "SetInput");  
 AddAction(2, 0, "Release", "Key-up", 
           "Release all", 
           "Release all key-down.", "Release");  
@@ -65,6 +68,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Directions", "8 directions", "The number of directions of movement available.", "Up & down|Left & right|4 directions|8 directions"),
+    new cr.Property(ept_float, "Sensitivity", 50, "Sensitivity of touch movment, in pixel."),       
 	];
 	
 // Called by IDE when a new object type is to be created
