@@ -439,11 +439,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Cnds.prototype.CompareDragDistance = function (cmp, s)
 	{
+	    if (!this.drag_info.is_on_dragged)
+	        return false;
+	        
 		return cr.do_cmp(this.drag_info.DragDistance(), cmp, s);
 	}; 
 
 	Cnds.prototype.CompareDragAngle = function (cmp, s)
 	{
+	    if (!this.drag_info.is_on_dragged)
+	        return false;
+	        	    
 		return cr.do_cmp(this.drag_info.DragAngle(), cmp, s);
 	}; 
 	
