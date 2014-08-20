@@ -196,14 +196,13 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
     var angle_saved = [];
     behinstProto._rotate_all = function (uids, a)
     {
-        angle_saved.length = 0;
         var cnt = uids.length, i, inst;
         for (i=0; i<cnt; i++)  
         {      
             inst = this.runtime.getObjectByUID(uids[i]);
 			if (inst == null)
 			    continue;
-            angle_saved.push[inst.angle];
+            angle_saved.push(inst.angle);
             inst.angle = a;
             inst.set_bbox_changed();
         }
@@ -241,13 +240,12 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         this.spacing = Math.sqrt((dx*dx) + (dy*dy));
         var start_x = points.start.x;
         var start_y = points.start.y;
-        var inst_angle = cr.to_degrees(a);
         this._rotate_recover(sprites);
 	    for (i=0;i<cnt;i++)
 	    {
 	        params = {x:start_x + (dx*i),
 	                  y:start_y + (dy*i),
-	                  angle:inst_angle};
+	                  angle:sprites[i].angle};
 	        layouter.layout_inst(sprites[i], params);
 	    }        
 	};
@@ -259,7 +257,7 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
 	    var cnt = sprites.length;
 	    if (cnt == 0)
 	        return;
-	        
+	    
 	    this._rotate_all(sprites, layouter.angle);	        
         var points = this._get_start_end_points(sprites);
         var layouter =  this.inst;   
@@ -291,14 +289,12 @@ cr.behaviors.Rex_layouter_linear = function(runtime)
         
         var start_x = points.start.x;
         var start_y = points.start.y;
-        a = layouter.angle;
-        var inst_angle = cr.to_degrees(a);
         this._rotate_recover(sprites);        
 	    for (i=0;i<cnt;i++)
 	    {
 	        params = {x:start_x + (dx*i),
 	                  y:start_y + (dy*i),
-	                  angle:a};	          
+	                  angle:sprites[i].angle};	          
 	        layouter.layout_inst(sprites[i], params);
 	    }        
 	};
