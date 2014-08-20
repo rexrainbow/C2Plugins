@@ -18,7 +18,18 @@ AddCondition(0, cf_trigger, "On touch start", "Touch", "{my} on touch start", "T
 AddCondition(1, cf_trigger, "On touch end", "Touch", "{my} on touch end", "Triggered when touch input ends.", "OnTouchEnd");
 AddCondition(2, 0, "Is in touch", "Touch", "{my} is in touch", "True if touch is currently in contact with this object.", "IsInTouch");
 AddCondition(3, cf_trigger, "On touch moving", "Touch moving", "{my} on touch moving", "Triggered when touch and moving.", "OnTouchMoving");
-
+AddCmpParam("Comparison", "Choose the way to compare drag-distance.");
+AddNumberParam("Value", "The value to compare drag-distance to.");
+AddCondition(4, 0, "Compare dragging distance", "Value", 
+             "Drag-distance {my} {0} {1}", 
+             "Compare the drag-distance.", 
+             "CompareDragDistance");
+AddCmpParam("Comparison", "Choose the way to compare drag-angle.");
+AddNumberParam("Value", "The value to compare drag-angle to.");
+AddCondition(5, 0, "Compare dragging angle", "Value", 
+             "Drag-angle {my} {0} {1}", 
+             "Compare the drag-angle.", 
+             "CompareDragAngle");        
 //////////////////////////////////////////////////////////////
 // Actions
 

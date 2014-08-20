@@ -283,6 +283,23 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
     {
         return true;
     };    
+    
+	Cnds.prototype.CompareDragDistance = function (cmp, s)
+	{
+        if (!this.is_touched)
+            return false;
+            
+		return cr.do_cmp(this._distance_get(), cmp, s);
+	};  
+    
+	Cnds.prototype.CompareDragAngle = function (cmp, s)
+	{
+        if (!this.is_touched)
+            return false;
+            
+		return cr.do_cmp(this._angle_get(), cmp, s);
+	};  
+    
     //////////////////////////////////////
     // Actions
     function Acts() {};
