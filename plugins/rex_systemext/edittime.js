@@ -36,10 +36,12 @@ AddCondition(2, cf_deprecated, "Quick picking by UID", "SOL",
 //////////////////////////////////////////////////////////////
 // Actions
 // SOL
+// valid 
 AddObjectParam("Object", "Object for picking");
 AddAction(0, 0, "Pick all instances", "SOL", 
-          "Pick all <i>{0}</i> instances", 
+          "Pick all <i>{0}</i>", 
           "Pick all instances.", "PickAll");
+// ----          
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
@@ -47,7 +49,7 @@ AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(1, af_deprecated, "Pick by UID", "SOL", 
           "Pick <i>{0}</i> instance by UID to <i>{1}</i>, form <i>{2}</i>", 
-          "Pick instance by UID.", "PickByUID");          
+          "Pick instance by UID.", "__PickByUID");          
 AddObjectParam("Object", "Object for picking");
 AddComboParamOption("uid");
 AddComboParamOption("x");
@@ -65,33 +67,43 @@ AddComboParam("All instances", "Pick from current picked instances or all instan
 AddAction(2, af_deprecated, "Pick by property", "SOL", 
           "Pick <i>{0}</i> instances by comparing <i>{1}</i> <i>{2}</i> <i>{3}</i>, form <i>{4}</i>", 
           "Pick instances by property comparing.", "PickByPropCmp");
+// valid           
 AddStringParam("Group", "Group name", '""');          
 AddNumberParam("Group actived", "0 = disable, 1 = enable, 2 = toggle", 0);          
 AddAction(3, 0, "Set group active", "General", 
           "Set group <i>{0}</i> to <i>{1}</i>", 
-          "Active or deactive an event group.", "SetGroupActive");       
+          "Active or deactive an event group.", "SetGroupActive"); 
+// valid                 
 AddAnyTypeParam("Layer", "Name or number of the layer to set visible", 0);          
 AddNumberParam("Visibled", "0 = invisible, 1 = visible", 0);          
 AddAction(4, 0, "Set visible", "Layers & transforms", 
           "Set layer <i>{0}</i>'s visible to <i>{1}</i>", 
-          "Set the visible of a layer.", "SetLayerVisible");     
+          "Set the visible of a layer.", "SetLayerVisible");
+// valid                       
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
 AddAction(5, 0, "Pick by UID", "SOL", 
-          "Pick <i>{0}</i> by UID = <i>{1}</i>", 
-          "Pick by UID.", "QuickPickByUID");                    
+          "Pick <i>{0}</i> with UID <i>{1}</i>", 
+          "Pick by UID.", "PickByUID");   
+// ----                                     
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
 AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
-AddAction(6, 0, "Pick inverse", "SOL", 
+AddAction(6, af_deprecated, "Pick inverse", "SOL", 
           "Pick <i>{0}</i> inverse instances by UID to <i>{1}</i>, form <i>{2}</i>", 
-          "Pick inverse instances.", "PickInverse");  
+          "Pick inverse instances.", "__PickInverse");   
+// valid                 
+AddObjectParam("Object", "Object for picking");
+AddNumberParam("UID", "UID of object", 0);
+AddAction(7, 0, "Pick inverse", "SOL", 
+          "Pick <i>{0}</i> with UID NOT <i>{1}</i>", 
+          "Pick inverse instances.", "PickInverse");              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam('""', "Code string.", '""');
-AddExpression(0, ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
+AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
 AddNumberParam("Number", "Decimal number", 0);
 AddExpression(1, ef_return_string, "Get hex string", "Math", "ToHexString", "Transfer decimal value to hex string.");
 

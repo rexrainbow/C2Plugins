@@ -192,12 +192,8 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.PickAll = function (objtype)
-	{
-        this._pick_all(objtype);
-	}; 
-    
-    Acts.prototype.PickByUID = function (objtype, uid, is_pick_all)
+    // deprecated
+    Acts.prototype.__PickByUID = function (objtype, uid, is_pick_all)
 	{  
         if (!objtype)
             return;
@@ -231,11 +227,7 @@ cr.plugins_.Rex_SysExt = function(runtime)
         sol.select_all = false;
         objtype.applySolToContainer();
 	}; 
-    
-    Acts.prototype.QuickPickByUID = function (objtype, uid)
-	{	    
-        this._quick_pick(objtype, uid);
-	};    
+   
         
     Acts.prototype.PickByPropCmp = function (objtype, prop_index, cmp, value, is_pick_all)
 	{
@@ -263,36 +255,137 @@ cr.plugins_.Rex_SysExt = function(runtime)
         sol.select_all = false;
 	};  
 
+    Acts.prototype.__PickInverse = function (objtype, uid, is_pick_all)
+	{
+        this._pick_inverse(objtype, uid, is_pick_all);
+	};   
+	
+	// valid
+    Acts.prototype.PickAll = function (objtype)
+	{
+        if (!objtype)
+            return;
+            	    
+        // Get the current sol and reset the select_all flag
+        var sol = objtype.getCurrentSol();
+        sol.select_all = true;
+		objtype.applySolToContainer();	    
+	}; 
+	    
+    Acts.prototype.PickByUID = function (objtype, uid)
+	{
+		var i, len, j, inst, families, instances, sol;
+					    
+        if (!objtype)
+            return;
+            	    
+        // Not inverted (ordinary pick of single instance with matching UID)
+        // Use the runtime's getObjectByUID() function to look up
+        // efficiently, and also support pending creation objects.
+        inst = this.runtime.getObjectByUID(uid);
+        
+        if (!inst)
+        	return;
+        	
+        // Verify this instance is already picked. We should not be able to
+        // pick instances already filtered out by prior conditions.
+        sol = objtype.getCurrentSol();
+        
+        if (!sol.select_all && sol.instances.indexOf(inst) === -1)
+        	return;		// not picked
+        
+        // If this type is a family, verify the inst belongs to this family.
+        // Otherwise verify the inst is of the same type as this.
+        if (objtype.is_family)
+        {
+        	families = objtype.families;
+        	
+        	for (i = 0, len = families.length; i < len; i++)
+        	{
+        		if (families[i] === inst.type)
+        		{
+        			sol.pick_one(inst);
+        			objtype.applySolToContainer();
+        			return;
+        		}
+        	}
+        }
+        else if (inst.type === objtype)
+        {
+        	sol.pick_one(inst);
+        	objtype.applySolToContainer();
+        	return;
+        }	    	    
+	}; 
+	
+    Acts.prototype.PickInverse = function (objtype, uid)
+	{
+	    var i, len, j, inst, families, instances, sol;
+
+        if (!objtype)
+            return;
+            
+        sol = objtype.getCurrentSol();
+        
+        if (sol.select_all)
+        {
+        	sol.select_all = false;
+        	sol.instances.length = 0;
+        	
+        	instances = objtype.instances;
+        	for (i = 0, len = instances.length; i < len; i++)
+        	{
+        		inst = instances[i];
+        		
+        		if (inst.uid !== uid)
+        			sol.instances.push(inst);
+        	}
+        	
+        	objtype.applySolToContainer();
+        	return;
+        }
+        else
+        {
+        	for (i = 0, j = 0, len = sol.instances.length; i < len; i++)
+        	{
+        		inst = sol.instances[i];
+        		sol.instances[j] = inst;
+        		
+        		if (inst.uid !== u)
+        			j++;
+        	}
+        	
+        	sol.instances.length = j;
+        	
+        	objtype.applySolToContainer();
+        	return;
+        }	
+					    
+	}; 	
+		
     Acts.prototype.SetGroupActive = function (group, active)
     {
-		var activeGroups = this.runtime.activeGroups;
+        debugger;
+		var g = this.runtime.groups_by_name[group.toLowerCase()];
         
-        if (activeGroups[group] == null)
-        {
-            alert("Group '" + group + "' does not exist");
-            return;
-        }
+		if (!g)
+			return;
         
-		group = group.toLowerCase();
-		
 		switch (active) {
 		// Disable
 		case 0:
-			delete activeGroups[group];
+			g.setGroupActive(false);
 			break;
 		// Enable
 		case 1:
-			activeGroups[group] = true;
+			g.setGroupActive(true);
 			break;
 		// Toggle
 		case 2:
-			if (activeGroups[group])
-				delete activeGroups[group];
-			else
-				activeGroups[group] = true;
+			g.setGroupActive(!g.group_active);
 			break;
 		}
-    };
+    }; 
 
     Acts.prototype.SetLayerVisible = function (layerparam, visible_)
     {
@@ -311,12 +404,7 @@ cr.plugins_.Rex_SysExt = function(runtime)
 			layer.visible = is_visible;
 			this.runtime.redraw = true;
 		}
-    }; 
-
-    Acts.prototype.PickInverse = function (objtype, uid, is_pick_all)
-	{
-        this._pick_inverse(objtype, uid, is_pick_all);
-	};     
+    };     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
