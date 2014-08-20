@@ -3,7 +3,7 @@
 	return {
 		"name":			"Gravitation",
 		"id":			"Rex_physics_gravitation",
-		"description":	"Local gravitation, standed on physics behavior.",
+		"description":	"Local gravitation, stand on physics behavior.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_physics_gravitation.html",
 		"category":		"Physics helper",
@@ -29,7 +29,7 @@ AddCondition(4, cf_trigger, "End attracted", "Target",
 			 "EndAttracted");  
 AddCondition(5, cf_trigger, "End attracting", "Source", 
              "{my} End attracting", 
-			 "Triggered when attracting ending, to get attracted target uid.", 
+			 "Triggered when attracting end, to get attracted target uid.", 
 			 "EndAttracting"); 
 AddCondition(6, 0, "Has attracting", "Source", "{my} has attracting", 
              "Source has attracting target.", "HasAttracting");			  			 		 
@@ -49,7 +49,7 @@ AddNumberParam("Force", "Gravitation force.");
 AddAction(3, 0, "Set force", "", "Set {my} force to <i>{0}</i>", 
           "Set applied force for source.", "SetForce");
 AddNumberParam("Range", "Sensitivity range.");
-AddAction(4, 0, "Set sensitivity range", "", "Set {my} sensitivity range to <i>{0}</i>", 
+AddAction(4, 0, "Set sensitivity range", "Sensitivity", "Set {my} sensitivity range to <i>{0}</i>", 
           "Set sensitivity range for source.", "SetRange");
 AddStringParam("Source tag", "Source tag.", '""');
 AddAction(5, 0, "Set source tag", "Tag", "Set {my} source tag to <i>{0}</i>",
@@ -75,11 +75,11 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Source", "Yes", "Gravitation source.", "No|Yes"),     
-    new cr.Property(ept_text, "Source tag", "", "Target will be attracted with souces which have the same tag."),   
-    new cr.Property(ept_float, "Force", 1, "Appling force to target. Source only."),    
+    new cr.Property(ept_text, "Source tag", "", "Target will be attracted with sources which have the same tag."),   
+    new cr.Property(ept_float, "Force", 1, "Applying force to target. Source only."),    
     new cr.Property(ept_float, "Sensitivity range", 0, "Appling force when distance is less then this range. 0 is infinity. Source only."),    
     new cr.Property(ept_combo, "Target", "No", "Gravitated by source.", "No|Yes"),    
-    new cr.Property(ept_text, "Target tag", "", "Target will be attracted with souces which have the same tag."),     
+    new cr.Property(ept_text, "Target tag", "", "Target will be attracted with sources which have the same tag."),     
 	];
 	
 // Called by IDE when a new behavior type is to be created

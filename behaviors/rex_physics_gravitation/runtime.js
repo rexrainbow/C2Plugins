@@ -14,7 +14,6 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 
 (function ()
 {
-    var worldScale = 0.02;
 	var behaviorProto = cr.behaviors.Rex_physics_gravitation.prototype;
 		
 	/////////////////////////////////////
@@ -62,10 +61,13 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
         this.attracting_source_uid = (-1);
         this.attracted_target_uid = (-1);
 
-        this.pre_sources = {};
-        this.pre_targets = {};        
-        this.current_sources = {};
-        this.current_targets = {};
+        if (!this.recycled)
+        {        	           
+            this.pre_sources = {};
+            this.pre_targets = {};        
+            this.current_sources = {};
+            this.current_targets = {};
+        }
 	};
 	
 	behinstProto.onDestroy = function()
@@ -79,6 +81,11 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	    }
 	    if (!has_inst)
 	        delete this.sources[this.source_tag];
+			
+	    clean_table(this.pre_sources);
+	    clean_table(this.pre_targets);	
+	    clean_table(this.current_sources);
+	    clean_table(this.current_targets);			
 	}; 	
 	
 	behinstProto._source_append = function()
@@ -123,8 +130,6 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	behinstProto._set_target = function(is_target)
 	{        
         this.is_target = is_target;
-        if (is_target && (this.physics_behavior_inst == null))
-            this.physics_behavior_inst = this._get_physics_behavior_inst();                 
 	};
 	behinstProto._set_range = function(range)
 	{        
@@ -156,14 +161,18 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	{
         if (!this.is_target)
             return;
-            
+       
+        if (this.physics_behavior_inst == null)
+            this.physics_behavior_inst = this._get_physics_behavior_inst();                 
+        
         this.has_been_attracted = false;
         if (!(this.target_tag in this.sources))
             return;
             
         var sources = this.sources[this.target_tag];
 		var my_uid = this.inst.uid;
-        var uid, source_inst, inst, source_grange_pow2;
+        var uid, source_inst, inst;
+	    this.has_attracting = false;          
         for (uid in sources)
         {
             source_inst = sources[uid];
@@ -173,32 +182,29 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
             if (my_uid === inst.uid)
                 continue;	
 				
-            source_grange_pow2 = source_inst.sensitivity_range_pow2;
-            if (this._in_range(inst,  source_grange_pow2))
-            {
-                this._apply_force_toward(source_inst.gravitation_force, inst.x, inst.y);
-                this.has_been_attracted = true;
-                source_inst.has_attracting = true;
-                this._attracting_target(source_inst, my_uid);
-                this._attracted_by_source(this, uid);
-            }
+            if (!this._in_range(inst,  source_inst.sensitivity_range_pow2))
+                continue;
+                
+            this._apply_force_toward(source_inst.gravitation_force, inst.x, inst.y);
+            this.has_been_attracted = true;
+            source_inst.has_attracting = true;
+            this._attracting_target(source_inst, my_uid);
+            this._attracted_by_source(this, uid);
         }
-	};
-	behinstProto.tick2 = function ()
-	{   
+        
+        
 	    this._attracting_target_end();
 	    this._attracted_by_source_end();
 	    	    
 	    copy_table(this.pre_sources, this.current_sources);
 	    clean_table(this.current_sources);
 	    copy_table(this.pre_targets, this.current_targets);
-	    clean_table(this.current_targets);	  
-	    this.has_attracting = false;  	    
+	    clean_table(this.current_targets);	
 	};	
 	
 	behinstProto._attracting_target = function (source_inst, target_uid)
 	{
-	    source_inst.attracted_target_uid = target_uid;
+	    source_inst.attracted_target_uid = parseInt(target_uid);
 	    var pre_targets = source_inst.pre_targets;
 	    if (!(target_uid in source_inst.pre_targets))
 	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.BeginAttracting, source_inst.inst);  
@@ -207,7 +213,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	
 	behinstProto._attracted_by_source = function (target_inst, source_uid)
 	{
-	    this.attracting_source_uid = source_uid;	    
+	    this.attracting_source_uid = parseInt(source_uid);	    
 	    var pre_sources = target_inst.pre_sources;
 	    if (!(source_uid in target_inst.pre_sources))
     	    this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.BeginAttracted, target_inst.inst);  
@@ -233,7 +239,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	    {
 	        if (uid in this.current_sources)
 	            continue;     
-	        this.attracting_source_uid = uid;  
+	        this.attracting_source_uid = parseInt(uid);  
 	        this.runtime.trigger(cr.behaviors.Rex_physics_gravitation.prototype.cnds.EndAttracted, this.inst);  
 	    }  
 	};		
@@ -251,7 +257,7 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	}; 
     
 	behinstProto._apply_force_toward = function (f, px, py)
-	{
+	{     
        cr.behaviors.Physics.prototype.acts.ApplyForceToward.apply(this.physics_behavior_inst, [f, px, py, 0]);       
 	};    
 
