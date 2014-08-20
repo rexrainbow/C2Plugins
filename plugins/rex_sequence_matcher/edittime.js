@@ -17,12 +17,12 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(2, cf_deprecated | cf_trigger, "On matching", "Patern", 
+AddCondition(2, cf_trigger, "On matching", "Patern checking: trigger", 
              "On matching <i>{0}</i>", 'Trigger by "Action:Put symbol" when matching pattern.', "OnMatchPattern");    
-AddCondition(3, cf_deprecated | cf_trigger, "On no matching pattern", "Patern", 
+AddCondition(3, cf_trigger, "On no matching pattern", "Patern checking: trigger", 
              "On no matching pattern", 'Trigger by "Action:Put symbol" when matching pattern.', "OnNoMatchPattern");   
 AddStringParam("Pattern", "Pattern.", '""');
-AddCondition(4, 0, "Is matching", "Patern", 
+AddCondition(4, 0, "Is matching", "Patern checking", 
              "Is matching <i>{0}</i>", 'Return true if pattern matched.', "IsMatchPattern");             
 //////////////////////////////////////////////////////////////
 // Actions 
