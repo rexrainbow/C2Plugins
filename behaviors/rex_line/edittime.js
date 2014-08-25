@@ -49,8 +49,11 @@ AddAction(6, 0, "Line to instance by UID", "Line to",
                   
 //////////////////////////////////////////////////////////////
 // Expressions
-
-
+AddExpression(1, ef_return_number, "Get X co-ordinate of line end", "End", "EndX", 
+             "Get X co-ordinate of line end.");
+AddExpression(2, ef_return_number, "Get Y co-ordinate of line end", "End", "EndY", 
+             "Get Y co-ordinate of line end.");
+             
 ACESDone();
 
 // Property grid properties for this plugin

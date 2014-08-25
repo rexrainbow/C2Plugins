@@ -54,6 +54,7 @@ cr.behaviors.Rex_Line = function(runtime)
         var dx=x1-x0, dy=y1-y0;
         var d = Math.sqrt(dx*dx + dy*dy);
         var a = Math.atan2(dy, dx);
+        //d = Math.ceil(d);
                 
         var has_update = false;
         var inst = this.inst;
@@ -140,5 +141,15 @@ cr.behaviors.Rex_Line = function(runtime)
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-
+    
+	Exps.prototype.EndX = function (ret)
+	{
+        var end_x = this.inst.x + (Math.cos(this.inst.angle) * this.inst.width);
+        ret.set_float( end_x );
+	};
+	Exps.prototype.EndY = function (ret)
+	{
+        var end_y = this.inst.y + (Math.sin(this.inst.angle) * this.inst.width);
+        ret.set_float( end_y );
+	};    
 }());
