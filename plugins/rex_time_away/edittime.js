@@ -4,9 +4,9 @@
 		"name":			"Time away",
 		"id":			"Rex_TimeAway",
 		"version":		"0.1",
-		"description":	"Get elapsed interval from webstroage",
+		"description":	"Get elapsed interval of turned off game from webstroage.",
 		"author":		"Rex.Rainbow",
-		"help url":		"",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timeaway.html",
 		"category":		"Time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -16,21 +16,18 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Key", "Key name of webstorage", "\"\"");
-AddNumberParam("Day", "Elapsed day count", 1);
-AddCondition(1,0,"Day elapsed","Days","<i>{1}</i> day elapsed in key <i>{0}</i>","Return true if days elapsed.","DaysElapsed");
 
 //////////////////////////////////////////////////////////////
 // Actions
+AddStringParam("Key", "Key name of webstorage", '""');
+AddAction(1, 0, "Start timer", "Timer", "Start timer <i>{0}</i>", "Start timer.", "StartTimer");
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddStringParam("Key", "Key name of webstorage", "\"\"");
-AddExpression(1, ef_return_number, "Get elapsed interval", "Interval", "ElapsedInterval", 
-             "Get elapsed interval from last call, in seconds.");
-AddExpression(2, ef_return_number, "Get elapsed days", "Days", "ElapsedDays", 
-             'Get elapsed days, valid under "condition: Is a day elapsed". ');
-			 
+AddStringParam("Key", "Key name of webstorage", '""');
+AddExpression(3, ef_return_number, "Get elapsed time", "Timer", "ElapsedTime", 
+             "Get elapsed time of timer, in seconds.");
+             
 ACESDone();
 
 // Property grid properties for this plugin

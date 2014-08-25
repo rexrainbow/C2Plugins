@@ -128,7 +128,7 @@ cr.plugins_.Rex_Date = function(runtime)
 		    var timer = new Date();
 		    delta = timer.getTime() - start_tick;
 		}
-		ret.set_int(delta);
+		ret.set_float(delta/1000);
 	};	
 
 	Exps.prototype.CurTicks = function (ret)
