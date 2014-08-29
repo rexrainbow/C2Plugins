@@ -133,8 +133,8 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
              
         // this.activated && this.is_on_drag                        
         var inst = this.inst;
-        var cur_x = this.GetX();
-        var cur_y = this.GetY();
+        var cur_x = this.GetOffsetX();
+        var cur_y = this.GetOffsetY();
         var dx = cur_x - this.pre_x;
         var dy = cur_y - this.pre_y;             
         if ( (dx!=0) || (dy!=0) )
@@ -170,8 +170,8 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
 	{   
         this.is_on_drag = true;
         this._dir = null;
-        this.pre_x = this.GetX();
-        this.pre_y = this.GetY();
+        this.pre_x = this.GetOffsetX();
+        this.pre_y = this.GetOffsetY();
         this.runtime.trigger(cr.behaviors.Rex_TouchDirection2.prototype.cnds.OnDraggingStart, this.inst);
 	};
 
@@ -217,6 +217,22 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
         this.type.GetSpeed.call(touch_obj, touch_obj.fake_ret, 0);
         return touch_obj.fake_ret.value;     
 	};   	
+	
+	behinstProto.GetOffsetX = function()
+	{
+        var x = this.GetX();
+        var layer = this.inst.layer;
+        var scrollX = (layer.parallaxX != 0)? layer.layout.scrollX : 0;
+        return x - scrollX;     
+	};
+    
+	behinstProto.GetOffsetY = function()
+	{
+        var y = this.GetY();
+        var layer = this.inst.layer;
+        var scrollY = (layer.parallaxX != 0)? layer.layout.scrollY : 0;
+        return y - scrollY;     
+	};	
 	
 	behinstProto.saveToJSON = function ()
 	{
@@ -265,8 +281,9 @@ cr.behaviors.Rex_TouchDirection2 = function(runtime)
              (s==1)
            )
         {
-            this.pre_x = this.GetABSX();
-            this.pre_y = this.GetABSY();
+            this._dir = null;
+        this.pre_x = this.GetOffsetX();
+        this.pre_y = this.GetOffsetY();
         }
 		this.activated = (s==1);
 	}; 
