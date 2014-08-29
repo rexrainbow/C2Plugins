@@ -667,6 +667,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		var i, len, t, u;
+		var cnt=this._plugins_hook.length, hooki;    
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -684,6 +685,17 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 					continue;
 					
 				u.update(nowtime, t.pageX - offset.left, t.pageY - offset.top);
+				
+                for (hooki=0; hooki<cnt; hooki++)
+			    {
+			    	if (this._plugins_hook[hooki].OnTouchMove)
+			    	{
+			            var touchx = t.pageX - offset.left;
+			            var touchy = t.pageY - offset.top;			    	    
+                        this._plugins_hook[hooki].OnTouchMove(t["identifier"], touchx, touchy);
+                    }
+			    }
+							
 			}
 		}
 	};
