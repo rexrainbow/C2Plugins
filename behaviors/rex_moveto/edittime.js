@@ -39,7 +39,7 @@ AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
 AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
 AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>", 
-          "Set whether this behavior is enabled.", "SetEnabled");
+          "Set whether this behavior is enabled. It will also pause current moving.", "SetEnabled");
 
 AddNumberParam("Max speed", "Maximum speed, in pixel per second.");
 AddAction(1, 0, "Set maximum speed", "Speed", 

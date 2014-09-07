@@ -167,18 +167,8 @@ cr.behaviors.Rex_Duration = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-	    if (!this.sync_timescale)
-		    return;
-			
-	    var ts = this.get_timescale();
-	    if (this.pre_ts == ts)
-	        return;
-	    
-	    var n;
-	    for (n in this.timers)
-	        this.timers[n].SetTimescale(ts);
-	        
-	    this.pre_ts = ts;
+	    if (this.sync_timescale)
+            this.sync_ts();            
 	};
     
     // handler of timeout for timers in this plugin, this=timer   
@@ -234,6 +224,19 @@ cr.behaviors.Rex_Duration = function(runtime)
     {
         return timer._duration_remain_time - timer.ElapsedTimeGet();
     };
+    
+	behinstProto.sync_ts = function ()
+	{
+	    var ts = this.get_timescale();
+	    if (this.pre_ts == ts)
+	        return;
+	    
+	    var n;
+	    for (n in this.timers)
+	        this.timers[n].SetTimescale(ts);
+	        
+	    this.pre_ts = ts;
+	};    
 
 	behinstProto.get_timescale = function ()
 	{
@@ -259,8 +262,7 @@ cr.behaviors.Rex_Duration = function(runtime)
                          
         }
 		return { "tims": tims_save,
-                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1),
-                 "cbuid": (this.type.callback != null)? this.type.callback.uid: (-1)    // deprecated
+                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1)
                 };
 	};
     
@@ -334,7 +336,7 @@ cr.behaviors.Rex_Duration = function(runtime)
 	behaviorProto.acts = new Acts();
 
     // ---- deprecated ----
-    Acts.prototype.Setup = function () { };      
+    Acts.prototype.Setup_deprecated = function () { };      
     Acts.prototype.Start_deprecated = function () { };
     // ---- deprecated ----
     

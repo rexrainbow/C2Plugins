@@ -34,7 +34,7 @@ AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
 AddAction(0, af_deprecated, "Setup", "Z: Deprecated", 
           "{my} get timer from <i>{0}</i>, callback to <i>{1}</i>", 
-          "Setup.", "Setup");          
+          "Setup.", "Setup_deprecated");          
 AddAnyTypeParam("Name", "Duration name. Could be a string or a number.", '""');
 AddNumberParam("Duration", "Duration time", 1);
 AddNumberParam("Interval", "Interval time", 0.1);

@@ -67,7 +67,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
     behinstProto.onCreate = function()
-    {
+    {      
         this._scenario = new cr.behaviors.rex_bScenario.ScenarioKlass(this);  
         this._scenario.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] == 1);
         this._scenario.is_accT_mode = (this.properties[1] == 0);
@@ -80,6 +80,10 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.init_tag = this.properties[6];
         this.init_repeat = this.properties[7];
         
+        // sync timescale
+		this.sync_timescale = (this.properties[8] == 1);      
+        this.pre_ts = 1;        
+        
         
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];
@@ -88,14 +92,38 @@ cr.behaviors.rex_bScenario = function(runtime)
 	
 	behinstProto.tick = function ()
 	{
-	    if (!this.init_start)
-	        return;
-	       
+	    if (this.sync_timescale)
+            this.sync_ts();
+            
+        if (this.init_start)
+            this.run_init_cmd();
+	};
+    
+	behinstProto.run_init_cmd = function ()
+	{
 	    this._scenario.load(this.init_cmds, true);
 	    this._scenario.start(this.init_offset, this.init_tag, this.init_repeat); 	      
 	    this.init_start = false; 
         this.init_cmds = null;
-	};
+	};    
+    
+	behinstProto.sync_ts = function ()
+	{
+	    var ts = this.get_timescale();
+	    if (this.pre_ts == ts)
+	        return;
+	    
+        this._scenario.SetTimescale(ts);	        
+	    this.pre_ts = ts;
+	};    
+
+	behinstProto.get_timescale = function ()
+	{
+	    var ts = this.inst.my_timescale;
+	    if (ts == -1)
+	        ts = 1;	    
+	    return ts;
+	};    
 	
 	behinstProto.onDestroy = function ()
 	{
@@ -324,7 +352,10 @@ cr.behaviors.rex_bScenario = function(runtime)
     {  
         if (repeat_count < 0)
             repeat_count = 1;
-        this._scenario.start(offset, tag, repeat_count);    
+        this._scenario.start(offset, tag, repeat_count);  
+        
+        if (this.sync_timescale)
+            this.sync_ts();       		       
     };
     
     Acts.prototype.Pause = function ()
@@ -465,6 +496,13 @@ cr.behaviors.rex_bScenario = function(runtime)
         if (this.timer)
             this.timer.Remove();
 	};
+    
+	ScenarioKlassProto.SetTimescale = function (ts)
+	{
+        if (this.timer)
+            this.timer.SetTimescale(ts);
+	};    
+    
 	    
     // export methods
     ScenarioKlassProto.load = function (cmd_string, is_json)

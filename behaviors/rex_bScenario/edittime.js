@@ -128,7 +128,8 @@ var property_list = [
     new cr.Property(ept_text, "Commands", "[]", "Commands in JSON format"),  
     new cr.Property(ept_float, "Offset", 0, "Time offset at start"),      
     new cr.Property(ept_text, "Tag", "", 'Tag in csv table. "" is start from 1st command.'),  
-    new cr.Property(ept_integer, "Repeat count", 0, "The times to execute commands repeatly. 0 is infinity."),      
+    new cr.Property(ept_integer, "Repeat count", 0, "The times to execute commands repeatly. 0 is infinity."),    
+    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),    
 	];
 	
 // Called by IDE when a new behavior type is to be created
