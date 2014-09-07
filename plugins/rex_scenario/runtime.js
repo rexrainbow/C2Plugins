@@ -49,12 +49,43 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.timeline = null;  
         this.timelineUid = -1;    // for loading     
         this.callback = null;     // deprecated
-        this.callbackUid = -1;    // for loading   // deprecated  
+        this.callbackUid = -1;    // for loading   // deprecated
+
+        // sync timescale
+        this.my_timescale = -1.0;     
+        this.runtime.tickMe(this);        
+		this.sync_timescale = (this.properties[3] == 1);      
+        this.pre_ts = 1;        
+                
         
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];
         /**END-PREVIEWONLY**/	
     };
+    
+	instanceProto.tick = function ()
+	{
+	    if (this.sync_timescale)
+            this.sync_ts();
+	};    
+    
+	instanceProto.sync_ts = function ()
+	{
+	    var ts = this.get_timescale();
+	    if (this.pre_ts == ts)
+	        return;
+	    
+        this._scenario.SetTimescale(ts);	        
+	    this.pre_ts = ts;
+	};    
+
+	instanceProto.get_timescale = function ()
+	{
+	    var ts = this.my_timescale;
+	    if (ts == -1)
+	        ts = 1;	    
+	    return ts;
+	};      
     
 	instanceProto.onDestroy = function ()
 	{
@@ -343,6 +374,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (this.timer)
             this.timer.Remove();
 	};
+    
+	ScenarioKlassProto.SetTimescale = function (ts)
+	{       
+        if (this.timer)
+            this.timer.SetTimescale(ts);
+	};       
 	    
     // export methods
     ScenarioKlassProto.load = function (csv_string)

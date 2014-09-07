@@ -318,7 +318,7 @@ cr.plugins_.Rex_SysExt = function(runtime)
         }	    	    
 	}; 
 	
-    Acts.prototype.PickInverse = function (objtype, uid)
+    Acts.prototype.PickInverse = function (objtype, uid, is_pick_all)
 	{
 	    var i, len, j, inst, families, instances, sol;
 
@@ -326,6 +326,11 @@ cr.plugins_.Rex_SysExt = function(runtime)
             return;
             
         sol = objtype.getCurrentSol();
+        
+        if (is_pick_all)
+        {
+            sol.select_all = true;
+        }
         
         if (sol.select_all)
         {
@@ -351,7 +356,7 @@ cr.plugins_.Rex_SysExt = function(runtime)
         		inst = sol.instances[i];
         		sol.instances[j] = inst;
         		
-        		if (inst.uid !== u)
+        		if (inst.uid !== uid)
         			j++;
         	}
         	

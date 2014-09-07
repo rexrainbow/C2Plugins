@@ -92,14 +92,17 @@ AddComboParamOption("Current picked instances");
 AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(6, af_deprecated, "Pick inverse", "SOL", 
-          "Pick <i>{0}</i> inverse instances by UID to <i>{1}</i>, form <i>{2}</i>", 
-          "Pick inverse instances.", "__PickInverse");   
+          "Pick <i>{0}</i> with UID NOT <i>{1}</i>, form <i>{2}</i>", 
+          "Pick inverse instances.", "PickInverse");            
 // valid                 
 AddObjectParam("Object", "Object for picking");
 AddNumberParam("UID", "UID of object", 0);
+AddComboParamOption("Current picked instances");
+AddComboParamOption("All instances");
+AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(7, 0, "Pick inverse", "SOL", 
-          "Pick <i>{0}</i> with UID NOT <i>{1}</i>", 
-          "Pick inverse instances.", "PickInverse");              
+          "Pick <i>{0}</i> with UID NOT <i>{1}</i>, form <i>{2}</i>", 
+          "Pick inverse instances.", "PickInverse");                
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam('""', "Code string.", '""');

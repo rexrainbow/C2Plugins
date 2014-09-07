@@ -51,6 +51,10 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
         this.sid2nickname = cr.plugins_.Rex_Nickname.sid2nickname;
 	    this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];
+        /**END-PREVIEWONLY**/	        
 	};
     
 	// export		
@@ -100,64 +104,101 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	    return objtype.getFirstPicked();
 	}; 	
 
+    var has_objtype = function (objfamily, objb)
+    {
+        if ((!objfamily) || (!objb))
+            return false;
+        else if (objfamily.is_family)  // family contain this objtype
+            return (objfamily.members.indexOf(objb) != -1);
+        else  // objtype is equal
+            return (objfamily === objb);
+    };
+    
+    var clean_sol = function (objtype)
+    {
+		var sol = objtype.getCurrentSol(); 
+		sol.select_all = false;
+		sol.instances.length = 0;   // clear contents    
+    };    
+    
+    var extend_sol = function (objtype, insts)
+    {
+		var sol = objtype.getCurrentSol(); 
+        var sol_insts = sol.instances;
+        sol_insts.push.apply(sol_insts, insts);
+		sol.select_all = false;
+    };
+    
+    var has_any_picked_inst = function (objtype)
+    {
+        return (objtype.getCurrentSol().instances.length > 0);
+    };    
+    
     // export
     instanceProto.PickAll = function (nickname, family_objtype)
 	{
-	    if (!family_objtype.is_family)
-		    return false;
-
-		var sol_family = family_objtype.getCurrentSol(); 
-		sol_family.select_all = false;
-		sol_family.instances.length = 0;   // clear contents
-				    
 	    var objtype = this.Nickname2Type(nickname);
-        if ( (!objtype) ||
-		     (family_objtype.members.indexOf(objtype) == -1) )
-	    {			
-            return false;
+        if ( !has_objtype(family_objtype, objtype) )
+	    {
+            clean_sol(family_objtype);
 		}
-		else
+		else if (family_objtype.is_family) 
 		{
             var sol = objtype.getCurrentSol();    
             var sol_save = sol.select_all;   
             sol.select_all = true;
-            var all_insts = sol.getObjects();
-            sol_family.instances = all_insts.slice();
-            sol_family.select_all = false; 
+            // set sol of family_objtype
+            clean_sol(family_objtype);         
+            extend_sol(family_objtype, sol.getObjects());            
+            // recover sol
             sol.select_all = sol_save; 		
 		}
-		return true;
+        else
+        {            
+            var sol = family_objtype.getCurrentSol();    
+            sol.select_all = true;
+        }
+		return has_any_picked_inst(family_objtype);
 	};	
 	
 
     instanceProto.PickMatched = function (_substring, family_objtype)
 	{
-	    if (!family_objtype.is_family)
-		    return false;
-		    
-		var sol_family = family_objtype.getCurrentSol(); 
-		sol_family.select_all = false;
-		var sol_family_insts = sol_family.instances;
-		sol_family_insts.length = 0;   // clear contents
-		    
-		var nickname;
-		var objtype, sol, sol_save;
-		for (nickname in this.nickname2objtype)
+	    if (family_objtype.is_family)
 		{
-		    if (nickname.match(_substring) == null)
-		        continue;
+            clean_sol(family_objtype);        
+		    var nickname;
+		    var objtype, sol, sol_save;
+		    for (nickname in this.nickname2objtype)
+		    {
+		        if (nickname.match(_substring) == null)
+		            continue;
 		    
-		    objtype = this.Nickname2Type(nickname);
-		    if ( (!objtype) ||
-		         (family_objtype.members.indexOf(objtype) == -1) )
-		        continue;
+		        objtype = this.Nickname2Type(nickname);
+                if ( !has_objtype(family_objtype, objtype) )
+		            continue;
 		    
-		    sol = objtype.getCurrentSol();  
-		    sol_save = sol.select_all;
-		    sol_family_insts.push.apply(sol_family_insts, sol.getObjects());
-		    sol.select_all = sol_save;
-		}
-		return (sol_family_insts.length > 0);		
+		        sol = objtype.getCurrentSol();  
+		        sol_save = sol.select_all;
+                sol.select_all = true;
+                extend_sol(family_objtype, sol.getObjects());    
+		        sol.select_all = sol_save;
+		    }	
+        }
+        else
+        {
+            var nickname = this.sid2nickname[family_objtype.sid];
+            if ((nickname != null) && (nickname.match(_substring) != null))
+            {
+                var sol = family_objtype.getCurrentSol();    
+                sol.select_all = true;
+            }
+            else
+            {
+                clean_sol(family_objtype);
+            }            
+        }
+        return has_any_picked_inst(family_objtype);
 	};
 
 	instanceProto.saveToJSON = function ()
@@ -177,6 +218,29 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
             this.nickname2objtype[name] = {sid:parseInt(sid, 10), index:-1};
 	    }
 	};
+    
+    /**BEGIN-PREVIEWONLY**/
+    instanceProto.getDebuggerValues = function (propsections)
+    {
+        this.propsections.length = 0;
+        this.propsections.push({"name": "Object type", "value": "Nickname", "readonly":true});
+        var nickname;
+        for (nickname in this.nickname2objtype)
+        {
+            this.propsections.push({"name": this.Nickname2Type(nickname).name, "value": nickname, "readonly":true});
+        }
+        
+        
+        propsections.push({
+            "title": this.type.name,
+            "properties": this.propsections
+        });
+    };
+    
+    instanceProto.onDebugValueEdited = function (header, name, value)
+    {        
+    };
+    /**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -212,17 +276,14 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	{
         var inst = this.CreateInst(nickname,x,y,_layer);
 		
-		// SOL
         if (!family_objtype)
             return;
-			
+        
+		// SOL
         if ((inst == null) || 
-		    (family_objtype.members.indexOf(inst.type) == -1))	    
+		    ( !has_objtype(family_objtype, inst.type) ))	    
 		{
-		    // clean sol
-			var sol = family_objtype.getCurrentSol();
-			sol.select_all = false;
-            sol.instances.length = 0;   // clear contents
+            clean_sol(family_objtype);
 		}
         else
 		{

@@ -99,6 +99,7 @@ var property_list = [
     new cr.Property(ept_combo, "Debug mode", "No", "Enable to show log.", "No|Yes"),
     new cr.Property(ept_combo, "Time stamp", "Differential", "Time stamp type.", "Accumulation|Differential"),
     new cr.Property(ept_combo, "Eval mode", "Yes", 'Enable "Eval mode" for parameters. "Mem" feature only could be used in eval mode.', "No|Yes"),
+    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),      
 	];
 	
 // Called by IDE when a new object type is to be created
