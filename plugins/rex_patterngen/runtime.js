@@ -51,6 +51,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         this._shadow_patterns = {};
         this.start_gen(); 	     
         
+        this.randomGenUid = -1;    // for loading
+        
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];      
         /**END-PREVIEWONLY**/           
@@ -182,13 +184,15 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	};
 
 	instanceProto.saveToJSON = function ()
-	{       	    
+	{       	 
+        var randomGen = cr.plugins_.Rex_PatternGen._random_gen;
+        var randomGenUid = (randomGen != null)? randomGen.uid:(-1);    
 		return { "m": this.mode,
 		         "pats": this.patterns,
 		         "pr": this._pat_rank,
 		         "spats": this._shadow_patterns,
-		         "rstf": this.restart_gen_flg
-		         };
+		         "rstf": this.restart_gen_flg,
+                 "randomuid":randomGenUid};
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -198,7 +202,23 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this._pat_rank = o["pr"];
 	    this._shadow_patterns = o["spats"];
 	    this.restart_gen_flg = o["rstf"];
+        
+        this.randomGenUid = o["randomuid"];	
 	};	
+    
+	instanceProto.afterLoad = function ()
+	{
+        var randomGen;
+		if (this.randomGenUid === -1)
+			randomGen = null;
+		else
+		{
+			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(randomGen, "Pattern gen: Failed to find random gen object by UID");
+		}		
+		this.randomGenUid = -1;			
+		cr.plugins_.Rex_PatternGen._random_gen = randomGen;
+	};
     
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
