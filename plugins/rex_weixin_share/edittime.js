@@ -20,11 +20,17 @@ AddCondition(0, cf_trigger, "On ready", "Ready", "On bridge ready",
              "Triggered when weixin JS bridge ready.", "OnReady");
 AddCondition(1, 0, "Is ready", "Ready", "Is ready", 
              "Is weixin JS bridge ready.", "IsReady");
-AddCondition(11, cf_trigger, "On share message error", "Error", "On share message error", 
+AddCondition(2, cf_trigger, "On share message", "Message", "On share message", 
+             "Triggered when share message.", "OnShareMessage");    
+AddCondition(3, cf_trigger, "On share timeline", "Timeline", "On share timeline", 
+             "Triggered when share timeline.", "OnShareTimeline"); 
+AddCondition(4, cf_trigger, "On share weibo", "Weibo", "On share weibo", 
+             "Triggered when share weibo.", "OnShareWeibo");             
+AddCondition(11, cf_trigger, "On share message error", "Message", "On share message error", 
              "Triggered when share message error.", "OnShareMessageError");    
-AddCondition(12, cf_trigger, "On share timeline error", "Error", "On share timeline error", 
+AddCondition(12, cf_trigger, "On share timeline error", "Timeline", "On share timeline error", 
              "Triggered when share timeline error.", "OnShareTimelineError"); 
-AddCondition(13, cf_trigger, "On share weibo error", "Error", "On share weibo error", 
+AddCondition(13, cf_trigger, "On share weibo error", "Weibo", "On share weibo error", 
              "Triggered when share weibo error.", "OnShareWeiboError");              
 //////////////////////////////////////////////////////////////
 // Actions  
@@ -36,7 +42,7 @@ AddStringParam("Image url", "Image url", '""');
 AddNumberParam("Image width", "Image width", 0);
 AddNumberParam("Image height", "Image height", 0);
 AddAction(2, 0, "Share message", "Message", 
-          "Share <i>{0}</i> message: <i>{1}</i>, title to <i>{2}</i>, link to <i>{3}</i> with image url to <i>{4}</i>, size to <i>{5}</i>x<i>{6}</i>", 
+          "Share message: <i>{1}</i>, title to <i>{2}</i>, link to <i>{3}</i> with image url to <i>{4}</i>, size to <i>{5}</i>x<i>{6}</i>", 
           "Share message.", "ShareMessage");  
 
 AddStringParam("Description", "Description", '""');

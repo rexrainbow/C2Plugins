@@ -53,6 +53,7 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
             "desc": "",
             "title": ""
         };
+        this.appmessage_inshare = false;
         
         this.timeline_enable = false;        
         this.timeline_content = {
@@ -63,12 +64,14 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
             "desc": "",
             "title": ""
         };
+        this.timeline_inshare = false;
         
         this.weibo_enable = false;
         this.weibo_content = {
             "content": "",
             "url": ""
-        };      
+        };
+        this.weibo_inshare = false;
 
         this.error_msg = "";
 
@@ -77,15 +80,15 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
             'WeixinJSBridgeReady', 
             function onBridgeReady() 
             {
-                window["WeixinJSBridge"].on(
+                window["WeixinJSBridge"]["on"](
                    'menu:share:appmessage', 
                     function(argv) { self.ShareMessage(); }
                 );
-                window["WeixinJSBridge"].on(
+                window["WeixinJSBridge"]["on"](
                     'menu:share:timeline', 
                     function(argv) { self.ShareTimeline(); }
                 );
-                window["WeixinJSBridge"].on(
+                window["WeixinJSBridge"]["on"](
                     'menu:share:weibo', 
                     function(argv) { self.ShareWeibo(); }
                 );
@@ -99,62 +102,72 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
     
     instanceProto.ShareMessage = function ()
     {
-        if (!this.appmessage_enable)
-            return;
-            
-        var self = this;            
-        window["WeixinJSBridge"]["invoke"](
-            'sendAppMessage',
-            table_copy(this.appmessage_content),
-                
-            function(res) 
-            { 
-                self.error_msg = res["err_msg"];
-                self.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareMessageError, self);
-            }
-        ); 
+        this.appmessage_inshare = true;
+        this.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareMessage, this);
         
-        this.appmessage_enable = false;
+        if (this.appmessage_enable)
+        {  
+            var self = this;            
+            window["WeixinJSBridge"]["invoke"](
+                'sendAppMessage',
+                table_copy(this.appmessage_content),
+                
+                function(res) 
+                { 
+                    self.error_msg = res["err_msg"];
+                    self.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareMessageError, self);
+                }
+            );         
+            this.appmessage_enable = false;
+		}
+		
+        this.appmessage_inshare = false;
     };
 
     instanceProto.ShareTimeline = function ()
     {
-        if (!this.timeline_enable)
-            return;
-  
-        var self = this;  
-        window["WeixinJSBridge"]["invoke"](
-            'shareTimeline',
-            table_copy(this.timeline_content), 
-                
-            function(res) 
-            { 
-                self.error_msg = res["err_msg"];
-                self.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareTimelineError, self);
-            }
-        );   
+        this.timeline_inshare = true;
+        this.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareTimeline, this);
         
-        this.timeline_enable = false;
+        if (this.timeline_enable)
+        {
+            var self = this;  
+            window["WeixinJSBridge"]["invoke"](
+                'shareTimeline',
+                table_copy(this.timeline_content), 
+                
+                function(res) 
+                { 
+                    self.error_msg = res["err_msg"];
+                    self.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareTimelineError, self);
+                }
+            );           
+            this.timeline_enable = false;
+		}
+        this.timeline_inshare = false;
     };    
 
     instanceProto.ShareWeibo = function ()
     {
-        if (!this.weibo_enable)
-            return;
-  
-        var self = this;
-        window["WeixinJSBridge"]["invoke"](
-            'shareWeibo',
-            table_copy(this.weibo_content), 
-                
-            function(res) 
-            { 
-                self.error_msg = res["err_msg"];
-                self.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareWeiboError, self);
-            }
-        );  
+        this.weibo_inshare = true;
+        this.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareWeibo, this);
         
-        this.weibo_enable = false;
+        if (this.weibo_enable)
+        {
+            var self = this;
+            window["WeixinJSBridge"]["invoke"](
+                'shareWeibo',
+                table_copy(this.weibo_content), 
+                
+                function(res) 
+                { 
+                    self.error_msg = res["err_msg"];
+                    self.runtime.trigger(cr.plugins_.Rex_Weixin_share.prototype.cnds.OnShareWeiboError, self);
+                }
+            );          
+            this.weibo_enable = false;
+		}
+        this.weibo_inshare = false;
     };  
 
     var table_copy = function (in_table, out_table)
@@ -193,6 +206,21 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
         return this.WeixinJSBridge_enable;
 	};
     
+	Cnds.prototype.OnShareMessage = function ()
+	{          
+        return true;
+	};    
+    
+	Cnds.prototype.OnShareTimeline = function ()
+	{          
+        return true;
+	}; 
+    
+	Cnds.prototype.OnShareWeibo = function ()
+	{          
+        return true;
+	}; 
+    
 	Cnds.prototype.OnShareMessageError = function ()
 	{          
         return true;
@@ -222,7 +250,7 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
         this.appmessage_content["img_url"] = img_url;
         this.appmessage_content["img_width"] = img_width.toString();
         this.appmessage_content["img_height"] = img_height.toString();
-        this.appmessage_enable = true;        
+        this.appmessage_enable = true;      
 	};
     
     Acts.prototype.ShareTimeline = function (desc, title, link, img_url, img_width, img_height)
@@ -233,14 +261,14 @@ cr.plugins_.Rex_Weixin_share = function(runtime)
         this.timeline_content["img_url"] = img_url;
         this.timeline_content["img_width"] = img_width.toString();
         this.timeline_content["img_height"] = img_height.toString();
-        this.timeline_enable = true;        
+        this.timeline_enable = true;       
 	};      
     
     Acts.prototype.ShareWeibo = function (content, url)
 	{  
         this.weibo_content["content"] = content;
         this.weibo_content["url"] = url;
-        this.weibo_enable = true;        
+        this.weibo_enable = true;             
 	};      
 	//////////////////////////////////////
 	// Expressions

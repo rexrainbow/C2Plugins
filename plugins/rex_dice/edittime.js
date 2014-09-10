@@ -30,7 +30,7 @@ AddAction(20, 0, "Set random generator", "Setup",
           "Set random generator object.", "SetRandomGenerator");		  
 //////////////////////////////////////////////////////////////
 // Expressions
-AddAnyTypeParam("Count", "Count of dice.", 1);
+AddAnyTypeParam("Count and faces", 'Combine dice count and faces in a string like "4D6", or the count of dice in a number, and add the faces in 2nd parameter.', 1);
 //AddNumberParam("Faces", "Faces of dice.", 6);
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Roll dices", "Roll", "Roll", "Roll dices and get the sum of result.");
 AddExpression(1, ef_return_number, "Count of dice", "Roll", "DiceCount", "Count of dice.");
