@@ -99,12 +99,24 @@ AddExpression(5, ef_return_number,
 AddExpression(6, ef_return_number,
               "Infinity property", "Moving point", "INFINITY",
               'Infinity property used in moving point, used in Moving point. The value is (-1)'); 
+
+AddExpression(11, ef_return_number,
+              "Get UID of previos tile", "Request: Previous", "PreTileUID",
+              "Get UID of previos tile.");
+AddExpression(12, ef_return_number,
+              "Get logic X of previos tile", "Request: Previous", "PreTileX",
+              "Get logic X of previos tile.");
+AddExpression(13, ef_return_number,
+              "Get logic Y of previos tile", "Request: Previous", "PreTileY",
+              "Get logic Y of previos tile."); 
               
+                   
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Path mode", "A*", "Geometry of moving path.", "Random|Diagonal|Straight|A*"),  
+    new cr.Property(ept_combo, "Cache cost", "Yes", "Cache the cost of each tile in a request.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

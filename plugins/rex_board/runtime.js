@@ -363,7 +363,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.add_item(chess_inst, target_x, target_y, target_z); 
 	}; 
     
-	instanceProto.are_neighbors = function (uidA, uidB)
+	instanceProto.uid2neighborDir = function (uidA, uidB)
 	{
         var xyzA=this.uid2xyz(uidA);
         var xyzB=this.uid2xyz(uidB);
@@ -371,19 +371,36 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return false;
         
         var layout = this.GetLayout();
-        var dir,dir_cnt=layout.GetDirCount();
-        var _are_neighbors = false;
+        var dir, dir_cnt=layout.GetDirCount();
+        var ret_dir = null;
         for(dir=0;dir<dir_cnt;dir++)
         {
-            if ((layout.GetNeighborLX(xyzA.x,xyzA.y,dir) == xyzB.x) &&
-                (layout.GetNeighborLY(xyzA.x,xyzA.y,dir) == xyzB.y)    )
+            if ((layout.GetNeighborLX(xyzA.x, xyzA.y, dir) == xyzB.x) &&
+                (layout.GetNeighborLY(xyzA.x, xyzA.y, dir) == xyzB.y)    )
             {
-                _are_neighbors = true;
+                ret_dir = dir;
                 break;
             }
         }
-        return _are_neighbors;
+        return ret_dir;
 	};    
+	
+	instanceProto.lxy2neighborDir = function (lx0, ly0, lx1, ly1)
+	{
+        var layout = this.GetLayout();
+        var dir, dir_cnt=layout.GetDirCount();
+        var ret_dir = null;
+        for(dir=0;dir<dir_cnt;dir++)
+        {
+            if ((layout.GetNeighborLX(lx0, ly0, dir) == lx1) &&
+                (layout.GetNeighborLY(lx0, ly0, dir) == ly1)    )
+            {
+                ret_dir = dir;
+                break;
+            }
+        }
+        return ret_dir;
+	};  	
 
 	instanceProto.CreateChess = function(obj_type,x,y,z,_layer)
 	{
@@ -725,7 +742,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Cnds.prototype.AreNeighbors = function (uidA, uidB)
 	{
-		return this.are_neighbors(uidA, uidB);
+		return (this.uid2neighborDir(uidA, uidB) != null);
 	};	
 
 	Cnds.prototype.PickAllChess = function ()

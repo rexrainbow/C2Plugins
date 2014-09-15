@@ -46,9 +46,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    this.exp_ChessUID = -1;
 	    this.exp_TileUID = -1;
         this.exp_TileX = -1;        
-        this.exp_TileY = -1;         
+        this.exp_TileY = -1;  
+	    this.exp_PreTileUID = -1;
+        this.exp_PreTileX = -1;        
+        this.exp_PreTileY = -1;               
 	    
 	    this.path_mode = this.properties[0];
+	    this.is_cache_cost = (this.properties[1]==1);
 	                     
         this.board = null;
         this.boardUid = -1;    // for loading         
@@ -148,14 +152,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	var prop_BLOCKING = -1;
     var prop_INFINITY = -1; 
-	instanceProto.cost_get_from_event = function(tile_uid, tile_x, tile_y)
+	instanceProto.cost_get_from_event = function (cur_node, pre_node)
 	{
 	    var cost;
 	    if (this._is_cost_fn)
 	    {           
-	        this.exp_TileUID = tile_uid;
-	        this.exp_TileX = tile_x;
-	        this.exp_TileY = tile_y;              
+	        this.exp_TileUID = cur_node.uid;
+	        this.exp_TileX = cur_node.x;
+	        this.exp_TileY = cur_node.y;   
+	        this.exp_PreTileUID = (pre_node)? pre_node.uid:(-1);
+	        this.exp_PreTileX = (pre_node)? pre_node.x:(-1);
+	        this.exp_PreTileY = (pre_node)? pre_node.y:(-1); 	                   
 	        this._cost_value = prop_BLOCKING;
 	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
 	        cost = this._cost_value
@@ -263,8 +270,11 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
         var end = (end_tile_uid != null)? this.ASTAR_node_get(end_tile_uid): null;
         // fix me
-        if ((end != null) && end.is_wall())
-            return;
+        if (end != null)
+        {
+            if ( is_wall( end.cost_get() ) )
+                return;
+        }
 
         var start = this.ASTAR_node_get(start_tile_uid);        
         start.h = start.manhattan(end); 
@@ -292,9 +302,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             var il = neighbors.length;
             for(var i=0; i<il; ++i) 
             {
-                var neighbor = neighbors[i];
-                
-                if(neighbor.closed || neighbor.is_wall()) 
+                var neighbor = neighbors[i];                
+                var neighbor_cost = neighbor.cost_get(currentNode);
+                if(neighbor.closed || is_wall(neighbor_cost))
                 {
                     // Not a valid node to process, skip to next neighbor.
                     continue;
@@ -302,7 +312,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
                 // The g score is the shortest distance from start to current node.
                 // We need to check if the path we have arrived at this neighbor is the shortest one we have seen yet.
-                var gScore = currentNode.g + neighbor.cost_get(),
+                var gScore = currentNode.g + neighbor_cost,
                     beenVisited = neighbor.visited;
                     
                 if ((moving_points != prop_INFINITY) && (gScore > moving_points))
@@ -451,17 +461,26 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
         return neighbor_nodes;        
     };       
-    nodeKlassProto.cost_get = function ()
+    nodeKlassProto.cost_get = function (pre_node)
     {
-        if (this.cost == null)
+        var cost;
+        if (this.plugin.is_cache_cost)
         {
-            this.cost = this.plugin.cost_get_from_event(this.uid, this.x, this.y);
-        }        
-        return this.cost;       
+            if (this.cost == null)
+            {                        
+                this.cost = this.plugin.cost_get_from_event(this, pre_node);
+            }
+            cost = this.cost;  
+        }
+        else
+        {
+            cost = this.plugin.cost_get_from_event(this, pre_node);
+        }
+        return cost;
     };
-    nodeKlassProto.is_wall = function ()
+    var is_wall = function(cost)
     {
-        return (this.cost_get() == prop_BLOCKING);        
+        return (cost == prop_BLOCKING);
     };
     nodeKlassProto.path_to_root = function ()
     {       
@@ -874,5 +893,20 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     Exps.prototype.INFINITY = function (ret)
     {
         ret.set_int(prop_INFINITY);
+    };
+    
+    Exps.prototype.PreTileUID = function (ret)
+    {
+        ret.set_int(this.exp_PreTileUID);
     };	
+	
+    Exps.prototype.PreTileX = function (ret)
+    {
+        ret.set_int(this.exp_PreTileX);
+    };
+    	
+    Exps.prototype.PreTileY = function (ret)
+    {
+        ret.set_int(this.exp_PreTileY);
+    };     	    
 }());
