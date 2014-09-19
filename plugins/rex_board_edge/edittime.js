@@ -29,19 +29,19 @@ AddCondition(2, 0, "Has edge between chess", "Has edge",
           "Has edge between chess UID:<i>{0}</i> and <i>{1}</i>", 
           "Has edge between chess.", "HasEdgeBetweenChess");        
 AddObjectParam("Chess", "Chess object.");
-AddNumberParam("Direction", "The direction of chess.", 0);
-AddCondition(3, 0, "Has edges beside chess at direction", "Has edge", 
-             "Has edges beside chess <i>{0}</i> at direction to <i>{1}</i>", 
-             "Has edges beside chess at direction.", "HasEdgesBesideChessAtDirection");         
+AddNumberParam("Direction", "The direction of chess. (-1) for all directions.", 0);
+AddCondition(3, 0, "Has edges around chess", "Has edge", 
+             "Has any edge around chess <i>{0}</i> at direction to <i>{1}</i>", 
+             "Has any edge around chess at direction.", "HasAnyEdgesAroundChessAtDirection");         
 AddObjectParam("Chess", "Chess object.");
 AddComboParamOption("Right");		  
 AddComboParamOption("Down");
 AddComboParamOption("Left");
 AddComboParamOption("Up");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddCondition(4, 0, "Has edges beside chess at direction", "Has edge - Square grid", 
-             "Has edges beside chess <i>{0}</i> at direction to <i>{1}</i>",
-             "Has edges by chess and direction.", "HasEdgesBesideChessAtDirection");          
+AddCondition(4, 0, "Has edges around chess", "Has edge - Square grid", 
+             "Has edges around chess <i>{0}</i> at direction to <i>{1}</i>",
+             "Has edges by chess and direction.", "HasEdgesAroundChessAtDirection");          
 AddObjectParam("Chess", "Chess object.");
 AddComboParamOption("Right");
 AddComboParamOption("Down-right");	  
@@ -50,9 +50,9 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddCondition(5, cf_not_invertible, "Has edges beside chess at direction", "Has edge - Hexagon grid (Left-Right)", 
-             "Has edges beside chess <i>{0}</i> at direction to <i>{1}</i>",
-             "Has edges beside chess at direction.", "HasEdgesBesideChessAtDirection");         
+AddCondition(5, 0, "Has edges around chess", "Has edge - Hexagon grid (Left-Right)", 
+             "Has edges around chess <i>{0}</i> at direction to <i>{1}</i>",
+             "Has edges around chess at direction.", "HasEdgesAroundChessAtDirection");         
 AddObjectParam("Chess", "Chess object.");
 AddComboParamOption("Down-right");	      
 AddComboParamOption("Down");
@@ -61,10 +61,10 @@ AddComboParamOption("Up-left");
 AddComboParamOption("Up");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddCondition(6, cf_not_invertible, "Has edges beside chess at direction", "Has edge - Hexagon grid (Up-Down)", 
-             "Has edges beside chess <i>{0}</i> at direction to <i>{1}</i>",
-             "Has edges beside chess at direction.", "HasEdgesBesideChessAtDirection"); 
-             
+AddCondition(6, 0, "Has edges around chess", "Has edge - Hexagon grid (Up-Down)", 
+             "Has edges around chess <i>{0}</i> at direction to <i>{1}</i>",
+             "Has edges around chess at direction.", "HasEdgesAroundChessAtDirection"); 
+                          
 AddObjectParam("Edge", "Edge object."); 
 AddCondition(11, cf_not_invertible, "Pick all edges", "Pick edge", 
           "Pick all edges <i>{0}</i>", 
@@ -80,15 +80,15 @@ AddCondition(12, cf_not_invertible, "Pick edge between points", "Pick edge",
 AddObjectParam("Edge", "Edge object.");          
 AddNumberParam("UID0", "The UID of chess", 0);
 AddNumberParam("UID1", "The UID of neighbor chess", 0);
-AddCondition(13, cf_not_invertible, "Pick edges beside chess", "Pick edge", 
+AddCondition(13, cf_not_invertible, "Pick edges between chess", "Pick edge", 
              "Pick edges <i>{0}</i> between chess UID:<i>{1}</i> and chess UID:<i>{2}</i>", 
              "Pick edges between chess.", "PickEdgeBetweenChess");              
 AddObjectParam("Edge", "Edge object.");          
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Direction", "The direction of chess.", 0);
-AddCondition(14, cf_not_invertible, "Pick edges beside chess at direction", "Pick edge", 
-             "Pick edges <i>{0}</i> beside chess <i>{1}</i> at direction to <i>{2}</i>", 
-             "Pick edges beside chess at direction.", "PickEdgesBesideChessAtDirection"); 
+AddCondition(14, cf_not_invertible, "Pick edges around chess", "Pick edge", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges around chess at direction.", "PickEdgesAroundChessAtDirection"); 
 AddObjectParam("Edge", "Edge object.");          
 AddObjectParam("Chess", "Chess object.");
 AddComboParamOption("Right");		  
@@ -96,9 +96,9 @@ AddComboParamOption("Down");
 AddComboParamOption("Left");
 AddComboParamOption("Up");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddCondition(15, cf_not_invertible, "Pick edges beside chess at direction", "Pick edge - Square grid", 
-             "Pick edges <i>{0}</i> beside chess <i>{1}</i> at direction to <i>{2}</i>", 
-             "Pick edges by chess and direction.", "PickEdgesBesideChessAtDirection"); 
+AddCondition(15, cf_not_invertible, "Pick edges around chess", "Pick edge - Square grid", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges by chess and direction.", "PickEdgesAroundChessAtDirection"); 
 AddObjectParam("Edge", "Edge object.");          
 AddObjectParam("Chess", "Chess object.");
 AddComboParamOption("Right");
@@ -108,9 +108,9 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddCondition(16, cf_not_invertible, "Pick edges beside chess at direction", "Pick edge - Hexagon grid (Left-Right)", 
-             "Pick edges <i>{0}</i> beside chess <i>{1}</i> at direction to <i>{2}</i>", 
-             "Pick edges beside chess at direction.", "PickEdgesBesideChessAtDirection"); 
+AddCondition(16, cf_not_invertible, "Pick edges around chess", "Pick edge - Hexagon grid (Left-Right)", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges around chess at direction.", "PickEdgesAroundChessAtDirection"); 
 AddObjectParam("Edge", "Edge object.");          
 AddObjectParam("Chess", "Chess object.");
 AddComboParamOption("Down-right");	      
@@ -120,22 +120,31 @@ AddComboParamOption("Up-left");
 AddComboParamOption("Up");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddCondition(17, cf_not_invertible, "Pick edges beside chess at direction", "Pick edge - Hexagon grid (Up-Down)", 
-             "Pick edges <i>{0}</i> beside chess <i>{1}</i> at direction to <i>{2}</i>", 
-             "Pick edges beside chess at direction.", "PickEdgesBesideChessAtDirection");     
-             
+AddCondition(17, cf_not_invertible, "Pick edges around chess", "Pick edge - Hexagon grid (Up-Down)", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges around chess at direction.", "PickEdgesAroundChessAtDirection");     
+AddObjectParam("Edge", "Edge object.");          
+AddObjectParam("Chess", "Chess object.");
+AddCondition(18, cf_not_invertible, "Pick edges clamped by chess", "Pick edge", 
+             "Pick edges <i>{0}</i> clamped by chess <i>{1}</i>", 
+             "Pick edges clamped by chess.", "PickEdgesClampedByChess");
+                          
 AddObjectParam("Chess", "Chess object.");
 AddObjectParam("Edge", "Edge object.");
 AddAnyTypeParam("Logic Z", "The Z index (0-based).", 0);    
-AddCondition(21, cf_not_invertible, "Pick chess beside edge at LZ", "Pick chess", 
-             "Pick cheess <i>{0}</i> beside edges <i>{1}</i> at Logic Z to <i>{2}</i>", 
-             "Pick chess beside edge.", "PickChessBesideEdge");
+AddCondition(21, cf_not_invertible, "Pick chess around edge at LZ", "Pick chess", 
+             "Pick cheess <i>{0}</i> around edges <i>{1}</i> at Logic Z to <i>{2}</i>", 
+             "Pick chess around edge.", "PickChessAroundEdge");
 AddObjectParam("Chess", "Chess object.");
 AddObjectParam("Edge", "Edge object.");
-AddCondition(23, cf_not_invertible, "Pick chess beside edge", "Pick chess", 
-             "Pick cheess <i>{0}</i> beside edges <i>{1}</i>", 
-             "Pick chess beside edge.", "PickChessBesideEdge");             
+AddCondition(22, cf_not_invertible, "Pick chess around edge", "Pick chess", 
+             "Pick cheess <i>{0}</i> around edges <i>{1}</i>", 
+             "Pick chess around edge.", "PickChessAroundEdge");             
 
+AddObjectParam("Edge", "Kicked edge object.");
+AddCondition(31, cf_trigger, "On edge kicked", "Kick", 
+            "On <i>{0}</i> kicked", 
+            'Triggered when edge kicked by "action:Create edge" or "action:Move edge".', "OnEdgeKicked");
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Board", "Board object");
@@ -161,11 +170,11 @@ AddAction(2, 0, "Create edge between chess", "Physical: Create",
           "Create edge between chess.", "CreateEdgeBetweenChess");	          
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
-AddNumberParam("Direction", "The direction of chess.", 0);
+AddNumberParam("Direction", "The direction of chess. (-1) for all directions", 0);
 AddLayerParam("Layer", "Layer name of number."); 	
-AddAction(3, 0, "Create edge beside chess", "Physical: Create", 
+AddAction(3, 0, "Create edge around chess", "Physical: Create", 
           "Create edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side on layer <i>{3}</i>", 
-          "Create edge beside chess.", "CreateEdgeBesideChess");
+          "Create edge around chess.", "CreateEdgeAroundChess");
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddComboParamOption("Right");		  
@@ -174,9 +183,9 @@ AddComboParamOption("Left");
 AddComboParamOption("Up");
 AddComboParam("Direction", "The direction of chess.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
-AddAction(4, 0, "Create edge beside chess", "Physical: Create - Square grid", 
+AddAction(4, 0, "Create edge around chess", "Physical: Create - Square grid", 
           "Create edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side on layer <i>{3}</i>", 
-          "Create edge beside chess.", "CreateEdgeBesideChess");
+          "Create edge around chess.", "CreateEdgeAroundChess");
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddComboParamOption("Right");
@@ -187,9 +196,9 @@ AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
-AddAction(5, 0, "Create edge beside chess", "Physical: Create - Hexagon grid (Left-Right)", 
+AddAction(5, 0, "Create edge around chess", "Physical: Create - Hexagon grid (Left-Right)", 
           "Create edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side on layer <i>{3}</i>", 
-          "Create edge beside chess.", "CreateEdgeBesideChess");		
+          "Create edge around chess.", "CreateEdgeAroundChess");		
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddComboParamOption("Down-right");	      
@@ -200,62 +209,18 @@ AddComboParamOption("Up");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
-AddAction(6, 0, "Create edge beside chess", "Physical: Create - Hexagon grid (Up-Down)", 
+AddAction(6, 0, "Create edge around chess", "Physical: Create - Hexagon grid (Up-Down)", 
           "Create edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side on layer <i>{3}</i>", 
-          "Create edge beside chess.", "CreateEdgeBesideChess");
+          "Create edge around chess.", "CreateEdgeAroundChess");
  
-AddNumberParam("LX0", "The logic X of point 0.", 0);
-AddNumberParam("LY0", "The logic Y of point 0.", 0);   
-AddNumberParam("LX1", "The logic X of point 1.", 0);
-AddNumberParam("LY1", "The logic Y of point 1.", 0);
-AddAction(11, 0, "Remove edge between points", "Logic: Remove", 
-          "Remove edge between logic points (<i>{1}</i>, <i>{2}</i>) and (<i>{3}</i>, <i>{4}</i>)", 
-          "Remove edge between points.", "RemoveEdgeBetweenLP"); 
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);	
-AddAction(12, 0, "Remove edge between chess", "Logic: Remove", 
-          "Remove edge between chess UID:<i>{1}</i> and chess UID:<i>{2}</i>", 
-          "Remove edge between chess.", "RemoveEdgeBetweenChess");
-AddObjectParam("Chess", "Chess object.");         
-AddNumberParam("Direction", "The direction of chess.", 0);	
-AddAction(13, 0, "Remove edge beside chess", "Logic: Remove", 
-          "Remove edge at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Remove edge beside chess.", "RemoveEdgeBesideChess"); 
-AddObjectParam("Chess", "Chess object.");         
-AddComboParamOption("Right");		  
-AddComboParamOption("Down");
-AddComboParamOption("Left");
-AddComboParamOption("Up");
-AddComboParam("Direction", "The direction of chess.", 0);
-AddAction(14, 0, "Remove edge beside chess", "Logic: Remove - Square grid", 
-          "Remove edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Remove edge beside chess.", "RemoveEdgeBesideChess");
-AddObjectParam("Chess", "Chess object.");         
-AddComboParamOption("Right");
-AddComboParamOption("Down-right");	  
-AddComboParamOption("Down-left");	 
-AddComboParamOption("Left");
-AddComboParamOption("Up-left");
-AddComboParamOption("Up-right");
-AddComboParam("Direction", "The direction of chess.", 0);
-AddAction(15, 0, "Remove edge beside chess", "Logic: Remove - Hexagon grid (Left-Right)", 
-          "Remove edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Remove edge beside chess.", "RemoveEdgeBesideChess");		
-AddObjectParam("Chess", "Chess object.");         
-AddComboParamOption("Down-right");	      
-AddComboParamOption("Down");
-AddComboParamOption("Down-left");	 
-AddComboParamOption("Up-left");
-AddComboParamOption("Up");
-AddComboParamOption("Up-right");
-AddComboParam("Direction", "The direction of chess.", 0);
-AddAction(16, 0, "Remove edge beside chess", "Logic: Remove - Hexagon grid (Up-Down)", 
-          "Remove edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Remove edge beside chess.", "RemoveEdgeBesideChess");
 AddObjectParam("Edge", "Edge object.");
-AddAction(17, 0, "Remove edge", "Logic: Remove", 
-          "Remove edge <i>{0}</i>", 
-          "Remove edge between points.", "RemoveEdge");          
+AddAction(17, 0, "Destroy edges", "Logic: Remove", 
+          "Destroy edges <i>{0}</i>", 
+          "Destroy edges and remove them from the board.", "DestroyEdges");       
+AddObjectParam("Edge", "Edge object.");
+AddAction(18, 0, "Remove edges", "Logic: Remove", 
+          "Remove edges <i>{0}</i>", 
+          "Remove edges from the board.", "RemoveEdges");          
           
 AddObjectParam("Edge", "Edge object.");  
 AddNumberParam("LX0", "The logic X of point 0.", 0);
@@ -274,9 +239,9 @@ AddAction(22, 0, "Move edge between chess", "Logic: Move",
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddNumberParam("Direction", "The direction of chess.", 0);	
-AddAction(23, 0, "Move edge beside chess", "Logic: Move", 
+AddAction(23, 0, "Move edge around chess", "Logic: Move", 
           "Move edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Move edge beside chess.", "MoveEdgeBesideChess");
+          "Move edge around chess.", "MoveEdgeAroundChess");
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddComboParamOption("Right");		  
@@ -284,9 +249,9 @@ AddComboParamOption("Down");
 AddComboParamOption("Left");
 AddComboParamOption("Up");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddAction(24, 0, "Move edge beside chess", "Logic: Move - Square grid", 
+AddAction(24, 0, "Move edge around chess", "Logic: Move - Square grid", 
           "Move edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Move edge beside chess.", "MoveEdgeBesideChess");
+          "Move edge around chess.", "MoveEdgeAroundChess");
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddComboParamOption("Right");
@@ -296,9 +261,9 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddAction(25, 0, "Move edge beside chess", "Logic: Move - Hexagon grid (Left-Right)", 
+AddAction(25, 0, "Move edge around chess", "Logic: Move - Hexagon grid (Left-Right)", 
           "Move edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Move edge beside chess.", "MoveEdgeBesideChess");		
+          "Move edge around chess.", "MoveEdgeAroundChess");		
 AddObjectParam("Edge", "Edge object.");  
 AddObjectParam("Chess", "Chess object.");         
 AddComboParamOption("Down-right");	      
@@ -308,10 +273,86 @@ AddComboParamOption("Up-left");
 AddComboParamOption("Up");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "The direction of chess.", 0);
-AddAction(26, 0, "Move edge beside chess", "Logic: Move - Hexagon grid (Up-Down)", 
+AddAction(26, 0, "Move edge around chess", "Logic: Move - Hexagon grid (Up-Down)", 
           "Move edge <i>{0}</i> at chess <i>{1}</i>'s <i>{2}</i> side", 
-          "Move edge beside chess.", "MoveEdgeBesideChess");
+          "Move edge around chess.", "MoveEdgeAroundChess");
 		  
+AddObjectParam("Edge", "Edge object."); 
+AddAction(31, 0, "Pick all edges", "Pick edge", 
+          "Pick all edges <i>{0}</i>", 
+          "Pick all edge.", "PickAllEdges");
+AddObjectParam("Edge", "Edge object.");  
+AddNumberParam("LX0", "The logic X of point 0.", 0);
+AddNumberParam("LY0", "The logic Y of point 0.", 0);   
+AddNumberParam("LX1", "The logic X of point 1.", 0);
+AddNumberParam("LY1", "The logic Y of point 1.", 0); 
+AddAction(32, 0, "Pick edge between points", "Pick edge", 
+          "Pick edge <i>{0}</i> between logic points (<i>{1}</i>, <i>{2}</i>) and (<i>{3}</i>, <i>{4}</i>)", 
+          "Pick edge between two logic points.", "PickEdgeBetweenLP");                    
+AddObjectParam("Edge", "Edge object.");          
+AddNumberParam("UID0", "The UID of chess", 0);
+AddNumberParam("UID1", "The UID of neighbor chess", 0);
+AddAction(33, 0, "Pick edges between chess", "Pick edge", 
+             "Pick edges <i>{0}</i> between chess UID:<i>{1}</i> and chess UID:<i>{2}</i>", 
+             "Pick edges between chess.", "PickEdgeBetweenChess");              
+AddObjectParam("Edge", "Edge object.");          
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("Direction", "The direction of chess.", 0);
+AddAction(34, 0, "Pick edges around chess", "Pick edge", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges around chess at direction.", "PickEdgesAroundChessAtDirection"); 
+AddObjectParam("Edge", "Edge object.");          
+AddObjectParam("Chess", "Chess object.");
+AddComboParamOption("Right");		  
+AddComboParamOption("Down");
+AddComboParamOption("Left");
+AddComboParamOption("Up");
+AddComboParam("Direction", "The direction of chess.", 0);
+AddAction(35, 0, "Pick edges around chess", "Pick edge - Square grid", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges by chess and direction.", "PickEdgesAroundChessAtDirection"); 
+AddObjectParam("Edge", "Edge object.");          
+AddObjectParam("Chess", "Chess object.");
+AddComboParamOption("Right");
+AddComboParamOption("Down-right");	  
+AddComboParamOption("Down-left");	 
+AddComboParamOption("Left");
+AddComboParamOption("Up-left");
+AddComboParamOption("Up-right");
+AddComboParam("Direction", "The direction of chess.", 0);
+AddAction(36, 0, "Pick edges around chess", "Pick edge - Hexagon grid (Left-Right)", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges around chess at direction.", "PickEdgesAroundChessAtDirection"); 
+AddObjectParam("Edge", "Edge object.");          
+AddObjectParam("Chess", "Chess object.");
+AddComboParamOption("Down-right");	      
+AddComboParamOption("Down");
+AddComboParamOption("Down-left");	 
+AddComboParamOption("Up-left");
+AddComboParamOption("Up");
+AddComboParamOption("Up-right");
+AddComboParam("Direction", "The direction of chess.", 0);
+AddAction(37, 0, "Pick edges around chess", "Pick edge - Hexagon grid (Up-Down)", 
+             "Pick edges <i>{0}</i> around chess <i>{1}</i> at direction to <i>{2}</i>", 
+             "Pick edges around chess at direction.", "PickEdgesAroundChessAtDirection");     
+AddObjectParam("Edge", "Edge object.");          
+AddObjectParam("Chess", "Chess object.");
+AddAction(38, 0, "Pick edges clamped by chess", "Pick edge", 
+             "Pick edges <i>{0}</i> clamped by chess <i>{1}</i>", 
+             "Pick edges clamped by chess.", "PickEdgesClampedByChess");
+                          
+AddObjectParam("Chess", "Chess object.");
+AddObjectParam("Edge", "Edge object.");
+AddAnyTypeParam("Logic Z", "The Z index (0-based).", 0);    
+AddAction(41, 0, "Pick chess around edge at LZ", "Pick chess", 
+             "Pick cheess <i>{0}</i> around edges <i>{1}</i> at Logic Z to <i>{2}</i>", 
+             "Pick chess around edge.", "PickChessAroundEdge");
+AddObjectParam("Chess", "Chess object.");
+AddObjectParam("Edge", "Edge object.");
+AddAction(42, 0, "Pick chess around edge", "Pick chess", 
+             "Pick cheess <i>{0}</i> around edges <i>{1}</i>", 
+             "Pick chess around edge.", "PickChessAroundEdge"); 
+               		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("LX0", "The logic X of point 0.", 0);
@@ -336,6 +377,19 @@ AddExpression(4, ef_return_number,
               "Get edge cout around the chess", "Edge", "ChessUID2EdgeCount",
               "Get edge cout around the chess. Return (-1) if this chess is not on the board.");
               
+AddNumberParam("UID", "The UID of edge", 0);
+AddExpression(11, ef_return_number,
+              "Get X co-ordinate of edge by UID", "Physical", "EdgeUID2PX",
+              "Get physical X co-ordinate of edge by UID. Return (-1) if this edge is not valided.");  
+AddNumberParam("UID", "The UID of edge", 0);
+AddExpression(12, ef_return_number,
+              "Get Y co-ordinate of edge by UID", "Physical", "EdgeUID2PY",
+              "Get physical Y co-ordinate of edge by UID. Return (-1) if this edge is not valided.");  
+AddNumberParam("UID", "The UID of edge", 0);
+AddExpression(13, ef_return_number,
+              "Get angle of edge by UID", "Physical", "EdgeUID2PA",
+              "Get physical angle of edge by UID. Return (-1) if this edge is not valided.");  
+                                          
 ACESDone();
 
 // Property grid properties for this plugin

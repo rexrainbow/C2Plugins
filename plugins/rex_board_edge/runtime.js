@@ -44,6 +44,8 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
 	    this.lxykey2edgeuid = {};
 		this.edgeuid2lxykey = {};
+		this.pinstgroup = new cr.plugins_.Rex_board_edge.GroupKlass();	
+		this._kicked_edge_uid = -1;
 		
         this.board = null;
         this.boardUid = -1;    // for loading   
@@ -56,7 +58,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 										})(this);
 										
 		this.runtime.addDestroyCallback(this.myDestroyCallback);               	
-	};	
+	};
 	
 	instanceProto.onDestroy = function ()
 	{
@@ -156,27 +158,21 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	{   	            
         return JSON.parse(k);
 	};
-	
-	instanceProto.remove_edgebylxy = function (lx0, ly0, lx1, ly1)
-	{   
-	    var k = this.lxy2key(lx0, ly0, lx1, ly1);
-	    var edge_uid = this.lxykey2edgeuid[k];
-	    if (edge_uid == null)
-	        return false;
-
-		delete this.lxykey2edgeuid[k];	        
-		delete this.edgeuid2lxykey[edge_uid];
-		return true; 
-	};	
-	
-	instanceProto.remove_edge = function (edge_uid)
+		
+	instanceProto.remove_edge = function (edge_uid, kicking_notify)
 	{   
 	    if (edge_uid == null)
 	        return false;
 	    var k = this.edgeuid2lxykey[edge_uid];	    
 	    if (k == null) 
 	        return false;
-
+	        
+        if (kicking_notify)
+        {
+            this._kicked_edge_uid = edge_uid;
+            this.runtime.trigger(cr.plugins_.Rex_board_edge.prototype.cnds.OnEdgeKicked, this); 
+        }
+        
 		delete this.lxykey2edgeuid[k];	        
 		delete this.edgeuid2lxykey[edge_uid]; 
 		return true; 
@@ -186,24 +182,27 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	{   
 	    this.remove_edge(edge_uid);
         var k = this.lxy2key(lx0, ly0, lx1, ly1);
+        this.remove_edge(this.lxykey2edgeuid[k], true);
         this.lxykey2edgeuid[k] = edge_uid;	    
 		this.edgeuid2lxykey[edge_uid] = k;    
 	};	
-	
-	var _uids = [];  // private global object	
-	instanceProto.pickuid = function (uid, objtype)
+
+	instanceProto.pickuids = function (group, objtype)
 	{
-        _uids.length = 1;
-        _uids[0] = uid;
-        return this.board_get().pickuids(_uids, edge_objtype);
+	    var has_picked = this.board_get().pickuids(group.GetList(), objtype, true);
+	    group.Clean();
+        return has_picked;
     };	
-	
+        
 	instanceProto.CreateEdgeBetweenLP = function (edge_objtype, lx0, ly0, lx1, ly1, layer)
 	{
         if (!edge_objtype)
             return;
         if (this.board_get().lxy2neighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
+        {
+            this.pickuids(this.pinstgroup, edge_objtype);
             return;
+        }
             
         var edge_inst = this.CreateInst(edge_objtype, 0, 0, layer);
         if (edge_inst == null)
@@ -211,7 +210,183 @@ cr.plugins_.Rex_board_edge = function(runtime)
             
 		this.add_edge(edge_inst.uid, lx0, ly0, lx1, ly1);         
         this.set_position_angle(edge_inst, lx0, ly0, lx1, ly1);		
-	};			
+	};		
+	
+	instanceProto.PickAllEdges = function (edge_objtype)
+	{
+        if (!edge_objtype)
+            return false;
+
+        var uid;
+        for (uid in this.edgeuid2lxykey)                      
+        {
+            this.pinstgroup.AddUID(parseInt(uid));
+        }
+        
+        return this.pickuids(this.pinstgroup, edge_objtype);
+	};
+	
+	instanceProto.PickEdgeBetweenLP = function (edge_objtype, lx0, ly0, lx1, ly1)
+	{
+        if (!edge_objtype)
+            return false;                      
+        var edgeuid = this.lxy2edgeuid(lx0, ly0, lx1, ly1);
+        if (edgeuid != null)
+        {
+            this.pinstgroup.AddUID(edgeuid);
+        }
+        return this.pickuids(this.pinstgroup, edge_objtype);
+	};
+	
+	instanceProto.PickEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1)
+	{	    
+        if (!edge_objtype)
+            return false; 
+
+	    var board = this.board_get();
+	    var xyz0 = board.uid2xyz(chess_uid0);
+	    var xyz1 = board.uid2xyz(chess_uid1);
+	    if ((xyz0 == null) || (xyz1 == null))
+	        return false;
+	                
+        var edgeuid = this.lxy2edgeuid(lx0, ly0, lx1, ly1);
+        if (edgeuid != null)
+        {
+            this.pinstgroup.AddUID(edgeuid);
+        }
+        return this.pickuids(this.pinstgroup, edge_objtype);         
+	};
+			
+	instanceProto.PickEdgesAroundChessAtDirection = function (edge_objtype, chess_objtype, dir)
+	{
+        if ((!edge_objtype) || (!chess_objtype))
+            return false; 
+            
+		var chess = chess_objtype.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+        var board = this.board_get();
+        var layout = board.GetLayout();
+        for (i=0; i<chess_cnt; i++)  
+        {
+	        var xyz0 = board.uid2xyz(chess[i].uid);
+	        if (xyz0==null)
+	            continue;
+	            
+	        if (dir == -1)
+	        {
+                var j, cnt = layout.GetDirCount();            
+                for (j=0; j<cnt; j++)
+                {
+	                var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, j);
+	                var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, j);	    
+                    var edgeuid = this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1);
+                    if (edgeuid != null)
+                    {
+                        this.pinstgroup.AddUID(edgeuid);
+                    }
+                }
+	        }
+	        else
+	        {	        
+	            var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
+	            var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);
+                var edgeuid = this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1);
+                if (edgeuid != null)
+                {
+                    this.pinstgroup.AddUID(edgeuid);
+                }
+            }
+        }
+        return this.pickuids(this.pinstgroup, edge_objtype);   
+	};		
+	
+	instanceProto.PickEdgesClampedByChess = function (edge_objtype, chess_objtype)
+	{
+        if ((!edge_objtype) || (!chess_objtype))
+            return false; 
+            
+		var chess = chess_objtype.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+        var board = this.board_get();
+        var layout = board.GetLayout();
+        var j, dir_cnt = layout.GetDirCount();   
+        var edgeuid2count = {};
+        for (i=0; i<chess_cnt; i++)  
+        {            
+	        var xyz0 = board.uid2xyz(chess[i].uid);
+	        if (xyz0==null)
+	            continue;
+	                      
+            for (j=0; j<dir_cnt; j++)
+            {
+	            var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, j);
+	            var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, j);	    
+                var edgeuid = this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1);
+                if (edgeuid == null)
+                    continue;
+                    
+                if (!edgeuid2count.hasOwnProperty(edgeuid))
+                {
+                    edgeuid2count[edgeuid] = 0;
+                }
+                edgeuid2count[edgeuid] += 1; 
+            }
+        }
+        
+        var uid;
+        for (uid in edgeuid2count)
+        {
+            if (edgeuid2count[uid] >= 2)
+            {
+                this.pinstgroup.AddUID(parseInt(uid));
+            }
+        }
+        
+        return this.pickuids(this.pinstgroup, edge_objtype);   
+	};		 	
+		
+	instanceProto.PickChessAroundEdge = function (chess_objtype, edge_objtype, lz)
+	{
+        if ((!edge_objtype) || (!chess_objtype))
+            return false; 
+            
+		var edges = edge_objtype.getCurrentSol().getObjects();
+        var i, edges_cnt=edges.length;
+        var board = this.board_get();
+        var layout = board.GetLayout();
+        for (i=0; i<edges_cnt; i++)  
+        {            
+            var k = this.edgeuid2lxykey[edges[i].uid];
+            if (k == null)
+                continue;
+            
+            var lxy = this.key2lxy(k);        
+            if (lz != null)
+            {
+                var chess_uid0 = board.xyz2uid(lxy[0], lxy[1], lz);
+                var chess_uid1 = board.xyz2uid(lxy[2], lxy[3], lz);                
+                if (chess_uid0 != null)
+                    this.pinstgroup.AddUID(chess_uid0);
+                if (chess_uid1 != null)
+                    this.pinstgroup.AddUID(chess_uid1);              
+            }
+            else
+            {
+                var zhash0 = board.xy2zhash(lxy[0], lxy[1]);
+                var zhash1 = board.xy2zhash(lxy[2], lxy[3]);           
+                var z;
+                for (z in zhash0)
+                {
+                    this.pinstgroup.AddUID(zhash0[z]);
+                }
+                for (z in zhash1)
+                {
+                    this.pinstgroup.AddUID(zhash1[z]);
+                }            
+            }
+        }
+        return this.pickuids(this.pinstgroup, chess_objtype);   
+	};		
     
 	instanceProto.saveToJSON = function ()
 	{
@@ -261,7 +436,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    return this.lxykey2edgeuid.hasOwnProperty(k);
 	};
 	
-	Cnds.prototype.HasEdgesBesideChessAtDirection = function (chess_objtype, dir)
+	Cnds.prototype.HasAnyEdgesAroundChessAtDirection = function (chess_objtype, dir)
 	{
         if (!chess_objtype)
             return false; 
@@ -273,119 +448,62 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    var board = this.board_get();
 	    var xyz0 = board.uid2xyz(chess_inst.uid);
 	    var layout = board.GetLayout();
-	    var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
-	    var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);
-        var edgeuid = this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1);	    	             
-        return (edgeuid != null);   
+	    var has_edge;
+	    if (dir == -1)
+	    {
+            var i, cnt = layout.GetDirCount();            
+            for (i=0; i<cnt; i++)
+            {
+                var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, i);
+	            var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, i);
+	            has_edge = (this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1) != null);
+	            if (has_edge)
+	                break;
+            }	        
+	    }
+	    else 
+	    {
+	        var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
+	        var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);
+            has_edge = (this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1) != null);	    	             
+        }
+        return has_edge;   
 	};			
 	
 	Cnds.prototype.PickAllEdges = function (edge_objtype)
 	{
-        if (!edge_objtype)
-            return false;
-        
-        _uids.length = 0;
-        var uid;
-        for (uid in this.edgeuid2lxykey)                      
-        {
-            _uids.push(parseInt(uid));
-        }
-        return board.pickuids(_uids, edge_objtype);
+        return this.PickAllEdges(edge_objtype);
 	};
 	
 	Cnds.prototype.PickEdgeBetweenLP = function (edge_objtype, lx0, ly0, lx1, ly1)
 	{
-        if (!edge_objtype)
-            return false;                      
-        var edgeuid = this.lxy2edgeuid(lx0, ly0, lx1, ly1);
-        if (edgeuid == null)
-            return false;
-
-        return this.pickuid(edgeuid, edge_objtype);
+        return this.PickEdgeBetweenLP(edge_objtype, lx0, ly0, lx1, ly1);
 	};	     
 	
 	Cnds.prototype.PickEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1)
-	{	    
-        if (!edge_objtype)
-            return false; 
-
-	    var board = this.board_get();
-	    var xyz0 = board.uid2xyz(chess_uid0);
-	    var xyz1 = board.uid2xyz(chess_uid1);
-	    if ((xyz0 == null) || (xyz1 == null))
-	        return false;
-	                
-        var edgeuid = this.lxy2edgeuid(lx0, ly0, lx1, ly1);
-        if (edgeuid == null)
-            return false;
-            	                               
-        return this.pickuid(edgeuid, edge_objtype);           
+	{
+        return this.PickEdgeBetweenChess(edge_objtype, chess_uid0, chess_uid1);         
 	};	    
     
-    
-	Cnds.prototype.PickEdgesBesideChessAtDirection = function (edge_objtype, chess_objtype, dir)
+	Cnds.prototype.PickEdgesAroundChessAtDirection = function (edge_objtype, chess_objtype, dir)
 	{
-        if ((!edge_objtype) || (!chess_objtype))
-            return false; 
-            
-	    var chess_inst = chess_objtype.getFirstPicked();
-        if (!chess_inst)
-            return false; 
-            
-	    var board = this.board_get();
-	    var xyz0 = board.uid2xyz(chess_inst.uid);
-	    var layout = board.GetLayout();
-	    var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
-	    var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);
-        var edgeuid = this.lxy2edgeuid(xyz0.x, xyz0.y, lx1, ly1);
-        if (edgeuid == null)
-            return false;
-            	    	             
-        return this.pickuid(edgeuid, edge_objtype);   
+        return this.PickEdgesAroundChessAtDirection(edge_objtype, chess_objtype, dir);   
 	};	
     
-	Cnds.prototype.PickChessBesideEdge = function (chess_objtype, edge_objtype, lz)
+	Cnds.prototype.PickEdgesClampedByChess = function (edge_objtype, chess_objtype)
 	{
-        if ((!edge_objtype) || (!chess_objtype))
-            return false; 
-            
-	    var edge_inst = edge_objtype.getFirstPicked();
-        if (!edge_inst)
-            return false;
-            
-        var k = this.edgeuid2lxykey[edge_inst.uid];
-        if (k == null)
-            return false;
-            
-        var lxy = this.key2lxy(k);
-        var board = this.board_get();
-        if (lz != null)
-        {
-            var chess_uid0 = board.xyz2uid(lxy[0], lxy[1], lz);
-            var chess_uid1 = board.xyz2uid(lxy[2], lxy[3], lz);
-            _uids.length = 0;
-            if (chess_uid0 != null)
-                _uids.push(chess_uid0);
-            if (chess_uid1 != null)
-                _uids.push(chess_uid1);                
-        }
-        else
-        {
-            var zhash0 = board.xy2zhash(lxy[0], lxy[1]);
-            var zhash1 = board.xy2zhash(lxy[2], lxy[3]);
-            _uids.length = 0;
-            var z;
-            for (z in zhash0)
-            {
-                _uids.push(zhash0[z]);
-            }
-            for (z in zhash1)
-            {
-                _uids.push(zhash1[z]);
-            }            
-        }
-        
-        return board.pickuids(_uids, edge_objtype);
+        return this.PickEdgesClampedByChess(edge_objtype, chess_objtype);   
+	};		
+	
+	Cnds.prototype.PickChessAroundEdge = function (chess_objtype, edge_objtype, lz)
+	{        
+        return this.PickChessAroundEdge(chess_objtype, edge_objtype, lz);   
+	};	
+	
+	Cnds.prototype.OnEdgeKicked = function (edge_objtype)
+	{        
+        this.pinstgroup.AddUID(this._kicked_edge_uid);
+	    return this.pickuids(this.pinstgroup, edge_objtype); 
 	};	    
     //////////////////////////////////////
 	// Actions
@@ -417,70 +535,64 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    this.CreateEdgeBetweenLP(edge_objtype, xyz0.x, xyz0.y, xyz1.x, xyz1.y, layer);        
 	};    
 	
-	Acts.prototype.CreateEdgeBesideChess = function (edge_objtype, chess_objtype, dir, layer)
+	Acts.prototype.CreateEdgeAroundChess = function (edge_objtype, chess_objtype, dir, layer)
 	{
         if (!chess_objtype)
-            return;			
-	    var chess_inst = chess_objtype.getFirstPicked();
-        if (!chess_inst)
-            return;
+            return;	
+
+        var chess = chess_objtype.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+        var board = this.board_get();
+        var layout = board.GetLayout();
+        for (i=0; i<chess_cnt; i++)  
+        {
+            var xyz0 = board.uid2xyz(chess[i].uid);
+            if (xyz0 == null)
+                continue;  
             
-	    var board = this.board_get();
-	    var xyz0 = board.uid2xyz(chess_inst.uid);
-        if (xyz0 == null)
-            return;
-	    var layout = board.GetLayout();
-	    var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
-	    var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);	    
-	    this.CreateEdgeBetweenLP(edge_objtype, xyz0.x, xyz0.y, lx1, ly1, layer);	    
+            if (dir == -1)
+            {
+                var j, cnt = layout.GetDirCount();            
+                for (j=0; j<cnt; j++)
+                {
+	                var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, i);
+	                var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, i);	    
+	                this.CreateEdgeBetweenLP(edge_objtype, xyz0.x, xyz0.y, lx1, ly1, layer);
+                }
+            }
+            else
+            {               
+	            var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
+	            var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);	    
+	            this.CreateEdgeBetweenLP(edge_objtype, xyz0.x, xyz0.y, lx1, ly1, layer);
+	        }
+        }	    
 	};	
-    
-	
-	Acts.prototype.RemoveEdgeBetweenLP = function (lx0, ly0, lx1, ly1)
-	{       
-	    this.remove_edgebylxy(lx0, ly0, lx1, ly1);
-	};	 
-	
-	Acts.prototype.RemoveEdgeBetweenChess = function (chess_uid0, chess_uid1)
-	{       
-	    var board = this.board_get();
-	    var xyz0 = board.uid2xyz(chess_uid0);
-	    var xyz1 = board.uid2xyz(chess_uid1);
-	    if ((xyz0 == null) || (xyz1 == null))
-	        return;
-	        
-	    this.remove_edgebylxy(xyz0.x, xyz0.y, xyz1.x, xyz1.y); 
-	};
-	
-	Acts.prototype.RemoveEdgeBesideChess = function (chess_objtype, dir, layer)
-	{       
-        if (!chess_objtype)
-            return;			
-	    var chess_inst = chess_objtype.getFirstPicked();
-        if (!chess_inst)
-            return;
-            
-	    var board = this.board_get();
-	    var xyz0 = board.uid2xyz(chess_inst.uid);
-        if (xyz0 == null)
-            return;        
-	    var layout = board.GetLayout();
-	    var lx1 = layout.GetNeighborLX(xyz0.x, xyz0.y, dir);
-	    var ly1 = layout.GetNeighborLY(xyz0.x, xyz0.y, dir);
-	    this.remove_edgebylxy(xyz0.x, xyz0.y, lx1, ly1);
-	};    
-	
-	Acts.prototype.RemoveEdge = function (edge_objtype)
+
+	Acts.prototype.DestroyEdges = function (edge_objtype)
 	{       
         if (!edge_objtype)
-            return;			
-	    var edge_inst = edge_objtype.getFirstPicked();
-        if (!edge_inst)
-            return;
-
-	    this.remove_edge(edge_inst.uid);
+            return;	
+        var edges = edge_objtype.getCurrentSol().getObjects();
+        var i, edge_cnt=edges.length;
+        for (i=0; i<edge_cnt; i++)  
+        {
+            this.remove_edge(edges[i].uid);
+	        this.runtime.DestroyInstance(edges[i]);
+	    }
 	};   
-	
+
+	Acts.prototype.RemoveChess = function (edge_objtype)
+	{       
+        if (!edge_objtype)
+            return;	
+        var edges = edge_objtype.getCurrentSol().getObjects();
+        var i, edge_cnt=edges.length;
+        for (i=0; i<edge_cnt; i++)  
+        {
+            this.remove_edge(edges[i].uid);
+	    }
+	};	
     
 	Acts.prototype.MoveEdgeBetweenLP = function (edge_objtype, lx0, ly0, lx1, ly1)
 	{
@@ -491,7 +603,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             return;
             
         this.add_edge(edge_inst.uid, lx0, ly0, lx1, ly1);
-        this.set_position_angle(edge_inst, lx0, ly0, lx1, ly1);
+        //this.set_position_angle(edge_inst, lx0, ly0, lx1, ly1);
 	};
 	
 	Acts.prototype.MoveEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1)
@@ -508,10 +620,10 @@ cr.plugins_.Rex_board_edge = function(runtime)
         if (!edge_inst)
             return;	        
 	    this.add_edge(edge_inst.uid, xyz0.x, xyz0.y, xyz1.x, xyz1.y); 
-	    this.set_position_angle(edge_inst, xyz0.x, xyz0.y, xyz1.x, xyz1.y);
+	    //this.set_position_angle(edge_inst, xyz0.x, xyz0.y, xyz1.x, xyz1.y);
 	};
 	
-	Acts.prototype.MoveEdgeBesideChess = function (edge_objtype, chess_objtype, dir, layer)
+	Acts.prototype.MoveEdgeAroundChess = function (edge_objtype, chess_objtype, dir, layer)
 	{       
         if (!chess_objtype)
             return;			
@@ -533,9 +645,39 @@ cr.plugins_.Rex_board_edge = function(runtime)
         if (!edge_inst)
             return;	 	    
         this.add_edge(edge_inst.uid, xyz0.x, xyz0.y, lx1, ly1);
-        this.set_position_angle(edge_inst, xyz0.x, xyz0.y, lx1, ly1);
+        //this.set_position_angle(edge_inst, xyz0.x, xyz0.y, lx1, ly1);
 	}; 
-	  			
+
+	Acts.prototype.PickAllEdges = function (edge_objtype)
+	{
+        this.PickAllEdges(edge_objtype);
+	};
+	
+	Acts.prototype.PickEdgeBetweenLP = function (edge_objtype, lx0, ly0, lx1, ly1)
+	{
+        this.PickEdgeBetweenLP(edge_objtype, lx0, ly0, lx1, ly1);
+	};	     
+	
+	Acts.prototype.PickEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1)
+	{
+        this.PickEdgeBetweenChess(edge_objtype, chess_uid0, chess_uid1);         
+	};	    
+    
+	Acts.prototype.PickEdgesAroundChessAtDirection = function (edge_objtype, chess_objtype, dir)
+	{
+        this.PickEdgesAroundChessAtDirection(edge_objtype, chess_objtype, dir);   
+	};	
+
+	Acts.prototype.PickEdgesClampedByChess = function (edge_objtype, chess_objtype)
+	{
+        return this.PickEdgesClampedByChess(edge_objtype, chess_objtype);   
+	};		
+	
+	Acts.prototype.PickChessAroundEdge = function (chess_objtype, edge_objtype, lz)
+	{        
+        this.PickChessAroundEdge(chess_objtype, edge_objtype, lz);   
+	};
+		  			
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -605,5 +747,382 @@ cr.plugins_.Rex_board_edge = function(runtime)
             }
         }
 	    ret.set_int(edge_count);
-	};    
+	};
+	
+	Exps.prototype.EdgeUID2PX = function (ret, edge_uid)
+	{
+	    var k = this.edgeuid2lxykey[edge_uid];
+	    if (k == null)
+	    {
+	        ret.set_float(-1);
+	        return;
+	    }
+        
+        var layout = this.board_get().GetLayout();	    
+        var lxy = this.key2lxy(k);
+	    var px0 = layout.LXYZ2PX(lxy[0], lxy[1], 0);
+        var px1 = layout.LXYZ2PX(lxy[2], lxy[3], 0);       
+	    ret.set_float( (px0 + px1)/2 );
+	};
+	
+	Exps.prototype.EdgeUID2PY = function (ret, edge_uid)
+	{
+	    var k = this.edgeuid2lxykey[edge_uid];
+	    if (k == null)
+	    {
+	        ret.set_float(-1);
+	        return;
+	    }
+
+        var layout = this.board_get().GetLayout();
+	    var lxy = this.key2lxy(k);
+	    var py0 = layout.LXYZ2PY(lxy[0], lxy[1], 0);
+        var py1 = layout.LXYZ2PY(lxy[2], lxy[3], 0);    
+	    ret.set_float( (py0 + py1)/2 );
+	};
+	
+	Exps.prototype.EdgeUID2PA = function (ret, edge_uid)
+	{
+	    var k = this.edgeuid2lxykey[edge_uid];
+	    if (k == null)
+	    {
+	        ret.set_float(-1);
+	        return;
+	    }
+
+        var layout = this.board_get().GetLayout();	
+	    var lxy = this.key2lxy(k);    
+	    var px0 = layout.LXYZ2PX(lxy[0], lxy[1], 0);
+	    var py0 = layout.LXYZ2PY(lxy[0], lxy[1], 0);
+        var px1 = layout.LXYZ2PX(lxy[2], lxy[3], 0); 
+        var py1 = layout.LXYZ2PY(lxy[2], lxy[3], 0);                
+	    var a = cr.angleTo( (px0 + px1)/2, (py0 + py1)/2, px0, py0);	    
+	    ret.set_float(cr.to_clamped_degrees(a));
+	};	
+		  	    
 }());
+
+(function ()
+{   
+    if (cr.plugins_.Rex_gInstGroup)
+    {
+        cr.plugins_.Rex_board_edge.GroupKlass = cr.plugins_.Rex_gInstGroup.GroupKlass;
+        return;
+    }
+    
+    // no Rex_gInstGroup found
+    cr.plugins_.Rex_board_edge.GroupKlass = function()
+    {
+		this._set = {};
+        this._list = [];    
+    };
+    var GroupKlassProto = cr.plugins_.Rex_board_edge.GroupKlass.prototype;
+    
+	GroupKlassProto.Clean = function()
+	{
+        var key;
+        for (key in this._set)
+            delete this._set[key];
+        this._list.length = 0;
+	};
+    
+	GroupKlassProto.Copy = function(group)
+	{
+        var key, hash_obj;
+        hash_obj = this._set;
+        for (key in hash_obj)
+            delete this._set[key];
+        hash_obj = group._set;
+        for (key in hash_obj)
+            this._set[key] = hash_obj[key];
+		cr.shallowAssignArray(this._list, group._list);
+	};   
+	
+	GroupKlassProto.SetByUIDList = function(uid_list, can_repeat)
+	{
+	    if (can_repeat)    // special case
+	    {
+	        cr.shallowAssignArray(this._list, uid_list);
+	        var list_len = uid_list.length;
+	        var i, key, hash_obj;
+            hash_obj = this._set;
+            for (key in hash_obj)
+                delete this._set[key];
+	        for (i=0; i<list_len; i++)
+	            this._set[uid_list[i]] = true;	        
+	    }
+	    else
+	    {
+	        this.Clean();
+	        this.AddUID(uid_list);
+	    }
+	};
+	
+	GroupKlassProto.AddUID = function(_uid)  // single number, number list
+	{
+	    if (typeof(_uid) == "number")    // single number
+	    {
+	        if (this._set[_uid] == null)    // not in group
+	        {
+	            this._set[_uid] = true;
+	            this._list.push(_uid);      // push back
+	        }
+            // else ingored 
+	    }
+	    else                            // uid list
+	    {
+	        var i, uid, cnt=_uid.length;
+	        for (i=0; i<cnt; i++)
+	        {
+	            uid = _uid[i];
+	            if (this._set[uid] == null)    // not in group
+	            {
+	                this._set[uid] = true;
+	                this._list.push(uid);      // push back
+	            }
+                // else ingored 
+	        }
+	    }
+	};
+    
+   	GroupKlassProto.PushUID = function(_uid, is_front)  // single number, number list
+	{	    
+	    
+	    if (typeof(_uid) == "number")    // single number
+	    {
+	        if (this._set[_uid] == null)
+	            this._set[_uid] = true;
+	        else    // remove existed item in this._list
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
+	            
+	        
+	        // add uid
+	        if (is_front)	            
+	            this._list.unshift(_uid);      // push front
+	        else
+	            this._list.push(_uid);         // push back	        
+	    }
+	    else                           // uid list, no repeating
+	    {
+	        var i, uid, cnt=_uid.length;
+	        for (i=0; i<cnt; i++)
+	        {
+	            uid = _uid[i];
+	            if (this._set[uid] == null)
+	                this._set[uid] = true;
+	            else    // remove existed item in this._list
+	                cr.arrayRemove(this._list, this._list.indexOf(uid));
+	        }
+	        
+	        // add uid ( no repeating check )
+	        if (is_front)	            
+	            this._list.unshift.apply(this._list, _uid); // push front
+	        else
+	            this._list.push.apply(this._list, _uid);    // push back	  
+	        
+	    }
+	};
+	
+   	GroupKlassProto.InsertUID = function(_uid, index)  // single number, number list
+	{	    	        
+	    if (typeof(_uid) == "number")    // single number
+	    {
+	        if (this._set[_uid] == null)
+	            this._set[_uid] = true;
+	        else    // remove existed item in this._list
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
+	            
+	        arrayInsert(this._list, _uid, index)      
+	    }
+	    else                           // uid list, no repeating
+	    {
+	        var i, uid, cnt=_uid.length;
+	        for (i=0; i<cnt; i++)
+	        {
+	            uid = _uid[i];
+	            if (this._set[uid] == null)
+	                this._set[uid] = true;
+	            else    // remove existed item in this._list
+	                cr.arrayRemove(this._list, this._list.indexOf(uid));
+	        }
+	        
+	        // add uid ( no repeating check )
+	        arrayInsert(this._list, _uid, index)     
+	        
+	    }
+	};
+		
+	GroupKlassProto.RemoveUID = function(_uid)  // single number, number list
+	{
+	    if (typeof(_uid) == "number")    // single number
+	    {
+	        if (this._set[_uid] != null)
+	        {
+	            delete this._set[_uid];
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
+	        }
+	    }
+	    else                            // uid list
+	    {
+	        var i, uid, cnt=_uid.length;
+	        for (i=0; i<cnt; i++)
+	        {
+	            uid = _uid[i];
+	            if (this._set[uid] != null)
+	            {
+	                delete this._set[uid];
+	                cr.arrayRemove(this._list, this._list.indexOf(uid));    
+	            }
+                // else ingored 
+	        }
+	    }
+	};
+	
+	GroupKlassProto.UID2Index = function(uid)
+	{
+	    return this._list.indexOf(uid);    
+	};
+	
+	GroupKlassProto.Index2UID = function(index)
+	{
+        var _list = this._list;
+        var uid = (index < _list.length)? _list[index]:(-1);
+        return uid;
+	};		
+		
+	GroupKlassProto.Union = function(group)
+	{
+	    var uids = group._set;
+        var uid;        
+        for (uid in uids)        
+            this.AddUID(parseInt(uid));    
+	};	
+		
+	GroupKlassProto.Complement = function(group)
+	{	  
+	    this.RemoveUID(group._list);            
+	};
+		
+	GroupKlassProto.Intersection = function(group)
+	{	    
+	    // copy this._set
+	    var uid, hash_uid=this._set;	    
+	    var set_copy={};
+	    for (uid in hash_uid)
+	        set_copy[uid] = true;
+	        
+	    // clean all
+	    this.Clean();
+	    
+	    // add intersection itme
+	    hash_uid = group._set;
+	    for (uid in hash_uid)
+	    {
+	        if (set_copy[uid] != null)
+	            this.AddUID(parseInt(uid));
+	    }
+	};	
+    
+	GroupKlassProto.IsSubset = function(subset_group)
+	{
+        var subset_uids = subset_group._set;
+        var uid;     
+        var is_subset = true;        
+        for (uid in subset_uids)        
+        {
+            if (!(uid in this._set))
+            {
+                is_subset = false;
+                break;
+            }
+        }
+        return is_subset;
+	};    
+	
+	GroupKlassProto.GetSet = function()
+	{
+	    return this._set;
+	};
+	
+	GroupKlassProto.GetList = function()
+	{
+	    return this._list;
+	};
+	
+	GroupKlassProto.IsInGroup = function(uid)
+	{
+	    return (this._set[uid] != null);
+	};
+		
+	GroupKlassProto.ToString = function()
+	{
+	    return JSON.stringify(this._list);
+	};
+	
+	GroupKlassProto.JSONString2Group = function(JSON_string)
+	{
+	    this.SetByUIDList(JSON.parse(JSON_string));
+	};	
+	
+	GroupKlassProto.Shuffle = function()
+	{
+	    _shuffle(this._list);
+	};
+	
+	var _shuffle = function (arr)
+	{
+        var i = arr.length, j, temp, random_value;
+		var randomGen = cr.plugins_.Rex_gInstGroup._randomGen;
+        if ( i == 0 ) return;
+        while ( --i ) 
+        {
+		    random_value = (randomGen == null)?
+			               Math.random(): randomGen.random();
+            j = Math.floor( random_value * (i+1) );
+            temp = arr[i]; 
+            arr[i] = arr[j]; 
+            arr[j] = temp;
+        }
+    };	
+    
+    var arrayInsert = function (arr, _value, index)
+    {       
+        var arr_len=arr.length;
+        if (index > arr_len)
+            index = arr_len;
+        if (typeof(_value) != "object")
+        {
+            if (index == 0)
+                arr.unshift(_value);
+            else if (index == arr_len)
+                arr.push(_value);
+            else
+            {
+                var i, last_index=arr.length;
+                arr.length += 1;
+                for (i=last_index; i>index; i--)
+                    arr[i] = arr[i-1];
+                arr[index] = _value;
+            }
+        }
+        else
+        {
+            if (index == 0)
+                arr.unshift.apply(arr, _value);
+            else if (index == arr_len)
+                arr.push.apply(arr, _value);
+            else
+            {
+                var start_index=arr.length-1;
+                var end_index=index;
+                var cnt=_value.length;   
+                arr.length += cnt;
+                var i;
+                for (i=start_index; i>=end_index; i--)
+                    arr[i+cnt] = arr[i];
+                for (i=0; i<cnt; i++)
+                    arr[i+index] = _value[i];
+            }
+        }
+    };
+}());  

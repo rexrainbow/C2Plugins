@@ -272,7 +272,18 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         // fix me
         if (end != null)
         {
-            if ( is_wall( end.cost_get() ) )
+            var neighbors = end.neighbor_nodes_get();
+            var il = neighbors.length;
+            var all_walls = true;
+            for(var i=0; i<il; ++i) 
+            {
+                if ( !is_wall( end.cost_get(neighbors[i]) ) )
+                {
+                    all_walls = false;
+                    break;
+                }
+            }
+            if (all_walls)
                 return;
         }
 
