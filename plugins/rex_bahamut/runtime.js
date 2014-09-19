@@ -4,9 +4,6 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
-// load jquery.xdomainajax.js
-document.write('<script src="jquery.xdomainajax.js"></script>');
-
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_Bahamut = function(runtime)
@@ -30,6 +27,28 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 
 	typeProto.onCreate = function()
 	{
+	    jsfile_load("jquery.xdomainajax.js");
+	};
+	
+	var jsfile_load = function(file_name)
+	{
+	    var scripts=document.getElementsByTagName("script");
+	    var exist=false;
+	    for(var i=0;i<scripts.length;i++)
+	    {
+	    	if(scripts[i].src.indexOf(file_name) != -1)
+	    	{
+	    		exist=true;
+	    		break;
+	    	}
+	    }
+	    if(!exist)
+	    {
+	    	var newScriptTag=document.createElement("script");
+	    	newScriptTag.setAttribute("type","text/javascript");
+	    	newScriptTag.setAttribute("src", file_name);
+	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
+	    }
 	};
 
 	/////////////////////////////////////
@@ -49,43 +68,49 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	    this._current_user_name = "";
 		this.exp_CurFriendName = "";
 		this.exp_CurFriendNickname = "";
-	};
-	
-    instanceProto._get_gamecard_url = function (user_name)
-	{
-	    if (user_name == null)
-	       user_name = this._current_user_name;	    
-	    var card_url = "http://gc.bahamut.com.tw/gc/html/"+
-	                   user_name.charAt(0) +"/"+ user_name.charAt(1) +"/"+ user_name +".html";
-	    return card_url;
-	};		
+	};	
 		
     var _is_vaild_html = function(content)
     {
         return (content != "") && content.indexOf("查詢失敗") == (-1);
     };
-		
-    var _is_error_html = function(content)
+
+    var _index_get = function (content, start_index, k)
     {
-        return content.indexOf("<Error>") != (-1);
-    };
-        
-	var _user2property = function(content, property_name)
+        return content.indexOf(k, start_index) + k.length;        
+    }
+
+	var _user2nickname = function(content, start_index)
+	{
+	    var start_index = _index_get(content, start_index, "暱稱：");
+	    var start_index = content.indexOf(">", start_index) +1;
+	    var end_index = content.indexOf("<", start_index);
+	    var value = content.substring(start_index, end_index);
+	    return value;
+	};
+	var _user2level = function(content, start_index)
+	{	    
+	    // level
+	    var start_index = _index_get(content, start_index, "LV");
+	    var end_index = content.indexOf(" ", start_index);
+	    var lv = parseFloat( content.substring(start_index, end_index) );
+	    // race
+	    var start_index = content.indexOf(" ", end_index+1) + 1;
+	    var end_index = content.indexOf(" ", start_index);
+	    var race = content.substring(start_index, end_index);
+	    // occupation
+	    var start_index = content.indexOf(" ", end_index+1) + 1;
+	    var end_index = content.indexOf("<", start_index);
+	    var occupation = content.substring(start_index, end_index);
+        return [lv, race, occupation];
+	};		   
+	var _user2property = function(content, start_index, property_name)
 	{	    
 	    property_name += "：";
-	    var key = "<p>"+property_name;
-	    var start_index = content.indexOf(key);
-	    if (start_index == (-1))
-	    {
-	        key = "<li>"+property_name;
-	        start_index = content.indexOf(key);
-	    }
-	    if (start_index == (-1))
-	        return null;
-	    start_index += key.length;
+	    var start_index = _index_get(content, start_index, property_name);
 	    var end_index = content.indexOf("<", start_index);
-	    var value_string = content.substring(start_index, end_index);
-	    return parseFloat(value_string);
+	    var value = content.substring(start_index, end_index);	    
+        return parseFloat(value);
 	};
 	
     var _get_friendlist = function(content)
@@ -118,19 +143,53 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 		nickname = content.substring(nickname_start_index, nickname_end_index);
 		return nickname;
 	};	
+
+    instanceProto.filled_user_data = function (content, usr_name)
+    {
+        if (!_is_vaild_html(content))
+        {
+            return false;
+        }
+        
+        if (!this._user_data.hasOwnProperty(usr_name))
+        {
+            this._user_data[usr_name] = {}; 
+        }
+        var user_data = this._user_data[usr_name]; 
+        var start_index = _index_get(content, 'MSG-mydata1">', 0);
+        user_data.Nickname = _user2nickname(content, start_index);
+        var lv = _user2level(content, start_index);
+        user_data.LV = lv[0];
+        user_data.RACE = lv[1];
+        user_data.OCCUPATION = lv[2];
+        
+        var start_index = _index_get(content, 'MSG-mydata3">', start_index);         
+        user_data.STR = _user2property(content, start_index, "STR");
+        user_data.DEX = _user2property(content, start_index, "DEX");
+        user_data.INT = _user2property(content, start_index, "INT");
+        user_data.LUK = _user2property(content, start_index, "LUK");
+        user_data.VIT = _user2property(content, start_index, "VIT");
+        user_data.AGI = _user2property(content, start_index, "AGI");
+        user_data.MND = _user2property(content, start_index, "MND");
 	
-	var _gamecard2nickname = function (content)
-	{
-	    var nickname_key = '<div id="apDiv1">';
-	    var nickname_start_index = content.indexOf(nickname_key);
-	    nickname_key = "<p>";
-	    nickname_start_index = content.indexOf(nickname_key, nickname_start_index);
-	    nickname_start_index += nickname_key.length;
-	    var nickname_end_index = content.indexOf("</p>", nickname_start_index);
-	    var nickname = content.substring(nickname_start_index, nickname_end_index);
-	    return nickname;
-	};
-	
+        return true;
+    }
+    
+    
+    instanceProto.filled_friend_list = function (content, usr_name)
+    {
+        if (!_is_vaild_html(content))
+        {
+            return false;
+        }
+        
+        if (!this._user_data.hasOwnProperty(usr_name))
+        {
+            this._user_data[usr_name] = {}; 
+        }
+        this._user_data[usr_name].friend_list = _get_friendlist(content);
+        return true;   
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -158,12 +217,12 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 
 	Cnds.prototype.OnGetGameCard = function(tag)
 	{    
-		return (this._tag == tag);
+	//	return (this._tag == tag);
 	};
 	
 	Cnds.prototype.OnGetGameCardFailed = function(tag)
 	{
-		return (this._tag == tag);
+	//	return (this._tag == tag);
 	};
 			
 	Cnds.prototype.ForEachFriend = function (user_name)
@@ -207,32 +266,15 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	Acts.prototype.GetUserData = function(user_name, tag)
 	{       
 	    this._current_user_name = user_name;	    
-	    var inst = this;
+	    var self = this;
 	    var is_success = false;
         jQuery.ajax({
             "url": "http://home.gamer.com.tw/homeindex.php?owner="+user_name,
             "type": 'GET',
             "success": function(res) {
                 var content = res.responseText;
-                content = content.replace(/\r\n/g, "\n");
-                var usr_name = user_name;
-                inst._current_user_name = user_name;
-                if (_is_vaild_html(content))
-                {                    
-                    if (inst._user_data[usr_name] == null)
-                        inst._user_data[usr_name] = {}; 
-                    var user_data = inst._user_data[usr_name];         
-                    user_data.STR = _user2property(content, "STR");
-                    user_data.DEX = _user2property(content, "DEX");
-                    user_data.INT = _user2property(content, "INT");
-                    user_data.LUK = _user2property(content, "LUK");
-                    user_data.VIT = _user2property(content, "VIT");
-                    user_data.AGI = _user2property(content, "AGI");
-                    user_data.MND = _user2property(content, "MND");
-				    is_success = true;
-                }
-                else
-			        is_success = false;
+                content = content.replace(/\r\n/g, "\n");                
+                is_success = self.filled_user_data(content, user_name);
             },
             "error": function()
 		    {
@@ -240,11 +282,12 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 		    },
 		    "complete": function()
 		    {
+		        self._current_user_name = user_name;
 		        var trg_method = (is_success)? 
 		                         cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetUserData:
 		                         cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetUserDataFailed;
-		        inst._tag = tag;
-		        inst.runtime.trigger(trg_method, inst);
+		        self._tag = tag;
+		        self.runtime.trigger(trg_method, self);
 		    }
         });  	    
 	}; 
@@ -252,7 +295,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	Acts.prototype.GetFriendList = function(user_name, tag)
 	{       
 	    this._current_user_name = user_name;	    
-	    var inst = this;
+	    var self = this;
 	    var is_success = false;
         jQuery.ajax({
             "url": "http://home.gamer.com.tw/friend.php?owner="+user_name,
@@ -260,17 +303,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
             "success": function(res) {
                 var content = res.responseText;
                 content = content.replace(/\r\n/g, "\n");
-                var usr_name = user_name;
-                inst._current_user_name = user_name;
-                if (_is_vaild_html(content))
-                {
-                    if (inst._user_data[usr_name] == null)
-                        inst._user_data[usr_name] = {}; 
-		 	        inst._user_data[usr_name].friend_list = _get_friendlist(content);
-                    is_success = true;			
-                }
-                else
-                    is_success = false;
+                is_success = self.filled_friend_list(content, user_name);
             },
             "error": function()
 		     {
@@ -278,52 +311,17 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 		     },
 		     "complete": function()
 		     {
+		        self._current_user_name = user_name;
 		        var trg_method = (is_success)? 
 		                         cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetFriendList:
 		                         cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetFriendListFailed;
-		        inst._tag = tag;
-		        inst.runtime.trigger(trg_method, inst);
+		        self._tag = tag;
+		        self.runtime.trigger(trg_method, self);
 		     }
         });	
 	}; 	
 	
-	Acts.prototype.GetGameCard = function(user_name, tag)
-	{       
-	    this._current_user_name = user_name;	    
-	    var inst = this;
-	    var is_success = false;
-        jQuery.ajax({
-            "url": inst._get_gamecard_url(user_name),
-            "type": 'GET',
-            "success": function(res) {
-                var content = res.responseText;
-                content = content.replace(/\r\n/g, "\n");
-                var usr_name = user_name;
-                inst._current_user_name = user_name;                 
-                if (content != "")
-                {
-                    if (inst._user_data[usr_name] == null)
-                        inst._user_data[usr_name] = {}; 
-		 	        inst._user_data[usr_name].Nickname = _gamecard2nickname(content);
-                    is_success = true;			
-                }
-                else
-                    is_success = false;
-            },
-            "error": function()
-		     {
-		         is_success = false;
-		     },
-		     "complete": function()
-		     {
-		        var trg_method = (is_success)? 
-		                         cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetGameCard:
-		                         cr.plugins_.Rex_Bahamut.prototype.cnds.OnGetGameCardFailed;
-		        inst._tag = tag;
-		        inst.runtime.trigger(trg_method, inst);
-		     }
-        });	
-	}; 	
+	Acts.prototype.GetGameCard = function(user_name, tag) {}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -403,7 +401,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	       user_name = this._current_user_name;	    
 	    var img_url = "http://avatar2.bahamut.com.tw/avataruserpic/"+
 	                  user_name.charAt(0) +"/"+ user_name.charAt(1)+ "/"+ user_name +"/"+ user_name +".png";
-		ret.set_string(img_url);          
+		ret.set_string(img_url);
 	}; 	
 	
 	Exps.prototype.CurFriendName = function(ret)
@@ -418,7 +416,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 
 	Exps.prototype.GameCardURL = function(ret, user_name)
 	{   
-		ret.set_string(this._get_gamecard_url(user_name));
+		ret.set_string("");
 	}; 	
 	
 	Exps.prototype.Nickname = function(ret, user_name)
@@ -429,5 +427,31 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 		           "":this._user_data[user_name].Nickname;
 		ret.set_string(val);	      
 	};
-		
+	
+	Exps.prototype.LV = function(ret, user_name)
+	{   
+	    if (user_name == null)
+	       user_name = this._current_user_name;
+		var val = (this._user_data[user_name] == null)?
+		           0:this._user_data[user_name].LV;
+		ret.set_float(val);	      
+	};
+	
+	Exps.prototype.RACE = function(ret, user_name)
+	{   
+	    if (user_name == null)
+	       user_name = this._current_user_name;
+		var val = (this._user_data[user_name] == null)?
+		           "":this._user_data[user_name].RACE;
+		ret.set_string(val);	      
+	};			
+	
+	Exps.prototype.OCCUPATION = function(ret, user_name)
+	{   
+	    if (user_name == null)
+	       user_name = this._current_user_name;
+		var val = (this._user_data[user_name] == null)?
+		           "":this._user_data[user_name].OCCUPATION;
+		ret.set_string(val);	      
+	};		
 }());

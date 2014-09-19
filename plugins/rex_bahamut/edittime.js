@@ -29,19 +29,19 @@ AddStringParam("Name","User name.","");
 AddCondition(3, cf_looping | cf_not_invertible, "For each friend", "Friend list", 
              "For each friend of <i>{0}</i>", "Repeat the event for each friend.", "ForEachFriend");
 AddStringParam("Tag","Tag.","");
-AddCondition(4,cf_trigger,"On friend list received","Friend list",
-             "On friend list received, tag: <b>{0}</b>",
-             "Triggered when receives friend list.","OnGetFriendList");
+AddCondition(4,cf_trigger,"On friends list received","Friend list",
+             "On friends list received, tag: <b>{0}</b>",
+             "Triggered when receives friends list.","OnGetFriendList");
 AddStringParam("Tag","Tag.","");             
-AddCondition(5,cf_trigger,"On friend list received failed","Friend list",
-             "On friend list received failed, tag: <b>{0}</b>",
-             "Triggered when receives friend list failed.","OnGetFriendListFailed");
+AddCondition(5,cf_trigger,"On friends list received failed","Friend list",
+             "On friends list received failed, tag: <b>{0}</b>",
+             "Triggered when receives friends list failed.","OnGetFriendListFailed");
 AddStringParam("Tag","Tag.","");
-AddCondition(6,cf_trigger,"On game card received","Game card",
+AddCondition(6, cf_deprecated | cf_trigger,"On game card received","Game card",
              "On game card received, tag: <b>{0}</b>",
              "Triggered when receives game card.","OnGetGameCard");
 AddStringParam("Tag","Tag.","");             
-AddCondition(7,cf_trigger,"On game card received failed","Game card",
+AddCondition(7,cf_deprecated | cf_trigger,"On game card received failed","Game card",
              "On game card received failed, tag: <b>{0}</b>",
              "Triggered when receives game card failed.","OnGetGameCardFailed");             
                           	 
@@ -53,35 +53,37 @@ AddAction(2,0,"Clean all users data","Clean",
 AddStringParam("Name","User name.","");
 AddStringParam("Tag","Tag for received callback.","");
 AddAction(3,0,"Get user data","User data",
-          "Get <b>{0}</b> user data, tag to <b>{1}</b>",
+          "Get <b>{0}</b>'s user data, tag to <b>{1}</b>",
           "Get user data.","GetUserData"); 
 AddStringParam("Name","User name.","");
 AddStringParam("Tag","Tag for received callback.","");
-AddAction(4,0,"Get friend list","Friend list",
-          "Get <b>{0}</b> friend list, tag to <b>{1}</b>",
-          "Get friend list.","GetFriendList");     
+AddAction(4,0,"Get friends list","Friend list",
+          "Get <b>{0}</b>'s friends list, tag to <b>{1}</b>",
+          "Get friends list.","GetFriendList");     
 AddStringParam("Name","User name.","");
 AddStringParam("Tag","Tag for received callback.","");
-AddAction(5,0,"Get game card","Game card",
+AddAction(5,af_deprecated,"Get game card","Game card",
           "Get <b>{0}</b> game card, tag to <b>{1}</b>",
           "Get game card.","GetGameCard");                          
                     
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1,ef_return_string,"Get current user name","User data","CurUserName","Get current user name.");
-AddExpression(2,ef_return_number | ef_variadic_parameters,"Get user's STR","User data","STR","Get user's STR.");
-AddExpression(3,ef_return_number | ef_variadic_parameters,"Get user's DEX","User data","DEX","Get user's DEX.");
-AddExpression(4,ef_return_number | ef_variadic_parameters,"Get user's INT","User data","INT","Get user's INT.");
-AddExpression(5,ef_return_number | ef_variadic_parameters,"Get user's LUK","User data","LUK","Get user's LUK.");
-AddExpression(6,ef_return_number | ef_variadic_parameters,"Get user's VIT","User data","VIT","Get user's VIT.");
-AddExpression(7,ef_return_number | ef_variadic_parameters,"Get user's AGI","User data","AGI","Get user's AGI.");
-AddExpression(8,ef_return_number | ef_variadic_parameters,"Get user's MND","User data","MND","Get user's MND.");
-AddExpression(9,ef_return_string | ef_variadic_parameters,"Get url of user image","User data","ImageURL","Get url of user image.");
-AddExpression(10, ef_return_string, "Current friend name", "Friend list", "CurFriendName", "Get the current friend name in For each friend event.");
-AddExpression(11, ef_return_string, "Current friend nickname", "Friend list", "CurFriendNickname", "Get the current friend nickname in For each friend event.");
-AddExpression(12,ef_return_string | ef_variadic_parameters,"Get url of user game card","User data","GameCardURL","Get url of user game card.");
-AddExpression(13,ef_return_string | ef_variadic_parameters,"Get user's nickname","Game card","Nickname","Get user's nickname.");
-
+AddExpression(1, ef_return_string, "Get current user name","User data","CurUserName","Get current user name.");
+AddExpression(2, ef_return_number | ef_variadic_parameters,"Get user's STR","User data","STR","Get user's STR.");
+AddExpression(3, ef_return_number | ef_variadic_parameters,"Get user's DEX","User data","DEX","Get user's DEX.");
+AddExpression(4, ef_return_number | ef_variadic_parameters,"Get user's INT","User data","INT","Get user's INT.");
+AddExpression(5, ef_return_number | ef_variadic_parameters,"Get user's LUK","User data","LUK","Get user's LUK.");
+AddExpression(6, ef_return_number | ef_variadic_parameters,"Get user's VIT","User data","VIT","Get user's VIT.");
+AddExpression(7, ef_return_number | ef_variadic_parameters,"Get user's AGI","User data","AGI","Get user's AGI.");
+AddExpression(8, ef_return_number | ef_variadic_parameters,"Get user's MND","User data","MND","Get user's MND.");
+AddExpression(9, ef_return_string | ef_variadic_parameters,"Get url of user image","User data","ImageURL","Get url of user image.");
+AddExpression(10, ef_return_string, "Current friends name", "Friend list", "CurFriendName", "Get the current friends name in For each friends event.");
+AddExpression(11, ef_return_string, "Current friends nickname", "Friend list", "CurFriendNickname", "Get the current friends nickname in For each friends event.");
+AddExpression(12, ef_deprecated | ef_return_string | ef_variadic_parameters,"Get url of user game card","User data","GameCardURL","Get url of user game card.");
+AddExpression(13, ef_return_string | ef_variadic_parameters,"Get user's nickname","User data","Nickname","Get user's nickname.");
+AddExpression(14, ef_return_number | ef_variadic_parameters,"Get user's level","User data","LV","Get user's level.");
+AddExpression(15, ef_return_string | ef_variadic_parameters,"Get user's race","User data","RACE","Get user's race.");
+AddExpression(16, ef_return_string | ef_variadic_parameters,"Get user's occupation","User data","OCCUPATION","Get user's occupation.");
 
 ACESDone();
 
