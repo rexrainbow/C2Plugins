@@ -203,13 +203,18 @@ cr.plugins_.Rex_board_edge = function(runtime)
             this.pickuids(this.pinstgroup, edge_objtype);
             return;
         }
-            
-        var edge_inst = this.CreateInst(edge_objtype, 0, 0, layer);
-        if (edge_inst == null)
-            return;
-            
-		this.add_edge(edge_inst.uid, lx0, ly0, lx1, ly1);         
-        this.set_position_angle(edge_inst, lx0, ly0, lx1, ly1);		
+        
+        // callback
+        var self = this;  
+        var __callback = function (inst)
+        {
+		    self.add_edge(inst.uid, lx0, ly0, lx1, ly1);         
+            self.set_position_angle(inst, lx0, ly0, lx1, ly1);	
+        }
+        // callback
+        
+        var edge_inst = window.RexC2CreateObject.call(this, edge_objtype, layer, 0, 0, __callback);   
+        return edge_inst;
 	};		
 	
 	instanceProto.PickAllEdges = function (edge_objtype)

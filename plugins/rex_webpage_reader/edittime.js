@@ -4,7 +4,7 @@
 		"name":			"Web page reader",
 		"id":			"Rex_webpage_reader",
 		"version":		"0.1",        
-		"description":	"Read web page by cross domain reqest.",
+		"description":	"Read web page by cross domain request.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_webpage_reader.html",
 		"category":		"Web",
@@ -17,22 +17,22 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different AJAX requests.", "\"\"");
-AddCondition(0,	cf_trigger, "On completed", "AJAX", "On <b>{0}</b> completed", "Triggered when an AJAX request completes successfully.", "OnComplete");
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different page requests.", "\"\"");
+AddCondition(0,	cf_trigger, "On completed", "Page", "On <b>{0}</b> completed", "Triggered when an page request completes successfully.", "OnComplete");
 
-AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different AJAX requests.", "\"\"");
-AddCondition(1,	cf_trigger, "On error", "AJAX", "On <b>{0}</b> error", "Triggered when an AJAX request fails.", "OnError");
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different page requests.", "\"\"");
+AddCondition(1,	cf_trigger, "On error", "Page", "On <b>{0}</b> error", "Triggered when an page request fails.", "OnError");
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different AJAX requests.", "\"\"");
-AddStringParam("URL", "The URL to request.  Note: most browsers prevent cross-domain requests.", "\"http://\"");
-AddAction(0, 0, "Request URL", "AJAX", "Request <b>{1}</b> (tag <i>{0}</i>)", "Request a URL by a GET request and retrieve the server response.", "Request");
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different page requests.", "\"\"");
+AddStringParam("URL", "The page URL to request.", "\"http://\"");
+AddAction(0, 0, "Request page", "Page", "Request <b>{1}</b> (tag <i>{0}</i>)", "Request a page.", "Request");
 
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_string, "Get last data", "AJAX", "LastData", "Get the data returned by the last successful request.");
+AddExpression(0, ef_return_string, "Get last data", "Page", "LastData", "Get the data returned by the last successful page request.");
 
 ACESDone();
 

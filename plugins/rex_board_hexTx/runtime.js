@@ -79,42 +79,68 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
 	    var px;
 	    if (this.is_up2down)
-	        px = (logic_x*this.width)+this.PositionOX;
+	    {
+	        px = (logic_x*this.width) + this.PositionOX;
+	    }
 	    else
-	        px = (logic_x*this.width)+((logic_y%2)*this.half_width)+this.PositionOX;
+	    {
+	        px = (logic_x*this.width) + this.PositionOX;
+	        if (Math.abs(logic_y)%2)
+	            px += this.half_width;
+	    }
         return px;
 	};
 	instanceProto.LXYZ2PY = function(logic_x, logic_y, logic_z)
 	{
 	    var py;
 	    if (this.is_up2down)
-	        py = (logic_y*this.height)+((logic_x%2)*this.half_height)+this.PositionOY;
+	    {
+	        py = (logic_y*this.height) + this.PositionOY;
+	        if (Math.abs(logic_x)%2)
+	            py += this.half_height;
+	    }
 	    else
-	        py = (logic_y*this.height)+this.PositionOY;
+	    {
+	        py = (logic_y*this.height) + this.PositionOY;
+	    }
         return py;
 	};   
 	instanceProto.PXY2LX = function(physical_x,physical_y)
 	{
-	    var lx;
+	    var offx, lx;
 	    if (this.is_up2down)
-	        lx = Math.round((physical_x-this.PositionOX)/this.width);
+	    {
+	        offx = physical_x - this.PositionOX;
+	    }
 	    else
 	    {
-	        var ly = this.PXY2LY(physical_x,physical_y);
-		    lx = Math.round((physical_x - this.PositionOX - ((ly%2)*this.half_width))/this.width);
+	        var ly = this.PXY2LY( physical_x, physical_y );
+	        offx = physical_x - this.PositionOX;
+	        if (Math.abs(ly)%2)
+	        {
+	            offx -= this.half_width;
+	        }
 	    }	    
+	    lx = Math.round( offx/this.width );
 		return lx;
 	};
 	instanceProto.PXY2LY = function(physical_x,physical_y)
 	{
-	    var ly;
+	    var offy, ly;	    
 	    if (this.is_up2down)
 	    {
 	        var lx = this.PXY2LX(physical_y,physical_x);
-		    ly = Math.round((physical_y - this.PositionOY - ((lx%2)*this.half_height))/this.height); 
+	        offy = physical_y - this.PositionOY;
+	        if (Math.abs(lx)%2)
+	        {
+	            offy -= this.half_height;
+	        }
 	    }
 	    else
-	        ly = Math.round((physical_y-this.PositionOY)/this.height);
+	    {
+	        offy = physical_y - this.PositionOY;
+	    }
+	    ly = Math.round( offy/this.height );
 	    return ly;
 	};
 	
@@ -130,8 +156,10 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    }
 	    else
 	    {
-	        dx = ((y%2) == 0)? nlx_map_lr_0[dir]:
-	                           nlx_map_lr_1[dir];
+	        if (Math.abs(y)%2)
+	            dx = nlx_map_lr_1[dir];
+	        else
+	            dx = nlx_map_lr_0[dir];
 	    }	   
 		return (x+dx);
 	};
@@ -144,8 +172,10 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    var dy;
 	    if (this.is_up2down)
 	    {
-	        dy = ((x%2) == 0)? nly_map_ud_0[dir]:
-	                           nly_map_ud_1[dir];        
+	        if (Math.abs(x)%2)
+	            dy = nly_map_ud_1[dir];
+	        else
+	            dy = nly_map_ud_0[dir];       
 	    }
 		else
 		{
@@ -163,7 +193,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    var dir;
 	    if (is_up2down)
 	    {
-	        if ((x%2) == 1)
+	        if (Math.abs(x)%2)
 	        {
 	            dir = ((dx==1) && (dy==1))?   0:
                       ((dx==0) && (dy==1))?   1:
@@ -186,7 +216,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    }
 	    else
 	    {
-	        if ((y%2) == 1)
+	        if (Math.abs(y)%2)
 	        {
 	            dir = ((dx==1) && (dy==0))?   0:
 	                  ((dx==1) && (dy==1))?   1:

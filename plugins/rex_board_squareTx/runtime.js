@@ -88,7 +88,9 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    }
 	    else if (this.layout_mode == 2)  // Staggered
 	    {
-	        x = (lx * this.width) + ((ly%2) * this.half_width);
+	        x = lx * this.width;
+	        if (Math.abs(ly)%2)
+	            x += this.half_width;
 	    }
 
         return x+this.PositionOX;
@@ -128,7 +130,9 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		else if (this.layout_mode == 2)  // Staggered
 		{
 		    var ly = Math.round((py - this.PositionOY)/this.half_height);
-		    px = px - this.PositionOX - ((ly%2) * this.half_width);
+		    px = px - this.PositionOX;
+		    if (Math.abs(ly)%2)
+		        px -= this.half_width;
 		    lx = Math.round(px/this.width);
 		}
 		    
@@ -172,8 +176,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		}
 		else if (this.layout_mode == 2)  // Staggered
 	    {
-	        dx = ((y%2) == 0)? nlx_map_2_0[dir]:
-	                           nlx_map_2_1[dir];
+	        if (Math.abs(y)%2)
+	            dx = nlx_map_2_1[dir];
+	        else
+	            dx = nlx_map_2_0[dir];
 		}
 		
 		return (x+dx);
@@ -233,7 +239,19 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		}
 		else if (layout_mode == 2)  // Staggered
 	    {
-	        if ((y%2) == 0)
+	        if (Math.abs(y)%2)
+	        {
+	            dir = ((dx==1) && (dy==-1))?  0:
+	                  ((dx==1) && (dy==1))?   1:
+	                  ((dx==0) && (dy==1))?   2:
+	                  ((dx==0) && (dy==-1))?  3:
+	                  ((dx==0) && (dy==2))?  4:
+	                  ((dx==-1) && (dy==0))?  5:
+	                  ((dx==0) && (dy==-2))? 6:
+	                  ((dx==1) && (dy==-0))? 7:
+	                                          null;  	            
+	        }
+	        else
 	        {
 	            dir = ((dx==0) && (dy==-1))?  0:
 	                  ((dx==0) && (dy==1))?   1:
@@ -244,18 +262,6 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	                  ((dx==0) && (dy==-2))? 6:
 	                  ((dx==1) && (dy==-0))? 7:
 	                                          null;	            
-	        }
-	        else
-	        {
-	            dir = ((dx==1) && (dy==-1))?  0:
-	                  ((dx==1) && (dy==1))?   1:
-	                  ((dx==0) && (dy==1))?   2:
-	                  ((dx==0) && (dy==-1))?  3:
-	                  ((dx==0) && (dy==2))?  4:
-	                  ((dx==-1) && (dy==0))?  5:
-	                  ((dx==0) && (dy==-2))? 6:
-	                  ((dx==1) && (dy==-0))? 7:
-	                                          null;           
 	        }
 		} 
 		return dir;			   

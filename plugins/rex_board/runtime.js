@@ -43,7 +43,6 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.check_name = "BOARD";
-        this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
 	    this.board = [];
 	    this.reset_board(this.properties[0]-1,
 	                     this.properties[1]-1);
@@ -279,8 +278,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    else
 	        return this.runtime.getObjectByUID(uid);
 	};
-
-	instanceProto.CreateItem = function (objtype,lx,ly,lz,layer)
+   
+	instanceProto.CreateItem = function (objtype,lx,ly,lz,layer, callback)
 	{
         if (objtype == null)
             return;
@@ -290,16 +289,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var layout = this.GetLayout();         
         var px = layout.LXYZ2PX(lx,ly,lz);
         var py = layout.LXYZ2PY(lx,ly,lz);
-        // call system action: Create instance
-        this.ActCreateInstance.call(
-            this.runtime.system,
-            objtype,
-            layer,
-            px,
-            py
-        );
-                           
-	    return objtype.getFirstPicked();
+        var inst = window.RexC2CreateObject.call(this, objtype, layer, px, py, callback);           
+	    return inst;
 	};
 		
 	instanceProto.SwapChess = function (uidA, uidB)
@@ -406,10 +397,16 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         if ((z != 0) && (!this.is_inside_board(x,y,0)))
             return;
-            
-        var inst = this.CreateItem(obj_type,x,y,z,_layer);
-		if (inst != null)
-	        this.add_item(inst,x,y,z);  
+        
+        // callback
+        var self = this;  
+        var __callback = function (inst)
+        {
+            self.add_item(inst, x,y,z);  
+        }
+        // callback
+        
+        var inst = this.CreateItem(obj_type,x,y,z,_layer, __callback); 
 	    return inst;
 	};	
 
@@ -1233,4 +1230,67 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 	    ret.set_int(this._exp_EmptyLY);
 	};     
+}());
+
+(function ()
+{
+    // general CreateObject function which call a callback before "OnCreated" triggered
+    if (window.RexC2CreateObject != null)
+        return;
+        
+    // copy from system action: CreateObject
+    var CreateObject = function (obj, layer, x, y, callback)
+    {
+        if (!layer || !obj)
+            return;
+
+        var inst = this.runtime.createInstance(obj, layer, x, y);
+		
+		if (!inst)
+			return;
+		
+		this.runtime.isInOnDestroy++;
+		
+		// call callback before "OnCreated" triggered
+		if (callback)
+		    callback(inst);
+		// call callback before "OnCreated" triggered
+		
+		var i, len, s;
+		this.runtime.trigger(Object.getPrototypeOf(obj.plugin).cnds.OnCreated, inst);
+		
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				this.runtime.trigger(Object.getPrototypeOf(s.type.plugin).cnds.OnCreated, s);
+			}
+		}
+		
+		this.runtime.isInOnDestroy--;
+
+        // Pick just this instance
+        var sol = obj.getCurrentSol();
+        sol.select_all = false;
+		sol.instances.length = 1;
+		sol.instances[0] = inst;
+		
+		// Siblings aren't in instance lists yet, pick them manually
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				sol = s.type.getCurrentSol();
+				sol.select_all = false;
+				sol.instances.length = 1;
+				sol.instances[0] = s;
+			}
+		}
+		
+		return inst;
+    };
+    
+    window.RexC2CreateObject = CreateObject;
 }());
