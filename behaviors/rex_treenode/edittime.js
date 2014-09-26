@@ -8,7 +8,7 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_treenode.html",
 		"category":		"General",
-		"flags":		0
+		"flags":		bf_onlyone
 	};
 };
 

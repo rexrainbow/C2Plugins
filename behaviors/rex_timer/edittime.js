@@ -4,7 +4,7 @@
 		"name":			"Timer",
 		"id":			"Rex_Timer",
 		"version":		"1.0",          
-		"description":	"Fire the trigger when time-out",
+		"description":	"Fire the trigger when time-out.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timer.html",
 		"category":		"Timer",
@@ -14,8 +14,10 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, 0, "Is timmer running", "Timer", "Is running", "", "IsRunning");
-AddCondition(1, cf_trigger, "On time-out", "Time-out", "On {my} timeout", 
+AddAnyTypeParam("Timer", "Timer name", '"_"');
+AddCondition(0, 0, "Is timmer running", "Timer", "{my} <i>{0}</i> running", "", "IsRunning");
+AddAnyTypeParam("Timer", "Timer name", '"_"');
+AddCondition(1, cf_trigger, "On time-out", "Time-out", "{my} on <i>{0}</i> timeout", 
              "Triggered when time-out.", "OnTimeout");
 
 //////////////////////////////////////////////////////////////
@@ -26,25 +28,30 @@ AddObjectParam("Timeline", "Timeline object for getting timer");
 AddObjectParam("Function", "Function object for callback");
 AddAction(0, af_deprecated, "Setup timer", "Z: Deprecated", 
           "{my} get timer from <i>{0}</i>, callback to <i>{1}</i>", 
-          "Setup timer.", "Setup");
+          "Setup timer.", "Setup_deprecated");
 AddStringParam("Commands", "Execute commands when timer's time-out", '""');
 AddAction(1, af_deprecated, "Create timer", "Z: Deprecated", 
           "Create {my} with callback <i>{0}</i>", 
-          "Create timer.", "Create");            
+          "Create timer.", "Create_deprecated");            
 // ---- deprecated ----
 
 AddNumberParam("Time", "Time-out in seconds", 0);
+AddAnyTypeParam("Timer", "Timer name", '"_"');
+AddNumberParam("Repeat", "Repeat count, 0 is infinity.", 1);
 AddAction(2, 0, "Start", "Control", 
-          "Start {my}, time-out is <i>{0}</i> seconds", 
+          "Start {my} <i>{1}</i>, time-out to <i>{0}</i> seconds, repeat count to <i>{2}</i>", 
           "Start timer.", "Start");   
+AddAnyTypeParam("Timer", "Timer name", '"_"');         
 AddAction(3, 0, "Pause", "Control", 
-          "Pause {my}", 
+          "Pause {my} <i>{0}</i>", 
           "Pause timer.", "Pause"); 
+AddAnyTypeParam("Timer", "Timer name", '"_"');           
 AddAction(4, 0, "Resume", "Control", 
-          "Resume {my}", 
-          "Resume timer.", "Resume");               
+          "Resume {my} <i>{0}</i>", 
+          "Resume timer.", "Resume");
+AddAnyTypeParam("Timer", "Timer name", '"_"');                             
 AddAction(5, 0, "Stop", "Control", 
-          "Stop {my}", 
+          "Stop {my} <i>{0}</i>", 
           "Stop timer.", "Stop"); 
           
 // ---- deprecated ----
@@ -62,19 +69,24 @@ AddAction(10, 0, "Setup timer", "Setup",
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Get remainder time", 
+//AddAnyTypeParam("Timer", "Timer name", '"_"');  
+AddExpression(0, ef_return_number | ef_variadic_parameters, "Get remainder time", 
               "Timer", "Remainder", 
               "Get remainder time.");
-AddExpression(1, ef_return_number, "Get elapsed time of timer", 
+//AddAnyTypeParam("Timer", "Timer name", '"_"');                
+AddExpression(1, ef_return_number | ef_variadic_parameters, "Get elapsed time of timer", 
               "Timer", "Elapsed", 
-              "Get elapsed time of timer.");              
-AddExpression(2, ef_return_number, "Get remainder time percentage of timer", 
+              "Get elapsed time of timer.");    
+//AddAnyTypeParam("Timer", "Timer name", '"_"');                          
+AddExpression(2, ef_return_number | ef_variadic_parameters, "Get remainder time percentage of timer", 
               "Timer", "RemainderPercent", 
               "Get remainder time percentage of timer.");
-AddExpression(3, ef_return_number, "Get elapsed time percentage of timer", 
+//AddAnyTypeParam("Timer", "Timer name", '"_"');                
+AddExpression(3, ef_return_number | ef_variadic_parameters, "Get elapsed time percentage of timer", 
               "Timer", "ElapsedPercent", 
               "Get elapsed time percentage of timer.");  
-AddExpression(4, ef_return_number, "Get delay time", 
+//AddAnyTypeParam("Timer", "Timer name", '"_"');                
+AddExpression(4, ef_return_number | ef_variadic_parameters, "Get delay time", 
               "Timer", "DelayTime", 
               "Get delay time.");
 
@@ -82,6 +94,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),
 	];
 	
 // Called by IDE when a new behavior type is to be created

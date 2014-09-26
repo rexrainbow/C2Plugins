@@ -13,6 +13,36 @@ cr.behaviors.Rex_Timer = function(runtime)
 
 (function ()
 {
+    
+    // TimerCacheKlass
+    var TimerCacheKlass = function ()
+    {
+        this.lines = [];  
+    };
+    var TimerCacheKlassProto = TimerCacheKlass.prototype;   
+         
+	TimerCacheKlassProto.alloc = function(timeline, on_timeout)
+	{
+        var timer;
+        if (this.lines.length > 0)
+        {
+            timer = this.lines.pop();
+			timer.Reset();
+        }
+        else
+        {
+            timer = timeline.CreateTimer(on_timeout);
+        }            
+		return timer;
+	};
+
+	TimerCacheKlassProto.free = function(timer)
+	{
+        this.lines.push(timer);
+	};
+	// TimerCacheKlass	
+	cr.behaviors.Rex_Timer.timer_cache = new TimerCacheKlass();
+	    
 	var behaviorProto = cr.behaviors.Rex_Timer.prototype;
 		
 	/////////////////////////////////////
@@ -29,9 +59,8 @@ cr.behaviors.Rex_Timer = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.timeline = null;  
-        this.timelineUid = -1;    // for loading         
-        this.callback = null;     // deprecated
-        this.callbackUid = -1;    // for loading   // deprecated
+        this.timelineUid = -1;    // for loading
+        this.timer_cache = cr.behaviors.Rex_Timer.timer_cache;
 	};
 
     behtypeProto._timeline_get = function ()
@@ -54,6 +83,25 @@ cr.behaviors.Rex_Timer = function(runtime)
         assert2(this.timeline, "Timer behavior: Can not find timeline oject.");
         return null;	
     };
+
+	behtypeProto.timer_create = function(on_timeout, plugin)
+	{
+	    var timer = this.timer_cache.alloc(this._timeline_get(), on_timeout);
+		timer.plugin = plugin; 
+        return timer;
+	}; 
+	
+	behtypeProto.timer_free = function(timer)
+	{
+	    timer.plugin = null; 
+        this.timer_cache.free(timer);
+	}; 	 
+	
+	behtypeProto.timer_cache_clean = function()
+	{
+        this.timer_cache.lines.length = 0;
+	};	
+	    
 	/////////////////////////////////////
 	// Behavior instance class
 	behaviorProto.Instance = function(type, inst)
@@ -68,77 +116,142 @@ cr.behaviors.Rex_Timer = function(runtime)
 
 	behinstProto.onCreate = function()
 	{        
-        this.timer = null;    
-        this.command = null; 
-        this.params = null;    // deprecated
-        this.is_my_call = false;       
-        this.timer_save = null;         
+	    if (!this.recycled)
+	    {
+            this.timers = {};
+        }
+		this.sync_timescale = (this.properties[0] == 1);
+        this._trigger_timer_name = "";
+        this.is_my_call = false;
+        this.timers_save = null;
+        this.timer_cache = cr.behaviors.Rex_Timer.timer_cache; 
+        this.pre_ts = 1;       
 	};
     
 	behinstProto.onDestroy = function()
 	{
-        if (this.timer)
+        var name, timer;
+        for (name in this.timers)
         {
-            this.timer.Remove();
-            this.timer = null;    
+            this.destroy_timer(name);
         }
-	};    
+	};
+	behinstProto.create_timer = function (timer_name)
+	{
+	    var timer = this.timers[timer_name];
+	    if (timer != null)
+	    {
+	        timer.Remove();
+	        return timer;
+	    }
+        
+        timer = this.type.timer_create(on_timeout, this);
+        timer._timer_name = timer_name;
+        this.timers[timer_name] = timer;    
+        return timer;
+	};
     
+	behinstProto.destroy_timer = function (timer_name)
+	{
+        var timer = this.timers[timer_name];
+        if (timer == null)
+            return;
+            
+        timer.Remove();        
+        delete this.timers[timer_name];
+        this.type.timer_free(timer);          
+	};
+
 	behinstProto.tick = function ()
 	{
+	    if (!this.sync_timescale)
+		    return;
+			
+	    var ts = this.get_timescale();
+	    if (this.pre_ts == ts)
+	        return;
+	    
+	    var n;
+	    for (n in this.timers)
+	        this.timers[n].SetTimescale(ts);
+	        
+	    this.pre_ts = ts;
 	};
     
     // handler of timeout for timers in this plugin, this=timer   
     var on_timeout = function ()
-    {
-        this.plugin.timer_handle();
-    };
-        
-    behinstProto.timer_handle = function()
-    {
-        if (this.command == null)
+    {                
+        this.plugin.run_callback(cr.behaviors.Rex_Timer.prototype.cnds.OnTimeout, this._timer_name);
+        if (this._repeat_count === 0)
+            this.Start();
+        else if (this._repeat_count > 1)
         {
-            this.is_my_call = true;
-            this.runtime.trigger(cr.behaviors.Rex_Timer.prototype.cnds.OnTimeout, this.inst); 
-            this.is_my_call = false;
+            this._repeat_count -= 1;
+            this.Start();
         }
-        else // ---- deprecated ----
-        {
-            // setup sol
-            var sol = this.type.objtype.getCurrentSol();
-            sol.select_all = false;
-            sol.instances.length = 1;        
-            sol.instances[0] = this.inst;
-            this.type.objtype.applySolToContainer();
-            // call function object
-            var has_rex_function = (this.type.callback != null);
-            if (has_rex_function)
-                this.type.callback.CallFn(this.command, this.params);     			
-            else
-            {
-                var has_fnobj = this.type.timeline.RunCallback(this.command, this.params, true);           
-                assert2(has_fnobj, "Timer: Can not find callback oject.");
-            }
-        }   // ---- deprecated ----
-    };	
+    };
+
+    behinstProto.run_callback = function(callback, timer_name)
+    {
+        this._trigger_timer_name = timer_name;        
+        this.is_my_call = true;
+        this.runtime.trigger(callback, this.inst); 
+        this.is_my_call = false;       
+    };
     
+    var remain_time_get = function (timer)
+    {
+        return timer._duration_remain_time - timer.ElapsedTimeGet();
+    };
+
+	behinstProto.get_timescale = function ()
+	{
+	    var ts = this.inst.my_timescale;
+	    if (ts == -1)
+	        ts = 1;	    
+	    return ts;
+	};
+    
+	behinstProto.timer_get = function (name)
+	{  
+        var timer;    
+        if (name == null)
+        {        
+            var _n;
+            for (_n in this.timers)
+            {
+                timer = this.timers[_n];
+                break;
+            }
+        }
+        else
+            timer = this.timers[name];
+           
+        return timer;
+	};    
+	
 	behinstProto.saveToJSON = function ()
 	{ 
-		return { "tim": (this.timer != null)? this.timer.saveToJSON() : null,
-                 "cmd": this.command,
-                 "pams": this.params,    // deprecated
-                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1),
-                 "cbuid": (this.type.callback != null)? this.type.callback.uid: (-1)    // deprecated
+	    var tims_save = {};
+        var name, timer, timer_save;
+        for (name in this.timers) 
+        {       
+            timer = this.timers[name];
+            timer_save = timer.saveToJSON();  
+            timer_save["_rc"] = timer._repeat_count;
+            tims_save[name] = timer_save;   
+                         
+        }
+		return { "tims": tims_save,
+                 "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1)
                 };
 	};
     
 	behinstProto.loadFromJSON = function (o)
 	{    
-        this.timer_save = o["tim"];
-        this.command = o["cmd"];
-        this.params = o["pams"];  // deprecated
-        this.type.timelineUid = o["tluid"];
-        this.type.callbackUid = o["cbuid"];   // deprecated     
+        this.timers_save = o["tims"];
+        this.type.timelineUid = o["tluid"];        
+        this.type.timer_cache_clean();   
 	};
     
 	behinstProto.afterLoad = function ()
@@ -150,39 +263,37 @@ cr.behaviors.Rex_Timer = function(runtime)
 			this.type.timeline = this.runtime.getObjectByUID(this.type.timelineUid);
 			assert2(this.type.timeline, "Timer: Failed to find timeline object by UID");
 		}		
-        
-        // ---- deprecated ----
-		if (this.type.callbackUid === -1)
-			this.type.callback = null;
-		else
-		{
-			this.type.callback = this.runtime.getObjectByUID(this.type.callbackUid);
-			assert2(this.type.callback, "Timer: Failed to find rex_function object by UID");
-		}		
-		// ---- deprecated ----          
-        
-        if (this.timer_save == null)
-            this.timer = null;
+
+        if (this.timers_save == null)
+            this.timers = {};
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
-            this.timer.plugin = this;
+            var name, timer, timer_save;
+            for (name in this.timers_save)   
+            {
+                timer_save = this.timers_save[name];
+                timer = this.create_timer(name); 
+                timer._repeat_count = timer_save["_rc"];
+                timer.loadFromJSON(timer_save);
+                timer.afterLoad();                
+            }
         }     
         this.timers_save = null;        
-	}; 
+	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
     
-	Cnds.prototype.IsRunning = function ()
+	Cnds.prototype.IsRunning = function (name)
 	{  
-		return ((this.timer)? this.timer.IsActive():false);  
+        var timer = this.timers[name];        
+        return (timer != null);
 	};
     
-	Cnds.prototype.OnTimeout = function ()
+	Cnds.prototype.OnTimeout = function (name)
 	{  
-		return this.is_my_call;  
+		return ((this._trigger_timer_name == name) && this.is_my_call);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -190,66 +301,41 @@ cr.behaviors.Rex_Timer = function(runtime)
 	behaviorProto.acts = new Acts();
 
     // ---- deprecated ----
-    Acts.prototype.Setup = function (timeline_objs, fn_objs)
-	{
-        var timeline = timeline_objs.instances[0];
-        if (timeline.check_name == "TIMELINE")
-            this.type.timeline = timeline;        	
-        else
-            alert ("Timer behavior should connect to a timeline object");          
-        
-        var callback = fn_objs.instances[0];
-        if (callback.check_name == "FUNCTION")
-            this.type.callback = callback;        
-        else
-            alert ("Timer behavior should connect to a function object");
-	};          
-    Acts.prototype.Create = function (command)
-	{
-        this.command = command;
-		var has_rex_function = (this.type.callback != null);
-		if (has_rex_function)
-		    this.params = {};
-	    else
-		    this.params = [];
-        if (this.timer)  // timer exist
-            this.timer.Remove();
-        else            // create new timer instance
-        {
-            this.timer = this.type._timeline_get().CreateTimer(on_timeout);   
-            this.timer.plugin = this;
-        }
-	}; 
+    Acts.prototype.Setup_deprecated = function (timeline_objs, fn_objs) { };          
+    Acts.prototype.Create_deprecated = function (command) { }; 
 	// ---- deprecated ----
     
-    Acts.prototype.Start = function (delay_time)
+    Acts.prototype.Start = function (delay_time, timer_name, repeat_count)
 	{
-        if ((this.timer == null) && (this.command == null))        
-        {
-            this.timer = this.type._timeline_get().CreateTimer(on_timeout);
-            this.timer.plugin = this;
-        }
-            
-        if (this.timer)
-            this.timer.Start(delay_time);
+        var timer = this.create_timer(timer_name);
+        timer._repeat_count = repeat_count;
+        timer.Start(delay_time);
+		
+		if (this.sync_timescale)
+		{
+            timer.SetTimescale(this.get_timescale());
+	    }
 	};
 
-    Acts.prototype.Pause = function ()
+    Acts.prototype.Pause = function (name)
 	{
-        if (this.timer)
-            this.timer.Suspend();
+	    var timer = this.timer_get(name); 
+        if (timer)
+            timer.Suspend();
 	};   
 
-    Acts.prototype.Resume = function ()
+    Acts.prototype.Resume = function (name)
 	{
-        if (this.timer)
-            this.timer.Resume();
+	    var timer = this.timer_get(name);
+        if (timer)
+            timer.Resume();
 	};       
     
-    Acts.prototype.Stop = function ()
+    Acts.prototype.Stop = function (name)
 	{
-        if (this.timer)
-            this.timer.Remove();
+	    var timer = this.timer_get(name);
+        if (timer)
+            timer.Remove();
 	};   
     
     // ---- deprecated ----
@@ -285,33 +371,38 @@ cr.behaviors.Rex_Timer = function(runtime)
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 
-    Exps.prototype.Remainder = function (ret)
+    Exps.prototype.Remainder = function (ret, name)
 	{
-        var val = (this.timer)? this.timer.RemainderTimeGet():0;     
+        var timer = this.timer_get(name);
+        var val = (timer)? timer.RemainderTimeGet():0;     
 	    ret.set_float(val);
 	};
     
 	Exps.prototype.Elapsed = function (ret)
 	{
-        var val = (this.timer)? this.timer.ElapsedTimeGet():0;     
+        var timer = this.timer_get(name);           
+        var val = (timer)? timer.ElapsedTimeGet():0;     
 	    ret.set_float(val);
 	};  
 
     Exps.prototype.RemainderPercent = function (ret)
-	{
-        var val = (this.timer)? this.timer.RemainderTimePercentGet():0;     
+	{ 
+        var timer = this.timer_get(name);     
+        var val = (timer)? timer.RemainderTimePercentGet():0;     
 	    ret.set_float(val);
 	};
     
 	Exps.prototype.ElapsedPercent = function (ret)
 	{
-        var val = (this.timer)? this.timer.ElapsedTimePercentGet():0;     
+        var timer = this.timer_get(name);
+        var val = (timer)? timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(val);
 	};    
     
 	Exps.prototype.DelayTime = function (ret)
 	{
-        var val = (this.timer)? this.timer.DelayTimeGet():0;     
+        var timer = this.timer_get(name);
+        var val = (timer)? timer.DelayTimeGet():0;     
 	    ret.set_float(val);
 	};  	
 	 

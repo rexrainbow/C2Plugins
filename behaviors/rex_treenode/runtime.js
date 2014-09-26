@@ -48,6 +48,8 @@ cr.behaviors.rex_treenode = function(runtime)
 	    this.parent = -1;
 	    this.children = [];		    
 	    this.root = this.inst.uid;    
+	    
+	    this.inst.extra.treeNode = this;  // It will not be saveed	
 	};
 	
 	behinstProto.onDestroy = function()
@@ -80,43 +82,27 @@ cr.behaviors.rex_treenode = function(runtime)
 	        this.children.push(child_uid);
 	};	
 	
+	behinstProto._bind_child = function (child_inst)
+	{
+        var child_tn = this.TreeNodeGet(child_inst);
+	    assert2(child_tn, "[Tree node] The child need to have tree node behavior");
+	    child_tn.parent = this.inst.uid;
+	    child_tn.root = this.root;
+	    this._add_child(child_inst.uid);
+	};		
+	
 	behinstProto.CreateChildInst = function (objtype,x,y,layer)
 	{ 
-        var inst = this.runtime.createInstance(objtype, layer, x, y ); 
-		if (inst == null)
-		    return null;
-		
-		var child_tn = this.TreeNodeGet(inst);
-		assert2(child_tn, "[Tree noe] The child need to have tree node behavior");
-		child_tn.parent = this.inst.uid;
-		child_tn.root = this.root;
-		this._add_child(inst.uid);
-		
-		
-        var sol = inst.type.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
-		
-		// Siblings aren't in instance lists yet, pick them manually
-		var i, len, s;
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
+        // callback
+        var self = this;  
+        var __callback = function (inst)
+        {
+            self._bind_child(inst);
+        }
+        // callback
         
-		this.runtime.isInOnDestroy++;
-		this.runtime.trigger(Object.getPrototypeOf(inst.type.plugin).cnds.OnCreated, inst);
-		this.runtime.isInOnDestroy--;
-        
-	    return inst;
+	    var inst = window.RexC2CreateObject(objtype, layer, x, y, __callback);
+	    return inst;	
 	}; 		
 	
 	behinstProto.TreeNodeGet = function(inst)
@@ -125,15 +111,8 @@ cr.behaviors.rex_treenode = function(runtime)
 	        inst = this.runtime.getObjectByUID(inst);	    
 	    if (inst == null)
 	        return null;
-	    	        
-		var i, len;
-		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
-		{
-			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
-				return inst.behavior_insts[i];
-		}
-		
-		return null;
+	        
+	    return inst.extra.treeNode;
 	};	
 	
 	behinstProto.ParentSet = function(parent_inst)
@@ -303,9 +282,7 @@ cr.behaviors.rex_treenode = function(runtime)
 	}; 
 	
     Acts.prototype.CreateChild = function (objtype,x,y,layer)
-	{
-        if (objtype == null)
-            return; 
+	{ 
         this.CreateChildInst(objtype,x,y,layer);
 	}; 
 	
@@ -322,7 +299,6 @@ cr.behaviors.rex_treenode = function(runtime)
 	{
 	    this.NodeRemove();
 	};	
-	
 	
     Acts.prototype.PickChildren = function (group_name, has_grandson)
 	{
@@ -405,4 +381,68 @@ cr.behaviors.rex_treenode = function(runtime)
 	    var uid = (children_uids.length > 0)? children_uids[children_uids.length-1]: (-1);                                  
 		ret.set_int(uid);
 	};	
+}());
+
+
+(function ()
+{
+    // general CreateObject function which call a callback before "OnCreated" triggered
+    if (window.RexC2CreateObject != null)
+        return;
+        
+    // copy from system action: CreateObject
+    var CreateObject = function (obj, layer, x, y, callback)
+    {
+        if (!layer || !obj)
+            return;
+
+        var inst = this.runtime.createInstance(obj, layer, x, y);
+		
+		if (!inst)
+			return;
+		
+		this.runtime.isInOnDestroy++;
+		
+		// call callback before "OnCreated" triggered
+		if (callback)
+		    callback(inst);
+		// call callback before "OnCreated" triggered
+		
+		var i, len, s;
+		this.runtime.trigger(Object.getPrototypeOf(obj.plugin).cnds.OnCreated, inst);
+		
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				this.runtime.trigger(Object.getPrototypeOf(s.type.plugin).cnds.OnCreated, s);
+			}
+		}
+		
+		this.runtime.isInOnDestroy--;
+
+        // Pick just this instance
+        var sol = obj.getCurrentSol();
+        sol.select_all = false;
+		sol.instances.length = 1;
+		sol.instances[0] = inst;
+		
+		// Siblings aren't in instance lists yet, pick them manually
+		if (inst.is_contained)
+		{
+			for (i = 0, len = inst.siblings.length; i < len; i++)
+			{
+				s = inst.siblings[i];
+				sol = s.type.getCurrentSol();
+				sol.select_all = false;
+				sol.instances.length = 1;
+				sol.instances[0] = s;
+			}
+		}
+		
+		return inst;
+    };
+    
+    window.RexC2CreateObject = CreateObject;
 }());
