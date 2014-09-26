@@ -60,6 +60,7 @@ AddComboParamOption("n");
 AddComboParamOption("B");
 AddComboParamOption("m");
 AddComboParam("Parameter", "Parameter of LJ potential.", 0);
+AddNumberParam("Value", "Value of parameter.");
 AddAction(7, 0, "Set parameter", "LJ potential", "Set {my} LJ potential parameter <i>{0}</i> to <i>{1}</i>", 
           "Set parameters of LJ potential.", "SetLJParam");          
 AddAction(11, 0, "Update", "Update", "Update {my} output force", 

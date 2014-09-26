@@ -427,6 +427,7 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
 	{
         this.output_force["x"] = 0;
         this.output_force["y"] = 0;  
+        this.has_been_attracted = false;         
 	}; 	    
 
 	function GetThisBehavior(inst)
@@ -449,7 +450,6 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
 	    var insts = objtype.getCurrentSol().getObjects();
 	    var i, cnt=insts.length, inst, behavior_inst;
         var my_uid=this.inst.uid;
-        this.has_been_attracted = false; 
         for (i=0; i<cnt; i++)
         {
             inst = insts[i];
