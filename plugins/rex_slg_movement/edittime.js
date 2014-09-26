@@ -117,6 +117,7 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_combo, "Path mode", "A*", "Geometry of moving path.", "Random|Diagonal|Straight|A*"),  
     new cr.Property(ept_combo, "Cache cost", "Yes", "Cache the cost of each tile in a request.", "No|Yes"),
+    new cr.Property(ept_combo, "Shuffle neighbors", "No", "Shuffle the order of checking neighbors.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

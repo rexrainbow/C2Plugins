@@ -52,7 +52,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.exp_PreTileY = -1;               
 	    
 	    this.path_mode = this.properties[0];
-	    this.is_cache_cost = (this.properties[1]==1);
+	    this.is_cache_cost = (this.properties[1]===1);
+	    this.is_shuffle_neighbors = (this.properties[2]===1); 
 	                     
         this.board = null;
         this.boardUid = -1;    // for loading         
@@ -198,9 +199,28 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             this._neighbors_lxy[dir].x = layout.GetNeighborLX(_x,_y, dir);
             this._neighbors_lxy[dir].y = layout.GetNeighborLY(_x,_y, dir);
         }
+        
+        if (this.is_shuffle_neighbors)
+        {
+            this.Shuffle(this._neighbors_lxy);
+        }
         return this._neighbors_lxy;
 	};	
-
+	instanceProto.Shuffle = function (arr)
+	{
+        var i = arr.length, j, temp, random_value;
+        if ( i == 0 ) return;
+        while ( --i ) 
+        {
+		    random_value = (this.randomGen == null)?
+			               Math.random(): this.randomGen.random();
+            j = Math.floor( random_value * (i+1) );
+            temp = arr[i]; 
+            arr[i] = arr[j]; 
+            arr[j] = temp;
+        }
+    };	
+    
     instanceProto.RandomInt = function (a, b)
     {
         var v = (this.randomGen == null)?
@@ -392,38 +412,63 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	};	
     var nodeCache = new ObjCacheKlass();
 
+    var GLOBOL_NODES_ORDER_INDEX = -1;
 	instanceProto.ASTAR_node_get = function (uid)
 	{
+	    // create node and put it into GLOBOL_NODES
+	    GLOBOL_NODES_ORDER_INDEX += 1;
 	    if (GLOBOL_NODES[uid] == null)
 	    {
             var node = nodeCache.allocLine();
             if (node == null)
                 node = new nodeKlass(this, uid);
             else
-                node.init(this, uid);
+                node.init(this, uid);                
 	        GLOBOL_NODES[uid] = node;
 	    }
 	    return GLOBOL_NODES[uid];
 	};
+	
+	// sorting by created order
+    var SORT_BY_ORDER = function(node_a, node_b)
+    {
+        var index_a = node_a.order_index;
+        var index_b = node_b.order_index;        
+        if (index_a > index_b)
+            return 1;
+        else if (index_a < index_b)
+            return (-1);
+        else  // (index_a == index_b)
+            return 0;
+    }	
 	instanceProto.ASTAR_closed_nodes_to_uid_get = function (nodes)
 	{
-        var closed_uids = [];
-        var uid;
+        var closed_nodes = [];
+        var uid, node;
         for (uid in nodes)
         {
-            if (nodes[uid].closed)
-                closed_uids.push(parseInt(uid));
+            node = nodes[uid];
+            if (node.closed)              // get closed node
+                closed_nodes.push(node);
         }
-        return closed_uids;
+        closed_nodes.sort(SORT_BY_ORDER); // sorting by created order
+        var i, cnt=closed_nodes.length;
+        for (i=0; i<cnt; i++)
+        {
+            closed_nodes[i] = closed_nodes[i].uid;
+        }
+        return closed_nodes;
 	};
 	instanceProto.ASTAR_nodes_release = function ()
 	{
+	    // release all nodes into node cache
         var uid;
         for (uid in GLOBOL_NODES)
         {
             nodeCache.freeLine(GLOBOL_NODES[uid]);
 	        delete GLOBOL_NODES[uid];  
-        }        
+        }  
+        GLOBOL_NODES_ORDER_INDEX = -1;      
 	};
 	
     var nodeKlass = function (plugin, uid)
@@ -434,6 +479,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     var nodeKlassProto = nodeKlass.prototype;
     nodeKlassProto.init = function (plugin, uid)
     {
+        this.order_index = GLOBOL_NODES_ORDER_INDEX;  // for sorting by created order
         var _xyz = plugin.uid2xyz(uid);        
         this.plugin = plugin;  
         this.uid = uid;      

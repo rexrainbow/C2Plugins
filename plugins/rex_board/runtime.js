@@ -39,7 +39,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};
 	
 	var instanceProto = pluginProto.Instance.prototype;
-
+    
+    var _uids = [];  // private global object
 	instanceProto.onCreate = function()
 	{
         this.check_name = "BOARD";
@@ -480,48 +481,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }
         }
 	};	
-    
-    var _uids = [];  // private global object
+
 	instanceProto.pickuids = function (uids, chess_type, ignored_chess_check)
 	{
-        var sol = chess_type.getCurrentSol();
-        sol.instances.length = 0;
-        sol.select_all = false;
-        var is_family = chess_type.is_family;
-        var members,member_cnt,i;
-        if (is_family)
-        {
-            members = chess_type.members;
-            member_cnt = members.length;
-        }
-        var i,j,uid_cnt=uids.length, inst, type_name;
-        for (i=0; i<uid_cnt; i++)
-        {
-            inst = this.uid2inst(uids[i], ignored_chess_check);	
-            if (inst == null)
-                continue;
-            type_name = inst.type.name;
-            if (is_family)
-            {
-                for (j=0; j<member_cnt; j++)
-                {
-                    if (type_name == members[j].name)
-                    {
-                        sol.instances.push(inst); 
-                        break;
-                    }
-                }
-            }
-            else
-            {
-                if (type_name == chess_type.name)
-                {
-                    sol.instances.push(inst);
-                }
-            }            
-        }
-        chess_type.applySolToContainer();
-	    return (sol.instances.length > 0);	    
+	    var check_callback;
+	    if (!ignored_chess_check)
+	    {
+	        var self = this;
+	        check_callback = function (uid)
+	        {
+	            return (self.uid2xyz(uid) != null);
+	        }
+	    }	       
+	    return window.RexC2PickUIDs.call(this, uids, chess_type, check_callback);  
 	};
     
     var name2type = {};  // private global object
@@ -1229,7 +1201,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Exps.prototype.EmptyLY = function (ret)
 	{
 	    ret.set_int(this._exp_EmptyLY);
-	};     
+	};   
+    
+	Exps.prototype.DirCount = function (ret)
+	{   
+	    ret.set_int( this.GetLayout().GetDirCount() );
+	}; 	
+    
+	Exps.prototype.NeigborUID2DIR = function (ret, uid_A, uid_B)
+	{   
+	    var dir = this.uid2neighborDir(uid_A, uid_B);
+	    if (dir == null)
+	        dir = (-1);
+	    ret.set_int( dir );
+	}; 		  
+	
 }());
 
 (function ()
@@ -1290,7 +1276,62 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		}
 		
 		return inst;
-    };
+    };   
     
     window.RexC2CreateObject = CreateObject;
+}());
+
+(function ()
+{
+    // general pick instances function
+    if (window.RexC2PickUIDs != null)
+        return;
+
+	var PickUIDs = function (uids, objtype, check_callback)
+	{
+        var sol = objtype.getCurrentSol();
+        sol.instances.length = 0;
+        sol.select_all = false;
+        var is_family = objtype.is_family;
+        var members,member_cnt,i;
+        if (is_family)
+        {
+            members = objtype.members;
+            member_cnt = members.length;
+        }
+        var i,j,uid_cnt=uids.length;
+        for (i=0; i<uid_cnt; i++)
+        {
+            var uid = uids[i];
+            var inst = this.runtime.getObjectByUID(uid);
+            if (inst == null)
+                continue;
+            if ((check_callback != null) && (!check_callback(uid)))
+                continue;
+            
+            var type_name = inst.type.name;
+            if (is_family)
+            {
+                for (j=0; j<member_cnt; j++)
+                {
+                    if (type_name == members[j].name)
+                    {
+                        sol.instances.push(inst); 
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if (type_name == objtype.name)
+                {
+                    sol.instances.push(inst);
+                }
+            }            
+        }
+        objtype.applySolToContainer();
+	    return (sol.instances.length > 0);	    
+	};    
+
+    window.RexC2PickUIDs = PickUIDs;
 }());

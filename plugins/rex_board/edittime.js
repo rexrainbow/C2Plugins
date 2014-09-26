@@ -335,7 +335,15 @@ AddExpression(23, ef_return_number,
 AddExpression(24, ef_return_number,
               "Get Y co-ordinate of an empty cell", "Empty", "EmptyLY",
               'Get Y co-ordinate of an empty cell under "Condition:Pick an empty cell". or "Condition:Has any empty cell".');
-              
+AddExpression(25, ef_return_number,
+              "Get count of directions", "Layout", "DirCount",
+              "Get count of directions.");
+AddNumberParam("UID", "The UID of chess A.", 0);    
+AddNumberParam("UID", "The UID of chess B.", 0);    
+AddExpression(26, ef_return_number,
+              "Get logic direction of two neighbor chess", "Logic", "NeigborUID2DIR",
+              "Get logic direction of two neighbor chess from chess A to chessB. Return (-1) if they are not on the board.");
+                            
 ACESDone();
 
 // Property grid properties for this plugin
