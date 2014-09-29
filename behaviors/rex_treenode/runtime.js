@@ -49,7 +49,7 @@ cr.behaviors.rex_treenode = function(runtime)
 	    this.children = [];		    
 	    this.root = this.inst.uid;    
 	    
-	    this.inst.extra.treeNode = this;  // It will not be saveed	
+	    this.inst.extra.rex_treeNode = this;  // It will not be saveed	
 	};
 	
 	behinstProto.onDestroy = function()
@@ -112,7 +112,7 @@ cr.behaviors.rex_treenode = function(runtime)
 	    if (inst == null)
 	        return null;
 	        
-	    return inst.extra.treeNode;
+	    return inst.extra.rex_treeNode;
 	};	
 	
 	behinstProto.ParentSet = function(parent_inst)

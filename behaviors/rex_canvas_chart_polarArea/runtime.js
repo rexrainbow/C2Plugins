@@ -136,9 +136,9 @@ cr.behaviors.Rex_canvas_chart_polarArea = function(runtime)
 	};
 	behinstProto.draw_chart = function(data)
 	{
-	    if (this.inst.extra.chartjs == null)
-		    this.inst.extra.chartjs = new window["chartjs"](this.inst.ctx);
-	    this.chart = this.inst.extra.chartjs.PolarArea(data, this.options);
+	    if (this.inst.extra.rex_chartjs == null)
+		    this.inst.extra.rex_chartjs = new window["chartjs"](this.inst.ctx);
+	    this.chart = this.inst.extra.rex_chartjs.PolarArea(data, this.options);
 	    this.is_drawing = true;
 	    this.acc_duration = 0;
 	};  	

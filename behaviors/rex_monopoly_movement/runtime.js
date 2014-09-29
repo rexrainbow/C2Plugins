@@ -29,6 +29,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 
 	behtypeProto.onCreate = function()
 	{
+        this.randomGen = null;
         this.group = null;    
 	};
     
@@ -138,7 +139,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     
     var _solid_get = function(inst)
     {
-        return (inst.extra != null) && (inst.extra.solidEnabled);
+        return (inst.extra != null) && (inst.extra["solidEnabled"]);
     };
     
     behinstProto._solid_prop_get = function (target_tile_uid)
@@ -257,7 +258,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         var backward_dir = this._get_backward_dir(dir);
         var i, cnt=target_tile_uids.length;
 		if ((random_mode == 1) || (random_mode == 2))
-		    _shuffle(this._dir_sequence);		
+		    _shuffle(this._dir_sequence, this.type.randomGen);		
         for (i=0; i<cnt; i++)
         {
 		    dir = this._dir_sequence[i];
@@ -409,10 +410,9 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         // output: this.path_tiles;
     };
 	
-	var _shuffle = function (arr)
+	var _shuffle = function (arr, random_gen)
 	{
         var i = arr.length, j, temp, random_value;
-		var random_gen = cr.behaviors.Rex_MonopolyMovement._random_gen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
@@ -423,12 +423,11 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
             arr[i] = arr[j]; 
             arr[j] = temp;
         }
-    };	
+    };		
 	
 	behinstProto.saveToJSON = function ()
 	{
-	    var randomGen = cr.behaviors.Rex_MonopolyMovement._random_gen;
-	    var randomGenUid = (randomGen != null)? randomGen.uid:(-1);	    
+	    var randomGenUid = (this.type.randomGen != null)? this.type.randomGen.uid:(-1);	    
 		return { "ds": this.square_dir,
 		         "de": this.hex_dir,
                  "fm": this.forked_selection_mode,
@@ -448,17 +447,14 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     
 	behinstProto.afterLoad = function ()
 	{
-        var randomGen;
 		if (this.randomGenUid === -1)
-			randomGen = null;
+			this.type.randomGen = null;
 		else
 		{
-			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
-			assert2(randomGen, "Monopoly movement: Failed to find random gen object by UID");
+			this.type.randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(this.type.randomGen, "Monopoly movement: Failed to find random gen object by UID");
 		}		
-		this.randomGenUid = -1;			
-		cr.behaviors.Rex_MonopolyMovement._random_gen = randomGen;
-		
+		this.randomGenUid = -1;
 		this.board = null;
 	}; 
 	//////////////////////////////////////
@@ -562,7 +558,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	{
         var random_gen = random_gen_objs.instances[0];
         if (random_gen.check_name == "RANDOM")
-            cr.behaviors.Rex_MonopolyMovement._random_gen = random_gen;        
+            this.type.randomGen = random_gen;        
         else
             alert ("Monopoly movement: This object is not a random generator object.");
 	};        

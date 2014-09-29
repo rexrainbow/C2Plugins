@@ -10,8 +10,6 @@ cr.behaviors.Rex_GridMove = function(runtime)
 {
 	this.runtime = runtime;
 };
-cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
-// TODO
 
 (function ()
 {
@@ -30,7 +28,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 
 	behtypeProto.onCreate = function()
 	{
-        this.group = null;  
+        this.group = null;
+        this.randomGen = null;
 	};
     
 	behtypeProto.instgroup_get = function()
@@ -181,7 +180,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     
     var _solid_get = function(inst)
     {
-        return (inst.extra != null) && (inst.extra.solidEnabled);
+        return (inst.extra != null) && (inst.extra["solidEnabled"]);
     };
 
     behinstProto.target2dir = function (target_x, target_y, target_z)
@@ -334,10 +333,9 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
         this.is_my_call = false;  
     }; 
     
-	var _shuffle = function (arr)
+	var _shuffle = function (arr, random_gen)
 	{
         var i = arr.length, j, temp, random_value;
-		var random_gen = cr.behaviors.Rex_GridMove._random_gen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
@@ -348,7 +346,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
             arr[i] = arr[j]; 
             arr[j] = temp;
         }
-    };	
+    };		
 
     behinstProto._colliding_checking = function (target_x, target_y, target_z)
     {
@@ -394,9 +392,8 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	};
 	
 	behinstProto.saveToJSON = function ()
-	{	  
-	    var randomGen = cr.behaviors.Rex_GridMove._random_gen;
-	    var randomGenUid = (randomGen != null)? randomGen.uid:(-1);	    
+	{
+	    var randomGenUid = (this.type.randomGen != null)? this.type.randomGen.uid:(-1);	    
 		return { "mt": this._cmd_move_to.saveToJSON(),
 		         "wander": this._wander,
 		         "z": this._z_saved,
@@ -424,17 +421,14 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
     
 	behinstProto.afterLoad = function ()
 	{
-        var randomGen;
 		if (this.randomGenUid === -1)
-			randomGen = null;
+			this.type.randomGen = null;
 		else
 		{
-			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
-			assert2(randomGen, "Grid move: Failed to find random gen object by UID");
+			this.type.randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(this.type.randomGen, "Grid move: Failed to find random gen object by UID");
 		}		
-		this.randomGenUid = -1;			
-		cr.behaviors.Rex_GridMove._random_gen = randomGen;
-		
+		this.randomGenUid = -1;		
 		this.board = null;
 	}; 	
 
@@ -661,7 +655,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 		var init_ly = this._wander["o"]["y"];
 		var range_x = this._wander["rx"];
 		var range_y = this._wander["ry"];		
-		_shuffle(this._dir_sequence);
+		_shuffle(this._dir_sequence, this.type.randomGen);
 		var i, dir, dir_count=this._dir_sequence.length;
 		var tx, ty, tz=_xyz.z, can_move;
 		for (i=0; i<dir_count; i++)
@@ -697,7 +691,7 @@ cr.behaviors.Rex_GridMove._random_gen = null;  // random generator for Shuffing
 	{
         var random_gen = random_gen_objs.instances[0];
         if (random_gen.check_name == "RANDOM")
-            cr.behaviors.Rex_GridMove._random_gen = random_gen;        
+            this.type.randomGen = random_gen;        
         else
             alert ("[Grid move] This object is not a random generator object.");
 	}; 

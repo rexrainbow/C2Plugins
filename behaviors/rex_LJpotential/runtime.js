@@ -81,6 +81,8 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
             this.current_sources = {};
             this.current_targets = {};
         }
+        
+        this.inst.extra.rex_LJp = this;  // hook this behavior instance on this.inst.extra
 	};
 	
 	behinstProto.onDestroy = function()
@@ -428,18 +430,6 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
         this.output_force["x"] = 0;
         this.output_force["y"] = 0;  
         this.has_been_attracted = false;         
-	}; 	    
-
-	function GetThisBehavior(inst)
-	{
-		var i, len;
-		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
-		{
-			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
-				return inst.behavior_insts[i];
-		}
-		
-		return null;
 	};    
     
 	Acts.prototype.AttractedBySource = function (objtype)
@@ -454,7 +444,7 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
         {
             inst = insts[i];
                 
-            behavior_inst = GetThisBehavior(insts[i]);
+            behavior_inst = insts[i].extra.rex_LJp;
             if (behavior_inst == null)
                 continue;
                 

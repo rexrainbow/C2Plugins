@@ -13,12 +13,23 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1,	cf_trigger, "On touch start", "Touch", "On {my} touch start", "Triggered when touch start.", "OnTouchStart");
-AddCondition(2,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when miniboard drag start.", "OnDragStart");
-AddCondition(3,	cf_trigger, "On dropped", "Drop", "On {my} drop", "Triggered when miniboard dropped.", "OnDrop"); 
-AddCondition(4,	cf_trigger, "On logic index changed", "Drag", "On {my} logic index changed", "Triggered when logic index changed on main board.", "OnLogicIndexChanged");         
-AddCondition(5,	0, "Is drag-able", "Drag", "Is {my} drag-able", "Return true if this mini board is drag-able.", "IsDragable");  
-AddCondition(6,	0, "Is touching", "Touch", "Is {my} touching", "Return true if this mini board is touching.", "IsTouching");  
+AddCondition(1,	cf_trigger, "On touch start", "Touch", 
+             "On {my} touch start", 
+             "Triggered when touch start.", "OnTouchStart");
+AddCondition(2,	cf_trigger, "On dragging start", "Drag", 
+             "On {my} drag start", 
+             "Triggered when miniboard drag start.", "OnDragStart");
+AddCondition(3,	cf_trigger, "On dropped", "Drop", 
+             "On {my} drop", "Triggered when miniboard dropped.", "OnDrop"); 
+AddCondition(4,	cf_trigger, "On logic index changed", "Drag", 
+             "On {my} logic index changed", 
+             "Triggered when logic index changed on main board.", "OnLogicIndexChanged");         
+AddCondition(5,	0, "Is drag-able", "Drag", 
+             "Is {my} drag-able", 
+             "Return true if this mini board is drag-able.", "IsDragable");  
+AddCondition(6,	0, "Is touching", "Touch", 
+             "Is {my} touching", 
+             "Return true if this mini board is touching.", "IsTouching");  
  
 //////////////////////////////////////////////////////////////
 // Actions
@@ -28,7 +39,8 @@ AddComboParam("Drag-able", "Enable to drag this miniboard.",1);
 AddAction(1, 0, "Set drag-able", "Drag & Drop", 
           "Set {my} drag-able to <i>{0}</i>", 
           "Set drag-able of this miniboard.", "SetDragable");         
-AddAction(2, 0, "Force to drop", "Drop", "Force {my} to drop", 
+AddAction(2, 0, "Force to drop", "Drop", 
+          "Force {my} to drop", 
           "Force the dragged object to drop.", "ForceDropp");    
           
 //////////////////////////////////////////////////////////////
@@ -42,7 +54,8 @@ AddExpression(2, ef_return_number,
 AddExpression(10, ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's dragging start position.");
 AddExpression(11, ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's dragging start position.");
 AddExpression(12, ef_return_number, "X co-ordinate of dragging start position", "Start", "DragStartX", "Get X co-ordinate of dragging start position.");
-AddExpression(13, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");    
+AddExpression(13, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");
+    
 ACESDone();
 
 // Property grid properties for this plugin
