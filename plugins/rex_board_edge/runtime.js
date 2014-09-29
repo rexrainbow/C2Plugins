@@ -44,7 +44,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    this.ActCreateInstance = cr.system_object.prototype.acts.CreateObject;
 	    this.lxykey2edgeuid = {};
 		this.edgeuid2lxykey = {};
-		this.pinstgroup = new cr.plugins_.Rex_board_edge.GroupKlass();	
+		this.pinstgroup = new window.RexC2GroupKlass();
 		this._kicked_edge_uid = -1;
 		
         this.board = null;
@@ -809,19 +809,16 @@ cr.plugins_.Rex_board_edge = function(runtime)
 
 (function ()
 {   
-    if (cr.plugins_.Rex_gInstGroup)
-    {
-        cr.plugins_.Rex_board_edge.GroupKlass = cr.plugins_.Rex_gInstGroup.GroupKlass;
+    // general group class
+    if (window.RexC2GroupKlass != null)
         return;
-    }
-    
-    // no Rex_gInstGroup found
-    cr.plugins_.Rex_board_edge.GroupKlass = function()
+        
+    var GroupKlass = function()
     {
 		this._set = {};
         this._list = [];    
     };
-    var GroupKlassProto = cr.plugins_.Rex_board_edge.GroupKlass.prototype;
+    var GroupKlassProto = GroupKlass.prototype;
     
 	GroupKlassProto.Clean = function()
 	{
@@ -1069,20 +1066,19 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    this.SetByUIDList(JSON.parse(JSON_string));
 	};	
 	
-	GroupKlassProto.Shuffle = function()
+	GroupKlassProto.Shuffle = function(random_gen)
 	{
-	    _shuffle(this._list);
+	    _shuffle(this._list, random_gen);
 	};
 	
-	var _shuffle = function (arr)
+	var _shuffle = function (arr, random_gen)
 	{
         var i = arr.length, j, temp, random_value;
-		var randomGen = cr.plugins_.Rex_gInstGroup._randomGen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
-		    random_value = (randomGen == null)?
-			               Math.random(): randomGen.random();
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
             j = Math.floor( random_value * (i+1) );
             temp = arr[i]; 
             arr[i] = arr[j]; 
@@ -1130,4 +1126,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             }
         }
     };
-}());  
+    
+    window.RexC2GroupKlass = GroupKlass;    
+}());    
+    

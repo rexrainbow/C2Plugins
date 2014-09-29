@@ -46,6 +46,8 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	    this.exp_CurX = 0;
 	    this.exp_CurY = 0;
 	    this.exp_CurValue = "";
+	    this.exp_Width = 0;
+	    this.exp_Height = 0;        
 	};
 	
 	instanceProto.value_get = function(v)
@@ -162,6 +164,8 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 			    
+	    this.exp_Width = x_cnt;
+	    this.exp_Height = y_cnt;                
         if (solModifierAfterCnds)
         {
 		    for (j=0; j<y_cnt; j++ )
@@ -283,6 +287,16 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
     
 	Exps.prototype.CurValue = function (ret)
 	{
-		ret.set_string(this.exp_CurValue);
-	};		
+		ret.set_any(this.exp_CurValue);
+	};
+
+	Exps.prototype.Width = function (ret)
+	{
+		ret.set_int(this.exp_Width);
+	};
+    
+	Exps.prototype.Height = function (ret)
+	{
+		ret.set_int(this.exp_Height);
+	};	    
 }());

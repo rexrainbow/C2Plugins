@@ -167,7 +167,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
             if (this._uids[inst.uid])  // is inside container
                 continue;    
             this._uids[inst.uid] = true;                      
-            inst.extra.rex_container_uid = this.uid;           
+            inst.extra["rex_glayouter_uid"] = this.uid;           
             if (is_world)
                 this.sprites.push(inst.uid);                
         }
@@ -496,7 +496,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
         var uids = {};
         for (i=0; i<cnt; i++)
         {
-            container_uid = insts[i].extra.rex_container_uid;
+            container_uid = insts[i].extra["rex_glayouter_uid"];
             if (container_uid in uids)
                 continue;
             container_inst = this.runtime.getObjectByUID(container_uid);

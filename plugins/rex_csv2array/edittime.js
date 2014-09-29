@@ -47,9 +47,13 @@ AddExpression(1, ef_return_number, "Current X", "For Each cell", "CurX",
               "Get the current X index in a For Each loop.");
 AddExpression(2, ef_return_number, "Current Y", "For Each cell", "CurY", 
               "Get the current Y index in a For Each loop.");
-AddExpression(3, ef_return_string, "Current value", "For Each cell", "CurValue", 
+AddExpression(3, ef_return_any, "Current value", "For Each cell", "CurValue", 
               "Get the current cell value in a For Each loop.");
-                         
+AddExpression(4, ef_return_number, "Width of array", "For Each cell", "Width", 
+              "Get width of array in a For Each loop.");
+AddExpression(5, ef_return_number, "Height of array", "For Each cell", "Height", 
+              "Get height of array in a For Each loop.");
+              
 ACESDone();
 
 // Property grid properties for this plugin

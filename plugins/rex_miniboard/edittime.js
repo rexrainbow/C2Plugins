@@ -85,8 +85,11 @@ AddAction(2, 0, "Create chess", "Mini-board: Create",
 AddObjectParam("Board", "Board object");
 AddNumberParam("Logic X", "The X index of offset.", 0);
 AddNumberParam("Logic Y", "The Y index of offset.", 0);
+AddComboParamOption("logical only");
+AddComboParamOption("logical and physical");
+AddComboParam("Mode", "Mode of putting.", 1);
 AddAction(3, 0, "Put", "Main board", 
-          "Put on <i>{0}</i> at offset to [<i>{1}</i>, <i>{2}</i>]", 
+          "Put on <i>{0}</i> at offset to [<i>{1}</i>, <i>{2}</i>] (<i>{3}</i>)", 
           "Put chess on the board.", "PutChess");	
              
 AddAction(4, 0, "Pull out", "Main board", 
@@ -117,7 +120,7 @@ AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
-AddAction(9, 0, "Create chess", "Mini-board: Add", 
+AddAction(9, 0, "Add chess", "Mini-board: Add", 
           "Add chess <i>{0}</i> at [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the mini board.", "AddChess");          
 
@@ -145,19 +148,19 @@ AddExpression(4, ef_return_number,
               "Get last valid logic Y offset on main board."); 
                            
 AddExpression(5, ef_return_number,
-              "Logic X of request cell on main board", "Main board: Request", "RequestLX",
+              "Logic X of request cell on main board", "Main board: Put-able", "RequestLX",
               "Get logic X of request cell on main board.");
               
 AddExpression(6, ef_return_number,
-              "Logic Y of request cell on main board", "Main board: Request", "RequestLY",
+              "Logic Y of request cell on main board", "Main board: Put-able", "RequestLY",
               "Get logic Y of request cell on main board.");
                      
 AddExpression(7, ef_return_number,
-              "Logic Z of request cell on main board", "Main board: Request", "RequestLZ",
+              "Logic Z of request cell on main board", "Main board: Put-able", "RequestLZ",
               "Get logic Z of request cell on main board.");
               
 AddExpression(8, ef_return_number,
-              "UID of request chess on mini board", "Mini board: Request", "RequestChessUID",
+              "UID of request chess on mini board", "Main board: Put-able", "RequestChessUID",
               "Get UID of request chess on mini board.");
                         
 AddExpression(10, ef_deprecated | ef_return_number,
@@ -167,13 +170,36 @@ AddExpression(10, ef_deprecated | ef_return_number,
 AddExpression(11, ef_deprecated | ef_return_number,
               "Logic Y of empty on main board", "Main board: find empty", "EmptyLY",
               "Get logic Y of empty on main board. Used under 'Condition:Can find empty logic index'");
+
+AddNumberParam("UID", "The UID of chess.", 0);
+AddExpression(12, ef_return_number, 
+              "Get X index of chess", "Mini board - Logical", "UID2LX", 
+              "Get X index of chess by UID. Return (-1) if the chess is not on the mini board.");
+AddNumberParam("UID", "The UID of chess.", 0);              
+AddExpression(13, ef_return_number, 
+              "Get Y index of chess", "Mini board - Logical", "UID2LY", 
+              "Get Y index of chess by UID. Return (-1) if the chess is not on the mini board.");
+AddNumberParam("UID", "The UID of chess.", 0);              
+AddExpression(14, ef_return_any, 
+              "Get Z index of chess", "Mini board - Logical", "UID2LZ", 
+              "Get Z index of chess by UID. Return (-1) if the chess is not on the mini board.");
+                            
+AddNumberParam("UID", "The UID of chess.", 0);
+AddExpression(15, ef_return_number,
+              "Get X co-ordinate by UID", "Mini board - Physical", "UID2PX",
+              "Get X co-ordinate by UID. Return (-1) if the chess is not on the mini board.");
+AddNumberParam("UID", "The UID of chess.", 0);              
+AddExpression(16, ef_return_number,
+              "Get Y co-ordinate by UID", "Mini board - Physical", "UID2PY",
+              "Get Y co-ordinate by UID. Return (-1) if the chess is not on the mini board.");
               
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [		
-    new cr.Property(ept_color, "Color",	cr.RGB(0, 0, 0), "Color for showing at editor.", "firstonly"),	
+    new cr.Property(ept_color, "Color",	cr.RGB(0, 0, 0), "Color for showing at editor.", "firstonly"),
+    new cr.Property(ept_combo, "Pin mode", "Yes", "Enable to set position of each chess follows to the mini board.", "No|Yes"),	
 	];
 	
 // Called by IDE when a new object type is to be created

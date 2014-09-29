@@ -43,6 +43,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 	    this.check_name = "INSTGROUP";
 	    this.groups = {};
+        this.randomGen = null;
         this.randomGenUid = -1;    // for loading
 	    this._cmp_uidA = 0;
 	    this._cmp_uidB = 0;
@@ -66,8 +67,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 		this.propsections = [];
 		/**END-PREVIEWONLY**/	    	    
 	};
-	cr.plugins_.Rex_gInstGroup._randomGen = null;  // random generator for Shuffing
-	
+    
 	instanceProto.onDestroy = function ()
 	{
         this.runtime.removeDestroyCallback(this.myDestroyCallback);
@@ -134,7 +134,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    var group = this.groups[name];
 	    if (group == null)
 	    {
-	        group = new cr.plugins_.Rex_gInstGroup.GroupKlass();
+	        group = new window.RexC2GroupKlass();
 	        this.groups[name] = group;
 	        this._append_pg(name);
 	    }
@@ -256,8 +256,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    for (name in groups)
 	        info[name] = groups[name].GetList();
         
-        var randomGen = cr.plugins_.Rex_gInstGroup._randomGen;
-        var randomGenUid = (randomGen != null)? randomGen.uid:(-1);
+        var randomGenUid = (this.randomGen != null)? this.randomGen.uid:(-1);
 		return { "d": info,
                  "randomuid":randomGenUid};
 	};
@@ -274,16 +273,14 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
 	instanceProto.afterLoad = function ()
 	{
-        var randomGen;
 		if (this.randomGenUid === -1)
-			randomGen = null;
+			this.randomGen = null;
 		else
 		{
-			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
-			assert2(randomGen, "Instance group: Failed to find random gen object by UID");
+			this.randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(this.randomGen, "Instance group: Failed to find random gen object by UID");
 		}		
-		this.randomGenUid = -1;			
-		cr.plugins_.Rex_gInstGroup._randomGen = randomGen;
+		this.randomGenUid = -1;
 	};
 	
 	/**BEGIN-PREVIEWONLY**/
@@ -495,7 +492,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
     Acts.prototype.Shuffle = function (name)
 	{
-	    this.GetGroup(name).Shuffle();
+	    this.GetGroup(name).Shuffle(this.randomGen);
 	};	
 	
     Acts.prototype.SortByFn = function (name, fn_name)
@@ -559,7 +556,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
         var randomGen = randomGen_objs.instances[0];
         if (randomGen.check_name == "RANDOM")
-            cr.plugins_.Rex_gInstGroup._randomGen = randomGen;        
+            this.randomGen = randomGen;        
         else
             alert ("[Instance group] This object is not a random generator object.");
 	};  
@@ -704,12 +701,16 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 
 (function ()
 {   
-    cr.plugins_.Rex_gInstGroup.GroupKlass = function()
+    // general group class
+    if (window.RexC2GroupKlass != null)
+        return;
+        
+    var GroupKlass = function()
     {
 		this._set = {};
         this._list = [];    
     };
-    var GroupKlassProto = cr.plugins_.Rex_gInstGroup.GroupKlass.prototype;
+    var GroupKlassProto = GroupKlass.prototype;
     
 	GroupKlassProto.Clean = function()
 	{
@@ -957,20 +958,19 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    this.SetByUIDList(JSON.parse(JSON_string));
 	};	
 	
-	GroupKlassProto.Shuffle = function()
+	GroupKlassProto.Shuffle = function(random_gen)
 	{
-	    _shuffle(this._list);
+	    _shuffle(this._list, random_gen);
 	};
 	
-	var _shuffle = function (arr)
+	var _shuffle = function (arr, random_gen)
 	{
         var i = arr.length, j, temp, random_value;
-		var randomGen = cr.plugins_.Rex_gInstGroup._randomGen;
         if ( i == 0 ) return;
         while ( --i ) 
         {
-		    random_value = (randomGen == null)?
-			               Math.random(): randomGen.random();
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
             j = Math.floor( random_value * (i+1) );
             temp = arr[i]; 
             arr[i] = arr[j]; 
@@ -1018,5 +1018,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
             }
         }
     };
+    
+    window.RexC2GroupKlass = GroupKlass;    
 }());    
     

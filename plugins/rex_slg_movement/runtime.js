@@ -202,24 +202,25 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         
         if (this.is_shuffle_neighbors)
         {
-            this.Shuffle(this._neighbors_lxy);
+            _shuffle(this._neighbors_lxy, this.randomGen);
         }
         return this._neighbors_lxy;
 	};	
-	instanceProto.Shuffle = function (arr)
+    
+	var _shuffle = function (arr, random_gen)
 	{
         var i = arr.length, j, temp, random_value;
         if ( i == 0 ) return;
         while ( --i ) 
         {
-		    random_value = (this.randomGen == null)?
-			               Math.random(): this.randomGen.random();
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
             j = Math.floor( random_value * (i+1) );
             temp = arr[i]; 
             arr[i] = arr[j]; 
             arr[j] = temp;
         }
-    };	
+    };
     
     instanceProto.RandomInt = function (a, b)
     {
