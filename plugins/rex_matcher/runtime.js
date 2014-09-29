@@ -225,7 +225,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchTemplatePattern2D, this);
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnMatchPattern2D, this);
         }
-    if (!this._has_matched_pattern)
+        if (!this._has_matched_pattern)
             this.runtime.trigger(cr.plugins_.Rex_Matcher.prototype.cnds.OnNoMatchPattern, this);
 	};
     
@@ -241,15 +241,19 @@ cr.plugins_.Rex_Matcher = function(runtime)
         // filled this._tiles_groups
         return this._tiles_groups;
 	};
-    String.prototype.repeat = function( num )
-    {
-        return new Array( num + 1 ).join( this );
-    };
     
+    var pattern_splitting = function (pattern)
+    {
+        var s = (pattern.indexOf(",") != null)? ",": "";
+        return pattern.split(s);        
+    }
 	instanceProto.pattern_search_square = function(pattern, is_any_pattern_mode)
 	{
-        var is_matchN_mode = (typeof(pattern) == "number");        
-	    var x,y,i,c,s,is_matched,matched_tiles=[];
+        var is_matchN_mode = (typeof(pattern) == "number"); 
+        if (!is_matchN_mode)
+            pattern = pattern_splitting(pattern); 
+            
+	    var x,y,i,s,is_matched,matched_tiles=[];
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;
 	    var board = this.board_get();
 	    var x_max=board.x_max;
@@ -295,10 +299,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    }	                    
                         else if (is_matchN_mode && (pattern==null))
                         {
-                            pattern = s.symbol.repeat(pattern_length);
+                            pattern = [];
+                            for (var r=0; r<pattern_length; r++)
+                                pattern.push(s.symbol);                            
                         }
-	                    c = pattern.charAt(i);
-	                    if (s.symbol!=c)
+	                    if (s.symbol != pattern[i])
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -318,8 +323,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};
 	instanceProto.pattern_search_hex = function(pattern, is_any_pattern_mode)
 	{	  
-        var is_matchN_mode = (typeof(pattern) == "number");   
-        var dir,x,y,i,c,s,is_matched,matched_tiles=[];
+        var is_matchN_mode = (typeof(pattern) == "number"); 
+        if (!is_matchN_mode)
+            pattern = pattern_splitting(pattern); 
+            
+        var dir,x,y,i,s,is_matched,matched_tiles=[];
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;     
 	    var board = this.board_get();
 	    var layout = board.GetLayout();
@@ -348,10 +356,11 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    }
                         else if (is_matchN_mode && (pattern==null))
                         {
-                            pattern = s.symbol.repeat(pattern_length);
+                            pattern = [];
+                            for (var r=0; r<pattern_length; r++)
+                                pattern.push(s.symbol);
                         }                          
-	                    c = pattern.charAt(i);
-	                    if (s.symbol!=c)
+	                    if (s.symbol != pattern[i])
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -430,7 +439,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        _fill_2d_template_pattern(pattern, s.symbol);
 	                        is_template_pattern = false;	                        
 	                    }
-	                    else if (s.symbol!=c)
+	                    else if (s.symbol != c)
 	                    {
 	                        is_matched = false;
 	                        break;
