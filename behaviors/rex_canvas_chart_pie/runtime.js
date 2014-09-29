@@ -113,9 +113,9 @@ cr.behaviors.Rex_canvas_chart_pie = function(runtime)
 	};
 	behinstProto.draw_chart = function(data)
 	{
-	    if (this.inst.extra.chartjs == null)
-		    this.inst.extra.chartjs = new window["chartjs"](this.inst.ctx);
-	    this.chart = this.inst.extra.chartjs.Pie(data, this.options);
+	    if (this.inst.rex_chartjs == null)
+		    this.inst.rex_chartjs = new window["chartjs"](this.inst.ctx);
+	    this.chart = this.inst.rex_chartjs.Pie(data, this.options);
 	    this.is_drawing = true;
 	    this.acc_duration = 0;
 	};  	
