@@ -120,11 +120,9 @@ cr.behaviors.Rex_Revive = function(runtime)
 	{
         this.activated = (this.properties[0]==1);
         this.revive_time = this.properties[1];
-        this._revive_at = this.properties[2];
-        if (this._revive_at==0)
-        {
-            this.revive_data = JSON.stringify(this.status_get());
-        }
+        this.revive_at = this.properties[2];
+        this.revive_data = null;
+        this.init_save_flg = true;
         this._mem = {};
 	};
 
@@ -134,7 +132,7 @@ cr.behaviors.Rex_Revive = function(runtime)
             return;
             
         this.runtime.trigger(cr.behaviors.Rex_Revive.prototype.cnds.OnDestroy, this.inst);
-        if (this._revive_at == 1)
+        if (this.revive_at == 1)
         {
             this.revive_data = JSON.stringify(this.status_get());
         }
@@ -157,6 +155,14 @@ cr.behaviors.Rex_Revive = function(runtime)
 	
 	behinstProto.tick = function ()
 	{
+	    if (!this.init_save_flg)
+	        return;
+	        
+	    this.init_save_flg = false;
+        if (this.revive_at == 0)
+        {
+            this.revive_data = JSON.stringify(this.status_get());
+        }
 	};
 
 	//////////////////////////////////////
