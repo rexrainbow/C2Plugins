@@ -81,9 +81,9 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.check_name = "BOARD";
-	    this.is_pin_mode = (this.properties[0] == 1);
-        this._pre_x = this.x;
-		this._pre_y = this.y;
+	    this.is_pin_mode = (this.properties[1] == 1);
+        this.pre_POX = this.x;
+		this.pre_POY = this.y;
          
         this.last_LOX = (-1);
         this.last_LOY = (-1);                
@@ -102,7 +102,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.exp_RequestLY = (-1);
         this.exp_RequestLZ = (-1);   
         this.exp_RequestChessUID = (-1);
-		this._kicked_chess_uid = -1;        
+		this._kicked_chess_uid = -1;  
+		this.mainBoardUid = -1;    // for loading		      
 	};
 	
 	instanceProto.ResetBoard = function ()
@@ -111,9 +112,9 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this.items = {};  // uid2xyz for all chess
         this.items_lz0 = {};  // uid2xyz for chess which lz = 0
 		this.mainBoard = null;
-		this.mainBoardUid = -1;    // for loading
 		this.LOX = (-1);   // LX of origin point on the main board
 		this.LOY = (-1);   // LY of origin point on the main board
+		this.uid2pdxy = {};
 	};	
 	
 	instanceProto.onInstanceDestroyed = function (inst)
@@ -135,24 +136,37 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	};
 	instanceProto.chess_pin = function ()
 	{
-	    var dx = this.x - this._pre_x;
-		var dy = this.y - this._pre_y;
-		if ((dx == 0) && (dy == 0))
+	    var POX=this.x, POY=this.y;	
+		if ((POX == this.pre_POX) && (POY == this.pre_POY))
 		    return;
 			
-		var uid, inst;
+		var uid, inst, pdxy;
 		for (uid in this.items)
 		{
 		    inst = this.uid2inst(uid);
 		    if (inst == null)
 		        continue;
-			inst.x += dx;
-			inst.y += dy;
+		    pdxy = this.uid2pdxy[uid];
+		    inst.x = POX + pdxy.x;	        
+			inst.y = POY + pdxy.y;
 			inst.set_bbox_changed();
 		}
-        this._pre_x = this.x;
-		this._pre_y = this.y;
-	}; 
+        this.pre_POX = POX;
+		this.pre_POY = POY;
+	};
+		
+	instanceProto.add_uid2pdxy = function(inst)
+	{
+	    var uid = inst.uid;
+	    if (!this.uid2pdxy.hasOwnProperty(uid))
+	    {
+	        this.uid2pdxy[uid] = {x:0,y:0};
+	    }
+	        
+	    this.uid2pdxy[uid].x = inst.x - this.x;
+	    this.uid2pdxy[uid].y = inst.y - this.y;   
+	};
+		 
 	instanceProto.tick2 = function ()
 	{
 	    if (this.is_pin_mode)
@@ -191,17 +205,34 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    else
 	        return this.runtime.getObjectByUID(uid);
 	};
-		
-	instanceProto._put_chess = function(x, y, z, uid)
-	{
-	    var tmp;
-		if (this.board[x] == null)
+
+	instanceProto.add_to_board = function(x, y, z, uid)
+	{	   
+	    if (!this.board.hasOwnProperty(x))
 		    this.board[x] = {};
-        tmp = this.board[x];
-		if (tmp[y] == null)
-		    tmp[y] = {};
-	    tmp = tmp[y];
-		tmp[z] = uid;
+        var tmpx = this.board[x];
+		if (!tmpx.hasOwnProperty(y))
+		    tmpx[y] = {};
+	    var tmpy = tmpx[y];
+		tmpy[z] = uid;
+	};	
+	
+	instanceProto.remove_from_board = function(x, y, z)
+	{
+		if (!this.board.hasOwnProperty(x))
+		    return;		    
+        var tmpx = this.board[x];
+		if (!tmpx.hasOwnProperty(y))
+		    return;
+	    var tmpy = tmpx[y];	    
+		if (!tmpy.hasOwnProperty(z))
+		    return;	
+		    	    
+		delete tmpy[z];		
+		if (is_hash_empty(tmpy))
+		    delete tmpx[y];
+		if (is_hash_empty(tmpx))
+		    delete this.board[x];
 	};	
 
 	instanceProto.remove_item = function(uid, kicking_notify)
@@ -220,7 +251,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         delete this.items[uid];
         if (_xyz.z == 0)
             delete this.items_lz0[uid];
-        delete this.board[_xyz.x][_xyz.y][_xyz.z];	 
+        this.remove_from_board(_xyz.x, _xyz.y, _xyz.z);
+        delete this.uid2pdxy[uid];
         get_extra_info(inst)["minb_uid"] = null;
 	};
 	
@@ -238,11 +270,13 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 			
         var uid = inst.uid;
         this.remove_item(this.xyz2uid(lx, ly, lz), true);
-		this._put_chess(lx, ly, lz,uid);
+		this.add_to_board(lx, ly, lz, uid);
 	    this.items[uid] = {x:lx, y:ly, z:lz};
         if (lz == 0)
             this.items_lz0[uid] = this.items[uid];
-	    get_extra_info(inst)["minb_uid"] = this.uid;                                      
+	    get_extra_info(inst)["minb_uid"] = this.uid;    
+
+	    this.add_uid2pdxy(inst);                            
 	};
 	
 	instanceProto.CreateChess = function(obj_type, lx, ly, lz, layer)
@@ -269,6 +303,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		layout.SetPOY(poy_save);
 	    return inst;
 	};
+	
 	instanceProto.AreEmpty = function (board_inst, offset_lx, offset_ly)
 	{
 		var board_xmax = board_inst.x_max;
@@ -276,23 +311,18 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		var board = board_inst.board;   
 		var _xyz, _lx, _ly, _lz;
 		var uid;
-        var is_empty = true;
 		for (uid in this.items)
 		{
 		    _xyz = this.uid2xyz(uid);
 			_lx = _xyz.x + offset_lx;
 			_ly = _xyz.y + offset_ly;
 			_lz = _xyz.z;
-			if ((_lx < 0) || (_lx > board_xmax) || 
-			    (_ly < 0) || (_ly > board_ymax) || 
-			    (board[_lx][_ly][_lz] != null))
-            {
-                is_empty = false;
-                break;
-            }
+			if ( !board_inst.is_empty(_lx,_ly,_lz) )
+			    return false;
 		}
-		return is_empty;
+		return true;
 	}; 	
+	
 	instanceProto.PutChess = function (board_inst, offset_lx, offset_ly, is_pos_set)
 	{
         this.PullOutChess();
@@ -435,10 +465,18 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		
 	var hash_clean = function (obj)
 	{
-	    var k;
-	    for (k in obj)
+	    for (var k in obj)
 	        delete obj[k];
 	};
+	
+	var is_hash_empty = function (obj)
+	{
+	    for (var k in obj)
+	    {
+	        return false;
+	    }
+	    return true;
+	};	
 	
 	instanceProto.saveToJSON = function ()
 	{    
@@ -453,8 +491,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        uid2xyz[uid]["z"] = item.z;	        
 	    }
 	    	    
-		return { "pre_x": this._pre_x,
-		         "pre_y": this._pre_y,
+		return { "pre_x": this.pre_POX,
+		         "pre_y": this.pre_POY,
                  "l_lox": this.last_LOX,
                  "l_loy": this.last_LOY,
                  "xyz2uid": this.board,
@@ -468,8 +506,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-	    this._pre_x = o["pre_x"];
-		this._pre_y = o["pre_y"];
+	    this.pre_POX = o["pre_x"];
+		this.pre_POY = o["pre_y"];
         this.last_LOX = o["l_lox"]; 
         this.last_LOY = o["l_loy"];
         this.board = o["xyz2uid"];     
@@ -711,19 +749,19 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	Exps.prototype.UID2LX = function (ret, uid)
 	{
 	    var xyz = this.uid2xyz(uid);
-	    var lx = (xyz == null) (-1): xyz.x;   
+	    var lx = (xyz == null)? (-1): xyz.x;   
 	    ret.set_int(lx);
 	};
 	Exps.prototype.UID2LY = function (ret, uid)
 	{
 	    var xyz = this.uid2xyz(uid);
-	    var ly = (xyz == null) (-1): xyz.y;   
+	    var ly = (xyz == null)? (-1): xyz.y;   
 	    ret.set_int(ly);
 	};	
 	Exps.prototype.UID2LZ = function (ret, uid)
 	{
 	    var xyz = this.uid2xyz(uid);
-	    var lz = (xyz == null) (-1): xyz.z;   
+	    var lz = (xyz == null)? (-1): xyz.z;   
 	    ret.set_int(lz);
 	};
 	

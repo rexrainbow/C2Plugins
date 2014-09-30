@@ -95,7 +95,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 
         return x+this.PositionOX;
 	};
-	instanceProto.LXYZ2PY = function(lx, ly, lz)
+	instanceProto.LXYZ2PY = function (lx, ly, lz)
 	{
 	    var y;
 	    if (this.layout_mode == 0)  // Orthogonal
@@ -296,6 +296,62 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
         return dir;				 
 	};
+    
+	instanceProto.LXYZRotate2LX = function (lx, ly, lz, dir)
+	{
+        var new_lx;
+        switch (this.layout_mode)
+        {
+        case 0:    // Orthogonal
+        case 1:    // Isometric
+	        switch (dir)
+	        {
+	        case 1:  // 90
+	            new_lx = -ly;
+	        break;
+	        case 2:  // 180
+	            new_lx = -lx;        
+	        break;
+	        case 3:  // 270
+	            new_lx = ly;
+	        break;
+	        }
+        break;
+            
+        case 2:
+        break;
+        }	
+
+        return new_lx;        
+	};
+
+	instanceProto.LXYZRotate2LY = function (lx, ly, lz, dir)
+	{
+        var new_ly;
+        switch (this.layout_mode)
+        {
+        case 0:    // Orthogonal
+        case 1:    // Isometric
+	        switch (dir)
+	        {
+	        case 1:  // 90
+	            new_ly = lx;
+	        break;
+	        case 2:  // 180
+	            new_ly = -ly;        
+	        break;
+	        case 3:  // 270
+	            new_ly = -lx;
+	        break;
+	        }
+        break;
+            
+        case 2:
+        break;
+        }	
+
+        return new_ly;        
+	};    
 	
 	instanceProto.saveToJSON = function ()
 	{
