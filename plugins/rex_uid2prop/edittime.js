@@ -7,7 +7,7 @@
 		"description":	"Get properties (x,y,angle,opacity,private variable) by UID.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_uid2prop.html",
-		"category":		"General",
+		"category":		"Rex - Instance properties",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

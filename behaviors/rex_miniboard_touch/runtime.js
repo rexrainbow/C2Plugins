@@ -31,9 +31,6 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         this.touchwrap = null;
         this.GetX = null;
         this.GetY = null;
-        this.behavior_index = null;
-        this._touched_miniboard_insts = [];
-        this._behavior_insts = [];
         this.board_types = [];
 	};
 	
@@ -72,80 +69,85 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	}; 
+	
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};	
     
-    behtypeProto._touched_miniboard_get = function (touchX, touchY)
+    var binsts = [];    
+    behtypeProto.touched_binst_get = function (touchX, touchY)
     {
         var miniboard_insts = this.objtype.instances;
-        this._touched_miniboard_insts.length = 0;
-        var i, miniboard_cnt=miniboard_insts.length, miniboard_inst;
+        var i, miniboard_cnt=miniboard_insts.length, binst;
         var j, chess_insts, chess_uid, chess_inst;
-        var tx,ty;
+        binsts.length = 0;        
         for (i=0; i<miniboard_cnt; i++)
         {
-            miniboard_inst = miniboard_insts[i];
-			if (miniboard_inst.behavior_insts[this.behavior_index].IsInTouch(touchX, touchY))
-			    this._touched_miniboard_insts.push(miniboard_inst);            
+            binst = GetThisBehavior(miniboard_insts[i]);
+            if (binst.activated && 
+                (!binst.drag_info.is_on_dragged) &&
+                binst.IsInTouch(touchX, touchY))
+			{
+			    binsts.push(binst);            
+			}
         }
-        return this._touched_miniboard_insts;
+        return binsts;
     };
     
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
         // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
-			
-        var touched_miniboard_insts = this._touched_miniboard_get(touchX, touchY);
-        if (touched_miniboard_insts.length == 0)
-            return;
-        
+
         // overlap_cnt > 0                      
         // 1. get all valid behavior instances
-        var i, cnt=touched_miniboard_insts.length, miniboard_inst, behavior_inst;
-        this._behavior_insts.length = 0;          
-        for (i=0; i<cnt; i++ )
-        {
-		    miniboard_inst = touched_miniboard_insts[i];
-            behavior_inst = miniboard_inst.behavior_insts[this.behavior_index];
-            if ((behavior_inst.activated) && (!behavior_inst.drag_info.is_on_dragged))
-                this._behavior_insts.push(behavior_inst);
-        }
+        var touched_binsts = this.touched_binst_get(touchX, touchY);
+        if (touched_binsts.length == 0)
+            return;
             
         // 2. get the max z-order inst
-        cnt = this._behavior_insts.length;
+        var cnt = touched_binsts.length;
 		if (cnt == 0)  // no inst match
             return;
             
-        var target_inst_behavior = this._behavior_insts[0];
+        var i, binst, target_binst=touched_binsts[0];
+        var instB=target_binst.inst, instA;
         for (i=1; i<cnt; i++ )
         {
-            behavior_inst = this._behavior_insts[i];
-            if ( behavior_inst.inst.zindex > target_inst_behavior.inst.zindex )
-                target_inst_behavior = behavior_inst;
+            binst = touched_binsts[i];
+            instA = binst.inst;
+            if ( ( instA.layer.index > instB.layer.index) ||
+                 ( (instA.layer.index == instB.layer.index) && (instA.get_zindex() > instB.get_zindex()) ) )              
+            {
+                target_binst = binst;
+                instB = instA;
+            } 
         }
         
-		target_inst_behavior.DragInfoSet(touch_src);
-        this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDragStart, target_inst_behavior.inst); 
+		target_binst.drag(touch_src);
+        this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDragStart, target_binst.inst); 
 
-        this._touched_miniboard_insts.length = 0;        
-        this._behavior_insts.length = 0; 
+        touched_binsts.length = 0; 
     };
     
     behtypeProto.OnTouchEnd = function (touch_src)
     {
-        if (this.behavior_index == null )
-            return;
-
 		var insts = this.objtype.instances;
-        var i, cnt=insts.length, inst, behavior_inst;
+        var i, cnt=insts.length, inst, binst;
         for (i=0; i<cnt; i++ )
         {
-		    inst = insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
-			if ((behavior_inst.drag_info.touch_src == touch_src) && behavior_inst.drag_info.is_on_dragged)
+		    inst = insts[i];            
+            binst = GetThisBehavior(inst);
+			if (binst.drag_info.touch_src == touch_src)
             {
-			    behavior_inst.drag_info.is_on_dragged = false;
-				this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDrop, inst); 
+                binst.drop();
 			}
         }      
     };  
@@ -178,9 +180,8 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
                           inst_start_x:0,
                           inst_start_y:0,
                           is_moved:false,
-                          mainboard_inst:null,
-                          mainboard_lx:(-1),
-                          mainboard_ly:(-1)};	     
+                          };
+        this.overlap_mainboard = new cr.plugins_.Rex_MiniBoard.MainboardRefKlass();                          	     
 	};
 
 	behinstProto.tick = function ()
@@ -190,7 +191,6 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 
         // this.activated == 1 && this.is_on_dragged        
         var inst=this.inst;
-        var inst_OX, inst_OY;
         var drag_info=this.drag_info;
         var cur_x=this.GetX();
         var cur_y=this.GetY();
@@ -198,62 +198,78 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
                         (drag_info.pre_y != cur_y);      
         if ( is_moving )
         {
-            var touched_board = this._touched_board_get(cur_x, cur_y);
-            drag_info.mainboard_inst = touched_board;
-            inst_OX = cur_x + drag_info.drag_dx;
-            inst_OY = cur_y + drag_info.drag_dy;
-            var lx_save=drag_info.mainboard_lx, ly_save=drag_info.mainboard_ly;
-            if (touched_board == null)
+            // move mini board with touch point
+            this.inst.x = cur_x + drag_info.drag_dx;
+            this.inst.y = cur_y + drag_info.drag_dy;    
+            // get overlapped main board        
+            var mainboard = this.touched_mainboard_get();
+            var drag_on_mainboard = (mainboard != this.overlap_mainboard.inst) && (mainboard != null);            
+            var lx_save=this.overlap_mainboard.LOX, ly_save=this.overlap_mainboard.LOY;
+            if (mainboard != null)
             {
-                drag_info.mainboard_lx = (-1);
-                drag_info.mainboard_ly = (-1);
-                inst.x = inst_OX;
-                inst.y = inst_OY;
-                inst.set_bbox_changed();
+                // align to main board 
+                var layout = mainboard.GetLayout();
+	            var lx = layout.PXY2LX(this.inst.x, this.inst.y);
+	            var ly = layout.PXY2LY(this.inst.x, this.inst.y);	            
+                this.inst.x = layout.LXYZ2PX(lx,ly,0);
+                this.inst.y = layout.LXYZ2PY(lx,ly,0);
+                this.overlap_mainboard.assign_board(mainboard, lx, ly); 
             }
             else
             {
-	            var lx = touched_board.layout.PXY2LX(inst_OX, inst_OY);
-	            var ly = touched_board.layout.PXY2LY(inst_OX, inst_OY);
-                lx = cr.clamp(Math.round(lx), 0, touched_board.x_max);
-                ly = cr.clamp(Math.round(ly), 0, touched_board.y_max);
-                if ((drag_info.mainboard_lx != lx) || (drag_info.mainboard_ly != ly))
-                {
-                    inst.x = touched_board.layout.LXYZ2PX(lx,ly,0);
-                    inst.y = touched_board.layout.LXYZ2PY(lx,ly,0);
-                    drag_info.mainboard_lx = lx;
-                    drag_info.mainboard_ly = ly;
-                    inst.set_bbox_changed();
-                }
+                this.overlap_mainboard.assign_board(null)
             }
-            
-            if ((drag_info.mainboard_lx != lx_save) || (drag_info.mainboard_ly != ly_save))
+            this.inst.set_bbox_changed();
+
+            if (drag_on_mainboard)
+                this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDragAtMainboard, inst);  
+                        
+            if (drag_on_mainboard || 
+                (this.overlap_mainboard.LOX != lx_save) || (this.overlap_mainboard.LOY != ly_save))
+            {
                 this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnLogicIndexChanged, inst); 
+            }
                 
             drag_info.pre_x = cur_x;
             drag_info.pre_y = cur_y;                    
         }
 	};  
 
-	behinstProto._touched_board_get = function(px, py)
+	behinstProto.is_any_cell_on_board = function(board_inst)
+	{ 
+        var layout = board_inst.GetLayout();
+        var offset_lx = layout.PXY2LX(this.inst.x, this.inst.y);
+        var offset_ly = layout.PXY2LY(this.inst.x, this.inst.y);
+	    var uid, xyz, lx, ly, lz;
+	    for (uid in this.inst.items)
+	    {
+	        xyz = this.inst.items[uid];     
+            lx = xyz.x + offset_lx;
+            ly = xyz.y + offset_ly;
+	        lz = xyz.z;
+	        if (this.inst.CellCanPut(board_inst, parseInt(uid), lx, ly, lz, 1))
+	        {
+	            return true;
+	        }
+	    }         
+	    return false;
+	};
+	
+	behinstProto.touched_mainboard_get = function()
 	{
 	    var board_types = this.type.board_types;
 	    var cnt=board_types.length;
-	    if (cnt == 0)
-	        return null;
 	        
-	    var i, boards, board;
-	    var j, inst_cnt, boards, board;
+	    var i;
 	    var is_on_board;
 	    for (i=0; i<cnt; i++)
 	    {	        
-	        boards = board_types[i].instances;
-	        inst_cnt = boards.length;
+	        var boards = board_types[i].instances;
+	        var j, inst_cnt = boards.length;
 	        for (j=0; j<inst_cnt; j++)
 	        {
-	            board = boards[j];
-	            if (board.point_is_in_board(px, py))
-	                return board; 
+	            if (this.is_any_cell_on_board(boards[j]))
+	                return boards[j]; 
 	        }
 	    }
 	    return null;
@@ -280,6 +296,12 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
                             touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	}; 
+    
+	behinstProto.drag = function(touch_src)
+	{
+        this.DragInfoSet(touch_src);        
+        this.tick();  
+	};    
 	
 	behinstProto.DragInfoSet = function(touch_src)
 	{
@@ -292,32 +314,29 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         var cur_x=this.GetX(), cur_y=this.GetY();
         drag_info.drag_dx = inst.x - cur_x;
         drag_info.drag_dy = inst.y - cur_y;
-        drag_info.pre_x = cur_x;
-        drag_info.pre_y = cur_y;     
+        drag_info.pre_x = null;
+        drag_info.pre_y = null;     
         drag_info.drag_start_x = cur_x;
         drag_info.drag_start_y = cur_y;         
         drag_info.inst_start_x = inst.x;
         drag_info.inst_start_y = inst.y;   
-        drag_info.is_moved = false;  
-        
-        var touched_board = this._touched_board_get(cur_x, cur_y);
-        drag_info.mainboard_inst = touched_board;
-        var lx_save=drag_info.mainboard_lx, ly_save=drag_info.mainboard_ly;
-        if (touched_board == null)
-        {
-            drag_info.mainboard_lx = (-1);
-            drag_info.mainboard_ly = (-1);        
-        }
-        else
-        {
-	        drag_info.mainboard_lx = touched_board.layout.PXY2LX(inst.x, inst.y);
-	        drag_info.mainboard_ly = touched_board.layout.PXY2LY(inst.x, inst.y);                   
-        }
-        
-        if ((drag_info.mainboard_lx != lx_save) || (drag_info.mainboard_ly != ly_save))
-            this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnLogicIndexChanged, inst);         
+        drag_info.is_moved = false;
 	};
-	
+    
+	behinstProto.drop = function()
+	{
+        if (!this.drag_info.is_on_dragged)
+            return;
+            
+	    this.drag_info.is_on_dragged = false;
+		this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDrop, this.inst); 
+				
+        if (this.overlap_mainboard.inst != null)
+        {
+		    this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDropAtMainboard, this.inst);
+        }
+		this.overlap_mainboard.assign_board(null);  
+	};	
 	behinstProto.IsInTouch = function(touchX, touchY)
 	{
         var miniboard_inst = this.inst;
@@ -328,12 +347,13 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         for (uid in uids)
         {
             inst = miniboard_inst.uid2inst(uid);
+            if (inst == null)
+                continue;
 			inst.update_bbox();
 			tx = inst.layer.canvasToLayer(touchX, touchY, true);
 			ty = inst.layer.canvasToLayer(touchX, touchY, false);                
             if (inst.contains_pt(tx,ty))
             {
-                this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnTouched, miniboard_inst);
                 return true;
             }
         }
@@ -353,11 +373,6 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	// Conditions
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
-    
-	Cnds.prototype.OnTouchStart = function ()
-	{
-        return true;
-	};
     
 	Cnds.prototype.OnDragStart = function ()
 	{
@@ -392,7 +407,31 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 			    return true;
 		}
         return false;
+	};	
+	
+	Cnds.prototype.OnDropAtMainboard = function (board_objs)
+	{
+	    if ( (this.overlap_mainboard.inst == null) ||
+	         (this.overlap_mainboard.inst.type !== board_objs)
+	       )
+	        return false;
+	        
+	    var sol = board_objs.getCurrentSol();
+	    sol.pick_one(this.overlap_mainboard.inst);
+        return true;
 	};
+
+	Cnds.prototype.OnDragAtMainboard = function (board_objs)
+	{
+	    if ( (this.overlap_mainboard.inst == null) ||
+	         (this.overlap_mainboard.inst.type !== board_objs)
+	       )
+	        return false;
+	        
+	    var sol = board_objs.getCurrentSol();
+	    sol.pick_one(this.overlap_mainboard.inst);
+        return true;
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -405,11 +444,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 
 	Acts.prototype.ForceDrop = function ()
 	{
-        if (this.drag_info.is_on_dragged)
-        {
-		    this.drag_info.is_on_dragged = false;            
-            this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDrop, this.inst); 
-        }
+        this.drop();
 	};     
 	//////////////////////////////////////
 	// Expressions
@@ -418,13 +453,18 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	
 	Exps.prototype.LX = function (ret)
 	{
-	    ret.set_int(this.drag_info.mainboard_lx);
+	    ret.set_int(this.overlap_mainboard.LOX);
 	};
 	Exps.prototype.LY = function (ret)
     {
-	    ret.set_int(this.drag_info.mainboard_ly);
+	    ret.set_int(this.overlap_mainboard.LOY);
 	};
-	
+	Exps.prototype.MBUID = function (ret)
+    {
+        var mb = this.overlap_mainboard.inst;   
+        var uid = (mb != null)? mb.uid:(-1);
+	    ret.set_int(uid);
+	};	
 	Exps.prototype.StartX = function (ret)
 	{
         ret.set_float( this.drag_info.inst_start_x );

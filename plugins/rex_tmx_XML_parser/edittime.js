@@ -7,7 +7,7 @@
 		"description":	"A TMX-XML parser.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_tmx_xml_parser.html",
-		"category":		"TMX Importer 2.x",
+		"category":		"Rex - Board - tmx importer v2.x",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

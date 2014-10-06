@@ -7,7 +7,7 @@
 		"description":	"Run lua script. The lua vm was referenced from http://kripken.github.io/lua.vm.js/lua.vm.js.html.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_luavm.html",
-		"category":		"General",
+		"category":		"Rex - Logic - flow control",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,

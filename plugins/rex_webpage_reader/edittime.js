@@ -7,7 +7,7 @@
 		"description":	"Read web page by cross domain request.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_webpage_reader.html",
-		"category":		"Web",
+		"category":		"Rex - Web",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,

@@ -98,8 +98,8 @@ cr.behaviors.rex_ChessPin = function(runtime)
 		this.board = this._board_get(this.board, this.inst.uid);
         this.board.move_item(this.inst, new_lx, new_ly, my_xyz.z);
 	};
-	
-	behinstProto._board_get = function (current_board, uid)
+    
+   	behinstProto._board_get = function (current_board, uid)
 	{
         var _xyz;
         if (current_board != null)
@@ -107,6 +107,8 @@ cr.behaviors.rex_ChessPin = function(runtime)
             _xyz = current_board.uid2xyz(uid);
             if (_xyz != null)
                 return current_board;  // find out xyz on board
+            else  // chess no longer at board
+                this.board = null;
         }
             
         var plugins = this.runtime.types;
@@ -116,13 +118,17 @@ cr.behaviors.rex_ChessPin = function(runtime)
             obj = plugins[name].instances[0];
             if ((obj != null) && (obj.check_name == "BOARD"))
             {
-                _xyz = obj.uid2xyz(uid);
-                if (_xyz != null)			
-                    return obj;
+                _xyz = obj.uid2xyz(uid)
+                if (_xyz != null)
+                { 
+                    this.board = obj;					
+                    return this.board;
+                }
             }
         }
         return null;	
-	};
+	};    
+
 	behinstProto._myLXYZ_get = function ()
 	{
 	    this.board = this._board_get(this.board, this.inst.uid);
@@ -143,7 +149,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{
 		return {"en": this.activated,
-                "uid": (this.pinChess != null) ? this.pinChess.uid : -1}
+                "uid": (this.pinChess != null) ? this.pinChess.uid : (-1),
 		       };
 	};
 	

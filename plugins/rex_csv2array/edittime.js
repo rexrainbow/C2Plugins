@@ -7,7 +7,7 @@
 		"description":	"Transfer csv string to array object",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_csv2array.html",
-		"category":		"Data & Storage",
+		"category":		"Rex - Data structure - CSV",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

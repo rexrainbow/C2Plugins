@@ -7,7 +7,7 @@
 		"description":	"Adding behavior to change the scale/anlge/opacity/visible of layer.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_layer.html",
-		"category":		"General",
+		"category":		"Rex - Layer/layout",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces

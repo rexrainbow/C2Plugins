@@ -7,7 +7,7 @@
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_gfsm.html",
-		"category":		"Control flow",
+		"category":		"Rex - Logic -finite state machine",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

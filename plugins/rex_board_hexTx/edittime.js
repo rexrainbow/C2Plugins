@@ -7,7 +7,7 @@
 		"description":	"Transfer logic position to physical position with hexagonal layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board_hexTx.html",
-		"category":		"Board",
+		"category":		"Rex - Board - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -81,7 +81,8 @@ var property_list = [
     new cr.Property(ept_float, "Y at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
 	new cr.Property(ept_float, "Width", 32, "Cell width in pixels."),
 	new cr.Property(ept_float, "Height", 32, "Cell height in pixels."),
-	new cr.Property(ept_combo, "Axis", "Left-Right", "The axis of layout.", "Left-Right|Up-Down")
+	new cr.Property(ept_combo, "Axis", "Left-Right", "The axis of layout.", "Left-Right|Up-Down"),
+	new cr.Property(ept_combo, "Indent", "No", "Indent first row or column.", "No|Yes")
 	];
 	
 // Called by IDE when a new object type is to be created

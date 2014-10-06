@@ -7,7 +7,7 @@
 		"description":	"Maintain edges on a board.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board_edge.html",
-		"category":		"Board",
+		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

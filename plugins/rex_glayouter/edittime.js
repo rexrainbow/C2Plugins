@@ -7,7 +7,7 @@
 		"description":	"Layout instances to get position and angle.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_glayouter.html",
-		"category":		"General",
+		"category":		"Rex - Layouter",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces

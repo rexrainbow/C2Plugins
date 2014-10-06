@@ -7,7 +7,7 @@
 		"description":	"Divide heavy looping into ticks",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_eventbalancer.html",
-		"category":		"Control flow",
+		"category":		"Rex - Logic - flow control",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

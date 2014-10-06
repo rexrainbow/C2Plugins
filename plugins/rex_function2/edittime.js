@@ -7,7 +7,7 @@
 		"description":	"Run other events in an action, like functions in programming languages.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function2.html",
-		"category":		"Control flow",
+		"category":		"Rex - Logic - function",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

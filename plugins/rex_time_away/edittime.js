@@ -7,7 +7,7 @@
 		"description":	"Get elapsed interval of turned off game from webstroage.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timeaway.html",
-		"category":		"Time",
+		"category":		"Rex - Date & time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

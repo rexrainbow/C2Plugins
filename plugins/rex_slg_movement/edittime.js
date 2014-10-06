@@ -7,7 +7,7 @@
 		"description":	"Movement on the SLG chess board",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_slg_movement.html",
-		"category":		"Board: logic",
+		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

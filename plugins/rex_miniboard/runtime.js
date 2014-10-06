@@ -84,9 +84,10 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    this.is_pin_mode = (this.properties[1] == 1);
         this.pre_POX = this.x;
 		this.pre_POY = this.y;
-         
-        this.last_LOX = (-1);
-        this.last_LOY = (-1);                
+        this.is_putting_request_accepted = false;
+		
+		this.mainboard = new cr.plugins_.Rex_MiniBoard.MainboardRefKlass();
+		this.mainboard_last = new cr.plugins_.Rex_MiniBoard.MainboardRefKlass();              
 		this.ResetBoard();
 		
 		this.myDestroyCallback = (function (self) {
@@ -97,13 +98,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.runtime.addDestroyCallback(this.myDestroyCallback); 
 		this.runtime.tick2Me(this); 
 
-        this.is_putable = 0;
         this.exp_RequestLX = (-1);		
         this.exp_RequestLY = (-1);
         this.exp_RequestLZ = (-1);   
         this.exp_RequestChessUID = (-1);
-		this._kicked_chess_uid = -1;  
-		this.mainBoardUid = -1;    // for loading		      
+        this.is_putable = 0;
+		this._kicked_chess_uid = -1;	      		
 	};
 	
 	instanceProto.ResetBoard = function ()
@@ -111,15 +111,29 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this.board = {};
 		this.items = {};  // uid2xyz for all chess
         this.items_lz0 = {};  // uid2xyz for chess which lz = 0
-		this.mainBoard = null;
-		this.LOX = (-1);   // LX of origin point on the main board
-		this.LOY = (-1);   // LY of origin point on the main board
+        this.mainboard_ref_set(null);
 		this.uid2pdxy = {};
 	};	
+	
+	instanceProto.mainboard_ref_set = function (inst, lx, ly)
+	{
+	    this.mainboard.assign_board(inst, lx, ly);
+        if (inst != null)
+        {
+            this.mainboard_last.assign_board(inst, lx, ly);
+        }
+	};
 	
 	instanceProto.onInstanceDestroyed = function (inst)
 	{
 		this.remove_item(inst.uid);
+		
+		// remove board instance
+		if (this.mainboard.inst === inst)
+		{
+		    this.mainboard.assign_board(null);
+		    this.mainboard_last.assign_board(null);
+		}
 	};
     
 	instanceProto.onDestroy = function ()
@@ -303,86 +317,148 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		layout.SetPOY(poy_save);
 	    return inst;
 	};
-	
-	instanceProto.AreEmpty = function (board_inst, offset_lx, offset_ly)
+	    
+	instanceProto.IsInside = function (board_inst, chess_uid, lx, ly, lz)
 	{
-		var board_xmax = board_inst.x_max;
-		var board_ymax = board_inst.y_max;
-		var board = board_inst.board;   
-		var _xyz, _lx, _ly, _lz;
-		var uid;
-		for (uid in this.items)
-		{
-		    _xyz = this.uid2xyz(uid);
-			_lx = _xyz.x + offset_lx;
-			_ly = _xyz.y + offset_ly;
-			_lz = _xyz.z;
-			if ( !board_inst.is_empty(_lx,_ly,_lz) )
-			    return false;
-		}
-		return true;
+		return board_inst.is_inside_board(lx, ly);
+	};	 
+	
+	instanceProto.IsEmpty = function (board_inst, chess_uid, lx, ly, lz)
+	{
+		if ( !board_inst.is_inside_board(lx, ly) )
+		    return false;
+				
+	    return board_inst.is_empty(lx, ly, lz);
+	};	
+	
+	instanceProto.IsPutable = function (board_inst, chess_uid, lx, ly, lz)
+	{
+		if ( !board_inst.is_inside_board(lx, ly) )
+		    return false;
+		
+		this.is_putable = false;
+		this.exp_RequestChessUID = chess_uid;
+		this.exp_RequestLX = lx;
+		this.exp_RequestLY = ly
+	    this.exp_RequestLZ = lz;
+	    this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPutAbleRequest, this);
+	    
+	    return this.is_putable;
+	};	
+	
+	// export
+	instanceProto.CellCanPut = function (board_inst, chess_uid, lx, ly, lz, check_mode)
+	{	
+	    switch (check_mode)
+	    {
+	    case 0:  return true;
+	    case 1:  return this.IsInside(board_inst, chess_uid, lx, ly, lz);
+	    case 2:  return this.IsEmpty(board_inst, chess_uid, lx, ly, lz); 
+	    case 3:  return this.IsPutable(board_inst, chess_uid, lx, ly, lz);  
+	    default: return this.IsEmpty(board_inst, chess_uid, lx, ly, lz);   	       
+	    }
 	}; 	
 	
-	instanceProto.PutChess = function (board_inst, offset_lx, offset_ly, is_pos_set)
-	{
-        this.PullOutChess();
-		this.mainBoard = board_inst;            
-		var _xyz, _lx, _ly, _lz;
-		var uid, inst;
-        // put lz = 0 first
-		for (uid in this.items_lz0)
-		{
-		    inst = this.uid2inst(uid);
-		    if (inst == null)
-		        continue;
-		    _xyz = this.uid2xyz(uid);
-			_lx = _xyz.x+offset_lx;
-			_ly = _xyz.y+offset_ly;
-			_lz = _xyz.z;			
-			board_inst.add_item(inst, _lx, _ly, _lz);
-		}
-        
+	instanceProto.CanPut = function (board_inst, offset_lx, offset_ly, check_mode)
+	{	    
+	    if (board_inst == null)
+	        return false;
+	        
+	    if (check_mode == 0)
+	        return true;
+
+		var uid, xyz, lx, ly, lz;
 		for (uid in this.items)
-		{
-            // lz=0, already put into main board
-            if (this.items_lz0.hasOwnProperty(uid))
-                continue;
-                
-		    inst = this.uid2inst(uid);
-		    if (inst == null)
-		        continue;
-		    _xyz = this.uid2xyz(uid);
-			_lx = _xyz.x+offset_lx;
-			_ly = _xyz.y+offset_ly;
-			_lz = _xyz.z;			
-			board_inst.add_item(inst, _lx, _ly, _lz);
+		{		    
+		    xyz = this.uid2xyz(uid);
+		    lx = xyz.x + offset_lx;
+		    ly = xyz.y + offset_ly;
+		    lz = xyz.z;
+
+		    if (!this.CellCanPut(board_inst, parseInt(uid), lx, ly, lz, check_mode))
+		        return false;
 		}
-		this.LOX = offset_lx;
-		this.LOY = offset_ly;
-        this.last_LOX = offset_lx;
-        this.last_LOY = offset_ly;  
+		return true;
+	}; 			
+	
+	instanceProto.PutChess = function (board_inst, offset_lx, offset_ly, check_mode, is_pos_set, is_put_test)
+	{	    
+	    if (board_inst == null)
+	        return;
+	        
+        this.PullOutChess();
         
-        if (is_pos_set)
+        var is_success = this.CanPut(board_inst, offset_lx, offset_ly, check_mode);  
+        if (is_success && (!is_put_test))
         {
-		    this.x = board_inst.layout.LXYZ2PX(offset_lx, offset_ly, 0);
-		    this.y = board_inst.layout.LXYZ2PY(offset_lx, offset_ly, 0);
-		    this.chess_pin();
+            // put on main board logically
+            this.mainboard_ref_set(board_inst, offset_lx, offset_ly);       
+                
+		    var uid, xyz, inst;
+            // put lz = 0 first
+		    for (uid in this.items_lz0)
+		    {
+		        inst = this.uid2inst(uid);
+		        if (inst == null)
+		            continue;
+		        xyz = this.uid2xyz(uid);
+		    	board_inst.add_item(inst,
+		    	                    xyz.x+offset_lx, 
+		    	                    xyz.y+offset_ly, 
+		    	                    xyz.z);
+		    	                    
+		    }
+            
+		    for (uid in this.items)
+		    {
+                // lz=0, already put into main board
+                if (this.items_lz0.hasOwnProperty(uid))
+                    continue;
+                    
+		        inst = this.uid2inst(uid);
+		        if (inst == null)
+		            continue;
+		        xyz = this.uid2xyz(uid);
+		    	board_inst.add_item(inst,
+		    	                    xyz.x+offset_lx, 
+		    	                    xyz.y+offset_ly, 
+		    	                    xyz.z);
+		    }
+            
+            // put on main board physically
+            if (is_pos_set)
+            {
+                var mainboard_layout = board_inst.GetLayout();
+		        this.x = mainboard_layout.LXYZ2PX(offset_lx, offset_ly, 0);
+		        this.y = mainboard_layout.LXYZ2PY(offset_lx, offset_ly, 0);
+		        this.chess_pin();
+            }
         }
-      
+        this.do_putting_request(is_success);
+        return is_success;
 	};
+    
+    instanceProto.do_putting_request = function(can_put)
+    {
+        this.is_putting_request_accepted = can_put;           
+        var trig = (can_put)? cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPuttingRequestAccepted:
+                              cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPuttingRequestRejected;
+        this.runtime.trigger(trig, this);
+    };      
 	
 	instanceProto.PullOutChess = function ()
 	{	 
-	    if (this.mainBoard == null)
+	    var mainboard = this.mainboard.inst; 
+	    if (mainboard == null)
 		    return;
         
-		var _xyz, x, y, z;
 		var uid;
 		for (uid in this.items)
-			this.mainBoard.remove_item(uid);
-		this.mainBoard = null;
-		this.LOX = (-1);
-		this.LOY = (-1);
+		{
+			mainboard.remove_item(uid);
+        }
+        
+        this.mainboard_ref_set(null);
 	};
 	
 	instanceProto.pickuids = function (uids, chess_type, ignored_chess_check)
@@ -427,39 +503,48 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    return has_inst;
 	};
 	
-	instanceProto._is_putable_test = function (board_inst, offset_lx, offset_ly)
+	instanceProto.pick_chess = function (chess_type)
+	{
+        _uids.length = 0;
+        var u;
+        for (u in this.items)
+        {
+            _uids.push(parseInt(u));
+        }       
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;  
+	};		
+	
+	instanceProto.IsPutable = function (board_inst, offset_lx, offset_ly)
 	{
 		var board_xmax = board_inst.x_max;
 		var board_ymax = board_inst.y_max;
 		var board = board_inst.board;   
-		var _xyz, _lx, _ly, _lz;
+		var xyz, lx, ly, lz;
 		var uid;
 		for (uid in this.items)
 		{		    
-		    _xyz = this.uid2xyz(uid);
-			_lx = _xyz.x+offset_lx;
-			_ly = _xyz.y+offset_ly;
-			_lz = _xyz.z;
+		    xyz = this.uid2xyz(uid);
+			lx = xyz.x+offset_lx;
+			ly = xyz.y+offset_ly;
+			lz = xyz.z;
         									
-			if ((_lx < 0) || (_lx > board_xmax) || 
-			    (_ly < 0) || (_ly > board_ymax)    )
+			if ((lx < 0) || (lx > board_xmax) || 
+			    (ly < 0) || (ly > board_ymax)    )
 			    return false;
 		    else
 		    {
-                this.exp_RequestLX = _xyz.x + offset_lx;	
-                this.exp_RequestLY = _xyz.y + offset_ly;
-                this.exp_RequestLZ = _xyz.z;
+                this.exp_RequestLX = xyz.x + offset_lx;	
+                this.exp_RequestLY = xyz.y + offset_ly;
+                this.exp_RequestLZ = xyz.z;
                 this.exp_RequestChessUID = parseInt(uid);
                 this.is_putable = false;
                 this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPutAbleRequest, this);
                 if (!this.is_putable)
                     return false;
 		    }
-		}
-        this.exp_RequestLX = (-1);		
-        this.exp_RequestLY = (-1);
-        this.exp_RequestLZ = (-1);	
-        this.exp_RequestChessUID = (-1);	
+		}	
 		return true;
 	};
 		
@@ -481,80 +566,101 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	instanceProto.saveToJSON = function ()
 	{    
 	    // wrap: copy from this.items
-	    var uid, uid2xyz = {}, item;
+	    var uid, uid2xyz_save = {}, item;
 	    for (uid in this.items)
 	    {
-	        uid2xyz[uid] = {};
+	        uid2xyz_save[uid] = {};
 	        item = this.items[uid];
-	        uid2xyz[uid]["x"] = item.x;
-	        uid2xyz[uid]["y"] = item.y;
-	        uid2xyz[uid]["z"] = item.z;	        
+	        uid2xyz_save[uid]["x"] = item.x;
+	        uid2xyz_save[uid]["y"] = item.y;
+	        uid2xyz_save[uid]["z"] = item.z;	        
+	    }
+	    // wrap: copy from this.uid2pdxy
+	    var uid2pdxy_save = {};
+	    for (uid in this.uid2pdxy)
+	    {
+	        uid2pdxy_save[uid] = {};
+	        uid2pdxy_save[uid]["x"] = this.uid2pdxy[uid].x;
+	        uid2pdxy_save[uid]["y"] = this.uid2pdxy[uid].y;	        
 	    }
 	    	    
 		return { "pre_x": this.pre_POX,
 		         "pre_y": this.pre_POY,
-                 "l_lox": this.last_LOX,
-                 "l_loy": this.last_LOY,
                  "xyz2uid": this.board,
-                 "uid2xyz": uid2xyz,
-                 "mbuid" : (this.mainBoard!=null)? this.mainBoard.uid:(-1),
-                 "lox": this.LOX,
-                 "loy": this.LOY,
-                 "luid": (this.type.layout != null)? this.type.layout.uid:(-1)
+                 "uid2xyz": uid2xyz_save,  
+                 "uid2pdxy": uid2pdxy_save,            
+                 "luid": (this.type.layout != null)? this.type.layout.uid:(-1),
+                 "mb": this.mainboard.saveToJSON(),
+                 "mbl": this.mainboard_last.saveToJSON(),
+                 "pq": this.is_putting_request_accepted,
                };
-	};
-	
+	};	
+		
 	instanceProto.loadFromJSON = function (o)
 	{
 	    this.pre_POX = o["pre_x"];
 		this.pre_POY = o["pre_y"];
-        this.last_LOX = o["l_lox"]; 
-        this.last_LOY = o["l_loy"];
-        this.board = o["xyz2uid"];     
-        this.mainBoardUid = o["mbuid"];
-        this.LOX = o["lox"]; 
-        this.LOY = o["loy"];  
+        this.board = o["xyz2uid"];
         this.type.layoutUid = o["luid"];
-        
+        this.mainboard.loadFromJSON(o["mb"]);
+        this.mainboard_last.loadFromJSON(o["mbl"]);
         
         // wrap: copy to this.items
         hash_clean(this.items);
-	    var uid, uid2xyz = o["uid2xyz"], item;
-	    for (uid in uid2xyz)
+	    var uid, uid2xyz_save = o["uid2xyz"];
+	    for (uid in uid2xyz_save)
 	    {
 	        this.items[uid] = {};
-	        item = uid2xyz[uid];
-	        this.items[uid].x = item["x"];
-	        this.items[uid].y = item["y"];
-	        this.items[uid].z = item["z"];
+	        this.items[uid].x = uid2xyz_save[uid]["x"];
+	        this.items[uid].y = uid2xyz_save[uid]["y"];
+	        this.items[uid].z = uid2xyz_save[uid]["z"];
 
             // copy link to lz0
-            if (item["z"] == 0)
+            if (uid2xyz_save[uid]["z"] == 0)
                 this.items_lz0[uid] = this.items[uid];            
-	    }          
+	    } 
+	       
+	    // wrap: copy from this.uid2pdxy
+	    hash_clean(this.uid2pdxy);
+	    var uid2pdxy_save = o["uid2pdxy"];
+	    for (uid in uid2pdxy_save)
+	    {
+	        this.uid2pdxy[uid] = {};
+	        this.uid2pdxy[uid].x = uid2pdxy_save[uid]["x"];
+	        this.uid2pdxy[uid].y = uid2pdxy_save[uid]["y"];       
+	    }	          
+        
+        this.is_putting_request_accepted = o["pq"];
 	};
 	
 	instanceProto.afterLoad = function ()
 	{
-		if (this.mainBoardUid === -1)
-			this.mainBoard = null;
-		else
-		{
-			this.mainBoard = this.runtime.getObjectByUID(this.mainBoardUid);
-			assert2(this.mainBoard, "Mini board: Failed to find main board object by UID");
-		}
-		
-		this.mainBoardUid = -1;
-		
 		if (this.type.layoutUid === -1)
 			this.type.layout = null;
 		else
 		{
 			this.type.layout = this.runtime.getObjectByUID(this.type.layoutUid);
 			assert2(this.type.layout, "Mini board: Failed to find layout object by UID");
-		}
+		}		
+		this.type.layoutUid = -1;
 		
-		this.type.layoutUid = -1;		
+			    
+		if (this.mainboard.saveUID === -1)
+			this.mainboard.inst = null;
+		else
+		{
+			this.mainboard.inst = this.runtime.getObjectByUID(this.mainboard.saveUID);
+			assert2(this.mainboard.inst, "Mini board: Failed to find main board object by UID");
+		}		
+		this.mainboard.saveUID = -1;
+				
+		if (this.mainboard_last.saveUID === -1)
+			this.mainboard_last.inst = null;
+		else
+		{
+			this.mainboard_last.inst = this.runtime.getObjectByUID(this.mainboard_last.saveUID);
+		}
+		this.mainboard_last.saveUID = -1;
 	};
 			
 	//////////////////////////////////////
@@ -562,11 +668,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 	  
-	Cnds.prototype.AreEmpty = function (board_objs, offset_lx, offset_ly)
+	Cnds.prototype.CanPut = function (board_objs, offset_lx, offset_ly, check_mode)
 	{
 		if (!board_objs)
-			return; 
-		return this.AreEmpty(board_objs.getFirstPicked(), offset_lx, offset_ly);
+			return;
+			
+        return this.CanPut(board_objs.getFirstPicked(), offset_lx, offset_ly, check_mode);
 	}; 
 
 	Cnds.prototype.PickAllChess = function ()
@@ -616,17 +723,13 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	Cnds.prototype.IsOnTheBoard = function (board_objs)
 	{
 		if (!board_objs)
-			return; 
+			return false; 
 		var board_inst = board_objs.getFirstPicked();
-		return (this.mainBoard === board_inst);
+		return (this.mainboard.inst === board_inst);
 	}; 
 	
-	Cnds.prototype.ArePutAble = function (board_objs, offset_lx, offset_ly)
-	{
-		if (!board_objs)
-			return; 
-		return this._is_putable_test(board_objs.getFirstPicked(), offset_lx, offset_ly);
-	}; 
+	//cf_deprecated
+	Cnds.prototype.ArePutAble = function (board_objs, offset_lx, offset_ly) { }; 
 	  
 	Cnds.prototype.OnPutAbleRequest = function ()
 	{
@@ -640,11 +743,29 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         var has_inst = this.pickuids(_uids, chess_type);
         _uids.length = 0;
         return has_inst;  
+	};	
+	
+	Cnds.prototype.PickChess = function (obj_type)
+	{
+        return this.pick_chess(obj_type);
 	};		
 	
 	//cf_deprecated
-	Cnds.prototype.CanFindEmpty = function (board_objs, _start_lx, _start_ly, _range)  {	};	
+	Cnds.prototype.CanFindEmpty = function (board_objs, _start_lx, _start_ly, _range) { }; 
 	
+	Cnds.prototype.IsPuttingRequestAccepted = function ()
+	{
+		return this.is_putting_request_accepted;
+	};     
+    
+    Cnds.prototype.OnPuttingRequestAccepted = function ()
+	{
+		return true;
+	};	
+    Cnds.prototype.OnPuttingRequestRejected = function ()
+	{
+		return true;
+	};       
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -664,11 +785,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    this.CreateChess(obj_type, lx, ly, lz, layer);        
 	};	
 	
-	Acts.prototype.PutChess = function (board_objs, offset_lx, offset_ly, is_pos_set)
+	Acts.prototype.PutChess = function (board_objs, offset_lx, offset_ly, is_pos_set, check_mode)
 	{	 
 		if (!board_objs)
 			return;
-		this.PutChess(board_objs.getFirstPicked(), offset_lx, offset_ly, is_pos_set);
+			
+		this.PutChess(board_objs.getFirstPicked(), offset_lx, offset_ly, check_mode, is_pos_set, false);
 	};
 	
 	Acts.prototype.PullOutChess = function ()
@@ -699,6 +821,22 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         if (!inst)
             return;	  	    
         this.add_item(inst, lx, ly, lz);
+	};	
+	
+	Acts.prototype.PickChess = function (obj_type)
+	{	
+        this.pick_chess(obj_type);
+	};
+		
+	
+	Acts.prototype.PutBack = function (is_pos_set)
+	{
+	    this.PutChess(this.mainboard_last.inst, 
+	                  this.mainboard_last.LOX, 
+	                  this.mainboard_last.LOY, 
+	                  null, 
+	                  is_pos_set, 
+	                  false);
 	};		
 		    
 	//////////////////////////////////////
@@ -708,21 +846,19 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	Exps.prototype.LX = function (ret)
 	{
-	    var lx = (this.mainBoard == null)? (-1): this.LOX;
-	    ret.set_int(lx);
+	    ret.set_int(this.mainboard.LOX);
 	};
 	Exps.prototype.LY = function (ret)
     {
-	    var ly = (this.mainBoard == null)? (-1): this.LOY;
-	    ret.set_int(ly);
+	    ret.set_int(this.mainboard.LOY);
 	};	
 	Exps.prototype.LastLX = function (ret)
 	{
-	    ret.set_int(this.last_LOX);
+	    ret.set_int(this.mainboard_last.LOX);
 	};
 	Exps.prototype.LastLY = function (ret)
     {
-	    ret.set_int(this.last_LOY);
+	    ret.set_int(this.mainboard_last.LOY);
 	};	
 	Exps.prototype.RequestLX = function (ret)
 	{
@@ -803,6 +939,38 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    }   
 	    ret.set_float(py);
 	};		 
+}());
+
+
+(function ()
+{
+	var MainboardRefKlass = function ()
+	{
+	    this.inst = null;
+	    this.LOX = (-1);
+	    this.LOY = (-1);
+	    this.saveUID = (-1);	// for loading	    
+	}
+	var MainboardRefKlassProto = MainboardRefKlass.prototype;
+	MainboardRefKlassProto.assign_board = function(inst, lx, ly)
+	{	    
+	    this.inst = inst;
+	    this.LOX = (inst==null)? (-1):lx;
+	    this.LOY = (inst==null)? (-1):ly;
+	};
+	MainboardRefKlassProto.saveToJSON = function()
+	{	    
+	    return {"uid": (this.inst==null)? (-1):this.inst.uid,
+	            "LOX": this.LOX,
+	            "LOY": this.LOY};
+	};
+	MainboardRefKlassProto.loadFromJSON = function(o)
+	{
+	    this.LOX = o["LOX"];
+	    this.LOY = o["LOY"];
+	    this.saveUID = o["uid"];
+	};  
+	cr.plugins_.Rex_MiniBoard.MainboardRefKlass = MainboardRefKlass;
 }());
 
 

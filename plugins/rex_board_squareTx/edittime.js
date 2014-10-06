@@ -7,7 +7,7 @@
 		"description":	"Transfer logic position to physical position with orthogonal or isometric layout",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board_squareTx.html",
-		"category":		"Board",
+		"category":		"Rex - Board - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

@@ -7,7 +7,7 @@
 		"description":	"Mapping angle input to arrow key event.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_angle2arrowKeymap.html",
-		"category":		"Input",
+		"category":		"Rex - Arrow key",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

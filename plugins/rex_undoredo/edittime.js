@@ -7,7 +7,7 @@
 		"description":	"A data structure to support undo&redo steps/states.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_undoredo.html",
-		"category":		"Data & Storage",
+		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

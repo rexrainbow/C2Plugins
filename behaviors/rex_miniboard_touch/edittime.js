@@ -3,7 +3,7 @@
 	return {
 		"name":			"Touch Ctrl",
 		"id":			"Rex_miniboard_touch",
-		"description":	"Move miniboard by touch.",
+		"description":	"Drag & drop mini board.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_miniboard_touch.html",
 		"category":		"Mini board",
@@ -13,30 +13,41 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1,	cf_trigger, "On touch start", "Touch", 
-             "On {my} touch start", 
-             "Triggered when touch start.", "OnTouchStart");
-AddCondition(2,	cf_trigger, "On dragging start", "Drag", 
+AddCondition(2, cf_trigger, "On dragging start", "Drag", 
              "On {my} drag start", 
-             "Triggered when miniboard drag start.", "OnDragStart");
-AddCondition(3,	cf_trigger, "On dropped", "Drop", 
+             "Triggered when miniboard dragging start.", "OnDragStart");
+             
+AddCondition(3, cf_trigger, "On dropped", "Drop", 
              "On {my} drop", "Triggered when miniboard dropped.", "OnDrop"); 
-AddCondition(4,	cf_trigger, "On logic index changed", "Drag", 
-             "On {my} logic index changed", 
-             "Triggered when logic index changed on main board.", "OnLogicIndexChanged");         
+             
+AddCondition(4, cf_trigger, "On logical position changed", "Drag", 
+             "On {my} logical position changed", 
+             "Triggered when logical position changed on main board.", "OnLogicIndexChanged");
+                      
 AddCondition(5,	0, "Is drag-able", "Drag", 
              "Is {my} drag-able", 
              "Return true if this mini board is drag-able.", "IsDragable");  
+             
 AddCondition(6,	0, "Is touching", "Touch", 
              "Is {my} touching", 
-             "Return true if this mini board is touching.", "IsTouching");  
- 
+             "Return true if this mini board is touching.", "IsTouching");
+              
+AddObjectParam("Main board", "Main board object.");              
+AddCondition(7, cf_trigger, "On dropped at main board", "Drop", 
+             "On {my} dropped at main board <i>{0}</i>", 
+             "Triggered when dropped at main board.", "OnDropAtMainboard");
+
+AddObjectParam("Main board", "Main board object."); 
+AddCondition(8, cf_trigger, "On dragging at main board", "Drag", 
+             "On {my} drag at main board <i>{0}</i>", 
+             "Triggered when miniboard dragging at main board.", "OnDragAtMainboard");
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
-AddComboParam("Drag-able", "Enable to drag this miniboard.",1);
-AddAction(1, 0, "Set drag-able", "Drag & Drop", 
+AddComboParam("Enable", "Enable to drag this miniboard.",1);
+AddAction(1, 0, "Set enable", "Drag & Drop", 
           "Set {my} drag-able to <i>{0}</i>", 
           "Set drag-able of this miniboard.", "SetDragable");         
 AddAction(2, 0, "Force to drop", "Drop", 
@@ -46,21 +57,33 @@ AddAction(2, 0, "Force to drop", "Drop",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
-              "Get logic X offset on main board", "Touch", "LX", 
-              "Get logic X offset on main board. Return (-1) if not on any main board.");
+              "Logical X of overlapped main board", "Main board", "LX", 
+              "Get logical X overlapped main board. Return -1 if out of any main board.");
 AddExpression(2, ef_return_number, 
-              "Get logic Y offset on main board", "Touch", "LY", 
-              "Get logic Y offset on main board. Return (-1) if not on any main board.");
-AddExpression(10, ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's dragging start position.");
-AddExpression(11, ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's dragging start position.");
-AddExpression(12, ef_return_number, "X co-ordinate of dragging start position", "Start", "DragStartX", "Get X co-ordinate of dragging start position.");
-AddExpression(13, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");
+              "Logical Y overlapped main board", "Main board", "LY", 
+              "Get logical Y overlapped main board. Return -1 if out of any main board.");
+AddExpression(3, ef_return_number, 
+              "UID of overlapped main board", "Main board", "MBUID", 
+              "Get UID of overlapped main board. Return -1 if out of any main board.");              
+              
+AddExpression(10, ef_return_number, 
+              "X co-ordinate of object's dragging start position", "Start", "StartX", 
+              "Get X co-ordinate of object's dragging start position.");
+AddExpression(11, ef_return_number, 
+              "Y co-ordinate of object's dragging start position", "Start", "StartY", 
+              "Get Y co-ordinate of object's dragging start position.");
+AddExpression(12, ef_return_number, 
+              "X co-ordinate of dragging start position", "Start", "DragStartX", 
+              "Get X co-ordinate of dragging start position.");
+AddExpression(13, ef_return_number, 
+              "Y co-ordinate of dragging start position", "Start", "DragStartY", 
+              "Get Y co-ordinate of dragging start position.");
     
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [ 
-    new cr.Property(ept_combo, "Drag-able", "Yes", "Enable to drag mini board.", "No|Yes"),
+    new cr.Property(ept_combo, "Enable", "Yes", "Enable to drag mini board.", "No|Yes"),
 	];
 	
 // Called by IDE when a new behavior type is to be created

@@ -73,7 +73,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         }        
         this._cmd_move_to.Reset(this);
    
-        this._is_moving_request_accepted = false;
+        this.is_moving_request_accepted = false;
         this.is_my_call = false;
         this.exp_BlockerUID = (-1);
         this.exp_Direction = (-1);
@@ -93,6 +93,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this._wander["ry"] = this.properties[5];
 
         this.force_move = (this.properties[6] == 1);    
+        this.enable_moveTo = (this.properties[7] == 1); 
         if (!this.recycled)
         {        
             this._dir_sequence = [];						
@@ -302,7 +303,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
             this.board.move_item(this.inst, target_x, target_y, z_index);
                 
             // set moveTo
-            this.moveto_pxy(target_x, target_y, target_z);
+            if (this.enable_moveTo)
+            {
+                this.moveto_pxy(target_x, target_y, target_z);
+            }
             this.on_moving_request_success(true);    
         } 
         else if (can_move == (-1))
@@ -311,7 +315,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         }    
         else
         {
-            this._is_moving_request_accepted = false;
+            this.is_moving_request_accepted = false;
         }
 		return (can_move == 1);
     };
@@ -325,7 +329,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
     behinstProto.on_moving_request_success = function(can_move)
     {
-        this._is_moving_request_accepted = can_move;           
+        this.is_moving_request_accepted = can_move;           
         this.is_my_call = true; 
         var trig = (can_move)? cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestAccepted:
                                cr.behaviors.Rex_GridMove.prototype.cnds.OnMovingRequestRejected;
@@ -462,7 +466,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	};
     Cnds.prototype.IsMovingRequestAccepted = function ()
 	{
-		return this._is_moving_request_accepted;
+		return this.is_moving_request_accepted;
 	};
     Cnds.prototype.TestMoveToOffset = function (dx, dy)
 	{

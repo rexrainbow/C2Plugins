@@ -7,7 +7,7 @@
 		"description":	"Create object by nickname.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_nickname.html",
-		"category":		"General",
+		"category":		"Rex - Nickname",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

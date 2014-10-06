@@ -25,7 +25,7 @@ AddCondition(4,	cf_trigger, "On moving accepted", "Request",
              "On {my} moving request accepted", "Triggered when moving request accepted.", "OnMovingRequestAccepted");                
 AddCondition(5,	cf_trigger, "On moving rejected", "Request", 
              "On {my} moving request rejected", "Triggered when moving request rejected.", "OnMovingRequestRejected");                          
-AddCondition(6,	0, "Moving accepted", "Request", "Is {my} moving request accepted", "Test if moving request accepted.", "IsMovingRequestAccepted");  
+AddCondition(6,	0, "Moving accepted", "Request", "Is {my} moving request accepted", "Return true if moving request accepted.", "IsMovingRequestAccepted");  
 AddNumberParam("X offset", "Relatived X offset.",0);
 AddNumberParam("Y offset", "Relatived Y offset.",0);
 AddCondition(7,	0, "Can move to", "Test", "{my} can move to offset [<i>{0}</i>, <i>{1}</i>]", 
@@ -243,7 +243,9 @@ var property_list = [
 	new cr.Property(ept_integer, "Wander range y", 1, 
                     "Random moving in the boundary."), 	
     new cr.Property(ept_combo, "Force move", "No", 
-                    "Enable if you wish to ignore solid checking. It will change z index when logical overlapping.", "No|Yes"), 					
+                    "Enable if you wish to ignore solid checking. It will change z index when logical overlapping.", "No|Yes"), 	
+    new cr.Property(ept_combo, "MoveTo", "Yes", 
+                    "Set Yes to move chess physically by built-in moveTo behavior. Set No will only change the logical position.", "No|Yes"),                     
 	];
 	
 // Called by IDE when a new behavior type is to be created

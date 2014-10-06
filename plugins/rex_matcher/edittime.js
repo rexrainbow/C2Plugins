@@ -7,7 +7,7 @@
 		"description":	"Get tiles with matched patterns.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_matcher.html",
-		"category":		"Board: logic",
+		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

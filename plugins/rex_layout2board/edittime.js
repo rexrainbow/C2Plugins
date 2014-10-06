@@ -7,7 +7,7 @@
 		"description":	"Put layout's instances into board.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_layout2board.html",
-		"category":		"Board",
+		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

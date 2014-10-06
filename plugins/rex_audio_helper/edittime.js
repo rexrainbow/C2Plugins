@@ -7,7 +7,7 @@
 		"description":	"Some helper methods for audio object",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_audio_helper.html",
-		"category":		"Media",
+		"category":		"Rex - Media",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

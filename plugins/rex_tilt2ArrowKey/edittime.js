@@ -7,7 +7,7 @@
 		"description":	"Get arrow key event from tilt's beta and gamma input.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tilt2ArrowKey.html",
-		"category":		"Input",
+		"category":		"Rex - Arrow key",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

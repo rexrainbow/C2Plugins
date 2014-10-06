@@ -7,7 +7,7 @@
 		"description":	"A wrap of save/load game.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_savedataindex.html",
-		"category":		"General",
+		"category":		"Rex - Save-load",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

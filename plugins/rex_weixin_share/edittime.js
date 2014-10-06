@@ -7,7 +7,7 @@
 		"description":	"Post messages on Weixin.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_weixin_share.html",
-		"category":		"Web",
+		"category":		"Rex - Web - service",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

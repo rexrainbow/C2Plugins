@@ -39,6 +39,11 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+    // reference - http://www.redblobgames.com/grids/hexagons/
+    var ODD_R = 0;
+    var EVEN_R = 1;
+    var ODD_Q = 2;
+    var EVEN_Q = 3;  
 	instanceProto.onCreate = function()
 	{
         this.check_name = "LAYOUT";
@@ -46,8 +51,13 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.SetPOY(this.properties[1]);
         this.SetWidth(this.properties[2]);
         this.SetHeight(this.properties[3]);
-        this.is_up2down = (this.properties[4]==1);
-        this.indent_first = this.properties[5];
+        
+        var is_up2down = (this.properties[4]==1);
+        var is_even = (this.properties[5]==1);
+        this.mode = (!is_up2down && !is_even)? ODD_R:
+                    (!is_up2down &&  is_even)? EVEN_R:
+                    ( is_up2down && !is_even)? ODD_Q:
+                    ( is_up2down &&  is_even)? EVEN_Q:0;                                                
 	};
 	instanceProto.SetPOX = function(pox)
 	{
@@ -74,174 +84,326 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
         this.height = height; 
         this.half_height = height/2;
-	};   
-	instanceProto.LXYZ2PX = function(logic_x, logic_y, logic_z)
+	}; 
+	
+	instanceProto.qr2x = function(q, r)
+	{
+	    var x;
+	    switch (this.mode)
+	    {
+	    case ODD_R:
+	        x = q - (r - (r&1)) / 2;     
+	    break;
+	    
+	    case EVEN_R:
+	        x = q - (r + (r&1)) / 2;    	   	        
+	    break;
+	    
+	    case ODD_Q:
+	    case EVEN_Q:	    
+	        x = q;
+	    break;	    
+	    }
+        return x;
+	};  
+	
+	instanceProto.qr2y = function(q, r)
+	{
+	    var x = this.qr2x(q, r);
+	    var z = this.qr2z(q, r);
+	    var y = -x-z;
+        return y;
+	};	
+	
+	instanceProto.qr2z = function(q, r)
+	{
+	    var z;
+	    switch (this.mode)
+	    {
+	    case ODD_R:
+	    case EVEN_R:
+	        z = r; 
+	    break;
+
+	    case ODD_Q:
+	        z = r - (q - (q&1)) / 2;
+	    break;
+	    case EVEN_Q:	    
+	        z = r - (q + (q&1)) / 2;
+	    break;	    
+	    }
+        return z;
+	}; 
+	
+	instanceProto.xyz2q = function(x, y, z)
+	{
+	    var q;
+	    switch (this.mode)
+	    {
+	    case ODD_R:
+	        q = x + (z - (z&1)) / 2;
+	    break;
+	    case EVEN_R:
+	        q = x + (z + (z&1)) / 2;
+	    break;
+
+	    case ODD_Q:
+	    case EVEN_Q:
+	        q = x;
+	    break;	    
+	    }
+        return q;
+	}; 
+		
+	instanceProto.xyz2r = function(x, y, z)
+	{
+	    var r;
+	    switch (this.mode)
+	    {
+	    case ODD_R:
+	    case EVEN_R:
+	        r = z; 
+	    break;
+
+	    case ODD_Q:
+	        r = z + (x - (x&1)) / 2;
+	    break;
+	    case EVEN_Q:	    
+	        r = z + (x + (x&1)) / 2;
+	    break;	    
+	    }
+        return r;
+	};  
+			
+	instanceProto.LXYZ2PX = function(lx, ly, lz)
 	{
 	    var px;
-	    if (this.is_up2down)
+	    switch (this.mode)
 	    {
-	        px = (logic_x*this.width) + this.PositionOX;
-	    }
-	    else
-	    {
-	        px = (logic_x*this.width) + this.PositionOX;
-	        if (Math.abs(logic_y)%2)
-	            px += this.half_width;
+	    case ODD_R:
+	        px = (lx*this.width) + this.PositionOX;
+	        if (ly&1)
+	            px += this.half_width;	        
+	    break;
+	    
+	    case EVEN_R:
+	        px = (lx*this.width) + this.PositionOX;
+	        if (ly&1)
+	            px -= this.half_width;	   	        
+	    break;
+	    
+	    case ODD_Q:
+	    case EVEN_Q:	    
+	        px = (lx*this.width) + this.PositionOX;
+	    break;	    
 	    }
         return px;
 	};
-	instanceProto.LXYZ2PY = function(logic_x, logic_y, logic_z)
+	instanceProto.LXYZ2PY = function(lx, ly, lz)
 	{
 	    var py;
-	    if (this.is_up2down)
+	    switch (this.mode)
 	    {
-	        py = (logic_y*this.height) + this.PositionOY;
-	        if (Math.abs(logic_x)%2)
-	            py += this.half_height;
-	    }
-	    else
-	    {
-	        py = (logic_y*this.height) + this.PositionOY;
+	    case ODD_R:
+	    case EVEN_R:
+	        py = (ly*this.height) + this.PositionOY;	        
+	    break;
+	    
+	    case ODD_Q:
+	        py = (ly*this.height) + this.PositionOY;
+	        if (lx&1)
+	            py += this.half_height;	        
+	    break;
+	    
+	    case EVEN_Q:	    
+	        px = (lx*this.width) + this.PositionOX;
+	        if (lx&1)
+	            py -= this.half_height;	  	        
+	    break;	    
 	    }
         return py;
 	};   
-	instanceProto.PXY2LX = function(physical_x,physical_y)
+	instanceProto.PXY2LX = function(px, py)
 	{
-	    var offx, lx;
-	    if (this.is_up2down)
+	    var lx;
+	    var offx=px-this.PositionOX;
+	    switch (this.mode)
 	    {
-	        offx = physical_x - this.PositionOX;
-	    }
-	    else
-	    {
-	        var ly = this.PXY2LY( physical_x, physical_y );
-	        offx = physical_x - this.PositionOX;
-	        if (Math.abs(ly)%2)
+	    case ODD_R:
+	    case EVEN_R:
+	        var ly = this.PXY2LY( px, py );
+	        if (ly&1)
 	        {
-	            offx -= this.half_width;
-	        }
-	    }	    
+	            if (this.mode == ODD_R)
+	                offx -= this.half_width;
+	            else
+	                offx += this.half_width;
+	        } 	        
+	    break;   
+	    }	       
 	    lx = Math.round( offx/this.width );
 		return lx;
 	};
-	instanceProto.PXY2LY = function(physical_x,physical_y)
+	instanceProto.PXY2LY = function(px, py)
 	{
-	    var offy, ly;	    
-	    if (this.is_up2down)
+	    var ly;
+	    var offy=py-this.PositionOY;
+	    switch (this.mode)
 	    {
-	        var lx = this.PXY2LX(physical_y,physical_x);
-	        offy = physical_y - this.PositionOY;
-	        if (Math.abs(lx)%2)
+	    case ODD_Q:
+	    case EVEN_Q:	
+	        var lx = this.PXY2LX( px, py );
+	        if (lx&1)
 	        {
-	            offy -= this.half_height;
-	        }
-	    }
-	    else
-	    {
-	        offy = physical_y - this.PositionOY;
-	    }
+	            if (this.mode == ODD_Q)
+	                offy -= this.half_height;
+	            else
+	                offy += this.half_height;
+	        } 	        
+	    break;   
+	    }	       
 	    ly = Math.round( offy/this.height );
 	    return ly;
 	};
 	
-	var nlx_map_ud = [1, 0, -1, -1, 0, 1];
-	var nlx_map_lr_0 = [1, 0, -1, -1, -1, 0];
-	var nlx_map_lr_1 = [1, 1, 0, -1, 0, 1];		
-	instanceProto.GetNeighborLX = function(x, y, dir)
-	{
-	    var dx;
-	    if (this.is_up2down)
+	var dir2dxy_ODD_R = [
+	    [ [+1,  0], [ 0, +1], [-1, +1],
+          [-1,  0], [-1, -1], [ 0, -1] ],          
+        [ [+1,  0], [+1, +1], [ 0, +1],
+          [-1,  0], [ 0, -1], [+1, -1] ]
+    ];
+    var dir2dxy_EVEN_R = [
+        [ [+1,  0], [+1, +1], [ 0, +1],
+          [-1,  0], [ 0, -1], [+1, -1] ],          
+        [ [+1,  0], [ 0, +1], [-1, +1],
+          [-1,  0], [-1, -1], [ 0, -1] ]
+    ];
+	var dir2dxy_ODD_Q = [
+        [ [+1,  0], [ 0, +1], [-1,  0],
+          [-1, -1], [ 0, -1], [+1, -1] ],          
+        [ [+1, +1], [ 0, +1], [-1, +1],
+          [-1,  0], [ 0, -1], [+1,  0] ]
+    ];
+    var dir2dxy_EVEN_Q = [
+        [ [+1, +1], [ 0, +1], [-1, +1],
+          [-1,  0], [ 0, -1], [+1,  0] ],          
+        [ [+1,  0], [ 0, +1], [-1,  0],
+          [-1, -1], [ 0, -1], [+1, -1] ]
+    ];
+	var neighbors = [dir2dxy_ODD_R,
+	                 dir2dxy_EVEN_R,
+	                 dir2dxy_ODD_Q,
+	                 dir2dxy_EVEN_Q];
+	                 
+	// reverse dir2dxy to dxy2dir
+    var dxy2dir_ODD_R = [];
+    var dxy2dir_EVEN_R = []; 
+    var dxy2dir_ODD_Q = [];
+    var dxy2dir_EVEN_Q = []; 
+    var dxy2dir_map = {0:dxy2dir_ODD_R,
+                       1:dxy2dir_EVEN_R,
+                       2:dxy2dir_ODD_Q,
+                       3:dxy2dir_EVEN_Q};
+    
+    var dxy2dir_gen = function (dir2dxy_in, dxy2dir_out)
+    {
+        var p,dir;
+        var dx,dy;                    
+        for (p=0; p<2; p++)
+        { 
+            var _dxy2dir = {};
+            for (dir=0; dir<6; dir++)
+            {
+                dx = dir2dxy_in[p][dir][0];
+                dy = dir2dxy_in[p][dir][1];
+                if (!_dxy2dir.hasOwnProperty(dx))
+                    _dxy2dir[dx] = {};
+                _dxy2dir[dx][dy] = dir;
+            }   
+            dxy2dir_out.push(_dxy2dir);                 
+        }
+    }
+    dxy2dir_gen(dir2dxy_ODD_R, dxy2dir_ODD_R);
+    dxy2dir_gen(dir2dxy_EVEN_R, dxy2dir_EVEN_R);    
+    dxy2dir_gen(dir2dxy_ODD_Q, dxy2dir_ODD_Q);
+    dxy2dir_gen(dir2dxy_EVEN_Q, dxy2dir_EVEN_Q);      
+
+	instanceProto.get_neighbor = function(q, r, dir)
+	{	    
+	    var parity;
+	    switch (this.mode)
 	    {
-	        dx = nlx_map_ud[dir];  
+	    case ODD_R:
+	    case EVEN_R:
+	        parity = r & 1;	        
+	    break;
+	    
+	    case ODD_Q:
+	    case EVEN_Q:
+	        parity = q & 1; 	        
+	    break;	    
 	    }
-	    else
-	    {
-	        if (Math.abs(y)%2)
-	            dx = nlx_map_lr_1[dir];
-	        else
-	            dx = nlx_map_lr_0[dir];
-	    }	   
-		return (x+dx);
+	    var d = neighbors[this.mode][parity][dir];	   	   
+		return d;
+	};
+	 	
+	instanceProto.GetNeighborLX = function(q, r, dir)
+	{  	   
+		return q + this.get_neighbor(q, r, dir)[0];
 	};
 	
-	var nly_map_ud_0 = [0, 1, 0, -1, -1, -1];
-	var nly_map_ud_1 = [1, 1, 1, 0, -1, 0];
-	var nly_map_lr = [0, 1, 1, 0, -1, -1];	
-	instanceProto.GetNeighborLY = function(x, y, dir)
-	{
-	    var dy;
-	    if (this.is_up2down)
-	    {
-	        if (Math.abs(x)%2)
-	            dy = nly_map_ud_1[dir];
-	        else
-	            dy = nly_map_ud_0[dir];       
-	    }
-		else
-		{
-		    dy = nly_map_lr[dir];
-		}          
-        return (y+dy);						 
-	};	
+	instanceProto.GetNeighborLY = function(q, r, dir)
+	{	    
+		return r + this.get_neighbor(q, r, dir)[1];
+	};
+		
 	instanceProto.GetDirCount = function()
 	{  
         return 6;						 
 	};
 	
-	var dxy2dir = function (dx, dy, x, y, is_up2down)
+	var dxy2dir = function (dq, dr, q, r, mode)
 	{
-	    var dir;
-	    if (is_up2down)
+	    var parity;
+	    switch (mode)
 	    {
-	        if (Math.abs(x)%2)
-	        {
-	            dir = ((dx==1) && (dy==1))?   0:
-                      ((dx==0) && (dy==1))?   1:
-	                  ((dx==-1) && (dy==1))?  2:
-                      ((dx==-1) && (dy==0))?  3:
-	                  ((dx==0) && (dy==-1))?  4: 
-	                  ((dx==1) && (dy==0))?   5:
-	                  null;  //fixme
-	        }		 
-	        else
-	        {
-	            dir = ((dx==1) && (dy==0))?   0:
-                      ((dx==0) && (dy==1))?   1:
-	                  ((dx==-1) && (dy==0))?  2:
-                      ((dx==-1) && (dy==-1))? 3:
-	                  ((dx==0) && (dy==-1))?  4:
-	                  ((dx==1) && (dy==-1))?  5: 
-	                  null;	 //fixme
-	        }
+	    case ODD_R:
+	    case EVEN_R:
+	        parity = r & 1;	        
+	    break;
+	    
+	    case ODD_Q:
+	    case EVEN_Q:
+	        parity = q & 1; 	        
+	    break;	    
 	    }
-	    else
-	    {
-	        if (Math.abs(y)%2)
-	        {
-	            dir = ((dx==1) && (dy==0))?   0:
-	                  ((dx==1) && (dy==1))?   1:
-                      ((dx==0) && (dy==1))?   2:
-	                  ((dx==-1) && (dy==0))?  3:
-                      ((dx==0) && (dy==-1))?  4:
-	                  ((dx==1) && (dy==-1))?  5: 
-	                  null;  //fixme
-	        }		 
-	        else
-	        {
-	            dir = ((dx==1) && (dy==0))?   0:
-	                  ((dx==0) && (dy==1))?   1:
-                      ((dx==-1) && (dy==1))?  2:
-	                  ((dx==-1) && (dy==0))?  3:
-                      ((dx==-1) && (dy==-1))? 4:
-	                  ((dx==0) && (dy==-1))?  5: 
-	                  null;	 //fixme
-	        }     
-	    }	
-        
-        return dir;
+	    var _dxy2dir = dxy2dir_map[mode][parity];
+	    
+	    if (!_dxy2dir.hasOwnProperty(dq))
+	        return null;
+	    if (!_dxy2dir[dq].hasOwnProperty(dr))
+	        return null;
+	    
+	    return _dxy2dir[dq][dr];
 	};
+	
 	instanceProto.XYZ2LA = function(xyz_o, xyz_to)
 	{  
+        var dir = this.XYZ2Dir(xyz_o, xyz_to); 
+	    var angle = (dir != null)? (dir*60):(-1);
+	    switch (this.mode)  
+	    {
+	    case ODD_Q:
+	    case EVEN_Q:
+	        if (dir != null)
+	            angle += 30; 	        
+	    break;	    
+	    }
+        return angle;				 
+	};
+	
+	instanceProto.XYZ2Dir = function(xyz_o, xyz_to)
+	{
 	    var dx = xyz_to.x - xyz_o.x;
 	    var dy = xyz_to.y - xyz_o.y;	    
 	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
@@ -251,38 +413,51 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	        dy = dy/vmax;
 	    }
 
-	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.is_up2down); 
-	    var angle;	    
-	    if (this.is_up2down)
-	    {
-	        angle = (dir != null)? ((dir*60)+30):
-	                               (-1);
-	    }
-	    else
-	    {
-	        angle = (dir != null)? dir*60:
-	                               (-1);
-	    }
-        return angle;				 
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.mode); 
+	    return dir;  
 	};
-	instanceProto.XYZ2Dir = function(xyz_o, xyz_to)
-	{  
+	
+	instanceProto.NeighborXYZ2Dir = function(xyz_o, xyz_to)
+	{
 	    var dx = xyz_to.x - xyz_o.x;
-	    var dy = xyz_to.y - xyz_o.y;	    
-	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
-	    if (vmax != 0)
+	    var dy = xyz_to.y - xyz_o.y;
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.mode); 
+	    return dir;  
+	};	
+	
+	var rotate_result = {q:0, r:0};
+	instanceProto.hex_rotate = function (q, r, dir)
+	{
+	    var x = this.qr2x(q,r);
+	    var y = this.qr2y(q,r);
+	    var z = this.qr2z(q,r);
+	    var new_x, new_y, new_z;
+	    switch (dir)
 	    {
-	        dx = dx/vmax;
-	        dy = dy/vmax;
+	    case 1: new_x=-z; new_y=-x; new_z=-y; break;
+	    case 2: new_x= y; new_y= z; new_z= x; break;
+	    case 3: new_x=-x; new_y=-y; new_z=-z; break;
+	    case 4: new_x= z; new_y= x; new_z= y; break;
+	    case 5: new_x=-y; new_y=-z; new_z=-x; break;
+	    default: new_x= x; new_y= y; new_z= z; break;
 	    }
-	    
-	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.is_up2down);  
-	    return dir;
-	};		
+	    rotate_result.q = this.xyz2q(new_x, new_y, new_z);
+	    rotate_result.r = this.xyz2r(new_x, new_y, new_z);
+	    return rotate_result;
+	};
+	instanceProto.LXYZRotate2LX = function (lx, ly, lz, dir)
+	{	  
+	    return this.hex_rotate(lx, ly, dir).q;
+	};
+
+	instanceProto.LXYZRotate2LY = function (lx, ly, lz, dir)
+	{
+	    return this.hex_rotate(lx, ly, dir).r;
+	};	    	
 	
 	instanceProto.saveToJSON = function ()
 	{
-		return { "isud": this.is_up2down,
+		return { "m": this.mode,
                  "w": this.width,
                  "h": this.height,
                  "ox": this.PositionOX,
@@ -292,7 +467,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-        this.is_up2down = o["isud"];    
+        this.mode = o["m"];    
         this.SetWidth(o["w"]);
         this.SetHeight(o["h"]);
         this.SetPOX(o["ox"]);

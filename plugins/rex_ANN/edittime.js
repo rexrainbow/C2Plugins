@@ -7,7 +7,7 @@
 		"description":	"Artificial Neural Network, using back-propagation and one hidden layer.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ann.html",
-		"category":		"AI",
+		"category":		"Rex - AI",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

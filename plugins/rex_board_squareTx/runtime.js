@@ -89,7 +89,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    else if (this.layout_mode == 2)  // Staggered
 	    {
 	        x = lx * this.width;
-	        if (Math.abs(ly)%2)
+	        if (ly&1)
 	            x += this.half_width;
 	    }
 
@@ -131,7 +131,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		{
 		    var ly = Math.round((py - this.PositionOY)/this.half_height);
 		    px = px - this.PositionOX;
-		    if (Math.abs(ly)%2)
+		    if (ly&1)
 		        px -= this.half_width;
 		    lx = Math.round(px/this.width);
 		}
@@ -176,7 +176,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		}
 		else if (this.layout_mode == 2)  // Staggered
 	    {
-	        if (Math.abs(y)%2)
+	        if (y&1)
 	            dx = nlx_map_2_1[dir];
 	        else
 	            dx = nlx_map_2_0[dir];
@@ -239,7 +239,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		}
 		else if (layout_mode == 2)  // Staggered
 	    {
-	        if (Math.abs(y)%2)
+	        if (y&1)
 	        {
 	            dir = ((dx==1) && (dy==-1))?  0:
 	                  ((dx==1) && (dy==1))?   1:
@@ -296,7 +296,15 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
         return dir;				 
 	};
-    
+	
+	instanceProto.NeighborXYZ2Dir = function(xyz_o, xyz_to)
+	{  
+	    var dx = xyz_to.x - xyz_o.x;
+	    var dy = xyz_to.y - xyz_o.y;
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
+        return dir;				 
+	};    
+	
 	instanceProto.LXYZRotate2LX = function (lx, ly, lz, dir)
 	{
         var new_lx;
@@ -305,16 +313,11 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         case 0:    // Orthogonal
         case 1:    // Isometric
 	        switch (dir)
-	        {
-	        case 1:  // 90
-	            new_lx = -ly;
-	        break;
-	        case 2:  // 180
-	            new_lx = -lx;        
-	        break;
-	        case 3:  // 270
-	            new_lx = ly;
-	        break;
+	        {	        
+	        case 1: new_lx = -ly; break;
+	        case 2: new_lx = -lx; break;
+	        case 3: new_lx = ly; break;
+	        default: new_lx = lx; break;	            
 	        }
         break;
             
@@ -334,15 +337,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         case 1:    // Isometric
 	        switch (dir)
 	        {
-	        case 1:  // 90
-	            new_ly = lx;
-	        break;
-	        case 2:  // 180
-	            new_ly = -ly;        
-	        break;
-	        case 3:  // 270
-	            new_ly = -lx;
-	        break;
+	        case 1: new_ly = lx; break;
+	        case 2: new_ly = -ly; break;
+	        case 3: new_ly = -lx; break;
+	        default: new_ly = ly; break;	        
 	        }
         break;
             

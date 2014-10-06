@@ -7,7 +7,7 @@
 		"description":	"Fuzzy logic",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_fuzzy.html",
-		"category":		"AI",
+		"category":		"Rex - AI",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

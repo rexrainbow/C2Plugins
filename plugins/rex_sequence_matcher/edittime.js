@@ -7,7 +7,7 @@
 		"description":	"To find sequence pattern.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_sequence_matcher.html",
-		"category":		"Logic",
+		"category":		"Rex - Logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

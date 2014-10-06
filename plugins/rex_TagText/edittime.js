@@ -7,7 +7,7 @@
 		"description":	"Displays text with multi-color, font face, or font size with tags.",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
-		"category":		"General",
+		"category":		"Rex - Text",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,				// can be rotated in layout
 		"flags":		pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces | pf_effects,

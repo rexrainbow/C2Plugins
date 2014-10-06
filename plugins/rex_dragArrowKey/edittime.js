@@ -7,7 +7,7 @@
 		"description":	"Get arrow key event from dragging input.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_dragArrowKey.html",
-		"category":		"Input",
+		"category":		"Rex - Arrow key",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

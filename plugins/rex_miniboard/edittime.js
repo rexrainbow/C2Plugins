@@ -19,12 +19,17 @@
 AddObjectParam("Board", "Board object");
 AddNumberParam("Logic X", "The X index of offset.", 0);
 AddNumberParam("Logic Y", "The Y index of offset.", 0);
-AddCondition(1, 0, "Empty", "Main board", 
-             "Cells on <i>{0}</i> at offset to [<i>{1}</i>,<i>{2}</i>] are empty", 
-             "Testing if cells on the board are empty.", "AreEmpty");
+AddComboParamOption("None");
+AddComboParamOption("Inside");
+AddComboParamOption("Empty");
+AddComboParamOption("Putable");
+AddComboParam("Putable checking", "Mode of putable checking.", 2);
+AddCondition(1, 0, "Can put", "Main board", 
+             "Can put on <i>{0}</i> at offset to [<i>{1}</i>,<i>{2}</i>], checking mode to <i>{3}</i>",
+             "Testing if this mini board could put at the main board.", "CanPut");
              
 AddCondition(2, cf_not_invertible, "Pick all chess", "SOL", 
-             "Pick all chess on this mini board", 
+             "Pick all chess", 
              "Pick all chess on this mini board.", "PickAllChess"); 
                
 AddObjectParam("Chess", "Chess under mini board");
@@ -40,7 +45,7 @@ AddCondition(4, 0, "On the board", "Board",
 AddObjectParam("Board", "Board object");
 AddNumberParam("Logic X", "The X index of offset.", 0);
 AddNumberParam("Logic Y", "The Y index of offset.", 0);
-AddCondition(5, 0, "Put-able", "Main board: Put-able", 
+AddCondition(5, cf_deprecated, "Put-able", "Main board: Put-able", 
              "Cells are put-able on <i>{0}</i> at offset to [<i>{1}</i>,<i>{2}</i>]", 
              "Testing if cells can be put on the board.", "ArePutAble");
              
@@ -52,7 +57,7 @@ AddObjectParam("Chess", "Kicked chess object.");
 AddCondition(7, cf_trigger, "On chess kicked", "Mini-board: Kick", 
             "On <i>{0}</i> kicked", 
             "Triggered when chess kicked by 'action:Add chess'.", "OnChessKicked");
-                           
+                  
 AddObjectParam("Board", "Board object");
 AddNumberParam("Logic X", "The X index of start.", 0);
 AddNumberParam("Logic Y", "The Y index of start.", 0);
@@ -63,9 +68,19 @@ AddCondition(10, cf_deprecated, "Can find empty", "Main board: find empty",
 
 AddObjectParam("Chess", "Chess object.");
 AddCondition(11, 0, "Pick chess", "SOL", 
-             "Pick chess <i>{0}</i> on the board", 
-             "Pick chess on the board.", "PickChess");
-                       
+             "Pick chess <i>{0}</i>", 
+             "Pick chess on this mini board.", "PickChess");
+
+AddCondition(12, 0, "Is putting accepted", "Request", 
+             "Is putting request accepted", 
+             "Return true if putting request accepted.", "IsPuttingRequestAccepted");   
+       
+AddCondition(13, cf_trigger, "On putting accepted", "Request", 
+             "On putting request accepted", 
+             "Triggered when putting request accepted.", "OnPuttingRequestAccepted"); 
+             
+AddCondition(14, cf_trigger, "On putting rejected", "Request", 
+             "On putting request rejected", "Triggered when putting request rejected.", "OnPuttingRequestRejected");             
 ////////////////////////////////////////
 // Actions
 AddObjectParam("Layout", "Layout to transfer logic index to physical position");
@@ -88,8 +103,13 @@ AddNumberParam("Logic Y", "The Y index of offset.", 0);
 AddComboParamOption("logical only");
 AddComboParamOption("logical and physical");
 AddComboParam("Mode", "Mode of putting.", 1);
+AddComboParamOption("None");
+AddComboParamOption("Inside");
+AddComboParamOption("Empty");
+AddComboParamOption("Putable");
+AddComboParam("Putable checking", "Mode of putable checking.", 0);
 AddAction(3, 0, "Put", "Main board", 
-          "Put on <i>{0}</i> at offset to [<i>{1}</i>, <i>{2}</i>] (<i>{3}</i>)", 
+          "Put on <i>{0}</i> at offset to [<i>{1}</i>, <i>{2}</i>] (<i>{3}</i>), checking mode to <i>{4}</i>", 
           "Put chess on the board.", "PutChess");	
              
 AddAction(4, 0, "Pull out", "Main board", 
@@ -128,7 +148,13 @@ AddObjectParam("Chess", "Chess object.");
 AddAction(10, 0, "Pick chess", "SOL", 
           "Pick chess <i>{0}</i> on the board", 
           "Pick chess on the board.", "PickChess");
-                          
+
+AddComboParamOption("logical only");
+AddComboParamOption("logical and physical");
+AddComboParam("Mode", "Mode of putting.", 1);
+AddAction(11, 0, "Put back", "Main board", 
+          "Put back (<i>{3}</i>)", 
+          "Put chess back on the previos board.", "PutBack");
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,

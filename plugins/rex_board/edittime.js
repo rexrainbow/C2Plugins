@@ -7,7 +7,7 @@
 		"description":	"A chess board container",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board.html",
-		"category":		"Board",
+		"category":		"Rex - Board - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -222,8 +222,7 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddLayerParam("Layer", "Layer name of number."); 
 AddAction(23, 0, "Create chess above tile", "Physical: Create", 
           "Create chess <i>{0}</i> above tile <i>{1}</i> at LZ to <i>{2}</i>, on layer <i>{3}</i>", 
-          "Create chess above tile.", "CreateChessAboveTile"); 
-                    
+          "Create chess above tile.", "CreateChessAboveTile");                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of chess.", 0);

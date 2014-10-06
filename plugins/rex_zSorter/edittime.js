@@ -7,7 +7,7 @@
 		"description":	"Sorts Objects in Layer By Y",
 		"author":		"Juan Pablo Tarquino",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_zSorter.html",
-		"category":		"General",
+		"category":		"Rex - Layer/layout",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

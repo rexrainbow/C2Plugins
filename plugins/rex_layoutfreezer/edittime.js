@@ -7,7 +7,7 @@
 		"description":	"Save/Load non-global instances on the layout.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_layoutfreezer.html",
-		"category":		"Data & Storage",
+		"category":		"Rex - Save-load",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

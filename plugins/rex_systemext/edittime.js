@@ -7,7 +7,7 @@
 		"description":	"System extension",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_systemext.html",
-		"category":		"General",
+		"category":		"Rex - System helper",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal
