@@ -6,7 +6,7 @@
 		"description":	"Put sprite linear on layouter.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_linear.html",
-		"category":		"Layouter",
+		"category":		"Rex - Layouter",
 		"flags":		bf_onlyone
 	};
 };

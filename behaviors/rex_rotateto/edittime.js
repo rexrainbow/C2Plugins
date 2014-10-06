@@ -7,7 +7,7 @@
 		"description":	"Rotate sprite to specific angle",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_rotateto.html",
-		"category":		"Movements",
+		"category":		"Rex - Movement - angle",
 		"flags":		0
 	};
 };

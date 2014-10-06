@@ -6,7 +6,7 @@
 		"description":	"Draw a doughnut chart on the canvas. The api of chart - http://www.chartjs.org/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_doughnut.html",
-		"category":		"Canvas",
+		"category":		"Rex - Canvas - Chart.js",
 		"flags":		0,	
 	};
 };

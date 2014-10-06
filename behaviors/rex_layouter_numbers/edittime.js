@@ -6,7 +6,7 @@
 		"description":	"Show numbers using spriters in layouter. The frames are 0,1,2,3,4,5,6,7,8,9, ,-",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_numbers.html",
-		"category":		"Layouter",
+		"category":		"Rex - Layouter",
 		"flags":		bf_onlyone
 	};
 };

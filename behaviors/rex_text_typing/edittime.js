@@ -6,7 +6,7 @@
 		"description":	"Typing text on text / sprite font object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_text_typing.html",
-		"category":		"Text / Sprite font",
+		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};
 };

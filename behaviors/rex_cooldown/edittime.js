@@ -7,7 +7,7 @@
 		"description":	"Accept request when cooldown",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_cooldown.html",
-		"category":		"Timer",
+		"category":		"Rex - Timeline",
 		"flags":		0
 	};
 };

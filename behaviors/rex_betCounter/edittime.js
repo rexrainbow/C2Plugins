@@ -6,7 +6,7 @@
 		"description":	"Get bet count in latest duration.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_betCounter.html",
-		"category":		"Variable",
+		"category":		"Rex - Attributes",
 		"flags":		0
 	};
 };

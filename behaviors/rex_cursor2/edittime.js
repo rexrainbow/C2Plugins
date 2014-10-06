@@ -7,7 +7,7 @@
 		"description":	"Move Sprite to cursor of mouse",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_cursor2.html",
-		"category":		"Movements",
+		"category":		"Rex - Touch",
 		"flags":		bf_onlyone
 	};
 };

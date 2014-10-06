@@ -7,7 +7,7 @@
 		"description":	"A variable which supports buffs. Get sum from base value and buffs.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_buff.html",
-		"category":		"Variable",
+		"category":		"Rex - Variable",
 		"flags":		0
 	};
 };

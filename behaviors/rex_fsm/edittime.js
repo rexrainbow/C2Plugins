@@ -7,7 +7,7 @@
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_fsm.html",
-	    "category":		"Variable",
+	    "category":		"Rex - Logic -finite state machine",
 		"flags":		0
 	};
 };

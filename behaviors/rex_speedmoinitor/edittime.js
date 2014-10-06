@@ -6,7 +6,7 @@
 		"description":	"Get current speed of instance.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_speedmoinitor.html",
-		"category":		"Attributes",
+		"category":		"Rex - Attributes",
 		"flags":		bf_onlyone
 	};
 };

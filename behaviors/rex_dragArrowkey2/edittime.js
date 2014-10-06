@@ -7,7 +7,7 @@
 		"description":	"Get arrow key event from dragging input.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_dragArrowkey2.html",
-		"category":		"Input",
+		"category":		"Rex - Arrow key",
 		"flags":		bf_onlyone
 	};
 };

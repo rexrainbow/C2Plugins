@@ -6,7 +6,7 @@
 		"description":	"Stick to another object's image point.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pin2imgpt.html",
-		"category":		"General",
+		"category":		"Rex - Movement - pin",
 		"flags":		bf_onlyone
 	};
 };

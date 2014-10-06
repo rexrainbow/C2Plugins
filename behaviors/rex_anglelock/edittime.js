@@ -7,7 +7,7 @@
 		"description":	"Lock the sprite angle.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_anglelock.html",
-		"category":		"General",
+		"category":		"Rex - Movement - angle",
 		"flags":		0	
 						| bf_onlyone
 	};

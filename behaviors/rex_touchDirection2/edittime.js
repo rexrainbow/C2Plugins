@@ -6,7 +6,7 @@
 		"description":	"Move sprite with mouse or touch dragging",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_touchDirection2.html",
-		"category":		"Movements",
+		"category":		"Rex - Touch",
 		"flags":		bf_onlyone
 	};
 };

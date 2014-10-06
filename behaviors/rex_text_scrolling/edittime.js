@@ -6,7 +6,7 @@
 		"description":	"Scroll text on text object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_text_scrolling.html",
-		"category":		"Text / Sprite font",
+		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};
 };

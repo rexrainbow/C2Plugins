@@ -6,7 +6,7 @@
 		"description":	"A command queue to pend commands.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_bcmdqueue.html",
-		"category":		"General",
+		"category":		"Rex - Logic - flow control",
 		"flags":		bf_onlyone
 	};
 };

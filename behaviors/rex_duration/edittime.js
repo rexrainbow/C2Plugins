@@ -7,7 +7,7 @@
 		"description":	"Execute callback during duration",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_duration.html",
-		"category":		"Timer",
+		"category":		"Rex - Timeline",
 		"flags":		0
 	};
 };

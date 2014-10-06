@@ -6,7 +6,7 @@
 		"description":	"Accept color input",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_textbox_color.html",
-		"category":		"Textbox",
+		"category":		"Rex - Textbox helper",
 		"flags":		bf_onlyone
 	};
 };

@@ -7,7 +7,7 @@
 		"description":	"Rotate Sprite",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_rotate.html",
-		"category":		"Movements",
+		"category":		"Rex - Movement - angle",
 		"flags":		0
 	};
 };

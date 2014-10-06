@@ -7,7 +7,7 @@
 		"description":	"Move platformer to specific position",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_platform_moveto.html",
-		"category":		"Movements",
+		"category":		"Rex - Platformer helper",
 		"flags":		0
 	};
 };

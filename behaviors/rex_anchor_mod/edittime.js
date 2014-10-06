@@ -7,7 +7,7 @@
 		"description":	"Position objects relative to the size of the window.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_anchor_mod.html",
-		"category":		"General",
+		"category":		"Rex - Movement - position",
 		"flags":		0	
 						| bf_onlyone
 	};

@@ -7,7 +7,7 @@
 		"description":	"Fire the trigger when time-out.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timer.html",
-		"category":		"Timer",
+		"category":		"Rex - Timeline",
 		"flags":		0
 	};
 };

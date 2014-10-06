@@ -6,7 +6,7 @@
 		"description":	"Replace instancne by fade-out itself, and create the target instance then fade-in it.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_replacer.html",
-		"category":		"General",
+		"category":		"Rex - Movement - opacity",
 		"flags":		bf_onlyone
 	};
 };

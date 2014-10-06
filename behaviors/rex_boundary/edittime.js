@@ -6,7 +6,7 @@
 		"description":	"Limit position of object in the boundary.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_boundary.html",
-		"category":		"General",
+		"category":		"Rex - Movement - position",
 		"flags":		0
 	};
 };

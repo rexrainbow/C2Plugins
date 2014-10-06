@@ -7,7 +7,7 @@
 		"description":	"Move sprite to specific position",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_moveto.html",
-		"category":		"Movements",
+		"category":		"Rex - Movement - position",
 		"flags":		0
 	};
 };

@@ -7,7 +7,7 @@
 		"description":	"Load animations from URL.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_animation_loader.html",
-		"category":		"General",
+		"category":		"Rex - Animations",
 		"flags":		bf_onlyone
 	};
 };

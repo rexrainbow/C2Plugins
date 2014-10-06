@@ -6,7 +6,7 @@
 		"description":	"Assign a nickname to this object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_bnickname.html",
-		"category":		"General",
+		"category":		"Rex - Nickname",
 		"flags":		bf_onlyone
 	};
 };

@@ -7,7 +7,7 @@
 		"description":	"Move sprite to neighbor on board object",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_grid_move.html",
-		"category":		"Board",
+		"category":		"Rex - Board - application",
 		"flags":		0
 	};
 };

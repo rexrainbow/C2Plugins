@@ -7,7 +7,7 @@
 		"description":	'Get click event while "touch end".',
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_button.html",
-		"category":		"Object",
+		"category":		"Rex - Touch",
 		"flags":		bf_onlyone
 	};
 };

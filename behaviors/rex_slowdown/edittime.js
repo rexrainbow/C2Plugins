@@ -7,7 +7,7 @@
 		"description":	"Slow down object unitl stop.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_slowdown.html",
-		"category":		"Movements",
+		"category":		"Rex - Movement - position",
 		"flags":		bf_onlyone
 	};
 };

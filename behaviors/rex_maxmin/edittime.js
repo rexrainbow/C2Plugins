@@ -7,7 +7,7 @@
 		"description":	"A variable which clamped between maximum and minimum bound.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_maxmin.html",
-		"category":		"Variable",
+		"category":		"Rex - Variable",
 		"flags":		0
 	};
 };
