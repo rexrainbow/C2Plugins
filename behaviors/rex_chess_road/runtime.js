@@ -57,7 +57,8 @@ cr.behaviors.rex_chess_road = function(runtime)
     
 	behinstProto.onCreate = function()
 	{
-	    this.activated = (this.properties[0]==1);
+        this.enable = (this.properties[0]==1);
+	    this.tag = this.properties[1];
 	    this.board = null;
         this.ActSetAnimFrame = (cr.plugins_.Sprite == null)? null:
                                cr.plugins_.Sprite.prototype.acts.SetAnimFrame;
@@ -65,15 +66,21 @@ cr.behaviors.rex_chess_road = function(runtime)
 	
 	behinstProto.tick = function ()
 	{
-	    if ((!this.activated) || (!this.ActSetAnimFrame))
+	    if (this.enable)
+	        this.update();
+	};
+	
+	behinstProto.update = function ()
+	{
+	    if (!this.ActSetAnimFrame)
 	        return;
 	    
         var score = this.neighbor_score_get();
         if (score == null)
-            return null;
+            return;
 
         this.ActSetAnimFrame.call(this.inst, score);
-	};
+	};	
 	
 	behinstProto.neighbor_score_get = function ()
 	{
@@ -95,8 +102,11 @@ cr.behaviors.rex_chess_road = function(runtime)
             if (neighbor_inst == null)
                 continue;
             binst = GetThisBehavior(neighbor_inst);
-            if (!binst.activated)
+            if (binst == null)
                 continue;
+            if (binst.tag != this.tag)
+                continue;     
+    
             score += (1<<dir);
         }
         return score;        
@@ -134,13 +144,13 @@ cr.behaviors.rex_chess_road = function(runtime)
 		
 	behinstProto.saveToJSON = function ()
 	{
-		return { "en": this.activated
+		return { "en": this.enable
                 };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-	    this.activated = o["en"];
+	    this.enable = o["en"];
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -155,14 +165,27 @@ cr.behaviors.rex_chess_road = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.SetActivated = function (s)
+	Acts.prototype.SetEnable = function (s)
 	{
-		this.activated = (s==1);
-	};  
+		this.enable = (s==1);
+	};
 	
+	Acts.prototype.Update = function ()
+	{
+		this.update();
+	};
+	
+	Acts.prototype.SetTag = function (tag)
+	{
+		this.tag = tag;
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-	
+
+	Exps.prototype.Tag = function (ret)
+	{
+		ret.set_string(this.tag);
+	};			
 }());

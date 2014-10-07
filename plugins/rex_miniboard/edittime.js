@@ -7,7 +7,7 @@
 		"description":	"A board-container to group chess and move them together.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_miniboard.html",
-		"category":		"Board: logic",
+		"category":		"Rex - Board - application - mini board",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":	    pf_position_aces

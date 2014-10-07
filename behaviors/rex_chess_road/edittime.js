@@ -4,10 +4,10 @@
 		"name":			"Road",
 		"id":			"rex_chess_road",
 		"version":		"0.1",
-		"description":	"Show road by frames automatically.",
+		"description":	"Set frame according to neighbors.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_chess_road.html",
-		"category":		"Board",
+		"category":		"Rex - Board - application",
 		"flags":		0	
 						| bf_onlyone
 	};
@@ -18,18 +18,29 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddComboParamOption("disabled");
-AddComboParamOption("enabled");
-AddComboParam("State", "Whether to enable or disable the behavior.");
-AddAction(0, 0, "Set enabled", "Enable", "Set {my} {0}", "Enable or disable the behavior.", "SetActivated");
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Activated", "Enable the behavior.",1);
+AddAction(0, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
+          "Enable this behavior.", "SetEnable");        
 
+AddAction(1, 0, "Update", "Update", 
+          "Update {my}", 
+          "Updating manually.", "Update");
+          
+AddStringParam("Tag", "Tag.", '""');
+AddAction(2, 0, "Set tag", "Tag", "Set {my} tag to <i>{0}</i>",
+         "Set tag.", "SetTag");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_string, "Get tag", "Tag", "Tag", "Get tag.");
 
 ACESDone();
 
 var property_list = [
-    new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+    new cr.Property(ept_combo, "Enable", "Yes", "Enable if you wish to update frame every tick.", "No|Yes"),
+    new cr.Property(ept_text, "Tag", "", "Tag with the same name will be treated as neighbor."),	    
 	];
 	
 // Called by IDE when a new behavior type is to be created

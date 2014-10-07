@@ -233,6 +233,8 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),                    
+    new cr.Property(ept_combo, "Wrap", "No", 
+                    "Set Yes to wrap logical and physical moving.", "No|Yes"),
 	new cr.Property(ept_float, "Max speed", 400, "Maximum speed, in pixel per second."),
 	new cr.Property(ept_float, "Acceleration", 0, 
                     "Acceleration, in pixel per second per second."),

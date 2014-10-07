@@ -20,11 +20,11 @@ AddCondition(1, 0, "Hit", "Hit",
 		 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(1, af_none, "Point to solids", "Manually", 
+AddAction(1, af_none, "Point to solids", "Manual", 
           "{my} point to solids", 
           "Extend width until hit any solid object.", "PointToSolid");
 AddObjectParam("Obstacle", "Choose an object to add as an obstacle.");
-AddAction(2, af_none, "Point to object", "Manually", 
+AddAction(2, af_none, "Point to object", "Manual", 
           "{my} point to {0}", 
           "Extend width until hit any specfic object.", "PointToObject");
 

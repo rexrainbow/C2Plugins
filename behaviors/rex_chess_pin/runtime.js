@@ -66,7 +66,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
 	behinstProto.onInstanceDestroyed = function (inst)
 	{
 		// Pinned object being destroyed
-		if (this.pinChess == inst)
+		if (this.pinChess === inst)
 			this.pinChess = null;
 	};
 	
@@ -97,6 +97,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
 		    return;
 		this.board = this._board_get(this.board, this.inst.uid);
         this.board.move_item(this.inst, new_lx, new_ly, my_xyz.z);
+        this.runtime.trigger(cr.behaviors.rex_ChessPin.prototype.cnds.OnLogicalPositionChanged, this.inst); 
 	};
     
    	behinstProto._board_get = function (current_board, uid)
@@ -185,6 +186,10 @@ cr.behaviors.rex_ChessPin = function(runtime)
 		return !!this.pinChess;
 	};
 
+	Cnds.prototype.OnLogicalPositionChanged = function ()
+	{
+		return true;
+	};
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

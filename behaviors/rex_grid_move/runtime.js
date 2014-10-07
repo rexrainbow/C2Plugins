@@ -67,6 +67,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.board = null;
+        this.is_wrap_mode = (this.properties[1] == 1);
+        this.has_wrap_lx = false;
+        this.has_wrap_ly = false;
+        
         if (!this.recycled)
         {
             this._cmd_move_to = new cr.behaviors.Rex_GridMove.CmdMoveTo(this);
@@ -89,11 +93,11 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		                    "o": {"x":0, "y":0, "z":0}
 		                   };
         }
-        this._wander["rx"] = this.properties[4];
-        this._wander["ry"] = this.properties[5];
+        this._wander["rx"] = this.properties[5];
+        this._wander["ry"] = this.properties[6];
 
-        this.force_move = (this.properties[6] == 1);    
-        this.enable_moveTo = (this.properties[7] == 1); 
+        this.force_move = (this.properties[7] == 1);    
+        this.enable_moveTo = (this.properties[8] == 1); 
         if (!this.recycled)
         {        
             this._dir_sequence = [];						
@@ -177,8 +181,61 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		    return board.uid2inst(uid);
 	    else
             return null;
-    };    
+    }; 
     
+    behinstProto.wrap_lx = function (lx)
+    {
+	    if (!this.is_wrap_mode)
+	    {
+	        this.has_wrap_lx = false;
+	        return lx;
+	    }
+	        	        
+	    var x_max = this.board_get().x_max;
+	    if (lx < 0)
+	    {
+	        lx = x_max;
+	        this.has_wrap_lx = true;
+	    }
+	    else if (lx > x_max)
+	    {	
+	        lx = 0;
+	        this.has_wrap_lx = true;
+	    }
+	    else
+	    {
+	        this.has_wrap_lx = false;
+	    }
+	    
+	    return lx;	    
+    };       
+    behinstProto.wrap_ly = function (ly)
+    {
+	    if (!this.is_wrap_mode)
+	    {
+	        this.has_wrap_ly = false;
+	        return ly;
+	    }
+	        	        
+	    var y_max = this.board_get().y_max;
+	    if (ly < 0)
+	    {
+	        ly = y_max;
+	        this.has_wrap_ly = true;
+	    }
+	    else if (ly > y_max)
+	    {	
+	        ly = 0;
+	        this.has_wrap_ly = true;
+	    }
+	    else
+	    {
+	        this.has_wrap_ly = false;
+	    }
+	    
+	    return ly;	    
+    };
+        
     var _solid_get = function(inst)
     {
         return (inst.extra != null) && (inst.extra["solidEnabled"]);
@@ -300,13 +357,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
                 z_index = target_z;
             
 
+            // set logical position
             this.board.move_item(this.inst, target_x, target_y, z_index);
-                
-            // set moveTo
-            if (this.enable_moveTo)
-            {
-                this.moveto_pxy(target_x, target_y, target_z);
-            }
+            // set physical position
+            this.moveto_pxy(target_x, target_y, target_z);
             this.on_moving_request_success(true);    
         } 
         else if (can_move == (-1))
@@ -325,6 +379,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
         var layout = this.board.layout;
         this._cmd_move_to.set_target_pos(layout.LXYZ2PX(lx, ly, lz), 
                                          layout.LXYZ2PY(lx, ly, lz));
+                                         
+        if (!this.enable_moveTo)
+            this._cmd_move_to.is_moving = false;
     };
     
     behinstProto.on_moving_request_success = function(can_move)
@@ -548,10 +605,13 @@ cr.behaviors.Rex_GridMove = function(runtime)
         if (_xyz == null)
             return;
             
-        var _layout = this._board_get().layout;	
-        var tx = _layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
-        var ty = _layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
+        var board = this._board_get();
+        var layout = board.GetLayout();	
+        var tx = layout.GetNeighborLX(_xyz.x, _xyz.y, dir);
+        var ty = layout.GetNeighborLY(_xyz.x, _xyz.y, dir);
         var tz = _xyz.z;
+        tx = this.wrap_lx(tx);
+        ty = this.wrap_ly(ty);
         this.set_move_target(tx, ty, tz, dir);
         this._colliding_checking(tx, ty, tz);        
         this._move_to_target(tx, ty, tz);
@@ -927,9 +987,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	CmdMoveToProto.Reset = function(plugin)
 	{
         this.activated = plugin.properties[0];
-        this.move["max"] = plugin.properties[1];
-        this.move["acc"] = plugin.properties[2];
-        this.move["dec"] = plugin.properties[3];                     
+        this.move["max"] = plugin.properties[2];
+        this.move["acc"] = plugin.properties[3];
+        this.move["dec"] = plugin.properties[4];                     
         //this.target = {"x":0 , "y":0, "a":0};
         this.is_moving = false;  
         this.current_speed = 0;       
@@ -1010,7 +1070,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
             this.current_speed = this.move["max"];
         }
 	};  
-    
+	    
 	CmdMoveToProto.set_target_pos = function (_x, _y)
 	{
         var dx = _x - this.inst.x;
@@ -1022,7 +1082,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.target["a"] = Math.atan2(dy, dx);
         this.remain_distance = Math.sqrt( (dx*dx) + (dy*dy) );
         this._set_current_speed(null);
-	}; 
+	};  
 	
 	CmdMoveToProto.saveToJSON = function ()
 	{

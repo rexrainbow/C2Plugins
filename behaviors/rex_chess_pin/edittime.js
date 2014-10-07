@@ -3,18 +3,20 @@
 	return {
 		"name":			"Logic Pin",	
 		"id":			"rex_ChessPin",	
-		"description":	"Change logic index X, logic index Y with pined chess.",
+		"description":	"Change logic position (X, Y) with pined chess.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_chess_pin.html",
-		"category":		"Board",
+		"category":		"Rex - Board - application",
 		"flags":		bf_onlyone
 	};
 };
 
 ////////////////////////////////////////
 // Conditions		
-AddCondition(0, cf_none, "Is pinned", "", "{my} is pinned", "Object is currently pinned to another object.", "IsPinned");
-
+AddCondition(0, cf_none, "Is pinned", "Pin", "{my} is pinned", "Object is currently pinned to another object.", "IsPinned");
+AddCondition(1,	cf_trigger, "On logical position changed", "Logical position", 
+             "On {my} logical position changed", "Triggered when logical position changed.", 
+             "OnLogicalPositionChanged");
 ////////////////////////////////////////
 // Actions
 AddObjectParam("Pin to", "Choose the object to pin to.");
@@ -24,7 +26,7 @@ AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
 AddAction(2, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
-          "Enable the object's bone behavior.", "SetActivated");        
+          "Enable this behavior.", "SetActivated");        
 
 ////////////////////////////////////////
 // Expressions
