@@ -84,7 +84,7 @@ cr.behaviors.rex_chess_road = function(runtime)
 	
 	behinstProto.neighbor_score_get = function ()
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
         if (board == null)
             return null;
             
@@ -112,7 +112,7 @@ cr.behaviors.rex_chess_road = function(runtime)
         return score;        
 	};    
     
-   	behinstProto._board_get = function ()
+   	behinstProto.GetBoard = function ()
 	{
         var _xyz;
         if (this.board != null)
@@ -187,5 +187,14 @@ cr.behaviors.rex_chess_road = function(runtime)
 	Exps.prototype.Tag = function (ret)
 	{
 		ret.set_string(this.tag);
-	};			
+	};
+
+	Exps.prototype.FrameIndex = function (ret)
+	{
+        var score = this.neighbor_score_get();
+        if (score == null)
+            score = 0;	
+		ret.set_int(score);
+	};
+	
 }());

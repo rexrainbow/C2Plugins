@@ -3,7 +3,7 @@
 	return {
 		"name":			"Boundary",
 		"id":			"Rex_boundary",
-		"description":	"Limit position of object in the boundary.",
+		"description":	"Clamp position of object in the boundary, or wrap the position at the other boundary.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_boundary.html",
 		"category":		"Rex - Movement - position",
@@ -80,6 +80,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [        
+    new cr.Property(ept_combo, "Mode", "Clamp", "Clamp or wrap the position of instance.", "Clamp|Wrap"),
+    new cr.Property(ept_combo, "Align", "Origin", "Align at origin or boundaries of instance.", "Origin|Boundaries"),	
     new cr.Property(ept_combo, "Horizontal", "No", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),	
     new cr.Property(ept_float, "Left", 0, "Left boundary."),	
 	new cr.Property(ept_float, "Right", 0, "Right boundary."),	

@@ -95,12 +95,12 @@ cr.behaviors.rex_ChessPin = function(runtime)
 		var new_ly = _xyz.y - this.dLY;
 		if ((new_lx == my_xyz.x) && (new_ly == my_xyz.y))
 		    return;
-		this.board = this._board_get(this.board, this.inst.uid);
-        this.board.move_item(this.inst, new_lx, new_ly, my_xyz.z);
+		this.board = this.GetBoard(this.board, this.inst.uid);
+        this.board.MoveChess(this.inst, new_lx, new_ly, my_xyz.z);
         this.runtime.trigger(cr.behaviors.rex_ChessPin.prototype.cnds.OnLogicalPositionChanged, this.inst); 
 	};
     
-   	behinstProto._board_get = function (current_board, uid)
+   	behinstProto.GetBoard = function (current_board, uid)
 	{
         var _xyz;
         if (current_board != null)
@@ -132,7 +132,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
 
 	behinstProto._myLXYZ_get = function ()
 	{
-	    this.board = this._board_get(this.board, this.inst.uid);
+	    this.board = this.GetBoard(this.board, this.inst.uid);
 		if (this.board == null)
 		    return null;
 	    else
@@ -140,7 +140,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
 	};	
 	behinstProto._pinedChessLXYZ_get = function (pined_chess)
 	{
-	    this.pinedChess_board = this._board_get(this.pinedChess_board, pined_chess.uid);
+	    this.pinedChess_board = this.GetBoard(this.pinedChess_board, pined_chess.uid);
 		if (this.pinedChess_board == null)
 		    return null;
 	    else

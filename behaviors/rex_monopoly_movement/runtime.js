@@ -84,7 +84,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		    arr.push(i);
 	};
 	
-	behinstProto._board_get = function ()
+	behinstProto.GetBoard = function ()
 	{
         var _xyz;
         if (this.board != null)
@@ -97,28 +97,20 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
         }
             
         var plugins = this.runtime.types;
-        var name, obj, dir_cnt;
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "BOARD"))
+            inst = plugins[name].instances[0];
+            if (cr.plugins_.Rex_SLGBoard && (inst instanceof cr.plugins_.Rex_SLGBoard.prototype.Instance))
             {
-                _xyz = obj.uid2xyz(this.inst.uid)
+                _xyz = inst.uid2xyz(this.inst.uid)
                 if (_xyz != null)
                 { 
-                    this.board = obj;
-                    var layout = obj.GetLayout();
-					dir_cnt = layout.GetDirCount();
-					_dir_sequence_init(this._dir_sequence, dir_cnt);
-					this._target_tile_uids.length = dir_cnt;
-					this._is_square_grid = (dir_cnt == 4);
-                    if (!this._is_square_grid)  // hex
-                    {
-                       this._is_hex_up2down = layout.is_up2down;
-                    }
-                    this.exp_TargetFaceDir = this._current_dir_get();
-                    this.exp_TargetLX = _xyz.x;
-                    this.exp_TargetLY = _xyz.y;					
+                    this.board = inst;
+					_dir_sequence_init(this._dir_sequence, inst.GetLayout().GetDirCount());
+					this._wander["o"]["x"] = _xyz.x;
+					this._wander["o"]["y"] = _xyz.y;
+					this._wander["o"]["z"] = _xyz.z;
                     return this.board;
                 }
             }
@@ -145,7 +137,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     behinstProto._solid_prop_get = function (target_tile_uid)
     {
         var tile_xyz = this.board.uid2xyz(target_tile_uid);
-        var z_hash = this.board.xy2zhash(tile_xyz.x, tile_xyz.y);
+        var z_hash = this.board.xy2zHash(tile_xyz.x, tile_xyz.y);
         var z, target_chess_uid;
         for (z in z_hash)
         {
@@ -466,7 +458,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	{
         if (!objtype)
             return;	
-        var board = this._board_get();
+        var board = this.GetBoard();
 		if (board == null)
 		    return;
 			
@@ -479,7 +471,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	{
         if (!objtype)
             return;	
-        var board = this._board_get();
+        var board = this.GetBoard();
 		if (board == null)
 		    return;
 			
@@ -515,7 +507,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 
 	Acts.prototype.GetMovingPath = function (moving_points)	
 	{
-        if (this._board_get() == null)
+        if (this.GetBoard() == null)
             return;
 	    this.get_moving_path(moving_points);
 		// output: this.path_tiles

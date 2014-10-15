@@ -111,8 +111,8 @@ AddAction(6, 0, "Set current speed", "Speed",
           "Set the object's Current speed.", "SetCurrentSpeed");  
 AddNumberParam("Logic X", "The X index (0-based).", 0);
 AddNumberParam("Logic Y", "The Y index (0-based).", 0);
-AddAction(7, 0, "Move to", "Request", "{my} move to [<i>{0}</i>, <i>{1}</i>]", 
-          "Move to target.", "MoveToTarget"); 
+AddAction(7, 0, "Move to LXY", "Request", "{my} move to [<i>{0}</i>, <i>{1}</i>]", 
+          "Move to logical position.", "MoveToLXY"); 
 AddNumberParam("UID", "Target UID.");
 AddAction(8, 0, "Swap", "Swap", "{my} swap with chess UID <i>{0}</i>", 
           "Swap with target chess.", "Swap");              
@@ -129,7 +129,7 @@ AddNumberParam("Direction", "The direction of neighbor.", 0);
 AddAction(10, 0, "Move to neighbor", "Request", "{my} move to direction <i>{0}</i>", 
           "Move to neighbor.", "MoveToNeighbor"); 		  
 AddObjectParam("Target", "Target object.");
-AddAction(11, 0, "Move to target", "Request", "{my} move to <i>{0}</i>", 
+AddAction(11, 0, "Move to chess", "Request", "{my} move to <i>{0}</i>", 
           "Move to target chess/tile.", "MoveToTargetChess");
 // AI          
 AddAction(12, 0, "Wander", "AI: Wander", 
@@ -200,7 +200,11 @@ AddAction(25, 0, "Approach/Depart chess by UID", "AI: Approach/Depart",
           "Approach to chess or depart from chess.", "ApproachOrDepart");            
 // AI              
 AddAction(30, 0, "Stop", "Stop", "{my} stop", 
-          "Stop moving.", "Stop");      
+          "Stop moving.", "Stop");   
+          
+AddNumberParam("UID", "Target chess UID", 0);
+AddAction(40, 0, "Move to chess by UID", "Request", "{my} move to chess UID: <i>{0}</i>", 
+          "Move to target chess/tile.", "MoveToTargetChess");             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
@@ -220,7 +224,7 @@ AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY",
 AddExpression(8, ef_return_number, "Get blocker UID", "Request", "BlockerUID", 
               "Get UID of blocker when moving request rejected.");
 AddExpression(9, ef_return_number, "Get moving direction", "Request", "Direction", 
-              "Get last moving direction of moving request.");
+              "Get last moving direction of moving request. Return (-1) if not moving to neighbor.");
 AddExpression(10, ef_return_number, "Get logic X of destination", "Request", "DestinationLX", 
               "Get logic X of destination X when moving request.");  
 AddExpression(11, ef_return_number, "Get logic Y of destination", "Request", "DestinationLY", 
@@ -233,8 +237,6 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),                    
-    new cr.Property(ept_combo, "Wrap", "No", 
-                    "Set Yes to wrap logical and physical moving.", "No|Yes"),
 	new cr.Property(ept_float, "Max speed", 400, "Maximum speed, in pixel per second."),
 	new cr.Property(ept_float, "Acceleration", 0, 
                     "Acceleration, in pixel per second per second."),

@@ -35,7 +35,10 @@ AddAction(2, 0, "Set tag", "Tag", "Set {my} tag to <i>{0}</i>",
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get tag", "Tag", "Tag", "Get tag.");
-
+AddExpression(2, ef_return_number, 
+              "Get frame index", "Frame", "FrameIndex", 
+              "Get frame index.");  
+			  
 ACESDone();
 
 var property_list = [

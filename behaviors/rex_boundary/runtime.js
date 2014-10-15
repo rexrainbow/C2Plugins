@@ -51,10 +51,14 @@ cr.behaviors.Rex_boundary = function(runtime)
 	};    	
 	behinstProto.onCreate = function()
 	{    
-        this.horizontal_enable = (this.properties[0]==1);
-        this.horizontal_boundary = [this.properties[1], this.properties[2]];
-        this.vertical_enable = (this.properties[3]==1);
-        this.vertical_boundary = [this.properties[4], this.properties[5]];
+		this.mode = this.properties[0];
+		this.align_mode = this.properties[1];
+        this.horizontal_enable = (this.properties[2]==1);
+        this.horizontal_boundary = [this.properties[3], this.properties[4]];
+        this.vertical_enable = (this.properties[5]==1);
+        this.vertical_boundary = [this.properties[6], this.properties[7]];
+
+		
         _sort_boundary(this.horizontal_boundary);
         _sort_boundary(this.vertical_boundary);
         this.horizontal_pin_instance = {"uid":(-1), "p0":null, "p1":null};
@@ -65,16 +69,26 @@ cr.behaviors.Rex_boundary = function(runtime)
 	{
         this.horizontal_boundary_update();
         this.vertical_boundary_update();
+		
 	    var is_hit_boundary = false;
-	    is_hit_boundary |= this.horizontal_boundary_check();
-	    is_hit_boundary |= this.vertical_boundary_check();		
+		
+		if (this.mode == 0)
+		{
+	        is_hit_boundary |= this.horizontal_boundary_clamp();
+	        is_hit_boundary |= this.vertical_boundary_clamp();		
+        }
+		else
+		{
+	        is_hit_boundary |= this.horizontal_boundary_wrap();
+	        is_hit_boundary |= this.vertical_boundary_wrap();			
+		}
 		if (is_hit_boundary)
         {                         
             this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitAnyBoundary, this.inst);            
 		    this.inst.set_bbox_changed();             
         }
 	};
-    
+	
 	behinstProto.horizontal_boundary_update = function ()
 	{
         var pin = this.horizontal_pin_instance;
@@ -97,55 +111,189 @@ cr.behaviors.Rex_boundary = function(runtime)
         _sort_boundary(this.vertical_boundary);
 	};
     
-	behinstProto.horizontal_boundary_check = function ()
+	// clamp
+	behinstProto.horizontal_boundary_clamp = function ()
 	{
 	    if (!this.horizontal_enable)
 		    return false;
 		var curr_x = this.inst.x;
-		if (this.inst.x < this.horizontal_boundary[0])
-        {
-		    this.inst.x = this.horizontal_boundary[0];
-            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
-        }
-        else if (this.inst.x > this.horizontal_boundary[1])
-        {
-		    this.inst.x = this.horizontal_boundary[1];
-            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
-        }
+		
+		if (this.align_mode == 0)    // origin
+		{
+		    if (this.inst.x < this.horizontal_boundary[0])
+            {
+		        this.inst.x = this.horizontal_boundary[0];
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
+            }
+            else if (this.inst.x > this.horizontal_boundary[1])
+            {
+		        this.inst.x = this.horizontal_boundary[1];
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
+            }
+		}
+		else    // boundaries
+		{
+		    this.inst.update_bbox();
+			var bbox = this.inst.bbox;			
+		    if (bbox.left < this.horizontal_boundary[0])
+            {			 
+		        this.inst.x = this.horizontal_boundary[0] + (this.inst.x - bbox.left);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
+            }
+            else if (bbox.right > this.horizontal_boundary[1])
+            {
+		        this.inst.x = this.horizontal_boundary[1] - (bbox.right - this.inst.x);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
+            }
+		}
 	    return (curr_x != this.inst.x);
 	};
 	
-	behinstProto.vertical_boundary_check = function ()
+	behinstProto.vertical_boundary_clamp = function ()
 	{
 	    if (!this.vertical_enable)
 		    return false;
 	    var curr_y = this.inst.y;
-		if (this.inst.y < this.vertical_boundary[0])
-        {
-		    this.inst.y = this.vertical_boundary[0];
-            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
-        }
-        else if (this.inst.y > this.vertical_boundary[1])
-        {
-		    this.inst.y = this.vertical_boundary[1];
-            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
-        }
+		
+		if (this.align_mode == 0)    // origin
+		{
+		    if (this.inst.y < this.vertical_boundary[0])
+            {
+		        this.inst.y = this.vertical_boundary[0];
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
+            }
+            else if (this.inst.y > this.vertical_boundary[1])
+            {
+		        this.inst.y = this.vertical_boundary[1];
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
+            }
+		}
+		else    // boundaries
+		{
+		    this.inst.update_bbox();
+			var bbox = this.inst.bbox;		
+		    if (bbox.top < this.vertical_boundary[0])
+            {
+		        this.inst.y = this.vertical_boundary[0] + (this.inst.y - bbox.top);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
+            }
+            else if (bbox.bottom > this.vertical_boundary[1])
+            {
+		        this.inst.y = this.vertical_boundary[1] - (bbox.bottom - this.inst.y);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
+            }		
+		}
 	    return (curr_y != this.inst.y);			
 	};
+	
+	// wrap	
+	behinstProto.horizontal_boundary_wrap = function ()
+	{
+	    if (!this.horizontal_enable)
+		    return false;
+		var curr_x = this.inst.x;
+		
+		if (this.align_mode == 0)    // origin
+		{
+		    if (this.inst.x < this.horizontal_boundary[0])
+            {
+		        this.inst.x = this.horizontal_boundary[1] + 1;
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
+            }
+            else if (this.inst.x > this.horizontal_boundary[1])
+            {
+		        this.inst.x = this.horizontal_boundary[0] - 1;
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
+            }
+		}
+		else    // boundaries
+		{
+		    this.inst.update_bbox();
+			var bbox = this.inst.bbox;			
+		    if (bbox.right < this.horizontal_boundary[0])
+            {			 
+		        this.inst.x = this.horizontal_boundary[1] + 1 + (bbox.right - this.inst.x);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
+            }
+            else if (bbox.left > this.horizontal_boundary[1])
+            {
+		        this.inst.x = this.horizontal_boundary[0] - 1 - (this.inst.x - bbox.left);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
+            }
+		}
+	    return (curr_x != this.inst.x);
+	};
+	
+	behinstProto.vertical_boundary_wrap = function ()
+	{
+	    if (!this.vertical_enable)
+		    return false;
+	    var curr_y = this.inst.y;
+		
+		if (this.align_mode == 0)    // origin
+		{
+		    if (this.inst.y < this.vertical_boundary[0])
+            {
+		        this.inst.y = this.vertical_boundary[1] + 1;
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
+            }
+            else if (this.inst.y > this.vertical_boundary[1])
+            {
+		        this.inst.y = this.vertical_boundary[0] - 1;
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
+            }
+		}
+		else    // boundaries
+		{
+		    this.inst.update_bbox();
+			var bbox = this.inst.bbox;		
+		    if (bbox.bottom < this.vertical_boundary[0])
+            {
+		        this.inst.y = this.vertical_boundary[1] + 1 + (bbox.bottom - this.inst.y) ;
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
+            }
+            else if (bbox.top > this.vertical_boundary[1])
+            {
+		        this.inst.y = this.vertical_boundary[0] - 1- (this.inst.y - bbox.top);
+                this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
+            }		
+		}
+	    return (curr_y != this.inst.y);			
+	};	
     
 	behinstProto._horizontal_percent_get = function ()
 	{
-        this.horizontal_boundary_update();        
-        var offset_inst = this.inst.x - this.horizontal_boundary[0];
-        var offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0];
+	    var offset_inst, offset_bound;
+        this.horizontal_boundary_update();
+        if (this.align_mode == 0)        
+		{
+            offset_inst = this.inst.x - this.horizontal_boundary[0];
+            offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0];
+	    }
+		else
+		{
+		    this.inst.update_bbox();
+            offset_inst = this.inst.x - this.horizontal_boundary[0] - (this.inst.x - this.inst.bbox.left);
+            offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0] - (this.inst.bbox.right - this.inst.bbox.left);		
+		}
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1) ;
         return pec;
 	};    
 	behinstProto._vertical_percent_get = function ()
 	{
-        this.vertical_boundary_update(); 
-        var offset_inst = this.inst.y - this.vertical_boundary[0];
-        var offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0];
+	    var offset_inst, offset_bound;	
+        this.vertical_boundary_update();
+        if (this.align_mode == 0)        
+		{		
+            offset_inst = this.inst.y - this.vertical_boundary[0];
+            offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0];
+		}
+		else
+		{
+		    this.inst.update_bbox();
+            offset_inst = this.inst.y - this.vertical_boundary[0] - (this.inst.y - this.inst.bbox.top);
+            offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0] - (this.inst.bbox.bottom - this.inst.bbox.top);				
+        }
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1);
         return pec;
 	};        

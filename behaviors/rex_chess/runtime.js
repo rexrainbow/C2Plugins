@@ -51,7 +51,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	{
 	};  
 	
-	behinstProto._board_get = function ()
+	behinstProto.GetBoard = function ()
 	{
         var _xyz;
         if (this.board != null)
@@ -110,7 +110,7 @@ cr.behaviors.Rex_chess = function(runtime)
 
 	Cnds.prototype.CompareLX = function (cmp, lx)
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    var _xyz = board.uid2xyz(this.inst.uid);    
@@ -119,7 +119,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	
 	Cnds.prototype.CompareLY = function (cmp, ly)
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    var _xyz = board.uid2xyz(this.inst.uid);    
@@ -128,7 +128,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	
 	Cnds.prototype.CompareLZ = function (cmp, lz)
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    var _xyz = board.uid2xyz(this.inst.uid);    
@@ -137,7 +137,7 @@ cr.behaviors.Rex_chess = function(runtime)
 		
 	Cnds.prototype.IsTile = function ()
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    var _xyz = board.uid2xyz(this.inst.uid);	    
@@ -148,7 +148,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	{
 		if (!board_objs)
 			return;
-		return (this._board_get() == board_objs.getFirstPicked());
+		return (this.GetBoard() == board_objs.getFirstPicked());
 	};	
 	
 	Cnds.prototype.OnCollided = function (objB)
@@ -157,7 +157,7 @@ cr.behaviors.Rex_chess = function(runtime)
 			return;
 				    
 	    var objA = this.inst.type;
-		var board = this._board_get();
+		var board = this.GetBoard();
 		if (board == null)
 		    return false;
             
@@ -172,7 +172,7 @@ cr.behaviors.Rex_chess = function(runtime)
 			return;
 				    
 	    var objA = this.inst.type;
-		var board = this._board_get();
+		var board = this.GetBoard();
 		if (board == null)
 		    return false;
             
@@ -183,7 +183,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	
 	Cnds.prototype.AreNeighbors = function (uidB)
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	   
@@ -192,23 +192,23 @@ cr.behaviors.Rex_chess = function(runtime)
 	
 	Cnds.prototype.NoChessAbove = function ()
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    
         var _xyz = board.uid2xyz(this.inst.uid);
-	    var cnt = board.xy2zcnt(_xyz.x, _xyz.y);
+	    var cnt = board.xy2zCnt(_xyz.x, _xyz.y);
 		return (cnt == 1);		
 	};	
 
 	Cnds.prototype.NoChessAboveLZ = function (lz)
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    
         var _xyz = board.uid2xyz(this.inst.uid);
-		return board.is_empty(_xyz.x, _xyz.y, lz);	
+		return board.IsEmpty(_xyz.x, _xyz.y, lz);	
 	};	
 	//////////////////////////////////////
 	// Actions
@@ -222,9 +222,9 @@ cr.behaviors.Rex_chess = function(runtime)
 				    
 	    var chess_uid = this.inst.uid;
 	    if (this.board != null)  // at other board
-	        this.board.remove_item(chess_uid);
+	        this.board.RemoveChess(chess_uid);
 	    this.board = board_objs.instances[0];
-	    this.board.add_item(this.inst,lx, ly, lz);
+	    this.board.AddChess(this.inst,lx, ly, lz);
 	    
 	    if (this.board.uid2xyz(chess_uid) == null)  // add chess fail
 	        this.board = null;
@@ -232,10 +232,10 @@ cr.behaviors.Rex_chess = function(runtime)
 
 	Acts.prototype.RemoveChess = function ()
 	{
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return;
-	    board.remove_item(this.inst.uid);   
+	    board.RemoveChess(this.inst.uid);   
 	}; 	
 
 	Acts.prototype.MoveChess = function (tile_objs)
@@ -243,7 +243,7 @@ cr.behaviors.Rex_chess = function(runtime)
 		if (!tile_objs)
 			return;
 				    
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return;
 	        
@@ -257,23 +257,23 @@ cr.behaviors.Rex_chess = function(runtime)
 	    if (tile_xyz == null)
 	        return;  
 	                
-        board.move_item(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z); 
+        board.MoveChess(chess_uid, tile_xyz.x, tile_xyz.y, chess_xyz.z); 
 	};	
 	
 	Acts.prototype.MoveChess2Index = function (lx, ly, lz)
 	{	
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return;
  
         var chess_uid = this.inst.uid;
-	    board.remove_item(chess_uid);   
-        board.add_item(chess_uid, lx, ly, lz);        
+	    board.RemoveChess(chess_uid);   
+        board.AddChess(chess_uid, lx, ly, lz);        
 	}; 
 	
 	Acts.prototype.SwapChess = function (uidB)
 	{	
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return;   
         board.SwapChess(this.inst.uid, uidB);
@@ -286,7 +286,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.LX = function (ret)
 	{
 	    var lx;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        lx = (-1);
 	    else
@@ -297,7 +297,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.LY = function (ret)
 	{
 	    var ly;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        ly = (-1);
 	    else
@@ -308,7 +308,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.LZ = function (ret)
 	{
 	    var lz;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        lz = (-1);
 	    else
@@ -319,7 +319,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.LZ2UID = function (ret,lz)
 	{
 	    var ret_uid;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        ret_uid = (-1);
 	    else
@@ -334,7 +334,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.PX = function (ret,logic_x,logic_y)
 	{	    
         var px;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        px = (-1);
 	    else
@@ -348,7 +348,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.PY = function (ret,logic_x,logic_y)
 	{
         var py;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        py = (-1);
 	    else
@@ -362,7 +362,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.UID2LA = function (ret, uid_to)
 	{
         var angle;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        angle = (-1);
 	    else
@@ -385,13 +385,13 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.ZCnt = function (ret)
 	{  	    
         var cnt;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        py = (-1);
 	    else
 	    {
 	        var _xyz = board.uid2xyz(this.inst.uid);
-	        cnt = board.xy2zcnt(_xyz.x, _xyz.y);
+	        cnt = board.xy2zCnt(_xyz.x, _xyz.y);
 	    }
 	    ret.set_int(cnt);
 	};	 
@@ -399,7 +399,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	Exps.prototype.DIR2UID = function (ret,dir,lz)
 	{
 	    var ret_uid;
-	    var board = this._board_get();
+	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        ret_uid = (-1);
 	    else
