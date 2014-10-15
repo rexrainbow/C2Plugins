@@ -73,7 +73,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._hit_dist_tile = false; 
 	};
 
-	instanceProto.board_get = function()
+	instanceProto.GetBoard = function()
 	{
         if (this.board != null)
             return this.board;
@@ -94,7 +94,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         return null;
 	};
 	
-	instanceProto.instgroup_get = function()
+	instanceProto.GetInstGroup = function()
 	{
         if (this.group != null)
             return this.group;
@@ -115,9 +115,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         return null;
 	};
 	
-	instanceProto.is_inside_board = function (x,y,z)
+	instanceProto.IsInsideBoard = function (x,y,z)
 	{
-	    return this.board_get().is_inside_board(x,y,z);
+	    return this.GetBoard().IsInsideBoard(x,y,z);
 	};	
 	
 	var _get_uid = function(objs)
@@ -138,17 +138,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
    
 	instanceProto.xyz2uid = function(x, y, z)
 	{
-	    return this.board_get().xyz2uid(x, y, z);
+	    return this.GetBoard().xyz2uid(x, y, z);
 	};
 	
 	instanceProto.uid2xyz = function(uid)
 	{
-	    return this.board_get().uid2xyz(uid);
+	    return this.GetBoard().uid2xyz(uid);
 	};
 	
 	instanceProto.lz2uid = function(uid,lz)
 	{
-	    return this.board_get().lz2uid(uid,lz);
+	    return this.GetBoard().lz2uid(uid,lz);
 	};	
 	
 	var prop_BLOCKING = -1;
@@ -190,14 +190,14 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	instanceProto.neighborsLXY_get = function(_x,_y)
 	{
-	    var layout = this.board_get().GetLayout();
-	    this._neighbors_lxy_init(layout.GetDirCount());
+	    var board = this.GetBoard();
+	    this._neighbors_lxy_init(board.GetLayout().GetDirCount());
 	    var dir;
 	    var neighbors_cnt = this._neighbors_lxy.length;	    
         for (dir=0; dir<neighbors_cnt; dir++)
         {
-            this._neighbors_lxy[dir].x = layout.GetNeighborLX(_x,_y, dir);
-            this._neighbors_lxy[dir].y = layout.GetNeighborLY(_x,_y, dir);
+            this._neighbors_lxy[dir].x = board.GetNeighborLX(_x,_y, dir);
+            this._neighbors_lxy[dir].y = board.GetNeighborLY(_x,_y, dir);
         }
         
         if (this.is_shuffle_neighbors)
@@ -233,7 +233,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     {
         var t0_xyz = this.uid2xyz(t0_uid);
         var t1_xyz = this.uid2xyz(t1_uid);
-        var dir = this.board_get().GetLayout().XYZ2Dir(t0_xyz, t1_xyz);
+        var dir = this.GetBoard().GetLayout().XYZ2Dir(t0_xyz, t1_xyz);
         return dir;
     };    
 	
@@ -844,8 +844,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	 
 	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
 	{	  
-	    var group = this.instgroup_get(); 
-	    var board = this.board_get();
+	    var group = this.GetInstGroup(); 
+	    var board = this.GetBoard();
 	    
 	    group.GetGroup(group_name).Clean();	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
@@ -883,8 +883,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		
 	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
 	{     
-	    var group = this.instgroup_get(); 
-	    var board = this.board_get();  
+	    var group = this.GetInstGroup(); 
+	    var board = this.GetBoard();  
 	    
 	    group.GetGroup(group_name).Clean();
 	    var chess_uid = _get_uid(chess_objs);

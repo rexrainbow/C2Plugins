@@ -69,7 +69,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 		this._clean_symbol_cache();
 	};
 		
-	instanceProto.board_get = function()
+	instanceProto.GetBoard = function()
 	{
         if (this.board != null)
             return this.board;
@@ -90,7 +90,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         return null;
 	};
 	
-	instanceProto.instgroup_get = function()
+	instanceProto.GetInstGroup = function()
 	{
         if (this.group != null)
             return this.group;
@@ -159,7 +159,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
     
     instanceProto.write_symbol_cache = function (x,y)
     {
-        var tile_uid = this.board_get().xyz2uid(x,y,0);
+        var tile_uid = this.GetBoard().xyz2uid(x,y,0);
         if (tile_uid == null)
             return;
 	    this.exp_TileUID = tile_uid;
@@ -200,7 +200,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{
         this._clean_symbol_cache();
         var x,y,uid;
-        var board = this.board_get();
+        var board = this.GetBoard();
         var x_max= board.x_max;
         var y_max= board.y_max;
         for (y=0; y<=y_max; y++)
@@ -233,7 +233,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{
         this._tiles_groups.length = 0;
         if (this._dir == null)
-            this._dir = this.board_get().GetLayout().GetDirCount();
+            this._dir = this.GetBoard().GetLayout().GetDirCount();
         if (this._dir == 4)
             this.pattern_search_square(pattern, is_any_pattern_mode);
         else if (this._dir == 6)
@@ -255,9 +255,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
             
 	    var x,y,i,s,is_matched,matched_tiles=[];
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var x_max=board.x_max;
 	    var y_max=board.y_max;
+        var cur_x,cur_y,next_x,next_y;		
 	    var m, mode_cnt=this._square_modes.length;
 	    for (m=0; m<mode_cnt; m++)
 	    {
@@ -272,44 +273,52 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                matched_tiles.length=0;
                     if (is_matchN_mode)
                         pattern = null;
+	                cur_x = x;
+	                cur_y = y;									
 	                for(i=0;i<pattern_length;i++)
-	                {
-	                    switch (m)
-	                    {
-	                    case 0:    // horizontal
-	                        s = this._symbol_at(x+i,y);
-	                        break;
-	                    case 1:    // vertical
-	                        s = this._symbol_at(x,y+i);
-	                        break;
-	                    case 2:    // isometric-0
-	                        s = this._symbol_at(x+i,y+i);
-	                        break;
-	                    case 3:    // isometric-1
-	                        s = this._symbol_at(x-i,y+i);
-	                        break;
-	                    default:
-	                        s = null;
-	                        break;
-	                    }
+	                {	                                        
+	                    s = this._symbol_at(cur_x,cur_y);
 	                    if (!this._is_valid_symbol(s))
 	                    {
 	                        is_matched = false;
 	                        break;
-	                    }	                    
+	                    }
                         else if (is_matchN_mode && (pattern==null))
                         {
                             pattern = [];
                             for (var r=0; r<pattern_length; r++)
-                                pattern.push(s.symbol);                            
+                                pattern.push(s.symbol);
                         }
 	                    if (s.symbol != pattern[i])
 	                    {
 	                        is_matched = false;
 	                        break;
 	                    }
-                        matched_tiles.push(s);
-	                }
+                        matched_tiles.push(s);   
+						
+	                    switch (m)
+	                    {
+						case 0:    // horizontal
+                            next_x = board.GetNeighborLX(cur_x,cur_y,0);
+	                        next_y = board.GetNeighborLY(cur_x,cur_y,0);
+							break;
+						case 1:    // vertical
+                            next_x = board.GetNeighborLX(cur_x,cur_y,1);
+	                        next_y = board.GetNeighborLY(cur_x,cur_y,1);
+							break;
+						case 2:    // isometric-0
+                            next_x = board.GetNeighborLX(cur_x,cur_y,4);
+	                        next_y = board.GetNeighborLY(cur_x,cur_y,4);
+							break;
+						case 3:    // isometric-1
+                            next_x = board.GetNeighborLX(cur_x,cur_y,5);
+	                        next_y = board.GetNeighborLY(cur_x,cur_y,5);
+							break;
+					    }
+						
+	                    cur_x = next_x;
+	                    cur_y = next_y;
+	                }					
 	                if (is_matched)
 					{
 	                    this._tiles_groups.push({"uid":matched2uid(matched_tiles),
@@ -329,8 +338,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
             
         var dir,x,y,i,s,is_matched,matched_tiles=[];
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;     
-	    var board = this.board_get();
-	    var layout = board.GetLayout();
+	    var board = this.GetBoard();
 	    var x_max=board.x_max;
 	    var y_max=board.y_max;       
         var cur_x,cur_y,next_x,next_y;
@@ -366,8 +374,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        break;
 	                    }
                         matched_tiles.push(s);                        
-                        next_x = layout.GetNeighborLX(cur_x,cur_y,dir);
-	                    next_y = layout.GetNeighborLY(cur_x,cur_y,dir);
+                        next_x = board.GetNeighborLX(cur_x,cur_y,dir);
+	                    next_y = board.GetNeighborLY(cur_x,cur_y,dir);
 	                    cur_x = next_x;
 	                    cur_y = next_y;
 	                }
@@ -403,11 +411,12 @@ cr.plugins_.Rex_Matcher = function(runtime)
         pattern = csv2array(pattern);
         this._tiles_groups.length = 0;
         var x,y,i,j,c,s,is_matched,matched_tiles=[];
-        var board = this.board_get();
+        var board = this.GetBoard();
 	    var x_max=board.x_max;
 	    var y_max=board.y_max;
         var pattern_row=pattern.length,pattern_col;
         var is_template_pattern;
+        var tlx, tly;
 	    for(y=0;y<=y_max;y++)
 	    {
 	        for(x=0;x<=x_max;x++)
@@ -422,7 +431,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                pattern_col = pattern[i].length;
 	                for(j=0;j<pattern_col;j++)
 	                {
-	                    s = this._symbol_at(x+j,y+i);
+	                    tlx = board.LX2WrapLX(x+j);
+	                    tly = board.LY2WrapLY(y+i);
+	                    s = this._symbol_at(tlx, tly);
 	                    if (!this._is_valid_symbol(s))
 	                    {
 	                        is_matched = false;
@@ -470,7 +481,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
         var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-        var _group=this.instgroup_get().GetGroup(this._group_name)
+        var _group=this.GetInstGroup().GetGroup(this._group_name)
 
         if (solModifierAfterCnds)
         {
@@ -747,7 +758,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};		
 	Acts.prototype.ForceUpdaeCellByTileUID = function (uid)	
 	{
-	    var _xyz = this.board_get().uid2xyz(uid);
+	    var _xyz = this.GetBoard().uid2xyz(uid);
         this.write_symbol_cache(_xyz.x, _xyz.y);       
 	};	
 	Acts.prototype.ForceUpdaeCellByTile = function (chess_type)	
@@ -756,7 +767,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
             return;  
         var chess = chess_type.getCurrentSol().getObjects();
         var i, chess_cnt=chess.length;
-		var _xyz, board=this.board_get();
+		var _xyz, board=this.GetBoard();
         for (i=0; i<chess_cnt; i++)
         {
 		    _xyz = board.uid2xyz(chess[i].uid);

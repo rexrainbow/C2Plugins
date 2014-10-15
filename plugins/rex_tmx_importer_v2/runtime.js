@@ -214,7 +214,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};
 	instanceProto._create_instance = function(x,y,c2_layer)
 	{
-        var inst = this.layout.CreateItem(this._obj_type,x,y,c2_layer);
+        var inst = this.layout.CreateChess(this._obj_type,x,y,c2_layer);
         cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, this.exp_Frame);
         inst.opacity = this.exp_LayerOpacity;          
         inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
@@ -943,7 +943,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
                                      (logic_y*this.height);
         return y+this.PositionOY;
 	};
-    LayoutKlassProto.CreateItem = function(obj_type,x,y,layer)
+    LayoutKlassProto.CreateChess = function(obj_type,x,y,layer)
 	{
         return this.plugin.runtime.createInstance(obj_type, layer,this.LXYZ2PX(x,y),this.LXYZ2PY(x,y) );         
 	}; 

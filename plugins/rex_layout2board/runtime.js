@@ -128,7 +128,7 @@ cr.plugins_.Rex_layout2board = function(runtime)
             ly = board_layout.PXY2LY(chess.x, chess.y);            
             error_flg = (board.xyz2uid(lx, ly, lz) != null)? null:true;
             assert2(error_flg, "[Layout to Board] Error! ("+lx+","+ly+","+lz+") had been occupied.");
-            board.add_item(chess, lx, ly, lz);
+            board.AddChess(chess, lx, ly, lz);
         }
 	};
     

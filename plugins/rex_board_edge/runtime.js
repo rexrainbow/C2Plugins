@@ -71,7 +71,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         this.remove_edge(inst.uid);
     };	
     
-	instanceProto.board_get = function()
+	instanceProto.GetBoard = function()
 	{
         if (this.board != null)
             return this.board;
@@ -115,7 +115,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	
 	instanceProto.set_position_angle = function (inst, lx0, ly0, lx1, ly1)
 	{
-        var layout = this.board_get().GetLayout();	    
+        var layout = this.GetBoard().GetLayout();	    
 	    var px0 = layout.LXYZ2PX(lx0, ly0, 0);
 	    var py0 = layout.LXYZ2PY(lx0, ly0, 0);
         var px1 = layout.LXYZ2PX(lx1, ly1, 0); 
@@ -189,7 +189,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 
 	instanceProto.pickuids = function (group, objtype)
 	{
-	    var has_picked = this.board_get().pickuids(group.GetList(), objtype, true);
+	    var has_picked = this.GetBoard().pickuids(group.GetList(), objtype, true);
 	    group.Clean();
         return has_picked;
     };	
@@ -198,7 +198,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	{
         if (!edge_objtype)
             return;
-        if (this.board_get().lxy2neighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
+        if (this.GetBoard().lxy2NeighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
         {
             this.pickuids(this.pinstgroup, edge_objtype);
             return;
@@ -248,7 +248,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         if (!edge_objtype)
             return false; 
 
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_uid0);
 	    var xyz1 = board.uid2xyz(chess_uid1);
 	    if ((xyz0 == null) || (xyz1 == null))
@@ -269,7 +269,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             
 		var chess = chess_objtype.getCurrentSol().getObjects();
         var i, chess_cnt=chess.length;
-        var board = this.board_get();
+        var board = this.GetBoard();
         var layout = board.GetLayout();
         for (i=0; i<chess_cnt; i++)  
         {
@@ -312,7 +312,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             
 		var chess = chess_objtype.getCurrentSol().getObjects();
         var i, chess_cnt=chess.length;
-        var board = this.board_get();
+        var board = this.GetBoard();
         var layout = board.GetLayout();
         var j, dir_cnt = layout.GetDirCount();   
         var edgeuid2count = {};
@@ -357,7 +357,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             
 		var edges = edge_objtype.getCurrentSol().getObjects();
         var i, edges_cnt=edges.length;
-        var board = this.board_get();
+        var board = this.GetBoard();
         var layout = board.GetLayout();
         for (i=0; i<edges_cnt; i++)  
         {            
@@ -377,8 +377,8 @@ cr.plugins_.Rex_board_edge = function(runtime)
             }
             else
             {
-                var zhash0 = board.xy2zhash(lxy[0], lxy[1]);
-                var zhash1 = board.xy2zhash(lxy[2], lxy[3]);           
+                var zhash0 = board.xy2zHash(lxy[0], lxy[1]);
+                var zhash1 = board.xy2zHash(lxy[2], lxy[3]);           
                 var z;
                 for (z in zhash0)
                 {
@@ -431,7 +431,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	};		  
 	Cnds.prototype.HasEdgeBetweenChess = function (chess_uid0, chess_uid1)
 	{
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_uid0);
 	    var xyz1 = board.uid2xyz(chess_uid1);
 	    if ((xyz0 == null) || (xyz1 == null))
@@ -450,7 +450,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         if (!chess_inst)
             return false; 
             
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_inst.uid);
 	    var layout = board.GetLayout();
 	    var has_edge;
@@ -531,7 +531,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    
 	Acts.prototype.CreateEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1, layer)
 	{
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_uid0);
 	    var xyz1 = board.uid2xyz(chess_uid1);
 	    if ((xyz0 == null) || (xyz1 == null))
@@ -547,7 +547,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 
         var chess = chess_objtype.getCurrentSol().getObjects();
         var i, chess_cnt=chess.length;
-        var board = this.board_get();
+        var board = this.GetBoard();
         var layout = board.GetLayout();
         for (i=0; i<chess_cnt; i++)  
         {
@@ -613,7 +613,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	
 	Acts.prototype.MoveEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1)
 	{   
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_uid0);
 	    var xyz1 = board.uid2xyz(chess_uid1);
 	    if ((xyz0 == null) || (xyz1 == null))
@@ -636,7 +636,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         if (!chess_inst)
             return;
             
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_inst.uid);
         if (xyz0 == null)
             return;        
@@ -698,7 +698,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
     
 	Exps.prototype.ChessUID2EdgeUID = function (ret, chess_uid, dir)
 	{
-        var board = this.board_get();
+        var board = this.GetBoard();
         var xyz0 = board.uid2xyz(chess_uid0);
 	    var xyz1 = board.uid2xyz(chess_uid1);
 	    if ((xyz0 == null) || (xyz1 == null))
@@ -714,7 +714,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
     
 	Exps.prototype.ChessDIR2EdgeUID = function (ret, chess_uid, dir)
 	{
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_uid);
         if (xyz0 == null)
         {
@@ -732,7 +732,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 
 	Exps.prototype.ChessUID2EdgeCount = function (ret, chess_uid)
 	{
-	    var board = this.board_get();
+	    var board = this.GetBoard();
 	    var xyz0 = board.uid2xyz(chess_uid);
         if (xyz0 == null)
         {
@@ -763,7 +763,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        return;
 	    }
         
-        var layout = this.board_get().GetLayout();	    
+        var layout = this.GetBoard().GetLayout();	    
         var lxy = this.key2lxy(k);
 	    var px0 = layout.LXYZ2PX(lxy[0], lxy[1], 0);
         var px1 = layout.LXYZ2PX(lxy[2], lxy[3], 0);       
@@ -779,7 +779,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        return;
 	    }
 
-        var layout = this.board_get().GetLayout();
+        var layout = this.GetBoard().GetLayout();
 	    var lxy = this.key2lxy(k);
 	    var py0 = layout.LXYZ2PY(lxy[0], lxy[1], 0);
         var py1 = layout.LXYZ2PY(lxy[2], lxy[3], 0);    
@@ -795,7 +795,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        return;
 	    }
 
-        var layout = this.board_get().GetLayout();	
+        var layout = this.GetBoard().GetLayout();	
 	    var lxy = this.key2lxy(k);    
 	    var px0 = layout.LXYZ2PX(lxy[0], lxy[1], 0);
 	    var py0 = layout.LXYZ2PY(lxy[0], lxy[1], 0);
