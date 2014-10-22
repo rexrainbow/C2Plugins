@@ -33,7 +33,12 @@ AddCondition(5,	0, "Is call rejected", "If",
              "Is {my} call rejected", "Requested call is rejected.", 
              "IsCallRejected");
 AddCondition(6, 0, "Is at cool down", "State", 
-             "Is {my} at cool down", "", "IsAtCD");             
+             "Is {my} at cool down", "", "IsAtCD"); 
+AddCondition(7, 0, "Can call", "Test", 
+             "Can {my} call", "", "TestCall");    
+AddCondition(8,	0, "Is activated", "Activated", 
+             "Is {my} activated", 
+             "Return true if this behavior is activated.", "IsActivated"); 	                                  
 AddCondition(11, cf_trigger, "On acceptable checking", "Acceptable", 
              "On {my} acceptable checking", 
              "Custom acceptable checking.", 
@@ -45,13 +50,13 @@ AddNumberParam("Time", "Cooldown interval, in seconds", 0.1);
 AddAction(0, 0, "Setup cooldown", "Setup", 
           "{my} get timer from <i>{0}</i>, cooldown interval to <i>{1}</i>", 
           "Setup cooldown.", "Setup");
-AddAction(1, 0, "Request a call", "Call", 
+AddAction(1, 0, "Request", "Request", 
           "Request {my} a call", 
-          "Request a call.", "Request");
+          "Request a call.", "RequestCall");
 AddNumberParam("Time", "Cooldown interval, in seconds", 0.1);
 AddAction(2, 0, "Set Cooldown interval", "Setup", 
-          "Set cooldown interval to <i>{0}</i> second", 
-          "Set cooldown interval, in second.", "SetCDInterval");
+          "Set {my} cooldown interval to <i>{0}</i> seconds", 
+          "Set cooldown interval, in seconds.", "SetCDInterval");
 AddAction(3, 0, "Pause", "Control", 
           "{my} pause cooldown", 
           "Pause cooldown.", "Pause"); 
@@ -61,14 +66,16 @@ AddAction(4, 0, "Resume", "Control",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the cooldown behavior.",1);
-AddAction(5, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", "Enable the object's cooldown behavior.", "SetActivated");
+AddAction(5, 0, "Set activated", "", 
+          "Set {my} activated to <i>{0}</i>", 
+          "Enable the object's cooldown behavior. It will also cancel current cooldown if sets to No.", "SetActivated");
 AddAction(6, 0, "Cancel", "Control", 
           "{my} cancel cooldown", 
           "Cancel cooldown.", "Cancel"); 
 AddNumberParam("Time", "Cooldown remainder time, in seconds", 0.1);
 AddAction(7, 0, "Set Cooldown remainder time", "Time", 
-          "Set cooldown remainder time to <i>{0}</i> second", 
-          "Set cooldown remainder time, in second. This value should smaller then cooldown interval.", "SetRemainerTime");
+          "Set {my} cooldown remainder time to <i>{0}</i> seconds", 
+          "Set cooldown remainder time, in seconds. This value should smaller then cooldown interval.", "SetRemainerTime");
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Accepted", "Accept this request.",1);
@@ -101,7 +108,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),    
-    new cr.Property(ept_float, "Cooldown interval", 1, "Cooldown interval, in second."),     
+    new cr.Property(ept_float, "Cooldown interval", 1, "Cooldown interval, in seconds. 0 is start immediately"),     
 	];
 	
 // Called by IDE when a new behavior type is to be created
