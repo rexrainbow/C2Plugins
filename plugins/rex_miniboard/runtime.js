@@ -347,9 +347,9 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	};	
 	
 	// export
-	instanceProto.CellCanPut = function (board_inst, chess_uid, lx, ly, lz, check_mode)
+	instanceProto.CellCanPut = function (board_inst, chess_uid, lx, ly, lz, test_mode)
 	{	
-	    switch (check_mode)
+	    switch (test_mode)
 	    {
 	    case 0:  return true;
 	    case 1:  return this.IsInside(board_inst, chess_uid, lx, ly, lz);
@@ -359,12 +359,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    }
 	}; 	
 	
-	instanceProto.CanPut = function (board_inst, offset_lx, offset_ly, check_mode)
+	instanceProto.CanPut = function (board_inst, offset_lx, offset_ly, test_mode)
 	{	    
 	    if (board_inst == null)
 	        return false;
 	        
-	    if (check_mode == 0)
+	    if (test_mode == 0)
 	        return true;
 
 		var uid, xyz, lx, ly, lz;
@@ -375,20 +375,22 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		    ly = xyz.y + offset_ly;
 		    lz = xyz.z;
 
-		    if (!this.CellCanPut(board_inst, parseInt(uid), lx, ly, lz, check_mode))
+		    if (!this.CellCanPut(board_inst, parseInt(uid), lx, ly, lz, test_mode))
 		        return false;
 		}
 		return true;
 	}; 			
 	
-	instanceProto.PutChess = function (board_inst, offset_lx, offset_ly, check_mode, is_pos_set, is_put_test)
+	instanceProto.PutChess = function (board_inst, offset_lx, offset_ly, 
+	                                   test_mode, is_pos_set, is_put_test, 
+	                                   ignore_put_request)
 	{	    
 	    if (board_inst == null)
 	        return;
 	        
         this.PullOutChess();
         
-        var is_success = this.CanPut(board_inst, offset_lx, offset_ly, check_mode);  
+        var is_success = this.CanPut(board_inst, offset_lx, offset_ly, test_mode);  
         if (is_success && (!is_put_test))
         {
             // put on main board logically
@@ -434,7 +436,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		        this.chess_pin();
             }
         }
-        this.do_putting_request(is_success);
+        if (ignore_put_request !== true)
+            this.do_putting_request(is_success);
         return is_success;
 	};
     
@@ -460,6 +463,113 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         
         this.mainboard_ref_set(null);
 	};
+	
+    // transfer miniboard 
+	instanceProto.TransferMiniboard = function (options)
+	{
+	    var miniboard = this.inst;
+	    var is_on_mainboard = (this.mainboard.inst != null);
+	    if (!is_on_mainboard)	    
+	        options.checkMode = null;
+	        
+	    if (is_on_mainboard)
+	    {
+	        this.PullOutChess();	
+	    }
+
+	    var new_items = this.do_logical_transfer(options);
+	    var is_success = (new_items != null);
+	    if (is_success && (!options.isTest))
+	    {
+	        this.lxyreset(new_items);
+	        if (options.isSetPosition)
+	            this.chess_position_reset();
+	    }
+	    
+	    if (is_on_mainboard)
+	    {	    
+	        this.PutChess(this.mainboard_last.inst, // board_inst
+	                      this.mainboard_last.LOX,  // offset_lx
+	                      this.mainboard_last.LOY,  // offset_ly
+	                      false,                    // test_mode
+	                      null,                     // is_pos_set
+	                      null,                     // is_put_test
+	                      true                      // ignore_put_request	    
+	                      );                                                       
+	    }
+        if (!options.isTest)
+        {
+            if (is_success)
+                options.onAccepted();	 
+            else
+                options.onRejected();	                      
+        }
+            
+	    return is_success;
+	};  	
+	instanceProto.lxyreset = function (new_items)
+	{
+        // reset items ( uid2xyz )
+        this.items = new_items;
+        
+        // reset board ( xyz2uid )
+        this.board = {};	        
+        var uid, xyz;
+        for (uid in new_items)
+        {
+            xyz = new_items[uid];
+            this.add_to_board(xyz.x, xyz.y, xyz.z, parseInt(uid));
+        }
+	};		
+	
+	instanceProto.chess_position_reset = function ()
+	{
+	    var layout = this.type.GetLayout();
+	    var pox_save = layout.GetPOX();
+		var poy_save = layout.GetPOY();
+		layout.SetPOX(this.x);
+		layout.SetPOY(this.y);
+        var _uid, xyz, chess_inst;
+        for (_uid in this.items)
+        {
+            var uid = parseInt(_uid);
+            chess_inst = this.uid2inst(uid);
+            if (chess_inst == null)
+                continue;                
+            xyz = this.uid2xyz(uid);         
+            chess_inst.x = layout.LXYZ2PX(xyz.x, xyz.y, xyz.z);
+            chess_inst.y = layout.LXYZ2PY(xyz.x, xyz.y, xyz.z);
+            chess_inst.set_bbox_changed();
+            this.add_uid2pdxy(chess_inst);
+        }
+		layout.SetPOX(pox_save);
+		layout.SetPOY(poy_save);	    
+	};	
+	    
+	instanceProto.do_logical_transfer = function (options)
+	{ 
+        var layout = this.type.GetLayout(); 
+        var mainboard = this.mainboard_last;
+        
+	    var uid, xyz, new_items = {};
+	    // rotate items to new_items  
+	    for (uid in this.items)
+	    {	        
+	        var new_xyz = options.onTransferCell(this.items[uid], options);
+	        
+	        if (options.checkMode != null)
+	        {
+	            var lx = new_xyz.x + mainboard.LOX;
+	            var ly = new_xyz.y + mainboard.LOY;
+	            var lz = new_xyz.z;
+	            if (!this.CellCanPut(mainboard.inst, parseInt(uid), lx, ly, lz, options.checkMode))
+	                return null;
+	        }
+	        new_items[uid] = new_xyz;
+	    }
+	    return new_items;
+	};
+	// transfer miniboard		
 	
 	instanceProto.pickuids = function (uids, chess_type, ignored_chess_check)
 	{
@@ -668,12 +778,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 	  
-	Cnds.prototype.CanPut = function (board_objs, offset_lx, offset_ly, check_mode)
+	Cnds.prototype.CanPut = function (board_objs, offset_lx, offset_ly, test_mode)
 	{
 		if (!board_objs)
 			return;
 			
-        return this.CanPut(board_objs.getFirstPicked(), offset_lx, offset_ly, check_mode);
+        return this.CanPut(board_objs.getFirstPicked(), offset_lx, offset_ly, test_mode);
 	}; 
 
 	Cnds.prototype.PickAllChess = function ()
@@ -785,12 +895,19 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    this.CreateChess(obj_type, lx, ly, lz, layer);        
 	};	
 	
-	Acts.prototype.PutChess = function (board_objs, offset_lx, offset_ly, is_pos_set, check_mode)
+	Acts.prototype.PutChess = function (board_objs, offset_lx, offset_ly, is_pos_set, test_mode)
 	{	 
 		if (!board_objs)
 			return;
 			
-		this.PutChess(board_objs.getFirstPicked(), offset_lx, offset_ly, check_mode, is_pos_set, false);
+		this.PutChess(board_objs.getFirstPicked(),    // board_inst
+		              offset_lx,                      // offset_lx
+		              offset_ly,                      // offset_ly
+		              test_mode,                     // test_mode
+		              is_pos_set,                     // is_pos_set
+		              false                           // is_put_test
+		                                              // ignore_put_request
+		              );              
 	};
 	
 	Acts.prototype.PullOutChess = function ()
@@ -831,12 +948,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	Acts.prototype.PutBack = function (is_pos_set)
 	{
-	    this.PutChess(this.mainboard_last.inst, 
-	                  this.mainboard_last.LOX, 
-	                  this.mainboard_last.LOY, 
-	                  null, 
-	                  is_pos_set, 
-	                  false);
+	    this.PutChess(this.mainboard_last.inst,     // board_inst
+	                  this.mainboard_last.LOX,      // offset_lx
+	                  this.mainboard_last.LOY,      // offset_ly
+	                  null,                         // test_mode
+	                  is_pos_set,                   // is_pos_set
+	                  false                         // is_put_test
+	                                                // ignore_put_request
+	                  );                 
 	};		
 		    
 	//////////////////////////////////////

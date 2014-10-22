@@ -105,8 +105,7 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	};
 
 	Cnds.prototype.NoWaitEvent = function(tag)
-	{    
-	    debugger;
+	{
 		var e=this.events[tag];
 		if (e == null)
 		    return true;

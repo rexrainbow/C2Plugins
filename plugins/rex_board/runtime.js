@@ -563,12 +563,13 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	instanceProto._pick_all_insts = function ()
 	{	    
 	    var uid, inst, objtype, sol;
-	    var uids = this.items;
 	    hash_clean(name2type);
 	    var has_inst = false;    
-	    for (uid in uids)
+	    for (uid in this.items)
 	    {
-	        inst = this.uid2inst(uid);	        
+	        inst = this.uid2inst(uid);	  
+            if (inst == null)
+                continue;			
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
 	        if (!(objtype.name in name2type))
@@ -585,6 +586,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	        name2type[name].applySolToContainer();
 	    hash_clean(name2type);
 	    return has_inst;
+	};
+	
+	instanceProto._pick_chess = function (chess_type)
+	{
+        _uids.length = 0;
+        var u;
+        for (u in this.items)
+        {
+            _uids.push(parseInt(u));
+        }       
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;  
 	};
     
 	instanceProto._pick_chess_on_LXY = function (chess_type, lx, ly)
@@ -647,6 +661,60 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         _uids.length = 0;
         return has_inst;          
 	};
+	
+	instanceProto._pick_chess_on_LX = function (chess_type, lx)
+	{
+	    var ly, lz, zHash, uid;
+        _uids.length = 0;	    
+	    for (ly=0; ly<=this.y_max; ly++)
+	    {
+	        zHash = this.xy2zHash(lx, ly);
+	        for (lz in zHash)
+	        {
+	            _uids.push(zHash[lz]);
+	        }
+	    }
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;          
+	};
+	
+	instanceProto._pick_chess_on_LY = function (chess_type, ly)
+	{
+	    var lx, lz, zHash, uid;
+        _uids.length = 0;	    
+	    for (lx=0; lx<=this.x_max; lx++)
+	    {
+	        zHash = this.xy2zHash(lx, ly);
+	        for (lz in zHash)
+	        {
+	            _uids.push(zHash[lz]);
+	        }
+	    }
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;          
+	};
+	
+	instanceProto._pick_chess_on_LZ = function (chess_type, lz)
+	{
+	    var lx, ly, uid;
+        _uids.length = 0;        
+	    for (ly=0; ly<=this.y_max; ly++)
+	    {
+	        for (lx=0; lx<=this.x_max; lx++)
+	        {
+	            uid = this.xyz2uid(lx, ly, lz);
+	            if (uid == null)
+	                continue;
+	                
+	            _uids.push(uid);
+	        }
+	    }
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;          
+	};			
 	
 	instanceProto.pick_neighbor_chess = function (origin_inst, dir, chess_type, is_wrap_mode)
 	{
@@ -907,6 +975,34 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var dir0 = this.uid2NeighborDir(uidA, uidB, 0);
 		return (dir1 != dir0);
 	};
+	
+	Cnds.prototype.PickChess = function (chess_type)
+	{
+        if (!chess_type)
+            return false;       
+        return this._pick_chess(chess_type);            
+	};	
+	
+	Cnds.prototype.PickChessAtLX = function (chess_type, lx)
+	{
+        if (!chess_type)
+            return false;
+        return this._pick_chess_on_LX(chess_type, lx);            
+	};	
+	
+	Cnds.prototype.PickChessAtLY = function (chess_type, ly)
+	{	    
+        if (!chess_type)
+            return false;
+        return this._pick_chess_on_LY(chess_type, ly);            
+	};	
+	
+	Cnds.prototype.PickChessAtLZ = function (chess_type, lz)
+	{
+        if (!chess_type)
+            return false;
+        return this._pick_chess_on_LZ(chess_type, lz);            
+	};		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -1096,7 +1192,35 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Acts.prototype.SetWrapMode = function (enable)
 	{
         this.is_wrap_mode = (enable == 1);
-	};		
+	};
+			
+	Acts.prototype.PickChess = function (chess_type)
+	{
+        if (!chess_type)
+            return;       
+        this._pick_chess(chess_type);            
+	};	
+	
+	Acts.prototype.PickChessAtLX = function (chess_type, lx)
+	{
+        if (!chess_type)
+            return;
+        this._pick_chess_on_LX(chess_type, lx);            
+	};	
+	
+	Acts.prototype.PickChessAtLY = function (chess_type, ly)
+	{
+        if (!chess_type)
+            return;
+        this._pick_chess_on_LY(chess_type, ly);            
+	};	
+	
+	Acts.prototype.PickChessAtLZ = function (chess_type, lz)
+	{
+        if (!chess_type)
+            return;
+        this._pick_chess_on_LZ(chess_type, lz);            
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

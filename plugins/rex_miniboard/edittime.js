@@ -23,9 +23,9 @@ AddComboParamOption("None");
 AddComboParamOption("Inside");
 AddComboParamOption("Empty");
 AddComboParamOption("Putable");
-AddComboParam("Putable checking", "Mode of putable checking.", 2);
+AddComboParam("Putable test", "Mode of putable test.", 2);
 AddCondition(1, 0, "Can put", "Main board", 
-             "Can put on <i>{0}</i> at offset to [<i>{1}</i>,<i>{2}</i>], checking mode to <i>{3}</i>",
+             "Can put on <i>{0}</i> at offset to [<i>{1}</i>,<i>{2}</i>], test mode: <i>{3}</i>",
              "Testing if this mini board could put at the main board.", "CanPut");
              
 AddCondition(2, cf_not_invertible, "Pick all chess", "SOL", 
@@ -107,9 +107,9 @@ AddComboParamOption("None");
 AddComboParamOption("Inside");
 AddComboParamOption("Empty");
 AddComboParamOption("Putable");
-AddComboParam("Putable checking", "Mode of putable checking.", 0);
+AddComboParam("Putable test", "Mode of putable test.", 1);
 AddAction(3, 0, "Put", "Main board", 
-          "Put on <i>{0}</i> at offset to [<i>{1}</i>, <i>{2}</i>] (<i>{3}</i>), checking mode to <i>{4}</i>", 
+          "Put on <i>{0}</i> at offset to [<i>{1}</i>, <i>{2}</i>] (<i>{3}</i>), test mode: <i>{4}</i>", 
           "Put chess on the board.", "PutChess");	
              
 AddAction(4, 0, "Pull out", "Main board", 
@@ -154,7 +154,7 @@ AddComboParamOption("logical and physical");
 AddComboParam("Mode", "Mode of putting.", 1);
 AddAction(11, 0, "Put back", "Main board", 
           "Put back (<i>{3}</i>)", 
-          "Put chess back on the previos board.", "PutBack");
+          "Put chess back on the previos board.", "PutBack");		  
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,
