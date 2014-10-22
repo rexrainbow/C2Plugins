@@ -341,47 +341,48 @@ cr.behaviors.Rex_GridMove = function(runtime)
         var layout = board.GetLayout();
         this.exp_TargetPX = layout.LXYZ2PX(lx, ly, lz);
         this.exp_TargetPY = layout.LXYZ2PY(lx, ly, lz);
-        var MoveSegmentKlass = cr.behaviors.Rex_GridMove.MoveSegment;
         
-        if (this.enable_moveTo)
+        if (!this.enable_moveTo)
+            return;
+
+        var MoveSegmentKlass = cr.behaviors.Rex_GridMove.MoveSegment;
+        if ((!board.is_wrap_mode) || (dir == null))
         {
-            if ((!board.is_wrap_mode) || (dir == null))
-            {
-                // not wrap mode, or not neighbor : move to target directly
-                var seg = new MoveSegmentKlass(this.inst.x, this.inst.y, this.exp_TargetPX, this.exp_TargetPY);
-                this._cmd_move_to.move_start(seg);            
-            }       
-            else // board.is_wrap_mode
-            {
-                var cur_xyz = this.chess_xyz_get();               
-                var relay_lx = layout.GetNeighborLX(cur_xyz.x, cur_xyz.y, dir);
-                var relay_ly = layout.GetNeighborLY(cur_xyz.x, cur_xyz.y, dir);
+            // not wrap mode, or not neighbor : move to target directly
+            var seg = new MoveSegmentKlass(this.inst.x, this.inst.y, this.exp_TargetPX, this.exp_TargetPY);
+            this._cmd_move_to.move_start(seg);            
+        }       
+        else // board.is_wrap_mode
+        {
+            var cur_xyz = this.chess_xyz_get();               
+            var relay_lx = layout.GetNeighborLX(cur_xyz.x, cur_xyz.y, dir);
+            var relay_ly = layout.GetNeighborLY(cur_xyz.x, cur_xyz.y, dir);
                 
-                if ((relay_lx == lx) && (relay_ly == ly))
-                {
-                    // non-wrapped neighbor : move to target directly
-                    var seg = new MoveSegmentKlass(this.inst.x, this.inst.y, this.exp_TargetPX, this.exp_TargetPY);
-                    this._cmd_move_to.move_start(seg); 
-                }
-                else
-                {
-                    // wrap neighbor : move to relay point
-                    var relay_px = layout.LXYZ2PX(relay_lx, relay_ly, 0);
-                    var relay_py = layout.LXYZ2PY(relay_lx, relay_ly, 0);                   
-                    var seg0 = new MoveSegmentKlass(this.inst.x, this.inst.y, relay_px, relay_py);
+            if ((relay_lx == lx) && (relay_ly == ly))
+            {
+                // non-wrapped neighbor : move to target directly
+                var seg = new MoveSegmentKlass(this.inst.x, this.inst.y, this.exp_TargetPX, this.exp_TargetPY);
+                this._cmd_move_to.move_start(seg); 
+            }
+            else
+            {
+                // wrap neighbor : move to relay point
+                var relay_px = layout.LXYZ2PX(relay_lx, relay_ly, 0);
+                var relay_py = layout.LXYZ2PY(relay_lx, relay_ly, 0);                   
+                var seg0 = new MoveSegmentKlass(this.inst.x, this.inst.y, relay_px, relay_py);
                     
-                    // wrap relay lxy
-                    if ((relay_lx < 0) || (relay_lx > board.x_max))                    
-                        relay_lx = board.x_max - relay_lx;
-                    if ((relay_ly < 0) || (relay_ly > board.y_max))                    
-                        relay_ly = board.y_max - relay_ly;                        
-                    relay_px = layout.LXYZ2PX(relay_lx, relay_ly, 0);
-                    relay_py = layout.LXYZ2PY(relay_lx, relay_ly, 0);
-                    var seg1 = new MoveSegmentKlass(relay_px, relay_py, this.exp_TargetPX, this.exp_TargetPY);                     
-                    this._cmd_move_to.move_start(seg0, seg1); 
-                }
-            }            
-        }        
+                // wrap relay lxy
+                if ((relay_lx < 0) || (relay_lx > board.x_max))                    
+                    relay_lx = board.x_max - relay_lx;
+                if ((relay_ly < 0) || (relay_ly > board.y_max))                    
+                    relay_ly = board.y_max - relay_ly;                        
+                relay_px = layout.LXYZ2PX(relay_lx, relay_ly, 0);
+                relay_py = layout.LXYZ2PY(relay_lx, relay_ly, 0);
+                var seg1 = new MoveSegmentKlass(relay_px, relay_py, this.exp_TargetPX, this.exp_TargetPY);                     
+                this._cmd_move_to.move_start(seg0, seg1); 
+            }
+        }            
+                
     };
     
     behinstProto.on_moving_request_success = function(can_move)
@@ -457,7 +458,8 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{
 	    var randomGenUid = (this.type.randomGen != null)? this.type.randomGen.uid:(-1);	    
-		return { "mt": this._cmd_move_to.saveToJSON(),
+		return { "mrq": this.is_moving_request_accepted,
+                 "mt": this._cmd_move_to.saveToJSON(),
 		         "wander": this._wander,
 		         "z": this._z_saved,
                  "e_buid": this.exp_BlockerUID,
@@ -473,6 +475,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
 	behinstProto.loadFromJSON = function (o)
 	{
+        this.is_moving_request_accepted = o["mrq"];
 	    this._cmd_move_to.loadFromJSON(o["mt"]);
 	    this._wander = o["wander"];
 	    this._z_saved = o["z"];

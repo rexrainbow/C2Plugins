@@ -20,8 +20,9 @@ AddCondition(2, cf_trigger, "On dragging start", "Drag",
 AddCondition(3, cf_trigger, "On dropped", "Drop", 
              "On {my} drop", "Triggered when miniboard dropped.", "OnDrop"); 
              
+AddObjectParam("Main board", "Main board object.");              
 AddCondition(4, cf_trigger, "On logical position changed", "Drag", 
-             "On {my} logical position changed", 
+             "On {my} logical position changed at main board <i>{0}</i>", 
              "Triggered when logical position changed on main board.", "OnLogicIndexChanged");
                       
 AddCondition(5,	0, "Is drag-able", "Drag", 

@@ -360,6 +360,21 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 		return false;
 	};	
 	
+	behinstProto.pick_mainboard = function (board_objs)
+	{
+	    var sol = board_objs.getCurrentSol();
+	    if ( (this.overlap_mainboard.inst == null) ||
+	         (this.overlap_mainboard.inst.type !== board_objs)
+	       )
+	    {
+	        sol.instances.length = 0;
+	        return false;
+	    }
+   
+	    sol.pick_one(this.overlap_mainboard.inst);
+        return true;
+	};	
+	
 	behinstProto.saveToJSON = function ()
 	{
 		return { "en": this.activated };
@@ -384,9 +399,9 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         return true;
 	};    
     
-	Cnds.prototype.OnLogicIndexChanged = function ()
+	Cnds.prototype.OnLogicIndexChanged = function (board_objs)
 	{
-        return true;
+        return this.pick_mainboard(board_objs);
 	};	
     
 	Cnds.prototype.IsDragable = function ()
@@ -411,14 +426,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	
 	Cnds.prototype.OnDropAtMainboard = function (board_objs)
 	{
-	    if ( (this.overlap_mainboard.inst == null) ||
-	         (this.overlap_mainboard.inst.type !== board_objs)
-	       )
-	        return false;
-	        
-	    var sol = board_objs.getCurrentSol();
-	    sol.pick_one(this.overlap_mainboard.inst);
-        return true;
+        return this.pick_mainboard(board_objs);
 	};
 
 	Cnds.prototype.OnDragAtMainboard = function (board_objs)

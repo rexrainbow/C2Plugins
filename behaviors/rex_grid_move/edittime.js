@@ -18,21 +18,30 @@ AddCondition(0, cf_trigger, "On hit target position", "Hit target",
              "On {my} hit target", 
 			 "Triggered when hit target position.", 
 			 "OnHitTarget");
-AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "Move", "On {my} moving", 
+AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "Move", 
+             "On {my} moving", 
              "Triggered when object moving.", "OnMoving");                          
-AddCondition(3,	0, "Is moving", "Move", "Is {my} moving", "Test if object is moving.", "IsMoving");  
+AddCondition(3,	0, "Is moving", "Move", 
+             "Is {my} moving", 
+             "Test if object is moving.", "IsMoving");  
 AddCondition(4,	cf_trigger, "On moving accepted", "Request", 
-             "On {my} moving request accepted", "Triggered when moving request accepted.", "OnMovingRequestAccepted");                
+             "On {my} moving request accepted", 
+             "Triggered when moving request accepted.", "OnMovingRequestAccepted");                
 AddCondition(5,	cf_trigger, "On moving rejected", "Request", 
-             "On {my} moving request rejected", "Triggered when moving request rejected.", "OnMovingRequestRejected");                          
-AddCondition(6,	0, "Moving accepted", "Request", "Is {my} moving request accepted", "Return true if moving request accepted.", "IsMovingRequestAccepted");  
+             "On {my} moving request rejected", 
+             "Triggered when moving request rejected.", "OnMovingRequestRejected");                          
+AddCondition(6,	0, "Moving accepted", "Request", 
+             "Is {my} moving request accepted", 
+             "Return true if moving request accepted.", "IsMovingRequestAccepted");  
 AddNumberParam("X offset", "Relatived X offset.",0);
 AddNumberParam("Y offset", "Relatived Y offset.",0);
-AddCondition(7,	0, "Can move to", "Test", "{my} can move to offset [<i>{0}</i>, <i>{1}</i>]", 
+AddCondition(7,	0, "Can move to", "Test", 
+             "{my} can move to offset [<i>{0}</i>, <i>{1}</i>]", 
              "Test if object can move to relatived offset target.", "TestMoveToOffset");
 AddNumberParam("Direction", "The direction of neighbor.", 0);		  
-AddCondition(8, 0, "Can move to neighbor", "Request", "{my} can move to direction <i>{0}</i>", 
-          "Test if object can move to neighbor.", "TestMoveToNeighbor");              
+AddCondition(8, 0, "Can move to neighbor", "Request", 
+             "{my} can move to direction <i>{0}</i>", 
+             "Test if object can move to neighbor.", "TestMoveToNeighbor");              
 AddComboParamOption("Right");		  
 AddComboParamOption("Down");
 AddComboParamOption("Left");
@@ -42,7 +51,8 @@ AddComboParamOption("Left-down");
 AddComboParamOption("Left-up");
 AddComboParamOption("Right-up");
 AddComboParam("Direction", "Moving direction.", 0);              
-AddCondition(9,	0, "Can move to neighbor", "Test: Square grid", "{my} can move to <i>{0}</i>", 
+AddCondition(9,	0, "Can move to neighbor", "Test: Square grid", 
+             "{my} can move to <i>{0}</i>", 
              "Test if object can move to neighbor.", "TestMoveToNeighbor");   
 AddComboParamOption("Right");
 AddComboParamOption("Down-right");	  
@@ -51,7 +61,8 @@ AddComboParamOption("Left");
 AddComboParamOption("Up-left");
 AddComboParamOption("Up-right");
 AddComboParam("Direction", "Moving direction.", 0);             
-AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid (Left-Right)", "{my} can move to <i>{0}</i>", 
+AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid (Left-Right)", 
+             "{my} can move to <i>{0}</i>", 
              "Test if object can move to neighbor.", "TestMoveToNeighbor");                     
 AddObjectParam("Chess", "Chess object.");     
 AddStringParam("Group", "Put result in this group", '""');        
