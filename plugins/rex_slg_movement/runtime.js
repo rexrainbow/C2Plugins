@@ -69,7 +69,6 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		this._neighbors_lxy = [];
         this.astar_heuristic_enable = false;
 
-        this._chess_xyz = null;
         this._hit_dist_tile = false; 
 	};
 
@@ -245,8 +244,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
 	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
-	    this._chess_xyz = this.uid2xyz(chess_uid);
-	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
+	    var chess_xyz = this.uid2xyz(chess_uid);
+        if (chess_xyz == null)
+            return [];
+	    var start_tile_uid = this.xyz2uid(chess_xyz.x, chess_xyz.y, 0);
         var nodes = this.ASTAR_search(start_tile_uid, null, moving_points, cost, CMD_AREA);
         if (nodes == null)
             return [];
@@ -259,8 +260,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost)
 	{
-	    this._chess_xyz = this.uid2xyz(chess_uid);
-	    var start_tile_uid = this.xyz2uid(this._chess_xyz.x, this._chess_xyz.y, 0);
+	    var chess_xyz = this.uid2xyz(chess_uid);
+        if (chess_xyz == null)
+            return [];        
+	    var start_tile_uid = this.xyz2uid(chess_xyz.x, chess_xyz.y, 0);
         var nodes = this.ASTAR_search(start_tile_uid, end_tile_uid, moving_points, cost, CMD_PATH);
         if (nodes == null)
             return [];

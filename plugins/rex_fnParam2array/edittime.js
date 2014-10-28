@@ -1,49 +1,36 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Toggle switch",
-		"id":			"Rex_pToggleSwitch",
-		"version":		"0.1",        
-		"description":	"A switch for toggling between on and off.",
+		"name":			"FnParam to Array",
+		"id":			"Rex_fnParam2Array",
+		"version":		"0.1",   		
+		"description":	"Create an array and dump parameters of current function into this array.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pToggleSwitch.html",
-		"category":		"Rex - Variable",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_fnparam2array.html",
+		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		pf_singleglobal
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On turn on", "Event", "On {my} turn on", "", "OnTurnOn");
-AddCondition(1, cf_trigger, "On turn off", "Event", "On {my} turn off", "", "OnTurnOff");
-AddCondition(2, 0, "Is turn on", "If", "Is turn on", "", "IsTurnOn");
 
 //////////////////////////////////////////////////////////////
-// Actions
-AddAction(0, 0, "Toggle switch", "Toggle", 
-          "Toggle {my}","Toggle switch between on and off.", "ToogleValue");  
-AddComboParamOption("Off");
-AddComboParamOption("On");
-AddComboParam("Value", "Set value to.",0);
-AddAction(1, 0, "Set value", "Set", 
-          "Set {my} value to <i>{0}</i>", "Set value of switch.", "SetValue");
-AddNumberParam("Value", "Set value. 0 = Off, 1 = On",0);
-AddAction(2, 0, "Set value by number", "Set", 
-          "Set {my} value to <i>{0}</i>", "Set value of switch.", "SetValue"); 
-           
-
+// Actions     
+AddObjectParam("Array", "Array object");
+AddAction(1, 0, "Dump parameters into a new array", "Dump", 
+          "Dump parameters into a new array <i>{0}</i>", 
+          "Dump parameters into a new array.", "DumpFParam2NewArray");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Get value of switch", "Value", "Value", "Get value of switch.");
-
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Initial value", "Off", "Set the initialize value of switch.", "Off|On"),
 	];
 	
 // Called by IDE when a new object type is to be created

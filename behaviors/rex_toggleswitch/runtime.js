@@ -53,12 +53,12 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 	{   
 	}; 
     
-	behinstProto._toogle_value = function (value)
-	{
-        var cur_value = this.value;
-        if (value == cur_value)
+	behinstProto.set_value = function (v)
+	{	    
+        if (v === this.value)
             return;
-        this.value = (!cur_value);
+            
+        this.value = v;                
         var trig_method = (this.value)?
                           cr.behaviors.Rex_ToggleSwitch.prototype.cnds.OnTurnOn:
                           cr.behaviors.Rex_ToggleSwitch.prototype.cnds.OnTurnOff;
@@ -83,17 +83,17 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 
 	Cnds.prototype.OnTurnOn = function ()
 	{
-		return (this.is_my_call);
+		return this.is_my_call;
 	};
 
 	Cnds.prototype.OnTurnOff = function ()
 	{
-		return (this.is_my_call);
+		return this.is_my_call;
 	};    
 
 	Cnds.prototype.IsTurnOn = function ()
 	{
-		return (this.value);
+		return this.value;
 	};       
 	//////////////////////////////////////
 	// Actions
@@ -102,12 +102,12 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 
 	Acts.prototype.ToogleValue = function ()
 	{
-		this._toogle_value();
-	};  
+		this.set_value(!this.value);
+	};
 
 	Acts.prototype.SetValue = function (s)
 	{
-		this._toogle_value((s==1));
+		this.set_value((s==1));
 	};
     
 	//////////////////////////////////////

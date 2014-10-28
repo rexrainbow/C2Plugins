@@ -1,0 +1,45 @@
+1. API of Function plugin 
+   for exporting to other plugins
+A. set parameters
+- fn_obj.AddParams(param)              
+  :: param is a hash
+
+B. call function
+- fn_obj.CallFn(name, args)            
+  :: args can be a hash, or some strings/numbers
+- fn_obj.ExecuteCommands(cmd)          
+  :: cmd is a string
+  
+C. get returns
+- fn_obj.GetReturns()
+  :: return a hash  
+  
+D. inject javascript function
+- fn_obj.InjectJS(name, fn)
+
+
+
+2. API of Function plugin 
+   for exporting to other javascript function
+- fn.CallFn(name, args)
+  :: args can be a hash, or some strings/numbers
+- fn.GetReturns()
+  :: return a hash 
+- fn.InjectJS(name, fn)
+
+
+
+3. API of internal function object  (using in JS)
+A. set parameters, returns
+- fn.param
+  :: input parameters, a hash
+- fn.ret
+  :: return values ,a hash
+- fn.result
+  :: return value, single value
+
+B. call function
+- fn.CallFn(name, param0, param1...)
+
+C. inject javascript function
+- fn.InjectJS(name, fn)

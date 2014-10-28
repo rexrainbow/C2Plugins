@@ -27,8 +27,11 @@ AddCondition(2, 0, "Compare function name", "Function queue : For each",
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Package", "Function call package in json string.", "\"\"");
+AddComboParamOption("From top to bottom");
+AddComboParamOption("From bottom to top");
+AddComboParam("Odrer", "Execution order.", 0);       
 AddAction(1, 0, "Call function", "Function", 
-          "Call function by package to <i>{0}</i>",
+          "Call function by package to <i>{0}</i>,  <i>{1}</i>",
           "Call function by package.", "CallFunction");  
        
 // function queue
@@ -37,8 +40,8 @@ AddAction(11, 0, "Clean", "Function queue",
 AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddVariadicParams("Parameter {n}", 
                   "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
-AddAction(12, 0, "Push", "Function queue", 
-          "Push function call <b>{0}</b> (<i>{...}</i>) into queue", 
+AddAction(12, 0, "Push back", "Function queue", 
+          "Push function call <b>{0}</b> (<i>{...}</i>)", 
           "Push function call into function queue.", "PushToFnQueue");
 AddStringParam("Package", "Function call package in json string.", "\"\"");
 AddAction(13, 0, "Load", "Function queue", 
@@ -49,17 +52,33 @@ AddAnyTypeParam("Value", "Value of paramete", 0);
 AddAction(14, 0, "Overwrite parameter", "Function queue : For each", 
           "Overwrite parameter[<i>{0}</i>] to <i>{1}</i>",
           'Overwrite parameter of current package in function queuem in a For Each package.', "CurPkgOverwriteParam");
-AddAction(15, 0, "Call function", "Function queue", 
-          "Call function in function queue",
-          "Call function in function queue.", "CallFunctionInQueue");                              
+AddComboParamOption("From top to bottom");
+AddComboParamOption("From bottom to top");
+AddComboParam("Odrer", "Execution order.", 0);          
+AddAction(15, 0, "Call functions", "Function queue", 
+          "Call functions <i>{0}</i>",
+          "Call functions in function queue.", "CallFunctionInQueue");          
+AddComboParamOption("Back");
+AddComboParamOption("Front");
+AddComboParam("Where", "Whether to insert at the beginning or the end of the array.", 0);
+AddStringParam("Name", "The name of the function to call.", "\"\"");
+AddVariadicParams("Parameter {n}", 
+                  "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
+AddAction(16, 0, "Push", "Function queue", 
+          "Push <b>{0}</b> function call <b>{1}</b> (<i>{...}</i>)", 
+          "Push function call into function queue.", "PushToFnQueue2");    
+AddAction(17, 0, "Reverse", "Function queue", 
+          "Reverse function queue", 
+          "Reverse function queue.", "ReverseFnQueue");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "The name of the function to call.");
 AddExpression(1, ef_return_string | ef_variadic_parameters, "Function call package", "Package", "FnCallPkg", 
-              "Get function call package in json format.");
+              "Get function call package in json format. The parameters format is the same as Call in official function object.");
 AddStringParam("Package", "Function call package in json string.", "\"\"");
-AddExpression(3, ef_return_any, "Call a function then get return value", "Function", "Call", 
-              "Call a function with parameters and return its return value.");
+//AddNumberParam("Is inverse", "Set 1 to execute functions frop bottom to top.", 1); 
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Call a function then get return value", "Function", "Call", 
+              "Call a function with parameters and return its return value. Add 2nd parameter to 1 to execute from bottom to top.");
 // function queue              
 AddExpression(11, ef_return_string, "Function queue package", "Function queue", "FnQueuePkg", 
               "Get function queue package in json format.");              

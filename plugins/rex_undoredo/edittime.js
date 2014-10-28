@@ -19,34 +19,51 @@
 AddCondition(1, 0, "Can undo", "Undo", 
              "Can undo", "Retrun true if can undo to previous step.", "CanUndo");
 AddCondition(2, 0, "Can redo", "Redo", 
-             "Can redo", "Retrun true if can redo to next step.", "CanRedo");              
+             "Can redo", "Retrun true if can redo to next step.", "CanRedo");                         
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1, 0, "Clean", "Recorder", 
           "Clean all", 
           "Clean all steps.", "CleanAll");   
 AddAnyTypeParam("Data", "Data of step", 0);
-AddAction(2, 0, "Push", "Recorder", 
+AddAction(2, 0, "Push", "Push - simple mode", 
           "Push step to <i>{0}</i>", 
-          "Push step.", "Push"); 
+          "Push step.", "Push");           
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(10, 0, "Load steps from JSON string", "JSON", 
           "Load steps from JSON string <i>{0}</i>",
-          "Load steps from JSON string.", "StringToSteps");          
+          "Load steps from JSON string.", "StringToSteps"); 
+// dictionary mode                   
+AddAnyTypeParam("Key", "The key of data.", '"_"');
+AddAnyTypeParam("Value", "The value of data", 0);
+AddAction(20, 0, "Set data", "Push", 
+          "Set key <i>{0}</i> with value to <i>{1}</i>", 
+          "Set date.", 
+          "SetDate");   
+AddAction(21, 0, "Push", "Push - dictionary mode", 
+          "Push current data", 
+          "Push current data.", "Push");
+AddAction(22, 0, "Undo", "Undo - dictionary mode", 
+          "Undo", 
+          "Get previosu step.", "Undo");
+AddAction(23, 0, "Redo", "Redo - dictionary mode", 
+          "Redo", 
+          "Get next step.", "Redo");                                             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any,
-              "Undo", "Undo", "Undo",
-              "Get previosu step.");
+              "Undo", "Simple mode", "Undo",
+              "Get previosu step. Used for simple mode.");
 AddExpression(2, ef_return_any,
-              "Redo", "Redo", "Redo",
-              "Get next step.");             
+              "Redo", "Simple mode", "Redo",
+              "Get next step. Used for simple mode.");             
 AddExpression(3, ef_return_number, 
-              "Get count", "Recorder", "StepsCnt", "Get steps count.");    
-AddExpression(4, ef_return_any, 
-              "Get current step", "Recorder", "CurStep", "Get current step.");              
+              "Get count", "Recorder", "StepsCnt", "Get steps count.");   
+//AddAnyTypeParam("Key", "Key of step", "_");               
+AddExpression(4, ef_return_any | ef_variadic_parameters, 
+              "Get data in current step. Add 2nd parameter to get date with specific key.", "Data", "CurStep", "Get data in current step.");              
 AddExpression(5, ef_return_number, 
-              "Get current index", "Recorder", "CurIndex", "Get current step index.");               
+              "Get current index", "Recorder", "CurIndex", "Get current step index.");              
 AddExpression(10, ef_return_string, "Get JSON from recorder", 
               "JSON", "ToString", "Get JSON from recorder.");  
               

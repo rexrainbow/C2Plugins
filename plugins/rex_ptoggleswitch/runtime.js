@@ -43,17 +43,17 @@ cr.plugins_.Rex_pToggleSwitch = function(runtime)
 	{
         this.value = (this.properties[0]==1);
 	};
-    instanceProto._toogle_value = function (value)
-	{
-        var cur_value = this.value;
-        if (value == cur_value)
+	instanceProto.set_value = function (v)
+	{	    
+        if (v === this.value)
             return;
-        this.value = (!cur_value);
+            
+        this.value = v;                
         var trig_method = (this.value)?
                           cr.plugins_.Rex_pToggleSwitch.prototype.cnds.OnTurnOn:
                           cr.plugins_.Rex_pToggleSwitch.prototype.cnds.OnTurnOff;
-        this.runtime.trigger(trig_method, this);   
-	};           
+        this.runtime.trigger(trig_method, this); 
+	}; 	          
 	
 	instanceProto.saveToJSON = function ()
 	{
@@ -91,12 +91,12 @@ cr.plugins_.Rex_pToggleSwitch = function(runtime)
 
 	Acts.prototype.ToogleValue = function ()
 	{
-		this._toogle_value();
+		this.set_value(!this.value);
 	};  
 
 	Acts.prototype.SetValue = function (s)
 	{
-		this._toogle_value((s==1));
+		this.set_value((s==1));
 	};    
     
 	//////////////////////////////////////

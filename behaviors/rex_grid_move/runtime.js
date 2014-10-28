@@ -93,6 +93,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.is_my_call = false;
         this.exp_BlockerUID = (-1);
         this.exp_Direction = (-1);
+        this.exp_SourceLX = (-1);
+        this.exp_SourceLY = (-1);
+        this.exp_SourceLZ = (-1);        
         this.exp_DestinationLX = (-1);
         this.exp_DestinationLY = (-1);
         this.exp_DestinationLZ = (-1);
@@ -210,6 +213,11 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
     behinstProto.set_move_target = function (target_x, target_y, target_z, dir)
     {
+        var my_xyz = this.chess_xyz_get(); 
+        this.exp_SourceLX = my_xyz.x;
+        this.exp_SourceLY = my_xyz.y;
+        this.exp_SourceLZ = my_xyz.z;         
+               
         this.exp_DestinationLX = target_x;
         this.exp_DestinationLY = target_y;
         this.exp_DestinationLZ = target_z; 
@@ -464,6 +472,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		         "z": this._z_saved,
                  "e_buid": this.exp_BlockerUID,
                  "e_dir" : this.exp_Direction,
+                 "e_slx" : this.exp_SourceLX,
+                 "e_sly" : this.exp_SourceLY,
+                 "e_slz" : this.exp_SourceLZ,                 
                  "e_dlx" : this.exp_DestinationLX,
                  "e_dly" : this.exp_DestinationLY,
                  "e_dlz" : this.exp_DestinationLZ,
@@ -481,6 +492,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	    this._z_saved = o["z"];
         this.exp_BlockerUID= o["e_buid"];
         this.exp_Direction = o["e_dir"]; 
+        this.exp_SourceLX = o["e_slx"];
+        this.exp_SourceLY = o["e_sly"]; 
+        this.exp_SourceLZ = o["e_slz"];                
         this.exp_DestinationLX = o["e_dlx"];
         this.exp_DestinationLY = o["e_dly"];
         this.exp_DestinationLZ = o["e_dlz"];	 
@@ -979,7 +993,23 @@ cr.behaviors.Rex_GridMove = function(runtime)
  	Exps.prototype.DestinationLZ = function (ret)
 	{
         ret.set_int(this.exp_DestinationLZ);		
+	};  
+    
+ 	Exps.prototype.SourceLX = function (ret)
+	{
+        ret.set_int(this.exp_SourceLX);		
 	};  	
+    
+ 	Exps.prototype.SourceLY = function (ret)
+	{
+        ret.set_int(this.exp_SourceLY);		
+	};  
+    
+ 	Exps.prototype.SourceLZ = function (ret)
+	{
+        ret.set_int(this.exp_SourceLZ);		
+	};  		
+		
 	
 }());
 

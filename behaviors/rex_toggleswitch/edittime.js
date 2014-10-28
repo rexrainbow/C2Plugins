@@ -3,10 +3,10 @@
 	return {
 		"name":			"Toggle switch",
 		"id":			"Rex_ToggleSwitch",
-		"description":	"A switch for toggling between on and off",
+		"description":	"A switch for toggling between on and off.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_toggleswitch.html",
-		"category":		"Variable",
+		"category":		"Rex - Variable",
 		"flags":		0
 	};
 };

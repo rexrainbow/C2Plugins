@@ -132,7 +132,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         this._fnobj_type = FNTYPE_NA;  // function object is not avaiable
 	};  
     	 
-	instanceProto.execute_package = function(pkg)
+	instanceProto.execute_package = function(pkg, is_reverse)
 	{	  
 	    if (this._fnobj_type == FNTYPE_NA)
 	        return;
@@ -147,18 +147,37 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         }
         else
         {
-            var i,cnt=pkg.length;
-            for(i=0; i<cnt; i++)
+            var i,cnt=pkg.length;            
+            if (is_reverse !== 1)
             {
-                this.call_function(pkg[i]);
+                for(i=0; i<cnt; i++)
+                {
+                    this.call_function(pkg[i]);
+                }
+            }
+            else
+            {
+                for(i=cnt-1; i>=0; i--)
+                {
+                    this.call_function(pkg[i]);
+                }                
             }
         }
 	};  
 
+    var GParams=[];
 	instanceProto.call_function = function(pkg)
 	{	  
-	    var name = pkg.shift();
-	    this._act_call_fn.call(this._fnobj, name, pkg);
+	    var name = pkg[0];
+        var i,cnt=pkg.length;
+        GParams.length = 0;
+        for(i=1; i<cnt; i++)
+        {
+            GParams[i-1] = pkg[i];
+        }
+        
+	    this._act_call_fn.call(this._fnobj, name, GParams);
+        GParams.length = 0;
 	};    
  	
     instanceProto.return_value_get = function ()
@@ -223,7 +242,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.CallFunction = function (pkg)
+    Acts.prototype.CallFunction = function (pkg, is_reverse)
 	{
         if (pkg == "")
             return;
@@ -233,7 +252,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		}
 		catch(e) { return; }
 		
-		this.execute_package(pkg);
+		this.execute_package(pkg, is_reverse);
 	}; 
     
     Acts.prototype.CleanFnQueue = function ()
@@ -244,7 +263,13 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
     Acts.prototype.PushToFnQueue = function (name, params)
 	{   
         var pkg = [name];
-        pkg.push.apply(pkg, params);
+        var i, cnt=params.length;
+        pkg.length = cnt+1;
+        for(i=0; i<cnt; i++)
+        {
+            pkg[i+1] = params[i];
+        }
+        
 	    this.fn_queue.push(pkg);
 	};
 	
@@ -292,10 +317,32 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	    this.Exp_pkg[param_index] = value_;
 	};
     
-    Acts.prototype.CallFunctionInQueue = function ()
+    Acts.prototype.CallFunctionInQueue = function (is_reverse)
 	{   
-	    this.execute_package(this.fn_queue);
-	};		
+	    this.execute_package(this.fn_queue, is_reverse);
+	};
+    
+    Acts.prototype.PushToFnQueue2 = function (where, name, params)
+	{   
+        var pkg = [name];
+        var i, cnt=params.length;
+        pkg.length = cnt+1;
+        for(i=0; i<cnt; i++)
+        {
+            pkg[i+1] = params[i];
+        }
+        
+        if (where == 0)
+	        this.fn_queue.push(pkg);
+	    else
+	        this.fn_queue.unshift(pkg);
+	};	
+    
+    Acts.prototype.ReverseFnQueue = function ()
+	{
+        this.fn_queue.reverse();
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -313,7 +360,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	    ret.set_string( s );
 	};
 	
-    Exps.prototype.Call = function (ret, pkg)
+    Exps.prototype.Call = function (ret, pkg, is_reverse)
 	{
         if (pkg == "")
         {
@@ -329,8 +376,8 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		     ret.set_any( 0 ); 
 		     return;
 	    }
-	    
-		this.execute_package(pkg);		   
+        
+		this.execute_package(pkg, is_reverse);		   
 	    ret.set_any( this.return_value_get() );
 	};
 
