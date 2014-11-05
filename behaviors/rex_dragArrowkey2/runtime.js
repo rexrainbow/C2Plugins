@@ -31,8 +31,6 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         this.touchwrap = null;
         this.GetX = null;
         this.GetY = null;
-        this.behavior_index = null;
-        this._behavior_insts = [];
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -56,6 +54,18 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
 	};  
+	
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};	
     
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
@@ -72,21 +82,17 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         
         // overlap_cnt > 0
         // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
-            
-            
+
         // 1. get all valid behavior instances            
-        var ovl_insts = sol.getObjects();
-        var i, cnt, inst, behavior_inst;          
-        cnt = ovl_insts.length;           
+        var insts = sol.getObjects();
+        var i, cnt, binst;          
+        cnt = insts.length;           
         for (i=0; i<cnt; i++ )
         {
-		    inst = ovl_insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
-            if (behavior_inst.activated && (!behavior_inst.is_on_dragging))
+            binst = GetThisBehavior(insts[i]);
+            if (binst.activated && (!binst.is_on_dragging))
             {
-                behavior_inst.on_control_start(touch_src);  
+                binst.on_control_start(touch_src);  
                 break;
             }
         }
@@ -97,21 +103,17 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
     
     behtypeProto.OnTouchEnd = function (touch_src)
     {
-        if (this.behavior_index == null )
-            return;
-			
 	    var sol = this.objtype.getCurrentSol();
         var select_all_save = sol.select_all;	
 		sol.select_all = true;
 		var insts = sol.getObjects();
-        var i, cnt=insts.length, inst, behavior_inst;
+        var i, cnt=insts.length, inst, binst;
         for (i=0; i<cnt; i++ )
         {
-		    inst = insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
-            if (behavior_inst.is_on_dragging && (behavior_inst.touch_src == touch_src))
+            binst = GetThisBehavior(insts[i]);
+            if (binst.is_on_dragging && (binst.touch_src == touch_src))
             {
-                behavior_inst.on_control_end();  
+                binst.on_control_end();  
                 break;
             }          
         }	
@@ -136,13 +138,20 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         this.activated = (this.properties[0]==1);  
         this._directions = this.properties[1]; 
         this._sensitivity = this.properties[2];
+	    this._reset_origin = (this.properties[3] == 1);         
 
         this.is_on_dragging = false;         
-        this.touch_src = null;
-		this.pre_x = 0;
-		this.pre_y = 0; 
+        this.touch_src = null;        
+		this.origin_x = 0;
+		this.origin_y = 0;
+		this.curr_x = 0;
+		this.curr_y = 0;		
+        this.is_on_dragging = false;
+        this.cmd_cancel = false;
         this.keyMap = [false, false, false, false];
-        this.pre_key_id = 0;  
+        this.pre_key_id = 0;
+        this.diff_x = 0;
+        this.diff_y = 0;  
         
         this.press_handlers =   [cr.behaviors.Rex_DragArrowkey2.prototype.cnds.OnRIGHTPressed,
                                  cr.behaviors.Rex_DragArrowkey2.prototype.cnds.OnDOWNPressed,
@@ -159,16 +168,22 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
     var LEFTKEY = 0x4;
     var UPKEY = 0x8;
 	behinstProto.tick = function ()
-	{  
-        if ((this.type.touchwrap == null) || (!this.activated) || (!this.is_on_dragging)) 
+	{    
+	    if (this.cmd_cancel)
+	        this.cmd_cancel = false;
+	        
+        if ((!this.activated) || (!this.is_on_dragging)) 
             return;
+
+		this.curr_x = this.get_touch_x();
+		this.curr_y = this.get_touch_y();        
+        var dx = this.curr_x - this.origin_x;
+        var dy = this.curr_y - this.origin_y;
+        this.diff_x = dx;
+        this.diff_y = dy;
+        var dist_o2c = Math.sqrt(dx*dx + dy*dy);
         
-        var cur_x = this.GetX();
-        var cur_y = this.GetY();
-        var dx = cur_x - this.pre_x;
-        var dy = cur_y - this.pre_y;      
-        
-        if ( Math.sqrt(dx*dx + dy*dy) >= this._sensitivity )
+        if ( dist_o2c >= this._sensitivity )
         {
             var angle = cr.to_clamped_degrees(Math.atan2(dy,dx));
             switch (this._directions)
@@ -197,12 +212,23 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
                              ((angle>292.5) && (angle<=337.5))? (UPKEY | RIGHTKEY): RIGHTKEY;                          
                 this._keydown(key_id);
                 break;                
-            }         
-            this.pre_x = cur_x;
-            this.pre_y = cur_y;                    
+            }    
+            
+            if (this._reset_origin)
+            {
+                this.origin_x = this.curr_x;
+                this.origin_y = this.curr_y;                    
+            }
+        }
+        else
+        {
+            if (!this._reset_origin)
+            {
+                this._keydown(0);
+            }
         }
 	}; 
-	
+
     var _keyid_list = [RIGHTKEY,DOWNKEY,LEFTKEY,UPKEY];       
     behinstProto._keydown = function(key_id)
     {
@@ -235,18 +261,25 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
     
 	behinstProto.on_control_start = function(touch_src)
 	{
-	    this.touch_src = touch_src;
-	    this.is_on_dragging = true;  
-		this.pre_x = this.GetX();
-		this.pre_y = this.GetY();    	     
+        if (this.cmd_cancel)
+        {
+            this.cmd_cancel = false;
+            return;
+        }
+        this.is_on_dragging = true;
+        this.touch_src = touch_src;    
+        this.origin_x = this.get_touch_x();
+        this.origin_y = this.get_touch_y(); 
+        this.runtime.trigger(cr.behaviors.Rex_DragArrowkey2.prototype.cnds.OnDetectingStart, this.inst);		    	     
 	};
 	behinstProto.on_control_end = function()
 	{
-	    this.touch_src = null;
-	    this.is_on_dragging = false;   
+        this.touch_src = null; 
+        this.is_on_dragging = false;
         this._keydown(0);
+        this.runtime.trigger(cr.behaviors.Rex_DragArrowkey2.prototype.cnds.OnDetectingEnd, this.inst);
 	};	
-	behinstProto.GetX = function()
+	behinstProto.get_touch_x = function()
 	{
         var touch_obj = this.type.touchwrap;
         this.type.GetX.call(touch_obj, 
@@ -254,7 +287,7 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         return touch_obj.fake_ret.value;          
 	};
     
-	behinstProto.GetY = function()
+	behinstProto.get_touch_y = function()
 	{
         var touch_obj = this.type.touchwrap;
         this.type.GetY.call(touch_obj, 
@@ -276,7 +309,9 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
             key_name += "Up ";                
 		propsections.push({
 			"title": this.type.name,
-			"properties": [{"name": "Pressed key", "value": key_name},			               
+			"properties": [{"name": "Origin (floor)", "value": "("+Math.floor(this.origin_x)+","+Math.floor(this.origin_y)+")"},	
+			               {"name": "Current (floor)", "value": "("+Math.floor(this.curr_x)+","+Math.floor(this.curr_y)+")"},	
+			               {"name": "Pressed key", "value": key_name},			               
                            ]
 		});
 	};
@@ -303,6 +338,10 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
 	{
         return this.keyMap[0];
 	};    
+	Cnds.prototype.IsAnyDown = function()
+	{
+        return this.keyMap[3] | this.keyMap[2] | this.keyMap[1] | this.keyMap[0];
+	}; 	
     
 	Cnds.prototype.OnUPPressed = function()
 	{
@@ -343,20 +382,69 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
         return true;    
 	};     
       
-       
+	Cnds.prototype.OnDetectingStart = function()
+	{
+        return true;    
+	};     
+	Cnds.prototype.OnDetectingEnd = function()
+	{
+        return true;    
+	};
+
+	Cnds.prototype.IsInDetecting = function()
+	{
+        return this.is_on_dragging;
+	};		 
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.SetActivated = function (s)
+	Acts.prototype.SetDragAble = function (s)
 	{
 		this.activated = (s==1);
-	};  
-      
+	};
+	  
+	Acts.prototype.Cancel = function ()
+	{
+	    var is_on_dragging = this.is_on_dragging;
+	    
+	    this.touch_src = null;
+	    this.is_on_dragging = false;
+        this.cmd_cancel = true;
+        
+        if (is_on_dragging)
+            this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-
+    
+	Exps.prototype.OX = function (ret)
+	{
+		ret.set_float(this.origin_x);
+	};
+	Exps.prototype.OY = function (ret)
+	{
+		ret.set_float(this.origin_y);
+	};
+	    
+	Exps.prototype.DistX = function (ret)
+	{
+		ret.set_float(this.diff_x);
+	};
+	Exps.prototype.DistY = function (ret)
+	{
+		ret.set_float(this.diff_y);
+	};
+	
+	Exps.prototype.CurrX = function (ret)
+	{
+		ret.set_float(this.curr_x);
+	};
+	Exps.prototype.CurrY = function (ret)
+	{
+		ret.set_float(this.curr_y);
+	};	
 }());
