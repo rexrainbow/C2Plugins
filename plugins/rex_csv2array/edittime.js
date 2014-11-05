@@ -37,7 +37,7 @@ AddObjectParam("Array", "Array object");
 AddComboParamOption("Row to X, Col to Y");
 AddComboParamOption("Row to Y, Col to X");
 AddComboParam("Mapping", "Map row/col to X/Y", 0);
-AddNumberParam("Z", "Z index (0-based) of array value.", 0);
+AddNumberParam("Z", "Z index (0-based) of array.", 0);
 AddAction(2, 0, "Put csv data into array", "CSV to Array", 
           "Put csv data <i>{0}</i> into array <i>{1}</i> at Z index to <i>{3}</i>, map <i>{2}</i>", 
           "Put csv data into array.", "CSV2Array");          

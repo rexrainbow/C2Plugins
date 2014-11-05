@@ -94,7 +94,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 
 	instanceProto.lxy2edgeuid = function (lx0, ly0, lx1, ly1)
 	{
-	    var k = this.lxy2key(lx0, ly0, lx1, ly1);
+	    var k = lxy2key(lx0, ly0, lx1, ly1);
 	    var edge_uid = this.lxykey2edgeuid[k];
 	    return edge_uid;  
 	};		         
@@ -127,13 +127,12 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    inst.set_bbox_changed();
 	};
 	
-	instanceProto.lxy2key = function (lx0, ly0, lx1, ly1)
+	var lxy2key = function (lx0, ly0, lx1, ly1)
 	{   
 	    var lxymap;
         if ( lx0 < lx1 )
         {
-            lxymap = [lx0, ly0, lx1, ly1];
-            return JSON.stringify([lx0, ly0, lx1, ly1]);
+            lxymap = [lx0, ly0, lx1, ly1];            
         }
         else if ( lx0 == lx1 )
         {
@@ -154,7 +153,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         return JSON.stringify(lxymap);
 	};
 					
-	instanceProto.key2lxy = function (k)
+	var key2lxy = function (k)
 	{   	            
         return JSON.parse(k);
 	};
@@ -181,7 +180,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	instanceProto.add_edge = function (edge_uid, lx0, ly0, lx1, ly1)
 	{   
 	    this.remove_edge(edge_uid);
-        var k = this.lxy2key(lx0, ly0, lx1, ly1);
+        var k = lxy2key(lx0, ly0, lx1, ly1);
         this.remove_edge(this.lxykey2edgeuid[k], true);
         this.lxykey2edgeuid[k] = edge_uid;	    
 		this.edgeuid2lxykey[edge_uid] = k;    
@@ -365,7 +364,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             if (k == null)
                 continue;
             
-            var lxy = this.key2lxy(k);        
+            var lxy = key2lxy(k);        
             if (lz != null)
             {
                 var chess_uid0 = board.xyz2uid(lxy[0], lxy[1], lz);
@@ -425,7 +424,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	
 	Cnds.prototype.HasEdgeBetweenLP = function (lx0, ly0, lx1, ly1)
 	{
-        var k = this.lxy2key(lx0, ly0, lx1, ly1);        
+        var k = lxy2key(lx0, ly0, lx1, ly1);        
 	    return this.lxykey2edgeuid.hasOwnProperty(k);
 	    
 	};		  
@@ -437,7 +436,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    if ((xyz0 == null) || (xyz1 == null))
 	        return false;
 	        
-        var k = this.lxy2key(xyz0.x, xyz0.y, xyz1.x, xyz1.y);        
+        var k = lxy2key(xyz0.x, xyz0.y, xyz1.x, xyz1.y);        
 	    return this.lxykey2edgeuid.hasOwnProperty(k);
 	};
 	
@@ -764,7 +763,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    }
         
         var layout = this.GetBoard().GetLayout();	    
-        var lxy = this.key2lxy(k);
+        var lxy = key2lxy(k);
 	    var px0 = layout.LXYZ2PX(lxy[0], lxy[1], 0);
         var px1 = layout.LXYZ2PX(lxy[2], lxy[3], 0);       
 	    ret.set_float( (px0 + px1)/2 );
@@ -780,7 +779,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    }
 
         var layout = this.GetBoard().GetLayout();
-	    var lxy = this.key2lxy(k);
+	    var lxy = key2lxy(k);
 	    var py0 = layout.LXYZ2PY(lxy[0], lxy[1], 0);
         var py1 = layout.LXYZ2PY(lxy[2], lxy[3], 0);    
 	    ret.set_float( (py0 + py1)/2 );
@@ -796,7 +795,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    }
 
         var layout = this.GetBoard().GetLayout();	
-	    var lxy = this.key2lxy(k);    
+	    var lxy = key2lxy(k);    
 	    var px0 = layout.LXYZ2PX(lxy[0], lxy[1], 0);
 	    var py0 = layout.LXYZ2PY(lxy[0], lxy[1], 0);
         var px1 = layout.LXYZ2PX(lxy[2], lxy[3], 0); 

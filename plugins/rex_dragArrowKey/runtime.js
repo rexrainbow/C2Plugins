@@ -57,7 +57,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 		this.origin_y = 0;
 		this.curr_x = 0;
 		this.curr_y = 0;		
-        this.is_on_moving = false;
+        this.is_on_dragging = false;
         this.cmd_cancel = false;
         this.keyMap = [false, false, false, false];
         this.pre_key_id = 0;
@@ -99,7 +99,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
             this.cmd_cancel = false;
             return;
         }
-        this.is_on_moving = true;
+        this.is_on_dragging = true;
         this.touch_src = touch_src;    
         this.origin_x = this.get_touch_x();
         this.origin_y = this.get_touch_y(); 
@@ -112,7 +112,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
             return;
             
         this.touch_src = null; 
-        this.is_on_moving = false;
+        this.is_on_dragging = false;
         this._keydown(0);
         this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
     };
@@ -157,7 +157,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	    if (this.cmd_cancel)
 	        this.cmd_cancel = false;
 	        
-        if ((this.touchwrap == null) || (!this.is_on_moving)) 
+        if ((this.touchwrap == null) || (!this.is_on_dragging)) 
             return;
 
 		this.curr_x = this.get_touch_x();
@@ -341,7 +341,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 
 	Cnds.prototype.IsInDetecting = function()
 	{
-        return this.is_on_moving;
+        return this.is_on_dragging;
 	};		
 	//////////////////////////////////////
 	// Actions
@@ -350,13 +350,13 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 		
 	Acts.prototype.Cancel = function ()
 	{
-	    var is_on_moving = this.is_on_moving;
+	    var is_on_dragging = this.is_on_dragging;
 	    
 	    this.touch_src = null;
-	    this.is_on_moving = false;
+	    this.is_on_dragging = false;
         this.cmd_cancel = true;
         
-        if (is_on_moving)
+        if (is_on_dragging)
             this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
 	};	
 	//////////////////////////////////////

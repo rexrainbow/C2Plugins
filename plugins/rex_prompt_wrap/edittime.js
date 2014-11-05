@@ -16,8 +16,8 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(11, cf_trigger, "On input cancelled", "Keyboard input", "On keyboard input cancelled", "Triggered after opening a text input dialog which is then cancelled.", "OnKeyboardCancelled");
-AddCondition(12, cf_trigger, "On input OK", "Keyboard input", "On keyboard input OK", "Triggered after opening a text input dialog which is then OK'd.", "OnKeyboardOK");
+AddCondition(11, cf_trigger, "On input cancelled", "Keyboard input", "On input cancelled", "Triggered after opening a text input dialog which is then cancelled.", "OnKeyboardCancelled");
+AddCondition(12, cf_trigger, "On input OK", "Keyboard input", "On input OK", "Triggered after opening a text input dialog which is then OK'd.", "OnKeyboardOK");
 
 //////////////////////////////////////////////////////////////
 // Actions

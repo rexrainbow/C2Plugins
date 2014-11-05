@@ -804,12 +804,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
 	Cnds.prototype.OnCostFn = function (name)
 	{
-        return (this._cost_fn_name == name);
+	    return cr.equals_nocase(name, this._cost_fn_name);
 	};    
 
 	Cnds.prototype.OnFilterFn = function (name)
 	{
-        return (this._filter_fn_name == name);
+	    return cr.equals_nocase(name, this._filter_fn_name);
 	}; 	
 	
 	//////////////////////////////////////
