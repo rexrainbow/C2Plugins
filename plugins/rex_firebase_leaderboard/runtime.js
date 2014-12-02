@@ -68,13 +68,13 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 		this.ranking_order = this.properties[2];
 	    this.update_mode = this.properties[3];
 	    
-	    this.exp_CurPlayerName = "";
-	    this.exp_CurPlayerScore = 0;
 	    this.exp_CurPlayerRank = -1;
+	    this.exp_CurRankCol = null;
 	    this.exp_PostPlayerName = "";
 	    	    
-	    this.ref = this.get_ref();
-	    this.ranks = [];	    
+	    this.post_ref = null;
+	    this.ranks = [];	
+	    this.UserID2rank = {};
 	    
 	    // auto mode
 	    this.update_all_ranks_handler = null;	   
@@ -83,44 +83,198 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	instanceProto.get_ref = function()
 	{
         return new window["Firebase"](this.rootpath);
-	};		
+	};	
 	
-	var read_ranks_handler_get = function(self)
+	instanceProto.get_post_ref = function()
 	{
-        var handler = function (snapshot)
+	    if (this.post_ref == null)
+	        this.post_ref = this.get_ref();
+	    
+	    return this.post_ref;
+	};			
+	       
+	instanceProto.update_UserID2Rank = function()
+	{
+	    clean_table(this.UserID2rank);	    
+	    var i,cnt = this.ranks.length;
+	    for (i=0; i<cnt; i++)
+	    {
+	        this.UserID2rank[this.ranks[i].userID] = i;
+	    }	
+	};    
+    
+	instanceProto.add_a_rank = function(snapshot)
+	{
+	    var UserID = snapshot.key();
+	    var read_info = snapshot.val();
+        this.ranks.push(read_info);
+	}; 
+	
+	instanceProto.remove_a_rank = function(snapshot)
+	{
+	    var i = this.UserID2rank[snapshot.key()];
+	    cr.arrayRemove(this.ranks, i);
+	};
+	
+	instanceProto.update_a_rank = function(snapshot)
+	{
+	    var i = this.UserID2rank[snapshot.key()];
+	    var rank = this.ranks[i];
+	    var read_info = snapshot.val();
+	    rank.name = read_info["name"];
+	    rank.score = read_info["score"];
+	    rank.extra = read_info["extra"];
+	    rank.timestamp = read_info["timestamp"];
+	};	 	
+	
+	// large to small, old to new
+    var SORT_SCORE = function(ra, rb)
+    {        
+        var scoreA = ra["score"];
+        var scoreB = rb["score"];
+        if (scoreA == scoreB)
         {
-            self.ranks.length = 0;
-            var name, ranks=snapshot.val();
-            for (name in ranks)
-            {
-                self.ranks.push([name, ranks[name]]);
-            }
-            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
-        };
-        return handler;
-    };
+            var timeA = ra["timestamp"];
+            var timeB = rb["timestamp"];
+            if (timeA < timeB)
+                return 1;
+            else if (timeA > timeB)
+                return -1;
+            else
+                return 0;
+        }
+        else if (scoreA > scoreB)        
+            return 1;        
+        else if (scoreA < scoreB)        
+            return -1;        
+    }	
+	instanceProto.sort_ranks = function()
+	{
+	    this.ranks.sort(SORT_SCORE);
+	};	   
           
     instanceProto.update_ranks = function (start, end)
 	{
 	    var ref = this.get_ref();
+	    
+		if (end == -1)  // update all
+		{
+	         // no filter
+		}
+		else
+		{	
+            var count = end + 1;
+            var limit_cb = (this.ranking_order == 0)? "limitToFirst":"limitToLast";
+		    ref = ref["orderByPriority"]()[limit_cb](count);
+		}
+			
 	    if (this.update_mode == 0)    // manual
-	    {
-		    if (end == -1)  // update all
-			{
-	            // no filter
-		    }
-			else
-			{	
-                var count = end + 1;
-                var limit_cb = (this.ranking_order == 0)? "limitToFirst":"limitToLast";
-				ref = ref["orderByPriority"]()[limit_cb](count);
-			}
-			ref["once"]("value", read_ranks_handler_get(this));
+	    {	    
+	            
+            var self = this;
+            var handler = function (snapshot)
+            {
+                self.ranks.length = 0;            
+                var UserID, read_info=snapshot.val(), rank_info;
+                for (UserID in read_info)
+                {           
+                    self.ranks.push(read_info[UserID]);
+                }
+                
+                self.sort_ranks();
+                self.update_UserID2Rank();                
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
+            };
+        
+	        
+			ref["once"]("value", handler);
 	    }
 	    else    // auto
-	    {
+	    {        
+	        ref["off"]();
+	        var self = this;	        
+	        var add_child_handler = function (snapshot)
+	        {
+	            self.add_a_rank(snapshot);
+	            self.sort_ranks();
+	            self.update_UserID2Rank();
+	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
+	        };
+	        var remove_child_handler = function (snapshot)
+	        {
+	            self.remove_a_rank(snapshot);
+	            self.sort_ranks();
+	            self.update_UserID2Rank();
+	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
+	        } 	        
+	        var change_child_handler = function (snapshot)
+	        {
+	            self.update_a_rank(snapshot);
+	            self.sort_ranks();
+	            self.update_UserID2Rank();
+	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
+	        };
+	        
+	        ref["on"]("child_added", add_child_handler);
+	        ref["on"]("child_removed", remove_child_handler);
+	        ref["on"]("child_moved", change_child_handler);
+	        ref["on"]("child_changed", change_child_handler);
 	    }
-	}; 	
+	}; 
+	
+	instanceProto.rank_info_get = function(i)
+	{
+	    if (this.ranking_order == 1)
+	        i = this.ranks.length - 1 - i;
+	    
+	    return this.ranks[i];
+	};		
+	
+	instanceProto.for_each_bank_in_range = function (start, end)
+	{	     
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		         
+		var i;
+		for(i=start; i<=end; i++)
+		{
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            this.exp_CurPlayerRank = i;
+            this.exp_CurRankCol = this.rank_info_get(i);
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }            
+		}
+		             
+        this.exp_CurRankCol = null;       		
+		return false;
+	};  	
+	
+	instanceProto.UserID2Rank = function (userID)
+	{	    
+	    var rank = this.UserID2rank[userID];
+	    if (rank === null)
+	        rank = -1;
+	    else if (this.ranking_order == 1)
+	        rank = this.ranks.length - 1 - rank;	        
+		
+		return rank;
+	};	
+	
+	var clean_table = function (o)
+	{
+	    var k;
+	    for (k in o)
+	        delete o[k];
+	}	
 		
 	//////////////////////////////////////
 	// Conditions
@@ -139,64 +293,24 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	{
 	    return true;
 	}; 	 
-	Cnds.prototype.ForEachRank = function ()
+	Cnds.prototype.ForEachRank = function (start, end)
 	{	     
-        var current_frame = this.runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-		         
-		var i, cnt=this.ranks.length;		
-		this.exp_CurPlayerRank = -1;
-        if (this.ranking_order == 0)  // small to large
-        {
-            for(i=0; i<cnt; i++)
-            {
-                if (solModifierAfterCnds)
-                {
-                    this.runtime.pushCopySol(current_event.solModifiers);
-                }
-                
-                this.exp_CurPlayerRank += 1;
-	            this.exp_CurPlayerName = this.ranks[i][0];
-	            this.exp_CurPlayerScore = this.ranks[i][1];                
-		        current_event.retrigger();
-		         
-		         if (solModifierAfterCnds)
-		         {
-		             this.runtime.popSol(current_event.solModifiers);
-		         }
-            }
-        }
-        else            // large to small
-        {
-            for(i=cnt-1; i>=0; i--)
-            {
-                if (solModifierAfterCnds)
-                {
-                    this.runtime.pushCopySol(current_event.solModifiers);
-                }
-                
-                this.exp_CurPlayerRank += 1;
-	            this.exp_CurPlayerName = this.ranks[i][0];
-	            this.exp_CurPlayerScore = this.ranks[i][1];                
-		        current_event.retrigger();
-		         
-		        if (solModifierAfterCnds)
-		        {
-		            this.runtime.popSol(current_event.solModifiers);
-		        }
-            }                
-        }	
-                    		
-		return false;
+	    if ((start === null) || (start < 0))
+	        start = 0; 
+	    if ((end === null) || (end > this.ranks.length - 1))
+	        end = this.ranks.length - 1;
+
+		return this.for_each_bank_in_range(start, end);
 	};  	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
-    Acts.prototype.PostScore = function (name, score)
+    Acts.prototype.PostScore = function (userID, name, score, extra_data)
 	{	    
+        var ref = this.get_post_ref();
+	        
 	    var self = this;
 	    var onComplete = function(error) 
 	    {
@@ -205,7 +319,13 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	                            cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnPostComplete;
 	        self.runtime.trigger(trig, self); 
         };	    
-	    this.ref["child"](name)["setWithPriority"](score, score, onComplete);
+        var save_data = {"userID": userID,
+                         "userName":name, 
+                         "score":score, 
+                         "extra": extra_data,
+                         "timestamp": window["Firebase"]["ServerValue"]["TIMESTAMP"]
+                        };
+	    ref["child"](userID)["setWithPriority"](save_data, score, onComplete);
 	}; 
 	
     Acts.prototype.UpdateAllRanks = function ()
@@ -217,6 +337,12 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	{	    
 	    this.update_ranks(0, count-1);
 	};
+	
+    Acts.prototype.RemovePost = function (userID)
+	{	    
+	    var ref = this.get_post_ref();
+	    ref["child"](userID)["remove"]();
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -224,19 +350,80 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 
 	Exps.prototype.CurPlayerName = function (ret)
 	{
-		ret.set_string(this.exp_CurPlayerName);
+	    if (this.exp_CurRankCol == null)
+	    {
+	        ret.set_string("");
+	        return;
+	    }
+	    
+		ret.set_string(this.exp_CurRankCol["userName"]);
 	}; 	
 	Exps.prototype.CurPlayerScore = function (ret)
 	{
-		ret.set_float(this.exp_CurPlayerScore);
+	    if (this.exp_CurRankCol == null)
+	    {
+	        ret.set_any(0);
+	        return;
+	    }
+	    
+		ret.set_any(this.exp_CurRankCol["score"]);
 	};
 	Exps.prototype.CurPlayerRank = function (ret)
 	{
 		ret.set_int(this.exp_CurPlayerRank);
 	};
+	Exps.prototype.CurUserID = function (ret)
+	{
+	    if (this.exp_CurRankCol == null)
+	    {
+	        ret.set_string("");
+	        return;
+	    }
+	    
+		ret.set_string(this.exp_CurRankCol["userID"]);
+	}; 	
+	Exps.prototype.CurExtraData = function (ret)
+	{
+	    if (this.exp_CurRankCol == null)
+	    {
+	        ret.set_any("");
+	        return;
+	    }
+	    
+		ret.set_any(this.exp_CurRankCol["extra"]);
+	};
+
+		
 	Exps.prototype.PostPlayerName = function (ret)
 	{
 		ret.set_string(this.exp_PostPlayerName);
 	}; 	
-		 	
+	
+	Exps.prototype.RankCount = function (ret)
+	{
+		ret.set_int(this.ranks.length);
+	}; 	
+	Exps.prototype.UserID2Rank = function (ret, userID)
+	{
+		ret.set_int(this.UserID2Rank(userID));
+	};
+	   	
+	Exps.prototype.Rank2PlayerName = function (ret, i)
+	{
+	    var rank_info = this.rank_info_get(i);
+	    var name = (!rank_info)? "":rank_info["userName"];
+		ret.set_string(name);
+	};
+	Exps.prototype.Rank2PlayerScore = function (ret, i)
+	{
+	    var rank_info = this.rank_info_get(i);    
+	    var score = (!rank_info)? "":rank_info["score"];
+		ret.set_any(score);
+	};	
+	Exps.prototype.Rank2ExtraData = function (ret, i)
+	{
+	    var rank_info = this.rank_info_get(i);	    
+	    var extra_data = (!rank_info)? "":rank_info["extra"];
+		ret.set_any(extra_data);
+	};						 	
 }());

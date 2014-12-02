@@ -135,11 +135,11 @@ cr.behaviors.Rex_Step = function(runtime)
 			this.step(dx, 0, cr.behaviors.Rex_Step.prototype.cnds.OnCMHorizStep);
 			
 			if (this.cancelStep === 0)
-				this.step(0, dy, cr.behaviors.Rex_Step.prototype.cnds.OnCMHorizStep);
+				this.step(0, dy, cr.behaviors.Rex_Step.prototype.cnds.OnCMVertStep);
 		}
 		else if (this.step_mode === 2)	// vertical then horizontal
 		{
-			this.step(0, dy, cr.behaviors.Rex_Step.prototype.cnds.OnCMHorizStep);
+			this.step(0, dy, cr.behaviors.Rex_Step.prototype.cnds.OnCMVertStep);
 			
 			if (this.cancelStep === 0)
 				this.step(dx, 0, cr.behaviors.Rex_Step.prototype.cnds.OnCMHorizStep);

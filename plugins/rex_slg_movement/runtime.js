@@ -42,15 +42,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 
     var GLOBOL_NODES = {};
 	instanceProto.onCreate = function()
-	{
-	    this.exp_ChessUID = -1;
-	    this.exp_TileUID = -1;
-        this.exp_TileX = -1;        
-        this.exp_TileY = -1;  
-	    this.exp_PreTileUID = -1;
-        this.exp_PreTileX = -1;        
-        this.exp_PreTileY = -1;               
-	    
+	{            	    
 	    this.path_mode = this.properties[0];
 	    this.is_cache_cost = (this.properties[1]===1);
 	    this.is_shuffle_neighbors = (this.properties[2]===1); 
@@ -67,9 +59,15 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this._filter_uid_list = [];
         this._is_cost_fn = null;  
 		this._neighbors_lxy = [];
-        this.astar_heuristic_enable = false;
 
         this._hit_dist_tile = false; 
+        this.uid2cost = {};
+        
+	    this.exp_ChessUID = -1;
+	    this.exp_StartTileUID = -1;
+	    this.exp_NearestTileUID = -1;
+	    this.exp_CurTile = null;
+	    this.exp_PreTile = null;         
 	};
 
 	instanceProto.GetBoard = function()
@@ -157,15 +155,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    var cost;
 	    if (this._is_cost_fn)
 	    {           
-	        this.exp_TileUID = cur_node.uid;
-	        this.exp_TileX = cur_node.x;
-	        this.exp_TileY = cur_node.y;   
-	        this.exp_PreTileUID = (pre_node)? pre_node.uid:(-1);
-	        this.exp_PreTileX = (pre_node)? pre_node.x:(-1);
-	        this.exp_PreTileY = (pre_node)? pre_node.y:(-1); 	                   
+	        this.exp_CurTile = cur_node;
+	        this.exp_PreTile = pre_node;	                   
 	        this._cost_value = prop_BLOCKING;
 	        this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnCostFn, this);
-	        cost = this._cost_value
+	        this.exp_CurTile = null;
+	        this.exp_PreTile = null;	        
+	        cost = this._cost_value;
 	    }
 	    else
 	        cost = this._cost_fn_name;        
@@ -242,12 +238,27 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    this._is_cost_fn = (typeof cost == "string");
 	};
     
-	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
+	instanceProto.tile_uid_get = function(chess_uid)
 	{
 	    var chess_xyz = this.uid2xyz(chess_uid);
         if (chess_xyz == null)
+            return null;
+        var tile_uid = this.xyz2uid(chess_xyz.x, chess_xyz.y, 0);
+        return tile_uid;
+	}; 
+	
+	instanceProto.request_init_clean = function()
+	{
+        clean_table ( this.uid2cost );
+        this.exp_NearestTileUID = -1;
+	}; 	   
+    
+	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
+	{
+        var start_tile_uid = this.tile_uid_get(chess_uid);
+        if (start_tile_uid == null)
             return [];
-	    var start_tile_uid = this.xyz2uid(chess_xyz.x, chess_xyz.y, 0);
+        this.exp_StartTileUID = start_tile_uid;
         var nodes = this.ASTAR_search(start_tile_uid, null, moving_points, cost, CMD_AREA);
         if (nodes == null)
             return [];
@@ -258,16 +269,20 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return area_uids;
 	};
 	
-	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost)
-	{
-	    var chess_xyz = this.uid2xyz(chess_uid);
-        if (chess_xyz == null)
+	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost, is_nearest)
+	{   
+        var start_tile_uid = this.tile_uid_get(chess_uid);
+        if (start_tile_uid == null)
             return [];        
-	    var start_tile_uid = this.xyz2uid(chess_xyz.x, chess_xyz.y, 0);
-        var nodes = this.ASTAR_search(start_tile_uid, end_tile_uid, moving_points, cost, CMD_PATH);
+        this.exp_StartTileUID = start_tile_uid;
+        var search_cmd = (is_nearest===1)? CMD_PATH_NEAREST : CMD_PATH;
+        var nodes = this.ASTAR_search(start_tile_uid, end_tile_uid, moving_points, cost, search_cmd);
         if (nodes == null)
             return [];
-
+ 
+        if (is_nearest===1)
+            end_tile_uid = this.exp_NearestTileUID;
+            
         var path_uids = nodes[end_tile_uid].path_to_root();
         this.ASTAR_nodes_release();     
 	    return path_uids;
@@ -282,38 +297,54 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 // http://eloquentjavascript.net/appendix2.html    
 // ----
     var CMD_PATH = 0;
-    var CMD_AREA = 1;
+    var CMD_PATH_NEAREST = 1;
+    var CMD_AREA = 16;
 	instanceProto.ASTAR_search = function (start_tile_uid, end_tile_uid, moving_points, cost, search_cmd)
 	{ 
-        var IS_PATH_SEARCH = (search_cmd == CMD_PATH);
+        var IS_PATH_SEARCH = (search_cmd == CMD_PATH) || (search_cmd == CMD_PATH_NEAREST);
         var IS_AREA_SEARCH = (search_cmd == CMD_AREA);        
-        this.astar_heuristic_enable = IS_PATH_SEARCH && (this.path_mode == 3);
+        var astar_heuristic_enable = IS_PATH_SEARCH && (this.path_mode == 3);
         var shortest_path_enable = IS_PATH_SEARCH && (this.path_mode != 3);
         
 	    this.cost_function_setup(cost);
 
         var end = (end_tile_uid != null)? this.ASTAR_node_get(end_tile_uid): null;
-        // fix me
-        if (end != null)
-        {
-            var neighbors = end.neighbor_nodes_get();
-            var il = neighbors.length;
-            var all_walls = true;
-            for(var i=0; i<il; ++i) 
-            {
-                if ( !is_wall( end.cost_get(neighbors[i]) ) )
-                {
-                    all_walls = false;
-                    break;
-                }
-            }
-            if (all_walls)
-                return;
-        }
+        //if ((end != null) && (search_cmd == CMD_PATH))
+        //{
+        //    var neighbors = end.neighbor_nodes_get();
+        //    var il = neighbors.length;
+        //    var all_walls = true;
+        //    for(var i=0; i<il; ++i) 
+        //    {
+        //        if ( !is_wall( end.cost_get(neighbors[i]) ) )
+        //        {
+        //            all_walls = false;
+        //            break;
+        //        }
+        //    }
+        //    if (all_walls)
+        //        return;
+        //}
 
         var start = this.ASTAR_node_get(start_tile_uid);        
-        start.h = start.manhattan(end); 
-        //var closestNode = star;
+        start.h = start.manhattan(end, astar_heuristic_enable); 
+        
+        // NEAREST NODE
+        var closestNode = start;
+        // helper function to update closer_h                
+        var closer_h_update = function(node)
+        {
+            if (astar_heuristic_enable)     
+                node.closer_h = node.h;                    
+            else
+                node.closer_h = node.closer_h || node.manhattan(end, true);
+        };
+        if (IS_PATH_SEARCH)
+        {
+            closer_h_update(closestNode);       
+            this.exp_NearestTileUID = closestNode.uid;
+        }
+        // NEAREST NODE
         
         openHeap.push(start);
         while(openHeap.size() > 0) 
@@ -361,17 +392,26 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     // Found an optimal (so far) path to this node.  Take score for node to see how good it is.
                     neighbor.visited = true;                    
                     neighbor.parent.length = 0;
-                    neighbor.parent.push(currentNode.uid);                   
-                    neighbor.h = neighbor.h || neighbor.manhattan(end);
+                    neighbor.parent.push(currentNode.uid);   
+                    neighbor.h = neighbor.h || neighbor.manhattan(end, astar_heuristic_enable);
                     neighbor.g = gScore;
-                    neighbor.f = neighbor.g + neighbor.h;
-                    
-                    //if ( (neighbor.h < closestNode.h) || 
-                    //     ( (neighbor.h === closestNode.h) && (neighbor.g < closestNode.g) ) 
-                    //   ) 
-                    //{
-                    //    closestNode = neighbor;
-                    //}                    
+                    neighbor.f = neighbor.g + neighbor.h;                    
+                    this.uid2cost[neighbor.uid] = gScore;
+
+                    // NEAREST NODE
+                    if (IS_PATH_SEARCH)
+                    {           
+                        closer_h_update(neighbor);          
+                        var is_neighbor_more_closer = (neighbor.closer_h < closestNode.closer_h) ||
+                                                      ( (neighbor.closer_h === closestNode.closer_h) && (neighbor.g < closestNode.g) ) ;
+                       
+                        if (is_neighbor_more_closer)
+                        {
+                            closestNode = neighbor;
+                            this.exp_NearestTileUID = closestNode.uid;
+                        }   
+                    }
+                    // NEAREST NODE
 
                     if (!beenVisited) 
                     {
@@ -493,17 +533,18 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.f = 0;   
         this.g = 0;   
         this.h = 0;  
+        this.closer_h = 0;
         this.visited = false;      
         this.closed = false;
         this.parent.length = 0;
     };
-    nodeKlassProto.manhattan = function (end_node)
-    {
-        if (!this.plugin.astar_heuristic_enable)
+    nodeKlassProto.manhattan = function (end_node, heuristic_enable)
+    {        
+        if (!heuristic_enable)
             return 0;
         
         return Math.abs(this.x - end_node.x) + Math.abs(this.y - end_node.y);
-    };
+    };   
     nodeKlassProto.neighbor_nodes_get = function()
     {
         var _neighbors_lxy = this.plugin.neighborsLXY_get(this.x, this.y);
@@ -600,6 +641,26 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         } 
         return path.reverse();   
     };  
+	
+	var node2uid = function(node)
+	{
+	    return (node != null)? node.uid:(-1);
+	};
+	
+	var node2lx = function(node)
+	{
+	    return (node != null)? node.x:(-1);
+	};
+	
+	var node2ly = function(node)
+	{
+	    return (node != null)? node.y:(-1);
+	};
+	
+	var node2pathcost = function(node)
+	{
+	    return (node != null)? node.g:(-1);
+	};	    
 
     var openHeap;
     var BinaryHeapKlass = function (scoreFunction)
@@ -748,6 +809,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     openHeap = new BinaryHeapKlass( function(node) { return node.f; } );
 	// a star
 	
+    var clean_table = function (o)
+    {
+        var k;
+        for (k in o)
+            delete o[k];
+    };
 	
 	
 	instanceProto.saveToJSON = function ()
@@ -755,7 +822,11 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		return { "pm" : this.path_mode,
 		         "boarduid": (this.board != null)? this.board.uid:(-1),
 		         "groupuid": (this.group != null)? this.group.uid:(-1),
-		         "randomuid": (this.randomGen != null)? this.randomGen.uid:(-1), };
+		         "randomuid": (this.randomGen != null)? this.randomGen.uid:(-1),
+		         "chessuid": this.exp_ChessUID,
+		         "starttileuid": this.exp_StartTileUID,
+		         "nearesttileuid": this.exp_NearestTileUID,
+                 "uid2cost": this.uid2cost};
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -763,7 +834,11 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    this.path_mode = o["pm"];
 	    this.boardUid = o["boarduid"];
 		this.groupUid = o["groupuid"];
-		this.randomGenUid = o["randomuid"];		       
+		this.randomGenUid = o["randomuid"];	
+		this.exp_ChessUID = o["chessuid"];	
+		this.exp_StartTileUID = o["starttileuid"];
+		this.exp_NearestTileUID = o["nearesttileuid"];		
+        this.uid2cost = o["uid2cost"];
 	};
 	
 	instanceProto.afterLoad = function ()
@@ -847,6 +922,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	 
 	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
 	{	  
+	    this.request_init_clean();
+	    	    
 	    var group = this.GetInstGroup(); 
 	    var board = this.GetBoard();
 	    
@@ -871,21 +948,25 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         // filter applied
 	    var i, cnt=tiles_uids.length ,uid, _xyz;	    
         this._filter_fn_name = filter_name;
-	    this._filter_uid_list.length = 0;        
+	    this._filter_uid_list.length = 0;   
+	    
+	    this.exp_CurTile = {uid:-1, x:-1, y:-1};
 	    for (i=0; i<cnt; i++)
 		{
-            uid = tiles_uids[i];
-		    this.exp_TileUID = parseInt(uid);
-            _xyz = this.uid2xyz(this.exp_TileUID);
-	        this.exp_TileX = _xyz.x;
-	        this.exp_TileY = _xyz.y;
+            uid = parseInt(tiles_uids[i]);
+            this.exp_CurTile.uid = uid;            
+            _xyz = this.uid2xyz(uid);
+	        this.exp_CurTile.x = _xyz.x;
+	        this.exp_CurTile.y = _xyz.y;
             this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
 		}
 		group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);
 	};  
 		
-	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name)	
+	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name, is_nearest)	
 	{     
+	    this.request_init_clean();
+	    	    
 	    var group = this.GetInstGroup(); 
 	    var board = this.GetBoard();  
 	    
@@ -903,7 +984,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		    return;
 			
         this.exp_ChessUID = chess_uid;
-	    var path_tiles_uids = this.get_moving_path(chess_uid, tile_uid, moving_points, cost);
+	    var path_tiles_uids = this.get_moving_path(chess_uid, tile_uid, moving_points, cost, is_nearest);
         if (path_tiles_uids.length > 0)
 	        group.GetGroup(group_name).SetByUIDList(path_tiles_uids);
 	};	 
@@ -930,10 +1011,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	{
 	    ret.set_int(this.exp_ChessUID);
 	};
-	
+		
     Exps.prototype.TileUID = function (ret)
     {
-        ret.set_int(this.exp_TileUID);
+        ret.set_int(node2uid(this.exp_CurTile));
     };	
 	
     Exps.prototype.BLOCKING = function (ret)
@@ -943,31 +1024,57 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     	
     Exps.prototype.TileX = function (ret)
     {
-        ret.set_int(this.exp_TileX);
+        ret.set_int(node2lx(this.exp_CurTile));
     };
     	
     Exps.prototype.TileY = function (ret)
     {
-        ret.set_int(this.exp_TileY);
+        ret.set_int(node2ly(this.exp_CurTile));
     }; 
 	
     Exps.prototype.INFINITY = function (ret)
     {
         ret.set_int(prop_INFINITY);
     };
+	
+    Exps.prototype.UID2PathCost = function (ret, chess_uid)
+    {
+        var tile_uid = this.tile_uid_get(chess_uid);
+        var c = this.uid2cost[tile_uid];
+        if (c == null)
+            c = -1;
+        ret.set_float(c);
+    };  
+    
+    Exps.prototype.NearestTileUID = function (ret)
+    {
+        ret.set_int(this.exp_NearestTileUID);
+    };
+    
+    Exps.prototype.StartTileUID = function (ret)
+    {
+        ret.set_int(this.exp_StartTileUID);
+    };    
+    
     
     Exps.prototype.PreTileUID = function (ret)
     {
-        ret.set_int(this.exp_PreTileUID);
+        ret.set_int(node2uid(this.exp_PreTile));
     };	
 	
     Exps.prototype.PreTileX = function (ret)
     {
-        ret.set_int(this.exp_PreTileX);
+        ret.set_int(node2lx(this.exp_PreTile));
     };
     	
     Exps.prototype.PreTileY = function (ret)
     {
-        ret.set_int(this.exp_PreTileY);
-    };     	    
+        ret.set_int(node2ly(this.exp_PreTile));
+    };
+    	
+    Exps.prototype.PreTilePathCost = function (ret)
+    {
+        ret.set_float(node2pathcost(this.exp_PreTile));
+    };    
+         	    
 }());

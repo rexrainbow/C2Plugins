@@ -37,6 +37,7 @@ AddAction(3, 0, "Set a memory value", "Memory",
           
 ////////////////////////////////////////
 // Expressions
+AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddExpression(0, ef_return_any | ef_variadic_parameters, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");

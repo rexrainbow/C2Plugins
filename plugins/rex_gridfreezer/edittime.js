@@ -23,7 +23,11 @@ AddCondition(1,	cf_trigger, "On save", "Save",
 			 
 AddCondition(2,	cf_trigger, "On load", "Load", 
              "On load", 
-			 "Triggered when load object from grid.", "OnLoad");  			 
+			 "Triggered when load object from grid.", "OnLoad");  
+
+AddCondition(103, cf_looping | cf_not_invertible, "For each masked LXY", "Masked area", 
+             "For each masked LXY", 
+             "Repeat the event for each logic position of masked area.", "ForEachMask");			 
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("Disabled");
@@ -35,8 +39,8 @@ AddAction(1, 0, "Clean", "Define mask",
           "Clean mask", 
           "Clean mask.", "CleanMask");
 
-AddNumberParam("Left-top X", "Logic X position of Left-top point related by origin point.", -2);   
-AddNumberParam("Left-top Y", "Logic Y position of Left-top point related by origin point.", -2); 
+AddNumberParam("Left-top X", "Logical X position of Left-top point related by origin point.", -2);   
+AddNumberParam("Left-top Y", "Logical Y position of Left-top point related by origin point.", -2); 
 AddNumberParam("Width", "Witdh of area.", 5);   
 AddNumberParam("Height", "Height of area.", 5);  
 AddAction(2, 0, "Fill a rectangle", "Define mask", 
@@ -91,6 +95,15 @@ AddExpression(2, ef_return_any | ef_variadic_parameters,
               'Get extra data by index. Used in "condition:On load". Add 2nd parameter for default value.');
 AddExpression(3, ef_return_number, "Get instance UID", "Load", "LoadInstUID", 'Get UID of current loaded instance. Used in "condition:On load".');
   
+AddExpression(101, ef_return_number, "Current Logical X ", "For each", "CurLX", 
+              "Current Logical X in a For Each loop.");   			  
+AddExpression(102, ef_return_number, "Current Logical Y ", "For each", "CurLY",
+              "Current Logical Y in a For Each loop.");
+AddExpression(121, ef_return_number, "Current Physical X ", "For each", "CurPX", 
+              "Current Physical X in a For Each loop.");   			  
+AddExpression(122, ef_return_number, "Current Physical Y ", "For each", "CurPY",
+              "Current Physical Y in a For Each loop.");
+			  
 ACESDone();
 
 // Property grid properties for this plugin

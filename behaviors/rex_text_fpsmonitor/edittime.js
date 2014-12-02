@@ -31,10 +31,11 @@ ACESDone();
 var property_list = [ 
     new cr.Property(ept_combo, "Activated", "Yes", 
                     "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
-    new cr.Property(ept_combo, "Current fps", "Yes", "Display current fps.", "No|Yes"),      
+    new cr.Property(ept_combo, "Current fps", "Yes", "Display current fps.", "No|Yes"),   
     new cr.Property(ept_combo, "Minimum fps", "Yes", "Display minimum fps.", "No|Yes"),   
     new cr.Property(ept_combo, "Maximum fps", "Yes", "Display maximum fps.", "No|Yes"),
-    new cr.Property(ept_combo, "Average fps", "Yes", "Display average fps.", "No|Yes"),                   
+    new cr.Property(ept_combo, "Average fps", "Yes", "Display average fps.", "No|Yes"),  
+	new cr.Property(ept_combo, "CPU", "Yes", "Display current cpu utilization.", "No|Yes"),   
 	];
 	
 // Called by IDE when a new behavior type is to be created

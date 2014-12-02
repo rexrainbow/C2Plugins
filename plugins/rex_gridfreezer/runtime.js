@@ -66,6 +66,8 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 		// expressions
 		this.exp_LoadInstUID = -1;
 		this.exp_ExtraData = null;
+	    this.exp_CurLX = 0;
+	    this.exp_CurLY = 0;		
 	};
 
     instanceProto.tick2 = function()
@@ -73,6 +75,8 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
         if (!this.activated)
             return;
 			
+        this.runtime.ClearDeathRow();
+        
         // save instances which not in mask
         var insts = this.pick_target_instances();
         insts = this.instances_not_in_mask(insts);
@@ -379,6 +383,40 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 		layout.loadFromJSON( o["layout"] );		
 	};    
 	
+	instanceProto.cond_for_each = function (klist, for_each_key)
+	{
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		
+		var i, k, lxy;
+        for(i in klist)
+        {
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            k = (for_each_key)? i:klist[i];
+			lxy = key2lxy(k);
+	        this.exp_CurLX = lxy[0];
+	        this.exp_CurLY = lxy[1];
+	        if (this.board2mask.hasOwnProperty(k))
+	        {
+	            var mask_k = this.board2mask[k];
+	        }
+	        
+		    current_event.retrigger();
+		      
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }
+        }
+                    		
+		return false;
+	};	
+	
 	instanceProto.saveToJSON = function ()
 	{	    	    
 		return { "origin": this.origin,
@@ -431,6 +469,11 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 	{
 		return true;
 	};
+	
+	Cnds.prototype.ForEachMask = function ()
+	{	     
+        return this.cond_for_each(this.board2mask, true);
+	};		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -541,7 +584,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 		var i, len, t;
 		for (i = 0, len = this.target_types.length; i < len; i++)
 		{
-			t = targetTypes[i];
+			t = this.target_types[i];
 			
 			if (t.is_family && t.members.indexOf(obj_) !== -1)
 				return;
@@ -592,6 +635,25 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 			    val = 0;
 		}
 	    ret.set_any(val);
+	};	
+	
+	Exps.prototype.CurLX = function (ret)
+	{
+		ret.set_int(this.exp_CurLX);
+	}; 	
+	Exps.prototype.CurLY = function (ret)
+	{
+		ret.set_int(this.exp_CurLY);
+	};	
+	Exps.prototype.CurPX = function (ret)
+	{
+	    var px = this.GetLayout().LXYZ2PX(this.exp_CurLX, this.exp_CurLY);
+		ret.set_float(px);
+	}; 	
+	Exps.prototype.CurPY = function (ret)
+	{
+	    var py = this.GetLayout().LXYZ2PY(this.exp_CurLX, this.exp_CurLY);
+		ret.set_float(py);
 	};	
 }());
 
@@ -651,7 +713,12 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 				sol.instances[0] = s;
 			}
 		}
-		
+
+        // add solModifiers
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+        current_event.addSolModifier(obj);
+        // add solModifiers
+        
 		return inst;
     };
     

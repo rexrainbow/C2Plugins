@@ -36,6 +36,14 @@ AddStringParam("Callback function", "Callback function.", '"_"');
 AddCondition(4, cf_trigger, "On error", "Send", 
             "On error <b>{0}</b>", 
             "Triggered after any sending action error.", "OnError");             
+            
+AddCondition(5, 0, "LastData is null", "Receive", 
+             "LastData is null", 
+             "Return true if LastData is null.", "LastDataIsNull");
+  
+AddCondition(6, 0, "TransactionIn is null", "Transaction", 
+             "TransactionIn is null", 
+             "Return true if TransactionIn is null.", "TransactionInIsNull");  
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
@@ -149,9 +157,9 @@ AddAction(25, 0, "Add once", "Receive - Add once",
           "Add received callback once.", "AddReadingCallbackOnce");   
 
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
-AddAction(31, 0, "Remove ref", "On disconnect", 
-          "Remove ref <i>{0}</i> when disconnected", 
-          'Remove data ref when disconnected. Uses under "condition: On received".', "RemoveRefOnDisconnect");
+AddAction(31, 0, "Remove", "On disconnect", 
+          "Remove all values at <i>{0}</i> when disconnected", 
+          'Remove all values at data ref when disconnected. Uses under "condition: On received".', "RemoveRefOnDisconnect");
 
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddAnyTypeParam("Value", "The value to set", 0);
@@ -178,7 +186,8 @@ AddExpression(4, ef_return_any | ef_variadic_parameters, "Previous child name", 
 AddExpression(11, ef_return_string, "Last push ref", "Push", "LastPushRef", 
               "Data reference at last push.");
 AddExpression(12, ef_return_number, "Timestamp", "Server value", "TIMESTAMP", 
-              "A placeholder value for auto-populating the current timestamp (time since the Unix epoch, in milliseconds) by the Firebase servers.");   			  
+              "A placeholder value for auto-populating the current timestamp (time since the Unix epoch, in milliseconds) by the Firebase servers."); 
+              
 ACESDone();
 
 // Property grid properties for this plugin

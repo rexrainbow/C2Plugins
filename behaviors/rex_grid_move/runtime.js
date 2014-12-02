@@ -603,13 +603,13 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
 	Acts.prototype.SetAcceleration = function (a)
 	{
-		this._cmd_move_to.move["acc"] = a;
+		this._cmd_move_to.move_params["acc"] = a;
         this._cmd_move_to._set_current_speed(null);
 	};
 	
 	Acts.prototype.SetDeceleration = function (a)
 	{
-		this._cmd_move_to.move["dec"] = a;
+		this._cmd_move_to.move_params["dec"] = a;
 	};
     
 	Acts.prototype.SetCurrentSpeed = function (s)
@@ -947,17 +947,17 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
 	Exps.prototype.MaxSpeed = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.move["max"]);
+		ret.set_float(this._cmd_move_to.move_params["max"]);
 	}; 
 
 	Exps.prototype.Acc = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.move["acc"]);
+		ret.set_float(this._cmd_move_to.move_params["acc"]);
 	};  
 
  	Exps.prototype.Dec = function (ret)
 	{
-		ret.set_float(this._cmd_move_to.move["dec"]);
+		ret.set_float(this._cmd_move_to.move_params["dec"]);
 	}; 
 
 	Exps.prototype.TargetX = function (ret)
@@ -1065,9 +1065,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
     var CmdMoveTo = function(plugin)
     {     
-        this.move = {"max":0,
-                     "acc":0,
-                     "dec":0};
+        this.move_params = {"max":0,
+                            "acc":0,
+                            "dec":0};
         this.segments = [];
     };
     var CmdMoveToProto = CmdMoveTo.prototype;
@@ -1075,14 +1075,15 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	CmdMoveToProto.Reset = function(plugin)
 	{
         this.activated = plugin.properties[0];
-        this.move["max"] = plugin.properties[1];
-        this.move["acc"] = plugin.properties[2];
-        this.move["dec"] = plugin.properties[3];
+        this.move_params["max"] = plugin.properties[1];
+        this.move_params["acc"] = plugin.properties[2];
+        this.move_params["dec"] = plugin.properties[3];
+        this.is_continue_mode = (plugin.properties[8] == 1);
         this.segments.length = 0;
         this.is_moving = false;  
         this.current_speed = 0;
         this.remain_distance = 0;  // used to control the moving speed
-        this.is_hit_target = false;
+        this.remain_dt = 0;
         this.is_my_call = false; 
         
         this.inst = plugin.inst;
@@ -1090,35 +1091,30 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	};
     
     CmdMoveToProto.tick = function ()
-	{
-        if (this.is_hit_target)
-        {        
-            this.is_moving = false;             
-            this.is_my_call = true;
-            this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnHitTarget, this.inst); 
-            this.is_my_call = false;
-            this.is_hit_target = false;
-        }
-        
-        if ( (!this.activated) || (!this.is_moving) ) 
-        {
+	{  
+        this.remain_dt = 0;	    
+        if ( (!this.activated) || (!this.is_moving) )         
             return;
-        }
         
 		var dt = this.runtime.getDt(this.inst);
-        if (dt==0)   // can not move if dt == 0
-            return;
-		
+        this.move(dt);
+	};
+	
+    CmdMoveToProto.move = function (dt)
+	{
+	    if (dt == 0)    // can not move if dt == 0
+	        return;
+	        
         // assign speed
         var is_slow_down = false;
-        if (this.move["dec"] != 0)
+        if (this.move_params["dec"] != 0)
         {
             // is time to deceleration?                
             var _speed = this.current_speed;
-            var d = (_speed*_speed)/(2*this.move["dec"]); // (v*v)/(2*a)
+            var d = (_speed*_speed)/(2*this.move_params["dec"]); // (v*v)/(2*a)
             is_slow_down = (d >= this.remain_distance);
         }
-        var acc = (is_slow_down)? (-this.move["dec"]):this.move["acc"];
+        var acc = (is_slow_down)? (-this.move_params["dec"]):this.move_params["acc"];
         if (acc != 0)
         {
             this._set_current_speed( this.current_speed + (acc * dt) );    
@@ -1130,16 +1126,22 @@ cr.behaviors.Rex_GridMove = function(runtime)
         var cur_seg = this.segments[0];
         var seg_remain_distance = cur_seg.GetRemainDistance( distance );       
 
+        var is_hit_target = false;
         // is hit to target of current segment?
         if ( (seg_remain_distance <= 0) || (this.current_speed <= 0) )
-        {            
+        {
             if (this.segments.length == 1)
             {
+                is_hit_target = true;        // trigger on hit target
                 this.inst.x = cur_seg.x1;
                 this.inst.y = cur_seg.y1;
-                this._set_current_speed(0);                
-                this.is_hit_target = true;
                 this.segments.length = 0;
+                
+                // remain dt
+                if ( this.current_speed > 0)  // not stop
+                    this.remain_dt = (-seg_remain_distance)/this.current_speed;
+                    
+                this._set_current_speed(0);
             }
             else
             {
@@ -1152,21 +1154,28 @@ cr.behaviors.Rex_GridMove = function(runtime)
             var angle = cur_seg.angle;
             this.inst.x += (distance * Math.cos(angle));
             this.inst.y += (distance * Math.sin(angle));
-        } 
-
+        }        
 		this.inst.set_bbox_changed();
-	};
+		
+        if (is_hit_target)
+        {                                    
+            this.is_moving = false;             
+            this.is_my_call = true;
+            this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnHitTarget, this.inst); 
+            this.is_my_call = false;          
+        }
+	};	
 	
 	CmdMoveToProto._set_current_speed = function(speed)
 	{
         if (speed != null)
         {
-            this.current_speed = (speed > this.move["max"])? 
-                                 this.move["max"]: speed;
+            this.current_speed = (speed > this.move_params["max"])? 
+                                 this.move_params["max"]: speed;
         }        
-        else if (this.move["acc"]==0)
+        else if (this.move_params["acc"]==0)
         {
-            this.current_speed = this.move["max"];
+            this.current_speed = this.move_params["max"];
         }
 	};  
     
@@ -1185,6 +1194,9 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this._set_current_speed(null);
         this.is_moving = true;
         this.set_star_pos();
+        
+        if (this.is_continue_mode)
+            this.move(this.remain_dt);
 	};
     
 	CmdMoveToProto.set_star_pos = function (offset_distance)
@@ -1211,11 +1223,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	        seg_save.push(this.segments[i].saveToJSON());
 	    }
 		return { "en": this.activated,
-		         "v": this.move,
+		         "v": this.move_params,
                  "is_m": this.is_moving,
                  "c_spd" : this.current_speed,
                  "rd" : this.remain_distance,
-                 "is_ht" : this.is_hit_target,
                  "seg" : seg_save
                };
 	};
@@ -1223,11 +1234,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	CmdMoveToProto.loadFromJSON = function (o)
 	{  
 		this.activated = o["en"];
-		this.move = o["v"];
+		this.move_params = o["v"];
 		this.is_moving = o["is_m"]; 
 		this.current_speed = o["c_spd"];
-		this.remain_distance = o["rd"];		
-		this.is_hit_target = o["is_ht"];
+		this.remain_distance = o["rd"];
 		
 	    var seg_save = o["seg"];		
 	    var i, cnt=seg_save.length;

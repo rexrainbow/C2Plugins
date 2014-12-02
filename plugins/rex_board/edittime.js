@@ -119,7 +119,8 @@ AddObjectParam("Chess", "Chess object.");
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the tile to set.", 0);
 AddCondition(24, cf_not_invertible, "Pick chess at LZ", "SOL - logical position", 
              "Pick <i>{0}</i> at LZ to <i>{1}</i>", 
-             "Pick chess at Logic Z.", "PickChessAtLZ");                 	
+             "Pick chess at Logic Z.", "PickChessAtLZ");
+                       	
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -144,6 +145,13 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddAction(3, 0, "Add chess", 
           "Logic: Add", "Add chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess");  
+AddAnyTypeParam("UID", "The UID of chess", 0);
+AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
+AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAction(4, 0, "Add chess by UID", 
+          "Logic: Add", "Add chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
+          "Add chess on the board.", "AddChess");           
 AddObjectParam("Chess", "Chess object.");
 AddAction(5, 0, "Remove chess", 
           "Logic: Remove", "Remove chess <i>{0}</i>", 
@@ -199,8 +207,11 @@ AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
+AddComboParamOption("stand on a tile");
+AddComboParamOption("ignore tile checking");
+AddComboParam("Check condition", "Tile checking.",0);
 AddAction(14, 0, "Create chess", "Physical: Create", 
-          "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>", 
+          "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>] on layer <i>{4}</i>, <i>{5}</i>", 
           "Create chess on the board.", "CreateChess");  
 AddNumberParam("UID of chess", "UID of chess A.", 0);
 AddNumberParam("UID of chess", "UID of chess B.", 0);
@@ -281,7 +292,14 @@ AddObjectParam("Chess", "Chess object.");
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the tile to set.", 0);
 AddAction(30, 0, "Pick chess at LZ", "SOL - logical position", 
           "Pick <i>{0}</i> at LZ to <i>{1}</i>", 
-          "Pick chess at Logic Z.", "PickChessAtLZ");          	  
+          "Pick chess at Logic Z.", "PickChessAtLZ"); 
+AddObjectParam("Chess", "Chess object.");
+AddAnyTypeParam("Tile UID", "Tile UID. Can be number or a tile UID list in JSON string.", 0);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 1);
+AddLayerParam("Layer", "Layer name of number."); 
+AddAction(31, 0, "Create chess above tile by UID", "Physical: Create", 
+          "Create chess <i>{0}</i> above tile UID:<i>{1}</i> at LZ to <i>{2}</i>, on layer <i>{3}</i>", 
+          "Create chess above tile.", "CreateChessAboveTile");                    	  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of chess.", 0);
@@ -401,7 +419,9 @@ AddNumberParam("UID", "The UID of chess B.", 0);
 AddExpression(26, ef_return_number,
               "Get logic direction of two neighbor chess", "Logic", "NeigborUID2DIR",
               "Get logic direction of two neighbor chess from chess A to chessB. Return (-1) if they are not on the board.");
-           
+AddExpression(27, ef_return_number,
+              "All directions", "Neighborhood", "ALLDIRECTIONS",
+              'Direction code for all directions (-1), used in "Condition: Pick neighbor chess".'); 
                             
 ACESDone();
 

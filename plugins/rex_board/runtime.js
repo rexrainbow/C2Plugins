@@ -41,6 +41,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
     
     var _uids = [];  // private global object
+    var ALLDIRECTIONS = (-1);
 	instanceProto.onCreate = function()
 	{
         this.check_name = "BOARD";
@@ -362,15 +363,38 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.AddChess(instA, xyzB.x, xyzB.y, xyzB.z);        
         this.AddChess(instB, xyzA.x, xyzA.y, xyzA.z);   
         return true;
-	};	
-    
+	};
+	
+	instanceProto.CanPut = function (lx, ly, lz, test_mode)
+	{
+	    var can_put;
+	    switch (test_mode)
+	    {
+	    case 0:    // lxy is inside board
+	        can_put = this.IsInsideBoard(lx, ly);
+	    break;
+	    case 1:    // lxy is inside board, and stand on a tile if lz!=0
+	        var check_lz = (lz == 0)? null : 0;
+	        can_put = this.IsInsideBoard(lx, ly, check_lz);
+	    break;
+	    case 2:    // lxy is stand on a tile and is empty
+	        can_put = this.IsEmpty(lx, ly, lz);
+	    break;	    
+	    }
+	    return can_put;
+	};
+		
 	instanceProto.AddChess = function(inst, _x, _y, _z)
 	{                
-        // inst could be instance(object) or uid(number)
-        if ((inst == null) || (!this.IsInsideBoard(_x, _y)))
+	    if (inst == null)
+	        return;
+	        
+        // check if lxy is inside board
+        if ( !this.IsInsideBoard(_x, _y) )
             return;
-        
-        var is_inst = (typeof(inst) != "number");
+                    
+        // inst could be instance(object) or uid(number) or ?(string)
+        var is_inst = (typeof(inst) == "object");
         var uid = (is_inst)? inst.uid:inst;
         if (this.uid2inst(uid) != null)  // already on board
             this.RemoveChess(uid);
@@ -451,14 +475,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return dir;
 	};  	
 	
-	instanceProto.CreateChess = function(objtype, lx, ly, lz, layer)
+	instanceProto.CreateChess = function(objtype, lx, ly, lz, layer, ignore_tile_checking)
 	{
         if ((objtype == null) || (layer == null))
+            return;   
+        
+        var test_mode = (ignore_tile_checking)?  0:1;
+        if (!this.CanPut(lx, ly, lz, test_mode))
             return;
             	    
-        if ((lz != 0) && (!this.IsInsideBoard(lx,ly,0)))
-            return;
-        
         // callback
         var self = this;  
         var callback = function (inst)
@@ -722,19 +747,20 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return false;
         
         var layout = this.GetLayout();
+        var dir_cnt = layout.GetDirCount();
         var origin_uid = origin_inst.uid;
         var tiles_uid = [], i, cnt, neighbor_uid;
-        if (dir == (-1))
+        if (dir == ALLDIRECTIONS)
         {
-            var i, cnt = layout.GetDirCount();            
-            for (i=0; i<cnt; i++)
+            var i;         
+            for (i=0; i<dir_cnt; i++)
             {
                 neighbor_uid = this.dir2uid(origin_uid, i, 0, is_wrap_mode);
                 if (neighbor_uid != null)
                     tiles_uid.push(neighbor_uid);
             }
         }    
-        else
+        else if ((dir >= 0) && (dir <dir_cnt))
         {
             neighbor_uid = this.dir2uid(origin_uid, dir, 0, is_wrap_mode);
             if (neighbor_uid != null)
@@ -1033,10 +1059,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};	
 	
 	
-	Acts.prototype.AddChess = function (objs,x,y,z)
+	Acts.prototype.AddChess = function (obj_type, x, y, z, ignore_tile_checking)
 	{
-        var inst = objs.getFirstPicked();
-	    this.AddChess(inst,x,y,z);
+	    if (obj_type == null)
+	        return;
+	        
+	    var inst;
+	    if (typeof(obj_type) == "object")
+            inst = obj_type.getFirstPicked();
+        else    // uid
+            inst = obj_type;
+            
+	    this.AddChess(inst, x, y, z, (ignore_tile_checking === 1));
 	};		
     
     Acts.prototype.SetupLayout = function (layout_objs)
@@ -1050,12 +1084,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		
 	Acts.prototype.CreateTile = function (objtype,x,y,layer)
 	{
-	    this.CreateChess(objtype,x,y,0,layer);
+	    this.CreateChess(objtype, x, y, 0, layer);
 	};
 	
-	Acts.prototype.CreateChess = function (objtype,x,y,z,layer)
-	{ 
-	    this.CreateChess(objtype,x,y,z,layer);        
+	Acts.prototype.CreateChess = function (objtype, x, y, z, layer, ignore_tile_checking)
+	{
+	    this.CreateChess(objtype,x,y,z,layer, (ignore_tile_checking === 1));        
 	};	
 	
 	Acts.prototype.RemoveChess = function (chess_type)
@@ -1159,19 +1193,41 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Acts.prototype.CreateChessAboveTile = function (chess_type, tile_type, lz, layer)
 	{        
-        if ((!chess_type) || (!tile_type))
+        if ( (!chess_type) || (tile_type==null) )
             return false; 
                   
-        var tiles = tile_type.getCurrentSol().getObjects();
-        var i, tiles_cnt=tiles.length;
-        for (i=0; i<tiles_cnt; i++)  
-        {      
-            var xyz = this.uid2xyz(tiles[i].uid);
+        if (typeof(tile_type) == "object")
+        {
+            var tiles = tile_type.getCurrentSol().getObjects();
+            var i, tiles_cnt=tiles.length;
+            for (i=0; i<tiles_cnt; i++)  
+            {      
+                var xyz = this.uid2xyz(tiles[i].uid);
+                if (xyz == null)
+                    continue;
+	            this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer);  
+	        }            
+        }
+        else if (typeof(tile_type) == "number")
+        {
+            var xyz = this.uid2xyz(tile_type);
             if (xyz == null)
-                continue;
-	        this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer);  
-	    }
-	};	
+                return;
+	        this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer); 
+        }
+        else if (typeof(tile_type) == "string")
+        {
+            var tile_uids = JSON.parse(tile_type);
+            var i, cnt=tile_uids.length, xyz;
+            for (i=0; i<cnt; i++)  
+            {
+                xyz = this.uid2xyz(tile_uids[i]);
+                if (xyz == null)
+                    continue;
+                this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer);  
+            }
+        }
+	};		
     
 	Acts.prototype.FillChess = function (tile_type, layer, lz)
 	{
@@ -1221,6 +1277,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return;
         this._pick_chess_on_LZ(chess_type, lz);            
 	};	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -1423,7 +1480,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	        dir = (-1);
 	    ret.set_int( dir );
 	}; 		  
-	
+    
+	Exps.prototype.ALLDIRECTIONS = function (ret)
+	{   
+	    ret.set_int( ALLDIRECTIONS );
+	}; 	
 }());
 
 (function ()
@@ -1482,9 +1543,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 				sol.instances[0] = s;
 			}
 		}
-		
+
+        // add solModifiers
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+        current_event.addSolModifier(obj);
+        // add solModifiers
+        
 		return inst;
-    };   
+    };
     
     window.RexC2CreateObject = CreateObject;
 }());

@@ -1,10 +1,10 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Logic mask",
+		"name":			"Logical mask",
 		"id":			"Rex_LogicMask",
 		"version":		"0.1",        
-		"description":	"A cover area of a board object.",
+		"description":	"A logical area to test which tiles had been entered coverage, or had been exited coverage.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_logicmask.html",
 		"category":		"Rex - Board - application",
@@ -16,18 +16,21 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_looping | cf_not_invertible, "For each enter LXY", "Enter", 
-             "For each enter LXY", 
-             "Repeat the event for each logic position of entered area.", "ForEachEnter");  
-AddCondition(2, cf_looping | cf_not_invertible, "For each exit LXY", "Exit", 
-             "For each exit LXY", 
-             "Repeat the event for each logic position of exited area.", "ForEachExit");   
-AddCondition(3, cf_looping | cf_not_invertible, "For each mask", "Mask area", 
-             "For each mask LXY", 
-             "Repeat the event for each logic position of mask area.", "ForEachMask");  
-AddNumberParam("Logic X", "The X index.", 0);
-AddNumberParam("Logic Y", "The Y index.", 0);
-AddCondition(4, 0, "In mask area", "Mask area", 
+AddCondition(1, cf_looping | cf_not_invertible, "For each entered LXY", "Entered area", 
+             "For each entered LXY", 
+             "Repeat the event for each logical position of entered area.", "ForEachEnter");  
+
+AddCondition(2, cf_looping | cf_not_invertible, "For each exit LXY", "Exit area", 
+             "For each exited LXY", 
+             "Repeat the event for each logical position of exited area.", "ForEachExit");   
+
+AddCondition(3, cf_looping | cf_not_invertible, "For each masked LXY", "Masked area", 
+             "For each masked LXY", 
+             "Repeat the event for each logical position of masked area.", "ForEachMask");
+               
+AddNumberParam("Logical X", "The X index.", 0);
+AddNumberParam("Logical Y", "The Y index.", 0);
+AddCondition(4, 0, "In mask area", "Masked area", 
              "[<i>{0}</i>,<i>{1}</i>] is in masked area", 
              "Testing if point is in masked area.", "IsMaskArea");			 
 //////////////////////////////////////////////////////////////
@@ -35,37 +38,61 @@ AddCondition(4, 0, "In mask area", "Mask area",
 AddAction(1, 0, "Clean", "Define mask", 
           "Clean mask", 
           "Clean mask.", "CleanMask");
-AddNumberParam("Left-top X", "Logic X position of Left-top point related by origin point.", -2);   
-AddNumberParam("Left-top Y", "Logic Y position of Left-top point related by origin point.", -2); 
+          
+AddNumberParam("Left-top X", "Logical X position of Left-top point related by origin point.", -2);   
+AddNumberParam("Left-top Y", "Logical Y position of Left-top point related by origin point.", -2); 
 AddNumberParam("Width", "Witdh of area.", 5);   
 AddNumberParam("Height", "Height of area.", 5); 
 AddAnyTypeParam("Value", "Filled value. Could be number or (JSON) string.", 1); 
 AddAction(2, 0, "Fill a rectangle", "Define mask", 
           "Fill a rectangle mask at offset to [<i>{0}</i>, <i>{1}</i>], width to <i>{2}</i>, height to <i>{3}</i>, with value to <i>{4}</i>",
           "Fill a rectangle mask.", "FillRectangleMask");  
-AddNumberParam("X", "Logic X position related by origin point.", 0);   
-AddNumberParam("Y", "Logic Y position related by origin point.", 0);
+
+AddNumberParam("X", "Logical X position related by origin point.", 0);   
+AddNumberParam("Y", "Logical Y position related by origin point.", 0);
 AddAnyTypeParam("Value", "Filled value. Could be number or (JSON) string.", 1); 
 AddAction(3, 0, "Fill a point", "Define mask", 
           "Fill at [<i>{0}</i>, <i>{1}</i>], with value to <i>{2}</i>",
           "Fill a point mask.", "FillPointMask");   
-AddNumberParam("X", "Logic X position of origin point.", 0);   
-AddNumberParam("Y", "Logic Y position of origin point.", 0);
-AddAction(11, 0, "Set origin point", "Origin point", 
-          "Set origin point to [<i>{0}</i>, <i>{1}</i>]",
-          "Set origin point.", "SetOrigin");                   
+
+AddNumberParam("X", "Logical X position related by origin point.", 0);   
+AddNumberParam("Y", "Logical Y position related by origin point.", 0);
+AddAction(4, 0, "Clean a point", "Define mask", 
+          "Clean point [<i>{0}</i>, <i>{1}</i>]",
+          "Clean a point at mask.", "CleanPointMask");
+
+AddNumberParam("Range", "Range of filled.", 3);
+AddAnyTypeParam("Value", "Filled value. Could be number or (JSON) string.", 1); 
+AddAction(5, 0, "Flood fill", "Define mask - advance", 
+          "Flood fill in a range to <i>{0}</i>, with value to <i>{1}</i>",
+          "Flood fill the mask. This action need to have rex_SquareTx or rex_HexTx object.", "FloodFillMask");
+
+AddNumberParam("X", "Logical X position of origin point.", 0);   
+AddNumberParam("Y", "Logical Y position of origin point.", 0);
+AddAction(11, 0, "Put mask", "Put", 
+          "Put mask at [<i>{0}</i>, <i>{1}</i>]",
+          "Put mask at board.", "PutMask");   
+
+AddAction(21, 0, "Clean", "Masked area", 
+          "Clean masked area", 
+          "Clean Masked area.", "CleanMaskedArea");  
+
+AddObjectParam("Layout", "Layout to get neighbors");
+AddAction(51, 0, "Setup layout", "Setup", 
+          "Set layout to <i>{0}</i>", 
+          "Setup layout for flood filling.", "SetupLayout");                                  
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "Current Logic X ", "For each", "CurLX", 
-              "Current Logic X in a For Each loop.");   			  
-AddExpression(2, ef_return_number, "Current Logic Y ", "For each", "CurLY",
-              "Current Logic Y in a For Each loop."); 
-AddExpression(3, ef_return_any, "Current value of mask", "For each", "CurValue",
+AddExpression(1, ef_return_number, "Current Logical X ", "For each", "CurLX", 
+              "Current Logical X in a For Each loop.");   			  
+AddExpression(2, ef_return_number, "Current Logical Y ", "For each", "CurLY",
+              "Current Logical Y in a For Each loop."); 
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Current value of mask", "For each", "CurValue",
               "Current value of mask in a For Each loop."); 
-AddExpression(11, ef_return_number, "Logic X of Origin point", "Origin", "OX", 
-              "Logic X of Origin point.");   			  
-AddExpression(12, ef_return_number, "Logic Y of Origin point", "Origin", "OY", 
-              "Logic Y of Origin point.");   					  
+AddExpression(11, ef_return_number, "Logical X of Origin point", "Origin", "OX", 
+              "Logical X of Origin point.");   			  
+AddExpression(12, ef_return_number, "Logical Y of Origin point", "Origin", "OY", 
+              "Logical Y of Origin point.");   					  
                                
 ACESDone();
 

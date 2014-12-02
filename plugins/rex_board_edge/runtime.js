@@ -129,33 +129,40 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	
 	var lxy2key = function (lx0, ly0, lx1, ly1)
 	{   
-	    var lxymap;
+	    var k0 = lx0.toString()+","+ly0.toString();
+	    var k1 = lx1.toString()+","+ly1.toString();
+	    var k;
         if ( lx0 < lx1 )
         {
-            lxymap = [lx0, ly0, lx1, ly1];            
+            k = k0+","+k1;          
         }
         else if ( lx0 == lx1 )
         {
             if ( ly0 < ly1)
             {
-                lxymap = [lx0, ly0, lx1, ly1];
+                k = k0+","+k1;
             }
             else 
             {
-                lxymap = [lx1, ly1, lx0, ly0];
+                k = k1+","+k0;
             }
         }
         else
         {
-            lxymap = [lx1, ly1, lx0, ly0];
+            k = k1+","+k0;
         }
         
-        return JSON.stringify(lxymap);
+        return k;
 	};
 					
 	var key2lxy = function (k)
-	{   	            
-        return JSON.parse(k);
+	{   	      
+	    lxy = k.split(",");
+	    lxy[0] = parseInt(lxy[0]);
+	    lxy[1] = parseInt(lxy[1]);
+	    lxy[2] = parseInt(lxy[2]);
+	    lxy[3] = parseInt(lxy[3]);	    
+        return lxy;
 	};
 		
 	instanceProto.remove_edge = function (edge_uid, kicking_notify)

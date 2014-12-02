@@ -233,7 +233,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
  
 	behinstProto.GetABSX = function ()
 	{
-	    if (!this.drag_info.is_on_dragged)
+	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
         var touch_obj = this.type.touchwrap;
@@ -244,7 +244,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	behinstProto.GetABSY = function ()
 	{
-	    if (!this.drag_info.is_on_dragged)
+	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
         var touch_obj = this.type.touchwrap;
@@ -255,7 +255,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         
 	behinstProto.GetX = function()
 	{
-	    if (!this.drag_info.is_on_dragged)
+	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
         var touch_obj = this.type.touchwrap;
@@ -266,7 +266,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
 	behinstProto.GetY = function()
 	{
-	    if (!this.drag_info.is_on_dragged)
+	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
         var touch_obj = this.type.touchwrap;
@@ -306,16 +306,21 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{
 	    if (touch_src == null)
 	    {
-            this.is_on_dragged = false;	
-		    this.touch_src = -1; 		    
+            this.is_on_dragged = false;		        
+	        this.plugin.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.plugin.inst);
+	        
+	        // !! should release it after handler	                      
+		    this.touch_src = -1; 	
+		    // !! should release it after handler		    
 	    }
 	    else
-	    {
-	        var inst = this.plugin.inst;       
+	    {     
             // !! should set these before get touchXY
             this.is_on_dragged = true;	
 		    this.touch_src = touch_src;
             // !! should set these before get touchXY
+            
+	        var inst = this.plugin.inst;              
             var cur_x=this.plugin.GetX(), cur_y=this.plugin.GetY();
             this.drag_dx = inst.x - cur_x;
             this.drag_dy = inst.y - cur_y;
@@ -325,25 +330,19 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             this.drag_start_y = cur_y;         
             this.inst_start_x = inst.x;
             this.inst_start_y = inst.y;
+            
+            this.plugin.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, this.plugin.inst); 
         }          
         this.IsMovingSet(false); 
-        
-        if (touch_src == null)
-        {
-            this.plugin.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.plugin.inst);   
-        }
-        else
-        {
-            this.plugin.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDragStart, this.plugin.inst); 
-        }
 	};
 
 	DragInfoKlassProto.ForceDrop = function ()
 	{
         if (this.is_on_dragged)
         {
-		    this.is_on_dragged = false;            
             this.plugin.runtime.trigger(cr.behaviors.Rex_DragDrop2.prototype.cnds.OnDrop, this.plugin.inst); 
+                        
+		    this.is_on_dragged = false;            
         }
 	};
 		
@@ -475,8 +474,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{
         if (this.drag_info.is_on_dragged)  // always dragged
             return;
-        
-            
+
         if (!this.type.touchwrap.IsInTouch())       // no touched
             return;
         

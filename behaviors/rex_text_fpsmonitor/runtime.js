@@ -48,7 +48,8 @@ cr.behaviors.Rex_text_fpsmonitor = function(runtime)
 	    this.current_fps_enable = (this.properties[1] == 1);
 	    this.minimum_fps_enable = (this.properties[2] == 1);
 	    this.maximum_fps_enable = (this.properties[3] == 1);	
-	    this.average_fps_enable = (this.properties[4] == 1);	
+	    this.average_fps_enable = (this.properties[4] == 1);
+        this.cpuutilisation_enable = (this.properties[5] == 1);
         this._text_type = ""; 
         this._set_text_handler = this._set_text_handler_get();        
 	    this._reset();       
@@ -129,6 +130,8 @@ cr.behaviors.Rex_text_fpsmonitor = function(runtime)
 	        var avg_fps = this.acc_fps/this.tick_cnt;
 	        content += ("avg:" + Math.floor(avg_fps).toString());
 	    }	
+        if (this.cpuutilisation_enable)
+            content += (" CPU:" + Math.floor(this.runtime.cpuutilisation/10).toString() + "%  ");        
 	    
 	    if (content != "")
 	        this.SetText(content);  

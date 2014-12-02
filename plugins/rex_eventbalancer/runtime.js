@@ -233,7 +233,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
-	Exps.prototype.ProcressingTime = function (ret)
+	Exps.prototype.ProcessingTime = function (ret)
 	{  
         ret.set_float(this.processing_time);
 	}; 

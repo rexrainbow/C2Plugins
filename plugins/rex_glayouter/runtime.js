@@ -716,7 +716,12 @@ cr.plugins_.Rex_Layouter = function(runtime)
 				sol.instances[0] = s;
 			}
 		}
-		
+
+        // add solModifiers
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+        current_event.addSolModifier(obj);
+        // add solModifiers
+        
 		return inst;
     };
     

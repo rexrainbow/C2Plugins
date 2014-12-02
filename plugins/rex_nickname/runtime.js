@@ -266,7 +266,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	Acts.prototype.CreateInst = function (nickname,x,y,_layer, family_objtype)
 	{
         var inst = this.CreateInst(nickname,x,y,_layer);
-		
+
         if (!family_objtype)
             return;
         
@@ -356,7 +356,12 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 				sol.instances[0] = s;
 			}
 		}
-		
+
+        // add solModifiers
+        var current_event = this.runtime.getCurrentEventStack().current_event;
+        current_event.addSolModifier(obj);
+        // add solModifiers
+        
 		return inst;
     };
     

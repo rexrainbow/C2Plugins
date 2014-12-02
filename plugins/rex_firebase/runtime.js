@@ -64,18 +64,18 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	var EVENTTYPEMAP = ["value", "child_added", "child_changed", "child_removed","child_moved"];
 	instanceProto.onCreate = function()
 	{
-        this.rootpath = this.properties[0]; 
+        this.rootpath = this.properties[0] + "/"; 
         
         // ref cache
         this.ref_cache = {};
 		// push
 		this.last_push_ref = "";
         // transaction
-        this.onTransaction_cb = "";
+        this.onTransaction_cb = null;
         this.onTransaction_input = null;
         this.onTransaction_output = null;
         // on complete
-        this.onComplete_cb = "";
+        this.onComplete_cb = null;
         this.onComplete_error = null;
         // reading
         this.reading_cb_map = {"value":{},
@@ -85,7 +85,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
                                "child_moved":{}
                               };
                               
-        this.reading_cb = "";
+        this.reading_cb = null;
         this.snapshot = null;
 		this.prevChildName = null;
 	};
@@ -102,6 +102,27 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
         return new window["Firebase"](this.rootpath + k);
 	};
+
+	var get_data = function(in_data, default_value)
+	{
+	    var val;
+	    if (in_data === null)
+	    {
+	        if (default_value === null)
+	            val = 0;
+	        else
+	            val = default_value;
+	    }
+        else if (typeof(in_data) == "object")
+        {
+            val = JSON.stringify(in_data);
+        }
+        else
+        {
+            val = in_data;
+        }	    
+        return val;
+	};    
 	     
 	//////////////////////////////////////
 	// Conditions
@@ -126,7 +147,19 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	Cnds.prototype.OnError = function (cb)
 	{
 	    return cr.equals_nocase(cb, this.onComplete_cb);
-	}; 		
+	};
+
+	Cnds.prototype.LastDataIsNull = function ()
+	{
+        var data =(this.snapshot === null)? null: this.snapshot["val"]();
+	    return (data === null);
+	};
+ 
+	Cnds.prototype.TransactionInIsNull = function ()
+	{
+        var data =(this.onTransaction_input === null)? null: this.onTransaction_input;
+	    return (data === null);
+	};   
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -144,6 +177,8 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	        var trig = (error)? cr.plugins_.Rex_Firebase.prototype.cnds.OnError:
 	                            cr.plugins_.Rex_Firebase.prototype.cnds.OnComplete;
 	        self.runtime.trigger(trig, self); 
+	        self.onComplete_cb = null;
+	        self.onComplete_error = null;   
         };
         return handler;
 	};
@@ -170,14 +205,14 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
 	    var ref = this.get_ref(k)["push"](v, handler);
-		this.last_push_ref = k + "/" +  ref.name();
+		this.last_push_ref = k + "/" +  ref.key();
 	}; 
 
     Acts.prototype.PushJSON = function (k, v, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);	    
 	    var ref = this.get_ref(k)["push"](JSON.parse(v), handler);
-		this.last_push_ref = k + "/" + ref.name();
+		this.last_push_ref = k + "/" + ref.key();
 	};
 	
     Acts.prototype.Transaction = function (k, onTransaction_cb, onComplete_cb)
@@ -189,6 +224,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.onTransaction_input = current_value;
             self.onTransaction_output = null;
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnTransaction, self); 
+            self.onTransaction_cb = null;
             return self.onTransaction_output;
         };
         var _onComplete = onComplete_get(this, onComplete_cb);
@@ -224,6 +260,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.snapshot = snapshot;
 			self.prevChildName = prevChildName;
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
+            self.reading_cb = null;            
         };
         this.reading_cb_map[event_type][cb] = reading_handler;
 	    this.get_query(k)["on"](event_type, reading_handler);                         
@@ -252,11 +289,13 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    var event_type = EVENTTYPEMAP[type_];	    
 
 	    var self = this;   
-        var reading_handler = function (snapshot)
+        var reading_handler = function (snapshot, prevChildName)
         {
             self.reading_cb = cb;   
             self.snapshot = snapshot;
+            self.prevChildName = prevChildName;
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
+            self.reading_cb = null; 
         };
 	    this.get_query(k)["once"](event_type, reading_handler);                         
 	}; 
@@ -280,27 +319,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-	
-	var get_data = function(in_data, default_value)
-	{
-	    var val;
-	    if (in_data === null)
-	    {
-	        if (default_value === null)
-	            val = 0;
-	        else
-	            val = default_value;
-	    }
-        else if (typeof(in_data) == "object")
-        {
-            val = JSON.stringify(in_data);
-        }
-        else
-        {
-            val = in_data;
-        }	    
-        return val;
-	};
+
 	
 	Exps.prototype.TransactionIn = function (ret, default_value)
 	{	
@@ -309,19 +328,20 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
 	Exps.prototype.LastData = function (ret, default_value)
 	{	
-		ret.set_any(get_data(this.snapshot["val"](), default_value));
+        var data =(this.snapshot === null)? null: this.snapshot["val"]();
+		ret.set_any(get_data(data, default_value));
 	};
 	
 	Exps.prototype.LastKey = function (ret, default_value)
 	{	
-		ret.set_any(get_data(this.snapshot["name"](), default_value));
+        var key =(this.snapshot === null)? null: this.snapshot["key"]();
+		ret.set_any(get_data(key, default_value));
 	};
 	
 	Exps.prototype.PrevChildName = function (ret, default_value)
 	{	
 		ret.set_any(get_data(this.prevChildName, default_value));
 	};	
-	
 	
 	Exps.prototype.LastPushRef = function (ret)
 	{

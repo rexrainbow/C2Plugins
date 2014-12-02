@@ -120,6 +120,7 @@ var property_list = [
                     "Acceleration, in pixel per second per second."),
 	new cr.Property(ept_float, "Deceleration", 0, 
                     "Deceleration, in pixel per second per second."),
+    new cr.Property(ept_combo, "Continued mode", "No", "Moving as in continued-time.", "No|Yes"),                       
 	];
 	
 // Called by IDE when a new behavior type is to be created
