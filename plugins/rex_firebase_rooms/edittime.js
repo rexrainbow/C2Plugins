@@ -58,7 +58,7 @@ AddAction(2, 0, "Logging out", "Login",
 
 AddComboParamOption("Create & Join");
 AddComboParamOption("Create persisted");
-AddComboParam("Action ", "Action type", 0);
+AddComboParam("Action", "Action type", 0);
 AddStringParam("Name", "Room name.", '""');
 AddComboParamOption("Private");
 AddComboParamOption("Public");

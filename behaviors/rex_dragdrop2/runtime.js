@@ -12,7 +12,19 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 };
 
 (function ()
-{
+{	
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};
+	    
 	var behaviorProto = cr.behaviors.Rex_DragDrop2.prototype;
 		
 	/////////////////////////////////////
@@ -22,26 +34,22 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		this.behavior = behavior;
 		this.objtype = objtype;
 		this.runtime = behavior.runtime;
-	};
-
-	var behtypeProto = behaviorProto.Type.prototype;
-
-	behtypeProto.onCreate = function()
-	{
+		
+		// touchwrap
         this.touchwrap = null;
         this.GetX = null;
         this.GetY = null;
         this.GetAbsoluteX = null;
-        this.GetAbsoluteY = null;
+        this.GetAbsoluteY = null;        		
 	};
-    
-	behtypeProto.TouchWrapGet = function ()
+	
+	behaviorProto.TouchWrapGet = function ()
 	{
         if (this.touchwrap != null)
             return this.touchwrap;
             
         assert2(cr.plugins_.rex_TouchWrap, "Drag drop behavior: Can not find touchWrap oject.");
-        var plugins = this.runtime.types;
+        var plugins = this.runtime.types
         var name, inst;
         for (name in plugins)
         {
@@ -58,27 +66,17 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             }
         }
         assert2(this.touchwrap, "Drag drop behavior: Can not find touchWrap oject.");
-	};  
+	}; 	
+
 	
-	function GetThisBehavior(inst)
-	{
-		var i, len;
-		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
-		{
-			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
-				return inst.behavior_insts[i];
-		}
-		
-		return null;
-	};
-    behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
+    behaviorProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
         this.DragDetecting(touchX, touchY, touch_src);
     };
     
-    behtypeProto.OnTouchEnd = function (touch_src)
+    behaviorProto.OnTouchEnd = function (touch_src)
     {
-		var insts = this.objtype.instances;
+        var insts = this.my_instances.valuesRef();
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
         {
@@ -100,50 +98,39 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
     
 	var _behavior_insts = [];
     // drag detecting
-	behtypeProto.DragDetecting = function(touchX, touchY, touch_src)
-	{
-        var sol = this.objtype.getCurrentSol(); 
-        var select_all_save = sol.select_all;
-        sol.select_all = true;
-        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, touchX, touchY, false);
-        if (overlap_cnt == 0)
-        {
-            // recover to select_all_save
-            sol.select_all = select_all_save;        
-            return false;
-        }
-        
-        // overlap_cnt > 0
-        // 0. find out index of behavior instance
-   
+	behaviorProto.DragDetecting = function(touchX, touchY, touch_src)
+	{        
+        // 0. get all instances
+        var arr = this.my_instances.valuesRef();
+        var i, cnt=arr.length;   
+
         // 1. get all valid behavior instances            
-        var ovl_insts = sol.getObjects();
-        var i, cnt, inst, behavior_inst;          
-        cnt = ovl_insts.length;   
+        var inst, behavior_inst; 
+        var lx, ly;         
         _behavior_insts.length = 0;          
         for (i=0; i<cnt; i++ )
         {
-		    inst = ovl_insts[i];
+		    inst = arr[i];
 		    if (!inst)
-		    {
 		        continue;
-		        // insts might be removed
-		    }		    
+		        	    
             behavior_inst = GetThisBehavior(inst);
             if (behavior_inst == null)
                 continue;
-            if ((behavior_inst.enabled) && (!behavior_inst.drag_info.is_on_dragged))
+            else if (!behavior_inst.enabled)
+                continue;
+            else if (behavior_inst.drag_info.is_on_dragged)
+                continue;
+            
+            lx = inst.layer.canvasToLayer(touchX, touchY, true);
+			ly = inst.layer.canvasToLayer(touchX, touchY, false);
+			inst.update_bbox();
+			if (inst.contains_pt(lx, ly))
                 _behavior_insts.push(behavior_inst);
         }
             
         // 2. get the max z-order inst
         cnt = _behavior_insts.length;
-		if (cnt == 0)  // no inst match
-		{
-            // recover to select_all_save
-            sol.select_all = select_all_save;
-            return false;  // get drag inst 
-		}
         var target_inst_behavior = _behavior_insts[0];
         var instB=target_inst_behavior.inst, instA;
         for (i=1; i<cnt; i++ )
@@ -159,12 +146,18 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         }
 
 		target_inst_behavior.DragSrcSet(touch_src);
-        // recover to select_all_save
-        sol.select_all = select_all_save;
         _behavior_insts.length = 0; 
         
         return true;  // get drag inst  
 	}; 
+
+	var behtypeProto = behaviorProto.Type.prototype;
+
+	behtypeProto.onCreate = function()
+	{
+	};
+    
+
          
 	/////////////////////////////////////
 	// Behavior instance class
@@ -175,7 +168,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		this.inst = inst;				// associated object instance to modify
 		this.runtime = type.runtime;
         
-        type.TouchWrapGet();            
+        this.behavior.TouchWrapGet();            
 	};
 
 	var behinstProto = behaviorProto.Instance.prototype;
@@ -236,9 +229,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.type.touchwrap;
-        this.type.GetAbsoluteX.call(touch_obj, 
-                                    touch_obj.fake_ret, this.drag_info.touch_src);
+        var touch_obj = this.behavior.touchwrap;
+        this.behavior.GetAbsoluteX.call(touch_obj, 
+                                        touch_obj.fake_ret, this.drag_info.touch_src);
         return touch_obj.fake_ret.value;
 	};  
 
@@ -247,9 +240,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.type.touchwrap;
-        this.type.GetAbsoluteY.call(touch_obj, 
-                                    touch_obj.fake_ret, this.drag_info.touch_src);
+        var touch_obj = this.behavior.touchwrap;
+        this.behavior.GetAbsoluteY.call(touch_obj, 
+                                        touch_obj.fake_ret, this.drag_info.touch_src);
         return touch_obj.fake_ret.value;        
 	};     
         
@@ -258,9 +251,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.type.touchwrap;
-        this.type.GetX.call(touch_obj, 
-                            touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
+        var touch_obj = this.behavior.touchwrap;
+        this.behavior.GetX.call(touch_obj, 
+                                touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;          
 	};
     
@@ -269,9 +262,9 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.type.touchwrap;
-        this.type.GetY.call(touch_obj, 
-                            touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
+        var touch_obj = this.behavior.touchwrap;
+        this.behavior.GetY.call(touch_obj, 
+                                touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	};
 	

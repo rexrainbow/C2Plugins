@@ -424,4 +424,9 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	{
 	    ret.set_string( decval.toString(16) );
 	};  
+    
+    Exps.prototype.ToDecimalMark = function (ret, number_in, locales)
+	{
+	    ret.set_string( number_in.toLocaleString(locales) );
+	};
 }());

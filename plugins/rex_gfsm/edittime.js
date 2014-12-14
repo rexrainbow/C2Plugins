@@ -43,8 +43,8 @@ AddCondition(1, cf_trigger, "On exit", "Action",
              "On exit from <i>{0}</i>", 
 			 "Triggered when exit state.", 
 			 "OnExit");
-AddStringParam("Name", "Exit from state", '""');
-AddStringParam("Name", "Enter to state", '""');
+AddStringParam("Exit", "Exit from state", '""');
+AddStringParam("Enter", "Enter to state", '""');
 AddCondition(2, cf_trigger, "On transfer", "Action", 
              "On exit from <i>{0}</i> and enter to <i>{1}</i>", 
 			 "Triggered when state transfer.", 

@@ -1,4 +1,19 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+
+<user-id>/
+    lists/
+        <list-name>/
+            <member-user-id>
+            
+    invite/
+        <inviter-id>
+            inviter-id
+            inviter-list
+            my-list
+            message
+
+*/
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");
@@ -65,110 +80,277 @@ cr.plugins_.Rex_Firebase_Userlist = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/";   
+        this.owner_userID = "";
         
-        this.myUser_info = {"id":"",
-                            "name": ""};
         // ref cache
-        this.ref_cache = {};        
+        this.ref_cache = {};      
+        
+        this.userLists = {};
+        this.exp_CurUserID = "";
+        this.CurUserInfo = null;
+        this.inviter_lists = null;
+        this.listener_refs = [];
 	};
 	
 	instanceProto.get_ref = function(k)
 	{
 	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k);
+	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
 	        
         return this.ref_cache[k];
-	};	
+	};
+	
+	instanceProto.get_list_ref = function(userId, list_name)
+	{	    
+        return this.get_ref(userId + "/lists/" + list_name);
+	};
     
-    // Login
-    instanceProto.Login = function ()
-	{     
-        var presence_ref = this.get_ref("presence")["child"](this.myUser_info["id"]);
-
-        var self = this;            
-        var login = function(snapshot)
-        {
-            presence_ref["onDisconnect"]()["update"]({"staus":"Offline"});
-            
-            var update_info = {};
-            if (snapshot.val() == null)
-            {
-                // add new user
-                update_info["id"] = self.myUser_info["id"];                
-                update_info["name"] = self.myUser_info["name"];
-            }                
-            update_info["staus"] = "Online";
-              
-	        var on_complete = function(error) 
-            {
-                if (error === null) 
-                {
-                    self.is_loggin = true;
-                    self.runtime.trigger(cr.plugins_.Rex_Firebase_Userlist.prototype.cnds.OnLoginSuccessfully, self);                
-                } 
-                else 
-                {
-                    self.runtime.trigger(cr.plugins_.Rex_Firebase_Userlist.prototype.cnds.OnLoginError, self);
-                }
-            
-            }; 
-                                         
-            presence_ref["update"](update_info, on_complete);            
-        };
+	instanceProto.get_inviter_list_ref = function(userId)
+	{	    
+        return this.get_ref(userId)["child"]("invite");
+	};    
     
-        presence_ref["once"]("value", login);        
-	};  
-
-    instanceProto.LoggingOut = function ()
+	instanceProto.get_cancel_notify_ref = function(userId)
+	{	    
+        return this.get_ref(userId)["child"]("cancel");
+	};   
+    
+    instanceProto.userList_addUser = function (owner_id, list_name, target_id)
 	{
-        var presence_ref = this.get_ref("presence")["child"](this.myUser_info["id"]);
+        var list_ref = this.get_list_ref(owner_id, list_name);
+        list_ref["child"](target_id)["set"](true);   
+	};
+
+    instanceProto.userList_removeUser = function (owner_id, list_name, target_id)
+	{
+        var list_ref = this.get_list_ref(owner_id, list_name);
+        list_ref["child"](target_id)["remove"]();     
+	};   
+
+    instanceProto.setup_owner_listener = function ()
+	{
+        this.setup_cancel_listener();
+	}; 
+    
+    instanceProto.close_owner_listener = function ()
+	{
+        var i, cnt=this.listener_refs.length;
+        for (i=0; i<cnt; i++)
+            this.listener_refs[i]["off"]();
+	};     
+    
+    instanceProto.setup_cancel_listener = function ()
+	{
+        var remove_notify_ref = this.get_cancel_notify_ref(this.owner_userID);
         var self = this;
-	    var on_complete = function(error) 
+        var on_cancel = function (snapshot)
         {
-            presence_ref["onDisconnect"]()["cancel"]();        
-            self.is_loggin = false;
-            self.runtime.trigger(cr.plugins_.Rex_Firebase_Userlist.prototype.cnds.OnLoggedOut, self);
-        };      
-        presence_ref["update"]["update"]({"staus":"Offline"}, on_complete);
+            var info = snapshot["val"]();
+            if (info === null)
+                return;
+            
+            var user_ref = self.get_list_ref(self.owner_userID, info["my-list"])["child"](info["cancel-id"]);
+            user_ref["remove"]();
+            remove_notify_ref["child"](info["cancel-id"])["remove"]();
+        };
+        remove_notify_ref["on"]("child_added", on_cancel);
+        this.listener_refs.push(remove_notify_ref);
+	};      
+	
+    var clean_table = function (o)
+	{
+        var k;
+        for (k in o)
+            delete o[k];
 	};	
-    // Login    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds(); 
-    
-	Cnds.prototype.OnLoginSuccessfully = function ()
-	{
-	    return true;
-	}; 	
 
-	Cnds.prototype.OnLoginError = function ()
+	Cnds.prototype.OnReceivingAllLists = function ()
 	{
 	    return true;
-	}; 
+	};	
 
-	Cnds.prototype.OnLoggedOut = function ()
+	Cnds.prototype.ForEachUserIDInList = function (list_name)
 	{
-	    return true;
+	    if (!this.userLists.hasOwnProperty(list_name))
+	        return false;
+
+        var user_list = this.userLists[list_name];
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		var k;
+		for (k in user_list)
+		{
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+
+            this.exp_CurUserID = k;
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }   
+		}
+      
+	    return false;
 	};
+	
+	Cnds.prototype.UserIDInList = function (id, list_name)
+	{
+	    if (!this.userLists.hasOwnProperty(list_name))
+	        return false;
+	    
+	    return this.userLists[list_name].hasOwnProperty(id);
+	};	
+
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-    Acts.prototype.Login = function (userID, name)
+    Acts.prototype.SetOwner = function (id)
 	{
-        if (this.is_loggin)
-            this.LoggingOut();
-            
-        this.myUser_info["id"] = userID;
-        this.myUser_info["name"] = name; 
-        this.Login();        
+        this.close_owner_listener();
+        this.owner_userID = id;
+        // clean current local user lists
+        clean_table(this.userLists);
+        
+        this.setup_owner_listener();
 	};
-    
+	
+    Acts.prototype.RequestAllLists = function ()
+	{
+        if (this.owner_userID==="")
+            return;            
+                
+        var user_ref = this.get_ref(this.owner_userID);
+        var self = this;
+        var on_read = function (snapshot)
+        {
+            var l = snapshot["val"]();
+            if (l === null)
+                clean_table(self.userLists);
+            else
+                self.userLists = l;
+
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Userlist.prototype.cnds.OnReceivingAllLists, self);
+        };
+        
+        user_ref["once"]("value", on_read); 
+	};
+	
+    Acts.prototype.AddUserIn2Sides = function (target_id, owner_list, target_list)
+	{
+        if (this.owner_userID==="")
+            return;
+            
+        this.userList_addUser(this.owner_userID, owner_list, target_id);
+        this.userList_addUser(target_id, target_list, this.owner_userID);
+	};	
+	
+    Acts.prototype.RemoveUserFrom2Sides = function  (target_id, owner_list, target_list)
+	{
+        if (this.owner_userID==="")
+            return;
+
+        this.userList_removeUser(this.owner_userID, owner_list, target_id);
+        this.userList_removeUser(target_id, target_list, this.owner_userID);
+	};
+		
+    Acts.prototype.AddUser = function (target_id, list_name)
+	{
+        if (this.owner_userID==="")
+            return;
+            
+        this.userList_addUser(this.owner_userID, list_name, target_id);
+	};	
+	
+    Acts.prototype.RemoveUser = function (target_id, list_name)
+	{
+        if (this.owner_userID==="")
+            return;
+
+        this.userList_removeUser(this.owner_userID, list_name, target_id); 
+	};
+
+    Acts.prototype.InviteUser = function (target_id, owner_list, target_list, msg)
+	{
+        if (this.owner_userID==="")
+            return;
+             
+        var inviter_ref = this.get_inviter_list_ref(target_id)["child"](this.owner_userID);
+        var invite_info = {"inviter-id":this.owner_userID,
+                           "inviter-list":owner_list,
+                           "my-list": target_list,
+                           "message":msg,                           
+                          };
+        inviter_ref["set"](invite_info);        
+	};	
+	
+    Acts.prototype.ResponseInvitation = function (inviter_id, is_accept)
+	{
+        if (this.owner_userID==="")
+            return;
+            
+        var inviter_ref = this.get_inviter_list_ref(this.owner_userID)["child"](inviter_id);
+        var self = this;
+        var on_read = function (snapshot)
+        {
+            var invite_info = snapshot["val"]();
+            if (invite_info === null)
+                return;
+            
+            if (is_accept == 1)
+            {
+                self.userList_addUser(self.owner_userID, invite_info["my-list"], invite_info["inviter-id"]);
+                self.userList_addUser(invite_info["inviter-id"], invite_info["inviter-list"], self.owner_userID);
+            }
+            inviter_ref["remove"]();
+        };
+        inviter_ref["once"]("value", on_read);        
+	};
+
+    Acts.prototype.CancelInvitation = function (target_id)
+	{
+        if (this.owner_userID==="")
+            return;
+             
+        var inviter_ref = this.get_inviter_list_ref(target_id)["child"](this.owner_userID);
+        inviter_ref["remove"]();        
+	};
+
+    Acts.prototype.RemoveMembership = function (target_id, owner_list, target_list)
+	{
+        if (this.owner_userID==="")
+            return;
+            
+        this.userList_removeUser(this.owner_userID, owner_list, target_id);        
+        var remove_notify_ref = this.get_cancel_notify_ref(target_id)["child"](this.owner_userID);
+        var cancel_info = {"cancel-id":this.owner_userID,
+                           "my-list": target_list                
+                          };
+        remove_notify_ref["set"](cancel_info);        
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-				 	
+
+	Exps.prototype.OwnerUserID = function (ret)
+	{
+		ret.set_string(this.owner_userID);
+	};
+		
+	Exps.prototype.CurUserID = function (ret)
+	{
+		ret.set_string(this.exp_CurUserID);
+	}; 	
+					 	
 }());

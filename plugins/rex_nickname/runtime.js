@@ -84,14 +84,14 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	};    
 	
 	// export
-	instanceProto.CreateInst = function (nickname,x,y,layer, callback)
+	instanceProto.CreateInst = function (nickname, x, y, layer, callback, ignore_picking)
 	{
 	    var objtype = (typeof(nickname) == "string")? this.Nickname2Type(nickname):
 	                                                  nickname;
         if (objtype == null)
             return null;
-
-        var inst = window.RexC2CreateObject.call(this, objtype, layer, x, y, callback);
+        
+        var inst = window.RexC2CreateObject.call(this, objtype, layer, x, y, callback, ignore_picking);
         return inst;           
 	}; 	
 
@@ -265,7 +265,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	
 	Acts.prototype.CreateInst = function (nickname,x,y,_layer, family_objtype)
 	{
-        var inst = this.CreateInst(nickname,x,y,_layer);
+        var inst = this.CreateInst(nickname,x,y,_layer, null, true);
 
         if (!family_objtype)
             return;
@@ -307,7 +307,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
         return;
         
     // copy from system action: CreateObject
-    var CreateObject = function (obj, layer, x, y, callback)
+    var CreateObject = function (obj, layer, x, y, callback, ignore_picking)
     {
         if (!layer || !obj)
             return;
@@ -338,28 +338,31 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 		
 		this.runtime.isInOnDestroy--;
 
-        // Pick just this instance
-        var sol = obj.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
+        if (ignore_picking !== true)
+        {
+            // Pick just this instance
+            var sol = obj.getCurrentSol();
+            sol.select_all = false;
+		    sol.instances.length = 1;
+		    sol.instances[0] = inst;
 		
-		// Siblings aren't in instance lists yet, pick them manually
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
+		    // Siblings aren't in instance lists yet, pick them manually
+		    if (inst.is_contained)
+		    {
+			    for (i = 0, len = inst.siblings.length; i < len; i++)
+			    {
+				    s = inst.siblings[i];
+				    sol = s.type.getCurrentSol();
+				    sol.select_all = false;
+				    sol.instances.length = 1;
+				    sol.instances[0] = s;
+			    }
+		    }
+        }
 
         // add solModifiers
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-        current_event.addSolModifier(obj);
+        //var current_event = this.runtime.getCurrentEventStack().current_event;
+        //current_event.addSolModifier(obj);
         // add solModifiers
         
 		return inst;

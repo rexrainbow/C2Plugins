@@ -85,7 +85,7 @@ cr.behaviors.Rex_Revive = function(runtime)
                 return;
         }  
              
-        var inst = window.RexC2CreateObject.call(this, objtype, layer, 0, 0);		
+        var inst = window.RexC2CreateObject.call(this, objtype, layer, 0, 0, null, false);		
         this.runtime.loadInstanceFromJSON(inst, revive_data, true); 
       
         var behavior_inst = GetThisBehavior(inst);
@@ -230,7 +230,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         return;
         
     // copy from system action: CreateObject
-    var CreateObject = function (obj, layer, x, y, callback)
+    var CreateObject = function (obj, layer, x, y, callback, ignore_picking)
     {
         if (!layer || !obj)
             return;
@@ -261,28 +261,31 @@ cr.behaviors.Rex_Revive = function(runtime)
 		
 		this.runtime.isInOnDestroy--;
 
-        // Pick just this instance
-        var sol = obj.getCurrentSol();
-        sol.select_all = false;
-		sol.instances.length = 1;
-		sol.instances[0] = inst;
+        if (ignore_picking !== true)
+        {
+            // Pick just this instance
+            var sol = obj.getCurrentSol();
+            sol.select_all = false;
+		    sol.instances.length = 1;
+		    sol.instances[0] = inst;
 		
-		// Siblings aren't in instance lists yet, pick them manually
-		if (inst.is_contained)
-		{
-			for (i = 0, len = inst.siblings.length; i < len; i++)
-			{
-				s = inst.siblings[i];
-				sol = s.type.getCurrentSol();
-				sol.select_all = false;
-				sol.instances.length = 1;
-				sol.instances[0] = s;
-			}
-		}
+		    // Siblings aren't in instance lists yet, pick them manually
+		    if (inst.is_contained)
+		    {
+			    for (i = 0, len = inst.siblings.length; i < len; i++)
+			    {
+				    s = inst.siblings[i];
+				    sol = s.type.getCurrentSol();
+				    sol.select_all = false;
+				    sol.instances.length = 1;
+				    sol.instances[0] = s;
+			    }
+		    }
+        }
 
         // add solModifiers
-        var current_event = this.runtime.getCurrentEventStack().current_event;
-        current_event.addSolModifier(obj);
+        //var current_event = this.runtime.getCurrentEventStack().current_event;
+        //current_event.addSolModifier(obj);
         // add solModifiers
         
 		return inst;

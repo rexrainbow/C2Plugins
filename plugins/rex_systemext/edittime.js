@@ -109,7 +109,9 @@ AddStringParam('""', "Code string.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
 AddNumberParam("Number", "Decimal number", 0);
 AddExpression(1, ef_return_string, "Get hex string", "Math", "ToHexString", "Transfer decimal value to hex string.");
-
+AddNumberParam("Number", "Decimal number", 0);
+AddExpression(2, ef_return_string | ef_variadic_parameters, "Get fecimal mark", "Math", "ToDecimalMark", 
+              "Transfer decimal value with decimal mark.");
 
 ACESDone();
 
