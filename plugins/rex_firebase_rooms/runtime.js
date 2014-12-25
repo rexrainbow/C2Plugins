@@ -82,6 +82,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
+        if (k == null)
+            k = "";
 	    if (!this.ref_cache.hasOwnProperty(k))
 	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
 	        
