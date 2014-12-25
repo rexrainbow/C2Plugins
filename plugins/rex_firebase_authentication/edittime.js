@@ -7,7 +7,7 @@
 		"description":	"Authentication which is provided by firebase. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_authentication.html",
-		"category":		"Rex - Web - firebase",
+		"category":		"Rex - Web - Firebase - General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

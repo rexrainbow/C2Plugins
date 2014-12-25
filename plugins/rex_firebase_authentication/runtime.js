@@ -67,6 +67,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         
         this.last_error = null;
         this.last_authData = null;
+        
         // ref cache
         this.ref_cache = {}; 
 
@@ -93,7 +94,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         if (k == null)
             k = "";
 	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k);
+	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
 	        
         return this.ref_cache[k];
 	};
