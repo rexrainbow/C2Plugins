@@ -66,8 +66,6 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
         this.rootpath = this.properties[0] + "/"; 
         
-        // ref cache
-        this.ref_cache = {};
 		// push
 		this.last_push_ref = "";
         // transaction
@@ -92,17 +90,12 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
-	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k);
+	    if (k == null)
+	        k = "";
 	        
-        return this.ref_cache[k];
+        return new window["Firebase"](this.rootpath + k + "/");
 	};
 	
-	instanceProto.get_query = function(k)
-	{
-        return new window["Firebase"](this.rootpath + k);
-	};
-
 	var get_data = function(in_data, default_value)
 	{
 	    var val;
@@ -263,7 +256,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.reading_cb = null;            
         };
         this.reading_cb_map[event_type][cb] = reading_handler;
-	    this.get_query(k)["on"](event_type, reading_handler);                         
+	    this.get_ref(k)["on"](event_type, reading_handler);                         
 	}; 		
 	
     Acts.prototype.RemoveReadingCallback = function (k, type_, cb)
@@ -281,7 +274,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	            return;
 	    }
 
-	    this.get_query(k)["off"](event_type, reading_handler);                         
+	    this.get_ref(k)["off"](event_type, reading_handler);                         
 	};
 	
     Acts.prototype.AddReadingCallbackOnce = function (k, type_, cb)
@@ -297,7 +290,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
             self.reading_cb = null; 
         };
-	    this.get_query(k)["once"](event_type, reading_handler);                         
+	    this.get_ref(k)["once"](event_type, reading_handler);                         
 	}; 
 
     Acts.prototype.RemoveRefOnDisconnect = function (k)
