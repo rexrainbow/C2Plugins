@@ -65,6 +65,10 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";
+	    
+	    // ref cache
+        this.ref_cache = {}; 
+        
 		this.ranking_order = this.properties[2];
 	    this.update_mode = this.properties[3];
 	    
@@ -80,10 +84,15 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    this.update_all_ranks_handler = null;	   
 	};
 	
-	instanceProto.get_ref = function()
+	instanceProto.get_ref = function(k)
 	{
-        return new window["Firebase"](this.rootpath);
-	};	
+        if (k == null)
+            k = "";
+	    if (!this.ref_cache.hasOwnProperty(k))
+	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
+	        
+        return this.ref_cache[k];
+	};
 	
 	instanceProto.get_post_ref = function()
 	{
