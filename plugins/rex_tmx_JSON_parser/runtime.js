@@ -143,6 +143,7 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
         tileset.spacing = _get_value(dict_obj, "spacing");
         tileset.margin = _get_value(dict_obj, "margin"); 
         tileset.tiles = _get_tiles(dict_obj, tileset.firstgid);
+		tileset.image = _get_image_properties(dict_obj);
         tileset.properties = _get_properties(dict_obj, "properties");
         return tileset;
     };
@@ -166,6 +167,14 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
         tile.properties = _get_properties(dict_obj);
         return tile;
     };
+	var _get_image_properties = function(dict_obj)
+	{
+	    var image_prop = {};
+		image_prop.source = _get_value(dict_obj, "image");
+		image_prop.width = _get_value(dict_obj, "imagewidth");
+		image_prop.height = _get_value(dict_obj, "imageheight");
+		return image_prop;
+	};
     var _get_layers = function (dict_obj)
     {       
         if (dict_obj.hasOwnProperty("layers"))

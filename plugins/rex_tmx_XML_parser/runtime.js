@@ -139,8 +139,9 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
         tileset.spacing = xml_obj.get_number_value("@spacing", xml_tileset);
         tileset.margin = xml_obj.get_number_value("@margin", xml_tileset); 
         var xml_tiles = xml_obj.get_nodes("./tile", xml_tileset);
-        tileset.tiles = _get_tiles(xml_obj, xml_tiles, tileset.firstgid);
-        
+        tileset.tiles = _get_tiles(xml_obj, xml_tiles, tileset.firstgid);        
+		var xml_images = xml_obj.get_nodes("./image", xml_tileset);
+		tileset.image = _get_image_properties(xml_obj, xml_images);
         var xml_properties = xml_obj.get_nodes("./properties/property", xml_tileset);
         tileset.properties = _get_properties(xml_obj, xml_properties);
         return tileset;
@@ -159,6 +160,17 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
         }        
         return tiles;
     };
+	
+	var _get_image_properties = function(xml_obj, xml_images)
+	{
+	    var image_prop = {};
+		var xml_image = xml_images.get_next_node(); 
+		image_prop.source = xml_obj.get_string_value("@source", xml_image);
+		image_prop.width = xml_obj.get_number_value("@width", xml_image);
+		image_prop.height = xml_obj.get_number_value("@height", xml_image);
+		return image_prop;
+	};
+	
     var _get_tile = function(xml_obj, xml_tile)
     {    
         var tile = {};

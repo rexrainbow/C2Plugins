@@ -51,6 +51,9 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_IsIsometric = 0;         
         this.exp_TileID = (-1);
 		this.exp_TilesetName = "";
+		this.exp_ImageSource = "";
+		this.exp_ImageWidth = 0;
+		this.exp_ImageHeight = 0;
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
@@ -197,6 +200,9 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
                 }
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 				this.exp_TilesetName = tileset_obj.name;
+				this.exp_ImageSource = tileset_obj.image.source;
+				this.exp_ImageWidth = tileset_obj.image.width;
+				this.exp_ImageHeight = tileset_obj.image.height;
                 this.exp_TilesetProperties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
@@ -401,6 +407,9 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
                 }            
                 tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
 		        this.exp_TilesetName = tileset_obj.name;
+				this.exp_ImageSource = tileset_obj.image.source;
+				this.exp_ImageWidth = tileset_obj.image.width;
+				this.exp_ImageHeight = tileset_obj.image.height;				
                 this.exp_TilesetProperties = tileset_obj.properties;
                 tile_obj = tileset_obj.tiles[this.exp_TileID];
                 this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
@@ -695,7 +704,20 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	Exps.prototype.IsIsometric = function (ret)
 	{    
 	    ret.set_int(this.exp_IsIsometric? 1:0);
-	}; 		
+	}; 	
+	Exps.prototype.ImageSource = function (ret)
+	{     
+	    ret.set_string(this.exp_ImageSource);
+	};
+	Exps.prototype.ImageWidth = function (ret)
+	{     
+	    ret.set_int(this.exp_ImageWidth);
+	};
+	Exps.prototype.ImageHeight = function (ret)
+	{    
+	    ret.set_int(this.exp_ImageHeight);
+	}; 	
+	
 	Exps.prototype.TileID = function (ret)
 	{    
 	    ret.set_int(this.exp_TileID);

@@ -81,7 +81,13 @@ AddExpression(5, ef_return_number,
 AddExpression(6, ef_return_number, 
               "Get total height", "Map", "TotalHeight", "Get total height in pixel."); 
 AddExpression(7, ef_return_number, 
-              "Get orientation", "Map", "IsIsometric", "Get orientation. 1=Isometric, 0=Orthogonal");               
+              "Get orientation", "Map", "IsIsometric", "Get orientation. 1=Isometric, 0=Orthogonal");
+AddExpression(8, ef_return_string, 
+              "Get image source of tileset", "Tileset", "ImageSource", "Get image source of tileset.");		
+AddExpression(9, ef_return_number, 
+              "Get image width of tileset", "Tileset", "ImageWidth", "Get image width of tileset.");		
+AddExpression(10, ef_return_number, 
+              "Get image height of tileset", "Tileset", "ImageHeight", "Get image height of tileset.");			  
 AddExpression(11, ef_return_number, 
               "Get tile id", "Tile: Layer", "TileID", "Get tile id.");           
 AddExpression(12, ef_return_number, 
@@ -93,10 +99,10 @@ AddExpression(14, ef_return_any | ef_variadic_parameters,
               "Get layer properties", "Tile: Layer", "LayerProp", "Get layer properties of created instance. Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(15, ef_return_any | ef_variadic_parameters,
-              "Get tileset properties", "Tile: Tileset", "TilesetProp", "Get tileset properties of created instance.  Add second parameters to set default value.");
+              "Get tileset properties", "Tileset", "TilesetProp", "Get tileset properties of created instance.  Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(16, ef_return_any | ef_variadic_parameters,
-              "Get tile properties", "Tile: Tileset", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
+              "Get tile properties", "Tile", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
 AddExpression(17, ef_return_number, 
               "Get physical X position", "Tile: Layer", "PhysicalX", "Get physical X position (in pixel) of created instance.");
 AddExpression(18, ef_return_number, 
@@ -114,14 +120,15 @@ AddExpression(23, ef_return_number,
 AddExpression(24, ef_return_number, 
               "Get frame number", "Tile: Layer", "Frame", "Get frame number.");                
 AddExpression(25, ef_return_string, 
-              "Get tileset name", "Map", "TilesetName", "Get tileset name.");
+              "Get tileset name", "Tileset", "TilesetName", "Get tileset name.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(26, ef_return_any | ef_variadic_parameters, 
               "Get map properties", "Map", "MapProp", "Get map properties. Add second parameters to set default value.");
 AddExpression(27, ef_return_number, 
               "Get angle", "Tile: Layer", "TileAngle", "Get angle of created instance.");
 AddExpression(28, ef_return_number, 
-              "Get background color", "Map", "BackgroundColor", "Get background color.");  
+              "Get background color", "Map", "BackgroundColor", "Get background color.");
+	  
              
 // For each property
 AddExpression(30, ef_return_string, 
