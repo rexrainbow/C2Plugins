@@ -80,7 +80,7 @@ cr.plugins_.Rex_MPwrap = function(runtime)
                 this.MP_SendPeerMessage = cr.plugins_.Multiplayer.prototype.acts.SendPeerMessage;
                 this.MP_IsConnected = cr.plugins_.Multiplayer.prototype.cnds.SignallingIsConnected;  
                 
-                isSupported = inst.mp["isSupported"]();
+                isSupported = window["C2Multiplayer_IsSupported"]();
                 this.msg_router.mp = inst.mp;
                 return this.multiplayer;
             }
