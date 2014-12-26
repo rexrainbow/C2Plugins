@@ -64,7 +64,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    this.rootpath = this.properties[0] + "/"; 
+	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
                 
         this.exp_ID = "";
         this.exp_UserID = "";
@@ -78,55 +78,79 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         return new window["Firebase"](this.rootpath + k + "/");
 	};
 	
-	instanceProto.try_getID = function(ID, userID, on_successful, on_failed)
+	instanceProto.get_UserID_ref = function(UserID)
 	{
-	    var ID_ref = this.get_ref()["child"](ID);
-        var on_write_id = function(current_value)
+        return this.get_ref("UserIDs")["child"](UserID);
+	};	
+	
+	instanceProto.get_ID_ref = function(ID)
+	{
+        return this.get_ref("IDs")["child"](ID);
+	};		
+	
+	instanceProto.try_getID = function(UserID, ID, on_retry)
+	{
+	    var ID_ref = this.get_ID_ref(ID);
+	    var self = this;
+        var on_write_ID = function(current_value)
         {
-            if (current_value === null)  //this id has not been occupied
-                return userID;
+            if (current_value === null)  //this ID has not been occupied
+                return UserID;
             else
                 return;    // Abort the transaction
         };
-        var on_complete = function(error, committed, snapshot) 
+        var on_getID_complete = function(error, committed, snapshot) 
         {
             if (error || !committed) 
             {
-                if(on_failed)
-                    on_failed(ID);                
+                if (on_retry)
+                    on_retry();               
             }
             else 
             {
-                ID_ref["setPriority"](userID);
-                if(on_successful)
-                    on_successful(ID);               
+                var UserID_ref = self.get_UserID_ref(UserID);
+                UserID_ref["set"](ID, on_setID_complete);
+                self.on_getID_successful(ID);         
             }            
         };
-        ID_ref["transaction"](on_write_id, on_complete);
+        var on_setID_complete = function(error)
+        {
+            if (error)
+                log("[UserID2ID] Error: set correspond ID failed!");
+        };
+        ID_ref["transaction"](on_write_ID, on_getID_complete);
 	};  
 
-	instanceProto.generate_id = function(digits)
+	instanceProto.generate_ID = function(digits)
 	{
-        var id = Math.floor(Math.random()*Math.pow(10, digits)).toString();
-        var i, zeroes = digits - id.length;
+        var ID = Math.floor(Math.random()*Math.pow(10, digits)).toString();
+        var i, zeroes = digits - ID.length;
 		for (i=0; i<zeroes; i++)
-			id += "0";        
-        return id;
+			ID += "0";        
+        return ID;
 	};     
 	
-	var get_first_key = function(o)
-	{
-	    var k;
-	    for (var k in o)
-	        return k
-	};
-	
-	var get_first_value = function(o)
-	{
-	    var k;
-	    for (var k in o)
-	        return o[k];
-	};
+    instanceProto.on_getID_successful = function (ID_)
+    {
+        this.exp_ID = ID_;
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDSuccessfully, this);
+    }; 
+    instanceProto.on_getID_failed = function ()
+    { 
+        this.exp_ID = "";
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDFailed, this);
+    }; 
+    
+    instanceProto.on_getUserID_successful = function (UserID_)
+    {
+        this.exp_UserID = UserID_;
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDSuccessfully, this);
+    }; 
+    instanceProto.on_getUserID_failed = function ()
+    { 
+        this.exp_UserID = "";
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDFailed, this);
+    };         
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -156,25 +180,26 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
-    Acts.prototype.RequestGetRandomID = function (userID, digits, retry)
+ 
+    Acts.prototype.RequestGetRandomID = function (UserID, digits, retry)
 	{
-        if (userID === "")
+        if (UserID === "")
             return;
             
         var self = this;            
-        var retry_cnt = retry;    
-        var ref = this.get_ref();
-        var on_read = function(snapshot)
+        var retry_cnt = retry;  
+        var UserID_ref = this.get_UserID_ref(UserID);   
+        var on_read_UserID = function(snapshot)
         {
-            var ID2UserID = snapshot["val"]();
-            if (ID2UserID === null)
+            var return_ID = snapshot["val"]();
+            if (return_ID == null)
             {
                 try_get_id();
             }
             else
             {
-                // get id
-                on_result(get_first_key(ID2UserID));
+                // get ID
+                self.on_getID_successful(return_ID);
             }
         };
         var try_get_id = function()
@@ -182,31 +207,17 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             if (retry_cnt == 0)
             {
                 // failed
-                on_result();
+                self.on_getID_failed();
             }
             else
             {
                 retry_cnt -= 1;            
-                var newid = self.generate_id(digits);
-                self.try_getID(newid, userID, on_result, try_get_id);
+                var newID = self.generate_ID(digits);
+                self.try_getID(UserID, newID, try_get_id);
             }
         };
         
-        var on_result = function (ID)
-        { 
-            if (ID !== null)
-            {
-                self.exp_ID = ID;
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDSuccessfully, self);
-            }
-            else
-            {
-                self.exp_ID = "";
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDFailed, self);
-            }
-        };
-        
-        ref["equalTo"](userID)["once"]("value", on_read);
+        UserID_ref["once"]("value", on_read_UserID);
 	};
 	
     Acts.prototype.RequestGetUserID = function (ID)
@@ -215,60 +226,52 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             return;
              
         var self = this;             
-        var ref = this.get_ref()["child"](ID);
-        var on_read = function(snapshot)
+        var ID_ref = this.get_ID_ref(ID);
+        var on_read_ID = function(snapshot)
         {
-            var userID = snapshot["val"]();
-            if (userID === null)
-            {
-                self.exp_UserID = "";
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDFailed, self);
-            }
+            var return_UserID = snapshot["val"]();
+            if (return_UserID == null)
+                self.on_getUserID_failed();
             else
-            {
-                self.exp_UserID = userID;
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDSuccessfully, self);
-            }
+                self.on_getUserID_successful(return_UserID);
         };
              
-        ref["once"]("value", on_read);
+        ID_ref["once"]("value", on_read_ID);
 	};	
 	
-    Acts.prototype.RequestTrySetID = function (userID, ID)
+    Acts.prototype.RequestTryGetID = function (UserID, ID)
 	{
-        if ((userID === "") || (ID === ""))
-            return;
-             
+	    if ((UserID === "") || (ID === ""))
+	        return;
+	        
+	    var GETCMD = (ID == null);
         var self = this;             
-        var ref = this.get_ref();
-        var on_read = function(snapshot)
+        var UserID_ref = this.get_UserID_ref(UserID);
+        var on_read_UserID = function(snapshot)
         {
-            var ID2UserID = snapshot["val"]();
-            if (ID2UserID === null)
+            var return_ID = snapshot["val"]();
+            if (GETCMD)  // get existed ID
             {
-                self.try_getID(ID, userID, on_successful, on_failed);
+                if (return_ID == null)
+                    self.on_getID_failed();
+                else
+                    self.on_getID_successful(return_ID); 
             }
             else
             {
-                if (get_first_key(ID2UserID) != ID)
-                    on_failed();
-                else
-                    on_successful(ID);
-                
-            }           
-        };
-        var on_successful = function (newid)
-        {
-            self.exp_ID = newid;
-            self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDSuccessfully, self);
-        };        
-        var on_failed = function ()
-        { 
-            self.exp_ID = "";
-            self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDFailed, self);
+                if (return_ID === null)  // try set new ID
+                    self.try_getID(UserID, ID);
+                else                     // ID is existed
+                {
+                    if (return_ID != ID)  
+                        self.on_getID_failed();
+                    else
+                        self.on_getID_successful(ID); 
+                }                        
+            }        
         };
         
-        ref["equalTo"](userID)["once"]("value", on_read);
+        UserID_ref["once"]("value", on_read_UserID);
 	};	
 	//////////////////////////////////////
 	// Expressions

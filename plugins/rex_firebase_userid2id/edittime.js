@@ -38,19 +38,24 @@ AddStringParam("User ID", "Key of User ID.", '""');
 AddNumberParam("Digits", "Count of digit characters for default value.", 9);
 AddNumberParam("Retry", "Retry count to get default value.", 1000);
 AddAction(1, 0, "Get random ID", "Request - ID", 
-          "Request - get ID from user ID:<i>{0}</i>, return a <i>{1}</i> digit random ID by default with retry <i>{2}</i> times", 
+          "Request - get ID from User ID:<i>{0}</i>, return a <i>{1}</i> digit random ID by default with retry <i>{2}</i> times", 
           "Request random ID.", "RequestGetRandomID");
 
 AddStringParam("ID", "ID.", '""');
-AddAction(2, 0, "Get user ID", "Request - User ID", 
-          "Request - get user ID from ID:<i>{0}</i>", 
-          "Request user ID.", "RequestGetUserID");
+AddAction(2, 0, "Get User ID", "Request - User ID", 
+          "Request - get User ID by ID:<i>{0}</i>", 
+          "Request User ID.", "RequestGetUserID");
 
 AddStringParam("User ID", "Key of User ID.", '""');
 AddStringParam("ID", "ID.", '""');
 AddAction(3, 0, "Try set ID", "Request - ID", 
-          "Request - Try set ID:<i>{1}</i> for user ID:<i>{0}</i>", 
-          "Request try set ID.", "RequestTrySetID");                  
+          "Request - try set ID:<i>{1}</i> for User ID:<i>{0}</i>", 
+          "Request try set ID.", "RequestTryGetID"); 
+          
+AddStringParam("User ID", "Key of User ID.", '""');
+AddAction(4, 0, "Get ID", "Request - ID", 
+          "Request - get ID by User ID:<i>{0}</i>", 
+          "Request ID.", "RequestTryGetID");                            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get ID of result", "Request - result", "ID", 
@@ -63,6 +68,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
+    new cr.Property(ept_text, "Sub domain", "UserID-ID", "Sub domain for this function."),
 	];
 	
 // Called by IDE when a new object type is to be created
