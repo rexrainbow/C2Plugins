@@ -1092,7 +1092,7 @@ cr.plugins_.rex_TagText = function(runtime)
             for (n = 0; n < lcnt; n++) {
                 cur_line = textLines[n];
                 txt = cur_line.text;
-                
+                       
                 var _word_pen = penCache.allocLine();
                 _word_pen.text = txt;
                 _word_pen.x = cursor_x;
@@ -1369,6 +1369,7 @@ cr.plugins_.rex_TagText = function(runtime)
 					
 				lineIndex++;
 				cur_line = "";
+				offset_x = 0;
 				continue;
 			}
 			
