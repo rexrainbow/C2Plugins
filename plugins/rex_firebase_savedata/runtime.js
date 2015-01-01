@@ -64,9 +64,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    this.rootpath = this.properties[0] + "/";
-        // ref cache
-        this.ref_cache = {};         
+	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";        
 
         this.owner_userID = "";
 		this.save_header = {};
@@ -82,10 +80,8 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	{
         if (k == null)
             k = "";
-	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
-	        
-        return this.ref_cache[k];
+
+        return new window["Firebase"](this.rootpath + k + "/");
 	};
 	
 	var get_data = function(in_data, default_value)
@@ -226,8 +222,8 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
     Acts.prototype.Save = function (slot_name)
 	{		
 	    var ref = this.get_ref(this.owner_userID);
-        var header_ref = ref["child"]("header")["child"](slot_name);
-		var body_ref = ref["child"]("body")["child"](slot_name);
+        var header_ref = ref["child"]("headers")["child"](slot_name);
+		var body_ref = ref["child"]("bodies")["child"](slot_name);
 				
 		var self = this;				
 		var complete_cnt = 0;
@@ -259,7 +255,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
     Acts.prototype.GetAllHeaders = function ()
 	{
-	    var ref = this.get_ref(this.owner_userID)["child"]("header");
+	    var ref = this.get_ref(this.owner_userID)["child"]("headers");
 		
 		var self = this;
         var handler = function (snapshot)
@@ -273,7 +269,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
     Acts.prototype.GetSlotBody = function (slot_name)
 	{
-	    var ref = this.get_ref(this.owner_userID)["child"]("body")["child"](slot_name);
+	    var ref = this.get_ref(this.owner_userID)["child"]("bodies")["child"](slot_name);
 		
 		var self = this;
         var handler = function (snapshot)
@@ -305,8 +301,8 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
     Acts.prototype.CleanSlot = function (slot_name)
 	{
 	    var ref = this.get_ref(this.owner_userID);
-        var header_ref = ref["child"]("header")["child"](slot_name);
-		var body_ref = ref["child"]("body")["child"](slot_name);
+        var header_ref = ref["child"]("headers")["child"](slot_name);
+		var body_ref = ref["child"]("bodies")["child"](slot_name);
 		
 		var self = this;		
 		var complete_cnt = 0;

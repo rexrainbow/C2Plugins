@@ -65,6 +65,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.rootpath = this.properties[0] + "/"; 
+        window["Firebase"]["enableLogging"](this.properties[1] == 1);
         
 		// push
 		this.last_push_ref = "";
@@ -95,6 +96,41 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	        
         return new window["Firebase"](this.rootpath + k + "/");
 	};
+	
+    instanceProto.add_callback = function (refObj, type_, cb)
+	{
+	    var event_type = EVENTTYPEMAP[type_];	    
+	    if (this.reading_cb_map[event_type].hasOwnProperty(cb))
+	        return;
+	        
+	    var self = this;   
+        var reading_handler = function (snapshot, prevChildName)
+        {
+            self.reading_cb = cb;   
+            self.snapshot = snapshot;
+			self.prevChildName = prevChildName;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
+            self.reading_cb = null;            
+        };
+        this.reading_cb_map[event_type][cb] = reading_handler;
+	    refObj["on"](event_type, reading_handler);                         
+	}; 	
+	
+    instanceProto.add_callback_once = function (refObj, type_, cb)
+	{
+	    var event_type = EVENTTYPEMAP[type_];	    
+
+	    var self = this;   
+        var reading_handler = function (snapshot, prevChildName)
+        {
+            self.reading_cb = cb;   
+            self.snapshot = snapshot;
+            self.prevChildName = prevChildName;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
+            self.reading_cb = null; 
+        };
+	    refObj["once"](event_type, reading_handler);                         
+	}; 		
 	
 	var get_data = function(in_data, default_value)
 	{
@@ -198,14 +234,14 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
 	    var ref = this.get_ref(k)["push"](v, handler);
-		this.last_push_ref = k + "/" +  ref.key();
+		this.last_push_ref = k + "/" +  ref["key"]();
 	}; 
 
     Acts.prototype.PushJSON = function (k, v, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);	    
 	    var ref = this.get_ref(k)["push"](JSON.parse(v), handler);
-		this.last_push_ref = k + "/" + ref.key();
+		this.last_push_ref = k + "/" + ref["key"]();
 	};
 	
     Acts.prototype.Transaction = function (k, onTransaction_cb, onComplete_cb)
@@ -242,21 +278,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
     
     Acts.prototype.AddReadingCallback = function (k, type_, cb)
 	{
-	    var event_type = EVENTTYPEMAP[type_];	    
-	    if (this.reading_cb_map[event_type].hasOwnProperty(cb))
-	        return;
-	        
-	    var self = this;   
-        var reading_handler = function (snapshot, prevChildName)
-        {
-            self.reading_cb = cb;   
-            self.snapshot = snapshot;
-			self.prevChildName = prevChildName;
-            self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
-            self.reading_cb = null;            
-        };
-        this.reading_cb_map[event_type][cb] = reading_handler;
-	    this.get_ref(k)["on"](event_type, reading_handler);                         
+	    this.add_callback(this.get_ref(k), type_, cb);                        
 	}; 		
 	
     Acts.prototype.RemoveReadingCallback = function (k, type_, cb)
@@ -279,18 +301,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
     Acts.prototype.AddReadingCallbackOnce = function (k, type_, cb)
 	{
-	    var event_type = EVENTTYPEMAP[type_];	    
-
-	    var self = this;   
-        var reading_handler = function (snapshot, prevChildName)
-        {
-            self.reading_cb = cb;   
-            self.snapshot = snapshot;
-            self.prevChildName = prevChildName;
-            self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
-            self.reading_cb = null; 
-        };
-	    this.get_ref(k)["once"](event_type, reading_handler);                         
+	    this.add_callback_once(this.get_ref(k), type_, cb);                        
 	}; 
 
     Acts.prototype.RemoveRefOnDisconnect = function (k)
@@ -307,7 +318,35 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 	    this.get_ref(k)["onDisconnect"]()["update"](v);
 	};	
-	
+
+    // query
+    var get_query = function (queryObjs)
+    {
+	    if (queryObjs == null)
+	        return;	        
+        var query = queryObjs.instances[0];
+        if (query == null)
+            return;
+            
+        return query.GetQuery();
+    };
+    Acts.prototype.AddQueryCallback = function (queryObjs, type_, cb)
+	{
+        var refObj = get_query(queryObjs);
+        if (refObj == null)
+            return;
+            
+        this.add_callback(refObj, type_, cb);                        
+	};	
+
+    Acts.prototype.AddQueryCallbackOnce = function (queryObjs, type_, cb)
+	{
+        var refObj = get_query(queryObjs);
+        if (refObj == null)
+            return;
+            	    
+	   this.add_callback_once(refObj, type_, cb);   
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

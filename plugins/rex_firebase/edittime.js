@@ -7,7 +7,7 @@
 		"description":	"Real time database-as-a-service. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase.html",
-		"category":		"Rex - Web - Firebase - General",
+		"category":		"Rex - Web - Firebase - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -173,6 +173,30 @@ AddAction(33, 0, "Update JSON", "On disconnect",
           "Update JSON <i>{1}</i> at <i>{0}</i> when disconnected", 
           'Updates JSON values at the data ref when disconnected. Uses under "condition: On received".', "UpdateJSONOnDisconnect");    
 
+// get query from Firebase_Query plugin
+AddObjectParam("Query", "Query object.");
+AddComboParamOption("Value changed");
+AddComboParamOption("Child added");
+AddComboParamOption("Child changed");
+AddComboParamOption("Child removed");
+AddComboParamOption("Child moved");
+AddComboParam("Type ", "Event type");
+AddStringParam("Callback function", "Callback function.", '"_"');
+AddAction(51, 0, "Add callback", "Query", 
+          "Add received callback: <i>{2}</i> for query <i>{0}</i> (<i>{1}</i>)", 
+          "Add received callback.", "AddQueryCallback");
+          
+AddObjectParam("Query", "Query object.");
+AddComboParamOption("Value changed");
+AddComboParamOption("Child added");
+AddComboParamOption("Child changed");
+AddComboParamOption("Child removed");
+AddComboParamOption("Child moved");
+AddComboParam("Type ", "Event type");
+AddStringParam("Callback function", "Callback function.", '"_"');
+AddAction(52, 0, "Add callback once", "Query", 
+          "Add received callback: <i>{2}</i> once for query <i>{0}</i> (<i>{1}</i>)", 
+          "Add received callback once.", "AddQueryCallbackOnce");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Transaction input", "Send - Transaction", "TransactionIn", 
@@ -192,7 +216,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data.")
+    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
+    new cr.Property(ept_combo, "Log", "No", "Enable log.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

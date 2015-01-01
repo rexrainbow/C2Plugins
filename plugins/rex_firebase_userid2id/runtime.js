@@ -260,7 +260,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             else
             {
                 if (return_ID === null)  // try set new ID
-                    self.try_getID(UserID, ID);
+                    self.try_getID(UserID, ID, on_getID_failed);
                 else                     // ID is existed
                 {
                     if (return_ID != ID)  
@@ -269,6 +269,10 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                         self.on_getID_successful(ID); 
                 }                        
             }        
+        };
+        var on_getID_failed = function ()
+        {
+            self.on_getID_failed();
         };
         
         UserID_ref["once"]("value", on_read_UserID);

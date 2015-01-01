@@ -7,7 +7,7 @@
 		"description":	"Authentication which is provided by firebase. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_authentication.html",
-		"category":		"Rex - Web - Firebase - General",
+		"category":		"Rex - Web - Firebase - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -127,11 +127,23 @@ AddStringParam("scope", "A comma-delimited list of requested extended permission
 AddAction(21, 0, "Login", "Authentication provider", 
           "Login by <i>{0}</i> with <i>{1}</i>, persisting type to <i>{2}</i>, scope to <i>{3}</i>", 
           "Login by authentication provider.", "ProviderAuthentication_Login");  
- 
+
+AddStringParam("Access token", 'Access token from other plugin. Set "" if using official facebook to login.', '""');
+AddComboParamOption("default");
+AddComboParamOption("sessionOnly");
+AddComboParamOption("never");
+AddComboParam("Remember ", "Persisting type");
+AddStringParam("scope", "A comma-delimited list of requested extended permissions");	  
+AddAction(22, 0, "Connect Facebook", "Authentication with token", 
+          "Authentication with Facebook access token <i>{0}</i>, persisting type to <i>{1}</i>, scope to <i>{2}</i>", 
+          "Authentication with Facebook access token, call it after facebook login.", "AuthWithOAuthToken_FB");
+		  
 // general         
 AddAction(31, 0, "Logging out", "General", 
           "Logging out current account", 
           "Logging out current account.", "LoggingOut");                           
+		  
+		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 
@@ -154,7 +166,9 @@ AddExpression(9, ef_return_string, "Email", "General auth data", "Email",
               "The user's primary email address as listed on their profile. Returned only if a valid email address is available, and the email permission was granted by the user. ");	
 AddExpression(10, ef_return_string, "User name", "General auth data", "UserName", 
               "The user's screen name, handle, or alias. Twitter screen names are unique, but subject to change. .");
-			  
+AddExpression(11, ef_return_string, "Error detail", "Error", "ErrorDetail", 
+              "Error detail.");
+              
 ACESDone();
 
 // Property grid properties for this plugin

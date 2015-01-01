@@ -1075,6 +1075,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     
     Acts.prototype.SetupLayout = function (layout_objs)
 	{   
+	    if (layout_objs == null)
+	        return;
+	        
         var layout = layout_objs.instances[0];
         if (layout.check_name == "LAYOUT")
             this.layout = layout;        

@@ -131,6 +131,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             
         // 2. get the max z-order inst
         cnt = _behavior_insts.length;
+		if (cnt == 0)
+		    return false;
         var target_inst_behavior = _behavior_insts[0];
         var instB=target_inst_behavior.inst, instA;
         for (i=1; i<cnt; i++ )
@@ -240,7 +242,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.behavior.touchwrap;
+        var touch_obj = this.behavior.TouchWrapGet();  
         this.behavior.GetAbsoluteY.call(touch_obj, 
                                         touch_obj.fake_ret, this.drag_info.touch_src);
         return touch_obj.fake_ret.value;        
@@ -251,7 +253,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.behavior.touchwrap;
+        var touch_obj = this.behavior.TouchWrapGet();  
         this.behavior.GetX.call(touch_obj, 
                                 touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;          
@@ -262,7 +264,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
-        var touch_obj = this.behavior.touchwrap;
+        var touch_obj = this.behavior.TouchWrapGet();  
         this.behavior.GetY.call(touch_obj, 
                                 touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
@@ -468,10 +470,11 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         if (this.drag_info.is_on_dragged)  // always dragged
             return;
 
-        if (!this.type.touchwrap.IsInTouch())       // no touched
+        var touch_obj = this.behavior.TouchWrapGet();  
+        if (!touch_obj.IsInTouch())       // no touched
             return;
         
-        var touch_pts = this.type.touchwrap.touches;
+        var touch_pts = touch_obj.touches;
         var cnt=touch_pts.length;            
         var i, touch_pt, tx, ty;
         var inst = this.inst;

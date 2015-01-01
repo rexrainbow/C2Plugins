@@ -50,7 +50,7 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Request",
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set", 0);
 AddAction(1, 0, "Set value", "Save", 
-          "Set key <i>{0}</i> to value <i>{1}</i> in current item", 
+          "Set key <i>{0}</i> to  <i>{1}</i> in current item", 
           "Set value into current item.", "SetValue");
 		  
 AddStringParam("ID", "ID of item.", '""');
@@ -63,7 +63,15 @@ AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(3, 0, "Remove", "Remove", 
           "Remove item with ID <i>{0}</i> (tag <i>{1}</i>)", 
-          "Remove item from server.", "Remove");           
+          "Remove item from server.", "Remove");  
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("False");
+AddComboParamOption("True");
+AddComboParam("Boolean", "Boolean value.", 1);
+AddAction(4, 0, "Set boolean value", "Save", 
+          "Set key <i>{0}</i> to <i>{1}</i> in current item", 
+          "Set boolean value into current item.", "SetBooleanValue");                   
 
 AddNumberParam("Count", "Count of picked item.", 1);    
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');      
@@ -72,11 +80,11 @@ AddAction(11, 0, "Get random items", "Request",
           "Get random items.", "GetRandomItems");                            
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_any, "Get itemID", "For each itemID", "CurItemID", 
-              "Get current itemID in a For Each loop.");
+AddExpression(1, ef_return_any, "Get itemID", "ItemID", "CurItemID", 
+              "Get current itemID in a For Each loop, or in save/remove callback.");
               
 AddExpression(2, ef_return_string, "Get itemID in JSON", "JSON", "ItemIDToJSON", 
-              "Get itemID in JSON string.");
+              "Get itemID in JSON string.");                   
               
 ACESDone();
 

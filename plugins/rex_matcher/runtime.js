@@ -234,7 +234,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._tiles_groups.length = 0;
         if (this._dir == null)
             this._dir = this.GetBoard().GetLayout().GetDirCount();
-        if (this._dir == 4)
+        if ((this._dir == 4) || (this._dir == 8))
             this.pattern_search_square(pattern, is_any_pattern_mode);
         else if (this._dir == 6)
             this.pattern_search_hex(pattern, is_any_pattern_mode);

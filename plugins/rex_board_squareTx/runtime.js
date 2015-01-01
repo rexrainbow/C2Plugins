@@ -43,11 +43,12 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	{        
         this.check_name = "LAYOUT";
         this.layout_mode = this.properties[0];
+        this.is_8dir = (this.properties[5] == 1);
+                
         this.SetPOX(this.properties[1]);
         this.SetPOY(this.properties[2]);
         this.SetWidth(this.properties[3]);
         this.SetHeight(this.properties[4]);
-        this.is_8dir = (this.properties[5] == 1);
 	};
 	instanceProto.SetPOX = function(pox)
 	{
@@ -159,8 +160,9 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		    
         return ly;
 	};
-	 
-	var nlx_map_01 = [1, 0, -1, 0, 1, -1, -1, 1];   // Orthogonal or Isometric
+	
+    var map_01 = [[1,0], [0,1], [-1,0], [0,-1],
+                  [1,1], [-1,1], [-1,-1], [1,-1]];   // Orthogonal or Isometric
 	var nlx_map_2_0 = [0, -1, -1, 0, 0, -1, 0, 1]; // Staggered (y%2==0)
 	var nlx_map_2_1 = [1, 0, 0, 1, 0, -1, 0, 1]; // Staggered (y%2==1)
 	instanceProto.GetNeighborLX = function(x, y, dir)
@@ -168,11 +170,11 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    var dx;
 	    if (this.layout_mode == 0)   // Orthogonal
 	    {
-	        dx = nlx_map_01[dir];
+	        dx = map_01[dir][0];
 	    }
 	    else if (this.layout_mode == 1)   // Isometric
 		{
-	        dx = nlx_map_01[dir];
+	        dx = map_01[dir];
 		}
 		else if (this.layout_mode == 2)  // Staggered
 	    {
@@ -184,19 +186,18 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		
 		return (x+dx);
 	};
-	
-	var nly_map_01 = [0, 1, 0, -1, 1, 1, -1, -1];   // Orthogonal or Isometric
+
 	var nly_map_2 = [1, 1, -1, -1, 2, 0, -2, 0];  // Staggered
 	instanceProto.GetNeighborLY = function(x, y, dir)
 	{
 	    var dy;
 	    if (this.layout_mode == 0)   // Orthogonal
 	    {
-	        dy = nly_map_01[dir];
+	        dy = map_01[dir][1];
 	    }
 	    else if (this.layout_mode == 1)   // Isometric
 		{
-	        dy = nly_map_01[dir];
+	        dy = map_01[dir][1];
 		}
 		else if (this.layout_mode == 2)  // Staggered
 	    {
@@ -302,6 +303,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    var dx = xyz_to.x - xyz_o.x;
 	    var dy = xyz_to.y - xyz_o.y;
 	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
+	    
+	    if ((dir != null) && (!this.is_8dir) && (dir > 3))	    
+	        dir = null;
+	        
         return dir;				 
 	};    
 	

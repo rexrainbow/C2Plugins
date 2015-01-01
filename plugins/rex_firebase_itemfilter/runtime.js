@@ -1,9 +1,4 @@
 ﻿/*
-Note:
-Each item would is belonged one client. i.e. only one client could add/remove/set the item.
-----
-Structure:
-
 itemIDs\
     <itemID>: true
     
@@ -83,7 +78,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
         
-        this.save_itme = {};
+        this.save_item = {};
         this.trig_tag = null;
         this.request_itemIDs = {};	
         
@@ -163,8 +158,8 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 		
-		var k, o=this.exp_CurHeader;
-		for(k in this.request_itemIDs)
+		var k, o=this.request_itemIDs;
+		for(k in o)
 		{
             if (solModifierAfterCnds)
             {
@@ -190,7 +185,12 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	
     Acts.prototype.SetValue = function (key_, value_)
 	{
-		this.save_itme[key_] = value_;
+		this.save_item[key_] = value_;
+	};
+	
+    Acts.prototype.SetBooleanValue = function (key_, is_true)
+	{
+		this.save_item[key_] = (is_true == 1);
 	};
 	
     Acts.prototype.Save = function (itemID, tag_)
@@ -225,9 +225,11 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	            // all jobs done
 			    var trig = (!has_error)? cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnSaveComplete:
 				                         cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnSaveError;
-                self.trig_tag = tag_;				                         
+                self.trig_tag = tag_;	
+                self.exp_CurItemID = itemID;	                         
 				self.runtime.trigger(trig, self); 	   
-				self.trig_tag = null;         
+				self.trig_tag = null;
+				self.exp_CurItemID = "";	  
 	        }
 	    };
 	    // wait done
@@ -236,15 +238,15 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	    wait_events += 1;
 	    // check if itemID is in itemID list
 	    this.get_itemID_ref(itemID)["once"]("value", on_read_itemID);	
-	    for (var k in this.save_itme)
+	    for (var k in this.save_item)
 	    {	        
 	        // add key-value
 	        wait_events += 1;
-	        this.get_key_ref(itemID, k)["set"](this.save_itme[k], isDone_handler);
+	        this.get_key_ref(itemID, k)["set"](this.save_item[k], isDone_handler);
 	        wait_events += 1;
 	        this.get_keyIndex_ref()["child"](k)["set"](true, isDone_handler);
 	    }
-		clean_table(this.save_itme);	
+		clean_table(this.save_item);	
 	};
 	
     Acts.prototype.Remove = function (itemID, tag_)
@@ -298,9 +300,11 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	            // all jobs done
 			    var trig = (!has_error)? cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRemoveComplete:
 				                         cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRemoveError;
-                self.trig_tag = tag_;				                         
+                self.trig_tag = tag_;
+                self.exp_CurItemID = itemID;				                         
 				self.runtime.trigger(trig, self); 	   
-				self.trig_tag = null;         
+				self.trig_tag = null;    
+				self.exp_CurItemID = "";     
 	        }
 	    };
 	    // wait done	    

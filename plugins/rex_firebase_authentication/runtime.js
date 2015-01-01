@@ -256,7 +256,28 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         var d = {"remember":PRESISTING_TYPE[r_],
                  "scopr":scope_};
 	    this.get_ref()[login_fn_name](provider, handler, d);
-	};	
+	};
+
+    Acts.prototype.AuthWithOAuthToken_FB = function (access_token, r_, scope_)
+	{
+        if (access_token == "")
+        {        
+	        if (typeof (FB) == null) 
+		        return;
+		
+		    var auth_response = FB["getAuthResponse"]();
+		    if (!auth_response)
+		        return;
+			
+	        access_token = auth_response["accessToken"];
+        }
+	    var handler = on_handler_get(this,
+	                                 cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessfully,
+	                                 cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginError);	
+        var d = {"remember":PRESISTING_TYPE[r_],
+                 "scopr":scope_};                                     
+        this.get_ref()["authWithOAuthToken"]("facebook", access_token, handler, d);		
+	};		
 		
     Acts.prototype.LoggingOut = function ()
 	{
@@ -269,7 +290,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	
 	Exps.prototype.ErrorCode = function (ret)
 	{
-	    var val = (!this.last_error)? "": this.last_error.code;    
+	    var val = (!this.last_error)? "": this.last_error["code"];    
 		ret.set_string(val);
 	}; 
 	
@@ -329,5 +350,13 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	Exps.prototype.UserName = function (ret)
 	{
 		ret.set_string(get_provider_property(this.last_authData, "username"));
-	};		
+	};
+	Exps.prototype.ErrorDetail = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["detail"];   
+        if (val == null)
+            val = "";        
+		ret.set_string(val);
+	}; 
+    
 }());
