@@ -71,10 +71,16 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
-        if (k == null)
-            k = "";
-
-        return new window["Firebase"](this.rootpath + k + "/");
+	    if (k == null)
+	        k = "";
+	        
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 	    
 	// export  

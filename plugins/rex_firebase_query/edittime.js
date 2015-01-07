@@ -64,14 +64,14 @@ AddAction(24, 0, "In range", "2. Create - Range",
 AddAnyTypeParam("Value", "Equal value.", 0);          
 AddAction(25, 0, "Equal to", "2. Create - Range", 
           "2. Set current query equal to <i>{0}</i>", 
-          "Set query equal to specific value.", "EqualTo");
+          "Set query equal to specific value.", "EqualTo"); 
 
 // 3. limit
-AddAnyTypeParam("Limit", "Limit count.", 1);          
+AddNumberParam("Limit", "Limit count.", 1);          
 AddAction(31, 0, "Limit to first", "3. Create - Limit", 
           "3. Set limit to <i>{0}</i> to first of current queue", 
           "Limit to first of queue.", "LimitToFirst");  
-AddAnyTypeParam("Limit", "Limit count.", 1);          
+AddNumberParam("Limit", "Limit count.", 1);          
 AddAction(32, 0, "Limit to last", "3. Create - Limit", 
           "3. Set limit to <i>{0}</i> to last of current queue", 
           "Limit to last of queue.", "LimitToLast"); 

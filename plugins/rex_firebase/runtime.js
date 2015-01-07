@@ -94,7 +94,13 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    if (k == null)
 	        k = "";
 	        
-        return new window["Firebase"](this.rootpath + k + "/");
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 	
     instanceProto.add_callback = function (refObj, type_, cb)

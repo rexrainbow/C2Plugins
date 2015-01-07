@@ -43,6 +43,16 @@ AddComboParamOption(">");
 AddComboParam("Result", "Compared result", 0);   
 AddAction(4, 0, "Set compared result", "Custom sorting: result", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
           'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");           
+          
+  
+AddNumberParam("UID A", "UID of instance A", 0);
+AddComboParamOption("in front");
+AddComboParamOption("behind");
+AddComboParam("Place", "Place", 0);
+AddNumberParam("UID B", "UID of instance B", 0);          
+AddAction(11, 0, "Move to object", "Z Order", 
+          "Move instance UID: <i>{0}</i> <i>{1}</i> instance UID: <i>{2}</i>", 
+          "Move the object next to another object in the Z order.", "ZMoveToObject");            
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 

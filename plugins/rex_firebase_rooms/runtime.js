@@ -72,9 +72,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                             "isModerator": false,
                             "persisted": false,
                            };        
-        
-        // ref cache
-        this.ref_cache = {};  
+         
         this.onDisconnectCancel_ref = [];
         this.is_loggin = false;      
         this._temp_room_info = {};
@@ -82,12 +80,16 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
-        if (k == null)
-            k = "";
-	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
+	    if (k == null)
+	        k = "";
 	        
-        return this.ref_cache[k];
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 	
 	instanceProto.get_userRoom_ref = function()

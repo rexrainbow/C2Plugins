@@ -4,7 +4,7 @@
 		"name":			"Item filter",
 		"id":			"Rex_Firebase_ItemFilter",
 		"version":		"0.1",        
-		"description":	"Query items with condition filters.",
+		"description":	"Query itemIDs with condition filters.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_itemfilter.html",
 		"category":		"Rex - Web - firebase",
@@ -49,15 +49,15 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Request",
 // Actions
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set", 0);
-AddAction(1, 0, "Set value", "Save", 
+AddAction(1, 0, "Set value", "Set item", 
           "Set key <i>{0}</i> to  <i>{1}</i> in current item", 
           "Set value into current item.", "SetValue");
 		  
 AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddAction(2, 0, "Save", "Save", 
-          "Save current item with ID <i>{0}</i> (tag <i>{1}</i>)", 
-          "Save current item into server.", "Save"); 
+AddAction(2, 0, "Update", "Set item", 
+          "Update current item with ID <i>{0}</i> (tag <i>{1}</i>)", 
+          "Update current item into server.", "Save"); 
           
 AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
@@ -69,23 +69,109 @@ AddStringParam("Key", "The name of the key.", '""');
 AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
-AddAction(4, 0, "Set boolean value", "Save", 
+AddAction(4, 0, "Set boolean value", "Set item", 
           "Set key <i>{0}</i> to <i>{1}</i> in current item", 
-          "Set boolean value into current item.", "SetBooleanValue");                   
+          "Set boolean value into current item.", "SetBooleanValue"); 
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddAction(5, 0, "Remove key", "Set item",
+          "Remove key <i>{0}</i> in server", 
+          "Remove key in firebase server.", "RemoveKey");                             
 
 AddNumberParam("Count", "Count of picked item.", 1);    
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');      
 AddAction(11, 0, "Get random items", "Request", 
           "Request - get <i>{0}</i> random items (tag <i>{1}</i>)", 
-          "Get random items.", "GetRandomItems");                            
+          "Get random items.", "GetRandomItems");
+
+AddStringParam("Expression", "Expression of conditions.", '""');  
+AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');    
+AddAction(12, 0, "Get items by condition", "Request", 
+          "Request - get items by condition to <i>{0}</i> (tag <i>{1}</i>)", 
+          "Get items by condition.", "GetItemsByCondition");  
+          
+AddStringParam("Key", "The name of the key.", '""');          
+AddAnyTypeParam("Value", "Start value.", 0);             
+AddAnyTypeParam("Value", "End value.", 0);
+AddComboParamOption("Limit to first");       
+AddComboParamOption("Limit to last");
+AddComboParam("Limit", "Limit types.", 0);
+AddNumberParam("Limit", "Limit count.", 1);    
+AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');  
+AddAction(13, 0, 'Get items by "In Range"', "Request - Signle query", 
+          "Request - get <i>{4}</i> items by condition: <i>{0}</i> In Range <i>{1}</i> - <i>{2}</i>, <i>{3}</i> (tag <i>{5}</i>)", 
+          "Get items by single condition-In Range with count limit.", "GetItemsBySingleConditionInRange");  
+          
+AddStringParam("Key", "The name of the key.", '""');          
+AddComboParamOption("Equal to");       
+AddComboParamOption("Greater than or Equal to");
+AddComboParamOption("Less than or Equal to");
+AddComboParam("Comparison", "Comparison types.", 0);          
+AddAnyTypeParam("Value", "Compared value.", 0);
+AddComboParamOption("Limit to first");       
+AddComboParamOption("Limit to last");
+AddComboParam("Limit", "Limit types.", 0);
+AddNumberParam("Limit", "Limit count.", 1);    
+AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');  
+AddAction(14, 0, 'Get items by comparison', "Request - Signle query", 
+          "Request - get <i>{4}</i> items by condition: <i>{0}</i> <i>{1}</i> <i>{2}</i>, <i>{3}</i> (tag <i>{5}</i>)", 
+          "Get items by single condition with count limit.", "GetItemsBySingleCondition");
+                           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any, "Get itemID", "ItemID", "CurItemID", 
               "Get current itemID in a For Each loop, or in save/remove callback.");
               
 AddExpression(2, ef_return_string, "Get itemID in JSON", "JSON", "ItemIDToJSON", 
-              "Get itemID in JSON string.");                   
+              "Get itemID in JSON string.");  
+
+// filter conditions
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to compare", 0);
+AddExpression(11, ef_return_string | ef_variadic_parameters, "Pick equal", "Condition", "Equal", 
+              "Do Equal to codition to pick matched itemID. Add 3rd and more parameters to pick more matched itemIDs.");
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to compare", 0);
+AddExpression(12, ef_return_string, "Pick greater or equal", "Condition", "GreaterEqual", 
+              "Do Greater than or Equal to codition to pick matched itemID.");
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to compare", 0);
+AddExpression(13, ef_return_string, "Pick less or equal", "Condition", "LessEqual", 
+              "Do Less than or Equal to codition to pick matched itemID.");
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The start value to compare", 0);
+AddAnyTypeParam("Value", "The end value to compare", 0);
+AddExpression(14, ef_return_string, "Pick in range", "Condition", "InRange", 
+              "Do In Range codition to pick matched itemID.");
               
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to compare", 0);
+AddExpression(15, ef_return_string, "Pick greater", "Condition", "Greater", 
+              "Do Greater than codition to pick matched itemID.");
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to compare", 0);
+AddExpression(16, ef_return_string, "Pick less", "Condition", "Less", 
+              "Do Less than codition to pick matched itemID.");              
+
+AddStringParam("Expression A", "Expression A of set operation.", '""');
+AddStringParam("Expression B", "Expression A of set operation.", '""');
+AddExpression(21, ef_return_string | ef_variadic_parameters, "OR operation", "Set operation", "OR", 
+              "Do OR operation of these expressions.");
+
+AddStringParam("Expression A", "Expression A of set operation.", '""');
+AddStringParam("Expression B", "Expression A of set operation.", '""');
+AddExpression(22, ef_return_string | ef_variadic_parameters, "AND operation", "Set operation", "AND",
+              "Do AND operation of these expressions.");
+
+AddStringParam("Expression A", "Expression A of set operation.", '""');
+AddStringParam("Expression B", "Expression A of set operation.", '""');
+AddExpression(23, ef_return_string | ef_variadic_parameters, "SUB operation", "Set operation", "SUB", 
+              "Do SUB operation of these expressions.");
+
 ACESDone();
 
 // Property grid properties for this plugin

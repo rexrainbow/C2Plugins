@@ -153,6 +153,32 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	{
 	    this._compared_result = result -1;
 	};
+	
+    Acts.prototype.ZMoveToObject = function (uidA, where_, uidB)
+	{	        
+	    if (uidA == uidB)
+	        return;
+	        
+	    var instA = this.runtime.getObjectByUID(uidA);
+	    var instB = this.runtime.getObjectByUID(uidB);
+	    if ((instA == null) || (instB == null))
+	        return;
+	
+	    // copy from commonace.js, line 831
+	    var isafter = (where_ === 0);
+	    // First move to same layer as other object if different
+	    if (instA.layer.index !== instB.layer.index)
+	    {
+	    	instA.layer.removeFromInstanceList(instA, true);
+	    	
+	    	instA.layer = instB.layer;
+	    	instB.layer.appendToInstanceList(instA, true);
+	    }
+	    
+	    instA.layer.moveInstanceAdjacent(instA, instB, isafter);				
+	    instA.runtime.redraw = true;	        
+	};	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

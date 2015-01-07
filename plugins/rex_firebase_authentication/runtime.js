@@ -67,11 +67,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         
         this.last_error = null;
         this.last_authData = null;
-        
-        // ref cache
-        this.ref_cache = {}; 
-
-        
+                
         var self = this;
         var onAuth_handler = function (authData)
         {
@@ -91,12 +87,16 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
-        if (k == null)
-            k = "";
-	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
+	    if (k == null)
+	        k = "";
 	        
-        return this.ref_cache[k];
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 	
 	instanceProto.get_query = function(k)

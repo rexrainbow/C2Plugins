@@ -82,9 +82,6 @@ cr.plugins_.Rex_Firebase_Userlist = function(runtime)
 	    this.rootpath = this.properties[0] + "/";   
         this.owner_userID = "";
         
-        // ref cache
-        this.ref_cache = {};      
-        
         this.userLists = {};
         this.exp_CurUserID = "";
         this.CurUserInfo = null;
@@ -94,12 +91,16 @@ cr.plugins_.Rex_Firebase_Userlist = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
-        if (k == null)
-            k = "";
-	    if (!this.ref_cache.hasOwnProperty(k))
-	        this.ref_cache[k] = new window["Firebase"](this.rootpath + k + "/");
+	    if (k == null)
+	        k = "";
 	        
-        return this.ref_cache[k];
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 	
 	instanceProto.get_list_ref = function(userId, list_name)

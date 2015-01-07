@@ -4,7 +4,7 @@
 		"name":			"Item table",
 		"id":			"Rex_Firebase_ItemTable",
 		"version":		"0.1",        
-		"description":	"Item table on firebase.",
+		"description":	"Item table, a 2d hash table on firebase.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_itemtable.html",
 		"category":		"Rex - Web - firebase",
@@ -100,6 +100,11 @@ AddStringParam("Tag", "A tag, to distinguish between different save requests.", 
 AddAction(12, 0, "Load", "Load", 
           "Load items (tag <i>{0}</i>)", 
           "Load items.", "LoadItems");     
+          
+AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');          
+AddAction(13, 0, "Load all", "Load", 
+          "Load all items (tag <i>{0}</i>)", 
+          "Load all items.", "LoadAllItems");  
  	                    
 //////////////////////////////////////////////////////////////
 // Expressions

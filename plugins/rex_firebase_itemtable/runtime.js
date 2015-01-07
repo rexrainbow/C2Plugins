@@ -85,10 +85,16 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	
 	instanceProto.get_ref = function(k)
 	{
-        if (k == null)
-            k = "";
-
-        return new window["Firebase"](this.rootpath + k + "/");
+	    if (k == null)
+	        k = "";
+	        
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 
 	var clean_table = function (o)
@@ -305,7 +311,46 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 		    item_ref = this.get_ref(itemID)["once"]("value", on_read);
 		    delete this.load_request_itemIDs[itemID];
 		}		
-	};			
+	};	
+
+    Acts.prototype.LoadAllItems = function (tag_)
+	{
+	    clean_table(this.load_items);
+
+        var self = this;
+	    // wait done
+        var wait_events = 0;    
+	    var isDone_handler = function()
+	    {
+	        wait_events -= 1;
+	        if (wait_events == 0)
+	        {	            
+	            // all jobs done
+                self.trig_tag = tag_;	                    
+                var trig = cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnLoadComplete;     
+				self.runtime.trigger(trig, self); 	   
+				self.trig_tag = null;	  
+	        }
+	    };
+	    // wait done
+        
+        // read handler	
+        var read_item = function(childSnapshot)
+        {
+            var key = childSnapshot["key"]();
+            var childData = childSnapshot["val"]();
+            self.load_items[key] = childData;
+        };   
+	    var on_read = function (snapshot)
+	    {            
+            snapshot["forEach"](read_item);
+            isDone_handler();
+	    };		    
+	    	    
+        // read all
+        wait_events += 1;
+        this.get_ref()["once"]("value", on_read);	
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

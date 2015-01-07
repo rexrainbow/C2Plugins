@@ -1,13 +1,17 @@
 ﻿/*
+# for random picking
 itemIDs\
     <itemID>: true
     
+# for condition picking    
 filters\
     <keys>
         <itemID>: <value>
 
-keys\
-    <keys>: true
+# for remove itemID
+itemID-keys\
+    <itemID>\
+        <keys>: true
 */
 
 // ECMAScript 5 strict mode
@@ -80,33 +84,100 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         
         this.save_item = {};
         this.trig_tag = null;
-        this.request_itemIDs = {};	
-        
+        this.request_itemIDs = {};
         this.exp_CurItemID = "";
 	};
 	
 	instanceProto.get_ref = function(k)
 	{
-        if (k == null)
-            k = "";
-
-        return new window["Firebase"](this.rootpath + k + "/");
+	    if (k == null)
+	        k = "";
+	        
+	    var path;
+	    if (k.substring(4) == "http")
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+	        
+        return new window["Firebase"](path);
 	};
 	
 	instanceProto.get_key_ref = function(itemID, key_)
 	{
-        return this.get_ref()["child"]("filters")["child"](key_)["child"](itemID);
+        return this.get_ref("filters")["child"](key_)["child"](itemID);
 	};
 	
-	instanceProto.get_keyIndex_ref = function()
+	instanceProto.get_itemID2Keys_ref = function(itemID)
 	{
-        return this.get_ref()["child"]("keys");
+        return this.get_ref("itemID-keys")["child"](itemID);
 	};
 	
 	instanceProto.get_itemID_ref = function(itemID)
 	{
-        return this.get_ref("itemIDs")["child"](itemID)
+        return this.get_ref("itemIDs")["child"](itemID);
 	};
+    
+    instanceProto.get_Equal_codeString = function (key_, value_)
+	{
+        key_ = string_quote(key_);
+        value_ = string_quote(value_);
+        var code_string = 'filter.Query("Equal",'+key_+","+value_+")";
+        return code_string;
+	};
+    
+    instanceProto.get_GreaterEqual_codeString = function (key_, value_)
+	{
+        key_ = string_quote(key_);
+        value_ = string_quote(value_);
+        var code_string = 'filter.Query("GreaterEqual",'+key_+","+value_+")";
+        return code_string;
+	};
+    
+    instanceProto.get_LessEqual_codeString = function (key_, value_)
+	{
+        key_ = string_quote(key_);
+        value_ = string_quote(value_);
+        var code_string = 'filter.Query("LessEqual",'+key_+","+value_+")";
+		return code_string;
+	};    
+    
+    instanceProto.get_InRange_codeString = function (key_, start_, end_)
+	{
+        key_ = string_quote(key_);
+        start_ = string_quote(start_);
+        end_ = string_quote(end_);
+        var code_string = 'filter.Query("InRange",'+key_+","+start_+","+end_+")";
+		return code_string;
+	};  
+
+    var ARGS_COPY = [];    
+    instanceProto.get_OR_codeString = function ()
+	{
+        array_copy(ARGS_COPY, arguments);
+        var code_string = 'filter.AddSETOP("OR",'+ARGS_COPY.join(",")+")";
+		return code_string;
+	};     
+    
+    instanceProto.get_AND_codeString = function ()
+	{
+        array_copy(ARGS_COPY, arguments);
+        var code_string = 'filter.AddSETOP("AND",'+ARGS_COPY.join(",")+")";
+		return code_string;
+	};    
+    
+    instanceProto.get_SUB_codeString = function ()
+	{
+        array_copy(ARGS_COPY, arguments);
+        var code_string = 'filter.AddSETOP("SUB",'+ARGS_COPY.join(",")+")";
+		return code_string;
+	};    
+    
+    instanceProto.get_SUBVALUE_codeString = function ()
+	{
+        array_copy(ARGS_COPY, arguments);
+        var code_string = 'filter.AddSETOP("SUB_VALUE",'+ARGS_COPY.join(",")+")";
+		return code_string;
+	};      
 
 	var clean_table = function (o)
 	{
@@ -124,6 +195,27 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
             arr_out.push(itemID);
         }
 	};
+    
+    var string_quote = function(v)
+    {
+        var s;
+        if (typeof (v) == "string")
+            s = '"'+v+'"';
+        else // number
+            s = v.toString();
+        return s
+    }; 
+
+    var array_copy = function (arr_out, arr_in, start_index)
+    {
+        if (start_index == null)
+            start_index = 0
+            
+        var i, cnt=arr_in.length;
+        arr_out.length = cnt - start_index;        
+        for(i=start_index; i<cnt; i++)
+            arr_out[i-start_index] = arr_in[i];
+    };  
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -177,7 +269,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 		    
         this.exp_CurItemID = "";   		
 		return false;
-	};
+	};  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -196,23 +288,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
     Acts.prototype.Save = function (itemID, tag_)
 	{
 	    var self = this;
-	    
-	    // try add new item
-	    var on_read_itemID = function (snapshot)
-        {
-            if (snapshot.val() == null)  // itemID is not in itemID list, add it
-            {
-                // add itemID to list
-                wait_events += 1;
-	            self.get_itemID_ref(itemID)["set"](true, isDone_handler);
-            }
-            else  // itemID is existed
-            {
-            }
-            isDone_handler();
-        };
-	    // try add new item
-	    
+	   
 	    // wait done
         var wait_events = 0;
         var has_error = false;	    
@@ -234,17 +310,19 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	    };
 	    // wait done
 	    
-	    // try add new itemID into itemID list
+	    // add itemID into itemID list
 	    wait_events += 1;
-	    // check if itemID is in itemID list
-	    this.get_itemID_ref(itemID)["once"]("value", on_read_itemID);	
+	    this.get_itemID_ref(itemID)["set"](true, isDone_handler);
+	    // add key-value pairs		 
+	    var item_value, is_remove;   
 	    for (var k in this.save_item)
-	    {	        
-	        // add key-value
+	    {
+	        item_value = this.save_item[k];
 	        wait_events += 1;
-	        this.get_key_ref(itemID, k)["set"](this.save_item[k], isDone_handler);
+	        this.get_key_ref(itemID, k)["setWithPriority"](item_value, item_value, isDone_handler);
 	        wait_events += 1;
-	        this.get_keyIndex_ref()["child"](k)["set"](true, isDone_handler);
+	        is_remove = (item_value === null);
+	        this.get_itemID2Keys_ref(itemID)["child"](k)["set"]((is_remove)? null:true, isDone_handler);
 	    }
 		clean_table(this.save_item);	
 	};
@@ -254,39 +332,31 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	    var self = this;
 	    
 	    // try remove itemID
-	    var on_read_itemID = function (snapshot)
+	    var on_read_keys = function (snapshot)
         {
-            if (snapshot.val() == null)  // itemID is not in itemID list
+            var keys = snapshot.val();
+            if (keys == null)  // itemID is not existed
             {
             }
-            else  // itemID is existed, try remove it
+            else  // itemID is existed, get keys
             {
                 // remove itemID from list
                 wait_events += 1;
 	            self.get_itemID_ref(itemID)["remove"](isDone_handler);
-                // read keys list
-                wait_events += 1; 
-                self.get_keyIndex_ref()["once"]("value", on_read_keylist);
+                // remove itemID-key
+                wait_events += 1;
+	            self.get_itemID2Keys_ref(itemID)["remove"](isDone_handler);
+	            
+	            // remove keys from filters
+	            for(var k in keys)
+	            {
+                    wait_events += 1; 
+                    self.get_key_ref(itemID, k)["remove"](isDone_handler);
+                }
             }           
             isDone_handler();
         };
-	    // try remove itemID
-	    
-	    // remove keys
-	    var on_read_keylist = function (snapshot)
-        {   
-            var keys = snapshot.val();
-            if (keys != null)
-            {
-                for(var k in keys)
-                {
-                    wait_events += 1;
-	                self.get_key_ref(itemID, k)["remove"](isDone_handler);
-                }                
-            }
-            isDone_handler();
-        };
-	    // remove keys
+	    // try remove itemID	    
 	    
 	    // wait done
         var wait_events = 0;
@@ -309,12 +379,16 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	    };
 	    // wait done	    
 	    	    
-	    // try remove itemID from itemID list
+	    // read itemID-keys
 	    wait_events += 1;
-	    // check if itemID is in itemID list
-	    this.get_itemID_ref(itemID)["once"]("value", on_read_itemID);	    
+	    this.get_itemID2Keys_ref(itemID)["once"]("value", on_read_keys);   
 	};
 
+    Acts.prototype.RemoveKey = function (key_)
+	{
+		this.save_item[key_] = null;
+	};
+	
     Acts.prototype.GetRandomItems = function (pick_count, tag_)
 	{	    
 	    clean_table(this.request_itemIDs);
@@ -391,7 +465,87 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
             arr[i] = arr[j]; 
             arr[j] = temp;
         }
-    };		
+    };	
+
+    Acts.prototype.GetItemsByCondition = function (condition_expression, tag_)
+	{  
+        var filter = new cr.plugins_.Rex_Firebase_ItemFilter.FilterKlass(this);      
+        var self=this;
+        var on_complete = function(result)
+        {
+            clean_table(self.request_itemIDs);
+            for (var k in result)
+                self.request_itemIDs[k] = true;
+            self.trig_tag = tag_;		            
+		    self.runtime.trigger(cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRequestComplete, self); 	   
+			self.trig_tag = null;
+        }
+
+        filter.DoRequest(condition_expression, on_complete);
+	};
+	
+	var LIMITTYPE = ["limitToFirst", "limitToLast"];
+    Acts.prototype.GetItemsBySingleConditionInRange = function (key_, start, end, limit_type, limit_count, tag_)
+	{  
+	    clean_table(this.request_itemIDs);
+	    
+	    var self = this;
+        var read_item = function(childSnapshot)
+        {
+            var k = childSnapshot["key"]();
+            var v = childSnapshot["val"]();
+            self.request_itemIDs[k] = v;
+        };     
+        var on_read_itemIDs = function (snapshot)
+        {
+            snapshot["forEach"](read_item);
+            
+            self.trig_tag = tag_;		            
+		    self.runtime.trigger(cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRequestComplete, self); 	   
+			self.trig_tag = null;
+        };	    
+        	    
+	    var query = this.get_ref("filters")["child"](key_);
+        query = query["orderByPriority"]();
+	    query = query["startAt"](start)["endAt"](end);
+	    query = query[LIMITTYPE[limit_type]](limit_count);
+	    query["once"]("value", on_read_itemIDs);
+	};	
+	
+	var COMPARSION_TYPE = ["equalTo", "startAt", "endAt", "startAt", "endAt"];
+    Acts.prototype.GetItemsBySingleCondition = function (key_, comparsion_type, value_, limit_type, limit_count, tag_)
+	{  
+	    var is_exclusive = (comparsion_type == 3) || (comparsion_type == 4);
+	    var current_item_count=0, last_key = "";
+	    
+	    clean_table(this.request_itemIDs);
+	    
+	    var self = this;
+        var read_item = function(childSnapshot)
+        {
+            var k = childSnapshot["key"]();               
+            var v = childSnapshot["val"]();
+            
+            self.request_itemIDs[k] = v;
+            current_item_count += 1;
+        };     
+        var on_read_itemIDs = function (snapshot)
+        {
+            snapshot["forEach"](read_item);
+            
+            self.trig_tag = tag_;		            
+		    self.runtime.trigger(cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRequestComplete, self); 	   
+			self.trig_tag = null;
+        };	    
+        	    
+	    var query = this.get_ref("filters")["child"](key_);	  
+        query = query["orderByPriority"]();        
+	    query = query[COMPARSION_TYPE[comparsion_type]](value_);	    
+	    query = query[LIMITTYPE[limit_type]](limit_count);
+	    query["once"]("value", on_read_itemIDs);
+	};	
+	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -406,4 +560,265 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	{
 		ret.set_string(JSON.stringify(this.request_itemIDs));
 	};	
+
+    Exps.prototype.Equal = function (ret, key_, value_)
+	{
+        var code_string;
+        if (arguments.length == 3)
+        {        
+		    code_string = this.get_Equal_codeString(key_, value_);
+        }
+        else
+        {
+            var equals = [];
+            var i, cnt=arguments.length;
+            for (i=2; i<cnt; i++)
+            {
+                equals.push(this.get_Equal_codeString(key_, arguments[i]));
+            }
+            code_string = this.get_OR_codeString.apply(this, equals);
+        }
+        ret.set_string(code_string);
+	};
+    
+    Exps.prototype.GreaterEqual = function (ret, key_, value_)
+	{
+        ret.set_string(this.get_GreaterEqual_codeString(key_, value_));
+	};
+    
+    Exps.prototype.LessEqual = function (ret, key_, value_)
+	{
+        ret.set_string(this.get_LessEqual_codeString(key_, value_));
+	};    
+    
+    Exps.prototype.InRange = function (ret, key_, start_, end_)
+	{
+        ret.set_string(this.get_InRange_codeString(key_, start_, end_));
+	};    
+
+    Exps.prototype.Greater = function (ret, key_, value_)
+	{
+        var query_code_string = this.get_GreaterEqual_codeString(key_, value_);
+        var code_string = this.get_SUBVALUE_codeString(query_code_string, value_);
+        ret.set_string(code_string);
+	};
+    
+    Exps.prototype.Less = function (ret, key_, value_)
+	{
+        var query_code_string = this.get_LessEqual_codeString(key_, value_);
+        var code_string = this.get_SUBVALUE_codeString(query_code_string, value_);
+        ret.set_string(code_string);
+	};       
+    
+    Exps.prototype.OR = function (ret)
+	{
+        array_copy(ARGS_COPY, arguments, 1);
+        var code_string = this.get_OR_codeString.apply(this, ARGS_COPY);
+		ret.set_string(code_string);
+	};     
+    
+    Exps.prototype.AND = function (ret)
+	{
+        array_copy(ARGS_COPY, arguments, 1);
+        var code_string = this.get_AND_codeString.apply(this, ARGS_COPY);
+		ret.set_string(code_string);
+	};    
+    
+    Exps.prototype.SUB = function (ret)
+	{
+        array_copy(ARGS_COPY, arguments, 1);
+        var code_string = this.get_SUB_codeString.apply(this, ARGS_COPY);
+		ret.set_string(code_string);
+	};     
+}());
+
+
+(function ()
+{
+    var FilterKlass = function(plugin)
+    {
+        this.plugin = plugin;
+        
+        this.wait_events = 0;
+        this.on_complete = null;
+        this.current_groupUid = 0;
+        this.groups = {};
+        this.set_expression = "";
+    };
+    var FilterKlassProto = FilterKlass.prototype;
+    
+	FilterKlassProto.isDone_test = function(on_complete)
+	{    
+	    this.wait_events -= 1;
+        if (this.wait_events > 0)
+            return;
+            
+        // all jobs done 
+        var result_group = this.DoSetOperation(this.set_expression);        
+              
+	    if (on_complete != null)	        
+			on_complete(result_group);	    
+	};  
+
+    FilterKlassProto.NewGroupUID = function()
+    {
+        var current_group_uid = this.current_groupUid.toString();
+        this.groups[current_group_uid] = {};
+        this.current_groupUid += 1;
+        return current_group_uid;
+    };
+    
+    // picking cnditions
+    // export
+    FilterKlassProto["Query"] = function (query_typeName, key_, value0, value1)
+    {
+        // read handler
+        var current_group_uid = this.NewGroupUID();
+        var read_result = this.groups[current_group_uid];
+        
+        var self = this;
+        var read_item = function(childSnapshot)
+        {
+            var k = childSnapshot["key"]();
+            var v = childSnapshot["val"]();
+            read_result[k] = v;
+        };     
+        var on_read = function (snapshot)
+        {
+            snapshot["forEach"](read_item);
+            self.isDone_test(self.on_complete);
+        };
+        
+        // create query
+        this.wait_events += 1;
+        var query = this.plugin.get_ref("filters")["child"](key_);        
+        query = query["orderByPriority"]();
+        query = this[query_typeName](query, value0, value1);
+        query["once"]("value", on_read);
+        
+        var code_string = '(filter.groups["'+current_group_uid+'"])';
+        return code_string;
+    };
+    // export 
+    
+    FilterKlassProto["Equal"] = function (query, value_)
+    {
+        return query["equalTo"](value_);
+    };
+    FilterKlassProto["GreaterEqual"] = function (query, value_)
+    {
+        return query["startAt"](value_);
+    };  
+    FilterKlassProto["LessEqual"] = function (query, value_)
+    {
+        return query["endAt"](value_);
+    };    
+    FilterKlassProto["InRange"] = function (query, value0, value1)
+    {
+        return query["startAt"](value0)["endAt"](value1);
+    };     
+    // picking cnditions
+    
+    // set operations    
+    // export    
+    var params = [];
+    FilterKlassProto["AddSETOP"] = function (operation_name)
+    {
+        var i,cnt=arguments.length;
+        for (i=1; i<cnt; i++)
+            params.push(arguments[i]);
+        operation_name = '"'+operation_name+'"';
+        // TODO
+        var code_string = 'filter["SET"]('+operation_name+","+params.join(",")+")";
+        return code_string;
+    };
+    // export     
+    
+    FilterKlassProto["SET"] = function (operation_name)
+    {   
+        // arguments are group_uids
+        var i, cnt=arguments.length;
+        var groupA=arguments[1], groupB;
+        var itemID;
+        
+        for (i=2; i<cnt; i++)
+        {
+            groupB = arguments[i];
+            this[operation_name](groupA, groupB);
+        }
+        return groupA;        
+    };
+    FilterKlassProto["OR"] = function (setA, setB)
+    {
+        var k;
+        for (k in setB)
+            setA[k] = true;      
+    };
+    FilterKlassProto["AND"] = function (setA, setB)
+    {
+        var k;
+        for (k in setA)
+        {
+            if (!setB.hasOwnProperty(k))
+                delete setA[k];
+        }   
+    };    
+    FilterKlassProto["SUB"] = function (setA, setB)
+    {
+        var k;
+        for (k in setB)
+        {
+            if (setA.hasOwnProperty(k))
+                delete setA[k];
+        }   
+    };     
+    FilterKlassProto["SUB_VALUE"] = function (setA, value_)
+    {
+        var k;
+        for (k in setA)
+        {
+            if (setA[k] == value_)
+                delete setA[k];
+        }   
+    };     
+    // set operations
+    
+    // code string to handler
+    FilterKlassProto.DoRequest = function (condition_expression, on_complete)
+    {
+        this.current_groupUid = 0;
+        this.wait_events = 0;
+        
+        this.on_complete = on_complete;      
+        var code_string = "function(filter){\n return "+condition_expression +";\n}";
+        var request;        
+        try
+        {
+            request = eval("("+code_string+")");
+        }
+        catch(err)
+        {
+            request = null;
+        }
+        this.set_expression = request(this);
+    };
+    
+    FilterKlassProto.DoSetOperation = function (set_expression)
+    {
+        var code_string = "function(filter){\n return "+set_expression +";\n}";
+        var handler;
+        try
+        {
+            handler = eval("("+code_string+")");
+        }
+        catch(err)
+        {
+            handler = null;
+        }
+        var result_groupUid = handler(this); 
+        return result_groupUid;   
+    };
+    // code string to handler    
+    
+    cr.plugins_.Rex_Firebase_ItemFilter.FilterKlass = FilterKlass;
 }());
