@@ -35,7 +35,7 @@ AddCondition(11, cf_looping | cf_not_invertible, "For each rank", "Update - for 
 AddNumberParam("Start", "Start from rank index (0-based).", 0);  
 AddNumberParam("End", "End to rank index (0-based). This value should larger than Start.", 2);    
 AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Update - for each", 
-             "For each rank from rank <i>{0}</i> to <i>{1}</i>", 
+             "For each rank from <i>{0}</i> to <i>{1}</i>", 
              "Repeat the event for each rank in a range.", "ForEachRank");                     
 //////////////////////////////////////////////////////////////
 // Actions
@@ -51,15 +51,19 @@ AddAction(2, 0, "Update all", "Update",
           "Update all ranks", 
           "Update all ranks.", "UpdateAllRanks");
           
-//AddNumberParam("Count", "The count of top ranks.", 10);       
-//AddAction(3, 0, "Update top", "Update", 
-//          "Update top <i>{0}</i> ranks", 
-//          "Update top ranks.", "UpdateTopRanks");	
+AddNumberParam("Count", "The count of top ranks.", 10);       
+AddAction(3, 0, "Update top", "Update", 
+          "Update top <i>{0}</i> ranks", 
+          "Update top ranks.", "UpdateTopRanks");	
           
 AddStringParam("UserID", "UserID from authentication.", '""');
 AddAction(4, 0, "Remove post", "Remove", 
           "Remove post by User ID: <i>{0}</i>", 
-          "Remove post by User ID.", "RemovePost");          
+          "Remove post by User ID.", "RemovePost");
+          
+AddAction(5, 0, "Stop updating", "Update", 
+          "Stop updating", 
+          "Stop updating ranks.", "StopUpdating");                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current player name", "Update - for each", "CurPlayerName", 
@@ -96,7 +100,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
-    new cr.Property(ept_text, "ID", "", "ID of leader board."),  
+    new cr.Property(ept_text, "ID", "Leaderboard", 'ID of leader board, i.e. "Sub domain".'),  
 	new cr.Property(ept_combo, "Order", "Large to small", "Ranking order.", "Small to large|Large to small"), 
     new cr.Property(ept_combo, "Update", "Manual", "Manual update or auto update.", "Manual|Auto"), 
 	];
