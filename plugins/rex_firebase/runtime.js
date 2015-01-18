@@ -73,20 +73,23 @@ cr.plugins_.Rex_Firebase = function(runtime)
         this.onTransaction_cb = null;
         this.onTransaction_input = null;
         this.onTransaction_output = null;
+        // transaction completed
+        this.onTransaction_completed_cb = null;
+        this.onTransaction_committed = false;
+        this.onTransaction_committedValue = null;        
         // on complete
         this.onComplete_cb = null;
         this.onComplete_error = null;
         // reading
-        this.reading_cb_map = {"value":{},
-                               "child_added":{},
-                               "child_changed":{},
-                               "child_removed":{},
-                               "child_moved":{}
-                              };
+        this.callbackMap = new cr.plugins_.Rex_Firebase.CallbackMapKlass();
                               
         this.reading_cb = null;
         this.snapshot = null;
 		this.prevChildName = null;
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.propsections = [];       
+        /**END-PREVIEWONLY**/          
 	};
 	
 	instanceProto.get_ref = function(k)
@@ -95,7 +98,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	        k = "";
 	        
 	    var path;
-	    if (k.substring(4) == "http")
+	    if (k.substring(0,8) == "https://")
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
@@ -105,10 +108,11 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
     instanceProto.add_callback = function (refObj, type_, cb)
 	{
-	    var event_type = EVENTTYPEMAP[type_];	    
-	    if (this.reading_cb_map[event_type].hasOwnProperty(cb))
-	        return;
-	        
+        var absRef = refObj["toString"]();
+	    var eventType = EVENTTYPEMAP[type_];	
+        if (this.callbackMap.IsExisted(absRef, eventType, cb))
+            return;
+            
 	    var self = this;   
         var reading_handler = function (snapshot, prevChildName)
         {
@@ -118,13 +122,14 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
             self.reading_cb = null;            
         };
-        this.reading_cb_map[event_type][cb] = reading_handler;
-	    refObj["on"](event_type, reading_handler);                         
+	    refObj["on"](eventType, reading_handler); 
+
+        this.callbackMap.Add(absRef, eventType, cb, reading_handler);
 	}; 	
 	
     instanceProto.add_callback_once = function (refObj, type_, cb)
 	{
-	    var event_type = EVENTTYPEMAP[type_];	    
+	    var eventType = EVENTTYPEMAP[type_];	    
 
 	    var self = this;   
         var reading_handler = function (snapshot, prevChildName)
@@ -135,7 +140,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
             self.reading_cb = null; 
         };
-	    refObj["once"](event_type, reading_handler);                         
+	    refObj["once"](eventType, reading_handler);                         
 	}; 		
 	
 	var get_data = function(in_data, default_value)
@@ -158,7 +163,24 @@ cr.plugins_.Rex_Firebase = function(runtime)
         }	    
         return val;
 	};    
-	     
+
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+	    this.propsections.length = 0;
+        this.callbackMap.getDebuggerValues(this.propsections);        
+        
+		propsections.push({
+			"title": this.type.name,
+			"properties": this.propsections
+		});
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -194,12 +216,33 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
         var data =(this.onTransaction_input === null)? null: this.onTransaction_input;
 	    return (data === null);
+	}; 
+
+	Cnds.prototype.IsTransactionAborted = function ()
+	{
+	    return (!this.onTransaction_committed);
+	};     
+    
+	Cnds.prototype.OnTransactionComplete = function (cb)
+	{
+	    return cr.equals_nocase(cb, this.onTransaction_completed_cb);
+	}; 	
+
+	Cnds.prototype.OnTransactionError = function (cb)
+	{
+	    return cr.equals_nocase(cb, this.onTransaction_completed_cb);
 	};   
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-	
+      
+    Acts.prototype.SetDomainRef = function (ref)
+	{
+	    this.rootpath = ref + "/"; 
+	}; 	
+    
 	var onComplete_get = function (self, onComplete_cb)
 	{
 	    if ((onComplete_cb === null) || (onComplete_cb === ""))
@@ -253,6 +296,21 @@ cr.plugins_.Rex_Firebase = function(runtime)
     Acts.prototype.Transaction = function (k, onTransaction_cb, onComplete_cb)
 	{ 
         var self = this;  
+
+	    var _onComplete = function(error, committed, snapshot) 
+	    {
+	        self.onTransaction_completed_cb = onComplete_cb;    
+	        self.onComplete_error = error; 
+            self.onTransaction_committed = committed;
+            self.onTransaction_committedValue = snapshot["val"]();
+            
+	        var trig = (error)? cr.plugins_.Rex_Firebase.prototype.cnds.OnTransactionError:
+	                            cr.plugins_.Rex_Firebase.prototype.cnds.OnTransactionComplete;
+	        self.runtime.trigger(trig, self); 
+	        self.onTransaction_completed_cb = null;
+	        self.onComplete_error = null;   
+        };
+        
         var _onTransaction = function(current_value)
         {
             self.onTransaction_cb = onTransaction_cb;	  
@@ -260,9 +318,12 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.onTransaction_output = null;
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnTransaction, self); 
             self.onTransaction_cb = null;
-            return self.onTransaction_output;
+            
+            if (self.onTransaction_output === null)
+                return;
+            else
+                return self.onTransaction_output;
         };
-        var _onComplete = onComplete_get(this, onComplete_cb);
 	    this.get_ref(k)["transaction"](_onTransaction, _onComplete);
 	};
 	
@@ -282,32 +343,53 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    this.get_ref(k)["remove"](handler);
 	}; 	
     
-    Acts.prototype.AddReadingCallback = function (k, type_, cb)
+    Acts.prototype.AddReadingCallback = function (k, type_, cbName)
 	{
-	    this.add_callback(this.get_ref(k), type_, cb);                        
+	    this.add_callback(this.get_ref(k), type_, cbName);                        
 	}; 		
 	
-    Acts.prototype.RemoveReadingCallback = function (k, type_, cb)
+    Acts.prototype.RemoveReadingCallback = function (k, type_, cbName)
 	{
-	    var event_type, reading_handler;	    
-	    if (type_ !== null)
+        var absRef = this.get_ref(k)["toString"]();
+	    if ((k != null) && (type_ != null) && (cbName != null))
 	    {
-	        event_type = EVENTTYPEMAP[type_];
-	    }
-	    if ((type_ !== null) && (cb !== null))
-	    {
-	        event_type = EVENTTYPEMAP[type_];	
-	        reading_handler = this.reading_cb_map[event_type][cb];
-	        if (reading_handler == null)
+	        var eventType = EVENTTYPEMAP[type_];	            
+            var callback = this.callbackMap.GetCallback(absRef, eventType, cbName)	        
+	        if (callback == null)
 	            return;
+                
+            this.get_ref(k)["off"](eventType, callback);  
+            this.callbackMap.Remove(absRef, eventType, cbName);
 	    }
+	    
+	    else if ((k != null) && (type_ != null) && (cbName == null))
+	    {
+	        var eventType = EVENTTYPEMAP[type_];
+            this.get_ref(k)["off"](eventType);  
+            this.callbackMap.Remove(absRef, eventType);
+	    }
+        
+	    else if ((k != null) && (type_ == null) && (cbName == null))
+	    {
+	        this.get_ref(k)["off"]();  
+            this.callbackMap.Remove(absRef);            
+	    }              
 
-	    this.get_ref(k)["off"](event_type, reading_handler);                         
+        else if ((k == null) && (type_ == null) && (cbName == null))
+        {
+            var refMap = this.callbackMap.GetRefMap();
+            var r;
+            for (r in refMap)
+            {
+                this.get_ref(r)["off"](); 
+                delete refMap[r];
+            }
+        };
 	};
 	
-    Acts.prototype.AddReadingCallbackOnce = function (k, type_, cb)
+    Acts.prototype.AddReadingCallbackOnce = function (k, type_, cbName)
 	{
-	    this.add_callback_once(this.get_ref(k), type_, cb);                        
+	    this.add_callback_once(this.get_ref(k), type_, cbName);                        
 	}; 
 
     Acts.prototype.RemoveRefOnDisconnect = function (k)
@@ -336,28 +418,32 @@ cr.plugins_.Rex_Firebase = function(runtime)
             
         return query.GetQuery();
     };
-    Acts.prototype.AddQueryCallback = function (queryObjs, type_, cb)
+    Acts.prototype.AddQueryCallback = function (queryObjs, type_, cbName)
 	{
         var refObj = get_query(queryObjs);
         if (refObj == null)
             return;
             
-        this.add_callback(refObj, type_, cb);                        
+        this.add_callback(refObj, type_, cbName);                        
 	};	
 
-    Acts.prototype.AddQueryCallbackOnce = function (queryObjs, type_, cb)
+    Acts.prototype.AddQueryCallbackOnce = function (queryObjs, type_, cbName)
 	{
         var refObj = get_query(queryObjs);
         if (refObj == null)
             return;
             	    
-	   this.add_callback_once(refObj, type_, cb);   
+	   this.add_callback_once(refObj, type_, cbName);   
 	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-
+	
+	Exps.prototype.Domain = function (ret)
+	{
+		ret.set_string(this.rootpath);
+	}; 
 	
 	Exps.prototype.TransactionIn = function (ret, default_value)
 	{	
@@ -380,15 +466,115 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{	
 		ret.set_any(get_data(this.prevChildName, default_value));
 	};	
+
+	Exps.prototype.TransactionResult = function (ret, default_value)
+	{	
+		ret.set_any(get_data(this.onTransaction_committedValue, default_value));
+	};
 	
 	Exps.prototype.LastPushRef = function (ret)
 	{
 		ret.set_string(this.last_push_ref);
-	}; 
-	
-	Exps.prototype.TIMESTAMP = function (ret)
-	{
-		ret.set_int(this.fb["ServerValue"]["TIMESTAMP"]);
-	}; 
+	};  
 	
 }());
+
+(function ()
+{
+    var CallbackMapKlass = function ()
+    {
+        this.map = {};
+    };
+    
+    var CallbackMapKlassProto = CallbackMapKlass.prototype;
+
+    CallbackMapKlassProto.IsExisted = function (absRef, eventType, cbName)
+    {
+        if (!this.map.hasOwnProperty(absRef))
+            return false;
+        var eventMap = this.map[absRef];
+        if (!eventMap.hasOwnProperty(eventType))
+            return false;
+            
+        var cbMap = eventMap[eventType];
+        if (!cbMap.hasOwnProperty(cbName))
+            return false;
+        
+        return true;     
+    };
+    
+	CallbackMapKlassProto.Add = function(absRef, eventType, cbName, cb)
+	{
+        if (!this.map.hasOwnProperty(absRef))
+            this.map[absRef] = {};
+        
+        var eventMap = this.map[absRef];
+        if (!eventMap.hasOwnProperty(eventType))
+            eventMap[eventType] = {};
+
+        var cbMap = eventMap[eventType];
+        cbMap[cbName] = cb;
+	};
+        
+	CallbackMapKlassProto.GetCallback = function(absRef, eventType, cbName)
+	{
+        if (!this.IsExisted(absRef, eventType, cbName))
+            return null;
+    
+        return this.map[absRef][eventType][cbName];
+	};   
+
+	CallbackMapKlassProto.Remove = function(absRef, eventType, cbName)
+	{
+        if (absRef && eventType && cbName)
+        {
+            if (!this.IsExisted(absRef, eventType, cbName))
+                return;
+            delete this.map[absRef][eventType][cbName];
+        }
+        else if (absRef && eventType && !cbName)
+        {
+            var eventMap = this.map[absRef];
+            if (!eventMap)
+                return;
+            var cbMap = eventMap[eventType];
+            if (!cbMap)
+                return;
+                
+            delete this.map[absRef][eventType];
+        }
+        else if (absRef && !eventType && !cbName)
+        {
+            var eventMap = this.map[absRef];
+            if (!eventMap)
+                return;
+  
+            delete this.map[absRef];
+        }    
+	}; 
+
+    CallbackMapKlassProto.getDebuggerValues = function (propsections)
+    {
+        var r, eventMap, e, cbMap, cn, display;
+        for (r in this.map)
+        {
+            eventMap = this.map[r];
+            for (e in eventMap)
+            {
+                cbMap = eventMap[e];
+                for (cn in cbMap)
+                {
+                    display = cn+":"+e+"-"+r;
+                    propsections.push({"name": display, "value": ""});
+                }
+            }
+        }
+    };
+    
+    CallbackMapKlassProto.GetRefMap = function ()
+    {
+        return this.map;
+    };    
+    
+	cr.plugins_.Rex_Firebase.CallbackMapKlass = CallbackMapKlass;
+}()); 

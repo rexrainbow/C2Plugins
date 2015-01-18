@@ -44,8 +44,28 @@ AddCondition(5, 0, "LastData is null", "Receive",
 AddCondition(6, 0, "TransactionIn is null", "Transaction", 
              "TransactionIn is null", 
              "Return true if TransactionIn is null.", "TransactionInIsNull");  
+             
+AddCondition(7, 0, "TransactionIn aborted", "Transaction - completed", 
+             "Transaction is aborted", 
+             "Return true if the last transaction is aborted.", "IsTransactionAborted");    
+
+AddStringParam("Callback function", "Callback function.", '"_"');
+AddCondition(8, cf_trigger, "On complete", "Transaction - completed", 
+            "On transaction complete <b>{0}</b>", 
+            "Triggered after any transaction success.", "OnTransactionComplete"); 
+                  
+AddStringParam("Callback function", "Callback function.", '"_"');
+AddCondition(9, cf_trigger, "On error", "Transaction - completed", 
+            "On transaction error <b>{0}</b>", 
+            "Triggered after any transaction  error.", "OnTransactionError");     
+            
 //////////////////////////////////////////////////////////////
 // Actions     
+AddStringParam("Domain", "The Firebase data ref URL", '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain ref to <i>{0}</i>", 
+          "Set domain ref.", "SetDomainRef");
+          
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddAnyTypeParam("Value", "The value to set", 0);
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
@@ -172,6 +192,10 @@ AddStringParam("JSON value", "JSON value to set", '"{}"');
 AddAction(33, 0, "Update JSON", "On disconnect", 
           "Update JSON <i>{1}</i> at <i>{0}</i> when disconnected", 
           'Updates JSON values at the data ref when disconnected. Uses under "condition: On received".', "UpdateJSONOnDisconnect");    
+          
+AddAction(34, 0, "Remove all callbacks", "Receive - Remove", 
+          "Remove all registered received callbacks", 
+          "Remove all registered received callbacks.", "RemoveReadingCallback");
 
 // get query from Firebase_Query plugin
 AddObjectParam("Query", "Query object.");
@@ -199,6 +223,8 @@ AddAction(52, 0, "Add callback once", "Query",
           "Add received callback once.", "AddQueryCallbackOnce");          
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(0, ef_return_string, "Get root location reference", "Domain", "Domain", 
+              "Get root location reference.");
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Transaction input", "Send - Transaction", "TransactionIn", 
               'Transaction input parameter, using under "condition:On transaction", JSON will be stringified. Add default value at 1st parameter if read data is null.');
 AddExpression(2, ef_return_any | ef_variadic_parameters, "Receive data", "Receive", "LastData", 
@@ -207,11 +233,11 @@ AddExpression(3, ef_return_any | ef_variadic_parameters, "Receive data", "Receiv
               'Key of received data, using under "condition:On received"');	  
 AddExpression(4, ef_return_any | ef_variadic_parameters, "Previous child name", "Receive", "PrevChildName", 
               'Previous child name, using under "condition:On received" with one of "Child added", "Child changed", "Child moved" type. Add default value at 1st parameter if read data is null.');
+AddExpression(5, ef_return_any | ef_variadic_parameters, "Transaction result", "Send - Transaction", "TransactionResult", 
+              'Transaction wrote result, using under "condition:On completed", JSON will be stringified. Add default value at 1st parameter if read data is null.');              
 AddExpression(11, ef_return_string, "Last push ref", "Push", "LastPushRef", 
               "Data reference at last push.");
-AddExpression(12, ef_return_number, "Timestamp", "Server value", "TIMESTAMP", 
-              "A placeholder value for auto-populating the current timestamp (time since the Unix epoch, in milliseconds) by the Firebase servers."); 
-              
+
 ACESDone();
 
 // Property grid properties for this plugin

@@ -75,7 +75,7 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 	        k = "";
 	        
 	    var path;
-	    if (k.substring(4) == "http")
+	    if (k.substring(0,8) == "https://")
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
