@@ -89,7 +89,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	        k = "";
 	        
 	    var path;
-	    if (k.substring(4) == "http")
+	    if (k.substring(0,8) == "https://")
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
@@ -196,7 +196,24 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
       
     Acts.prototype.SetValue = function (key_, value_)
 	{
-		this.save_item[key_] = value_;
+        var save_value;
+        if (typeof(value_) == "string")
+        {
+            try
+            {
+	            save_value = JSON.parse(value_);
+            }
+            catch(err)
+            {
+                save_value = value_;
+            }
+        }
+        else
+        {
+            save_value = value_;
+        }
+            
+		this.save_item[key_] = save_value;
 	};
 	
     Acts.prototype.SetBooleanValue = function (key_, is_true)
@@ -356,14 +373,18 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
-    var boolean2value = function (vin)
-    {
-        var v = vin;
-	    if (v === true)
-	        v = 1;
-	    else if (v === false)
-	        v = 0;
-	    return v;
+    var parse_itemValue = function (vin)
+    {        
+        var vout;
+	    if (vin === true)
+	        vout = 1;
+	    else if (vin === false)
+	        vout = 0;
+        else if (typeof(vin) == "object")
+            vout = JSON.stringify(vin);
+        else
+            vout = vin;
+	    return vout;
     };
     
     Exps.prototype.CurItemID = function (ret)
@@ -384,7 +405,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
     Exps.prototype.CurValue = function (ret)
 	{
 	    var v = this.exp_CurValue;
-	    v = boolean2value(v);
+	    v = parse_itemValue(v);
 		ret.set_any(v);
 	};	
 		
@@ -395,7 +416,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    if (item_props)
 	    {
 	        v = item_props[key_];
-	        v = boolean2value(v);	        
+	        v = parse_itemValue(v);	        
 	    }
 	    
 	    if (v == null)

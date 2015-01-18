@@ -53,7 +53,7 @@ AddCondition(13, cf_looping | cf_not_invertible, "For each key", "Load",
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key", "The name of the key.", '""');
-AddAnyTypeParam("Value", "The value to set", 0);
+AddAnyTypeParam("Value", "The value to set, could be number or (JSON) string.", 0);
 AddAction(1, 0, "Set value", "Set item", 
           "Set key <i>{0}</i> to  <i>{1}</i> in current item", 
           "Set value into current item.", "SetValue");
