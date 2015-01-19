@@ -39,6 +39,12 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Up
              "Repeat the event for each rank in a range.", "ForEachRank");                     
 //////////////////////////////////////////////////////////////
 // Actions
+AddStringParam("Domain", "The root location of the Firebase data.", '""');
+AddStringParam("ID", 'ID of leader board, i.e. "Sub domain".', '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain to <i>{0}</i>, ID to <i>{1}</i>", 
+          "Set domain ref.", "SetDomainRef");
+
 AddStringParam("UserID", "UserID from authentication.", '""');
 AddStringParam("Name", "Player name.", '""');
 AddAnyTypeParam("Score", "Player Score", 0);

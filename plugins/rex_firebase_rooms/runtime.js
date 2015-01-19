@@ -1465,13 +1465,19 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.onItemAdd = null;
         this.onItemRemove = null;
         this.onItemChange = null;
-        this.onItemsFetch = null;
+        this.onItemsFetch = null;   // manual update, to get all items
         this.onGetIterItem = null;  // used in ForEachItem
         // export: overwrite these values
         
         this.query = null;
         this.items = [];
-        this.itemID2Index = {};  
+        this.itemID2Index = {}; 
+        
+        
+        // saved callbacks
+        this.add_child_handler = null;
+        this.remove_child_handler = null;
+        this.change_child_handler = null;
     };
     
     var ItemListKlassProto = ItemListKlass.prototype;    
@@ -1482,9 +1488,14 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         return this.items;
     };
     
+    ItemListKlassProto.GetItemIndexByID = function (itemID)
+    {
+        return this.itemID2Index[itemID];
+    };     
+    
     ItemListKlassProto.GetItemByID = function (itemID)
     {
-        var i = this.itemID2Index[itemID];
+        var i = this.GetItemIndexByID(itemID);
         if (i == null)
             return null;
             
@@ -1499,13 +1510,9 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     
     ItemListKlassProto.StartUpdate = function (query)
     {
-        this.StopUpdate();
-            
-        this.query = query;
-        this.Clean();
-        
-        var self = this;
-        
+        this.StopUpdate();            
+        this.Clean();        
+        var self = this;        
         if (this.isAutoUpdate)
         {
 	        var add_child_handler = function (newSnapshot, prevName)
@@ -1536,6 +1543,11 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	        query["on"]("child_removed", remove_child_handler);
 	        query["on"]("child_moved", change_child_handler);
 	        query["on"]("child_changed", change_child_handler);  
+	        
+	        this.query = query;
+            this.add_child_handler = add_child_handler;
+            this.remove_child_handler = remove_child_handler;
+            this.change_child_handler = change_child_handler;	        
         }
         else
         {
@@ -1558,7 +1570,17 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     ItemListKlassProto.StopUpdate = function ()
 	{
         if (this.query)
-            this.query["off"]();
+        {
+            this.query["off"]("child_added", this.add_child_handler);
+	        this.query["off"]("child_added", this.add_child_handler);
+	        this.query["off"]("child_removed", this.remove_child_handler);
+	        this.query["off"]("child_moved", this.change_child_handler);
+	        this.query["off"]("child_changed", this.change_child_handler);
+            this.add_child_handler = null;
+            this.remove_child_handler = null;
+            this.change_child_handler = null;	
+            //this.query["off"]();
+        }
         this.query = null;
 	};	
 	

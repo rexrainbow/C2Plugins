@@ -67,18 +67,12 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";
 	    
 		this.ranking_order = this.properties[2];
-	    this.update_mode = this.properties[3];
 	    
-	    this.exp_CurPlayerRank = -1;
-	    this.exp_CurRankCol = null;
+	    this.ranks = this.create_ranks(this.properties[3]==1);
+	    
+	    this.exp_CurRankCol = null;	    	    
+	    this.exp_CurPlayerRank = -1;	    
 	    this.exp_PostPlayerName = "";
-	    	    
-	    this.post_ref = null;
-	    this.ranks = [];	
-	    this.UserID2rank = {};
-	    
-	    // auto mode
-	    this.update_all_ranks_handler = null;	   
 	};
 	
 	instanceProto.get_ref = function(k)
@@ -95,160 +89,48 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
         return new window["Firebase"](path);
 	};
 	
-	instanceProto.get_post_ref = function()
+	instanceProto.create_ranks = function(isAutoUpdate)
 	{
-	    if (this.post_ref == null)
-	        this.post_ref = this.get_ref();
+	    var ranks = new window.FirebaseItemListKlass();
 	    
-	    return this.post_ref;
-	};			
-	       
-	instanceProto.update_UserID2Rank = function()
-	{
-	    clean_table(this.UserID2rank);
-	    var i,cnt = this.ranks.length;
-	    for (i=0; i<cnt; i++)
+	    ranks.isAutoUpdate = isAutoUpdate;
+	    ranks.keyItemID = "userID";
+	    
+	    var self = this;
+	    var on_update = function()
 	    {
-	        this.UserID2rank[this.ranks[i]["userID"]] = i;
-	    }	
-	};    
-    
-	instanceProto.add_rank = function(snapshot, prevName, force_push)
-	{
-	    var k = snapshot["key"]();
-	    var v = snapshot["val"]();
-	    v["userID"] = k;
+	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
+	    };	    
+	    ranks.onItemsFetch = on_update;
+        ranks.onItemAdd = on_update;
+        ranks.onItemRemove = on_update;
+        ranks.onItemChange = on_update;
         
-        if (force_push === true)
-        {
-            this.ranks.push(v);
-            return;
-        }
-        
-	    if (prevName == null)
+	    var onGetIterItem = function(item, i)
 	    {
-            this.ranks.unshift(v);
-        }
-        else
-        {
-            var i = this.UserID2rank[prevName];
-            if (i == this.ranks.length-1)
-                this.ranks.push(v);
-            else
-                this.ranks.splice(i+1, 0, v);
-        }
-	}; 
+	        self.exp_CurRankCol = item;
+	        self.exp_CurPlayerRank = i;
+	    };
+	    ranks.onGetIterItem = onGetIterItem; 
+	           
+        return ranks;
+    };
 	
-	instanceProto.remove_rank = function(snapshot)
-	{
-	    var k = snapshot["key"]();
-	    var i = this.UserID2rank[k];
-	    cr.arrayRemove(this.ranks, i);
-	};
-
     instanceProto.update_ranks = function (count)
 	{
-	    var ref = this.get_ref();
-        ref["off"]();
-        this.ranks.length = 0; 
-	    
+	    var query = this.get_ref();
 		if (count == -1)  // update all
 		{
 	         // no filter
 		}
 		else
 		{
-		    ref = ref["orderByPriority"]()["limitToFirst"](count);
+		    query = query["orderByPriority"]()["limitToFirst"](count);
 		}
-			
-	    if (this.update_mode == 0)    // manual
-	    {	      
-            var self = this;
-            var read_item = function(childSnapshot)
-            {
-	            self.add_rank(childSnapshot, null, true);
-            };            
-            var handler = function (snapshot)
-            {           
-                snapshot["forEach"](read_item);                
-                self.update_UserID2Rank();                
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
-            };
-        
-	        
-			ref["once"]("value", handler);
-	    }
-	    else    // auto
-	    {        
-	        var self = this;	        
-	        var add_child_handler = function (newSnapshot, prevName)
-	        {
-	            self.add_rank(newSnapshot, prevName);
-	            self.update_UserID2Rank();
-	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
-	        };
-	        var remove_child_handler = function (snapshot)
-	        {
-	            self.remove_rank(snapshot);
-	            self.update_UserID2Rank();
-	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
-	        };      	        
-	        var change_child_handler = function (snapshot, prevName)
-	        {
-	            self.remove_rank(snapshot);
-	            self.update_UserID2Rank();
-	            self.add_rank(snapshot, prevName);
-	            self.update_UserID2Rank();
-	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnUpdate, self); 
-	        };
-	        
-	        ref["on"]("child_added", add_child_handler);
-	        ref["on"]("child_removed", remove_child_handler);
-	        ref["on"]("child_moved", change_child_handler);
-	        ref["on"]("child_changed", change_child_handler);
-	    }
+		
+		this.ranks.StartUpdate(query);
 	}; 
 	
-	instanceProto.rank_info_get = function(i)
-	{
-	    return this.ranks[i];
-	};		
-	
-	instanceProto.for_each_bank_in_range = function (start, end)
-	{	     
-        var current_frame = this.runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-		         
-		var i;
-		for(i=start; i<=end; i++)
-		{
-            if (solModifierAfterCnds)
-            {
-                this.runtime.pushCopySol(current_event.solModifiers);
-            }
-            
-            this.exp_CurPlayerRank = i;
-            this.exp_CurRankCol = this.rank_info_get(i);
-            current_event.retrigger();
-            
-		    if (solModifierAfterCnds)
-		    {
-		        this.runtime.popSol(current_event.solModifiers);
-		    }            
-		}
-		             
-        this.exp_CurRankCol = null;       		
-		return false;
-	};
-	
-	var clean_table = function (o)
-	{
-	    var k;
-	    for (k in o)
-	        delete o[k];
-	}	
-		
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -268,21 +150,22 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	}; 	 
 	Cnds.prototype.ForEachRank = function (start, end)
 	{	     
-	    if ((start == null) || (start < 0))
-	        start = 0; 
-	    if ((end == null) || (end > this.ranks.length - 1))
-	        end = this.ranks.length - 1;
-
-		return this.for_each_bank_in_range(start, end);
+		return this.ranks.ForEachItem(this.runtime, start, end);
 	};  	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
- 
+        
+    Acts.prototype.SetDomainRef = function (ref, ID_)
+	{
+	    this.ranks.StopUpdate();
+	    this.rootpath = ref + "/" + ID_ + "/";
+	}; 
+	
     Acts.prototype.PostScore = function (userID, name, score, extra_data)
 	{	    
-        var ref = this.get_post_ref();
+        var ref = this.get_ref();
 	        
 	    var self = this;
 	    var onComplete = function(error) 
@@ -330,14 +213,14 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	
     Acts.prototype.RemovePost = function (userID)
 	{	    
-	    var ref = this.get_post_ref();
+	    var ref = this.get_ref();
 	    ref["child"](userID)["remove"]();
 	};	
 	
       
     Acts.prototype.StopUpdating = function ()
 	{
-        this.get_ref()["off"]();
+        this.ranks.StopUpdate();
 	};	
 	//////////////////////////////////////
 	// Expressions
@@ -408,11 +291,11 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	
 	Exps.prototype.RankCount = function (ret)
 	{
-		ret.set_int(this.ranks.length);
+		ret.set_int(this.ranks.GetItems().length);
 	}; 	
 	Exps.prototype.UserID2Rank = function (ret, userID)
 	{
-	    var rank = this.UserID2rank[userID];
+	    var rank = this.ranks.GetItemIndexByID(userID);
 	    if (rank == null)
 	        rank = -1;    
 		ret.set_int(rank);
@@ -420,20 +303,249 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	   	
 	Exps.prototype.Rank2PlayerName = function (ret, i)
 	{
-	    var rank_info = this.rank_info_get(i);
+	    var rank_info = this.ranks.GetItems[i];
 	    var name = (!rank_info)? "":rank_info["name"];
 		ret.set_string(name);
 	};
 	Exps.prototype.Rank2PlayerScore = function (ret, i)
 	{
-	    var rank_info = this.rank_info_get(i);    
+	    var rank_info = this.ranks.GetItems[i];
 	    var score = (!rank_info)? "":rank_info["score"];
 		ret.set_any(score);
 	};	
 	Exps.prototype.Rank2ExtraData = function (ret, i)
 	{
-	    var rank_info = this.rank_info_get(i);	    
+	    var rank_info = this.ranks.GetItems[i];
 	    var extra_data = (!rank_info)? "":rank_info["extra"];
 		ret.set_any(extra_data);
 	};						 	
 }());
+
+(function ()
+{
+    if (window.FirebaseItemListKlass != null)
+        return;    
+    
+    var ItemListKlass = function ()
+    {
+        // export: overwrite these values
+        this.isAutoUpdate = true;
+        this.keyItemID = "__itemID__";
+        this.snapshot2Item = null;
+        this.onItemAdd = null;
+        this.onItemRemove = null;
+        this.onItemChange = null;
+        this.onItemsFetch = null;   // manual update, to get all items
+        this.onGetIterItem = null;  // used in ForEachItem
+        // export: overwrite these values
+        
+        this.query = null;
+        this.items = [];
+        this.itemID2Index = {}; 
+        
+        
+        // saved callbacks
+        this.add_child_handler = null;
+        this.remove_child_handler = null;
+        this.change_child_handler = null;
+    };
+    
+    var ItemListKlassProto = ItemListKlass.prototype;    
+    
+    // export
+    ItemListKlassProto.GetItems = function ()
+    {
+        return this.items;
+    };
+    
+    ItemListKlassProto.GetItemIndexByID = function (itemID)
+    {
+        return this.itemID2Index[itemID];
+    };     
+    
+    ItemListKlassProto.GetItemByID = function (itemID)
+    {
+        var i = this.GetItemIndexByID(itemID);
+        if (i == null)
+            return null;
+            
+        return this.items[i];
+    };  
+    
+    ItemListKlassProto.Clean = function ()
+    {
+        this.items.length = 0;
+        clean_table(this.itemID2Index); 
+    };        
+    
+    ItemListKlassProto.StartUpdate = function (query)
+    {
+        this.StopUpdate();            
+        this.Clean();        
+        var self = this;        
+        if (this.isAutoUpdate)
+        {
+	        var add_child_handler = function (newSnapshot, prevName)
+	        {
+	            var item = self.add_item(newSnapshot, prevName);
+	            self.update_itemID2Index();
+	            if (self.onItemAdd)
+	                self.onItemAdd(item);
+	        };
+	        var remove_child_handler = function (snapshot)
+	        {
+	            var item = self.remove_item(snapshot);
+	            self.update_itemID2Index();
+	            if (self.onItemRemove)
+	                self.onItemRemove(item);
+	        };      	        
+	        var change_child_handler = function (snapshot, prevName)
+	        {
+	            var item = self.remove_item(snapshot);
+	            self.update_itemID2Index();
+	            self.add_item(snapshot, prevName);
+	            self.update_itemID2Index();
+	            if (self.onItemChange)
+	                self.onItemChange(item); 
+	        };
+	        
+	        query["on"]("child_added", add_child_handler);
+	        query["on"]("child_removed", remove_child_handler);
+	        query["on"]("child_moved", change_child_handler);
+	        query["on"]("child_changed", change_child_handler);  
+	        
+	        this.query = query;
+            this.add_child_handler = add_child_handler;
+            this.remove_child_handler = remove_child_handler;
+            this.change_child_handler = change_child_handler;	        
+        }
+        else
+        {
+            var read_item = function(childSnapshot)
+            {
+	            self.add_item(childSnapshot, null, true);
+            };            
+            var handler = function (snapshot)
+            {           
+                snapshot["forEach"](read_item);                
+                self.update_itemID2Index();   
+                if (self.onItemsFetch)
+                    self.onItemsFetch(self.items)
+            };
+        
+			query["once"]("value", handler);
+        }        
+    };
+    
+    ItemListKlassProto.StopUpdate = function ()
+	{
+        if (this.query)
+        {
+            this.query["off"]("child_added", this.add_child_handler);
+	        this.query["off"]("child_added", this.add_child_handler);
+	        this.query["off"]("child_removed", this.remove_child_handler);
+	        this.query["off"]("child_moved", this.change_child_handler);
+	        this.query["off"]("child_changed", this.change_child_handler);
+            this.add_child_handler = null;
+            this.remove_child_handler = null;
+            this.change_child_handler = null;	
+            //this.query["off"]();
+        }
+        this.query = null;
+	};	
+	
+	ItemListKlassProto.ForEachItem = function (runtime, start, end)
+	{	     
+	    if ((start == null) || (start < 0))
+	        start = 0; 
+	    if ((end == null) || (end > this.items.length - 1))
+	        end = this.items.length - 1;
+	    
+        var current_frame = runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		         
+		var i;
+		for(i=start; i<=end; i++)
+		{
+            if (solModifierAfterCnds)
+            {
+                runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            if (this.onGetIterItem)
+                this.onGetIterItem(this.items[i], i);
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        runtime.popSol(current_event.solModifiers);
+		    }            
+		}
+     		
+		return false;
+	};    	    
+	// export
+    
+    ItemListKlassProto.add_item = function(snapshot, prevName, force_push)
+	{
+	    var item;
+	    if (this.snapshot2Item)
+	        item = this.snapshot2Item(snapshot);
+	    else
+	    {
+	        var k = snapshot["key"]();
+	        var item = snapshot["val"]();
+	        item[this.keyItemID] = k;
+	    }
+        
+        if (force_push === true)
+        {
+            this.items.push(item);
+            return;
+        }        
+	        
+	    if (prevName == null)
+	    {
+            this.items.unshift(item);
+        }
+        else
+        {
+            var i = this.itemID2Index[prevName];
+            if (i == this.items.length-1)
+                this.items.push(item);
+            else
+                this.items.splice(i+1, 0, item);
+        }
+        
+        return item;
+	};
+	
+	ItemListKlassProto.remove_item = function(snapshot)
+	{
+	    var k = snapshot["key"]();
+	    var i = this.itemID2Index[k];	 
+	    var item = this.items[i];
+	    cr.arrayRemove(this.items, i);
+	    return item;
+	};	  
+
+	ItemListKlassProto.update_itemID2Index = function()
+	{
+	    clean_table(this.itemID2Index);
+	    var i,cnt = this.items.length;
+	    for (i=0; i<cnt; i++)
+	    {
+	        this.itemID2Index[this.items[i][this.keyItemID]] = i;
+	    }	
+	};
+		  
+	var clean_table = function (o)
+	{
+	    var k;
+	    for (k in o)
+	        delete o[k];
+	};
+	
+	window.FirebaseItemListKlass = ItemListKlass;
+}()); 
