@@ -41,7 +41,12 @@ AddCondition(4, 0, "Compare last counter value", "Add",
              
 AddCondition(5, cf_trigger, "On my writing abort", "Add", 
             "On my writing abort",
-            "Triggered when my writing abort.", "OnMyWritingAbort");                                    
+            "Triggered when my writing abort.", "OnMyWritingAbort");  
+
+AddStringParam("Function", "Function for increasing counter.", '"_"');
+AddCondition(21, cf_trigger, "On custom add", "Custom add", 
+            "On custom add function: <i>{0}</i>",
+            "Custom add function.", "OnAddFn");              
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1, 0, "Start", "Update", 
@@ -66,7 +71,20 @@ AddAction(11, 0, "Try add to", "Add",
 AddNumberParam("Value", "Value to set.", 0);
 AddAction(12, 0, "Force set to", "Set", 
           "Force set value to <i>{0}</i>", 
-          "Force set value, it will cancel any pending adding action.", "ForceSet");                
+          "Force set value, it will cancel any pending adding action.", "ForceSet"); 
+
+AddStringParam("Function", "Function for increasing counter.", '"_"');
+AddAction(21, 0, "Try add by function", "Custom add", 
+          "Try add by function: <i>{0}</i>", 
+          "Try add by function.", "CustomAddByFn");     
+AddNumberParam("Value", 'Value to add. Positive or negative number.', 1);
+AddAction(22, 0, "Add to", "Custom add", 
+          "Custom add: add <i>{0}</i>", 
+          'Try add to, used under "Condition:On custom add".', "CustomAddAdd");
+AddAction(23, 0, "Abort", "Custom add", 
+          "Custom add:: abort", 
+          'Abort current action, used under "Condition:On custom add".', "CustomAddAbort");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get last value", "Counter", "LastValue", 
@@ -76,13 +94,16 @@ AddExpression(2, ef_return_number, "Get my last wrote value", "Add", "LastWroteV
 AddExpression(3, ef_return_number, "Get my last added value", "Add", "LastAddedValue", 
               'Get my last added value. Valid under "condition:On my writing".');              
               
+AddExpression(21, ef_return_number, "Get current value", "Custom add", "CustomAddIn", 
+              'Get current value, used under "Condition:On custom add".');
+              
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
     new cr.Property(ept_text, "Sub domain", "Counter", "Sub domain for this function."),
-    new cr.Property(ept_float, "Init", 0, "Init value if counter value is null."),
+    new cr.Property(ept_float, "Initial", 0, "Initial value if counter value is null."),
     new cr.Property(ept_text, "Upper bound", "", 'Upper bound of counter, "" is none. Counter value will be clamped at upper bound.'),         
 	];
 	

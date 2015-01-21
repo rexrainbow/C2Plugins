@@ -67,10 +67,17 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 	    
 	    this.set_init(this.properties[2], this.properties[3]);
 	    
-	    this.last_transactionIn = null;
+	    this.exp_LastTransactionIn = null;
         this.exp_LastValue = this.init_value;
         this.exp_MyLastWroteValue = null;
         this.exp_MyLastAddedValue = 0;
+        
+        // custom add
+        this.onCustomAdd_cb = "";
+        
+        
+        this.query = null;
+        this.read_value_handler = null;
 	};
 	
     instanceProto.set_init = function (init_value, upper_bound)
@@ -118,7 +125,41 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	        
         return new window["Firebase"](path);
 	};
-	
+
+	instanceProto.clamp_result = function(current_value, wrote_value)
+	{    
+	    // no upper bound
+	    if (!this.has_bound())	     	            
+	        return wrote_value;	        
+
+	    // has upper bound
+        // current value is equal to upper bound
+	    else if (this.upper_bound == current_value)
+	        return null;   // Abort the transaction
+	            
+	    else
+	    {
+	        if (this.upper_bound > this.init_value)
+	        {
+	            if (wrote_value <= this.upper_bound)
+	                return wrote_value;
+	            else if (wrote_value > this.upper_bound)
+	                return this.upper_bound;
+	            else
+	                return null;   // Abort the transaction
+	        }
+	        else // (this.upper_bound < this.init_value)
+	        {
+	            if (wrote_value >= this.upper_bound)
+	                return wrote_value;
+	            else if (wrote_value < this.upper_bound)
+	                return this.upper_bound;	        
+	            else
+	                return null;   // Abort the transaction            
+	        }
+	    }
+    };
+            
 	instanceProto.on_transaction_complete = function(error, committed, snapshot) 
     {
         if (error)
@@ -131,10 +172,43 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
         else
         {
             this.exp_MyLastWroteValue = snapshot["val"]();
-            this.exp_MyLastAddedValue = this.exp_MyLastWroteValue - this.last_transactionIn;
+            this.exp_MyLastAddedValue = this.exp_MyLastWroteValue - this.exp_LastTransactionIn;
             this.runtime.trigger(cr.plugins_.Rex_Firebase_Counter.prototype.cnds.OnMyWriting, this);
         }
-    }; 		     
+    }; 
+    
+    instanceProto.start_update = function ()
+	{	    
+	    this.stop_update();
+	    
+	    var self = this;
+	    var on_read = function (snapshot)
+	    {
+	        var counter_value = snapshot["val"]();
+	        if (counter_value == null)
+	            counter_value = self.init_value;
+	            
+	        self.exp_LastValue = counter_value;
+	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Counter.prototype.cnds.OnUpdate, self); 
+	    };
+	    
+	    var query = this.get_ref();
+	    query["on"]("value", on_read);
+	    
+	    this.query = query;
+	    this.read_value_handler = on_read;	    
+	};
+ 
+    instanceProto.stop_update = function ()
+	{
+	    if (this.query)
+	    {
+	        this.query["off"]("value", this.read_value_handler);
+	        this.read_value_handler = null;
+	        //this.get_ref()["off"]();
+	        this.query = null;
+	    }	    
+	};    		     
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -166,7 +240,11 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	{
 	    return true;
 	};		
-	
+			
+	Cnds.prototype.OnAddFn = function (cb)
+	{
+	    return cr.equals_nocase(cb, this.onCustomAdd_cb);
+	};		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -174,22 +252,12 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
  
     Acts.prototype.StartUpdate = function ()
 	{	    
-	    var self = this;
-	    var on_read = function (snapshot)
-	    {
-	        var counter_value = snapshot["val"]();
-	        if (counter_value == null)
-	            counter_value = self.init_value;
-	            
-	        self.exp_LastValue = counter_value;
-	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Counter.prototype.cnds.OnUpdate, self); 
-	    };
-	    this.get_ref()["on"]("value", on_read);
+	    this.start_update();   
 	};
  
     Acts.prototype.StopUpdate = function ()
 	{
-	    this.get_ref()["off"]();
+	    this.stop_update();    
 	};	 
  
     Acts.prototype.SetInit = function (init_value, upper_bound)
@@ -224,40 +292,14 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	        if (current_value == null)
 	            current_value = self.init_value;
 	        
-	        self.last_transactionIn = current_value;
+	        self.exp_LastTransactionIn = current_value;                       
 	        var added_value = get_value(value_, current_value);
-	        var wrote_value = current_value + added_value;           	        
-	        
-	        // no upper bound
-	        if (!self.has_bound())	     	            
-	            return wrote_value;	        
-
-	        // has upper bound
-            // current value is equal to upper bound
-	        else if (self.upper_bound == current_value)
-	            return;   // Abort the transaction
-	            
-	        else
-	        {
-	            if (self.upper_bound > self.init_value)
-	            {
-	                if (wrote_value <= self.upper_bound)
-	                    return wrote_value;
-	                else if (wrote_value > self.upper_bound)
-	                    return self.upper_bound;
-	                else
-	                    return;   // Abort the transaction
-	            }
-	            else // (self.upper_bound < self.init_value)
-	            {
-	                if (wrote_value >= self.upper_bound)
-	                    return wrote_value;
-	                else if (wrote_value < self.upper_bound)
-	                    return self.upper_bound;	        
-	                else
-	                    return;   // Abort the transaction            
-	            }
-	        }	        
+	        var wrote_value = current_value + added_value;    
+	        var result = self.clamp_result(current_value, wrote_value);	       
+            if (result == null)
+                return;          // Abort the transaction
+            else
+                return result;         
 	    };
 	    this.get_ref()["transaction"](on_add, on_complete);
 	};
@@ -266,6 +308,55 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	{
 	    this.get_ref()["set"](value_);
 	};		
+    
+    Acts.prototype.CustomAddByFn = function (cb)
+	{
+	    var self = this;        
+        
+	    var on_complete = function(error, committed, snapshot) 
+	    {
+	        self.on_transaction_complete(error, committed, snapshot) ;
+        };
+        
+        var get_value = function (current_value)
+        {
+	        self.exp_LastTransactionIn = current_value;
+            self.transactionOut = null;
+            self.onCustomAdd_cb = cb;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Counter.prototype.cnds.OnAddFn, self);
+            return self.transactionOut;
+        };
+        	    
+	    var on_add = function (current_value)
+	    {	        
+	        if (current_value == null)
+	            current_value = self.init_value;
+	        
+	        var added_value = get_value(current_value);
+            if (added_value == null)
+                return;   // Abort the transaction
+                
+	        var wrote_value = current_value + added_value;    
+	        var result = self.clamp_result(current_value, wrote_value);	       
+            if (result == null)
+                return;          // Abort the transaction
+            else
+                return result;       
+	    };
+	    this.get_ref()["transaction"](on_add, on_complete);
+	};  
+	
+    Acts.prototype.CustomAddAdd = function (value_)
+	{
+	    this.transactionOut = value_;        
+	};
+	
+    Acts.prototype.CustomAddAbort = function ()
+	{
+	    this.transactionOut = null;        
+	};    
+    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -284,5 +375,11 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	Exps.prototype.LastAddedValue = function (ret)
 	{
 		ret.set_float(this.exp_MyLastAddedValue);
-	}; 	
+	}; 
+	
+	Exps.prototype.CustomAddIn = function (ret)
+	{
+		ret.set_float(this.exp_LastTransactionIn);
+	}; 
+	
 }());
