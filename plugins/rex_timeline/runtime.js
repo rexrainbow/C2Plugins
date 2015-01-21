@@ -368,6 +368,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.rex_function_objUid = o["rexFnUid"];
         this.last_real_time = o["lrt"];
         
+        this.onDestroy();
         this.timer_cache_clean();
 	};     
 
@@ -406,6 +407,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
 	    this.propsections.length = 0;
 	    this.propsections.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
+        
+        var name, timer;
+        for (name in this.timers)
+        {
+            timer = this.timers[name];
+            this.propsections.push({"name": name, "value": timer._cb.command});
+        }
+        
 
 		propsections.push({
 			"title": this.type.name,
