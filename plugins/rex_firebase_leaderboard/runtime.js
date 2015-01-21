@@ -450,8 +450,9 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
             this.remove_child_handler = null;
             this.change_child_handler = null;	
             //this.query["off"]();
+            
+            this.query = null;
         }
-        this.query = null;
 	};	
 	
 	ItemListKlassProto.ForEachItem = function (runtime, start, end)
