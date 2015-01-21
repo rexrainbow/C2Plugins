@@ -134,7 +134,7 @@ AddNumberParam("Life period", "0=Temporary, 1=Persisted.", 0);
 AddNumberParam("Door state", "0=Closed, 1=Open.", 1);
 AddNumberParam("oin permission", "0=Anyone, 1=Black list, 2=White list.", 0);
 AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""');
-AddAction(13, 0, "Create (number parameters)", "Room", 
+AddAction(13, 0, "Create (#)", "Room", 
           "Create <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
           "Create room.", "CreateRoom");                        
           
@@ -148,6 +148,35 @@ AddAction(16, 0, "Leave", "Room",
           "Leave current room", 
           "Leave current room.", "LeaveRoom"); 
           
+AddStringParam("Name", "Room name.", '""');
+AddStringParam("Type", 'Room type. "public", "private", or others.', '"public"');
+AddNumberParam("Max peers", "The maximum number of peers that can join this room. Leave 0 for unlimited.", 0);
+AddComboParamOption("Temporary");
+AddComboParamOption("Persisted");
+AddComboParam("Life period ", "Life period of this room.", 0);
+AddComboParamOption("Closed");
+AddComboParamOption("Open");
+AddComboParam("Door state", "Door state of this room.", 1);
+AddComboParamOption("Anyone");
+AddComboParamOption("Black list");
+AddComboParamOption("White list");
+AddComboParam("Join permission", "Join permission.", 0);
+AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""');
+AddAction(17, 0, "Create or join", "Room", 
+          "Create or join <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
+          "Try create room, or join the room if existed.", "CreateOrJoinRoom");           
+          
+AddStringParam("Name", "Room name.", '""');
+AddStringParam("Type", 'Room type. "public", "private", or others.', '"public"');
+AddNumberParam("Max peers", "The maximum number of peers that can join this room. Leave 0 for unlimited.", 0);
+AddNumberParam("Life period", "0=Temporary, 1=Persisted.", 0);
+AddNumberParam("Door state", "0=Closed, 1=Open.", 1);
+AddNumberParam("oin permission", "0=Anyone, 1=Black list, 2=White list.", 0);
+AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""');
+AddAction(18, 0, "Create or join (#)", "Room", 
+          "Create <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
+          "Create room.", "CreateOrJoinRoom"); 
+                    
 //AddStringParam("Room ID", "Room ID.", '""');
 //AddComboParamOption("Anyone");
 //AddComboParamOption("Creater");
@@ -165,7 +194,7 @@ AddAction(22, 0, "Stop updating", "Room list",
           "Request - Stop updating rooms list", 
           "Stop updating opened rooms list.", "StopUpdatingOpenRoomsList");   
           
-AddStringParam("Message", "Message.", '""');          
+AddStringParam("Message", "Message.", '""');
 AddAction(41, 0, "Broadcast", "Message", 
           "Broadcast message: <i>{0}</i>", 
           "Broadcast message.", "BroadcastMessage");
@@ -259,8 +288,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),  // 0
-    new cr.Property(ept_text, "Sub domain", "Rooms", "Sub domain for this function."),   // 1
+    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
+    new cr.Property(ept_text, "Sub domain", "Rooms", "Sub domain for this function."),
+    new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),    
 	];
 	
 // Called by IDE when a new object type is to be created
