@@ -164,6 +164,7 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
     {
         if (error)
         {
+            this.runtime.trigger(cr.plugins_.Rex_Firebase_Counter.prototype.cnds.OnMyWritingError, this);            
         }
         else if (!committed)
         {
@@ -244,7 +245,13 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	Cnds.prototype.OnAddFn = function (cb)
 	{
 	    return cr.equals_nocase(cb, this.onCustomAdd_cb);
+	};	
+			
+	Cnds.prototype.OnMyWritingError = function ()
+	{
+	    return true;
 	};		
+		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

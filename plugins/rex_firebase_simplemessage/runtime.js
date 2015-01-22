@@ -1,4 +1,14 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+senderID - userID of sender
+senderName - name of sender
+message - message, string or json object in string
+stamp - true or false, toggled after each sent
+
+# message would be cleaned if user had left
+*/
+
+
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");

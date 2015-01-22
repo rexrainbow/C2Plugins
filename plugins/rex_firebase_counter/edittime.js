@@ -42,6 +42,10 @@ AddCondition(4, 0, "Compare last counter value", "Add",
 AddCondition(5, cf_trigger, "On my writing abort", "Add", 
             "On my writing abort",
             "Triggered when my writing abort.", "OnMyWritingAbort");  
+            
+AddCondition(6, cf_trigger, "On my writing error", "Add", 
+            "On my writing error",
+            "Triggered when my writing error.", "OnMyWritingError");              
 
 AddStringParam("Function", "Function for increasing counter.", '"_"');
 AddCondition(21, cf_trigger, "On custom add", "Custom add", 
