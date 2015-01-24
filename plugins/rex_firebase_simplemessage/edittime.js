@@ -4,7 +4,7 @@
 		"name":			"Simple message",
 		"id":			"Rex_Firebase_SimpleMessage",
 		"version":		"0.1",        
-		"description":	"Broadcast message to all clients.",
+		"description":	"Send message to ID.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_simplemessage.html",
 		"category":		"Rex - Web - firebase",
@@ -22,24 +22,26 @@ AddCondition(1, cf_trigger, "On receive", "Message",
             "Triggered when received message.", "OnReceivedMessage");                   
 //////////////////////////////////////////////////////////////
 // Actions      
-AddStringParam("UserID", "UserID from authentication.", '""');
-AddStringParam("Name", "Player name.", '""');
+AddStringParam("Sender ID", "Sender ID.", '""');
+AddStringParam("Sender name", "Sender name.", '""');
 AddAction(1, 0, "Set user", "User info", 
-          "Set user name to <i>{1}</i>, user ID to <i>{0}</i>", 
+          "Set sender name to <i>{1}</i>, sender ID to <i>{0}</i>", 
           "Set user info.", "SetUserInfo");
-          
+
+AddStringParam("Receiver ID", "ID of receiver.", '""');          
 AddAction(11, 0, "Start", "Update", 
-          "Start update", 
-          "Start update.", "StartUpdate");
+          "Start receiving on ID <i>{0}</i>", 
+          "Start receiving.", "StartUpdate");
           
 AddAction(12, 0, "Stop", "Update", 
-          "Stop update", 
-          "Stop update.", "StopUpdate");  
+          "Stop receiving", 
+          "Stop receiving.", "StopUpdate");  
 
+AddStringParam("Send to ID", "Send to ID.", '""');
 AddStringParam("Message", "Message. String or JSON string for object.", '""');
-AddAction(21, 0, "Broadcast", "Message", 
-          "Broadcast message: <i>{0}</i>", 
-          "Broadcast message.", "BroadcastMessage");          
+AddAction(21, 0, "Send", "Message", 
+          "Send message: <i>{1}</i> to ID: <i>{0}</i>", 
+          "Send message.", "SendMessage");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Lest sender ID", "Message", "LastSenderID", 
@@ -54,9 +56,8 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
-    new cr.Property(ept_text, "Sub domain", "Message", "Sub domain for this function."),
+    new cr.Property(ept_text, "Sub domain", "private message", "Sub domain for this function."),
     new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),
-    new cr.Property(ept_combo, "Initial update", "Start", "Whether to initially have the updating starting or stopped.", "Stop|Start")
 	];
 	
 // Called by IDE when a new object type is to be created

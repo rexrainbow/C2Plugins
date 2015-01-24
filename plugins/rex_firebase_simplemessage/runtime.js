@@ -1,14 +1,4 @@
-﻿/*
-senderID - userID of sender
-senderName - name of sender
-message - message, string or json object in string
-stamp - true or false, toggled after each sent
-
-# message would be cleaned if user had left
-*/
-
-
-// ECMAScript 5 strict mode
+﻿// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");
@@ -75,17 +65,15 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";
-        var init_start = (this.properties[3] == 1);
         
-        this.userID = null;
-        this.userName = null;
+        this.userID = "";
+        this.userName = "";
+        this.lastReceiverID = "";
         
         var message_type = this.properties[2];
-        this.simple_message = this.create_simpleMessage(message_type, this.get_ref());
-        this.exp_LastMessage = null;
-        
-        if (init_start)
-            this.simple_message.StartUpdate(); 
+        this.inBox = this.create_inBox(message_type);
+        this.outPort = new window.FirebaseSimpleMessageKlass(message_type);
+        this.exp_LastMessage = null;        
 	};
 	
 	instanceProto.get_ref = function(k)
@@ -103,7 +91,7 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	};
 	
 	
-    instanceProto.create_simpleMessage = function (message_type, ref)
+    instanceProto.create_inBox = function (message_type)
 	{    
 	    var self = this;
 	    var on_received = function(d)
@@ -115,9 +103,28 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	    
 	    var simple_message = new window.FirebaseSimpleMessageKlass(message_type);
 	    simple_message.onReceived = on_received;
-        simple_message.SetRef(ref);
         
         return simple_message;
+    };
+    
+    instanceProto.send_message = function (receiverID, message)
+	{  
+	    if (this.lastReceiverID != receiverID)
+	    {
+            var ref = this.get_ref(receiverID);	        	    
+	        this.outPort.SetRef(ref);
+	    }
+	    
+	    if (message == null)
+	    {
+	        // clean message
+	        this.outPort.Send();  
+	    }
+	    else
+	    {
+	        this.outPort.Send(message, this.userID, this.userName);    
+	    }
+	  
     };
   
 	//////////////////////////////////////
@@ -140,19 +147,33 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
         this.userID = userID;
         this.userName = userName; 
 	};    
-    Acts.prototype.StartUpdate = function ()
-	{	    
-	    this.simple_message.StartUpdate();   
+    Acts.prototype.StartUpdate = function (receiverID)
+	{	   
+	    if (receiverID == "")
+	        return;
+	    
+	    var ref = this.get_ref(receiverID);
+	    this.inBox.StartUpdate(ref);   
 	};
  
     Acts.prototype.StopUpdate = function ()
 	{
-	    this.simple_message.StopUpdate();    
+	    this.inBox.StopUpdate();    
 	};
 
-    Acts.prototype.BroadcastMessage = function (message)
+    Acts.prototype.SendMessage = function (receiverID, message)
 	{
-	    this.simple_message.Send(message, this.userID, this.userName);
+	    if (receiverID == "")
+	        return;
+	        
+	    if ((this.lastReceiverID != "") && (this.lastReceiverID != receiverID))
+	    {
+	        // clean message since receiver had changed
+	        this.send_message(this.lastReceiverID, null);
+	    }
+	    	    
+        this.send_message(receiverID, message);
+        this.lastReceiverID = receiverID;        
 	};       
 	//////////////////////////////////////
 	// Expressions
@@ -231,6 +252,14 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
     {
         if (this.ref == null)
             return;
+            
+        
+        // clean message
+        if ((message == null) && (senderID == null) && (senderName == null))
+        {
+            this.ref["remove"]();       
+            return;
+        }
         
         if (this.messageType == MESSAGE_JSON)
             message = JSON.parse(s); 
