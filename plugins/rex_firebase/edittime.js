@@ -122,7 +122,25 @@ AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
 AddAction(9, 0, "Remove", "Send - Remove", 
           "Remove all values at <i>{0}</i>, on complete callback to <i>{1}</i>",     
-          "Remove all values at data ref.", "Remove");          
+          "Remove all values at data ref.", "Remove");
+          
+AddStringParam("DataRef", "The Firebase data ref URL", '""');
+AddComboParamOption("False");
+AddComboParamOption("True");
+AddComboParam("Boolean", "Boolean value.", 1);
+AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
+AddAction(10, 0, "Set boolean value", "Send - Set", 
+          "Set <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>", 
+          "Sets boolean value at data ref.", "SetBooleanValue");  
+
+AddStringParam("DataRef", "The Firebase data ref URL", '""');
+AddComboParamOption("False");
+AddComboParamOption("True");
+AddComboParam("Boolean", "Boolean value.", 1);
+AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
+AddAction(4, 0, "Push value", "Send - Push", 
+          "Push <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>",   
+          "Push boolean value at data ref.", "PushBooleanValue");                          
           
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddComboParamOption("Value changed");

@@ -1,4 +1,13 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<userID>
+    headers\  
+        object
+        
+    bodies\
+        object
+*/
+
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");

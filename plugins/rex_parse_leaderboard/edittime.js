@@ -35,7 +35,7 @@ AddCondition(11, cf_looping | cf_not_invertible, "For each rank", "Update - for 
 AddNumberParam("Start", "Start from rank index (0-based).", 0);  
 AddNumberParam("End", "End to rank index (0-based). This value should larger than Start.", 2);    
 AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Update - for each", 
-             "For each rank from rank <i>{0}</i> to <i>{1}</i>", 
+             "For each rank from index <i>{0}</i> to <i>{1}</i>", 
              "Repeat the event for each rank in a range.", "ForEachRank");  
 
 //////////////////////////////////////////////////////////////

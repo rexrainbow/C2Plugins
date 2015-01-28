@@ -27,9 +27,19 @@ AddCondition(2, cf_trigger, "On owner changed", "Token",
             
 AddCondition(3, 0, "Is owner", "Token", 
             "Is owner", 
-            "Return true if thie client owns the token.", "IsOwner");      
+            "Return true if thie client owns the token.", "IsOwner");     
+            
+AddCondition(4, cf_trigger, "On release token", "Token", 
+            "On release token", 
+            "Triggered when release the token.", "OnReleaseToken");             
 //////////////////////////////////////////////////////////////
 // Actions
+AddStringParam("Domain", "The root location of the Firebase data.", '""');
+AddStringParam("Sub domain", "Sub domain for this function.", '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
+          "Set domain ref.", "SetDomainRef");
+          
 AddStringParam("User ID", "Key of User ID.", '""');
 AddAction(1, 0, "Join", "Group", 
           "Join into group with user ID:<i>{0}</i>", 

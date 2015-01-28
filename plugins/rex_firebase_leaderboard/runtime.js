@@ -303,19 +303,19 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	   	
 	Exps.prototype.Rank2PlayerName = function (ret, i)
 	{
-	    var rank_info = this.ranks.GetItems[i];
+	    var rank_info = this.ranks.GetItems()[i];
 	    var name = (!rank_info)? "":rank_info["name"];
 		ret.set_string(name);
 	};
 	Exps.prototype.Rank2PlayerScore = function (ret, i)
 	{
-	    var rank_info = this.ranks.GetItems[i];
+	    var rank_info = this.ranks.GetItems()[i];
 	    var score = (!rank_info)? "":rank_info["score"];
 		ret.set_any(score);
 	};	
 	Exps.prototype.Rank2ExtraData = function (ret, i)
 	{
-	    var rank_info = this.ranks.GetItems[i];
+	    var rank_info = this.ranks.GetItems()[i];
 	    var extra_data = (!rank_info)? "":rank_info["extra"];
 		ret.set_any(extra_data);
 	};						 	
@@ -337,6 +337,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
         this.onItemChange = null;
         this.onItemsFetch = null;   // manual update, to get all items
         this.onGetIterItem = null;  // used in ForEachItem
+        this.extra = {};
         // export: overwrite these values
         
         this.query = null;
@@ -434,7 +435,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
             };
         
 			query["once"]("value", handler);
-        }        
+        }
     };
     
     ItemListKlassProto.StopUpdate = function ()
@@ -442,7 +443,6 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
         if (this.query)
         {
             this.query["off"]("child_added", this.add_child_handler);
-	        this.query["off"]("child_added", this.add_child_handler);
 	        this.query["off"]("child_removed", this.remove_child_handler);
 	        this.query["off"]("child_moved", this.change_child_handler);
 	        this.query["off"]("child_changed", this.change_child_handler);
@@ -450,9 +450,8 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
             this.remove_child_handler = null;
             this.change_child_handler = null;	
             //this.query["off"]();
-            
-            this.query = null;
         }
+        this.query = null;
 	};	
 	
 	ItemListKlassProto.ForEachItem = function (runtime, start, end)

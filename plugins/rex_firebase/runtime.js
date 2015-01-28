@@ -342,7 +342,20 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    var handler = onComplete_get(this, onComplete_cb);	    
 	    this.get_ref(k)["remove"](handler);
 	}; 	
-    
+
+    Acts.prototype.SetBooleanValue = function (k, b, onComplete_cb)
+	{
+	    var handler = onComplete_get(this, onComplete_cb);
+	    this.get_ref(k)["set"]((b==1), handler);
+	};	
+	
+    Acts.prototype.PushBooleanValue = function (k, b, onComplete_cb)
+	{
+	    var handler = onComplete_get(this, onComplete_cb);
+	    var ref = this.get_ref(k)["push"]((b==1), handler);
+		this.last_push_ref = k + "/" +  ref["key"]();
+	}; 	
+		
     Acts.prototype.AddReadingCallback = function (k, type_, cbName)
 	{
 	    this.add_callback(this.get_ref(k), type_, cbName);                        

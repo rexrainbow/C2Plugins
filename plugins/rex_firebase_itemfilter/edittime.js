@@ -47,6 +47,12 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Request",
              "Repeat the event for each itemID of request result.", "ForEachItemID"); 			
 //////////////////////////////////////////////////////////////
 // Actions
+AddStringParam("Domain", "The root location of the Firebase data.", '""');
+AddStringParam("Sub domain", "Sub domain for this function.", '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
+          "Set domain ref.", "SetDomainRef");
+          
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set", 0);
 AddAction(1, 0, "Set value", "Set item", 

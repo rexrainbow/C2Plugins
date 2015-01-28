@@ -53,6 +53,12 @@ AddCondition(21, cf_trigger, "On custom add", "Custom add",
             "Custom add function.", "OnAddFn");              
 //////////////////////////////////////////////////////////////
 // Actions
+AddStringParam("Domain", "The root location of the Firebase data.", '""');
+AddStringParam("Sub domain", "Sub domain for this function.", '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
+          "Set domain ref.", "SetDomainRef");
+          
 AddAction(1, 0, "Start", "Update", 
           "Start update", 
           "Start update.", "StartUpdate");

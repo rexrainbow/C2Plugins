@@ -22,6 +22,12 @@ AddCondition(1, cf_trigger, "On receive", "Message",
             "Triggered when received message.", "OnReceivedMessage");                   
 //////////////////////////////////////////////////////////////
 // Actions      
+AddStringParam("Domain", "The root location of the Firebase data.", '""');
+AddStringParam("Sub domain", "Sub domain for this function.", '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
+          "Set domain ref.", "SetDomainRef");
+          
 AddStringParam("Sender ID", "Sender ID.", '""');
 AddStringParam("Sender name", "Sender name.", '""');
 AddAction(1, 0, "Set user", "User info", 

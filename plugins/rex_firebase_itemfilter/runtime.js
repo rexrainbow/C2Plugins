@@ -274,7 +274,12 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-	
+
+    Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
+	{
+		this.rootpath = domain_ref + "/" + sub_domain_ref + "/";
+	};
+		
     Acts.prototype.SetValue = function (key_, value_)
 	{
 		this.save_item[key_] = value_;

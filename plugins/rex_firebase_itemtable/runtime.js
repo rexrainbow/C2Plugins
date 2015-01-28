@@ -103,6 +103,41 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 		for (k in o)
 		    delete o[k];
 	};
+    
+    var din = function (d)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };
+    
+    var dout = function (d)
+    {
+        var o;
+        if (typeof(d) == "string")	
+        {        
+            try
+            {
+	            o = JSON.parse(d) 
+            }
+            catch(err)
+            {
+                o = d;
+            } 
+        }
+        else
+        {
+            o = d;
+        }
+        return o;
+    };     
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -194,26 +229,16 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
       
+	
+    Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
+	{
+		this.rootpath = domain_ref + "/" + sub_domain_ref + "/"; 
+		clean_table(this.load_items);
+	};
+	      
     Acts.prototype.SetValue = function (key_, value_)
 	{
-        var save_value;
-        if (typeof(value_) == "string")
-        {
-            try
-            {
-	            save_value = JSON.parse(value_);
-            }
-            catch(err)
-            {
-                save_value = value_;
-            }
-        }
-        else
-        {
-            save_value = value_;
-        }
-            
-		this.save_item[key_] = save_value;
+		this.save_item[key_] = dout(value_);
 	};
 	
     Acts.prototype.SetBooleanValue = function (key_, is_true)
@@ -373,20 +398,6 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
-    var parse_itemValue = function (vin)
-    {        
-        var vout;
-	    if (vin === true)
-	        vout = 1;
-	    else if (vin === false)
-	        vout = 0;
-        else if (typeof(vin) == "object")
-            vout = JSON.stringify(vin);
-        else
-            vout = vin;
-	    return vout;
-    };
-    
     Exps.prototype.CurItemID = function (ret)
 	{
 		ret.set_string(this.exp_CurItemID);
@@ -405,7 +416,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
     Exps.prototype.CurValue = function (ret)
 	{
 	    var v = this.exp_CurValue;
-	    v = parse_itemValue(v);
+	    v = din(v);
 		ret.set_any(v);
 	};	
 		
@@ -416,7 +427,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    if (item_props)
 	    {
 	        v = item_props[key_];
-	        v = parse_itemValue(v);	        
+	        v = din(v);	        
 	    }
 	    
 	    if (v == null)

@@ -192,7 +192,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		         "pr": this._pat_rank,
 		         "spats": this._shadow_patterns,
 		         "rstf": this.restart_gen_flg,
-                 "randomuid":randomGenUid};
+                 "randomuid":randomGenUid
+                 };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -284,6 +285,18 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this.restart_gen_flg = true; 
 	};
 	
+	Acts.prototype.JSONLoad = function (json_)
+	{
+		var o;
+		
+		try {
+			o = JSON.parse(json_);
+		}
+		catch(e) { return; }
+		
+		this.loadFromJSON(o);		
+	};
+		
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
         var random_gen = random_gen_objs.instances[0];
@@ -315,4 +328,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		ret.set_string(this.get_pattern(pattern));
 	};
 	
+	Exps.prototype.AsJSON = function (ret)
+	{
+		ret.set_string(JSON.stringify(this.saveToJSON()));
+	};
 }());

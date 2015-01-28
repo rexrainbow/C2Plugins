@@ -141,7 +141,13 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-    
+
+    Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
+	{
+	    this.inBox.StopUpdate();
+		this.rootpath = domain_ref + "/" + sub_domain_ref + "/";
+	};
+	    
     Acts.prototype.SetUserInfo = function (userID, userName)
 	{	    
         this.userID = userID;
@@ -262,7 +268,7 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
         }
         
         if (this.messageType == MESSAGE_JSON)
-            message = JSON.parse(s); 
+            message = JSON.parse(message); 
         
         var d = {
             "message": message,

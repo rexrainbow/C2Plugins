@@ -1446,6 +1446,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.onItemChange = null;
         this.onItemsFetch = null;   // manual update, to get all items
         this.onGetIterItem = null;  // used in ForEachItem
+        this.extra = {};
         // export: overwrite these values
         
         this.query = null;
@@ -1543,7 +1544,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             };
         
 			query["once"]("value", handler);
-        }        
+        }
     };
     
     ItemListKlassProto.StopUpdate = function ()
@@ -1551,7 +1552,6 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         if (this.query)
         {
             this.query["off"]("child_added", this.add_child_handler);
-	        this.query["off"]("child_added", this.add_child_handler);
 	        this.query["off"]("child_removed", this.remove_child_handler);
 	        this.query["off"]("child_moved", this.change_child_handler);
 	        this.query["off"]("child_changed", this.change_child_handler);
@@ -1696,6 +1696,14 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     {
         if (this.ref == null)
             return;
+            
+        
+        // clean message
+        if ((message == null) && (senderID == null) && (senderName == null))
+        {
+            this.ref["remove"]();       
+            return;
+        }
         
         if (this.messageType == MESSAGE_JSON)
             message = JSON.parse(s); 
@@ -1757,4 +1765,4 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     };  
         	
 	window.FirebaseSimpleMessageKlass = SimpleMessageKlass;
-}());   
+}());

@@ -83,10 +83,10 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
     instanceProto.set_init = function (init_value, upper_bound)
 	{
 	    this.init_value = init_value;
-	    if (upper_bound == "")
+	    if ((upper_bound == "") || (upper_bound == '""'))
 	        upper_bound = null;
 	    else if (typeof (upper_bound) == "string")
-	            upper_bound = parseFloat(upper_bound);
+	        upper_bound = parseFloat(upper_bound);
 	    
 	    this.upper_bound = upper_bound;      
 	    this.set_range(this.init_value, this.upper_bound);
@@ -257,6 +257,11 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
+    Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
+	{
+		this.rootpath = domain_ref + "/" + sub_domain_ref + "/";
+	};
+	
     Acts.prototype.StartUpdate = function ()
 	{	    
 	    this.start_update();   
@@ -271,11 +276,7 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 	{
 	    this.set_init(init_value, upper_bound);
 	};	 	
- 
-    Acts.prototype.SetUpperBound = function (upper_bound)
-	{
-	    this.init_value = value_;
-	};		
+
     Acts.prototype.Add = function (value_)
 	{
 	    var is_numbe = typeof(value_) == "number";
