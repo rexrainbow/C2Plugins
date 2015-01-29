@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Rotate",
+		"name":			"(Miniboard) Rotate",
 		"id":			"rex_miniboard_rotate",
 		"version":		"0.1",
 		"description":	"Spin chess on mini board logically and physically.",

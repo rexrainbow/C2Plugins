@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Grid move",
+		"name":			"(Miniboard) Grid move",
 		"id":			"Rex_miniboard_move",
 		"version":		"0.1",
 		"description":	"Move mini board logically and physically on main board.",

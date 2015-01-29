@@ -65,26 +65,37 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";         
-		this.tokenCtrl = new cr.plugins_.Rex_Firebase_Token.TokenCtrlClass(this);
-		this.tokenCtrl.Add(this);
+		this.token = new cr.plugins_.Rex_Firebase_Token.TokenClass(this);
+		
+		var self = this;
+        var on_tokenOwner_changed = function ()
+        {
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Token.prototype.cnds.OnTokenOwnerChanged, self);
+        };
+        var on_get_token = function ()
+        {
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Token.prototype.cnds.OnGetToken, self);
+        };  
+        var on_release_token = function ()
+        {
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Token.prototype.cnds.OnReleaseToken, self);
+        };          
+        this.token.OnTokenOwnerChanged = on_tokenOwner_changed;
+        this.token.OnGetToken = on_get_token;    
+        this.token.OnReleaseToken = on_release_token;            
+                
                 
         if (window.SuspendMgr == null)   
         {
             window.SuspendMgr = new window.SuspendMgrKlass(this.runtime);            
         }
-        window.SuspendMgr.Add(this);
+        window.SuspendMgr.push(this);
 	};
 	
 	instanceProto.onDestroy = function ()
 	{
-	    this.tokenCtrl.Remove(this);
-        window.SuspendMgr.Remove(this);
-	};
-	
-	instanceProto.GetTokenCtrl = function ()
-	{
-	    return this.tokenCtrl;
-	};	
+        window.SuspendMgr.remove(this);
+	};  	
     	
 	instanceProto.get_ref = function(k)
 	{
@@ -100,34 +111,19 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
         return new window["Firebase"](path);
 	};	
 	
-	
     instanceProto.JoinGroup = function (UserID)
 	{	   	 
-	    this.tokenCtrl.JoinGroup(UserID);   
+	    this.token.JoinGroup(UserID);   
 	};
 	
     instanceProto.LeaveGroup = function ()
 	{
-	    this.tokenCtrl.LeaveGroup();    
+	    this.token.LeaveGroup();    
 	};
 	
 	// for window.SuspendMgr
     instanceProto.OnSuspend = instanceProto.LeaveGroup;
-    instanceProto.OnResume = instanceProto.JoinGroup;   
-    
-    // for tokenCtl object
-    instanceProto.OnTokenOwnerChanged = function ()
-    {
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_Token.prototype.cnds.OnTokenOwnerChanged, this);
-    };
-    instanceProto.OnGetToken = function ()
-    {
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_Token.prototype.cnds.OnGetToken, this);
-    };  
-    instanceProto.OnReleaseToken = function ()
-    {
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_Token.prototype.cnds.OnReleaseToken, this);
-    };     
+    instanceProto.OnResume = instanceProto.JoinGroup;    
 	
 	//////////////////////////////////////
 	// Conditions
@@ -146,7 +142,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 	
 	Cnds.prototype.IsOwner = function ()
 	{
-	    return (this.tokenCtrl.IsInGroup() && this.tokenCtrl.IsOwner());
+	    return (this.token.IsInGroup() && this.token.IsOwner());
 	}; 
 	
 	Cnds.prototype.OnReleaseToken = function ()
@@ -180,7 +176,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 
 	Exps.prototype.OwnerID = function (ret)
 	{
-		ret.set_string(this.tokenCtrl.ownerID);
+		ret.set_string(this.token.ownerID);
 	};
 }());
 
@@ -191,7 +187,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
         
     var SuspendMgrKlass = function(runtime)
     {
-        this.callbackObjs = [];
+        this.objects = [];
         this.addSuspendCallback(runtime);  
     };
     var SuspendMgrKlassProto = SuspendMgrKlass.prototype;
@@ -204,13 +200,13 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
         var self = this;
         var on_suspended = function (s)
         {   
-            var i, cnt=self.callbackObjs.length, inst;
+            var i, cnt=self.objects.length, inst;
 			if (s)
 			{			    			    
 			    // suspended
 			    for (i=0; i<cnt; i++)
 			    {			
-			        inst = self.callbackObjs[i];     
+			        inst = self.objects[i];     
 			        if (inst.OnSuspend)
 			            inst.OnSuspend();	    
 			    }
@@ -220,7 +216,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 			    // resume
 			    for (i=0; i<cnt; i++)
 			    {			
-			        inst = self.callbackObjs[i];     
+			        inst = self.objects[i];     
 			        if (inst.OnResume)
 			            inst.OnResume();	    
 			    }	  
@@ -229,14 +225,14 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 		runtime.addSuspendCallback(on_suspended);      
 	}; 
 	    
-	SuspendMgrKlassProto.Add = function(inst)
+	SuspendMgrKlassProto.push = function(inst)
 	{
-        this.callbackObjs.push(inst);
+        this.objects.push(inst);
 	}; 
 	
-	SuspendMgrKlassProto.Remove = function(inst)
+	SuspendMgrKlassProto.remove = function(inst)
 	{
-	    cr.arrayFindRemove(this.callbackObjs, inst);
+	    cr.arrayFindRemove(this.objects, inst);
 	};
 	
 	window.SuspendMgrKlass = SuspendMgrKlass;
@@ -244,16 +240,21 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 
 (function ()
 {
-    cr.plugins_.Rex_Firebase_Token.TokenCtrlClass = function(plugin)
+    cr.plugins_.Rex_Firebase_Token.TokenClass = function(plugin)
     {        
-        this.callbackObjs = [];
+        // export
+        this.OnTokenOwnerChanged = null;
+        this.OnGetToken = null;
+        this.OnReleaseToken = null;
+        
+        // export
         this.plugin = plugin;
 		this.myID = "";
         this.ownerID = "";
         this.my_ref = null;
         this.on_owner_changed = null;
     };
-    var TokenClassProto = cr.plugins_.Rex_Firebase_Token.TokenCtrlClass.prototype;
+    var TokenClassProto = cr.plugins_.Rex_Firebase_Token.TokenClass.prototype;
     
 	TokenClassProto.IsInGroup = function()
 	{
@@ -275,21 +276,15 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 	    var on_owner_changed = function(snapshot)
 	    {
 	        self.ownerID = snapshot["val"]();
-	        
-	        var i, cnt=self.callbackObjs.length, inst;
-	        for (i=0; i<cnt; i++)
-	        {
-	            inst = self.callbackObjs[i];
-	            if (inst.OnTokenOwnerChanged)
-	                inst.OnTokenOwnerChanged();	  
-	                          	            
-	            if (self.IsOwner() && inst.OnGetToken)
-	                inst.OnGetToken();	 
-	                
-	            if (!self.IsOwner() && inst.OnReleaseToken)
-	                inst.OnReleaseToken();	
-	        }
-             
+	        if (self.OnTokenOwnerChanged)
+	            self.OnTokenOwnerChanged();	  
+	                      	            
+	        if (self.IsOwner() && self.OnGetToken)
+	            self.OnGetToken();	 
+	            
+	        if (!self.IsOwner() && self.OnReleaseToken)
+	            self.OnReleaseToken();	 	            
+	                       
 	    };	    
 	    candidates_ref["limitToFirst"](1)["on"]("child_added", on_owner_changed);
 	    this.on_owner_changed = on_owner_changed;
@@ -333,15 +328,5 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 	    this.on_owner_changed = null;
 	};
 	    
-	TokenClassProto.Add = function(inst)
-	{
-        this.callbackObjs.push(inst);
-	}; 
-	
-	TokenClassProto.Remove = function(inst)
-	{
-	    cr.arrayFindRemove(this.callbackObjs, inst);
-	};
-		    
 }());
 

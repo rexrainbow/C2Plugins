@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Touch Ctrl",
+		"name":			"(Miniboard) Touch Ctrl",
 		"id":			"Rex_miniboard_touch",
 		"description":	"Drag & drop mini board.",
 		"author":		"Rex.Rainbow",

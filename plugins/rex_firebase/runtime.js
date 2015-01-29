@@ -81,7 +81,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
         this.onComplete_cb = null;
         this.onComplete_error = null;
         // reading
-        this.callbackMap = new cr.plugins_.Rex_Firebase.CallbackMapKlass();
+        this.callbackMap = new window.FirebaseCallbackMapKlass();
                               
         this.reading_cb = null;
         this.snapshot = null;
@@ -106,25 +106,20 @@ cr.plugins_.Rex_Firebase = function(runtime)
         return new window["Firebase"](path);
 	};
 	
-    instanceProto.add_callback = function (refObj, type_, cb)
+    instanceProto.add_callback = function (query, type_, cbName)
 	{
-        var absRef = refObj["toString"]();
 	    var eventType = EVENTTYPEMAP[type_];	
-        if (this.callbackMap.IsExisted(absRef, eventType, cb))
-            return;
-            
 	    var self = this;   
         var reading_handler = function (snapshot, prevChildName)
         {
-            self.reading_cb = cb;   
+            self.reading_cb = cbName;   
             self.snapshot = snapshot;
 			self.prevChildName = prevChildName;
             self.runtime.trigger(cr.plugins_.Rex_Firebase.prototype.cnds.OnReading, self); 
             self.reading_cb = null;            
         };
-	    refObj["on"](eventType, reading_handler); 
 
-        this.callbackMap.Add(absRef, eventType, cb, reading_handler);
+        this.callbackMap.Add(query, eventType, cbName, reading_handler);
 	}; 	
 	
     instanceProto.add_callback_once = function (refObj, type_, cb)
@@ -363,41 +358,9 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
     Acts.prototype.RemoveReadingCallback = function (k, type_, cbName)
 	{
-        var absRef = this.get_ref(k)["toString"]();
-	    if ((k != null) && (type_ != null) && (cbName != null))
-	    {
-	        var eventType = EVENTTYPEMAP[type_];	            
-            var callback = this.callbackMap.GetCallback(absRef, eventType, cbName)	        
-	        if (callback == null)
-	            return;
-                
-            this.get_ref(k)["off"](eventType, callback);  
-            this.callbackMap.Remove(absRef, eventType, cbName);
-	    }
-	    
-	    else if ((k != null) && (type_ != null) && (cbName == null))
-	    {
-	        var eventType = EVENTTYPEMAP[type_];
-            this.get_ref(k)["off"](eventType);  
-            this.callbackMap.Remove(absRef, eventType);
-	    }
-        
-	    else if ((k != null) && (type_ == null) && (cbName == null))
-	    {
-	        this.get_ref(k)["off"]();  
-            this.callbackMap.Remove(absRef);            
-	    }              
-
-        else if ((k == null) && (type_ == null) && (cbName == null))
-        {
-            var refMap = this.callbackMap.GetRefMap();
-            var r;
-            for (r in refMap)
-            {
-                this.get_ref(r)["off"](); 
-                delete refMap[r];
-            }
-        };
+        var absRef = (k != null)? this.get_ref(k)["toString"](): null;
+        var eventType = (type_ != null)? EVENTTYPEMAP[type_]: null;
+        this.callbackMap.Remove(absRef, eventType, cbName);
 	};
 	
     Acts.prototype.AddReadingCallbackOnce = function (k, type_, cbName)
@@ -494,21 +457,44 @@ cr.plugins_.Rex_Firebase = function(runtime)
 
 (function ()
 {
-    var CallbackMapKlass = function ()
+    if (window.FirebaseCallbackMapKlass != null)
+        return;    
+    
+    var FirebaseCallbackMapKlass = function ()
     {
         this.map = {};
     };
     
-    var CallbackMapKlassProto = CallbackMapKlass.prototype;
+    var CallbackMapKlassProto = FirebaseCallbackMapKlass.prototype;
+    
+	CallbackMapKlassProto.get_ref = function(k)
+	{
+        return new window["Firebase"](k);
+	};    
+	
+	CallbackMapKlassProto.get_callback = function(absRef, eventType, cbName)
+	{
+        if (!this.IsExisted(absRef, eventType, cbName))
+            return null;
+    
+        return this.map[absRef][eventType][cbName];
+	};
 
     CallbackMapKlassProto.IsExisted = function (absRef, eventType, cbName)
     {
         if (!this.map.hasOwnProperty(absRef))
             return false;
+        
+        if (!eventType)  // don't check event type
+            return true;
+         
         var eventMap = this.map[absRef];
         if (!eventMap.hasOwnProperty(eventType))
             return false;
             
+        if (!cbName)  // don't check callback name
+            return true;
+                                    
         var cbMap = eventMap[eventType];
         if (!cbMap.hasOwnProperty(cbName))
             return false;
@@ -516,8 +502,12 @@ cr.plugins_.Rex_Firebase = function(runtime)
         return true;     
     };
     
-	CallbackMapKlassProto.Add = function(absRef, eventType, cbName, cb)
+	CallbackMapKlassProto.Add = function(query, eventType, cbName, cb)
 	{
+	    var absRef = query["toString"]();
+        if (this.IsExisted(absRef, eventType, cbName))
+            return;
+            	    
         if (!this.map.hasOwnProperty(absRef))
             this.map[absRef] = {};
         
@@ -527,22 +517,21 @@ cr.plugins_.Rex_Firebase = function(runtime)
 
         var cbMap = eventMap[eventType];
         cbMap[cbName] = cb;
-	};
         
-	CallbackMapKlassProto.GetCallback = function(absRef, eventType, cbName)
-	{
-        if (!this.IsExisted(absRef, eventType, cbName))
-            return null;
-    
-        return this.map[absRef][eventType][cbName];
-	};   
-
+	    query["on"](eventType, cb);         
+	};
+       
 	CallbackMapKlassProto.Remove = function(absRef, eventType, cbName)
 	{
+	    if ((absRef != null) && (typeof(absRef) == "object"))
+	        absRef = absRef["toString"]();
+	        
         if (absRef && eventType && cbName)
         {
-            if (!this.IsExisted(absRef, eventType, cbName))
-                return;
+            var cb = this.get_callback(absRef, eventType, cbName);
+            if (cb == null)
+                return;                
+            this.get_ref(absRef)["off"](eventType, cb);  
             delete this.map[absRef][eventType][cbName];
         }
         else if (absRef && eventType && !cbName)
@@ -553,7 +542,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             var cbMap = eventMap[eventType];
             if (!cbMap)
                 return;
-                
+            this.get_ref(absRef)["off"](eventType); 
             delete this.map[absRef][eventType];
         }
         else if (absRef && !eventType && !cbName)
@@ -561,11 +550,54 @@ cr.plugins_.Rex_Firebase = function(runtime)
             var eventMap = this.map[absRef];
             if (!eventMap)
                 return;
-  
+            this.get_ref(absRef)["off"](); 
             delete this.map[absRef];
-        }    
+        }  
+        else if (!absRef && !eventType && !cbName)
+        {
+            for (var r in this.map)
+            {
+                this.get_ref(r)["off"](); 
+                delete this.map[r];
+            } 
+        }  
 	}; 
-
+	
+	CallbackMapKlassProto.RemoveAllCB = function(absRef)
+	{
+	    if (absRef)
+	    {
+            var eventMap = this.map[absRef];
+            for (var e in eventMap)
+            {
+                var cbMap = eventMap[e];
+                for (var cbName in cbMap)
+                {
+                    this.get_ref(absRef)["off"](e, cbMap[cbName]);  
+                }
+            }
+            
+            delete this.map[absRef];
+	    }
+	    else if (!absRef)
+	    {
+            for (var r in this.map)
+            {
+                var eventMap = this.map[r];
+                for (var e in eventMap)
+                {
+                    var cbMap = eventMap[e];
+                    for (var cbName in cbMap)
+                    {
+                        this.get_ref(r)["off"](e, cbMap[cbName]);  
+                    }
+                }
+                
+                delete this.map[r];
+            }
+        } 	    
+	};	
+    
     CallbackMapKlassProto.getDebuggerValues = function (propsections)
     {
         var r, eventMap, e, cbMap, cn, display;
@@ -589,5 +621,5 @@ cr.plugins_.Rex_Firebase = function(runtime)
         return this.map;
     };    
     
-	cr.plugins_.Rex_Firebase.CallbackMapKlass = CallbackMapKlass;
+	window.FirebaseCallbackMapKlass = FirebaseCallbackMapKlass;
 }()); 

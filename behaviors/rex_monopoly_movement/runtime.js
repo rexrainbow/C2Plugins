@@ -107,10 +107,17 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
                 if (_xyz != null)
                 { 
                     this.board = inst;
-					_dir_sequence_init(this._dir_sequence, inst.GetLayout().GetDirCount());
-					this._wander["o"]["x"] = _xyz.x;
-					this._wander["o"]["y"] = _xyz.y;
-					this._wander["o"]["z"] = _xyz.z;
+                    var dir_cnt = inst.GetLayout().GetDirCount();
+					_dir_sequence_init(this._dir_sequence, dir_cnt);
+					this._target_tile_uids.length = dir_cnt;
+					this._is_square_grid = (dir_cnt == 4);
+					if (!this._is_square_grid)  // hex
+					{
+                       this._is_hex_up2down = layout.is_up2down;
+                    }
+                    this.exp_TargetFaceDir = this._current_dir_get();
+                    this.exp_TargetLX = _xyz.x;
+                    this.exp_TargetLY = _xyz.y;		
                     return this.board;
                 }
             }
