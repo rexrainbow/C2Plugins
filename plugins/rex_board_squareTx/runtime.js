@@ -174,7 +174,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    }
 	    else if (this.layout_mode == 1)   // Isometric
 		{
-	        dx = map_01[dir];
+	        dx = map_01[dir][0];
 		}
 		else if (this.layout_mode == 2)  // Staggered
 	    {

@@ -4,7 +4,7 @@
 		"name":			"Item table",
 		"id":			"Rex_Firebase_ItemTable",
 		"version":		"0.1",        
-		"description":	"Item table, a 2d hash table on firebase.",
+		"description":	"Items table indexed by (itemID, key), supports writing a item or reading items back.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_itemtable.html",
 		"category":		"Rex - Web - firebase",
@@ -41,9 +41,12 @@ AddStringParam("Tag", "A tag, to distinguish between different save requests.", 
 AddCondition(11, cf_trigger, "On load complete", "Load", 
             "On load <i>{0}</i> complete",
             "Triggered when load current item complete.", "OnLoadComplete");
-          
+
+AddComboParamOption("Small to large");
+AddComboParamOption("Large to small");
+AddComboParam("Order", "Order of itemID.", 0);          
 AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Load", 
-             "For each itemID", 
+             "For each itemID <i>{0}</i>", 
              "Repeat the event for each itemID of load result.", "ForEachItemID");
 
 AddStringParam("ID", "ID of item.", '""');
@@ -60,21 +63,21 @@ AddAction(0, 0, "Set domain", "Domain",
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or (JSON) string.", 0);
-AddAction(1, 0, "Set value", "Set item", 
-          "Set key <i>{0}</i> to  <i>{1}</i> in current item", 
+AddAction(1, 0, "1. Set value", "Set item", 
+          "1. Set key <i>{0}</i> to  <i>{1}</i> in current item", 
           "Set value into current item.", "SetValue");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
-AddAction(2, 0, "Set boolean value", "Set item",
-          "Set key <i>{0}</i> to <i>{1}</i> in current item", 
+AddAction(2, 0, "1. Set boolean value", "Set item",
+          "1. Set key <i>{0}</i> to <i>{1}</i> in current item", 
           "Set boolean value into current item.", "SetBooleanValue"); 
           
 AddStringParam("Key", "The name of the key.", '""');
-AddAction(3, 0, "Remove key", "Set item",
-          "Remove key <i>{0}</i> in server", 
+AddAction(3, 0, "1. Remove key", "Set item",
+          "1. Remove key <i>{0}</i> in server", 
           "Remove key in firebase server.", "RemoveKey");            
           
 AddStringParam("ID", "ID of item.", '""');
@@ -82,36 +85,59 @@ AddComboParamOption("Update");
 AddComboParamOption("Set");
 AddComboParam("Set mode", "Update, or clean then set item values", 0);
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddAction(4, 0, "Save", "Save", 
-          "<i>{1}</i> current item with ID <i>{0}</i> (tag <i>{2}</i>)", 
-          "Save current item into server.", "Save"); 
+AddAction(4, 0, "2. Save", "Save", 
+          "2. <i>{1}</i> current itemID: <i>{0}</i> (tag <i>{2}</i>)", 
+          'Save current item into server. Push item if ID is equal to "".', "Save"); 
 
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddAction(5, 0, "Push", "Save", 
-          "Push current item (tag <i>{0}</i>)", 
+AddAction(5, 0, "2. Push", "Save", 
+          "2. Push current item", 
           'Push current item into server. Get itemID by "expression:LastItemID".', "Push");           
           
 AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(6, 0, "Remove", "Remove", 
-          "Remove item with ID <i>{0}</i> (tag <i>{1}</i>)", 
+          "Remove itemID: <i>{0}</i> (tag <i>{1}</i>)", 
           "Remove item from server.", "Remove"); 
-
+          
+AddAction(7, 0, "Generate", "ItemID", 
+          "Generate a new itemID", 
+          'Generate a new itemID. Get it by "Expression:LastGeneratedKey". Or use "Expression:GenerateKey" directly.', "GenerateKey");           
+          
+AddNumberParam("X", "The X position.", 0);
+AddNumberParam("Y", "The Y position.", 0); 
+AddAction(8, 0, "1. Set to position", "Set item - position", 
+          '1. Set key "pos" to (<i>{0}</i>, <i>{1}</i>)', 
+          'Set position value into current item with key "pos".', "SetPosValue");
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddAction(9, 0, "1. Set to timestamp", "Set item", 
+          "1. Set key <i>{0}</i> to  server timestamp in current item", 
+          "Set server timestamp value into current item.", "SetServerTimestampValue");          
+                    
 AddStringParam("ID", "ID of item.", '""');
-AddAction(11, 0, "Add itemID", "Load", 
-          "Add load-request itemID to <i>{0}</i>", 
+AddAction(11, 0, "1. Add itemID", "Load", 
+          "1. Add load-request itemID: <i>{0}</i>", 
           "Add load-request itemID.", "AddLoadRequestItemID");
 
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');          
-AddAction(12, 0, "Load", "Load", 
-          "Load items (tag <i>{0}</i>)", 
+AddAction(12, 0, "2. Load", "Load", 
+          "2. Load items (tag <i>{0}</i>)", 
           "Load items.", "LoadItems");     
           
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');          
 AddAction(13, 0, "Load all", "Load", 
           "Load all items (tag <i>{0}</i>)", 
           "Load all items.", "LoadAllItems");  
- 	                    
+          
+AddAction(21, 0, "Cancel disconnected handler", "On disconnected", 
+          "Cancel all disconnected handlers", 
+          "Cancel all disconnected handlers.", "CancelOnDisconnected");           
+          
+AddStringParam("ID", "ID of item.", '""');
+AddAction(22, 0, "Auto remove", "On disconnected", 
+          "Auto remove itemID: <i>{0}</i> when disconnected", 
+          "Auto remov item when disconnected.", "RemoveOnDisconnected");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get itemID", "For Each", "CurItemID", 
@@ -128,12 +154,21 @@ AddExpression(4, ef_return_any, "Get value", "For Each", "CurValue",
       
 AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Key", "The name of the key.", '""');
-AddExpression(5, ef_return_any, "Get value at", "Table", "At", 
-              "Get value by itemId and key in last load result.");
+AddExpression(5, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", 
+              "Get value by itemId and key in last load result. Add 2nd parameter for default value if this key is not existed.");
               
 AddExpression(6, ef_return_string, "Get last itemID", "ItemID", "LastItemID", 
               "Get last itemID.");               
-                                                                      
+       
+AddExpression(7, ef_return_any | ef_variadic_parameters, "Get current item content", "For Each", "CurItemContent", 
+              'Get current content in JSON stringin in a For Each loop, in last load result. Add 2nd parameter for specific key, 3rd parameter for default value if this key is not existed.');              
+                                                                        
+AddExpression(21, ef_return_string, "Generate new key from push", "ItemID", "GenerateKey", 
+              "Generate new key from push action."); 
+              
+AddExpression(22, ef_return_string, "Get last generated key", "ItemID", "LastGeneratedKey", 
+              "Get last generate a key from push action.");               
+       
 ACESDone();
 
 // Property grid properties for this plugin

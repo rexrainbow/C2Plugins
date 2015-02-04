@@ -44,7 +44,23 @@ AddCondition(91, cf_trigger, "On fetch one", "Message - fetch one",
 
 AddCondition(92, cf_trigger, "On fetch error", "Message - fetch one", 
             "On fetch one error",
-            "Triggered when fetch one message error.", "OnFetchOneError");             
+            "Triggered when fetch one message error.", "OnFetchOneError"); 
+            
+AddCondition(101, cf_trigger, "On remove complete", "Message - remove",
+            "On remove complete",
+            "Triggered when remove complete.", "OnRemoveComplete");
+
+AddCondition(102, cf_trigger, "On remove error", "Message - remove",
+            "On remove error",
+            "Triggered when remove error.", "OnRemoveError"); 
+            
+AddCondition(103, cf_trigger, "On remove messages complete", "Message - remove queried messages",
+            "On remove queried messages complete",
+            "Triggered when remove complete.", "OnRemoveQueriedItemsComplete");
+
+AddCondition(104, cf_trigger, "On remove messages error", "Message - remove queried messages",
+            "On remove queried messages error",
+            "Triggered when remove error.", "OnRemoveQueriedItemsError");                                    
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Sender ID", "Sender ID.", '""');
@@ -58,7 +74,7 @@ AddStringParam("Title", "Title of this message.", '""');
 AddStringParam("Content", "Content of this message. String or JSON string for object.", '""');
 AddStringParam("Tag", "Tag of this message for filtering.", '""');
 AddAction(11, 0, "Send", "Message - send", 
-          "Send message to user ID: <i>{0}</i> with title: <i>{1}</i>, content: <i>{2}</i>, tag to <i>{3}</i>", 
+          "Send message to channel ID: <i>{0}</i> with title: <i>{1}</i>, content: <i>{2}</i>, tag to <i>{3}</i>", 
           "Send message.", "Send");    
 
 AddAction(21, 0, "1. New", "Message filter - 1. new", 
@@ -70,40 +86,40 @@ AddNumberParam("Lines", "Count of lines", 10);
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);                    
-AddAction(22, 0, "5. Request in a range", "Message filter - 5. request", 
-          "5. Request message start from <i>{0}</i> with <i>{1}</i> lines, <i>{2}</i> content", 
+AddAction(22, 0, "6. Request in a range", "Message filter - 6. request", 
+          "6. Request message start from <i>{0}</i> with <i>{1}</i> lines, <i>{2}</i> content", 
           "Request messages in a range.", "RequestInRange");   
 
 AddNumberParam("Index", "Page index, 0-based.", 0);
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);   
-AddAction(23, 0, "5. Request to page", "Message filter - 5. request", 
+AddAction(23, 0, "6. Request to page", "Message filter - 6. request", 
           "Request message at page <i>{0}</i>, <i>{1}</i> content", 
           "Request messages at page.", "RequestTurnToPage");
 
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);             
-AddAction(24, 0, "5. Request current page",  "Message filter - 5. request", 
+AddAction(24, 0, "6. Request current page",  "Message filter - 6. request", 
           "Request message at current page, <i>{0}</i> content",  
           "Request messages at current page.", "RequestUpdateCurrentPage"); 
           
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);             
-AddAction(25, 0, "5. Request next page", "Message filter - 5. request", 
+AddAction(25, 0, "6. Request next page", "Message filter - 6. request", 
           "Request message at next page, <i>{0}</i> content",  
           "Request messages at next page.", "RequestTurnToNextPage");  
 
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);             
-AddAction(26, 0, "5. Request previous page", "Message filter - 5. request", 
+AddAction(26, 0, "6. Request previous page", "Message filter - 6. request", 
           "Request message at previous page, <i>{0}</i> content",  
           "Request messages at previous page.", "RequestTurnToPreviousPage");           
 
-AddAction(31, 0, "2. all Senders", "Message filter - 2. senderID", 
+AddAction(31, 0, "2. all senders", "Message filter - 2. senderID", 
           "2. add all senders into filter", 
           "Add all senders into filter.", "AddAllSenders"); 
           
@@ -125,17 +141,44 @@ AddAction(51, 0, "4. all tags", "Message filter - 4. tag",
           "4. add all tags into filter", 
           "Add all tags into filter.", "AddAllTags"); 
           
-AddStringParam("Type", "Type.", '""');
+AddStringParam("Tag", "Tag.", '""');
 AddAction(52, 0, "4. add tag", "Message filter - 4. tag", 
           "4. add tag: <i>{0}</i> into filter", 
           "Add a tag into filter.", "AddTag");
-
+          
+AddAction(61, 0, "5. all timestamps", "Message filter - 5. timestamp", 
+          "5. add all timestamps into filter", 
+          "Add all timestamps into filter.", "AddAllTimestamps"); 
+                    
+AddComboParamOption("Before");
+AddComboParamOption("After");
+AddComboParam("When", "Before or after the timestamp.", 1); 
+AddNumberParam("Timestamp", "Timestamp in milliseconds.", 0);
+AddComboParamOption("Excluded");
+AddComboParamOption("Included");
+AddComboParam("Include", "Include compared timestamp or excluded.", 1); 
+AddComboParamOption("Created");
+AddComboParamOption("Updated");
+AddComboParam("Type", "Type of compared timestamp.", 0);  
+AddAction(62, 0, "5. add timestamp constraint", "Message filter - 5. timestamp", 
+          "5. add timestamp constraint: <i>{3}</i> <i>{0}</i> <i>{1}</i> (<i>{2}</i>) into filter", 
+          "Add a timestamp constraint into filter. They will be jointed by AND operation.", "AddTimeConstraint");          
+          
           
 AddStringParam("Message ID", "Message ID.", '""');
 AddAction(91, 0, "Fetch one", "Message - fetch one", 
           "Fetch messageID: <i>{0}</i>", 
-          "Fetch one message by messageID.", "FetchByMessageID");          
+          "Fetch message by messageID.", "FetchByMessageID");          
+          
+AddStringParam("Message ID", "Message ID.", '""');
+AddAction(101, 0, "Remove", "Message - remove", 
+          "Message messageID: <i>{0}</i>", 
+          "Message message by messageID.", "RemoveByMessageID");    
                    
+AddAction(102, 0, "Remove queried messages", "Message - remove", 
+          "6. Remove queried messages", 
+          "Remove queried messages.", "RemoveQueriedItems");   
+                                  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "My userID", "User info", "MyUserID", 
@@ -178,6 +221,9 @@ AddExpression(96, ef_return_string, "Current messageID", "Received - for each", 
 AddExpression(97, ef_return_number, "Current sent unix timestamp", "Received - for each", "LastFetchedSentAt", 
               "Get the current sent unix timestamp (number of milliseconds since the epoch) in a For Each loop.");
                             
+AddExpression(101, ef_return_string, "Last removed messageID", "Remove", "LastRemovedMessageID", 
+              'Get last removed messageID under "Condition:On remove complete".');   
+                             
 ACESDone();
 
 // Property grid properties for this plugin

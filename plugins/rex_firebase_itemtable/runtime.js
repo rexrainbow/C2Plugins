@@ -74,13 +74,18 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
 	    
         this.save_item = {};
+        this.disconnectRemove_absRefs = {};
         this.trig_tag = null;
+        
         this.load_request_itemIDs = {};
-        this.load_items = {};        
-        this.exp_CurItemID = "";    
+        this.load_items = {};   
+             
+        this.exp_CurItemID = ""; 
+        this.exp_CurItemContent = null;   
         this.exp_CurKey = "";  
         this.exp_CurValue = 0;
-        this.exp_LastItemID = "";           	    
+        this.exp_LastItemID = ""; 
+        this.exp_LastGeneratedKey = "";        
 	};
 	
 	instanceProto.get_ref = function(k)
@@ -96,21 +101,109 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	        
         return new window["Firebase"](path);
 	};
+	
+	instanceProto.ForEachItemID = function (itemIDList, items)
+	{
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		         
+		var i, cnt=itemIDList.length;
+		for(i=0; i<cnt; i++)
+		{
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            this.exp_CurItemID = itemIDList[i];
+            this.exp_CurItemContent = items[this.exp_CurItemID]; 
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }            
+		}
+     		
+		return false;
+	};	  
+	
+    instanceProto.Save = function (itemID, set_mode, tag_)
+	{	 
+	    if (itemID === "")
+	    {
+	        var ref = this.get_ref()["push"]();
+	   	    itemID = ref["key"]();
+	    }
+	    else
+	    {
+	        var ref = this.get_ref(itemID);	
+	    }
+	    
+	    var self = this;	
+	    var on_save = function (error)
+	    {
+		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnSaveComplete:
+		                         cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnSaveError;
+            self.trig_tag = tag_;	
+            self.exp_CurItemID = itemID;	                         
+		    self.runtime.trigger(trig, self); 	   
+		    self.trig_tag = null;
+		    self.exp_CurItemID = "";
+	    };
 
+	    this.exp_LastItemID = itemID;	    
+	    var is_empty = is_empty_table(this.save_item);
+	    var save_data = is_empty? true: this.save_item;
+	    
+	    var op = (set_mode == 1)? "set":"update";	    
+	    ref[op](save_data, on_save);
+	    
+	    if (!is_empty)
+	        this.save_item = {};
+	};	
+		
+    instanceProto.At = function (itemID, key_, default_value)
+	{
+	    var v;
+        if (!this.load_items.hasOwnProperty(itemID))
+            v = null;
+        else
+            v = this.load_items[itemID][key_];
+        
+        v = din(v, default_value);
+		return v;
+	};	
+    
 	var clean_table = function (o)
 	{
-	    var k;
-		for (k in o)
+		for (var k in o)
 		    delete o[k];
 	};
+	
+	var is_empty_table = function (o)
+	{
+		for (var k in o)
+		    return false;
+		
+		return true;
+	};	
     
-    var din = function (d)
+    var din = function (d, default_value)
     {       
         var o;
 	    if (d === true)
 	        o = 1;
 	    else if (d === false)
 	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
         else if (typeof(d) == "object")
             o = JSON.stringify(d);
         else
@@ -165,32 +258,26 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	{
 	    return cr.equals_nocase(tag_, this.trig_tag);
 	}; 
-	
+
+    var inc = function(a, b)
+    {
+        return (a < b)?  1:
+               (a == b)? 0:
+                         (-1);
+    };
+    var dec = function(a, b)
+    {
+        return (a > b)?  1:
+               (a == b)? 0:
+                         (-1);
+    }; 
+    	
 	Cnds.prototype.ForEachItemID = function ()
 	{
-        var current_frame = this.runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-		
-		var k, o=this.load_items;
-		for(k in o)
-		{
-            if (solModifierAfterCnds)
-            {
-                this.runtime.pushCopySol(current_event.solModifiers);
-            }
-            
-            this.exp_CurItemID = k;
-            current_event.retrigger();
-            
-		    if (solModifierAfterCnds)
-		    {
-		        this.runtime.popSol(current_event.solModifiers);
-		    }            
-		}
-		    
-        this.exp_CurItemID = "";   		
-		return false;
+	    var itemIDList = Object.keys(this.load_items);
+	    var sort_fn = (order == 0)? inc:dec;
+	    itemIDList.sort(sort_fn);
+	    return this.ForEachItemID(itemIDList, this.load_items);
 	};	
 	
 	Cnds.prototype.ForEachKey = function (itemID)
@@ -220,8 +307,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 		        this.runtime.popSol(current_event.solModifiers);
 		    }            
 		}
-		    
-        this.exp_CurItemID = "";   		
+
 		return false;
 	};	
 	//////////////////////////////////////
@@ -253,41 +339,12 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	
     Acts.prototype.Save = function (itemID, set_mode, tag_)
 	{	 
-	    var self = this;	
-	    var on_save = function (error)
-	    {
-		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnSaveComplete:
-		                         cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnSaveError;
-            self.trig_tag = tag_;	
-            self.exp_CurItemID = itemID;	                         
-		    self.runtime.trigger(trig, self); 	   
-		    self.trig_tag = null;
-		    self.exp_CurItemID = "";
-	    };
-	    var op = (set_mode == 1)? "set":"update";
-	    this.get_ref(itemID)[op](this.save_item, on_save);
-	    this.exp_LastItemID = itemID;
-	    this.save_item = {};
+	    this.Save(itemID, set_mode, tag_);
 	};	
 	
     Acts.prototype.Push = function (tag_)
 	{	 
-	    var self = this;
-	    var itemID;	
-	    var on_push = function (error)
-	    {
-		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnSaveComplete:
-		                         cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnSaveError;
-            self.trig_tag = tag_;	
-            self.exp_CurItemID = itemID;	                         
-		    self.runtime.trigger(trig, self); 	   
-		    self.trig_tag = null;
-		    self.exp_CurItemID = "";
-	    };
-	    var ref = this.get_ref(itemID)["push"](this.save_item, on_push);
-	    itemID = ref["key"]();
-	    this.exp_LastItemID = itemID;
-	    this.save_item = {};
+	    this.Save("", 1, tag_);
 	};	
 	
     Acts.prototype.Remove = function (itemID, tag_)
@@ -305,7 +362,22 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    };  
 	    this.get_ref(itemID)["remove"](on_remove);
 	};
-  
+	
+    Acts.prototype.GenerateKey = function ()
+	{
+	    var ref = this.get_ref()["push"]();
+        this.exp_LastGeneratedKey = ref["key"]();
+	};	
+	
+    Acts.prototype.SetPosValue = function (x, y)
+	{
+		this.save_item["pos"] = {"x":x, "y":y};
+	};	    
+	
+    Acts.prototype.SetServerTimestampValue = function (key_)
+	{
+		this.save_item[key_] = window["Firebase"]["ServerValue"]["TIMESTAMP"];
+	};
 	
     Acts.prototype.AddLoadRequestItemID = function (itemID)
 	{
@@ -392,7 +464,26 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         // read all
         wait_events += 1;
         this.get_ref()["once"]("value", on_read);	
-	};	    
+	};
+  
+    Acts.prototype.CancelOnDisconnected = function ()
+	{
+	    for(var r in this.disconnectRemove_absRefs)
+	    {
+	        this.get_ref(r)["onDisconnect"]()["cancel"]();
+	        delete this.disconnectRemove_absRefs[r];
+	    }
+	};	
+    
+    Acts.prototype.RemoveOnDisconnected = function (itemID)
+	{
+	    if (itemID == "")
+	        return;
+        
+        var ref = this.get_ref(itemID);
+        ref["onDisconnect"]()["remove"]();
+	    this.disconnectRemove_absRefs[ref["toString"]()] = true;
+	};  
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -423,25 +514,39 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
     Exps.prototype.At = function (ret, itemID, key_, default_value)
 	{
 	    var v;
-	    var item_props = this.load_items[itemID];
-	    if (item_props)
-	    {
-	        v = item_props[key_];
-	        v = din(v);	        
-	    }
-	    
-	    if (v == null)
-	    {
-	        if (default_value != null)
-	            v = default_value;
-	        else
-	            v = 0;
-	    }
+        if (!this.load_items.hasOwnProperty(itemID))
+            v = null;
+        else
+            v = this.load_items[itemID][key_];
+        
+        v = din(v, default_value);
 		ret.set_any(v);
 	};	
 	
 	Exps.prototype.LastItemID = function (ret)
 	{
 		ret.set_string(this.exp_LastItemID);
-	};			
+	};
+	
+    Exps.prototype.CurItemContent = function (ret, key_, default_value)
+	{
+        if (key_ == null)
+            v = din(this.exp_CurItemContent);
+        else
+            v = din(this.exp_CurItemContent[key_], default_value);
+ 
+		ret.set_any(v);
+	};
+
+	Exps.prototype.GenerateKey = function (ret)
+	{
+	    var ref = this.get_ref()["push"]();
+        this.exp_LastGeneratedKey = ref["key"]();
+		ret.set_string(this.exp_LastGeneratedKey);
+	};	
+    
+	Exps.prototype.LastGeneratedKey = function (ret)
+	{
+	    ret.set_string(this.exp_LastGeneratedKey);
+	};	    
 }());

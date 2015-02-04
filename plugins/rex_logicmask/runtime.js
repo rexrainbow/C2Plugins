@@ -292,6 +292,22 @@ cr.plugins_.Rex_LogicMask = function(runtime)
 		
 		this.boardUid = -1;          
 	};	
+    
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+                {"name": "O", "value": "("+this.origin[0]+","+this.origin[1]+")"},
+            ]
+		});
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/      
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

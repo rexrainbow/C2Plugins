@@ -33,8 +33,12 @@ AddAction(3, 0, "Remove pattern", "Pattern", "Remove pattern <i>{0}</i>",
           "Remove pattern.", "RemovePattern"); 
 AddAction(4, 0, "Remove all patterns", "Pattern", "Remove all patterns", 
           "Remove all patterns.", "RemoveAllPatterns");  
-AddAction(5, 0, "Start generator", "Generator", "Start generator", 
+AddAction(5, 0, "Start", "Generator", 
+          "Start generator", 
           "Start generator.", "StartGenerator"); 
+AddAction(6, 0, "Generate", "Generator", 
+          "Generate a new pattern", 
+          "Generate a new pattern.", "Generate");           
 
 AddStringParam("JSON", "A string of the JSON data to load.");
 AddAction(11, 0, "Load", "JSON", "Load from JSON string <i>{0}</i>", "Load from an object previously encoded in JSON format.", "JSONLoad");
@@ -54,7 +58,10 @@ AddExpression(3, ef_return_number,
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddExpression(4, ef_return_number, 
               "Manual pick pattern", "Generator", "ManualPick", 'Manual pick pattern. Return pattern if success, else return ""');
-
+AddExpression(5, ef_return_string, 
+              "Get last pattern", "Generator", "LastPattern", 
+              "Get last generated pattern.")
+              
 AddExpression(11, ef_return_string, "Get as JSON", "JSON", "AsJSON", "Return the contents of the patterngen in JSON format.");
               
 ACESDone();

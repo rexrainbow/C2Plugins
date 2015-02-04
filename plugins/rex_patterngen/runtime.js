@@ -49,7 +49,9 @@ cr.plugins_.Rex_PatternGen = function(runtime)
             this.patterns = {};	   	                 
 	    this._pat_rank = [];
         this._shadow_patterns = {};
-        this.start_gen(); 	     
+        this.start_gen(); 	
+        
+        this.exp_LastPattern = "";
         
         this.randomGenUid = -1;    // for loading
         
@@ -192,7 +194,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		         "pr": this._pat_rank,
 		         "spats": this._shadow_patterns,
 		         "rstf": this.restart_gen_flg,
-                 "randomuid":randomGenUid
+                 "randomuid":randomGenUid,
+                 "lp" : this.exp_LastPattern,
                  };
 	};
 	
@@ -202,9 +205,9 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this.patterns = o["pats"];
 	    this._pat_rank = o["pr"];
 	    this._shadow_patterns = o["spats"];
-	    this.restart_gen_flg = o["rstf"];
-        
+	    this.restart_gen_flg = o["rstf"];        
         this.randomGenUid = o["randomuid"];	
+        this.exp_LastPattern = o["lp"];	
 	};	
     
 	instanceProto.afterLoad = function ()
@@ -285,6 +288,10 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this.restart_gen_flg = true; 
 	};
 	
+    Acts.prototype.Generate = function ()
+	{  
+        this.exp_LastPattern = this.get_pattern();
+	};	
 	Acts.prototype.JSONLoad = function (json_)
 	{
 		var o;
@@ -312,7 +319,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	
 	Exps.prototype.Pattern = function (ret)
 	{
-		ret.set_string(this.get_pattern());
+        this.exp_LastPattern = this.get_pattern();
+		ret.set_string(this.exp_LastPattern);
 	};	
 	
 	Exps.prototype.TotalCount = function (ret, pattern)
@@ -328,6 +336,10 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		ret.set_string(this.get_pattern(pattern));
 	};
 	
+	Exps.prototype.LastPattern = function (ret)
+	{
+		ret.set_string(this.exp_LastPattern);
+	};		
 	Exps.prototype.AsJSON = function (ret)
 	{
 		ret.set_string(JSON.stringify(this.saveToJSON()));

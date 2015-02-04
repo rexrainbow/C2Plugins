@@ -343,7 +343,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
 	instanceProto.uid2inst = function(uid, ignored_chess_check)
 	{
-	    if (!ignored_chess_check && (this.uid2xyz(uid) === null))  // not on the board
+	    if (!ignored_chess_check && (this.uid2xyz(uid) == null))  // not on the board
 	        return null;
 	    else
 	        return this.runtime.getObjectByUID(uid);
@@ -1280,7 +1280,36 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return;
         this._pick_chess_on_LZ(chess_type, lz);            
 	};	
-	
+    
+	Acts.prototype.MoveChessLZ = function (chess_type, z)
+	{		    
+        var chess_uid = _get_uid(chess_type);
+	    if (chess_uid == null)
+	        return;  
+
+        var _xyz = this.uid2xyz(chess_uid);
+        if (_xyz == null)
+            return;
+            
+        var lx=_xyz.x, ly=_xyz.y;
+	    this.RemoveChess(chess_uid);   
+        this.AddChess(chess_uid, lx, ly, z);        
+	};  
+    
+	Acts.prototype.MoveChessLXY = function (chess_type, x, y)
+	{		    
+        var chess_uid = _get_uid(chess_type);
+	    if (chess_uid == null)
+	        return;  
+
+        var _xyz = this.uid2xyz(chess_uid);
+        if (_xyz == null)
+            return;
+            
+        var lz=_xyz.z;
+	    this.RemoveChess(chess_uid);   
+        this.AddChess(chess_uid, x, y, lz);       
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -1304,7 +1333,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 	    var _xyz = this.uid2xyz(uid);
 	    var z = (_xyz==null)? (-1):_xyz.z;
-		ret.set_int(z);
+		ret.set_any(z);
 	};
 	
 	Exps.prototype.LXYZ2UID = function (ret,_x,_y,_z)

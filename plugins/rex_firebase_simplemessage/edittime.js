@@ -36,7 +36,7 @@ AddAction(1, 0, "Set user", "User info",
 
 AddStringParam("Receiver ID", "ID of receiver.", '""');          
 AddAction(11, 0, "Start", "Update", 
-          "Start receiving on ID <i>{0}</i>", 
+          "Start receiving on channel ID <i>{0}</i>", 
           "Start receiving.", "StartUpdate");
           
 AddAction(12, 0, "Stop", "Update", 
@@ -64,6 +64,7 @@ var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
     new cr.Property(ept_text, "Sub domain", "private message", "Sub domain for this function."),
     new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),
+    new cr.Property(ept_combo, "Offline message", "Discard", "Discard or pend offline message. Pend mode is only used for single receiver.", "Discard|Pend"),
 	];
 	
 // Called by IDE when a new object type is to be created

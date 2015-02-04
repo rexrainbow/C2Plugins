@@ -299,7 +299,18 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddLayerParam("Layer", "Layer name of number."); 
 AddAction(31, 0, "Create chess above tile by UID", "Physical: Create", 
           "Create chess <i>{0}</i> above tile UID:<i>{1}</i> at LZ to <i>{2}</i>, on layer <i>{3}</i>", 
-          "Create chess above tile.", "CreateChessAboveTile");                    	  
+          "Create chess above tile.", "CreateChessAboveTile");     
+AddObjectParam("Chess", "Chess object.");
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAction(32, 0, "Move chess to z", "Logic: Move", 
+          "Move chess <i>{0}</i> 's LZ to <i>{1}</i>", 
+          "Move chess's LZ on the board.", "MoveChessLZ");    
+AddObjectParam("Chess", "Chess object.");
+AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
+AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
+AddAction(33, 0, "Move chess to xy", "Logic: Move", 
+          "Move chess <i>{0}</i> 's LXY to [<i>{1}</i>,<i>{2}</i>]", 
+          "Move chess's LXY on the board.", "MoveChessLXY");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of chess.", 0);

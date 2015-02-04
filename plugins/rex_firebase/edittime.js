@@ -80,7 +80,7 @@ AddAction(2, 0, "Set JSON", "Send - Set",
           "Set JSON <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>", 
           "Sets JSON value at data ref.", "SetJSON");
        
-AddStringParam("DataRef", "The Firebase data ref URL", "\"/myref\"");
+AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddStringParam("JSON value", "JSON value to set", '"{}"');
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
 AddAction(3, 0, "Update JSON", "Send - Update", 
@@ -138,7 +138,7 @@ AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
-AddAction(4, 0, "Push value", "Send - Push", 
+AddAction(11, 0, "Push value", "Send - Push", 
           "Push <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>",   
           "Push boolean value at data ref.", "PushBooleanValue");                          
           

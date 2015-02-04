@@ -17,6 +17,7 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
+// monitor items
 AddCondition(1, cf_trigger, "On item added", "Monitor - item", 
             "On item added",
             "Triggered when item added.", "OnItemAdded");
@@ -25,6 +26,7 @@ AddCondition(2, cf_trigger, "On item removed", "Monitor - item",
             "On item removed",
             "Triggered when item removed.", "OnItemRemoved"); 
 
+// monitor properties of a item
 AddStringParam("Property", "Property name of item.", '""');
 AddCondition(3, cf_trigger, "On value changed", "Monitor - key", 
             "On <i>{0}</i> value changed",
@@ -40,8 +42,24 @@ AddCondition(5, cf_trigger, "On key added", "Monitor - key",
             
 AddCondition(6, cf_trigger, "On key removed", "Monitor - key", 
             "On key removed",
-            "Triggered when key removed.", "OnPropertyRemoved");                            
-                       
+            "Triggered when key removed.", "OnPropertyRemoved"); 
+
+// retrieve items
+AddCondition(11, cf_trigger, "On any item changed", "Monitor", 
+            "On any item changed",
+            "Triggered when any item changed, included item added, removed, value changed.", "OnItemListChanged");                                       
+
+AddComboParamOption("Small to large");
+AddComboParamOption("Large to small");
+AddComboParam("Order", "Order of itemID.", 0);
+AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Load", 
+             "For each itemID <i>{0}</i>", 
+             "Repeat the event for each itemID of load result which sorted by itemID.", "ForEachItemID");
+
+AddStringParam("ID", "ID of item.", '""');
+AddCondition(13, cf_looping | cf_not_invertible, "For each key", "Load", 
+             "For each key", 
+             "Repeat the event for each key of a item of load result.", "ForEachKey");                        
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Domain", "The root location of the Firebase data.", '""');
@@ -60,13 +78,13 @@ AddAction(2, 0, "Stop", "Monitor all",
          
 AddStringParam("Key", "The name of the key.", '""');         
 AddAnyTypeParam("Value", "Compared value.", 0);          
-AddAction(3, 0, "Start", "Monitor on key", 
+AddAction(3, af_deprecated, "Start", "Monitor on key", 
           "Start monitor on items with key <i>{0}</i> = <i>{1}</i>", 
           "Start monitor items with condition.", "StartMonitorItemsWCond");   
 
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "Compared value.", 0);      
-AddAction(4, 0, "Stop", "Monitor on key", 
+AddAction(4, af_deprecated, "Stop", "Monitor on key", 
           "Stop monitor on items with key <i>{0}</i> = <i>{1}</i>", 
           "Stop monitor items with condition.", "StopMonitorItemsWCond");                              
 //////////////////////////////////////////////////////////////
@@ -77,17 +95,38 @@ AddExpression(2, ef_return_any | ef_variadic_parameters, "Get last item content"
               'Get last content in JSON string, used under "condition: On item added" or "condition: On item removed". Add 2nd parameter for specific key, 3rd parameter for default value if this key is not existed.');
 AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Key", "The name of the key.", '""');
-AddExpression(3, ef_return_any, "Get value at", "Table", "At", 
-              "Get value by itemId and key in last load result.");
-                             
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", 
+              "Get value by itemId and key in last load result. Add 3rd parameter for default value if this key is not existed.");
+AddExpression(4, ef_return_number, "Get X position in last item content", "Items", "LastItemContentPosX", 
+              'Get X position in last content in JSON string, used under "condition: On item added" or "condition: On item removed".');
+AddExpression(5, ef_return_number, "Get Y position in last item content", "Items", "LastItemContentPosY", 
+              'Get Y position in last content in JSON string, used under "condition: On item added" or "condition: On item removed".');
+
 AddExpression(11, ef_return_string, "Get last key name", "Properties", "LastPropertyName", 
               'Get last content in JSON string, used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');      
 AddExpression(12, ef_return_any, "Get last value", "Item", "LastValue", 
               'Get last value of key, used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');         
 AddExpression(13, ef_return_any, "Get previous value", "Item", "PrevValue", 
-              'Get previous value of key, used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');         
+              'Get previous value of key, used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".'); 
+              
+AddExpression(14, ef_return_number, "Get last X position", "Item", "LastValuePosX", 
+              'Get last X position in key "pos", used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');     
+AddExpression(15, ef_return_number, "Get last Y position", "Item", "LastValuePosY", 
+              'Get last Y position in key "pos", used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');  
+AddExpression(16, ef_return_number, "Get previous X position", "Item", "PrevValuePosX", 
+              'Get previous X position in key "pos", used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');     
+AddExpression(17, ef_return_number, "Get previous Y position", "Item", "PrevValuePosY", 
+              'Get previous Y position in key "pos", used under "condition: On any value changed", "condition: On key added" or "condition: On key removed".');             
 
-                                                                                    
+AddExpression(21, ef_return_string, "Get itemID", "For Each", "CurItemID", 
+              "Get current itemID in a For Each loop, in last load result. Or in save/remove callback.");
+AddExpression(22, ef_return_any | ef_variadic_parameters, "Get last item content", "For Each", "CurItemContent", 
+              'Get last content in JSON string, used under "condition: On item added" or "condition: On item removed". Add 2nd parameter for specific key, 3rd parameter for default value if this key is not existed.');                                                                                    
+AddExpression(23, ef_return_string, "Get key", "For Each", "CurKey", 
+              "Get current key in a For Each loop, in last load result.");
+AddExpression(24, ef_return_any, "Get value", "For Each", "CurValue", 
+              "Get current value in a For Each loop, in last load result.");               
+              
 ACESDone();
 
 // Property grid properties for this plugin

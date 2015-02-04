@@ -89,11 +89,13 @@ cr.plugins_.Rex_parse_message = function(runtime)
         this.filters.senders = [];
         this.filters.receivers = [];
         this.filters.tags = [];
+        this.filters.timestamps = [];
         
         this.exp_LastSentMessageID = "";
 	    this.exp_CurMessageIndex = -1;
 	    this.exp_CurMessage = null;
-	    this.exp_LastFetchedMessage = null;        
+	    this.exp_LastFetchedMessage = null;   
+	    this.exp_LastRemovedMessageID = "";     
 	};
 	
 	instanceProto.create_messagebox = function(page_lines)
@@ -126,7 +128,10 @@ cr.plugins_.Rex_parse_message = function(runtime)
             filters.receivers = [];
             
         if (filters.tags.length != 0)                
-            filters.tags = [];        
+            filters.tags = [];  
+            
+        if (filters.timestamps.length != 0)                
+            filters.timestamps = [];                    
 	};    
     
     instanceProto.get_request_query = function (filters, with_content)
@@ -140,16 +145,23 @@ cr.plugins_.Rex_parse_message = function(runtime)
             query["containedIn"]("senderID", tfilters.senders);        
 
         var receivers_cnt = filters.receivers.length;
-        if (senders_cnt == 1)
+        if (receivers_cnt == 1)
             query["equalTo"]("receiverID", filters.receivers[0]);
-        else if (senders_cnt > 1)
+        else if (receivers_cnt > 1)
             query["containedIn"]("receiverID", filters.receivers);
 
         var tags_cnt = filters.tags.length;
-        if (senders_cnt == 1)
+        if (tags_cnt == 1)
             query["equalTo"]("tag", filters.tags[0]);
-        else if (senders_cnt > 1)
-            query["containedIn"]("tag", filters.tags);            
+        else if (tags_cnt > 1)
+            query["containedIn"]("tag", filters.tags);
+
+        var timestamps_cnt=filters.timestamps.length, cond;       
+        for(var i=0; i<timestamps_cnt;i++)
+        {
+            cond = filters.timestamps[i];
+            query[cond[0]](cond[1], new Date(cond[2]));
+        }
         
         query[this.order]("createdAt");
         
@@ -190,7 +202,25 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	Cnds.prototype.OnFetchOneError = function ()
 	{
 	    return true;
-	};	   
+	};	
+		
+	Cnds.prototype.OnRemoveComplete = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnRemoveError = function ()
+	{
+	    return true;
+	};
+	
+	Cnds.prototype.OnRemoveQueriedItemsComplete = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnRemoveQueriedItemsError = function ()
+	{
+	    return true;
+	};			   
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -290,6 +320,23 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	{
         this.filters.tags.push(tag);
 	};   
+	
+    Acts.prototype.AddAllTimestamps = function ()
+	{
+        this.filters.timestamps.length = 0;
+	}; 
+    
+    var TIMESTAMP_CONDITIONS = [
+        ["lessThan", "lessThanOrEqualTo"],           // before, excluded/included
+        ["greaterThan", "greaterThanOrEqualTo"],     // after, excluded/included
+    ];
+    var TIMESTAMP_TYPE = ["createdAt", "updatedAt"];
+    Acts.prototype.AddTimeConstraint = function (when_, timestamp, is_included, type_)
+	{
+	    var query_fn = TIMESTAMP_CONDITIONS[when_][is_included];
+	    var compared_type = TIMESTAMP_TYPE[type_];
+        this.filters.timestamps.push([query_fn, compared_type, timestamp]);
+	}; 	
     
     Acts.prototype.FetchByMessageID = function (messageID)
 	{
@@ -310,7 +357,100 @@ cr.plugins_.Rex_parse_message = function(runtime)
         var query = new window["Parse"]["Query"](this.message_klass);        
         query["get"](messageID, handler);
 	}; 	
-	   
+	
+    Acts.prototype.RemoveByMessageID = function (messageID)
+	{
+        var self = this;
+        
+	    var on_success = function(message)
+	    {
+	        self.exp_LastRemovedMessageID = messageID;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveComplete, self);
+	    };	    
+	    var on_error = function(message, error)
+	    { 
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveError, self);     
+	    };	    
+	    var handler = {"success":on_success, "error": on_error};
+	    	    
+        var message = new this.message_klass();
+	    message["set"]("id", messageID);
+	    message["destroy"](handler);
+	}; 	
+	
+    Acts.prototype.RemoveQueriedItems = function ()
+	{
+	    var query = this.get_request_query(this.filters, 1);  
+	    var remove_error_flg = false;
+
+	    // wait done
+        var wait_events = 0;    
+	    var isDone_handler = function()
+	    {
+	        wait_events -= 1;
+	        if (wait_events == 0)
+	        {	            
+	            // all jobs done 
+	            // step 4. do read items again
+	            query["find"](query_handler);
+	        }
+	    };
+	    // wait done
+	    	    
+        var self = this;
+        // destroy        
+	    var on_destroy_success = function(message)
+	    {
+	        self.exp_LastRemovedMessageID = message["id"];
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveComplete, self);
+	        isDone_handler();
+	    };	    
+	    var on_destroy_error = function(message, error)
+	    { 
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveError, self);  
+	           
+	        if (!remove_error_flg)
+	        {
+	            self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveQueriedItemsError, self);     
+	            remove_error_flg = true;
+	        }
+	    };	    
+	    var destroy_handler = {"success":on_destroy_success, "error": on_destroy_error};
+	    // destroy     
+        
+        // read
+        // step 2. destroy each item
+	    var on_query_success = function(items)
+	    {	
+	        var i, cnt=items.length;
+	        if (cnt == 0)
+	        {
+	            // all items had been removed
+	            // step 4. no item returned, done
+	            self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveQueriedItemsComplete, self);
+	        }
+	        else
+	        {
+	            for(i=0; i<cnt; i++)
+	            {
+	                wait_events += 1;
+	                items[i]["destroy"](destroy_handler);
+	            }
+	            
+	            // continue to find
+	            query["find"](query_handler);
+	        }
+	    };	    
+	    var on_query_error = function(error)
+	    {      
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveQueriedItemsError, self); 
+	    };
+	    var query_handler = {"success":on_query_success, "error": on_query_error};        
+        // read
+                
+        // step 1. read items   
+	    query["find"](query_handler);
+	}; 	   
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -474,7 +614,14 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	        return;
 	    }
 		ret.set_float(this.exp_LastFetchedMessage["createdAt"].getTime());
-	};	    
+	};
+    
+	Exps.prototype.LastRemovedMessageID = function (ret)
+	{
+		ret.set_float(this.exp_LastRemovedMessageID);
+	};	
+	
+		    
 }());     
  
 
@@ -586,7 +733,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
             
 		    if (solModifierAfterCnds)
 		    {
-		        this.runtime.popSol(current_event.solModifiers);
+		        runtime.popSol(current_event.solModifiers);
 		    }            
 		}
     		

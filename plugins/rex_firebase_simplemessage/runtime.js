@@ -62,6 +62,8 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+    var OFFLMSG_DISCARD = 0;
+    var OFFLMSG_PEND = 1;    
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";
@@ -71,8 +73,11 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
         this.lastReceiverID = "";
         
         var message_type = this.properties[2];
-        this.inBox = this.create_inBox(message_type);
-        this.outPort = new window.FirebaseSimpleMessageKlass(message_type);
+        this.offline_mode = this.properties[3];
+	    var messageKlass = (this.offline_mode == OFFLMSG_DISCARD)? 
+	                       window.FirebaseSimpleMessageKlass: window.FirebaseStackMessageKlass;        
+        this.inBox = this.create_inBox(messageKlass, message_type);
+        this.outPort = new messageKlass(message_type);
         this.exp_LastMessage = null;        
 	};
 	
@@ -91,7 +96,7 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	};
 	
 	
-    instanceProto.create_inBox = function (message_type)
+    instanceProto.create_inBox = function (messageKlass, message_type)
 	{    
 	    var self = this;
 	    var on_received = function(d)
@@ -100,8 +105,8 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
             var trig = cr.plugins_.Rex_Firebase_SimpleMessage.prototype.cnds.OnReceivedMessage;
             self.runtime.trigger(trig, self); 
 	    };
-	    
-	    var simple_message = new window.FirebaseSimpleMessageKlass(message_type);
+
+	    var simple_message = new messageKlass(message_type);
 	    simple_message.onReceived = on_received;
         
         return simple_message;
@@ -172,10 +177,11 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	    if (receiverID == "")
 	        return;
 	        
-	    if ((this.lastReceiverID != "") && (this.lastReceiverID != receiverID))
+	    if (this.offline_mode == OFFLMSG_DISCARD)
 	    {
-	        // clean message since receiver had changed
-	        this.send_message(this.lastReceiverID, null);
+	        // clean message if receiver had changed
+	        if ((this.lastReceiverID != "") && (this.lastReceiverID != receiverID))           
+	            this.send_message(this.lastReceiverID, null);	        
 	    }
 	    	    
         this.send_message(receiverID, message);
@@ -220,6 +226,106 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	}; 
 	
 }());
+
+(function ()
+{
+    if (window.FirebaseStackMessageKlass != null)
+        return;    
+    
+    var MESSAGE_STRING = 0;
+    var MESSAGE_JSON = 1;
+    var StackMessageKlass = function (messageType)
+    {
+        // export
+        this.onReceived = null
+        // export
+                
+        this.messageType = messageType;
+        
+        // internal
+        this.ref = null;
+        this.on_read = null;        
+    };
+    
+    var StackMessageKlassProto = StackMessageKlass.prototype;    
+
+    StackMessageKlassProto.SetRef = function (ref)
+    {
+        var is_reading = (this.on_read != null);
+        this.StopUpdate();
+        this.ref = ref;
+        if (is_reading)
+            this.StartUpdate();
+    }; 
+    
+    StackMessageKlassProto.Send = function (message, senderID, senderName)
+    {
+        if (this.ref == null)
+            return;
+            
+        
+        // clean message
+        if ((message == null) && (senderID == null) && (senderName == null))
+        {
+            // do nothing  
+            return;
+        }
+        
+        if (this.messageType == MESSAGE_JSON)
+            message = JSON.parse(message); 
+        
+        var d = {
+            "message": message,
+            "senderID": senderID,
+            "senderName": senderName,
+        };     
+        this.ref["push"](d);
+    };    
+    
+    StackMessageKlassProto.StartUpdate = function (ref)
+	{
+        this.StopUpdate();
+        if (ref != null)
+            this.ref = ref; 
+        
+        var self = this;
+	    var on_update = function (snapshot)
+	    {     
+	        var d = snapshot["val"]();
+            if (self.skip_first)
+            {
+                self.skip_first = false;
+                return;
+            }
+            if (d == null)
+                return;
+
+
+            if (self.messageType == MESSAGE_JSON)
+                d["message"] = JSON.stringify(d["message"]);
+            
+            if (self.onReceived)
+                self.onReceived(d);
+                
+            // remove this child
+            snapshot["ref"]()["remove"]();
+        };
+
+        this.ref["limitToFirst"](1)["on"]("child_added", on_update);        
+        this.on_read = on_update;
+    };
+
+    StackMessageKlassProto.StopUpdate = function ()
+	{
+        if (this.on_read == null)
+            return;
+
+        this.ref["off"]("child_added", this.on_read);
+        this.on_read = null; 
+    };  
+        	
+	window.FirebaseStackMessageKlass = StackMessageKlass;
+}());     
 
 (function ()
 {
