@@ -64,13 +64,19 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 	    
-	    window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	    this.rank_klass = window["Parse"].Object["extend"](this.properties[2]);
+	    if (!this.recycled)
+	    {	    
+	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        this.rank_klass = window["Parse"].Object["extend"](this.properties[2]);
+	    }
+	    
 	    var leaderboardID = this.properties[3];
 	    var page_lines = this.properties[4]
 	    this.ranking_order = this.properties[5];
 	    
-        this.leaderboard = this.create_leaderboard(page_lines);
+	    if (!this.recycled)
+            this.leaderboard = this.create_leaderboard(page_lines);
+        
         this.set_leaderBoardID(leaderboardID);
         
 	    this.exp_CurPlayerRank = -1;
@@ -105,7 +111,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    
 	    if (leaderboard == null)
 	        leaderboard = this.leaderboard;
-	    leaderboard.Clean();
+	    leaderboard.Reset();		
 	};
     
 	instanceProto.get_base_query = function(boardID, userID)
@@ -195,7 +201,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    };
         
 	    // step 1
-	    var handler = {"success":on_success, "error": on_error};
+		var handler = {"success":on_success, "error": on_error};		
 	    this.get_base_query(this.leaderBoardID, userID)["first"](handler); 
 	}; 
 	
@@ -340,6 +346,12 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
     
     var ItemPageKlassProto = ItemPageKlass.prototype;  
      
+	ItemPageKlassProto.Reset = function()
+	{ 
+	    this.items.length = 0;
+        this.start = 0;     
+	};	
+	     
 	ItemPageKlassProto.request = function(query, start, lines)
 	{
         if (start < 0)
@@ -349,12 +361,10 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         
 	    var on_success = function(items)
 	    {
-	        if ((items != null) && (items.length > 0))
-            {
-	            self.items = items;
-                self.start = start;
-                self.page_index = Math.floor(start/self.page_lines);
-            }
+	        self.items = items;
+            self.start = start;
+            self.page_index = Math.floor(start/self.page_lines);
+            
             if (self.onReceived)
                 self.onReceived();
 	    };	    
@@ -454,12 +464,6 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
 	    return this.items[i - this.start];
 	};
-
-	ItemPageKlassProto.Clean = function()
-	{ 
-	    this.items.length = 0;
-        this.start = 0;     
-	};
 	
 	ItemPageKlassProto.GetCurrentPageIndex = function ()
 	{
@@ -467,4 +471,4 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	};	
 
 	window.ParseItemPageKlass = ItemPageKlass;
-}());        
+}());                

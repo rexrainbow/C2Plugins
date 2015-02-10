@@ -73,19 +73,31 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
 	    
-        this.save_item = {};
-        this.disconnectRemove_absRefs = {};
-        this.trig_tag = null;
+	    if (!this.recycled)
+	    {
+            this.save_item = {};
+            this.disconnectRemove_absRefs = {};        
+            this.load_request_itemIDs = {};
+            this.load_items = {};   
+        }
+        else
+        {
+            clean_table( this.save_item );
+            clean_table( this.disconnectRemove_absRefs );
+            clean_table( this.load_request_itemIDs );
+            clean_table( this.load_items );           
+        }
         
-        this.load_request_itemIDs = {};
-        this.load_items = {};   
+        //this.attachments = ["", ""];      
+        this.trig_tag = null;        
              
         this.exp_CurItemID = ""; 
         this.exp_CurItemContent = null;   
         this.exp_CurKey = "";  
         this.exp_CurValue = 0;
         this.exp_LastItemID = ""; 
-        this.exp_LastGeneratedKey = "";        
+        this.exp_LastGeneratedKey = "";  
+        this.exp_LastAttachment = "";
 	};
 	
 	instanceProto.get_ref = function(k)
@@ -484,6 +496,12 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         ref["onDisconnect"]()["remove"]();
 	    this.disconnectRemove_absRefs[ref["toString"]()] = true;
 	};  
+    
+    Acts.prototype.SetActionID = function (on_success, on_error)
+	{	 
+	    this.attachments[0] = on_success;
+        this.attachments[1] = on_error;
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -548,5 +566,11 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	Exps.prototype.LastGeneratedKey = function (ret)
 	{
 	    ret.set_string(this.exp_LastGeneratedKey);
-	};	    
+	};
+    
+	Exps.prototype.LastAttachment = function (ret)
+	{
+	    ret.set_any(this.exp_LastAttachment);
+	};
+    
 }());

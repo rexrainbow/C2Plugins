@@ -65,7 +65,9 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.rootpath = this.properties[0] + "/"; 
-        window["Firebase"]["enableLogging"](this.properties[1] == 1);
+        
+        if (!this.recycled)
+            window["Firebase"]["enableLogging"](this.properties[1] == 1);
         
 		// push
 		this.last_push_ref = "";
@@ -81,7 +83,10 @@ cr.plugins_.Rex_Firebase = function(runtime)
         this.onComplete_cb = null;
         this.onComplete_error = null;
         // reading
-        this.callbackMap = new window.FirebaseCallbackMapKlass();
+        if (!this.recycled)
+            this.callbackMap = new window.FirebaseCallbackMapKlass();
+        else
+            this.callbackMap.Reset();
                               
         this.reading_cb = null;
         this.snapshot = null;
@@ -466,7 +471,13 @@ cr.plugins_.Rex_Firebase = function(runtime)
     };
     
     var CallbackMapKlassProto = FirebaseCallbackMapKlass.prototype;
-    
+
+	CallbackMapKlassProto.Reset = function(k)
+	{
+        for (var k in this.map)
+            delete this.map[k];
+	}; 
+	    
 	CallbackMapKlassProto.get_ref = function(k)
 	{
         return new window["Firebase"](k);

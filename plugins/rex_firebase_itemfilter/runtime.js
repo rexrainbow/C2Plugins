@@ -82,9 +82,18 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
         
-        this.save_item = {};
-        this.trig_tag = null;
-        this.request_itemIDs = {};
+        if (!this.recycled)
+        {
+            this.save_item = {};
+            this.request_itemIDs = {};
+        }
+        else
+        {
+            clean_table( this.save_item );
+            clean_table( this.request_itemIDs );
+        }
+           
+        this.trig_tag = null;            
         this.exp_CurItemID = "";
 	};
 	

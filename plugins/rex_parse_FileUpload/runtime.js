@@ -65,7 +65,9 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.file_obj = null;
-	    window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	    
+	    if (!this.recycled)
+	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	};
 
 	instanceProto.OnUploadComplete = function()

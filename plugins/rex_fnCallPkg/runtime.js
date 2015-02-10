@@ -57,7 +57,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         this.fn_queue = []; 
         
         // for each pkg
-        this.Exp_pkg = null; 	    
+        this.exp_pkg = null; 	    
 	};
 	var fake_ret = {value:0,
 	                set_any: function(value){this.value=value;},
@@ -203,28 +203,18 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 			    
-        if (solModifierAfterCnds)
+        for (i=0; i<cnt; i++)
         {
-            for (i=0; i<cnt; i++)
-            {
+            if (solModifierAfterCnds)
                 this.runtime.pushCopySol(current_event.solModifiers);
-                
-                this.Exp_pkg = this.fn_queue[i];
-                
-                current_event.retrigger();
-		    	this.runtime.popSol(current_event.solModifiers);
-            }            	
-	    }
-	    else
-	    {
-            for (i=0; i<cnt; i++)
-            {
-                this.Exp_pkg = this.fn_queue[i];
-                
-                current_event.retrigger();
-            }	        
-	    }
-	    this.Exp_pkg = null;
+            
+            this.exp_pkg = this.fn_queue[i];            
+            current_event.retrigger();
+            
+            if (solModifierAfterCnds)
+			    this.runtime.popSol(current_event.solModifiers);
+        }  
+	    this.exp_pkg = null;
 
 		return false;
 	}; 
@@ -232,10 +222,10 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	  
 	Cnds.prototype.IsCurName = function (name_)
 	{
-	    if (this.Exp_pkg == null)	        
+	    if (this.exp_pkg == null)	        
 		    return false;
 		
-		return cr.equals_nocase(name_, this.Exp_pkg[0]);
+		return cr.equals_nocase(name_, this.exp_pkg[0]);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -296,27 +286,31 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		
 	};
     
-    Acts.prototype.CurPkgOverwriteParam = function (index_, value_)
+    Acts.prototype.OverwriteParam = function (index_, value_)
 	{
-	    if (this.Exp_pkg == null)
+	    var pkg = this.exp_pkg || this.fn_queue[0];
+	    if (pkg == null)
+	    {
 	        return;
+	    }
 	    
-	    var param_cnt = this.Exp_pkg.length -1;
+	    var param_cnt = pkg.length -1;
 	    var param_index = index_+1;
-
+        
 	    if (index_ >= param_cnt)
 	    {
-	        this.Exp_pkg.length = param_index+1;
+	        // extend param array
+	        pkg.length = param_index+1;
 	        var i;
 	        for (i=param_cnt+1; i<param_index; i++)
 	        {
-	            this.Exp_pkg[i] = 0;
+	            pkg[i] = 0;
 	        }
 	    }
 
-	    this.Exp_pkg[param_index] = value_;
+	    pkg[param_index] = value_;
 	};
-    
+
     Acts.prototype.CallFunctionInQueue = function (is_reverse)
 	{   
 	    this.execute_package(this.fn_queue, is_reverse);
@@ -388,18 +382,18 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
     Exps.prototype.CurName = function (ret)
 	{
-	    var n = (this.Exp_pkg == null)? "" : this.Exp_pkg[0];
+	    var n = (this.exp_pkg == null)? "" : this.exp_pkg[0];
 	    ret.set_string( n );
 	};	
 
     Exps.prototype.CurParam = function (ret, index_)
 	{
 	    var p;
-	    if (this.Exp_pkg == null)
+	    if (this.exp_pkg == null)
 	        p = 0;
 	    else
 	    {
-	        p = this.Exp_pkg[index_ + 1];
+	        p = this.exp_pkg[index_ + 1];
 	        if (p == null)
 	            p = 0;
 	    }

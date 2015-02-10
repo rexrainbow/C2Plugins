@@ -113,7 +113,12 @@ AddExpression(4, ef_return_string, "Get all headers", "JSON", "HeadersToJSON",
 			  
 AddExpression(5, ef_return_string, "Get all body values", "JSON", "BodyToJSON", 
               "Get all body values in JSON string.");
-              
+
+AddStringParam("Slot name", "The name of the slot.", '""');              
+AddStringParam("Key", "The name of the key.", '""');
+AddExpression(6, ef_return_any | ef_variadic_parameters, "Get header value", "Headers", "HeaderValue", 
+              "Get header value by slot name and key. Add default value at 3rd parameter if read data is null.");
+                            
 ACESDone();
 
 // Property grid properties for this plugin

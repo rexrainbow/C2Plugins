@@ -75,10 +75,19 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 	    
-
-        this.items = {};
-        this.tag2items = {};
-        this.callbackMap = new window.FirebaseCallbackMapKlass();   
+        
+        if (!this.recycled)
+        {
+            this.items = {};
+            this.tag2items = {};            
+            this.callbackMap = new window.FirebaseCallbackMapKlass();
+        }
+        else
+        {
+            clean_table( this.items );
+            clean_table( this.tag2items );
+            this.callbackMap.Reset();
+        }
 
         this.exp_LastItemID = "";
         this.exp_LastItemContent = null;
@@ -658,7 +667,6 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	};	
 }());
 
-
 (function ()
 {
     if (window.FirebaseCallbackMapKlass != null)
@@ -670,7 +678,13 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
     };
     
     var CallbackMapKlassProto = FirebaseCallbackMapKlass.prototype;
-    
+
+	CallbackMapKlassProto.Reset = function(k)
+	{
+        for (var k in this.map)
+            delete this.map[k];
+	}; 
+	    
 	CallbackMapKlassProto.get_ref = function(k)
 	{
         return new window["Firebase"](k);

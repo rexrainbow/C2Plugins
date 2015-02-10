@@ -73,7 +73,7 @@ AddCondition(104, cf_trigger, "On remove items error", "Remove - queried items",
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(1, 0, "Set value", "Prepare item", 
-          "Prepare- Set key <i>{0}</i> to  <i>{1}</i> in current item", 
+          "Prepare- Set key <i>{0}</i> to <i>{1}</i>", 
           "Set value into current item.", "SetValue");
           
 AddStringParam("Key", "The name of the key.", '""');
@@ -81,12 +81,12 @@ AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
 AddAction(2, 0, "Set boolean value", "Prepare item", 
-          "Prepare- Set key <i>{0}</i> to <i>{1}</i> in current item", 
+          "Prepare- Set key <i>{0}</i> to <i>{1}</i>", 
           "Set boolean value into current item.", "SetBooleanValue"); 
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAction(3, 0, "Remove key", "Prepare item",
-          "Prepare- Remove key <i>{0}</i> in server", 
+          "Prepare- Remove key <i>{0}</i>", 
           "Remove key in firebase server.", "RemoveKey");            
           
 AddStringParam("ID", "ID of item.", '""');
@@ -103,7 +103,13 @@ AddAction(5, 0, "Push", "Save",
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(6, 0, "Save at first queried item", "Save", 
           "Save- Save current item at first queried item (tag <i>{0}</i>)", 
-          "Overwrite first queried item. Create one if there had no queried item.", "OverwriteQueriedItems"); 		  
+          "Overwrite first queried item. Create one if there had no queried item.", "OverwriteQueriedItems");
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 1);
+AddAction(7, 0, "Increase value", "Prepare item", 
+          "Prepare- Increase value at key <i>{0}</i> by <i>{1}</i>", 
+          "Increase value at key into current item.", "IncValue");           		  
 
 AddNumberParam("Start", "Start index, 0-based.", 0);          
 AddNumberParam("Lines", "Count of lines", 10); 
@@ -117,7 +123,7 @@ AddAction(12, 0, "Turn to page", "Load - page",
           "Turn to page.", "RequestTurnToPage");
                            
 AddAction(13, 0, "Update current page", "Load - page", 
-          "Load - update current page", 
+          "Load- update current page", 
           "Update current page.", "RequestUpdateCurrentPage"); 
           
 AddAction(14, 0, "Turn to next page", "Load - page", 
@@ -199,8 +205,9 @@ AddAction(91, 0, "Load by itemID", "Load - itemID",
           "Load item by itemID.", "FetchByItemID");          
           
 AddStringParam("ID", "ID of item.", '""');
+AddStringParam("Tag", "A tag, to distinguish between different remove requests.", '"_"');
 AddAction(101, 0, "Remove by itemID", "Remove", 
-          "Remove- remove item by itemID: <i>{0}</i>", 
+          "Remove- remove item by itemID: <i>{0}</i> (tag <i>{1}</i>)", 
           "Remove item by itemID.", "RemoveByItemID");    
                    
 AddAction(102, 0, "Remove queried items", "Remove - queried items", 

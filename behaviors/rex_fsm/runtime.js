@@ -48,11 +48,11 @@ cr.behaviors.Rex_FSM = function(runtime)
 		var previous_state = "Off";		
 		var current_state = this.properties[1];		
         current_state = (current_state!="")? current_state:"Off";
-        if (!this.recycled)
-        {        	           
-            this.fsm = new cr.behaviors.Rex_FSM.FSMKlass(this, previous_state, current_state); 
-        }
-        this.fsm.Reset(this, previous_state, current_state);
+        
+        if (!this.recycled)               	           
+            this.fsm = new cr.behaviors.Rex_FSM.FSMKlass(this, previous_state, current_state);         
+        else
+            this.fsm.Reset(this, previous_state, current_state);
         
         this.check_state = null; 
         this.check_state2 = null;
@@ -213,9 +213,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 {
     cr.behaviors.Rex_FSM.FSMKlass = function(plugin, previous_state, current_state)
     {
-        this.plugin = plugin;
-        this.PreState = previous_state;
-        this.CurState = current_state;
+        this.Reset(plugin, previous_state, current_state);
     };
     var FSMKlassProto = cr.behaviors.Rex_FSM.FSMKlass.prototype;
 

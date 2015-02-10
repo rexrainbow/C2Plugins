@@ -67,13 +67,27 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";        
 
         this.owner_userID = "";
-		this.save_header = {};
-		this.save_body = {};
+        
+        if (!this.recycled)
+        {
+		    this.save_header = {};
+		    this.save_body = {};
+		}
+		else
+		{
+		    clean_table( this.save_header );
+		    clean_table( this.save_body );
+		}
+		
 		this.load_headers = null;
 		this.load_body = null;
 		
 		this.exp_CurSlotName = "";
-		this.exp_CurHeader = {};
+		
+		if (!this.recycled)
+		    this.exp_CurHeader = {};
+		else
+		    clean_table( this.exp_CurHeader );
 	};
 	
 	instanceProto.get_ref = function(k)
@@ -113,8 +127,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
 	var clean_table = function (o)
 	{
-	    var k;
-		for (k in o)
+		for (var k in o)
 		    delete o[k];
 	};	
 	
@@ -360,4 +373,18 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	{
 		ret.set_string(JSON.stringify(this.load_body));
 	};	
+	
+	Exps.prototype.HeaderValue = function (ret, slot_name, key_, default_value)
+	{	
+	    var value_ = this.load_body;
+	    if (value_ != null)
+	    {
+	        value_ = value_[slot_name];
+	        if (value_ != null)
+	        {
+	            value_ = value_[key_];
+	        }
+	    }
+		ret.set_any(get_data(value_, default_value));
+	};		
 }());

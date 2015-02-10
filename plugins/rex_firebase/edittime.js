@@ -138,7 +138,7 @@ AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
-AddAction(11, 0, "Push value", "Send - Push", 
+AddAction(11, 0, "Push boolean value", "Send - Push", 
           "Push <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>",   
           "Push boolean value at data ref.", "PushBooleanValue");                          
           

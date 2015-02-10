@@ -65,7 +65,9 @@ cr.plugins_.Rex_parse_QuickLogin = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
         this.last_error = null;
-	    window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+        
+        if (!this.recycled)
+	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	};
 	
 	instanceProto.OnLoginSuccessfully = function()

@@ -74,10 +74,14 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
         
         var message_type = this.properties[2];
         this.offline_mode = this.properties[3];
-	    var messageKlass = (this.offline_mode == OFFLMSG_DISCARD)? 
-	                       window.FirebaseSimpleMessageKlass: window.FirebaseStackMessageKlass;        
-        this.inBox = this.create_inBox(messageKlass, message_type);
-        this.outPort = new messageKlass(message_type);
+        
+        if (!this.recycled)
+        {
+	        var messageKlass = (this.offline_mode == OFFLMSG_DISCARD)? 
+	                           window.FirebaseSimpleMessageKlass: window.FirebaseStackMessageKlass;        
+            this.inBox = this.create_inBox(messageKlass, message_type);
+            this.outPort = new messageKlass(message_type);
+        }
         this.exp_LastMessage = null;        
 	};
 	

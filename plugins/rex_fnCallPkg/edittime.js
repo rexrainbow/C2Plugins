@@ -49,9 +49,9 @@ AddAction(13, 0, "Load", "Function queue",
           "Load function queue.", "LoadFnQueue"); 
 AddNumberParam("Index", "Index of parameter.", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0); 
-AddAction(14, 0, "Overwrite parameter", "Function queue : For each", 
+AddAction(14, 0, "Overwrite parameter", "Function queue", 
           "Overwrite parameter[<i>{0}</i>] to <i>{1}</i>",
-          'Overwrite parameter of current package in function queuem in a For Each package.', "CurPkgOverwriteParam");
+          'Overwrite parameter of current package in function queue.', "OverwriteParam");
 AddComboParamOption("From top to bottom");
 AddComboParamOption("From bottom to top");
 AddComboParam("Odrer", "Execution order.", 0);          
