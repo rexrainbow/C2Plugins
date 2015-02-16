@@ -69,6 +69,8 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
         this.is_touched = false;	    
         this.cur_touchX = -1;
         this.cur_touchY = -1;
+        this.delta_touchX = 0;
+        this.delta_touchY = 0;        
         this.start_touchX = -1;
         this.start_touchY = -1;
         this._vectorX = -1;
@@ -112,6 +114,18 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
         
         var pre_is_touched = this.is_touched;
         this.is_touched = is_touched;	
+        
+        if (pre_is_touched && is_touched)
+        {
+            this.delta_touchX = this.cur_touchX - pre_tx;
+            this.delta_touchY = this.cur_touchY - pre_ty;
+        }
+        else         
+        {
+            this.delta_touchX = 0;
+            this.delta_touchY = 0; 
+        }
+        
         if ((!pre_is_touched) && is_touched)
         {
             this.start_touchX = this.cur_touchX;
@@ -348,5 +362,15 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
     Exps.prototype.VectorY = function (ret)
     {
         ret.set_float(this._vectory_get());
-    };		  	
+    };
+
+    Exps.prototype.DeltaX = function (ret)
+    {
+        ret.set_float(this.delta_touchX);
+    };
+    
+    Exps.prototype.DeltaY = function (ret)
+    {
+        ret.set_float(this.delta_touchY);
+    };     
 }());

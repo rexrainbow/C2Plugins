@@ -51,7 +51,11 @@ AddExpression(6, ef_return_number, "Dragged unit vector X", "Polar", "VectorX",
               "Get the dragged unit vector X.");
 AddExpression(7, ef_return_number, "Dragged unit vector Y", "Polar", "VectorY", 
               "Get the dragged unit vector Y.");
-                                   
+AddExpression(8, ef_return_number, "Dragged delta X position in a tick", "Delta", "DeltaX", 
+              "Get dragged delta X position by current X - previous X.");
+AddExpression(9, ef_return_number, "Dragged delta Y position in a tick", "Delta", "DeltaY", 
+              "Get dragged delta Y position by current Y - previous y.");
+              
 ACESDone();
 
 // Property grid properties for this plugin
