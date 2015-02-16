@@ -629,7 +629,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
     
 	Exps.prototype.LastRemovedMessageID = function (ret)
 	{
-		ret.set_float(this.exp_LastRemovedMessageID);
+		ret.set_string(this.exp_LastRemovedMessageID);
 	};	
 	
 		    
@@ -746,7 +746,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
             
 		    if (solModifierAfterCnds)
 		    {
-		        this.runtime.popSol(current_event.solModifiers);
+		        runtime.popSol(current_event.solModifiers);
 		    }            
 		}
     		
