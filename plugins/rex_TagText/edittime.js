@@ -77,6 +77,43 @@ AddAction(52, 0, "Set line height", "Properties",
           "Set line height to <i>{0}</i>", 
           "Set line height.", "SetLineHeight");
 
+AddComboParamOption("Left");
+AddComboParamOption("Center");
+AddComboParamOption("Right");
+AddComboParam("Horizontal alignment", "Horizontal alignment of the text", 0);          
+AddAction(53, 0, "Set horizontal alignment", "Properties", 
+          "{my} Set horizontal alignment to <i>{0}</i>", 
+          "Set horizontal alignment.", "SetHorizontalAlignment"); 
+          
+AddNumberParam("Horizontal alignment", "Horizontal alignment. 0=Left, 1=Center. 2=Right", 0);          
+AddAction(54, 0, "Set horizontal alignment (#)", "Properties", 
+          "{my} Set horizontal alignment to <i>{0}</i>", 
+          "Set horizontal alignment.", "SetHorizontalAlignment"); 
+          
+AddComboParamOption("Top");
+AddComboParamOption("Center");
+AddComboParamOption("Bottom");
+AddComboParam("Vertical alignment", "Horizontal alignment of the text", 0);          
+AddAction(55, 0, "Set Vertical alignment", "Properties", 
+          "{my} Set vertical alignment to <i>{0}</i>", 
+          "Set vertical alignment.", "SetVerticalAlignment"); 
+
+AddNumberParam("Vertical alignment", "Vertical alignment. 0=Top, 1=Center. 2=Bottom", 0);          
+AddAction(56, 0, "Set Vertical alignment (#)", "Properties", 
+          "{my} Set vertical alignment to <i>{0}</i>", 
+          "Set vertical alignment.", "SetVerticalAlignment"); 
+          
+AddComboParamOption("Word");
+AddComboParamOption("Character");
+AddComboParam("Wrapping", "Wrap text by space-separated words or nearest character", 0);          
+AddAction(57, 0, "Set wrapping", "Properties", 
+          "{my} Set wrapping to <i>{0}</i>", 
+          "Set wrapping.", "SetWrapping");   
+
+AddNumberParam("Wrapping", "Wrap text. 0=Word, 1=Character", 0);    
+AddAction(58, 0, "Set wrapping (#)", "Properties", 
+          "{my} Set wrapping to <i>{0}</i>", 
+          "Set wrapping.", "SetWrapping");                                  
 ////////////////////////
 AddExpression(0,	ef_return_string,	"Get text",			"Text",			"Text",		"Get the object's text.");
 AddExpression(1,	ef_return_string,	"Get face name",	"Appearance",	"FaceName",	"Get the current font face name.");

@@ -94,6 +94,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.pre_instY = this.y;        
         this.pre_instHeight = this.height;
     };
+    
+	instanceProto.onDestroy = function ()
+	{		
+        this.set_lines_count(0);
+	};
+        
     	
     instanceProto.update = function(refresh)
     {     
@@ -223,6 +229,9 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
 	instanceProto.is_visible = function(idx)
 	{
+	    if (this.visible_start == null)
+	        return false;
+	        
 	    return (idx >= this.visible_start) && (idx <= this.visible_end);
 	};
 
@@ -557,7 +566,18 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         var is_changed = (this.default_lineHeight != height);        
 	    this.default_lineHeight = height;        
         this.update_flag = this.update_flag || is_changed;
-	};		
+	};	
+	
+    Acts.prototype.SetLineOffsetY = function (line_index, offsety)
+	{
+        var line = this.lines_mgr.GetLine(line_index);
+        if (!line)
+            return;
+        var is_changed = (line.offsety != offsety);        
+	    line.offsety = offsety;        
+        this.update_flag = this.update_flag || is_changed;
+	};	
+	
     Acts.prototype.RefreshVisibleLines = function ()
 	{
         this.update(true);
@@ -611,7 +631,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{ 
 		ret.set_int(this.lines_mgr.GetLinesCount());
 	};	
-		
+	
+    Exps.prototype.DefaultLineHeight = function (ret)
+	{ 
+		ret.set_float(this.default_lineHeight);
+	};			
+    
     Exps.prototype.At = function (ret, index_, key_, default_value)
 	{
 	    var v = this.lines_mgr.GetCustomData(index_, key_);   
@@ -625,6 +650,13 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{
 		ret.set_string(this.exp_LastRemovedLines);
 	};	
+	
+    Exps.prototype.CustomDataInLines = function (ret, idx, cnt)
+	{	    
+	    var dataInLines = this.lines_mgr.GetCustomDataInLines(idx, cnt);
+		ret.set_string(JSON.stringify( dataInLines ));
+	};		
+	
 }());
 
 
@@ -852,6 +884,22 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    
 	    return removed_lines;
 	};
+	
+	LinesMgrKlassProto.GetCustomDataInLines = function(idx, cnt)
+	{
+	    var i, line, dataInLines=[];
+	    dataInLines.length = cnt;
+	    for (i=0; i<cnt; i++)
+	    {
+	        line = this.GetLine(idx+i, true);
+	        if (line)
+	            dataInLines[i] = line.GetCustomData();
+	        else
+	            dataInLines[i] = null;
+	    }
+
+	    return dataInLines;
+	};	
 			
 	LinesMgrKlassProto.saveToJSON = function ()
 	{

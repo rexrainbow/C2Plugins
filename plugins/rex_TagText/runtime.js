@@ -90,7 +90,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.lastheight = this.height;
 		
 		this.line_height_offset = this.properties[8];
-		this.vshift = this.properties[10];
+
+		this.vshift = this.properties[10] * this.runtime.devicePixelRatio;
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
@@ -125,11 +126,8 @@ cr.plugins_.rex_TagText = function(runtime)
         {
 		    this.canvas_text = new cr.plugins_.rex_TagText.CanvasTextKlass();
         }
-		this.canvas_text.wrapbyword = this.wrapbyword;
-		this.canvas_text.halign = this.halign;
-		this.canvas_text.valign = this.valign;
-		this.canvas_text.vshift = this.vshift * this.runtime.devicePixelRatio;
-		this.canvas_text.textBaseline = (this.properties[9] == 0)? "alphabetic":"top";
+        this.canvas_text.Reset(this);
+        this.canvas_text.textBaseline = (this.properties[9] == 0)? "alphabetic":"top";
 		this.lines = this.canvas_text.rawTextLine;
 	};
 	
@@ -172,6 +170,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			"wr": this.wrapbyword,
 			"lho": this.line_height_offset,
 			"vs": this.vshift,
+            "bl": this.canvas_text.textBaseline,
 			"fn": this.facename,
 			"fs": this.fontstyle,
 			"ps": this.ptSize,
@@ -204,11 +203,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.lastwidth = this.width;
 		this.lastwrapwidth = this.width;
 		this.lastheight = this.height;
-		
-		this.canvas_text.wrapbyword = this.wrapbyword;
-		this.canvas_text.halign = this.halign;
-		this.canvas_text.valign = this.valign;
-		this.canvas_text.vshift = this.vshift * this.runtime.devicePixelRatio;
+
+        this.canvas_text.textBaseline = o["bl"];	
 	};
 	
 	instanceProto.tick = function ()
@@ -748,8 +744,47 @@ cr.plugins_.rex_TagText = function(runtime)
     
 	Acts.prototype.SetLineHeight = function(line_height_offset)
 	{
+	    if (this.line_height_offset != line_height_offset)
+	    {
+	        this.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }    
         this.line_height_offset = line_height_offset;
-	};	    
+	};	
+
+	Acts.prototype.SetHorizontalAlignment = function(align)
+	{
+	    if (this.halign != align)
+	    {
+	        this.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }
+	    
+        this.halign = align;   // 0=left, 1=center, 2=right
+	};
+
+	Acts.prototype.SetVerticalAlignment = function(align)
+	{
+	    if (this.valign != align)
+	    {
+	        this.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }	    
+  
+        this.valign = align;   // 0=top, 1=center, 2=bottom
+	};	
+
+	Acts.prototype.SetWrapping = function(wrap_mode)
+	{
+	    wrap_mode = (wrap_mode === 0);  // 0=word, 1=character
+	    if (this.wrapbyword != wrap_mode)
+	    {
+	        this.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }
+	    
+        this.wrapbyword = wrap_mode;   
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -828,14 +863,14 @@ cr.plugins_.rex_TagText = function(runtime)
         this.lineHeight = "16";
         this.textShadow = null; 
         
-        // Properties of C2 text object
-		this.wrapbyword = 1;   // 0=word, 1=character
-		this.halign = 0;          // 0=left, 1=center, 2=right
-		this.valign = 0;          // 0=top, 1=center, 2=bottom
-		this.vshift = 0;
     };
     var CanvasTextProto = CanvasText.prototype;
 
+    CanvasTextProto.Reset = function(plugin)
+    {
+       this.plugin = plugin;
+    };
+    
     CanvasTextProto._text_prop_get = function (prop)
     {
         var proFont={}, proColor, proShadow;
@@ -935,15 +970,15 @@ cr.plugins_.rex_TagText = function(runtime)
         var offset_x=0, offset_y=0;
 
 		// vertical alignment
-		if (this.valign === 1)		// center
+		if (this.plugin.valign === 1)		// center
 			offset_y = Math.max( (boxHeight - (lcnt * this.lineHeight)) / 2, 0);
-		else if (this.valign === 2)	// bottom
+		else if (this.plugin.valign === 2)	// bottom
 			offset_y = Math.max(boxHeight - (lcnt * this.lineHeight) - 2, 0);
         else
             offset_y = 0;
         
         if (this.textBaseline == "alphabetic")
-            offset_y += this.vshift;  // shift line down    
+            offset_y += this.plugin.vshift;  // shift line down    
         
 			
         for(i=0; i<lcnt; i++)
@@ -955,9 +990,9 @@ cr.plugins_.rex_TagText = function(runtime)
             
             last_word = l[wcnt-1];
             line_width = last_word.x + last_word.width;
-			if (this.halign === 1)		// center
+			if (this.plugin.halign === 1)		// center
 				offset_x = (boxWidth - line_width) / 2;
-			else if (this.halign === 2)	// right
+			else if (this.plugin.halign === 2)	// right
 				offset_x = boxWidth - line_width;  
 				          
             for(j=0; j<wcnt; j++)
@@ -1028,7 +1063,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.rawTextLine[0].text = "";
 		
         // The main regex. Looks for <style>, <class> or <br /> tags.
-        var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/style\s*\>|[^<]+/g);
+        var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>|[^<]+/g);
 		if (!match)
 		    return;
         var match_cnt = match.length;
@@ -1046,7 +1081,7 @@ cr.plugins_.rex_TagText = function(runtime)
             if (/<\s*class=/i.test(match[i])) 
             { 
                 // Looks the attributes and text inside the class tag.
-                innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>/);
+                innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>/);
                
                 classDefinition = this.getClass(innerMatch[1]);
                 proText = innerMatch[2];
@@ -1055,7 +1090,7 @@ cr.plugins_.rex_TagText = function(runtime)
             else if (/<\s*style=/i.test(match[i])) 
             {
                 // Looks the attributes and text inside the style tag.
-                innerMatch = match[i].match(/<\s*style=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/style\s*\>/);
+                innerMatch = match[i].match(/<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>/);
 
                 // innerMatch[1] contains the properties of the attribute.
                 var properties = _style2prop(innerMatch[1].split(";"));                
@@ -1083,7 +1118,7 @@ cr.plugins_.rex_TagText = function(runtime)
             // Reset textLines;
             textLines.length = 0;
 			// boxWidth comes from plugin
-            textLines = _word_wrap(proText, textLines, this.context, boxWidth, this.wrapbyword, cursor_x-start_x );
+            textLines = _word_wrap(proText, textLines, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );
             
             // save pen info
             var lcnt=textLines.length, txt;         
@@ -1141,7 +1176,7 @@ cr.plugins_.rex_TagText = function(runtime)
     {
         pkgCache.freeAllLines(this._text_pkg);
         // The main regex. Looks for <style>, <class> or <br /> tags.
-        var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/style\s*\>|[^<]+/g);
+        var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>|[^<]+/g);
 		if (!match)
 		    return this._text_pkg;
 			
@@ -1154,7 +1189,7 @@ cr.plugins_.rex_TagText = function(runtime)
             if (/<\s*class=/i.test(match[i]))
             {
                 // Looks the attributes and text inside the class tag.
-                innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>([^>]+)<\s*\/class\s*\>/);               
+                innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>/);               
                 this._text_pkg.push( pkgCache.allocLine(innerMatch[2], innerMatch[1], start_index) );
                 start_index += innerMatch[2].length;
             }

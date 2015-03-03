@@ -46,11 +46,11 @@ AddCondition(14, cf_looping | cf_not_invertible, "For each matched line", "Filte
 ////////////////////////////////////////
 // Actions
 AddNumberParam("OY", "Offset Y of this list, in pixels. Start at 0.", 0);
-AddAction(1, 0, "Set", "Offset Y", 
+AddAction(1, 0, "Set", "List - offset Y", 
           "Set offset Y to <i>{0}</i>", 
           "Set offset Y.", "SetOY"); 
 AddNumberParam("Value", "Add value to Offset Y, in pixels", 0);
-AddAction(2, 0, "Add to", "Offset Y", 
+AddAction(2, 0, "Add to", "List - offset Y", 
           "Add <i>{0}</i> to offset Y", 
           "Add to Offset Y.", "AddOY"); 
 AddObjectParam("Instance", "Instance belong the line.");
@@ -66,11 +66,11 @@ AddAction(5, 0, "Set total lines count", "List",
           "Set total lines count to <i>{0}</i>", 
           "Set total lines count.", "SetLinesCount"); 
 AddNumberParam("Line index", "Line index.", 0);
-AddAction(6, 0, "Scroll to index", "Offset Y", 
+AddAction(6, 0, "Scroll to index", "List - offset Y", 
           "Scroll offset Y to line <i>{0}</i>", 
           "Scroll offset Y to line lindex.", "SetOYToLineIndex"); 
 AddNumberParam("Percentage", "Scroll list, 0 is top, 1 is bottom.", 1);
-AddAction(7, 0, "Scroll by percentage", "Offset Y", 
+AddAction(7, 0, "Scroll by percentage", "List - Offset Y", 
           "Scroll offset Y by percentage to <i>{0}</i>", 
           "Scroll offset Y by percentage.", "SetOYByPercentage"); 		  
 		  
@@ -124,6 +124,12 @@ AddNumberParam("Line height", "Line height, in pixels.", 30);
 AddAction(31, 0, "Set line height", "Line height", 
           "Set line height to <i>{0}</i>", 
           "Set line height.", "SetLineHeight"); 
+          
+AddNumberParam("Line index", "Line index.", 0);         
+AddNumberParam("OY", "Offset Y of a line, in pixels.", 0);
+AddAction(41, 0, "Set", "Line - offset Y", 
+          "Set additional offset Y of line <i>{0}</i> to <i>{1}</i>", 
+          "Set offset Y of line.", "SetLineOffsetY");           
 		  
 AddAction(51, 0, "Refresh", "Visible", 
           "Refresh visible lines", 
@@ -144,14 +150,21 @@ AddExpression(6, ef_return_number, "Get position Y by line index", "Offset Y", "
               "Get top-left position Y by line index");              
 AddExpression(7, ef_return_number, "Get total lines count", "List", "TotalLinesCount", 
               "Get total lines count.");
-                                                                          
+AddExpression(8, ef_return_number, "Get line height", "List", "DefaultLineHeight", 
+              "Get default line height.");
+              
 AddNumberParam("Index", "Index of line.", 0);
 AddStringParam("Key", "The name of the key.", '""');
 AddExpression(11, ef_return_any | ef_variadic_parameters, "Get value at", "Custom data", "At", 
               "Get value by line index and key. Add 3rd parameter for default value if this key is not existed.");
 
-AddExpression(21, ef_return_string, "Get last removed lines", "Remove", "LastRemovedLines", 
-              'Get last removed lines in JSON string after "Action: Remove lines".');
+AddExpression(21, ef_return_string, "Get custom date last removed lines", "Custom data", "LastRemovedLines", 
+              'Get custom date of last removed lines in JSON string after "Action: Remove lines".');
+              
+AddNumberParam("Start index", "Start index of line.", 0);
+AddNumberParam("Line number", "Line number.", 1);              
+AddExpression(22, ef_return_string, "Get custom date of lines", "Custom data", "CustomDataInLines", 
+              "Get custom date of lines.");              
               
 ACESDone();
 

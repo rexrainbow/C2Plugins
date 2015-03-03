@@ -39,21 +39,30 @@ AddCondition(7, 0, "No pattern" , "If: No matched",
              "Has no matched pattern", 'Return true if no matched pattern in latest "action:Get matched tiles".', "HasNoMatchPattern");
 // any
 AddStringParam("Pattern", 'Pattern. It could splitted by ",".', '""');
+AddStringParam("Group", "Put result in this group", '""');
 AddCondition(8, 0, "Any 1d pattern ", "Any: 1D Patern", 
-             "Has any 1d pattern <i>{0}</i> matched", 
-			 'Return true if there has any 1d pattern matched.', "AnyMatchPattern");   
+             "Has any 1d pattern <i>{0}</i> matched, put result in group <i>{1}</i>", 
+			 'Return true if there has any 1d pattern matched. Put 1 matched result into group if found.', 
+			 "AnyMatchPattern");   
 AddNumberParam("Count", "Continuous symbols count.", 3);
+AddStringParam("Group", "Put result in this group", '""');
 AddCondition(9, 0, "Any N symbols", "Any: 1D Patern", 
-             "Has any <i>{0}</i>  continuous symbols matched", 
-			 'Return true if there has any N continuous symbols matched.', "AnyMatchPattern");
+             "Has any <i>{0}</i> continuous symbols matched, put result in group <i>{1}</i>", 
+			 'Return true if there has any N continuous symbols matched. Put 1 matched result into group if found.', 
+			 "AnyMatchPattern");
 AddStringParam("Pattern", 'Pattern, splitted by ","', '""');
+AddStringParam("Group", "Put result in this group", '""');
 AddCondition(10, 0, "Any 2D pattern", "Any: 2D Patern", 
-             "Has any 2D pattern <i>{0}</i> matched", 
-			 'Return true if there has any 2d pattern matched.', "AnyMatchPattern2D");   
+             "Has any 2D pattern <i>{0}</i> matched, put result in group <i>{1}</i>", 
+			 'Return true if there has any 2d pattern matched. Put 1 matched result into group if found.', 
+			 "AnyMatchPattern2D");   
 AddStringParam("Template", 'Pattern template, splitted by ",".', '""');
+AddStringParam("Group", "Put result in this group", '""');
 AddCondition(11, 0, "Any 2D template pattern", "Any: 2D Patern", 
-             "Has any 2D template pattern <i>{0}</i> matched", 
-			 'Return true if there has any 2d template pattern matched.', "AnyMatchTemplatePattern2D");	
+             "Has any 2D template pattern <i>{0}</i> matched, put result in group <i>{1}</i>", 
+			 'Return true if there has any 2d template pattern matched. Put 1 matched result into group if found.', 
+			 "AnyMatchTemplatePattern2D");	
+			 
 // for each			 
 AddStringParam("Pattern", 'Pattern. It could splitted by ",".', '""');
 AddStringParam("Group", "Put result in this group", '""');
@@ -63,7 +72,7 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each 1d pattern ", "For ea
 AddNumberParam("Count", "Continuous symbols count.", 3);
 AddStringParam("Group", "Put result in this group", '""');
 AddCondition(13, cf_looping | cf_not_invertible, "For each N symbols", "For each: 1D Patern", 
-             "For each <i>{0}</i>  continuous symbols, put result in group <i>{1}</i>", 
+             "For each <i>{0}</i> continuous symbols, put result in group <i>{1}</i>", 
 			 'Repeat the event for each N continuous symbols matched.', "ForEachMatchPattern");
 AddStringParam("Pattern", 'Pattern, splitted by ","', '""');
 AddStringParam("Group", "Put result in this group", '""');
@@ -162,7 +171,8 @@ var property_list = [
                     "The axis to get symbol for 1d pattern matched on square board. Ignored it when using hex board"),
     new cr.Property(ept_combo, "Horizontal", "Yes", "Compare at horizontal axis", "No|Yes"),   
     new cr.Property(ept_combo, "Vertical", "Yes", "Compare at vertical axis", "No|Yes"),   
-    new cr.Property(ept_combo, "Isometric", "Yes", "Compare at isometric axis", "No|Yes"),         
+    new cr.Property(ept_combo, "Isometric", "Yes", "Compare at isometric axis", "No|Yes"),    
+    new cr.Property(ept_combo, "Update symbols", "Auto", "Auto or manual update symbol table", "Manual|Auto"), 	
 	];
 	
 // Called by IDE when a new object type is to be created

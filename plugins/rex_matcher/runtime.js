@@ -41,6 +41,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
   
 	instanceProto.onCreate = function()
 	{
+	    this.is_autoUpdate_symbolCache = (this.properties[3] == 1);
         this.board = null; 
         this.boardUid = -1;    // for loading 
         this._dir = null;
@@ -214,7 +215,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	instanceProto.get_match_tiles = function(group_name,pattern_dimation)
 	{
         this._group_name = group_name;
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();	
         this._has_matched_pattern = false;
         
@@ -467,7 +468,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                this._tiles_groups.push({"uid":matched2uid(matched_tiles),
 	                                         "dir":null});   
 					if (is_any_pattern_mode)
-						    return this._tiles_groups;	
+					    return this._tiles_groups;	
 			    }
 	        }
 	    }      
@@ -478,31 +479,26 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{       
         var i,cnt=tiles_groups.length;
         var runtime = this.runtime;
-        var current_frame = this.runtime.getCurrentEventStack();
+        var current_frame = runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
         var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-        var _group=this.GetInstGroup().GetGroup(this._group_name)
-
-        if (solModifierAfterCnds)
-        {
-            for (i=0;i<cnt;i++)
-            {                
+        var _group=this.GetInstGroup().GetGroup(this._group_name);
+		
+        for (i=0;i<cnt;i++)
+        {                
+		    if (solModifierAfterCnds)
+			{
                 runtime.pushCopySol(current_event.solModifiers);
-                
-                _group.SetByUIDList(tiles_groups[i]["uid"]);
-                this._matched_axis = tiles_groups[i]["dir"];                
-                
-                current_event.retrigger();
+		    }
+            
+            _group.SetByUIDList(tiles_groups[i]["uid"]);
+            this._matched_axis = tiles_groups[i]["dir"];                
+            current_event.retrigger();
+			
+			if (solModifierAfterCnds)
+			{
                 runtime.popSol(current_event.solModifiers);        
-            }            
-        }
-        else
-        {
-            for (i=0;i<cnt;i++)
-            {
-                _group.SetByUIDList(tiles_groups[i]["uid"]);
-                current_event.retrigger();        
-            }             
+		    }
         }
         
         this._matched_axis = null;  
@@ -530,10 +526,15 @@ cr.plugins_.Rex_Matcher = function(runtime)
         return arr;    
 	};
 	
+	instanceProto.is_updateCache = function ()
+	{       
+	    return (this.is_autoUpdate_symbolCache && this.is_tick_changed())
+	};	
+	
 	instanceProto.is_tick_changed = function ()
 	{       
 	    var cur_tick = this.runtime.tickcount;
-		var tick_changed = (this._last_tick != cur_tick);
+		var tick_changed = (this._last_tick !== cur_tick);
         this._last_tick = cur_tick;
 		return tick_changed;
 	};
@@ -614,33 +615,54 @@ cr.plugins_.Rex_Matcher = function(runtime)
         return (!this._has_matched_pattern);
 	};	
 	// any
-	Cnds.prototype.AnyMatchPattern = function (pattern)
+	Cnds.prototype.AnyMatchPattern = function (pattern, group_name)
 	{
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();
 	    var tiles_groups = this.pattern_search(pattern, true);
-        return (tiles_groups.length != 0);
+	    var has_any_matched = (tiles_groups.length != 0);
+	    if (has_any_matched)
+	    {
+	        var group=this.GetInstGroup().GetGroup(group_name);
+            group.SetByUIDList(tiles_groups[0]["uid"]);
+            this._matched_axis = tiles_groups[0]["dir"];   	    
+        }
+        return has_any_matched;
 	};	
 	
-	Cnds.prototype.AnyMatchPattern2D = function (pattern)
+	Cnds.prototype.AnyMatchPattern2D = function (pattern, group_name)
 	{
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();
 	    var tiles_groups = this.pattern_search_2d(pattern, false, true);
-        return (tiles_groups.length != 0);
+	    var has_any_matched = (tiles_groups.length != 0);
+	    if (has_any_matched)
+	    {
+	        var group=this.GetInstGroup().GetGroup(group_name);
+            group.SetByUIDList(tiles_groups[0]["uid"]);
+            this._matched_axis = tiles_groups[0]["dir"];   	    
+        }
+        return has_any_matched;
 	};		
 	
-	Cnds.prototype.AnyMatchTemplatePattern2D = function (pattern)
+	Cnds.prototype.AnyMatchTemplatePattern2D = function (pattern, group_name)
 	{
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();		
 	    var tiles_groups = this.pattern_search_2d(pattern, true, true);
-        return (tiles_groups.length != 0);
+	    var has_any_matched = (tiles_groups.length != 0);
+	    if (has_any_matched)
+	    {
+	        var group=this.GetInstGroup().GetGroup(group_name);
+            group.SetByUIDList(tiles_groups[0]["uid"]);
+            this._matched_axis = tiles_groups[0]["dir"];   	    
+        }
+        return has_any_matched;
 	};	
 	// for each
 	Cnds.prototype.ForEachMatchPattern = function (pattern, group_name)
 	{
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();
 	    var tiles_groups = this.pattern_search(pattern, false);
 	    this._has_matched_pattern = (tiles_groups.length != 0);
@@ -654,7 +676,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	
 	Cnds.prototype.ForEachMatchPattern2D = function (pattern, group_name)
 	{
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();
 	    var tiles_groups = this.pattern_search_2d(pattern, false, false);
 	    this._has_matched_pattern = (tiles_groups.length != 0);
@@ -668,7 +690,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	
 	Cnds.prototype.ForEachMatchTemplatePattern2D = function (pattern, group_name)
 	{
-	    if (this.is_tick_changed())
+	    if (this.is_updateCache())
 		    this.refilled_symbol_array();		
 	    var tiles_groups = this.pattern_search_2d(pattern, true, false);
 	    this._has_matched_pattern = (tiles_groups.length != 0);

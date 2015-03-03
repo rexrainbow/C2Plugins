@@ -22,7 +22,7 @@ AddCondition(0, 0, "Is timmer running", "Timer", "<i>{0}</i> is running", "", "I
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Time", "Delta-time in seconds", 0);
-AddAction(0, 0, "Push timeline forward", "TimeLine", 
+AddAction(0, 0, "Push timeline forward", "TimeLine - manual", 
           "Push timeline forward with delta-time to <i>{0}</i>", 
           "Push timeline forward with delta-time.", "PushTimeLine");
           
@@ -103,6 +103,11 @@ AddAction(32, 0, "Set parameters", "Timer: Triggered timer",
 AddAction(33, 0, "Delete triggered timer", "Timer: Triggered timer", 
           "Delete triggered timer", 
           "Delete triggered timer.", "DeleteTrgTimer"); 
+          
+AddNumberParam("Time", "Time in seconds", 0);
+AddAction(40, 0, "Push timeline to", "TimeLine - manual", 
+          "Push timeline to <i>{0}</i>", 
+          "Push timeline to specific time. It could not turn back the timeline.", "PushTimeLineTo");          
 		  
 //////////////////////////////////////////////////////////////
 // Expressions

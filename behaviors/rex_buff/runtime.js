@@ -106,8 +106,8 @@ cr.behaviors.Rex_buff = function(runtime)
     behinstProto.AddBuff = function (name, priority, value, is_clamp)
 	{
 	    priority = Math.floor(priority);
-	    var buff = this.buff[name];
-		if (buff == null)
+	    var buff;
+		if (!this.buff.hasOwnProperty(name))
 		{	
 			buff = this.buff_cache.alloc(this, name, priority, value, is_clamp);
 			this.buff[name] = buff;
@@ -115,7 +115,8 @@ cr.behaviors.Rex_buff = function(runtime)
 		}
 		else  // already in this behavior
 		{
-		    buff.Init(this, priority, value, is_clamp);
+            buff = this.buff[name];
+		    buff.Init(this, name, priority, value, is_clamp);
 		}
         this.queue.sort(_sort_by_priority);
 		this.next_lower_priority_update(priority);

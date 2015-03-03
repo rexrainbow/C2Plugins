@@ -12,8 +12,22 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
     this.sources = {};
 };
 
+cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
+
 (function ()
 {
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};
+	
 	var behaviorProto = cr.behaviors.Rex_LJ_potential.prototype;
 		
 	/////////////////////////////////////
@@ -81,8 +95,6 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
             this.current_sources = {};
             this.current_targets = {};
         }
-        
-        this.inst.extra.rex_LJp = this;  // hook this behavior instance on this.inst.extra
 	};
 	
 	behinstProto.onDestroy = function()
@@ -100,7 +112,11 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
 	    clean_table(this.pre_sources);
 	    clean_table(this.pre_targets);	
 	    clean_table(this.current_sources);
-	    clean_table(this.current_targets);			
+	    clean_table(this.current_targets);	
+
+		var uid2behaviorInst = cr.behaviors.Rex_LJ_potential.uid2behaviorInst;
+		if (uid2behaviorInst.hasOwnProperty(this.inst.uid))
+            delete uid2behaviorInst[this.inst.uid];
 	}; 	
 	
 	behinstProto._source_append = function()
@@ -265,6 +281,21 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
        var distance_pow2 = (dx*dx)+(dy*dy);
        return (distance_pow2 <= sensitivity_range_pow2);
 	}; 
+	
+	behinstProto.get_thisBehaviorInst = function (inst)
+	{
+        var uid = inst.uid;
+		var uid2behaviorInst = cr.behaviors.Rex_LJ_potential.uid2behaviorInst;
+		if (uid2behaviorInst.hasOwnProperty(uid))
+            return uid2behaviorInst[uid];
+			
+        var behavior_inst = GetThisBehavior(inst);
+        if (behavior_inst)
+        {
+            uid2behaviorInst[uid] = behavior_inst;
+        }
+        return behavior_inst;
+	};
     
     // LJ potential
 	behinstProto._accumulate_force = function (source_behavior)
@@ -342,7 +373,12 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
         this.sensitivity_range = o["sr"];
         this._set_range(this.sensitivity_range);
         this.output_force = o["of"];
-	};        
+		
+		var uid2behaviorInst = cr.behaviors.Rex_LJ_potential.uid2behaviorInst;
+        for (var uid in uid2behaviorInst)
+            delete uid2behaviorInst[uid];
+	};    
+
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -444,7 +480,7 @@ cr.behaviors.Rex_LJ_potential = function(runtime)
         {
             inst = insts[i];
                 
-            behavior_inst = insts[i].extra.rex_LJp;
+            behavior_inst = this.get_thisBehaviorInst(inst);
             if (behavior_inst == null)
                 continue;
                 

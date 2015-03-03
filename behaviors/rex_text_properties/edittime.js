@@ -21,33 +21,48 @@ AddComboParamOption("Center");
 AddComboParamOption("Right");
 AddComboParam("Horizontal alignment", "Horizontal alignment of the text", 0);          
 AddAction(1, 0, "Set horizontal alignment", "Properties", 
-          "Set horizontal alignment to <i>{0}</i>", 
+          "{my} Set horizontal alignment to <i>{0}</i>", 
           "Set horizontal alignment.", "SetHorizontalAlignment"); 
+          
 AddComboParamOption("Top");
 AddComboParamOption("Center");
 AddComboParamOption("Bottom");
 AddComboParam("Vertical alignment", "Horizontal alignment of the text", 0);          
 AddAction(2, 0, "Set Vertical alignment", "Properties", 
-          "Set vertical alignment to <i>{0}</i>", 
-          "Set vertical alignment.", "SetVerticalAlignment");              
+          "{my} Set vertical alignment to <i>{0}</i>", 
+          "Set vertical alignment.", "SetVerticalAlignment"); 
+          
 AddComboParamOption("Word");
 AddComboParamOption("Character");
 AddComboParam("Wrapping", "Wrap text by space-separated words or nearest character", 0);          
 AddAction(3, 0, "Set wrapping", "Properties", 
-          "Set wrapping to <i>{0}</i>", 
+          "{my} Set wrapping to <i>{0}</i>", 
           "Set wrapping.", "SetWrapping");   
+          
 AddNumberParam("Line height", "Offset to the default line height, in pixels. 0 is default line height", 0);      
 AddAction(4, 0, "Set line height", "Properties", 
-          "Set line height to <i>{0}</i>", 
+          "{my} Set line height to <i>{0}</i>", 
           "Set line height.", "SetLineHeight");
+          
 AddNumberParam("Wrapping", "Wrap text. 0=Word, 1=Character", 0);    
-AddAction(5, 0, "Set wrapping", "Properties", 
-          "Set wrapping to <i>{0}</i>", 
+AddAction(5, 0, "Set wrapping (#)", "Properties", 
+          "{my} Set wrapping to <i>{0}</i>", 
           "Set wrapping.", "SetWrapping");
+          
 AddStringParam("Font face", "The new font face name to set.", "\"Arial\"");
 AddNumberParam("Style", "0=normal, 1=bold, 2=italic, 3=bold and italic", 0);
-AddAction(6, 0, "Set font face", "Appearance", "Set font face to <i>{0}</i> (<i>{1}</i>)", "Set the font face used to display text.", "SetFontFace");
-                      
+AddAction(6, 0, "Set font face", "Appearance", 
+          "{my} Set font face to <i>{0}</i> (<i>{1}</i>)", "Set the font face used to display text.", "SetFontFace");
+
+AddNumberParam("Horizontal alignment", "Horizontal alignment. 0=Left, 1=Center. 2=Right", 0);          
+AddAction(7, 0, "Set horizontal alignment (#)", "Properties", 
+          "{my} Set horizontal alignment to <i>{0}</i>", 
+          "Set horizontal alignment.", "SetHorizontalAlignment"); 
+          
+AddNumberParam("Vertical alignment", "Vertical alignment. 0=Top, 1=Center. 2=Bottom", 0);          
+AddAction(8, 0, "Set Vertical alignment (#)", "Properties", 
+          "{my} Set vertical alignment to <i>{0}</i>", 
+          "Set vertical alignment.", "SetVerticalAlignment");                 
 //////////////////////////////////////////////////////////////
 // Expressions
 

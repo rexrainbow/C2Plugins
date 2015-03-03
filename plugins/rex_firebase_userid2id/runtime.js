@@ -116,6 +116,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             {
                 var UserID_ref = self.get_UserID_ref(UserID);
                 UserID_ref["set"](ID, on_setID_complete);
+                self.exp_UserID = UserID;
                 self.on_getID_successful(ID);         
             }            
         };
@@ -205,6 +206,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             else
             {
                 // get ID
+                self.exp_UserID = UserID;
                 self.on_getID_successful(return_ID);
             }
         };
@@ -213,6 +215,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             if (retry_cnt == 0)
             {
                 // failed
+                self.exp_UserID = UserID;
                 self.on_getID_failed();
             }
             else
@@ -222,7 +225,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                 self.try_getID(UserID, newID, try_get_id);
             }
         };
-        
+                
         UserID_ref["once"]("value", on_read_UserID);
 	};
 	
@@ -236,12 +239,13 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         var on_read_ID = function(snapshot)
         {
             var return_UserID = snapshot["val"]();
+            self.exp_ID = ID;     
             if (return_UserID == null)
                 self.on_getUserID_failed();
             else
                 self.on_getUserID_successful(return_UserID);
         };
-             
+                        
         ID_ref["once"]("value", on_read_ID);
 	};	
 	
@@ -258,6 +262,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             var return_ID = snapshot["val"]();
             if (GETCMD)  // get existed ID
             {
+                self.exp_UserID = UserID;
                 if (return_ID == null)
                     self.on_getID_failed();
                 else
@@ -269,6 +274,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                     self.try_getID(UserID, ID, on_getID_failed);
                 else                     // ID is existed
                 {
+                    self.exp_UserID = UserID;
                     if (return_ID != ID)  
                         self.on_getID_failed();
                     else
@@ -278,9 +284,10 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         };
         var on_getID_failed = function ()
         {
+            self.exp_UserID = UserID;
             self.on_getID_failed();
         };
-        
+                
         UserID_ref["once"]("value", on_read_UserID);
 	};	
 	//////////////////////////////////////

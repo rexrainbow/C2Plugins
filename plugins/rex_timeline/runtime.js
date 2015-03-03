@@ -353,7 +353,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                                 "rc": timer._repeat_count,
                                 };
         }
-		return { "ug": this.update_with_game_time,
+		return { "ts": this.my_timescale,
+                 "ug": this.update_with_game_time,
                  "tl": this.timeline.saveToJSON(),
                  "timers": timers_save,
                  "rexFnUid": (this.rex_function_obj != null)? this.rex_function_obj.uid : (-1),
@@ -363,6 +364,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
 	instanceProto.loadFromJSON = function (o)
 	{
+        this.my_timescale = o["ts"];
         this.timeline.loadFromJSON(o["tl"]);
         this.timers_save = o["timers"];
         this.rex_function_objUid = o["rexFnUid"];
@@ -556,6 +558,19 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
 	    this.destroy_local_timer(this.exp_triggered_timer_name);		
 	};	
+	
+    Acts.prototype.PushTimeLineTo = function (t)
+	{
+        if (!this.update_manually)
+            return;
+            
+        // push manually
+        var delta_time = t - this.timeline.ABS_Time;
+        if (delta_time < 0)
+            return;
+            
+        this.timeline.Dispatch(delta_time);
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -675,13 +690,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             }
         }
         
-        // remainder timers
+        // remainder timers   
         if (_timer_cnt)
         {
-            if (_timer_cnt==1)
-                this._waiting_timer_queue.shift();
-            else
-                this._waiting_timer_queue.splice(0,_timer_cnt);
+            for(i=_timer_cnt; i<quene_length; i++)
+            {
+                this._waiting_timer_queue[i-_timer_cnt] = this._waiting_timer_queue[i];            
+            }
+            this._waiting_timer_queue.length -= _timer_cnt;
         }
 
         // do call back function with arg list

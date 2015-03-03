@@ -62,21 +62,46 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetHorizontalAlignment = function(align)
 	{
+	    if (this.inst.halign != align)
+	    {
+	        this.inst.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }
+	    
         this.inst.halign = align;   // 0=left, 1=center, 2=right
 	};
 
 	Acts.prototype.SetVerticalAlignment = function(align)
 	{
+	    if (this.inst.valign != align)
+	    {
+	        this.inst.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }	    
+  
         this.inst.valign = align;   // 0=top, 1=center, 2=bottom
 	};	
 
 	Acts.prototype.SetWrapping = function(wrap_mode)
 	{
-        this.inst.wrapbyword = (wrap_mode === 0);;   // 0=word, 1=character
+	    wrap_mode = (wrap_mode === 0);  // 0=word, 1=character
+	    if (this.inst.wrapbyword != wrap_mode)
+	    {
+	        this.inst.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }
+	    
+        this.inst.wrapbyword = wrap_mode;   
 	};
 
 	Acts.prototype.SetLineHeight = function(line_height_offset)
 	{
+	    if (this.inst.line_height_offset != line_height_offset)
+	    {
+	        this.inst.need_text_redraw = true;
+	        this.runtime.redraw = true;
+	    }
+	    	    
         this.inst.line_height_offset = line_height_offset;
 	};	
 	
