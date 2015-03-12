@@ -77,7 +77,11 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	// Conditions
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
-	
+
+	Cnds.prototype.IsNicknameMatched = function (name)
+	{
+		return (this.nickname === name);
+	};		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

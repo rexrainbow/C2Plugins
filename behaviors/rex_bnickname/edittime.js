@@ -13,7 +13,11 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-	  			 		 
+AddStringParam("Nickname", "Nickname of object.", '""');
+AddCondition(1, 0, "Compare nickanme", "Nickname", 
+             "{my} nickname is equal to <i>{0}</i>", 
+             "Return true if nickname is matched to specific string.", "IsNicknameMatched");	  			 		 
+             
 //////////////////////////////////////////////////////////////
 // Actions
 
