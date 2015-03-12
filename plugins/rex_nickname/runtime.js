@@ -50,6 +50,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	{	    
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
         this.sid2nickname = cr.plugins_.Rex_Nickname.sid2nickname;
+        this.exp_LastCreatedInstUID = -1;
         
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];
@@ -265,7 +266,9 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	
 	Acts.prototype.CreateInst = function (nickname,x,y,_layer, family_objtype)
 	{
-        var inst = this.CreateInst(nickname,x,y,_layer, null, true);
+        var inst = this.CreateInst(nickname,x,y,_layer, null, true);4
+        
+        this.exp_LastCreatedInstUID = (inst)? inst.uid:(-1);
 
         if (!family_objtype)
             return;
@@ -297,6 +300,12 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
+
+    Exps.prototype.LastCreatedInstUID = function (ret)
+	{
+        ret.set_int(this.exp_LastCreatedInstUID);
+	};
+	
 	
 }());
 

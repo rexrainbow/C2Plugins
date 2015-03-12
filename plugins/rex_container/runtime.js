@@ -16,6 +16,15 @@ cr.plugins_.Rex_Container.tag2container = {};
 {
 	var pluginProto = cr.plugins_.Rex_Container.prototype;
 		
+	pluginProto.onCreate = function ()
+	{
+		pluginProto.acts.Destroy = function ()
+		{
+			this.runtime.DestroyInstance(this);
+	        delete cr.plugins_.Rex_Container.tag2container[this.tag];
+            this._destory_all_insts();
+		};        
+	}; 
 	/////////////////////////////////////
 	// Object type class
 	pluginProto.Type = function(plugin)
@@ -349,7 +358,10 @@ cr.plugins_.Rex_Container.tag2container = {};
         {
             inst = this.runtime.getObjectByUID(uid);
             if (inst != null)
-                this.runtime.DestroyInstance(inst);       
+            {
+                Object.getPrototypeOf(inst.type.plugin).acts.Destroy.call(inst);
+                //this.runtime.DestroyInstance(inst);       
+            }
         }     	
 	};	
 	

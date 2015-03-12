@@ -406,7 +406,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	{
 	    var dx = xyz_to.x - xyz_o.x;
 	    var dy = xyz_to.y - xyz_o.y;	    
-	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
+	    var vmax = Math.max(quickAbs(dx), quickAbs(dy));
 	    if (vmax != 0)
 	    {
 	        dx = dx/vmax;
@@ -453,7 +453,21 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	instanceProto.LXYZRotate2LY = function (lx, ly, lz, dir)
 	{
 	    return this.hex_rotate(lx, ly, dir).r;
-	};	    	
+	};	
+
+	instanceProto.LXYZ2Dist = function (q0, r0, s0, q1, r1, s1)
+	{       
+        var dx = this.qr2x(q1,r1) - this.qr2x(q0,r0);
+        var dy = this.qr2y(q1,r1) - this.qr2y(q0,r0);
+	    var dz = this.qr2z(q1,r1) - this.qr2z(q0,r0);
+        
+        return (quickAbs(dx) + quickAbs(dy) + quickAbs(dz)) / 2
+	};       
+
+	function quickAbs(x)
+	{
+		return x < 0 ? -x : x;
+	};
 	
 	instanceProto.saveToJSON = function ()
 	{

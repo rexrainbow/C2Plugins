@@ -78,6 +78,9 @@ AddComboParamOption("Random");
 AddComboParamOption("Diagonal");
 AddComboParamOption("Straight");
 AddComboParamOption("A*");
+AddComboParamOption("Line");
+AddComboParamOption("A*-line");
+AddComboParamOption("A*-random");
 AddComboParam("Path mode", "Geometry of moving path.", 0);
 AddAction(7, 0, "Set path mode", "Setup", "Set path mode to <i>{0}</i>", 
           "Set path mode.", "SetPathMode");
@@ -133,9 +136,10 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Path mode", "A*", "Geometry of moving path.", "Random|Diagonal|Straight|A*"),  
+    new cr.Property(ept_combo, "Path mode", "A*", "Geometry of moving path.", "Random|Diagonal|Straight|A*|Line|A* -line|A* -random"),  
     new cr.Property(ept_combo, "Cache cost", "Yes", "Cache the cost of each tile in a request.", "No|Yes"),
     new cr.Property(ept_combo, "Shuffle neighbors", "No", "Shuffle the order of checking neighbors.", "No|Yes"),
+	new cr.Property(ept_float, "Weight", 10, "Weight of heuristic estimation for A*- path mode."),
 	];
 	
 // Called by IDE when a new object type is to be created

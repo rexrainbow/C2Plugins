@@ -15,6 +15,15 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 {
 	var pluginProto = cr.plugins_.Rex_ListCtrl.prototype;
 		
+	pluginProto.onCreate = function ()
+	{
+		pluginProto.acts.Destroy = function ()
+		{
+			this.runtime.DestroyInstance(this);
+            this.set_lines_count(0);
+		};        
+	};
+    
 	/////////////////////////////////////
 	// Object type class
 	pluginProto.Type = function(plugin)
@@ -97,7 +106,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     
 	instanceProto.onDestroy = function ()
 	{		
-        this.set_lines_count(0);
+        //this.set_lines_count(0);
 	};
         
     	
@@ -1030,7 +1039,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	        if (!inst)
 	            continue;
 	            
-	        runtime.DestroyInstance(inst);
+            Object.getPrototypeOf(inst.type.plugin).acts.Destroy.call(inst);
+	        //runtime.DestroyInstance(inst);
 	        
 	        delete this.pined_insts[uid]; 
 	    }	    	    

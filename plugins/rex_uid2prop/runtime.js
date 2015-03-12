@@ -95,6 +95,21 @@ cr.plugins_.Rex_UID2Prop = function(runtime)
         return inst.instance_vars[pv_index];
 	};
     
+	instanceProto.set_pv = function (inst, alias_, value_)
+	{
+        if (inst == null)
+            return 0;
+        var map = this.alias2pv[alias_];
+        if (map == null)
+            return 0;
+            
+        var pv_index = map[inst.type.sid];
+        if (pv_index == null)
+            return 0;
+            
+       inst.instance_vars[pv_index] = value_;
+	};
+    
 	instanceProto.saveToJSON = function ()
 	{    
 		return { "alias": this.alias2pv,
@@ -120,7 +135,293 @@ cr.plugins_.Rex_UID2Prop = function(runtime)
 	{
         this.add_alias(alias_, type_, var_);
 	};
+   
+	Acts.prototype.InstDestroy = function (uid)
+	{
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst)
+            return;
+ 
+        this.runtime.DestroyInstance(inst);
+	};  
+
+    Acts.prototype.InstSetX = function (uid, x)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.x == null))
+            return;
+                    
+    	if (inst.x !== x)
+    	{
+    		inst.x = x;
+    		inst.set_bbox_changed();
+    	}
+    };
     
+    Acts.prototype.InstSetY = function (uid, y)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.y == null))
+            return;
+                    
+    	if (inst.y !== y)
+    	{
+    		inst.y = y;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstSetPos = function (uid, x, y)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.x == null))
+            return;
+                    
+    	if (inst.x !== x || inst.y !== y)
+    	{
+    		inst.x = x;
+    		inst.y = y;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstSetPosToObject = function (uid, uidB, imgpt)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.x == null))
+            return;
+                    
+    	var instB = this.runtime.getObjectByUID(uidB);   
+    	if (!instB)
+    		return;
+    		
+    	var newx, newy;
+    		
+    	if (instB.getImagePoint)
+    	{
+    		newx = instB.getImagePoint(imgpt, true);
+    		newy = instB.getImagePoint(imgpt, false);
+    	}
+    	else
+    	{
+    		newx = instB.x;
+    		newy = instB.y;
+    	}
+    		
+    	if (inst.x !== newx || inst.y !== newy)
+    	{
+    		inst.x = newx;
+    		inst.y = newy;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstMoveForward = function (uid, dist)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.x == null))
+            return;
+                    
+    	if (dist !== 0)
+    	{
+    		inst.x += Math.cos(inst.angle) * dist;
+    		inst.y += Math.sin(inst.angle) * dist;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstMoveAtAngle = function (uid, a, dist)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.x == null))
+            return;
+                    
+    	if (dist !== 0)
+    	{
+    		inst.x += Math.cos(cr.to_radians(a)) * dist;
+    		inst.y += Math.sin(cr.to_radians(a)) * dist;
+    		inst.set_bbox_changed();
+    	}
+    };
+
+    Acts.prototype.InstSetWidth = function (uid, w)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.width == null))
+            return;
+                    
+    	if (inst.width !== w)
+    	{
+    		inst.width = w;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstSetHeight = function (uid, h)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.height == null))
+            return;
+                    
+    	if (inst.height !== h)
+    	{
+    		inst.height = h;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstSetSize = function (uid, w, h)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.width == null))
+            return;
+                    
+    	if (inst.width !== w || inst.height !== h)
+    	{
+    		inst.width = w;
+    		inst.height = h;
+    		inst.set_bbox_changed();
+    	}
+    };
+
+    Acts.prototype.InstSetAngle = function (uid, a)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.angle == null))
+            return;
+                    
+    	var newangle = cr.to_radians(cr.clamp_angle_degrees(a));
+    
+    	if (isNaN(newangle))
+    		return;
+    
+    	if (inst.angle !== newangle)
+    	{
+    		inst.angle = newangle;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstRotateClockwise = function (uid, a)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.angle == null))
+            return;
+                    
+    	if (a !== 0 && !isNaN(a))
+    	{
+    		inst.angle += cr.to_radians(a);
+    		inst.angle = cr.clamp_angle(inst.angle);
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstRotateCounterclockwise = function (uid, a)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.angle == null))
+            return;
+                    
+    	if (a !== 0 && !isNaN(a))
+    	{
+    		inst.angle -= cr.to_radians(a);
+    		inst.angle = cr.clamp_angle(inst.angle);
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstRotateTowardAngle = function (uid, amt, target)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.angle == null))
+            return;
+                    
+    	var newangle = cr.angleRotate(inst.angle, cr.to_radians(target), cr.to_radians(amt));
+    
+    	if (isNaN(newangle))
+    		return;
+    
+    	if (inst.angle !== newangle)
+    	{
+    		inst.angle = newangle;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstRotateTowardPosition = function (uid, amt, x, y)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.angle == null))
+            return;
+                    
+    	var dx = x - inst.x;
+    	var dy = y - inst.y;
+    	var target = Math.atan2(dy, dx);
+    	var newangle = cr.angleRotate(inst.angle, target, cr.to_radians(amt));
+    
+    	if (isNaN(newangle))
+    		return;
+    
+    	if (inst.angle !== newangle)
+    	{
+    		inst.angle = newangle;
+    		inst.set_bbox_changed();
+    	}
+    };
+    
+    Acts.prototype.InstSetTowardPosition = function (uid, x, y)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.angle == null))
+            return;
+                    
+    	// Calculate angle towards position
+    	var dx = x - inst.x;
+    	var dy = y - inst.y;
+    	var newangle = Math.atan2(dy, dx);
+    
+    	if (isNaN(newangle))
+    		return;
+    
+    	if (inst.angle !== newangle)
+    	{
+    		inst.angle = newangle;
+    		inst.set_bbox_changed();
+    	}
+    };  
+
+    Acts.prototype.InstSetOpacity = function (uid, x)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.opacity == null))
+            return;
+                    
+    	var new_opacity = x / 100.0;
+    
+    	if (new_opacity < 0)
+    		new_opacity = 0;
+    	else if (new_opacity > 1)
+    		new_opacity = 1;
+    
+    	if (new_opacity !== inst.opacity)
+    	{
+    		inst.opacity = new_opacity;
+    		inst.runtime.redraw = true;
+    	}
+    };  
+    
+    Acts.prototype.InstSetVisible = function (v)
+	{
+        var inst = this.runtime.getObjectByUID(uid);
+        if (!inst || (inst.visible == null))
+            return;
+            
+		if (!v !== !inst.visible)
+		{
+			inst.visible = v;
+			inst.runtime.redraw = true;
+		}
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

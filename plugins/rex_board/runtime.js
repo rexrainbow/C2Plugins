@@ -1482,11 +1482,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if ((xyz_A == null) || (xyz_B == null))
             distanc = (-1)
         else
-        {
-            var dx = xyz_B.x - xyz_A.x;
-            var dy = xyz_B.y - xyz_A.y;
-            distanc = Math.sqrt(dx*dx + dy*dy);
-        }
+            distanc = this.GetLayout().LXYZ2Dist(xyz_B.x, xyz_B.y, xyz_B.z, xyz_A.x, xyz_A.y, xyz_A.z);
+
 	    ret.set_float(distanc);
 	};	 
 

@@ -18,6 +18,7 @@
 // Conditions 
 AddStringParam("Nickname", "Nickname of object.", '""');
 AddCondition(1, 0, "Is nickname valid", "Nickname", "Nickname <i>{0}</i> is valid", "Return true if this nickname is valid.", "IsNicknameValid");       
+
 AddStringParam("Nickname", "Nickname of object.", '""');
 AddObjectParam("Family", "Family type.");
 AddCondition(10, 0, "Pick instances", "SOL", 
@@ -61,6 +62,8 @@ AddAction(11, 0, "Pick matched instances", "SOL",
           "Pick matched instances.", "PickMatched");          	  
 ////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get last created instance UID", "Created instance", "LastCreatedInstUID", 
+              "Get last created instance UID.");
 
 ACESDone();
 
@@ -107,37 +110,6 @@ function IDEInstance(instance, type)
 
 IDEInstance.prototype.OnCreate = function()
 {
-
-    switch (this.properties["Hotspot"])
-    {
-        case "Top-left" :
-            this.instance.SetHotspot(new cr.vector2(0, 0));
-            break;
-        case "Top" :
-            this.instance.SetHotspot(new cr.vector2(0.5, 0));
-            break;
-        case "Top-right" :
-            this.instance.SetHotspot(new cr.vector2(1, 0));
-            break;
-        case "Left" :
-            this.instance.SetHotspot(new cr.vector2(0, 0.5));
-            break;
-        case "Center" :
-            this.instance.SetHotspot(new cr.vector2(0.5, 0.5));
-            break;
-        case "Right" :
-            this.instance.SetHotspot(new cr.vector2(1, 0.5));
-            break;
-        case "Bottom-left" :
-            this.instance.SetHotspot(new cr.vector2(0, 1));
-            break;
-        case "Bottom" :
-            this.instance.SetHotspot(new cr.vector2(0.5, 1));
-            break;
-        case "Bottom-right" :
-            this.instance.SetHotspot(new cr.vector2(1, 1));
-            break;
-    }
 }
 
 IDEInstance.prototype.OnInserted = function()
@@ -151,40 +123,6 @@ IDEInstance.prototype.OnDoubleClicked = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
-	// Edit image link
-	if (property_name === "Hotspot")
-	{
-        switch (this.properties["Hotspot"])
-        {
-            case "Top-left" :
-                this.instance.SetHotspot(new cr.vector2(0, 0));
-                break;
-            case "Top" :
-                this.instance.SetHotspot(new cr.vector2(0.5, 0));
-                break;
-            case "Top-right" :
-                this.instance.SetHotspot(new cr.vector2(1, 0));
-                break;
-            case "Left" :
-                this.instance.SetHotspot(new cr.vector2(0, 0.5));
-                break;
-            case "Center" :
-                this.instance.SetHotspot(new cr.vector2(0.5, 0.5));
-                break;
-            case "Right" :
-                this.instance.SetHotspot(new cr.vector2(1, 0.5));
-                break;
-            case "Bottom-left" :
-                this.instance.SetHotspot(new cr.vector2(0, 1));
-                break;
-            case "Bottom" :
-                this.instance.SetHotspot(new cr.vector2(0.5, 1));
-                break;
-            case "Bottom-right" :
-                this.instance.SetHotspot(new cr.vector2(1, 1));
-                break;
-        }
-	}
 }
 
 IDEInstance.prototype.OnRendererInit = function(renderer)
@@ -194,8 +132,6 @@ IDEInstance.prototype.OnRendererInit = function(renderer)
 // Called to draw self in the editor
 IDEInstance.prototype.Draw = function(renderer)
 {
-    var quad = this.instance.GetBoundingQuad();
-    renderer.Fill(quad, cr.RGB(255, 130, 122));
 }
 
 IDEInstance.prototype.OnRendererReleased = function(renderer)

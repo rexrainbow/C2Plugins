@@ -46,6 +46,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    this.path_mode = this.properties[0];
 	    this.is_cache_cost = (this.properties[1]===1);
 	    this.is_shuffle_neighbors = (this.properties[2]===1); 
+        this.weight_heuristic = this.properties[3];
 	                     
         this.board = null;
         this.boardUid = -1;    // for loading         
@@ -148,6 +149,20 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    return this.GetBoard().lz2uid(uid,lz);
 	};	
 	
+	instanceProto.lxy2dist = function(lx0, ly0, lx1, ly1)
+	{
+	    return this.GetBoard().GetLayout().LXYZ2Dist(lx1, ly1, 0, lx0, ly0, 0, true);
+	};	
+	instanceProto.lxy2px = function(lx, ly)
+	{
+	    return this.GetBoard().GetLayout().LXYZ2PX(lx, ly, 0);
+	};	
+	
+	instanceProto.lxy2py = function(lx, ly)
+	{
+	    return this.GetBoard().GetLayout().LXYZ2PY(lx, ly, 0);
+	};	    
+    
 	var prop_BLOCKING = -1;
     var prop_INFINITY = -1; 
 	instanceProto.cost_get_from_event = function (cur_node, pre_node)
@@ -218,12 +233,16 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     };
     
     instanceProto.RandomInt = function (a, b)
-    {
-        var v = (this.randomGen == null)?
-			    Math.random(): this.randomGen.random();    
-        return Math.floor(v * (b - a) + a);
+    {    
+        return Math.floor(this.Random() * (b - a) + a);
     };
-        
+    
+    instanceProto.Random = function ()
+    {
+        return (this.randomGen == null)?
+			    Math.random(): this.randomGen.random();  
+    };   
+    
     instanceProto.UID2DIR = function (t0_uid, t1_uid)
     {
         var t0_xyz = this.uid2xyz(t0_uid);
@@ -282,8 +301,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
  
         if (is_nearest===1)
             end_tile_uid = this.exp_NearestTileUID;
-            
-        var path_uids = nodes[end_tile_uid].path_to_root();
+        
+        var start_node = nodes[start_tile_uid];
+        var path_uids = nodes[end_tile_uid].path_to_root(start_node);
         this.ASTAR_nodes_release();     
 	    return path_uids;
 	};
@@ -302,10 +322,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	instanceProto.ASTAR_search = function (start_tile_uid, end_tile_uid, moving_points, cost, search_cmd)
 	{ 
         var IS_PATH_SEARCH = (search_cmd == CMD_PATH) || (search_cmd == CMD_PATH_NEAREST);
-        var IS_AREA_SEARCH = (search_cmd == CMD_AREA);        
-        var astar_heuristic_enable = IS_PATH_SEARCH && (this.path_mode == 3);
-        var shortest_path_enable = IS_PATH_SEARCH && (this.path_mode != 3);
-        
+        var IS_AREA_SEARCH = (search_cmd == CMD_AREA); 
+        var is_astar = (this.path_mode == 3) || (this.path_mode == 5) || (this.path_mode == 6);  
+        var astar_heuristic_enable = IS_PATH_SEARCH && is_astar;
+        var shortest_path_enable = IS_PATH_SEARCH && (!is_astar);
+        var astar_heuristic_mode = (!astar_heuristic_enable)? null:
+                                   (this.path_mode == 3)?     0:
+                                   (this.path_mode == 5)?     1:
+                                   (this.path_mode == 6)?     2:
+                                                              null;
+
+                                                              
 	    this.cost_function_setup(cost);
 
         var end = (end_tile_uid != null)? this.ASTAR_node_get(end_tile_uid): null;
@@ -327,17 +354,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         //}
 
         var start = this.ASTAR_node_get(start_tile_uid);        
-        start.h = start.manhattan(end, astar_heuristic_enable); 
+        start.h = start.heuristic(end, astar_heuristic_mode); 
         
         // NEAREST NODE
         var closestNode = start;
         // helper function to update closer_h                
-        var closer_h_update = function(node)
+        var closer_h_update = function(node, base_node)
         {
             if (astar_heuristic_enable)     
                 node.closer_h = node.h;                    
             else
-                node.closer_h = node.closer_h || node.manhattan(end, true);
+                node.closer_h = node.closer_h || node.heuristic(end, astar_heuristic_mode, base_node);
         };
         if (IS_PATH_SEARCH)
         {
@@ -393,7 +420,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     neighbor.visited = true;                    
                     neighbor.parent.length = 0;
                     neighbor.parent.push(currentNode.uid);   
-                    neighbor.h = neighbor.h || neighbor.manhattan(end, astar_heuristic_enable);
+                    neighbor.h = neighbor.h || neighbor.heuristic(end, astar_heuristic_mode, start);
                     neighbor.g = gScore;
                     neighbor.f = neighbor.g + neighbor.h;                    
                     this.uid2cost[neighbor.uid] = gScore;
@@ -401,7 +428,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     // NEAREST NODE
                     if (IS_PATH_SEARCH)
                     {           
-                        closer_h_update(neighbor);          
+                        closer_h_update(neighbor, start);          
                         var is_neighbor_more_closer = (neighbor.closer_h < closestNode.closer_h) ||
                                                       ( (neighbor.closer_h === closestNode.closer_h) && (neighbor.g < closestNode.g) ) ;
                        
@@ -528,7 +555,9 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.plugin = plugin;  
         this.uid = uid;      
         this.x = _xyz.x;  
-        this.y = _xyz.y;
+        this.y = _xyz.y;  
+        this.px = null;
+        this.py = null;      
         this.cost = null;
         this.f = 0;   
         this.g = 0;   
@@ -538,12 +567,27 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.closed = false;
         this.parent.length = 0;
     };
-    nodeKlassProto.manhattan = function (end_node, heuristic_enable)
-    {        
-        if (!heuristic_enable)
+    nodeKlassProto.heuristic = function (end_node, path_mode, base_node)
+    {
+        if (path_mode === null)
             return 0;
         
-        return Math.abs(this.x - end_node.x) + Math.abs(this.y - end_node.y);
+        var h;
+        var dist = this.plugin.lxy2dist(end_node.x, end_node.y, this.x, this.y) * this.plugin.weight_heuristic;
+        
+        if ((path_mode === 1) && base_node)
+        {
+            var da = end_node.angleTo(base_node) - this.angleTo(base_node);
+            h = dist + quickAbs(da);
+        }
+        else if (path_mode === 2)
+        {
+            h = dist + this.plugin.Random();
+        }
+        else
+            h = dist;
+        
+        return h;
     };   
     nodeKlassProto.neighbor_nodes_get = function()
     {
@@ -584,14 +628,21 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     {
         return (cost == prop_BLOCKING);
     };
-    nodeKlassProto.path_to_root = function ()
-    {       
-        var is_astar_mode = (this.plugin.path_mode == 3);
+    nodeKlassProto.path_to_root = function (end_node)
+    {
+        var is_astar_mode = (this.plugin.path_mode == 3) || (this.plugin.path_mode == 5) || (this.plugin.path_mode == 6);      
         var is_shortest_random_mode = (this.plugin.path_mode == 0);
         var is_shortest_diagonal_mode = (this.plugin.path_mode == 1);
-        var is_shortest_straight_mode = (this.plugin.path_mode == 2);
+        var is_shortest_straight_mode = (this.plugin.path_mode == 2);      
+        var is_shortest_line_mode = (this.plugin.path_mode == 4);
         
         var parent_index, cur_dir = null, parent_dir, i, cnt;
+        
+        if (is_shortest_line_mode)
+        {
+            var start_node=this;
+            var ta = end_node.angleTo(start_node);
+        }
         
         var curr = this, path = [];
         while (curr.parent.length > 0)
@@ -606,9 +657,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                 parent_index = this.plugin.RandomInt(0, curr.parent.length);
                 curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
             }
+
             else if (is_shortest_diagonal_mode)
             {
-                cnt = curr.parent.length;
+                cnt = curr.parent.length;                
                 for (i=0; i<cnt; i++)
                 {
                     parent_dir = this.plugin.UID2DIR(curr.uid, curr.parent[i]);
@@ -621,7 +673,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     }
                 }             
                 curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
-            }     
+            }    
+            
             else if (is_shortest_straight_mode)
             {
                 cnt = curr.parent.length;
@@ -637,10 +690,53 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     }
                 }             
                 curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
+            } 
+            
+            else if (is_shortest_line_mode)
+            {
+                cnt = curr.parent.length;
+                if (cnt == 1)
+                {
+                    curr =  GLOBOL_NODES[ curr.parent[0].toString() ];
+                    start_node = curr; // turn in the course
+                    ta = end_node.angleTo(start_node);
+                }
+                else
+                {
+                    var n = GLOBOL_NODES[ curr.parent[0].toString() ], n_;
+                    var da = quickAbs(end_node.angleTo(n) - ta), da_;
+                    for (i=1; i<cnt; i++)
+                    {
+                        n_ = GLOBOL_NODES[ curr.parent[i].toString() ];
+                        da_ = quickAbs(end_node.angleTo(n_) - ta);
+                        if (da_ < da)
+                        {
+                            n = n_;
+                            da = da_;
+                        }
+                    }
+                    curr =  n;
+                }                
+                
             }             
+        
         } 
         return path.reverse();   
     };  
+    nodeKlassProto.angleTo = function (end_node)
+    {
+        if (this.px == null)
+            this.px = this.plugin.lxy2px(this.x, this.y);
+        if (this.py == null)
+            this.py = this.plugin.lxy2py(this.x, this.y);    
+    
+        if (end_node.px == null)
+            end_node.px = this.plugin.lxy2px(end_node.x, end_node.y);
+        if (end_node.py == null)
+            end_node.py = this.plugin.lxy2py(end_node.x, end_node.y);            
+           
+        return cr.angleTo(this.px, this.py, end_node.px, end_node.py);
+    };    
 	
 	var node2uid = function(node)
 	{
@@ -815,7 +911,11 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         for (k in o)
             delete o[k];
     };
-	
+
+	function quickAbs(x)
+	{
+		return x < 0 ? -x : x;
+	};	
 	
 	instanceProto.saveToJSON = function ()
 	{    

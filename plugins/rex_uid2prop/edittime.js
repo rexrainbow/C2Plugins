@@ -4,7 +4,7 @@
 		"name":			"UID to Properties",
 		"id":			"Rex_UID2Prop",
 		"version":		"0.1",        
-		"description":	"Get properties (x,y,angle,opacity,private variable) by UID.",
+		"description":	"Get/set properties (x,y,angle,opacity,private variable) by UID without picking first.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_uid2prop.html",
 		"category":		"Rex - Instance properties",
@@ -22,10 +22,131 @@
 AddStringParam("Alias", "An alias to identify this private variable.");
 AddObjectParam("Object", "Object type.");
 AddObjectInstanceVarParam("Instance variable", "Choose the instance variable in the above object.");
-AddAction(1, af_none, "Define alias", "Private variable", 
+AddAction(1, 0, "Define alias", "Private variable", 
           "Define alias <b>{0}</b> refer to {1} variable <b>{2}</b>", 
           "Define an alias of private variable.", "DefinePrivateVariableAlias");
 
+AddNumberParam("UID", "Instance UID.", 0);
+AddAction(2, 0, "Destroy instance", "Destroy", 
+          "Instance UID <i>{0}</i>: destroy ", 
+          "Destroy instance.", "InstDestroy");
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("X", "New X co-ordinate, in pixels.", 0);
+AddAction(3, 0, "Set X", "Position", 
+          "Instance UID <i>{0}</i>: set X to <i>{1}</i>", 
+          "Set the object's X co-ordinate.", "InstSetX");   
+            
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Y", "New Y co-ordinate, in pixels.", 0);
+AddAction(4, 0, "Set Y", "Position", 
+          "Instance UID <i>{0}</i>: set Y to <i>{1}</i>", 
+          "Set the object's Y co-ordinate.", "InstSetY"); 
+                   
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("X", "New X co-ordinate, in pixels.", 0);
+AddNumberParam("Y", "New Y co-ordinate, in pixels.", 0);
+AddAction(5, 0, "Set position", "Position", 
+          "Instance UID <i>{0}</i>: set position to ( <i>{1}</i>, <i>{2}</i> )", 
+          "Set the object's X and Y co-ordinates at the same time.", "InstSetY");   
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("UIDB", "Object to position by.");
+AddAnyTypeParam("Image point (optional)", "The name or number of an image point in the object to position by.  Leave 0 for object's origin.");
+AddAction(6, 0, "Set position to another object", "Position", 
+          "Instance UID <i>{0}</i>: set position to instance UID: <i>{1}</i> (image point <i>{2}</i>)", 
+          "Position object relative to another object.", "InstSetPosToObject");
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Distance", "Distance, in pixels, to move the object forwards at its current angle.", 0);
+AddAction(7, 0, "Move forward", "Position", 
+          "Instance UID <i>{0}</i>: move forward <i>{1}</i> pixels", 
+          "Move object forwards a number of pixels at its current angle.", "InstMoveForward");
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Angle", "Angle, in degrees, at which to move the object.", 0);
+AddNumberParam("Distance", "Distance, in pixels, to move the object forwards at its current angle.", 0);
+AddAction(8, 0, "Move at angle", "Position", 
+          "Instance UID <i>{0}</i>: move <i>{2}</i> pixels at angle <i>{1}</i>", 
+          "Move object a number of pixels at a given angle.", "InstMoveForward");  
+
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Width", "New object width, in pixels.", 0);
+AddAction(9, 0, "Set width", "Size", 
+          "Instance UID <i>{0}</i>: set width to <i>{1}</i>", 
+          "Set the object's width.", "InstMoveAtAngle");  
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Width", "New object width, in pixels.", 0);
+AddAction(10, 0, "Set width", "Size", 
+          "Instance UID <i>{0}</i>: set width to <i>{1}</i>", 
+          "Set the object's width.", "InstSetWidth");  
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Height", "New object height, in pixels.", 0);
+AddAction(11, 0, "Set height", "Size", 
+          "Instance UID <i>{0}</i>: set height to <i>{1}</i>", 
+          "Set the object's height.", "InstSetHeight");
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Width", "New object width, in pixels.", 0);
+AddNumberParam("Height", "New object height, in pixels.", 0);
+AddAction(12, 0, "Set size", "Size", 
+          "Instance UID <i>{0}</i>: set size to (<i>{1}</i>, <i>{2}</i>)", 
+          "Set the object's width and height at the same time.", "InstSetSize");          
+                                                    
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Angle", "New object angle, in degrees.", 0);
+AddAction(13, 0, "Set angle", "Angle", 
+          "Instance UID <i>{0}</i>: set angle to <i>{1}</i> degrees", 
+          "Set the angle the object is oriented at.", "InstSetAngle");
+                                                    
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Degrees", "Number of degrees to rotate the object clockwise.", 0);
+AddAction(14, 0, "Rotate clockwise", "Angle", 
+          "Instance UID <i>{0}</i>: rotate <i>{1}</i> degrees clockwise", 
+          "Rotate the object's angle clockwise by a number of degrees.", "InstRotateClockwise");          
+                                                    
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Degrees", "Number of degrees to rotate the object counter-clockwise.", 0);
+AddAction(15, 0, "Rotate counter-clockwise", "Angle", 
+          "Instance UID <i>{0}</i>: rotate <i>{1}</i> degrees counter-clockwise", 
+          "Rotate the object's angle counter-clockwise by a number of degrees.", "InstRotateCounterclockwise");
+                                                    
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Degrees", "Number of degrees to rotate towards the target angle.", 0);
+AddNumberParam("Angle", "Angle, in degrees, to rotate towards.", 0);
+AddAction(16, 0, "Rotate toward angle", "Angle", 
+          "Instance UID <i>{0}</i>: rotate <i>{1}</i> degrees toward <i>{2}</i>", 
+          "Rotate the object towards another angle.", "InstRotateTowardAngle");          
+                                                    
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Degrees", "Number of degrees to rotate towards the target position.", 0);
+AddNumberParam("X", "X position to rotate toward.", 0);
+AddNumberParam("Y", "Y position to rotate toward.", 0);
+AddAction(17, 0, "Rotate toward position", "Angle", 
+          "Instance UID <i>{0}</i>: rotate <i>{1}</i> degrees toward (<i>{2}</i>, <i>{3}</i>)", 
+          "Rotate the object towards a position.", "InstRotateTowardPosition");                             
+                                                    
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("X", "X position to rotate toward.", 0);
+AddNumberParam("Y", "Y position to rotate toward.", 0);
+AddAction(18, 0, "Set angle toward position", "Angle", 
+          "Instance UID <i>{0}</i>: set angle toward (<i>{1}</i>, <i>{2}</i>)", 
+          "Set the object's angle towards a position.", "InstSetTowardPosition"); 
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Visible", "Choose the object visible, from 0 (transparent) to 100 (opaque).", 0);
+AddAction(19, 0, "Set visible", "Appear", 
+          "Instance UID <i>{0}</i>: set visible to <i>{1}</i>", 
+          "Set whether the object is hidden or shown.", "InstSetVisible");
+          
+AddNumberParam("UID", "Instance UID.", 0);
+AddNumberParam("Opacity", "Choose the object opacity, from 0 (transparent) to 100 (opaque).", 0);
+AddAction(20, 0, "Set opacity", "Appear", 
+          "Instance UID <i>{0}</i>: set opacity to <i>{1}</i>", 
+          "Set how transparent the object appears.", "InstSetOpacity");                     
+                                                      
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of instance.", 0);

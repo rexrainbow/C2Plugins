@@ -184,12 +184,10 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.tasksMgr = new cr.plugins_.Rex_TweenTasks.TasksMgrKlass(this);
-        this.exp_taskName = "";
-        this.exp_fnName = "";
-        this.exp_fnParams = null;
-        this.exp_fnPercentage = 0;
+		this.exp_task = null;
+		this.exp_fnPercentage = 0;
         this.exp_bindInstUID = -1;
-        this.exp_bindInstTypeSID = -1;        
+        this.exp_bindInstTypeSID = null;        
         
         this.my_timescale = -1.0;
         this.runtime.tickMe(this);
@@ -209,29 +207,32 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
             return;
             
         this.tasksMgr.Tick(dt);
-	};    
-    instanceProto.OnTaskDone = function (taskName)
+	}; 
+    instanceProto.OnTaskStart = function (task)
     {
-        this.exp_taskName = taskName;
+	    this.exp_task = task;
+        this.runtime.trigger(cr.plugins_.Rex_TweenTasks.prototype.cnds.OnAnyTaskStart, this);
+        this.runtime.trigger(cr.plugins_.Rex_TweenTasks.prototype.cnds.OnTaskStart, this);
+		this.exp_task = null;
+    };	   
+    instanceProto.OnTaskDone = function (task)
+    {
+        this.exp_task = task;
         this.runtime.trigger(cr.plugins_.Rex_TweenTasks.prototype.cnds.OnAnyTaskDone, this);
         this.runtime.trigger(cr.plugins_.Rex_TweenTasks.prototype.cnds.OnTaskDone, this);
-        this.exp_taskName = "";
+        this.exp_task = null;
     };
-	instanceProto.CallFunction = function(taskName, fnName, fnParams, percentage, bindInstUID, bindInstTypeSID)
+	instanceProto.CallFunction = function(task, percentage, bindInstUID, bindInstTypeSID)
 	{
-        this.exp_taskName = taskName;    
-        this.exp_fnName = fnName;
-        this.exp_fnParams = fnParams;
-        this.exp_fnPercentage = percentage;
+        this.exp_task = task;
+		this.exp_fnPercentage = percentage;
         this.exp_bindInstUID = bindInstUID;
         this.exp_bindInstTypeSID = bindInstTypeSID;        
         this.runtime.trigger(cr.plugins_.Rex_TweenTasks.prototype.cnds.OnFunction, this);
-        this.exp_taskName = "";        
-        this.exp_fnName = "";
-        this.exp_fnParams = null;
-        this.exp_fnPercentage = 0;
+        this.exp_task = null;
+		this.exp_fnPercentage = 0;
         this.exp_bindInstUID = -1;
-        this.exp_bindInstTypeSID = -1;
+        this.exp_bindInstTypeSID = null;
 	};  
 
     instanceProto.PickBindInst = function (uid, sid)
@@ -288,10 +289,14 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
     
     instanceProto.GetFnParam = function (paramName, valueType)
 	{
-	    var v;
-	    if (this.exp_fnParams.hasOwnProperty(paramName))
+	    if (!this.exp_task)
+		    return 0;
+			
+	    var fnParams = this.exp_task.fnParams;
+	    var v;		
+	    if (fnParams.hasOwnProperty(paramName))
 	    {
-	        var param = this.exp_fnParams[paramName];
+	        var param = fnParams[paramName];
 	        if (param.update_flag) // using default easeType
                 ease_param(param, this.exp_fnPercentage, param.easeType);
             
@@ -353,8 +358,8 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
     
 	Cnds.prototype.OnFunction = function (fnName)
 	{
-        var is_my_fn  = cr.equals_nocase(fnName, this.exp_fnName);
-        if (is_my_fn && (this.exp_bindInstUID >=0))
+        var is_my_fn  = cr.equals_nocase(fnName, this.exp_task.fnName);
+        if (is_my_fn && (this.exp_bindInstTypeSID != null))
         {
             this.PickBindInst(this.exp_bindInstUID, this.exp_bindInstTypeSID);
         }
@@ -362,12 +367,21 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	};    
 	Cnds.prototype.OnTaskDone = function (taskName)
 	{
-		return cr.equals_nocase(taskName, this.exp_taskName);
+		return cr.equals_nocase(taskName, this.exp_task.taskName);
 	};
 	Cnds.prototype.OnAnyTaskDone = function ()
 	{
 		return true;
+	};
+	Cnds.prototype.OnAnyTaskStart = function ()
+	{
+		return true;
 	};	
+	Cnds.prototype.OnTaskStart = function (taskName)
+	{
+		return cr.equals_nocase(taskName, this.exp_task.taskName);
+	};	
+		
 	Cnds.prototype.IsRunning = function (taskName)
 	{
         var task = this.tasksMgr.GetActivatedTask(taskName);
@@ -448,11 +462,23 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	
 	Acts.prototype.BindInst = function (taskName, objtype, destroyAfterTaskDone)
 	{       
-        if (!objtype)
+        if (objtype == null)
             return;  
-        var inst = objtype.getFirstPicked();
+        
+        var inst, sid;
+        if (typeof(objtype) == "object")
+        {            
+            inst = objtype.getFirstPicked();                       
+        }
+        else
+        {
+            var uid = objtype;
+            inst = this.runtime.getObjectByUID(uid);
+            objtype = inst.type;
+        }
+        
         if (!inst)
-            return;
+            return;        
             
         var task = this.tasksMgr.GetCandidateTask(taskName);
         task.BindInst(inst.uid, objtype.sid, (destroyAfterTaskDone==1));
@@ -499,7 +525,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
     
     Exps.prototype.TaskParam = function (ret, taskName, paramName, default_value)
 	{
-        var v = this.tasksMgr.GetTaskParameter(askName, paramName);
+        var v = this.tasksMgr.GetTaskParameter(taskName, paramName);
         if (v == null)
             v = default_value || 0;
             
@@ -508,8 +534,44 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
     
     Exps.prototype.TaskName = function (ret)
 	{
-		ret.set_string(this.exp_taskName);
-	};    
+	    var n = "";
+		if (this.exp_task)
+		    n = this.exp_task.taskName;
+		ret.set_string(n);
+	};   
+    
+    Exps.prototype.ChildTaskName = function (ret, taskName)
+	{
+	    var n = "", task;
+		if (taskName)
+		    task = this.tasksMgr.GetActivatedTask(taskName);
+        else
+            task = this.exp_task;
+            
+	    if (task && task.GetCurrentSubTask)
+	        n = task.GetCurrentSubTask().taskName;
+		ret.set_string(n);
+	};  
+    
+    Exps.prototype.RootTaskName = function (ret, taskName)
+	{
+	    var n = "", task;
+		if (taskName)
+		    task = this.tasksMgr.GetActivatedTask(taskName);
+        else
+            task = this.exp_task;
+
+	    if (task)
+	        n = task.GetRootTask().taskName;
+		ret.set_string(n);
+	}; 
+    
+    Exps.prototype.BoundInstUID = function (ret)
+	{
+		ret.set_int(this.exp_bindInstUID);
+	}; 	
+	 
+	
 }());
 
 (function ()
@@ -551,6 +613,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 		this.interval = interval;
 		this.repeatCount = repeatCount;
 		this.remainInterval = interval;
+		this.remainRepeatCount = repeatCount;
         this.destroyAfterDone = false;       
         
         if (!this.params)
@@ -579,7 +642,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
             this.bindInstInfo = {};
         
         this.bindInstInfo.uid = -1;        
-        this.bindInstInfo.sid = -1;
+        this.bindInstInfo.sid = null;
         this.bindInstInfo.destroyAfterTaskDone = false;
 	};
     
@@ -595,16 +658,30 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    this.parentTask = parentTask;
 	}; 
 	    
-	TweenTaskKlassProto.Start = function () 
-	{
-	    this.remainInterval = this.interval;
-	    
+	TweenTaskKlassProto.Start = function (force_init) 
+	{		    
+        this.remainInterval = this.interval;        
+        
+	    if (force_init)
+	    {
+	        this.remainRepeatCount = this.repeatCount;	        
+	        this.taskMgr.OnTaskStart(this);
+	        
+	        if (this.interval <= 0)
+	        {	        
+	            this.OnEnd(true);
+	            return;
+	            // end of task
+	        }
+	    }
+	    	    
 	    var param;
         for (var n in this.fnParams)
         {       
             param = this.fnParams[n];
             param.Reset(param.start, param.end, param.easeType);
         }
+        return true;
 	};
 
 	TweenTaskKlassProto.Tick = function (dt) 
@@ -630,11 +707,11 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	{                      
 	};    
 	
-	TweenTaskKlassProto.OnEnd = function ()
+	TweenTaskKlassProto.OnEnd = function (force_end)
 	{
-		if (this.repeatCount != 1)
+		if ((this.remainRepeatCount != 1) && (!force_end))
         {
-            this.repeatCount -= 1;
+            this.remainRepeatCount -= 1;
 			this.Start();
 		}
 		else
@@ -681,7 +758,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         for (var n in this.fnParams)        
             this.fnParams[n].update_flag = true;
             
-        this.taskMgr.CallFunction(this.taskName, this.fnName, this.fnParams, percentage, this.bindInstInfo.uid, this.bindInstInfo.sid);
+        this.taskMgr.CallFunction(this, percentage, this.bindInstInfo.uid, this.bindInstInfo.sid);
 	};
 	
 	TweenTaskKlassProto.CreateInversedTask = function (taskName)
@@ -719,6 +796,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 		        "interval": this.interval,
 		        "repeatCount":this.repeatCount,
 		        "remainInterval":this.remainInterval,
+		        "remainRepeatCount":this.remainRepeatCount,
 		        "destroyAfterDone":this.destroyAfterDone,
 		        "params":this.params,
 		        "fnParams":fnParams_save,
@@ -735,6 +813,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    this.interval = o["interval"];
 	    this.repeatCount = o["repeatCount"];
 	    this.remainInterval = o["remainInterval"];
+	    this.remainRepeatCount = o["remainRepeatCount"];
 	    this.destroyAfterDone = o["destroyAfterDone"];
 	       
 	    this.params = o["params"];	    
@@ -881,6 +960,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.parentTask = null;
         this.playRate = 1;
 		this.repeatCount = repeatCount;
+		this.remainRepeatCount = repeatCount;
         this.destroyAfterDone = false;       
         
         if (!this.params)
@@ -914,8 +994,13 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    this.parentTask = parentTask;
 	}; 
 	    
-	WaitForSignalTaskKlassProto.Start = function () 
+	WaitForSignalTaskKlassProto.Start = function (force_init) 
 	{
+	    if (force_init)
+	    {
+	        this.remainRepeatCount = this.repeatCount;
+	        this.taskMgr.OnTaskStart(this);
+	    }
 	};
 
 	WaitForSignalTaskKlassProto.Tick = function (dt) 
@@ -928,11 +1013,11 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
             this.OnEnd();        
 	};    
 	
-	WaitForSignalTaskKlassProto.OnEnd = function ()
+	WaitForSignalTaskKlassProto.OnEnd = function (force_end)
 	{
-		if (this.repeatCount != 1)
+		if ((this.remainRepeatCount != 1) && (!force_end))
         {
-            this.repeatCount -= 1;
+            this.remainRepeatCount -= 1;
 			this.Start();
 		}
 		else
@@ -972,6 +1057,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
                 "signalName":this.signalName,
 		        "playRate":this.playRate,
 		        "repeatCount":this.repeatCount,
+		        "remainRepeatCount":this.remainRepeatCount,
 		        "destroyAfterDone":this.destroyAfterDone,
 		        "params":this.params,
 		        "bindInstInfo": bindInstInfo_save,
@@ -985,6 +1071,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.signalName = o["signalName"];
 	    this.playRate = o["playRate"];
 	    this.repeatCount = o["repeatCount"];
+	    this.remainRepeatCount = o["remainRepeatCount"]; 
 	    this.destroyAfterDone = o["destroyAfterDone"];
 	       
 	    this.params = o["params"];	    
@@ -1011,6 +1098,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.parentTask = null; 
         this.playRate = 1;        
 		this.repeatCount = repeatCount;
+		this.remainRepeatCount = repeatCount;
         this.destroyAfterDone = false;
         
         if (!this.tasks)
@@ -1071,14 +1159,20 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	        this.BindInstToChildrenTasks();
 	};
 	
-	SequenceTasksKlassProto.Start = function () 
+	SequenceTasksKlassProto.Start = function (force_init) 
 	{
-        if (this.tasks.length == 0)
-        {
-			// end trigger
-            if (this.parentTask)
-                this.parentTask.OnChildTaskEnd(this);
-        }
+	    if (force_init)
+	    {
+            this.remainRepeatCount = this.repeatCount;	        
+	        this.taskMgr.OnTaskStart(this);
+	                    
+            if (this.tasks.length == 0)
+            {
+                this.OnEnd(true);
+                return;
+            }
+        	        
+	    }
         
 	    this.taskIndex = -1;
         this.startSubTask();
@@ -1090,11 +1184,12 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         if (this.taskIndex >= this.tasks.length)
         {
             this.OnEnd(); 
-            return;
+            return false;
         }
         
         this.actived_task = this.tasks[this.taskIndex];
-        this.actived_task.Start();
+        this.actived_task.Start(true);
+        return true;
 	};
     
 	SequenceTasksKlassProto.Tick = function (dt) 
@@ -1108,11 +1203,11 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.actived_task.Continue(signalName);
 	};    
 	
-	SequenceTasksKlassProto.OnEnd = function ()
+	SequenceTasksKlassProto.OnEnd = function (force_end)
 	{
-		if ((this.repeatCount != 1) && (this.tasks.length > 0))
+		if ((this.remainRepeatCount != 1) && (this.tasks.length > 0) && (!force_end))
         {
-            this.repeatCount -= 1;
+            this.remainRepeatCount -= 1;
 			this.Start();
 		}
 		else
@@ -1132,7 +1227,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
     
     SequenceTasksKlassProto.OnChildTaskEnd = function (task)
     {
-        this.startSubTask();
+        this.startSubTask();        
     };
 	SequenceTasksKlassProto.Destroy = function () 
 	{           
@@ -1162,6 +1257,11 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    return (!this.parentTask)? this:this.parentTask.GetRootTask();
 	};	
 	
+	SequenceTasksKlassProto.GetCurrentSubTask = function () 
+	{
+        return this.actived_task;
+	};
+		
 	SequenceTasksKlassProto.saveToJSON = function ()
 	{ 
         var tasks_save = [];
@@ -1178,6 +1278,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 		        "taskName":this.taskName,
 		        "playRate":this.playRate,
 		        "repeatCount":this.repeatCount,
+		        "remainRepeatCount":this.remainRepeatCount,
 		        "destroyAfterDone":this.destroyAfterDone,
 		        "taskIndex":this.taskIndex,
 		        "tasks":tasks_save,
@@ -1193,6 +1294,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    this.taskName = o["taskName"];
 	    this.playRate = o["playRate"];
 	    this.repeatCount = o["repeatCount"];
+	    this.remainRepeatCount = o["remainRepeatCount"];
 	    this.destroyAfterDone = o["destroyAfterDone"];
 	    this.taskIndex = o["taskIndex"];
 	    
@@ -1229,6 +1331,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.parentTask = null;
         this.playRate = 1;
 		this.repeatCount = repeatCount;
+		this.remainRepeatCount = repeatCount;
         this.destroyAfterDone = false;
         
         if (!this.tasks)        
@@ -1293,16 +1396,22 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	        this.BindInstToChildrenTasks();
 	};
 	
-	ParallelTasksKlassProto.Start = function () 
+	ParallelTasksKlassProto.Start = function (force_init) 
 	{
-        if (this.tasks.length == 0)
-        {
-			// end trigger
-            if (this.parentTask)
-                this.parentTask.OnChildTaskEnd(this);
-        }
-        
-        this.startSubTask();    
+	    if (forece_init)
+	    {	        
+	        this.remainRepeatCount = this.repeatCount;
+	        this.taskMgr.OnTaskStart(this);
+	        
+            if (this.tasks.length == 0)
+            {
+		    	this.OnEnd(true);
+                return false;
+            }
+	    }
+	    
+        this.startSubTask();  
+        return true;  
 	};
     
 	ParallelTasksKlassProto.startSubTask = function () 
@@ -1312,7 +1421,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         {
             childTask = this.tasks[i];
             this.waitTasks[childTask.taskName] = true;
-            childTask.Start();
+            childTask.Start(true);
         }
 	};    
 
@@ -1339,11 +1448,11 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         }
 	};
 	
-	ParallelTasksKlassProto.OnEnd = function ()
+	ParallelTasksKlassProto.OnEnd = function (force_end)
 	{
-		if (this.repeatCount != 1)
+		if ((this.remainRepeatCount != 1) && (this.tasks.length > 0) && (!force_end))
         {
-            this.repeatCount -= 1;
+            this.remainRepeatCount -= 1;
 			this.Start();
 		}
 		else
@@ -1418,6 +1527,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 		        "taskName":this.taskName,
 		        "playRate":this.playRate,
 		        "repeatCount":this.repeatCount,
+		        "remainRepeatCount":this.remainRepeatCount,
 		        "destroyAfterDone":this.destroyAfterDone,
 		        "tasks":tasks_save,
 		        "waitTasks": this.waitTasks,
@@ -1432,6 +1542,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    this.taskName = o["taskName"];
 	    this.playRate = o["playRate"];
 	    this.repeatCount = o["repeatCount"];
+	    this.remainRepeatCount = o["remainRepeatCount"];
 	    this.destroyAfterDone = o["destroyAfterDone"];
 	    
 	    var tasks_save = o["tasks"];
@@ -1459,7 +1570,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	//taskKlassProto.BindInst = function (instUID, sid, destroyAfterTaskDone) {};     
 	//taskKlassProto.Start = function () {};
 	//taskKlassProto.Tick = function (dt) {};
-	//taskKlassProto.OnEnd = function () {};
+	//taskKlassProto.OnEnd = function (force_end) {};
     //taskKlassProto.OnChildTaskEnd = function (task) {}; 
     //taskKlassProto.Destroy = function () {}; 
     //taskKlassProto.SetTaskParameter = function (name, value) {};  
@@ -1618,7 +1729,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
             this.activated_tasks.push(task);
             this.update_activated_taskIndex(true);
             task.destroyAfterDone = (destroyAfterDone == 1);
-            task.Start();
+            task.Start(true); 
         }        
     };
     TasksMgrKlassProto.PauseTask = function (taskName)
@@ -1680,19 +1791,23 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         
         this.process_queue.length = 0;
     };
+    TasksMgrKlassProto.OnTaskStart = function (task)
+    {
+        this.plugin.OnTaskStart(task);       
+    };     
     TasksMgrKlassProto.OnTaskDone = function (task)
     {
         this.set_task_idle(task.taskName);
         // else : subTasks
-        this.plugin.OnTaskDone(task.taskName);       
+        this.plugin.OnTaskDone(task);       
     };
-    TasksMgrKlassProto.CallFunction = function (taskName, fnName, fnParams, percentage, bindInstUID, bindInstTypeSID) 
+    TasksMgrKlassProto.CallFunction = function (task, percentage, bindInstUID, bindInstTypeSID) 
     {
-        this.plugin.CallFunction(taskName, fnName, fnParams, percentage, bindInstUID, bindInstTypeSID);
+        this.plugin.CallFunction(task, percentage, bindInstUID, bindInstTypeSID);
     };
 	TasksMgrKlassProto.SetTaskParameter = function (taskName, paramName, paramValue)
 	{       
-        var task = this.tasksMgr.GetTask(taskName, true);
+        var task = this.GetTask(taskName, true);
         if (!task)
             return;
         
@@ -1700,7 +1815,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	}; 
 	TasksMgrKlassProto.GetTaskParameter = function (taskName, paramName)
 	{       
-        var task = this.tasksMgr.GetTask(taskName, true);
+        var task = this.GetTask(taskName, true);
         if (!task)
             return;
         

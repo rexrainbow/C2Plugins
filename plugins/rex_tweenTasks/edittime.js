@@ -29,6 +29,15 @@ AddCondition(31, cf_trigger, "On task done", "Control",
 AddCondition(32, cf_trigger, "On any task done", "Control", 
              "On any task done", 
              "Triggered when any task is done.", "OnAnyTaskDone");
+             
+AddCondition(33, cf_trigger, "On any task start", "Control", 
+             "On any task started", 
+             "Triggered when any task is started.", "OnAnyTaskStart"); 
+             
+AddStringParam("Name", "Name of task.", '"task"');
+AddCondition(34, cf_trigger, "On task started", "Control", 
+             "On task <b>{0}</b> started", 
+             "Triggered when a task is started.", "OnTaskStart");                     
 
 AddStringParam("Name", "Name of task.", '"task"');
 AddCondition(51, 0, "Is task running", "Statis", 
@@ -123,10 +132,10 @@ AddAction(14, 0, "New sequence task", "New - group task",
           
 AddStringParam("Task", "Name of task.", '"task"');
 AddNumberParam("Repeat", "Repeat count. 0 is infinty.", 1); 
-AddVariadicParams("Child task {n}", "Tasks in sequence.");
+AddVariadicParams("Child task {n}", "Tasks in parallel.");
 AddAction(15, 0, "New parallel task", "New - group task", 
           "Create new task <b>{0}</b> to run children tasks (<b>{...}</b>) parallel, repeat count to <b>{1}</b>", 
-          "Create a new task to run tasks in sequence or parallel.", "NewParallelTask");    
+          "Create a new task to run tasks in parallel.", "NewParallelTask");    
 
 AddStringParam("Task", "Name of task.", '"task"');
 AddStringParam("child task", "Name of child task.", '"sub"');
@@ -150,7 +159,7 @@ AddStringParam("Task", "Name of task.", '""');
 AddAnyTypeParam("Parameter", "Name of parameter", '""');
 AddAnyTypeParam("Value", "Value", 0);
 AddAction(21, 0, "Set parameter", "Task parameter", 
-          "Set parameter <b>{0}</b> to <b>{1}</b> of task <b>{2}</b>", 
+          "Set task <b>{0}</b> 's parameter <b>{1}</b> to <b>{2}</b>", 
           "Set a parameter of task.", "SetTaskParameter");
 
 AddStringParam("Task", "Name of task.", '""');              
@@ -160,7 +169,16 @@ AddComboParamOption("Destroy");
 AddComboParam("Destroy", "Destroy bound instance after task done.", 0); 
 AddAction(22, 0, "Bind instance", "Task parameter",
           "Bind instance {1} to task <b>{0}</b>, <b>{2}</b> instance after task done", 
-          "Bind instance to task.", "BindInst");          
+          "Bind instance to task.", "BindInst");  
+          
+AddStringParam("Task", "Name of task.", '""');              
+AddNumberParam("UID", "Instance UID.", 0);
+AddComboParamOption("Keep");
+AddComboParamOption("Destroy");
+AddComboParam("Destroy", "Destroy bound instance after task done.", 0); 
+AddAction(23, 0, "Bind instance by UID", "Task parameter",
+          "Bind instance UID: <b>{1}</b> to task <b>{0}</b>, <b>{2}</b> instance after task done", 
+          "Bind instance to task.", "BindInst");                   
           
 AddStringParam("Task", "Name of task.", '"task"');
 AddComboParamOption("Keep");
@@ -207,8 +225,19 @@ AddExpression(21, ef_return_any, "Get value of task parameter", "Task", "TaskPar
               'Get value of task parameter.');
               
 AddExpression(31, ef_return_string, "Get task name", "Task", "TaskName", 
-              "Get task name."); 
+              "Get task name.");             
 
+//AddStringParam("Task", "Name of sequence task.", '"task"');
+AddExpression(32, ef_return_string | ef_variadic_parameters, "Get current child task name", "Sequence", "ChildTaskName", 
+              'Get current child task name in sequence task. Return "" if not avaiable.  Add 2nd parameter to child task name.'); 
+
+//AddStringParam("Task", "Name of child task.", '"task"');
+AddExpression(33, ef_return_string | ef_variadic_parameters, "Get root task name", "Task", "RootTaskName", 
+              'Get root task name. Add 2nd parameter to child task name.'); 
+
+AddExpression(34, ef_return_number, "Get bound instance UID", "Task", "BoundInstUID", 
+              "Get bound instance UID.");   
+                            
 ACESDone();
 
 // Property grid properties for this plugin

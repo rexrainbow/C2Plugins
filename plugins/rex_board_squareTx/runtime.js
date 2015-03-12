@@ -288,7 +288,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	{  
 	    var dx = xyz_to.x - xyz_o.x;
 	    var dy = xyz_to.y - xyz_o.y;	    
-	    var vmax = Math.max(Math.abs(dx), Math.abs(dy));
+	    var vmax = Math.max(quickAbs(dx), quickAbs(dy));
 	    if (vmax != 0)
 	    {
 	        dx = dx/vmax;
@@ -354,6 +354,23 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         }	
 
         return new_ly;        
+	};  
+
+	instanceProto.LXYZ2Dist = function (lx0, ly0, lz0, lx1, ly1, lz1, is_rough)
+	{
+        var dx = lx1 - lx0;
+        var dy = ly1 - ly0;
+        var d;
+        if (!is_rough)
+            d = Math.sqrt(dx*dx + dy*dy);
+        else
+            d = quickAbs(dx) + quickAbs(dy);
+       return d;
+	};   
+
+	function quickAbs(x)
+	{
+		return x < 0 ? -x : x;
 	};    
 	
 	instanceProto.saveToJSON = function ()

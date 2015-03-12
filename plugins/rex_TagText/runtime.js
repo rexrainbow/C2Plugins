@@ -643,22 +643,32 @@ cr.plugins_.rex_TagText = function(runtime)
 							self.runtime.redraw = true;
 							self.text_changed = true;
 						});
-
+        var newfacename = "'" + familyname_ + "'";
+        
 		// Already requested this web font?
 		if (requestedWebFonts.hasOwnProperty(cssurl_))
 		{
-			// Use it immediately without requesting again.  Whichever object
-			// made the original request will refresh the canvas when it finishes
-			// loading.
-			var newfacename = "'" + familyname_ + "'";
-			
-			if (this.facename === newfacename)
-				return;	// no change
+            
+	        if (this._tag != null)  // <class> ... </class>
+	        {
+	            this._tag["fontFamily"] = newfacename;                             
+	        }
+	        else    // global
+	        {
+        
+			    // Use it immediately without requesting again.  Whichever object
+			    // made the original request will refresh the canvas when it finishes
+			    // loading.
+			    
+			    if (this.facename === newfacename)
+				    return;	// no change
 				
-			this.facename = newfacename;
-			this.updateFont();
+			    this.facename = newfacename;
+			    this.updateFont();
 			
-			// There doesn't seem to be a good way to test if the font has loaded,
+            }
+            
+            // There doesn't seem to be a good way to test if the font has loaded,
 			// so just fire a refresh every 100ms for the first 1 second, then
 			// every 1 second after that up to 10 sec - hopefully will have loaded by then!
 			for (var i = 1; i < 10; i++)
@@ -666,8 +676,8 @@ cr.plugins_.rex_TagText = function(runtime)
 				setTimeout(refreshFunc, i * 100);
 				setTimeout(refreshFunc, i * 1000);
 			}
-		
-			return;
+            
+			return;            
 		}
 		
 		// Otherwise start loading the web font now
@@ -680,16 +690,25 @@ cr.plugins_.rex_TagText = function(runtime)
 		document.getElementsByTagName('head')[0].appendChild(wf);
 		requestedWebFonts[cssurl_] = true;
 		
-		this.facename = "'" + familyname_ + "'";
-		this.updateFont();
-					
-		// Another refresh hack
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+	        this._tag["fontFamily"] = newfacename;                              
+	    }
+        else
+        {        
+		    this.facename = "'" + familyname_ + "'";
+		    this.updateFont();
+		
+           
+		}
+        
+        // Another refresh hack
 		for (var i = 1; i < 10; i++)
 		{
 			setTimeout(refreshFunc, i * 100);
 			setTimeout(refreshFunc, i * 1000);
-		}
-		
+		} 
+        
 		log("Requesting web font '" + cssurl_ + "'... (tick " + this.runtime.tickcount.toString() + ")");
 	};
 	
@@ -822,7 +841,9 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	Exps.prototype.TextHeight = function (ret)
 	{
-		ret.set_int(this.lines.length * (this.pxHeight + this.line_height_offset) - this.line_height_offset);
+	    var text_height = this.lines.length * (this.pxHeight + this.line_height_offset) - this.line_height_offset;
+	    text_height += this.vshift
+		ret.set_float(text_height);
 	};
 
 	Exps.prototype.RawText = function(ret)
@@ -847,7 +868,7 @@ cr.plugins_.rex_TagText = function(runtime)
         // pens for draw        
         this.pens = [[]];
         this.text_changed = true; // update this.pens to redraw
-        this.rawTextLine = [pkgCache.allocLine("", null, 0)];
+        this.rawTextLine = [pkgCache.allocLine("", null, 0, 0)];
         this._text_pkg = [];
         
         /*
@@ -1118,8 +1139,8 @@ cr.plugins_.rex_TagText = function(runtime)
             // Reset textLines;
             textLines.length = 0;
 			// boxWidth comes from plugin
-            textLines = _word_wrap(proText, textLines, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );
-            
+            _word_wrap(proText, textLines, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );
+
             // save pen info
             var lcnt=textLines.length, txt;         
             var last_line_index=this.rawTextLine.length-1; 
@@ -1143,7 +1164,8 @@ cr.plugins_.rex_TagText = function(runtime)
 				if (is_new_line)
 				    y += this.lineHeight;
 								                
-				this.rawTextLine[last_line_index].text += txt;				
+				this.rawTextLine[last_line_index].text += txt;
+				this.rawTextLine[last_line_index].width = cursor_x;
 				if (is_new_line) // not the last line
 				{
 				    cur_line_char_cnt = this.rawTextLine[last_line_index].text.length;
@@ -1305,6 +1327,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		pkg.text = _text;
 		pkg.tag = _tag;
 		pkg.index = _index;
+        pkg.width = 0;       // line width of text
 		return pkg;
 	};
 	

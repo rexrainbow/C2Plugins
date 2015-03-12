@@ -15,6 +15,14 @@ cr.plugins_.Rex_Layouter = function(runtime)
 {
 	var pluginProto = cr.plugins_.Rex_Layouter.prototype;
 		
+	pluginProto.onCreate = function ()
+	{
+		pluginProto.acts.Destroy = function ()
+		{
+			this.runtime.DestroyInstance(this);
+            this._destory_all_insts();
+		};        
+	};        
 	/////////////////////////////////////
 	// Object type class
 	pluginProto.Type = function(plugin)
@@ -63,7 +71,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
     
 	instanceProto.onDestroy = function ()
 	{		
-        this._destory_all_insts();
+        //this._destory_all_insts();
 	};
     
 	instanceProto._update_opacity = function ()
@@ -243,7 +251,8 @@ cr.plugins_.Rex_Layouter = function(runtime)
             if (!(inst.uid in this._uids))
                 continue;
             this._insts.push(inst);
-            this.runtime.DestroyInstance(inst);
+            Object.getPrototypeOf(inst.type.plugin).acts.Destroy.call(inst);
+            //this.runtime.DestroyInstance(inst);
             this._remove_uid(inst.uid);
         }
         // layout instances
@@ -330,7 +339,10 @@ cr.plugins_.Rex_Layouter = function(runtime)
         {
             inst = this.runtime.getObjectByUID(uid);
             if (inst != null)
-                this.runtime.DestroyInstance(inst);       
+            {
+                Object.getPrototypeOf(inst.type.plugin).acts.Destroy.call(inst);
+                //this.runtime.DestroyInstance(inst);       
+            }
         }     	
 	};	
 	
