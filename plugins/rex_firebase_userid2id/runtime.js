@@ -13,7 +13,6 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_Firebase_UserID2ID.prototype;
 		
 	/////////////////////////////////////

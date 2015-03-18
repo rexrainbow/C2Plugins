@@ -60,7 +60,15 @@ AddCondition(103, cf_trigger, "On remove queried messages complete", "Remove que
 
 AddCondition(104, cf_trigger, "On remove queried messages error", "Remove queried messages",
             "On remove queried messages error",
-            "Triggered when remove error.", "OnRemoveQueriedItemsError");                                    
+            "Triggered when remove error.", "OnRemoveQueriedItemsError");    
+            
+AddCondition(111, cf_trigger, "On get message count complete", "Queried message count",
+            "On get message count complete",
+            "Triggered when get message count.", "OnGetMessageCountComplete");
+
+AddCondition(112, cf_trigger, "On get message count error", "Queried message count",
+            "On get message count error",
+            "Triggered when get message count error.", "OnGetMessageCountError");                                                
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Sender ID", "Sender ID.", '""');
@@ -177,7 +185,11 @@ AddAction(101, 0, "Remove by messageID", "Remove",
 AddAction(102, 0, "Remove queried messages", "Remove", 
           "Remove- Remove queried messages", 
           "Remove queried messages.", "RemoveQueriedMessages");   
-                                  
+
+AddAction(111, 0, "Get message count", "Queried message count", 
+          "Get queried message count", 
+          "Get queried message count. Maximum of 160 requests per minute.", "GetMessageCount");   
+                                         
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "My userID", "User info", "MyUserID", 
@@ -224,7 +236,10 @@ AddExpression(97, ef_return_number, "Last loaded sent unix timestamp", "Received
                             
 AddExpression(101, ef_return_string, "Last removed messageID", "Remove", "LastRemovedMessageID", 
               'Get last removed messageID under "Condition:On remove complete".');   
-                             
+                    
+AddExpression(111, ef_return_number, "Last message count", "Queried message count", "LastMessageCount", 
+              'Get last queried message count under "Condition: On get message count complete".');
+                                           
 ACESDone();
 
 // Property grid properties for this plugin

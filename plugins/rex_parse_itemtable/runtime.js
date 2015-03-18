@@ -13,7 +13,6 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_parse_ItemTable.prototype;
 		
 	/////////////////////////////////////
@@ -64,9 +63,14 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 	    
-	    if (!this.recycled)
+	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        window.RexC2IsParseInit = true;
+	    }
+	    	    
+	    if (!this.recycled)
+	    {
 	        this.itemTable_klass = window["Parse"].Object["extend"](this.properties[2]);
 	        var page_lines = this.properties[3];	    
             this.itemTable = this.create_itemTable(page_lines);	

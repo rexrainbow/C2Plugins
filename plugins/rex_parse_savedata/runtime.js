@@ -13,7 +13,6 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_parse_saveslot.prototype;
 		
 	/////////////////////////////////////
@@ -64,9 +63,14 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if (!this.recycled)
+	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        window.RexC2IsParseInit = true;
+	    }
+	    	    
+	    if (!this.recycled)
+	    {
 		    this.header_klass = window["Parse"].Object["extend"](this.properties[2]);
 		    this.body_klass = window["Parse"].Object["extend"](this.properties[3]);
 		}

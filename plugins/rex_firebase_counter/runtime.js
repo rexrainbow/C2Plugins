@@ -13,7 +13,6 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_Firebase_Counter.prototype;
 		
 	/////////////////////////////////////

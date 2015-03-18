@@ -67,7 +67,6 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_Firebase_Rooms.prototype;
 		
 	/////////////////////////////////////

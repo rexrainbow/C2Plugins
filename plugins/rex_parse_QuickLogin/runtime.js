@@ -13,7 +13,6 @@ cr.plugins_.Rex_parse_QuickLogin = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_parse_QuickLogin.prototype;
 		
 	/////////////////////////////////////
@@ -66,8 +65,11 @@ cr.plugins_.Rex_parse_QuickLogin = function(runtime)
 	{ 
         this.last_error = null;
         
-        if (!this.recycled)
+	    if (!window.RexC2IsParseInit)
+	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        window.RexC2IsParseInit = true;
+	    }
 	};
 	
 	instanceProto.OnLoginSuccessfully = function()

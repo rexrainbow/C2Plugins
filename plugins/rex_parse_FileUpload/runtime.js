@@ -13,7 +13,6 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_Parse_FileUpload.prototype;
 		
 	/////////////////////////////////////
@@ -66,8 +65,11 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 	{ 
 	    this.file_obj = null;
 	    
-	    if (!this.recycled)
+	    if (!window.RexC2IsParseInit)
+	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        window.RexC2IsParseInit = true;
+	    }
 	};
 
 	instanceProto.OnUploadComplete = function()

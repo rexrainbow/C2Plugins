@@ -28,7 +28,6 @@ cr.plugins_.Rex_Firebase_Userlist = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_Firebase_Userlist.prototype;
 		
 	/////////////////////////////////////

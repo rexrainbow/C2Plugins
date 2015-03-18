@@ -23,7 +23,6 @@ cr.plugins_.Rex_parse_message = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_parse_message.prototype;
 		
 	/////////////////////////////////////
@@ -76,9 +75,14 @@ cr.plugins_.Rex_parse_message = function(runtime)
     var MESSAGE_JSON = 1;
 	instanceProto.onCreate = function()
 	{ 
-	    if (!this.recycled)
+	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        window.RexC2IsParseInit = true;
+	    }
+	    	    
+	    if (!this.recycled)
+	    {
 	        this.message_klass = window["Parse"].Object["extend"](this.properties[2]);
 	    }
 	    
@@ -102,7 +106,8 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    this.exp_CurMessageIndex = -1;
 	    this.exp_CurMessage = null;
 	    this.exp_LastFetchedMessage = null;   
-	    this.exp_LastRemovedMessageID = "";     
+	    this.exp_LastRemovedMessageID = "";  
+	    this.exp_LastMessageCount = -1;   
 	};
 	
 	instanceProto.create_messagebox = function(page_lines)
@@ -254,7 +259,16 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	Cnds.prototype.OnRemoveQueriedItemsError = function ()
 	{
 	    return true;
-	};			   
+	};	
+	
+	Cnds.prototype.OnGetMessageCountComplete = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnGetMessageCountError = function ()
+	{
+	    return true;
+	};				   
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -457,6 +471,25 @@ cr.plugins_.Rex_parse_message = function(runtime)
         // step 1. read items           
 	    query["find"](query_handler);
 	};
+	
+    Acts.prototype.GetMessageCount = function ()
+	{
+	    var query = this.get_request_query(this.filters, 2); 
+	    
+	    var self = this;
+	    var on_query_success = function(count)
+	    {
+	        self.exp_LastMessageCount = count;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessageCountComplete, self); 	        
+	    };	    
+	    var on_query_error = function(error)
+	    {      
+	        self.exp_LastMessageCount = -1;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessageCountError, self); 
+	    };
+	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
+	    query["count"](query_handler);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -631,7 +664,11 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	{
 		ret.set_string(this.exp_LastRemovedMessageID);
 	};	
-	
+    
+	Exps.prototype.LastMessageCount = function (ret)
+	{
+		ret.set_int(this.exp_LastMessageCount);
+	};	
 		    
 }());     
 (function ()

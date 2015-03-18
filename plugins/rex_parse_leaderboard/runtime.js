@@ -13,7 +13,6 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 (function ()
 {
-	var input_text = "";
 	var pluginProto = cr.plugins_.Rex_parse_Leaderboard.prototype;
 		
 	/////////////////////////////////////
@@ -63,10 +62,15 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{ 	    
+	{ 	   
+	    if (!window.RexC2IsParseInit)
+	    {
+	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        window.RexC2IsParseInit = true;
+	    }
+	    	     
 	    if (!this.recycled)
 	    {	    
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        this.rank_klass = window["Parse"].Object["extend"](this.properties[2]);
 	    }
 	    
