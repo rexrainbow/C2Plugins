@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, 0, "Has been attracted", "Target", "{my} has been attracted", 
-             "Target has been attracted by source.", "HasBeenAttracted");
+             "Return true if target has been attracted by source.", "HasBeenAttracted");
 AddCondition(2, cf_trigger, "Begin attracted", "Target", 
              "{my} Begin attracted", 
 			 "Triggered when attracted beginning, to get attracted source uid.", 
@@ -32,8 +32,10 @@ AddCondition(5, cf_trigger, "End attracting", "Source",
 			 "Triggered when attracting end, to get attracted target uid.", 
 			 "EndAttracting"); 
 AddCondition(6, 0, "Has attracting", "Source", "{my} has attracting", 
-             "Source has attracting target.", "HasAttracting");	
-	 		 
+             "Return true if source has attracting target.", "HasAttracting");	
+	 		
+AddCondition(11, 0, "Has force", "Output", "{my} has force", 
+             "Return true if force is not 0.", "HasForce");	 		 
 //////////////////////////////////////////////////////////////
 // Actions         
 AddComboParamOption("No");

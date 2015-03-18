@@ -125,13 +125,13 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
             return;
             
         var uid = this.inst.uid;
-        if ((this.pre_source_tag != null) && (this.pre_source_tag in this.sources))
+        if ((this.pre_source_tag != null) && (this.sources.hasOwnProperty(this.pre_source_tag)))
         {
             var sources = this.sources[this.pre_source_tag];
             if (uid in sources)
                 delete sources[uid];
         }
-        if (!(this.source_tag in this.sources))
+        if (!(this.sources.hasOwnProperty(this.source_tag)))
             this.sources[this.source_tag] = {};
         this.sources[this.source_tag][uid] = this;
         this.pre_source_tag = this.source_tag;
@@ -140,7 +140,7 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	behinstProto._source_remove = function()
 	{
         var uid = this.inst.uid;
-        if (this.source_tag in this.sources)
+        if (this.sources.hasOwnProperty(this.source_tag))
         {
             var sources = this.sources[this.source_tag];
             if (uid in sources)
@@ -186,31 +186,31 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
             
         var sources = this.sources[this.target_tag];
 		var my_uid = this.inst.uid;
-        var uid, source_inst, inst;
+        var uid, behavior_instB, instB;
         this.has_been_attracted = false;        
         this.has_attracting = false; 
         for (uid in sources)
         {
-            source_inst = sources[uid];
-			inst = source_inst.inst;
+            behavior_instB = sources[uid];
+			instB = behavior_instB.inst;
 			
             //We do not want an object to be exerting a gravitational force on itself
-            if (my_uid === inst.uid)
+            if (my_uid === instB.uid)
             {
-                source_inst.has_attracting = false;
+                behavior_instB.has_attracting = false;
                 continue;	
             }
 
-            if (!this._in_range(inst,  source_inst.sensitivity_range_pow2))
+            if (!this._in_range(instB,  behavior_instB.sensitivity_range_pow2))
             {
-                source_inst.has_attracting = false;
+                behavior_instB.has_attracting = false;
                 continue;
             }
             
             this.has_been_attracted = true;     
-            source_inst.has_attracting = true;                   
-            this._accumulate_force(source_inst);
-            this._attracting_target(source_inst, my_uid);
+            behavior_instB.has_attracting = true;                   
+            this._accumulate_force(behavior_instB);
+            this._attracting_target(behavior_instB, my_uid);
             this._attracted_by_source(this, uid);
         }       
         
@@ -228,13 +228,13 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	    clean_table(this.current_targets);      
 	};    
 
-	behinstProto._attracting_target = function (source_inst, target_uid)
+	behinstProto._attracting_target = function (behavior_instB, target_uid)
 	{
-	    source_inst.attracted_target_uid = parseInt(target_uid);
-	    var pre_targets = source_inst.pre_targets;
-	    if (!(target_uid in source_inst.pre_targets))
-	        this.runtime.trigger(cr.behaviors.Rex_LJ_potential.prototype.cnds.BeginAttracting, source_inst.inst);  
-	    source_inst.current_targets[target_uid] = true;
+	    behavior_instB.attracted_target_uid = parseInt(target_uid);
+	    var pre_targets = behavior_instB.pre_targets;
+	    if (!(target_uid in behavior_instB.pre_targets))
+	        this.runtime.trigger(cr.behaviors.Rex_LJ_potential.prototype.cnds.BeginAttracting, behavior_instB.inst);  
+	    behavior_instB.current_targets[target_uid] = true;
 	}; 
 	
 	behinstProto._attracted_by_source = function (target_inst, source_uid)
@@ -260,7 +260,7 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	
 	behinstProto._attracted_by_source_end = function ()
 	{
-	    var uid, source_inst;
+	    var uid, behavior_instB;
 	    for (uid in this.pre_sources)
 	    {
 	        if (uid in this.current_sources)
@@ -270,16 +270,16 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	    }  
 	};		
 	
-	behinstProto._in_range = function (inst1, sensitivity_range_pow2)
+	behinstProto._in_range = function (instB, sensitivity_range_pow2)
 	{
-	   if (sensitivity_range_pow2 == 0)
-	       return true;
+	    if (sensitivity_range_pow2 == 0)
+	        return true;
 	       
-       var inst0 = this.inst;
-       var dx = inst1.x - inst0.x;
-       var dy = inst1.y - inst0.y;
-       var distance_pow2 = (dx*dx)+(dy*dy);
-       return (distance_pow2 <= sensitivity_range_pow2);
+        var instA = this.inst;
+        var dx = instB.x - instA.x;
+        var dy = instB.y - instA.y;
+        var distance_pow2 = (dx*dx)+(dy*dy);
+        return (distance_pow2 <= sensitivity_range_pow2);
 	}; 
 	
 	behinstProto.get_thisBehaviorInst = function (inst)
@@ -413,7 +413,11 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	{
 		return this.has_attracting;
 	};	
-    
+
+	Cnds.prototype.HasForce = function ()
+	{
+		return (this.output_force["x"] != 0) && (this.output_force["y"] != 0);
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -548,7 +552,11 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	{
         var dx = this.output_force["x"];
         var dy = this.output_force["y"];    
-        var m = Math.sqrt( (dx*dx) + (dy*dy) );
+        var m;
+        if ((dx != 0) && (dy != 0))
+            m = Math.sqrt( (dx*dx) + (dy*dy) );
+        else
+            m = 0;
 		ret.set_float(m);
 	};   
 	Exps.prototype.ForceDx = function (ret)
