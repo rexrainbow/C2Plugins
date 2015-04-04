@@ -89,6 +89,12 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		    clean_table( this.exp_CurHeader );
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	    clean_table( this.save_header );
+		clean_table( this.save_body );
+	};
+		
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)

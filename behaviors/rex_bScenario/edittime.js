@@ -67,7 +67,14 @@ AddAction(6, 0, "Stop scenario", "Control",
 AddNumberParam("Offset", "Time offset at start", 0);     
 AddAction(7, 0, "Set time offset", "Setting", 
           "Set offset to <i>{1}</i>", 
-          "Set time offset.", "SetOffset");   
+          "Set time offset.", "SetOffset");  
+AddAction(8, 0, "Clean commands", "0: Load", 
+          "Clean all commands", 
+          "Clean all commands.", "CleanCmds");            
+AddStringParam("Commands", "Commands in CSV format", "");
+AddAction(9, 0, "Append commands", "0: Load", 
+          "Append commands <i>{0}</i>", 
+          "Append commands.", "AppendCmds");          
 AddAction(20, 0, "Continue all", "Response - Wait", 
           "Continue scenario (response of wait command)", 
           "Continue scenario, response of wait command.", "Continue");  

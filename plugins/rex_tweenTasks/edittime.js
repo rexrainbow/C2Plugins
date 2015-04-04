@@ -40,7 +40,7 @@ AddCondition(34, cf_trigger, "On task started", "Control",
              "Triggered when a task is started.", "OnTaskStart");                     
 
 AddStringParam("Name", "Name of task.", '"task"');
-AddCondition(51, 0, "Is task running", "Statis", 
+AddCondition(51, 0, "Is task running", "Status", 
              "<b>{0}</b> is running", 
              "Return true if task is running.", "IsRunning");
 //////////////////////////////////////////////////////////////

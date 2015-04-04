@@ -70,19 +70,24 @@ cr.behaviors.Rex_boundary = function(runtime)
         this.horizontal_boundary_update();
         this.vertical_boundary_update();
 		
-	    var is_hit_boundary = false;
-		
+		var hit_horizontal, hit_vertical;
 		if (this.mode == 0)
 		{
-	        is_hit_boundary |= this.horizontal_boundary_clamp();
-	        is_hit_boundary |= this.vertical_boundary_clamp();		
+		    hit_horizontal = this.horizontal_boundary_clamp();
+		    hit_vertical = this.vertical_boundary_clamp();	
         }
-		else
+		else if (this.mode == 1)
 		{
-	        is_hit_boundary |= this.horizontal_boundary_wrap();
-	        is_hit_boundary |= this.vertical_boundary_wrap();			
+		    hit_horizontal = this.horizontal_boundary_wrap();
+		    hit_vertical = this.vertical_boundary_wrap();			
 		}
-		if (is_hit_boundary)
+		else if (this.mode == 2)
+		{
+		    hit_horizontal = this.horizontal_boundary_modwrap();
+		    hit_vertical = this.vertical_boundary_modwrap();			
+		}
+		
+		if (hit_horizontal || hit_vertical)
         {                         
             this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitAnyBoundary, this.inst);            
 		    this.inst.set_bbox_changed();             
@@ -260,6 +265,63 @@ cr.behaviors.Rex_boundary = function(runtime)
 		}
 	    return (curr_y != this.inst.y);			
 	};	
+	
+	// mod wrap	
+	behinstProto.horizontal_boundary_modwrap = function ()
+	{
+	    if (!this.horizontal_enable)
+		    return false;
+		
+		// mod wrap only support origin alignment
+		var hit_left = (this.inst.x < this.horizontal_boundary[0]);
+		var hit_right = (this.inst.x > this.horizontal_boundary[1]);
+		var is_hit = (hit_left || hit_right);
+		
+		if (is_hit)
+		{
+		    var dist = this.horizontal_boundary[1] - this.horizontal_boundary[0];
+		    var offset =  (this.inst.x - this.horizontal_boundary[0]) % dist;
+		    if (offset < 0)
+		        offset += dist;
+	        
+	        this.inst.x = offset + this.horizontal_boundary[0];
+		}
+		
+        if (hit_left)
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
+        else if (hit_right)
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
+            
+	    return is_hit;
+	};
+	
+	behinstProto.vertical_boundary_modwrap = function ()
+	{
+	    if (!this.vertical_enable)
+		    return false;
+		    
+		// mod wrap only support origin alignment		
+		var hit_top = (this.inst.y < this.vertical_boundary[0]);
+		var hit_bottom = (this.inst.y > this.vertical_boundary[1]);
+		var is_hit = (hit_top || hit_bottom);
+		
+		if (is_hit)
+		{
+		    var dist = this.vertical_boundary[1] - this.vertical_boundary[0];
+		    var offset =  (this.inst.y - this.vertical_boundary[0]) % dist;
+		    if (offset < 0)
+		        offset += dist;
+	        
+	        this.inst.y = offset + this.vertical_boundary[0];
+		}		
+
+		if (hit_top)
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
+        else if (hit_bottom)        
+            this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
+                    
+	    return is_hit;			
+	};		
     
 	behinstProto._horizontal_percent_get = function ()
 	{
@@ -273,7 +335,8 @@ cr.behaviors.Rex_boundary = function(runtime)
 		else
 		{
 		    this.inst.update_bbox();
-            offset_inst = this.inst.x - this.horizontal_boundary[0] - (this.inst.x - this.inst.bbox.left);
+            //offset_inst = this.inst.x - this.horizontal_boundary[0] - (this.inst.x - this.inst.bbox.left);
+            offset_inst = this.inst.bbox.left - this.horizontal_boundary[0];
             offset_bound = this.horizontal_boundary[1] - this.horizontal_boundary[0] - (this.inst.bbox.right - this.inst.bbox.left);		
 		}
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1) ;
@@ -291,7 +354,8 @@ cr.behaviors.Rex_boundary = function(runtime)
 		else
 		{
 		    this.inst.update_bbox();
-            offset_inst = this.inst.y - this.vertical_boundary[0] - (this.inst.y - this.inst.bbox.top);
+            //offset_inst = this.inst.y - this.vertical_boundary[0] - (this.inst.y - this.inst.bbox.top);
+            offset_inst = this.inst.bbox.top - this.vertical_boundary[0];
             offset_bound = this.vertical_boundary[1] - this.vertical_boundary[0] - (this.inst.bbox.bottom - this.inst.bbox.top);				
         }
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1);

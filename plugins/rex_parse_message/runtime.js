@@ -107,7 +107,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    this.exp_CurMessage = null;
 	    this.exp_LastFetchedMessage = null;   
 	    this.exp_LastRemovedMessageID = "";  
-	    this.exp_LastMessageCount = -1;   
+	    this.exp_LastMessagesCount = -1;   
 	};
 	
 	instanceProto.create_messagebox = function(page_lines)
@@ -261,11 +261,11 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    return true;
 	};	
 	
-	Cnds.prototype.OnGetMessageCountComplete = function ()
+	Cnds.prototype.OnGetMessagesCountComplete = function ()
 	{
 	    return true;
 	}; 
-	Cnds.prototype.OnGetMessageCountError = function ()
+	Cnds.prototype.OnGetMessagesCountError = function ()
 	{
 	    return true;
 	};				   
@@ -472,20 +472,20 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    query["find"](query_handler);
 	};
 	
-    Acts.prototype.GetMessageCount = function ()
+    Acts.prototype.GetMessagesCount = function ()
 	{
 	    var query = this.get_request_query(this.filters, 2); 
 	    
 	    var self = this;
 	    var on_query_success = function(count)
 	    {
-	        self.exp_LastMessageCount = count;
-	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessageCountComplete, self); 	        
+	        self.exp_LastMessagesCount = count;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessagesCountComplete, self); 	        
 	    };	    
 	    var on_query_error = function(error)
 	    {      
-	        self.exp_LastMessageCount = -1;
-	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessageCountError, self); 
+	        self.exp_LastMessagesCount = -1;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessagesCountError, self); 
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
 	    query["count"](query_handler);
@@ -665,9 +665,9 @@ cr.plugins_.Rex_parse_message = function(runtime)
 		ret.set_string(this.exp_LastRemovedMessageID);
 	};	
     
-	Exps.prototype.LastMessageCount = function (ret)
+	Exps.prototype.LastMessagesCount = function (ret)
 	{
-		ret.set_int(this.exp_LastMessageCount);
+		ret.set_int(this.exp_LastMessagesCount);
 	};	
 		    
 }());     

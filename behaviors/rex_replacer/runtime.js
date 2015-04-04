@@ -104,12 +104,12 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	    {  
 	        if (this.cmd == CMD_FADEOUT)
 	        {
-	            this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeOutStart, this.inst);
+	            this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeOutFinish, this.inst);
 	            this.runtime.DestroyInstance(this.inst);
 	        }
 	        else  // CMD_FADEIN
 	        {
-	            this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeInStart, this.inst);
+	            this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeInFinish, this.inst);
 	        }
 	        this.cmd = CMD_IDLE;
 	    }

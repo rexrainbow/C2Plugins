@@ -86,8 +86,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
             clean_table( this.load_request_itemIDs );
             clean_table( this.load_items );           
         }
-        
-        //this.attachments = ["", ""];      
+           
         this.trig_tag = null;        
              
         this.exp_CurItemID = ""; 
@@ -99,6 +98,15 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         this.exp_LastAttachment = "";
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	    this.CancelOnDisconnected();
+        clean_table( this.save_item );
+        clean_table( this.disconnectRemove_absRefs );
+        clean_table( this.load_request_itemIDs );
+        clean_table( this.load_items );   	    
+	};
+		
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)
@@ -185,7 +193,16 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         
         v = din(v, default_value);
 		return v;
-	};	
+	};
+	
+    instanceProto.CancelOnDisconnected = function ()
+	{
+	    for(var r in this.disconnectRemove_absRefs)
+	    {
+	        this.get_ref(r)["onDisconnect"]()["cancel"]();
+	        delete this.disconnectRemove_absRefs[r];
+	    }
+	};			
     
 	var clean_table = function (o)
 	{
@@ -479,11 +496,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
   
     Acts.prototype.CancelOnDisconnected = function ()
 	{
-	    for(var r in this.disconnectRemove_absRefs)
-	    {
-	        this.get_ref(r)["onDisconnect"]()["cancel"]();
-	        delete this.disconnectRemove_absRefs[r];
-	    }
+	    this.CancelOnDisconnected();
 	};	
     
     Acts.prototype.RemoveOnDisconnected = function (itemID)
@@ -495,12 +508,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         ref["onDisconnect"]()["remove"]();
 	    this.disconnectRemove_absRefs[ref["toString"]()] = true;
 	};  
-    
-    Acts.prototype.SetActionID = function (on_success, on_error)
-	{	 
-	    this.attachments[0] = on_success;
-        this.attachments[1] = on_error;
-	};    
+       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

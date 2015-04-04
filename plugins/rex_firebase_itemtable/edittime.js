@@ -137,13 +137,7 @@ AddAction(21, 0, "Cancel disconnected handler", "On disconnected",
 AddStringParam("ID", "ID of item.", '""');
 AddAction(22, 0, "Auto remove", "On disconnected", 
           "Auto remove itemID: <i>{0}</i> when disconnected", 
-          "Auto remov item when disconnected.", "RemoveOnDisconnected");    
-
-//AddAnyTypeParam("On success", "Attachment of on success handle event.", '""');
-//AddAnyTypeParam("On error", "Attachment of on error handle event.", '""');
-//AddAction(999, 0, "Set attachments", "Callback attachment", 
-//          "Set attachment of on success handle event to <i>{0}</i>, attachment of on error handle event <i>{1}</i> for next actions", 
-//          "Set attachments for next actions.", "SetAttachments");              
+          "Auto remov item when disconnected.", "RemoveOnDisconnected");             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get itemID", "For Each", "CurItemID", 

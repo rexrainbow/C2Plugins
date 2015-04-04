@@ -107,10 +107,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		this.exp_triggered_timer_name = "";
         this.timers_save = null;
 		
-        // callback:
-        
-		// rex_function
-        this.rex_function_objUid = -1;    // for loading 
+        // callback:      
         // rex_functionext or function
         this._fnobj = null;
         this._fnobj_type = FNTYPE_UK;
@@ -164,79 +161,118 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         return timer;
 	}; 
        
-	instanceProto._setup_callback = function (raise_assert_when_not_fnobj_avaiable)
+    // ---- callback ----
+	instanceProto.setup_callback = function (raise_assert_when_not_fnobj_avaiable, fn_type)
 	{
-        if (raise_assert_when_not_fnobj_avaiable)
+        if (fn_type == null)
         {
-            var has_func = (cr.plugins_.Rex_FnExt != null)      || 
-                           (cr.plugins_.Rex_Function2 != null)  ||
-                           (cr.plugins_.Function != null)       ||
-                           (cr.plugins_.Rex_Function != null);
-            assert2(has_func, "Function extension or official function, or rex_function was not found.");
-        }
+            // seek all possible function object
+            if (this.cache_RexFnExt())
+                return;
+            if (this.cache_RexFn2())
+                return;
+            if (this.cache_Fn())
+                return;
+            // cache nothing
+            this._fnobj_type = FNTYPE_NA;  // function object is not avaiable            
+            
+            if (raise_assert_when_not_fnobj_avaiable)            
+                assert2(has_func, "Function extension or official function, or rex_function2 was not found.");            
 
+        }
+        else
+        {
+		    this._fnobj_type = FNTYPE_UK;
+            // seek function object
+	        switch (fn_type)
+		    {
+		    case FNTYPE_REXFNEX:     // rex_functionext
+		        this.cache_RexFnExt();
+		    	break;
+            case FNTYPE_REXFN2:      // rex_function2   
+		        this.cache_RexFn2();
+		    	break;                     
+	        case FNTYPE_OFFICIALFN:  // official function
+		        this.cache_Fn()
+		    	break; 
+		    }
+
+        }
+	}; 
+	
+	instanceProto.cache_RexFnExt = function()
+	{
+	    if (!cr.plugins_.Rex_FnExt)
+	        return false;
+	        
         var plugins = this.runtime.types;			
         var name, inst;
-		// try to get callback from function extension
-		if (cr.plugins_.Rex_FnExt != null)
-		{
-            for (name in plugins)
-            {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
-                {
-                    this._fnobj = inst;
-                    this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
-			        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
-				    this._fnobj_type = FNTYPE_REXFNEX;
-                    return;
-                }                                          
-            }
-		}
         
-               
-		// try to get callback from rex_function2
-		if (cr.plugins_.Rex_Function2 != null)
-		{
-            
-            for (name in plugins)
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
             {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
-                {
-                    this._fnobj = inst;
-                    this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
-			        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
-				    this._fnobj_type = FNTYPE_REXFN2;
-                    return;
-                }                                          
-            }
-		}        
+                this._fnobj = inst;
+                this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+		        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
+			    this._fnobj_type = FNTYPE_REXFNEX;
+                return true;
+            }                                          
+        }  
+        return false;
+    };
+    
+	instanceProto.cache_RexFn2 = function()
+	{
+	    if (!cr.plugins_.Rex_Function2)
+	        return false;
+	        
+        var plugins = this.runtime.types;			
+        var name, inst;
         
-        // try to get callback from official function
-		if (cr.plugins_.Function != null)    
-		{	
-            for (name in plugins)
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
             {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Function.prototype.Instance)
-                {
-                    this._fnobj = inst;
-                    this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-                    this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
-				    this._fnobj_type = FNTYPE_OFFICIALFN;
-                    return;
-                }                                          
-            }
-		}	
+                this._fnobj = inst;
+                this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
+		        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
+			    this._fnobj_type = FNTYPE_REXFN2;
+                return true;
+            }                                          
+        }
+        return false;
+	};    
+	
+	instanceProto.cache_Fn = function()
+	{
+	    if (!cr.plugins_.Function)
+	        return false;
+	        
+        var plugins = this.runtime.types;			
+        var name, inst;
         
-        this._fnobj_type = FNTYPE_NA;  // function object is not avaiable
-	};   
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Function.prototype.Instance)
+            {
+                this._fnobj = inst;
+                this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+                this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
+			    this._fnobj_type = FNTYPE_OFFICIALFN;
+                return true;
+            }                                          
+        }
+        return false;
+	};  
 
     instanceProto.RunCallback = function(name, params, raise_assert_when_not_fnobj_avaiable)
     {
 	    if (this._fnobj_type == FNTYPE_UK)
-	        this._setup_callback(raise_assert_when_not_fnobj_avaiable);
+	        this.setup_callback(raise_assert_when_not_fnobj_avaiable);
         
 	    switch (this._fnobj_type)
 		{
@@ -256,7 +292,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {
 	    // params = [ ret, name, param0, param1, ... ]
 	    if (this._fnobj_type == FNTYPE_UK)
-	        this._setup_callback(raise_assert_when_not_fnobj_avaiable);
+	        this.setup_callback(raise_assert_when_not_fnobj_avaiable);
         
 	    switch (this._fnobj_type)
 		{
@@ -269,7 +305,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
         return (this._fnobj_type != FNTYPE_NA);  
     };		
-	
+    // ---- callback ----
+    	
     instanceProto.TimeGet = function()
     {
         return this.timeline.ABS_Time;  
@@ -321,7 +358,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         assert2(has_fnobj, "Timeline: Can not find callback oject.");
         
         if (this._repeat_count === 0)
-                this.Start();
+            this.Start();
         else if (this._repeat_count > 1)
         {
             this._repeat_count -= 1;
@@ -357,8 +394,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                  "ug": this.update_with_game_time,
                  "tl": this.timeline.saveToJSON(),
                  "timers": timers_save,
-                 "rexFnUid": (this.rex_function_obj != null)? this.rex_function_obj.uid : (-1),
-                 "lrt": this.last_real_time
+                 "lrt": this.last_real_time,
+                 "fnType": this._fnobj_type,                 
                  };
 	};
     
@@ -367,8 +404,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.my_timescale = o["ts"];
         this.timeline.loadFromJSON(o["tl"]);
         this.timers_save = o["timers"];
-        this.rex_function_objUid = o["rexFnUid"];
         this.last_real_time = o["lrt"];
+        this._fnobj_type = o["fnType"];
         
         this.onDestroy();
         this.timer_cache_clean();
@@ -390,19 +427,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
         this.timers_save = null;
         
-		if (this.rex_function_objUid === -1)
-		{
-		    this._fnobj = null;
-			this._fnobj_type = FNTYPE_UK; 
-        }
-		else
-		{
-			this._fnobj = this.runtime.getObjectByUID(this.rex_function_objUid);
-			assert2(this.rex_function_obj, "Timeline: Failed to find rex_function object by UID");
-			this._fnobj_type = FNTYPE_REXFN;      			
-		}		
-		this.rex_function_objUid = -1;        
-	};  
+        this.setup_callback(false, this._fnobj_type);
+	};
 
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
@@ -570,7 +596,50 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             return;
             
         this.timeline.Dispatch(delta_time);
-	}; 	
+	}; 
+	
+    Acts.prototype.SetupCallback = function (callback_type)
+	{	
+        var plugins = this.runtime.types;
+        var name, inst;
+        if (callback_type === 0)
+        {
+            if(!cr.plugins_.Function)
+                return;
+                
+            for (name in plugins)
+            {
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Function.prototype.Instance)
+                {
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+                    this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
+				    this._fnobj_type = FNTYPE_OFFICIALFN;
+                    return;
+                }                                          
+            }
+        }
+        else if (callback_type === 1)
+        {
+            if (!cr.plugins_.Rex_Function2)
+                return;   
+                
+            for (name in plugins)
+            {
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
+                {
+                    this._fnobj = inst;
+                    this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
+			        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
+				    this._fnobj_type = FNTYPE_REXFN2;
+                    return;
+                }                                          
+            }                
+        }
+	};	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -879,7 +948,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimerProto.Remove = function()
     {
-        this.timeline.RemoveTimer(this);
+        if ((!this._is_alive) && (!this._is_active))
+            this.timeline.RemoveTimer(this);
     };
     
     TimerProto.IsAlive = function()

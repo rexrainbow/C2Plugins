@@ -63,6 +63,11 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	
 	behinstProto.tick = function ()
 	{  	    
+        this.redraw_text();
+	};
+    
+	behinstProto.redraw_text = function ()
+	{  	    
         if ((this.lastwidth == this.inst.width) &&
             (this.lastheight == this.inst.height) &&
             (!this.text_changed) )
@@ -72,11 +77,13 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.text_changed = false;
         this.lastwidth = this.inst.width;
         this.lastheight = this.inst.height;
-	};
-    
+	};    
 	behinstProto._last_start_line = function ()
 	{  
-        return this.total_lines - this.visible_lines;
+        var idx = this.total_lines - this.visible_lines;
+        if (idx < 0)
+            idx = 0;
+        return idx;
 	};
     
 	behinstProto.perent2line = function (percent)
@@ -153,9 +160,9 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	};
     
 	behinstProto.SetContent = function ()
-	{
+	{        
         var inst = this.inst;              
-        this.SetText(this.content);
+        this.SetText(this.content);         // start from line 0        
         var ctx = (this.runtime.enableWebGL)? 
                   this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
@@ -164,8 +171,10 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    this.visible_lines = Math.floor(inst.height/line_height);
         if ((inst.height%line_height) == 0)
             this.visible_lines -= 1;
-	    this._copy_content_lines(inst.lines);		
-	    this.SetText(this._visible_text_get(this.start_line_index));
+	    this._copy_content_lines(inst.lines);
+        
+        if (this.start_line_index != 0)
+	        this.SetText(this._visible_text_get(this.start_line_index));
 	};    
 	
 	behinstProto._line_height_get = function ()
@@ -213,10 +222,12 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     };  		
 	
 	behinstProto.SetText = function (content)
-	{	    
+	{
 	    if (this._set_text_handler == null)
 		    return;
-		this._set_text_handler.call(this.inst, content);
+        
+        this._set_text_handler.call(this.inst, "");      // clean remain text     
+		this._set_text_handler.call(this.inst, content); // set text
 	};  
  	
 	behinstProto.saveToJSON = function ()
@@ -239,6 +250,26 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.line_pos_percent = o["lper"];
         this.start_line_index = o["start"];
 	};
+    
+    
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "Content", "value": this.content},
+                {"name": "Start at", "value": this.start_line_index},
+				{"name": "Total lines", "value": this.total_lines},
+				{"name": "Visible lines", "value": this.visible_lines}
+			]
+		});
+	};
+	
+	behinstProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -269,6 +300,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 
 	Acts.prototype.ScrollByPercent = function(percent)
 	{   
+        this.redraw_text();            
         this.line_pos_percent = cr.clamp(percent, 0, 1);
         var start_line_index = this.perent2line(this.line_pos_percent);
         this.SetText(this._visible_text_get(start_line_index));
@@ -281,27 +313,32 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	}; 
 
 	Acts.prototype.ScrollByIndex = function(line_index)
-	{   
+	{               
+        this.redraw_text();       
         this.SetText(this._visible_text_get(line_index));
 	}; 
 
 	Acts.prototype.NextLine = function()
 	{   
+        this.redraw_text();      
         this.SetText(this._visible_text_get(this.start_line_index+1));
 	}; 
 
 	Acts.prototype.PreviousLine = function()
 	{   
+        this.redraw_text();      
         this.SetText(this._visible_text_get(this.start_line_index-1));
 	};   
 
 	Acts.prototype.NextPage = function()
 	{   
+        this.redraw_text();      
         this.SetText(this._visible_text_get(this.start_line_index+this.visible_lines));
 	}; 
 
 	Acts.prototype.PreviousPage = function()
 	{   
+        this.redraw_text();      
         this.SetText(this._visible_text_get(this.start_line_index-this.visible_lines));
 	};   
 	  

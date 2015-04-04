@@ -68,7 +68,14 @@ cr.behaviors.rex_bScenario = function(runtime)
 
     behinstProto.onCreate = function()
     {      
-        this._scenario = new cr.behaviors.rex_bScenario.ScenarioKlass(this);  
+        if (!this.recycled)
+        {
+            this._scenario = new cr.behaviors.rex_bScenario.ScenarioKlass(this);
+        }
+        else
+        {
+            this._scenario.Reset();
+        } 
         this._scenario.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] == 1);
         this._scenario.is_accT_mode = (this.properties[1] == 0);
         this._scenario.is_eval_mode = (this.properties[2] == 1);
@@ -101,8 +108,8 @@ cr.behaviors.rex_bScenario = function(runtime)
     
 	behinstProto.run_init_cmd = function ()
 	{
-	    this._scenario.load(this.init_cmds, true);
-	    this._scenario.start(this.init_offset, this.init_tag, this.init_repeat); 	      
+	    this._scenario.Load(this.init_cmds, true);
+	    this._scenario.Start(this.init_offset, this.init_tag, this.init_repeat); 	      
 	    this.init_start = false; 
         this.init_cmds = null;
 	};    
@@ -249,7 +256,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     behinstProto.getDebuggerValues = function (propsections)
     {
         this.propsections.length = 0;
-        this.propsections.push({"name": "Tag", "value": this._scenario.get_last_tag()});
+        this.propsections.push({"name": "Tag", "value": this._scenario.GetLastTag()});
         var debugger_info=this._scenario.debugger_info;
         var i,cnt=debugger_info.length;
         for (i=0;i<cnt;i++)
@@ -268,8 +275,8 @@ cr.behaviors.rex_bScenario = function(runtime)
     {
         if (name == "Tag")    // change page
         {
-            if (this._scenario.has_tag(value))
-                this._scenario.start(null, value);
+            if (this._scenario.HasTag(value))
+                this._scenario.Start(null, value);
             else			
                 alert("Invalid tag "+value);
         }
@@ -306,7 +313,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 
     Cnds.prototype.IsTagExisted = function (tag)
     {
-        return this._scenario.has_tag(tag);
+        return this._scenario.HasTag(tag);
     }; 
     
 	// command 
@@ -345,14 +352,14 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     Acts.prototype.LoadCSVCmds = function (csv_string)
     {  
-        this._scenario.load(csv_string);
+        this._scenario.Load(csv_string);
     };
     
     Acts.prototype.Start = function (offset, tag, repeat_count)
     {  
         if (repeat_count < 0)
             repeat_count = 1;
-        this._scenario.start(offset, tag, repeat_count);  
+        this._scenario.Start(offset, tag, repeat_count);  
         
         if (this.sync_timescale)
             this.sync_ts();       		       
@@ -384,6 +391,15 @@ cr.behaviors.rex_bScenario = function(runtime)
         this._scenario.offset = offset;
     }; 
     
+    Acts.prototype.CleanCmds = function ()
+    {
+        this._scenario.Clean();
+    };  
+    
+    Acts.prototype.AppendCmds = function (csv_string)
+    {  
+        this._scenario.Append(csv_string);
+    };
     Acts.prototype.Continue = function (key)
     {
         this._scenario.resume(key);
@@ -391,7 +407,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     //Acts.prototype.GoToTag = function (tag)
     //{
-    //    this._scenario.start(null, tag);    
+    //    this._scenario.Start(null, tag);    
     //};     
         
     Acts.prototype.SetMemory = function (index, value)
@@ -406,7 +422,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     Acts.prototype.LoadJSONCmds = function (json_string)
     {  
-        this._scenario.load(csv_string, true);
+        this._scenario.Load(csv_string, true);
     };       
     
     Acts.prototype.Setup2 = function (timeline_objs)
@@ -425,7 +441,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 
     Exps.prototype.LastTag = function(ret)
     {
-        ret.set_string(this._scenario.get_last_tag());
+        ret.set_string(this._scenario.GetLastTag());
     };
     
     Exps.prototype.Mem = function(ret, index)
@@ -491,10 +507,36 @@ cr.behaviors.rex_bScenario = function(runtime)
     };
     var ScenarioKlassProto = cr.behaviors.rex_bScenario.ScenarioKlass.prototype;
     
+    // export methods
+	ScenarioKlassProto.Reset = function ()
+	{         
+        //this.cmd_table = new CmdQueueKlass(this);        
+        this.Clean();
+       
+        // -status-
+        this.IsRunning = false;
+        this.is_pause = false;
+        // --------
+        //this.timer = null;      
+        if (this.timer)
+            this.timer.Remove();   
+            
+        this.pre_abs_time = 0;
+        this.Offset = 0;  
+
+        // this["Mem"] = {};
+        for (var k in this["Mem"])
+            delete this["Mem"][k];
+            	
+        this.timer_save = null;       
+	};
+	
 	ScenarioKlassProto.onDestroy = function ()
 	{
         if (this.timer)
             this.timer.Remove();
+                    
+        this.Clean();
 	};
     
 	ScenarioKlassProto.SetTimescale = function (ts)
@@ -503,39 +545,45 @@ cr.behaviors.rex_bScenario = function(runtime)
             this.timer.SetTimescale(ts);
 	};    
     
-	    
-    // export methods
-    ScenarioKlassProto.load = function (cmd_string, is_json)
+    ScenarioKlassProto.Load = function (csv_string)
+    {        
+        this.Clean();
+        if (csv_string === "")
+            return;
+            
+        var arr = CSVToArray(csv_string);        
+        this.remove_invalid_commands(arr);
+        this.parse_commands(arr);        
+        this.cmd_table.Reset(arr);
+    };
+    
+    ScenarioKlassProto.Append = function (csv_string)
+    {        
+        if (csv_string === "")
+            return;
+            
+        var arr = CSVToArray(csv_string);        
+        this.remove_invalid_commands(arr);
+        this.parse_commands(arr);        
+        this.cmd_table.Append(arr);
+    };
+        
+    ScenarioKlassProto.Clean = function ()
     {        
         // reset all extra cmd handler
-        var extra_cmd_handler;
-        for(extra_cmd_handler in this._extra_cmd_handlers)
-            this._extra_cmd_handlers[extra_cmd_handler].on_reset();
-            
-        var _arr;
-        if (cmd_string == null)
-        {
-            _arr = [];
-        }
-        else
-        {
-            _arr = (is_json == true)?  JSON.parse(cmd_string):
-                                       CSVToArray(cmd_string); 
-        }
-        
-        this.cmd_table.reset(_arr);
-        var queue = this.cmd_table.queue;
-        // check vaild
-        var i, cmd;        
-        var cnt = queue.length;
+        for(var handler in this._extra_cmd_handlers)
+            this._extra_cmd_handlers[handler].on_reset();
+
+        this.cmd_table.Clean();
+    };
+    
+    ScenarioKlassProto.remove_invalid_commands = function (queue)
+    {
+        var i, cmd, cnt = queue.length;              
         var invalid_cmd_indexs = [];
         for (i=0;i<cnt;i++)
         {
             cmd = queue[i][0];
-            
-            if (typeof(cmd) =="number")
-                continue;
-                
             if (isNaN(cmd) || (cmd == ""))  // might be other command
             {
                 if (!(cmd.toLowerCase() in this._extra_cmd_handlers))
@@ -546,49 +594,31 @@ cr.behaviors.rex_bScenario = function(runtime)
                         log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");                   
                 }
             }
-        }        
+        } 
    
         // remove invalid commands
         cnt = invalid_cmd_indexs.length;
         if (cnt != 0)
-        {   
+        {
             invalid_cmd_indexs.reverse(); 
-            for (i=0;i<cnt;i++)
-                queue.splice(invalid_cmd_indexs[i],1);
-        }
-
-        // remove empty cell
-        //cnt = queue.length;
-        //var cell_cnt = queue[0].length;
-        //var cmd_pack, j;
-        //for (i=0;i<cnt;i++)
-        //{
-        //    cmd_pack = queue[i];
-        //    for(j=0;j<cell_cnt;j++)
-        //	{
-        //	    if (cmd_pack[j] == "")
-        //		    break;
-        //	}
-        //	if (j<cell_cnt)
-        //	    cmd_pack.splice(j, cell_cnt-j)
-        //}
-        
-        cnt = queue.length;
-        var cmd_pack;
+            for (i=0; i<cnt; i++)
+                queue.splice(invalid_cmd_indexs[i], 1);
+        }        
+    };  
+    
+    ScenarioKlassProto.parse_commands = function (queue)
+    {        
+        var i, cnt = queue.length, cmd_pack, cmd;
         for (i=0;i<cnt;i++)
         {
             cmd_pack = queue[i];
-            cmd = cmd_pack[0];  
-            
-            if (typeof(cmd) =="number")
-                continue;
-                      
+            cmd = cmd_pack[0];             
             if (isNaN(cmd) || (cmd == ""))  // might be other command
                 this.cmd_handler_get(cmd).on_parsing(i, cmd_pack);
         }
-    };
+    };       
     
-    ScenarioKlassProto.start = function (offset, tag, repeat_count)
+    ScenarioKlassProto.Start = function (offset, tag, repeat_count)
     {        
         this.is_running = true;
         this._reset_abs_time();
@@ -601,7 +631,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         }
         else
             this.timer.Remove();  // stop timer
-        this.cmd_table.reset();
+        this.cmd_table.Reset();
         var index = this.cmd_handler_get("tag").tag2index(tag);
         if (index == null)
         {
@@ -624,14 +654,14 @@ cr.behaviors.rex_bScenario = function(runtime)
         return this._extra_cmd_handlers[cmd_name];
     };        
 
-    ScenarioKlassProto.get_last_tag = function ()
+    ScenarioKlassProto.GetLastTag = function ()
     {      
         return this.cmd_handler_get("tag").last_tag;
     };  
     
-    ScenarioKlassProto.has_tag = function (tag)
+    ScenarioKlassProto.HasTag = function (tag)
     {
-        return this.cmd_handler_get("tag").has_tag(tag);
+        return this.cmd_handler_get("tag").HasTag(tag);
     };
               
     // internal methods
@@ -667,11 +697,11 @@ cr.behaviors.rex_bScenario = function(runtime)
     }; 
     ScenarioKlassProto.table_index_set = function (index)
     {      
-        this.cmd_table.index_set(index);
+        this.cmd_table.IndexSet(index);
     };
     ScenarioKlassProto.table_index_reset = function ()
     {      
-        this.cmd_table.index_set(this.start_index);
+        this.cmd_table.IndexSet(this.start_index);
     };    
     
     ScenarioKlassProto.exit = function ()
@@ -856,7 +886,7 @@ cr.behaviors.rex_bScenario = function(runtime)
             timer_save["__cbargs"] = [this.timer._cb_name, this.timer._cb_params];
         }
         return { "q": this.cmd_table.saveToJSON(),
-                 "isrun": this.is_running,
+                 "isrun": this.IsRunning,
                  "isp": this.is_pause,
                  "tim" : timer_save,
                  "pa": this.pre_abs_time,	       
@@ -868,7 +898,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     ScenarioKlassProto.loadFromJSON = function (o)
     {    
         this.cmd_table.loadFromJSON(o["q"]); 
-        this.is_running = o["isrun"];
+        this.IsRunning = o["isrun"];
         this.is_pause = o["isp"];
         this.timer_save = o["tim"];
         this.pre_abs_time = o["pa"];
@@ -895,21 +925,40 @@ cr.behaviors.rex_bScenario = function(runtime)
     {
         this.scenario = scenario;
         this.queue = null;
-        this.reset(queue);
+        this.Reset(queue);
     };
     var CmdQueueKlassProto = CmdQueueKlass.prototype; 
 
-    CmdQueueKlassProto.reset = function(queue)
+    CmdQueueKlassProto.Reset = function(queue)
     {
         this.current_index = -1;
-        if (queue != null)
+        if (queue)
             this.queue = queue;
     };
     
-    CmdQueueKlassProto.index_set = function(index)
+    CmdQueueKlassProto.Append = function(queue)
+    {
+        if (!queue)
+            return;
+            
+        if (!this.queue)
+            this.queue = [];
+            
+        var i, cnt=queue.length;
+        for (i=0; i<cnt; i++)
+        {
+            this.queue.push(queue[i]);
+        }
+    };
+    CmdQueueKlassProto.Clean = function()
+    {
+        this.current_index = -1;
+        this.queue = null;
+    };
+    CmdQueueKlassProto.IndexSet = function(index)
     {
         this.current_index = index -1;
-    };  
+    };      
 
     CmdQueueKlassProto.get_cmd = function(index)
     {
@@ -1066,7 +1115,7 @@ cr.behaviors.rex_bScenario = function(runtime)
             index = 0;
         return index;        
     };
-    CmdTAGKlassProto.has_tag = function(tag)
+    CmdTAGKlassProto.HasTag = function(tag)
     {	 
         return (this.tag2index(tag) != null);      
     };  	

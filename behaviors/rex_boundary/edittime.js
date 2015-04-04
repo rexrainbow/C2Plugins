@@ -80,8 +80,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [        
-    new cr.Property(ept_combo, "Mode", "Clamp", "Clamp or wrap the position of instance.", "Clamp|Wrap"),
-    new cr.Property(ept_combo, "Align", "Origin", "Align at origin or boundaries of instance.", "Origin|Boundaries"),	
+    new cr.Property(ept_combo, "Mode", "Clamp", "Clamp or wrap the position of instance.", "Clamp|Wrap|Mod wrap"),
+    new cr.Property(ept_combo, "Align", "Origin", "Align at origin or boundaries of instance. Only used for clamp or wrap mode.", "Origin|Boundaries"),	
     new cr.Property(ept_combo, "Horizontal", "No", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),	
     new cr.Property(ept_float, "Left", 0, "Left boundary."),	
 	new cr.Property(ept_float, "Right", 0, "Right boundary."),	

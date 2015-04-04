@@ -103,6 +103,11 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         /**END-PREVIEWONLY**/  
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	    this.RemoveAllMonitorQuery(); 
+	};
+		
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)

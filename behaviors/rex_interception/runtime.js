@@ -260,7 +260,13 @@ cr.behaviors.Rex_Interception = function(runtime)
 	{
         this.update_force();
 		return (this.output_force["x"] != 0) && (this.output_force["y"] != 0);
-	};     
+	};  
+
+	Cnds.prototype.IsLocking = function ()
+	{
+        return !!this.runtime.getObjectByUID(this.target_info["uid"]);
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

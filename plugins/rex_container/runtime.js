@@ -204,7 +204,7 @@ cr.plugins_.Rex_Container.tag2container = {};
             inst = insts[i];
             if (this._uids[inst.uid])  // is inside container
                 continue;
-            inst.extra.["rex_container_uid"] = this.uid;
+            inst.extra["rex_container_uid"] = this.uid;
             this._uids[inst.uid] = true;
 
             if (is_world && (this.pin_mode != 0))
@@ -420,7 +420,7 @@ cr.plugins_.Rex_Container.tag2container = {};
         var uids = {};
         for (i=0; i<cnt; i++)
         {
-            container_uid = insts[i].extra.["rex_container_uid"];
+            container_uid = insts[i].extra["rex_container_uid"];
             if (container_uid in uids)
                 continue;
             container_inst = this.runtime.getObjectByUID(container_uid);

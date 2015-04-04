@@ -96,6 +96,12 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         this.exp_CurItemID = "";
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+        clean_table( this.save_item );
+        clean_table( this.request_itemIDs );
+	};
+			
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)

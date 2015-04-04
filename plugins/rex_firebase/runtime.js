@@ -97,6 +97,11 @@ cr.plugins_.Rex_Firebase = function(runtime)
         /**END-PREVIEWONLY**/          
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	     this.callbackMap.Remove();
+	};
+	
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)

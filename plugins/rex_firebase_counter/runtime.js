@@ -79,6 +79,11 @@ cr.plugins_.Rex_Firebase_Counter = function(runtime)
         this.read_value_handler = null;
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	     this.stop_update(); 
+	};
+		
     instanceProto.set_init = function (init_value, upper_bound)
 	{
 	    this.init_value = init_value;

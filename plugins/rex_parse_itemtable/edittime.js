@@ -67,7 +67,15 @@ AddCondition(103, cf_trigger, "On remove items complete", "Remove - queried item
 
 AddCondition(104, cf_trigger, "On remove items error", "Remove - queried items", 
             "On remove queried items error",
-            "Triggered when remove error.", "OnRemoveQueriedItemsError");               
+            "Triggered when remove error.", "OnRemoveQueriedItemsError");    
+            
+AddCondition(111, cf_trigger, "On get items count complete", "Queried items count",
+            "On get items count complete",
+            "Triggered when get items count.", "OnGetItemsCountComplete");
+
+AddCondition(112, cf_trigger, "On get items count error", "Queried items count",
+            "On get items count error",
+            "Triggered when get items count error.", "OnGetItemsCountError");                          
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("Key", "The name of the key.", '""');
@@ -212,7 +220,16 @@ AddAction(101, 0, "Remove by itemID", "Remove",
                    
 AddAction(102, 0, "Remove queried items", "Remove - queried items", 
           "Remove- remove queried items", 
-          "Remove queried items.", "RemoveQueriedItems");                                                 
+          "Remove queried items.", "RemoveQueriedItems");  
+          
+AddAction(111, 0, "Get items count", "Queried items count", 
+          "Get queried items count", 
+          "Get queried items count. Maximum of 160 requests per minute.", "GetItemsCount");    
+          
+AddNumberParam("Count", "Count of picked item.", 1);    
+AddAction(112, 0, "Get random items", "Request", 
+          "Request - get <i>{0}</i> random items", 
+          "Get random items.", "GetRandomItems");                                                                
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current itemID", "Received - for each", "CurItemID", 
@@ -221,8 +238,8 @@ AddExpression(2, ef_return_any | ef_variadic_parameters, "Current item content",
               "Get current item content in JSON string in a For Each loop. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
 AddExpression(3, ef_return_number, "Current sent unix timestamp", "Received - for each", "CurSentAt", 
               "Get the current sent unix timestamp (number of milliseconds since the epoch) in a For Each loop.");
-AddExpression(4, ef_return_number, "Current message index", "Received - for each", "CurItemIndex", 
-              "Get the current message index in a For Each loop."); 
+AddExpression(4, ef_return_number, "Current items index", "Received - for each", "CurItemIndex", 
+              "Get the current items index in a For Each loop."); 
 AddExpression(5, ef_return_any | ef_variadic_parameters, "Prepared item content", "Prepare item", "PreparedItemContent", 
               "Get prepared item content in JSON string. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
 AddNumberParam("Index", "Global index, 0-based.", 0); 			  
@@ -235,7 +252,9 @@ AddExpression(92, ef_return_any | ef_variadic_parameters, "Last fetched item con
               "Get last fetched item content in JSON string. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
 AddExpression(93, ef_return_number, "Last fetched item's sent unix timestamp", "Fetch one", "LastFetchedSentAt", 
               "Get last fetched item's sent unix timestamp (number of milliseconds since the epoch).");
-              
+
+AddExpression(111, ef_return_number, "Last items count", "Queried items count", "LastItemsCount", 
+              'Get last queried items count under "Condition: On get items count complete".');              
 ACESDone();
 
 // Property grid properties for this plugin

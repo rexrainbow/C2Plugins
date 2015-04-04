@@ -39,22 +39,42 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     var instanceProto = pluginProto.Instance.prototype;
 
+	var FNTYPE_UK = 0;          // unknow 
+	var FNTYPE_NA = 1;	        // not avaiable
+	var FNTYPE_REXFNEX = 2;     // rex_functionext
+    var FNTYPE_REXFN2 = 3;      // rex_function2
+	var FNTYPE_OFFICIALFN = 4;  // official function
+	var FNTYPE_REXFN = 5;       // rex_function    
     instanceProto.onCreate = function()
     {
-        this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);  
-        this._scenario.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] == 1);
-        this._scenario.is_accT_mode = (this.properties[1] == 0);
-        this._scenario.is_eval_mode = (this.properties[2] == 1);
+        if (!this.recycled)
+        {
+            this._scenario = new cr.plugins_.Rex_Scenario.ScenarioKlass(this);
+        }
+        else
+        {
+            this._scenario.Reset();
+        }
+        
+          
+        this._scenario.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] === 1);
+        this._scenario.is_accT_mode = (this.properties[1] === 0);
+        this._scenario.is_eval_mode = (this.properties[2] === 1);
       
         this.timeline = null;  
         this.timelineUid = -1;    // for loading     
-        this.callback = null;     // deprecated
-        this.callbackUid = -1;    // for loading   // deprecated
+        
+        // callback:      
+        // rex_functionext or function
+        this._fnobj = null;
+        this._fnobj_type = null;
+	    this._act_call_fn = null;
+		this._exp_call = null;
 
         // sync timescale
         this.my_timescale = -1.0;     
         this.runtime.tickMe(this);        
-		this.sync_timescale = (this.properties[3] == 1);      
+		this.sync_timescale = (this.properties[3] === 1);      
         this.pre_ts = 1;        
                 
         
@@ -112,6 +132,152 @@ cr.plugins_.Rex_Scenario = function(runtime)
         assert2(this.timeline, "Scenario: Can not find timeline oject.");
         return null;	
     };
+    
+    // ---- callback ----    
+	instanceProto.setup_callback = function (raise_assert_when_not_fnobj_avaiable, fn_type)
+	{
+        if (fn_type == null)
+        {         
+            // do nothing
+        }
+        else
+        {
+		    this._fnobj_type = FNTYPE_UK;
+            // seek function object
+	        switch (fn_type)
+		    {
+		    case FNTYPE_REXFNEX:     // rex_functionext
+		        this.cache_RexFnExt();
+		    	break;
+            case FNTYPE_REXFN2:      // rex_function2   
+		        this.cache_RexFn2();
+		    	break;                     
+	        case FNTYPE_OFFICIALFN:  // official function
+		        this.cache_Fn()
+		    	break; 
+		    }
+
+        }
+	}; 
+	
+	instanceProto.cache_RexFnExt = function()
+	{
+	    if (!cr.plugins_.Rex_FnExt)
+	        return false;
+	        
+        var plugins = this.runtime.types;			
+        var name, inst;
+        
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
+            {
+                this._fnobj = inst;
+                this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
+		        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
+			    this._fnobj_type = FNTYPE_REXFNEX;
+                return true;
+            }                                          
+        }  
+        return false;
+    };
+    
+	instanceProto.cache_RexFn2 = function()
+	{
+	    if (!cr.plugins_.Rex_Function2)
+	        return fasle;
+	        
+        var plugins = this.runtime.types;			
+        var name, inst;
+        
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
+            {
+                this._fnobj = inst;
+                this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
+		        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
+			    this._fnobj_type = FNTYPE_REXFN2;
+                return true;
+            }                                          
+        }
+        return false;
+	};    
+	
+	instanceProto.cache_Fn = function()
+	{
+	    if (!cr.plugins_.Function)
+	        return fasle;
+	        
+        var plugins = this.runtime.types;			
+        var name, inst;
+        
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.Function.prototype.Instance)
+            {
+                this._fnobj = inst;
+                this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+                this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
+			    this._fnobj_type = FNTYPE_OFFICIALFN;
+                return true;
+            }                                          
+        }
+        return false;
+	};  
+
+    instanceProto.RunCallback = function(name, params)
+    {
+	    // use callback in timeline
+	    if (this._fnobj_type == null)
+	    {
+            var has_fnobj = this._timeline_get().RunCallback(name, params, true);     
+            assert2(has_fnobj, "Scenario: Can not find callback object.");
+	    }
+	    else
+	    {	
+	        switch (this._fnobj_type)
+		    {
+		    case FNTYPE_REXFNEX:     // rex_functionext
+		        this._fnobj.CallFunction(name, params);
+		    	break;
+            case FNTYPE_REXFN2:      // rex_function2            
+	        case FNTYPE_OFFICIALFN:  // official function
+                this._act_call_fn.call(this._fnobj, name, params);
+		    	break;	
+		    }
+	    }      
+
+        return (this._fnobj_type != FNTYPE_NA);  
+    };	
+	
+    instanceProto.Call = function(params)
+    {
+	    // params = [ ret, name, param0, param1, ... ]
+	    // use callback in timeline
+	    if (this._fnobj_type == null)
+	    {
+            var has_fnobj = this._timeline_get().Call(params, true);     
+            assert2(has_fnobj, "Scenario: Can not find callback object.");            
+	    }
+	    else
+	    {        
+	        switch (this._fnobj_type)
+		    {
+		    case FNTYPE_REXFNEX:     // rex_functionext
+            case FNTYPE_REXFN2:      // rex_function2
+		    case FNTYPE_OFFICIALFN:  // official function 
+		        this._exp_call.apply(this._fnobj, params);
+		    	break;
+		    }
+	    }      
+
+        return (this._fnobj_type != FNTYPE_NA);  
+    };	  
+    // ---- callback ----      
         
     instanceProto.value_get = function(v)
     {
@@ -127,7 +293,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     { 
         return { "s": this._scenario.saveToJSON(),
                  "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
-                 "cbUid": (this.callback != null)? this.callback.uid : (-1)  // deprecated
+                 "fnType": this._fnobj_type,      
                  };
     };
     
@@ -135,7 +301,6 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this._scenario.loadFromJSON(o["s"]);
         this.timelineUid = o["tlUid"];
-        this.callbackUid = o["cbUid"];  // deprecated
     };     
 
     instanceProto.afterLoad = function ()
@@ -147,25 +312,16 @@ cr.plugins_.Rex_Scenario = function(runtime)
             this.timeline = this.runtime.getObjectByUID(this.timelineUid);
             assert2(this.timeline, "Scenario: Failed to find timeline object by UID");
         }		
-        
-        // ---- deprecated ----
-        if (this.callbackUid === -1)
-            this.callback = null;
-        else
-        {
-            this.callback = this.runtime.getObjectByUID(this.callbackUid);
-            assert2(this.callback, "Scenario: Failed to find rex_function object by UID");
-        }		
-        // ---- deprecated ---- 
 
         this._scenario.afterLoad();
+        this.setup_callback(false, this._fnobj_type);
     }; 
     
     /**BEGIN-PREVIEWONLY**/
     instanceProto.getDebuggerValues = function (propsections)
     {
         this.propsections.length = 0;
-        this.propsections.push({"name": "Tag", "value": this._scenario.get_last_tag()});
+        this.propsections.push({"name": "Tag", "value": this._scenario.GetLastTag()});
         var debugger_info=this._scenario.debugger_info;
         var i,cnt=debugger_info.length;
         for (i=0;i<cnt;i++)
@@ -184,8 +340,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         if (name == "Tag")    // change page
         {
-            if (this._scenario.has_tag(value))
-                this._scenario.start(null, value);
+            if (this._scenario.HasTag(value))
+                this._scenario.Start(null, value);
             else			
                 alert("Invalid tag "+value);
         }
@@ -209,7 +365,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 
     Cnds.prototype.IsRunning = function ()
     {
-        return this._scenario.is_running;
+        return this._scenario.IsRunning;
     }; 
     
     Cnds.prototype.OnTagChanged = function ()
@@ -219,7 +375,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 
     Cnds.prototype.IsTagExisted = function (tag)
     {
-        return this._scenario.has_tag(tag);
+        return this._scenario.HasTag(tag);
     }; 
     
     //////////////////////////////////////
@@ -227,29 +383,18 @@ cr.plugins_.Rex_Scenario = function(runtime)
     function Acts() {};
     pluginProto.acts = new Acts();
     
-    Acts.prototype.Setup = function (timeline_objs, fn_objs)
+    Acts.prototype.Setup_deprecated = function (timeline_objs, fn_objs)
     {  
-        var timeline = timeline_objs.instances[0];
-        if ((cr.plugins_.Rex_TimeLine) && (timeline instanceof cr.plugins_.Rex_TimeLine.prototype.Instance))
-            this.timeline = timeline;        
-        else
-            alert ("Scenario should connect to a timeline object");          
-        
-        var callback = fn_objs.instances[0];
-        if ((cr.plugins_.Rex_Function) && (callback instanceof cr.plugins_.Rex_Function.prototype.Instance))
-            this.callback = callback;        
-        else
-            alert ("Scenario should connect to a function object");
     };  
     
     Acts.prototype.LoadCmds = function (csv_string)
     {  
-        this._scenario.load(csv_string);
+        this._scenario.Load(csv_string);
     };
     
     Acts.prototype.Start = function (offset, tag)
     {  
-        this._scenario.start(offset, tag);    
+        this._scenario.Start(offset, tag);    
     };
     
     Acts.prototype.Pause = function ()
@@ -275,17 +420,27 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Acts.prototype.SetOffset = function (offset)
     {
-        this._scenario.offset = offset;
+        this._scenario.Offset = offset;
     }; 
     
+    Acts.prototype.CleanCmds = function ()
+    {
+        this._scenario.Clean();
+    };  
+    
+    Acts.prototype.AppendCmds = function (csv_string)
+    {  
+        this._scenario.Append(csv_string);
+    };
+      
     Acts.prototype.Continue = function (key)
     {
-        this._scenario.resume(key);
+        this._scenario.Resume(key);
     };
     
     Acts.prototype.GoToTag = function (tag)
     {
-        this._scenario.start(null, tag);    
+        this._scenario.Start(null, tag);    
     };     
         
     Acts.prototype.SetMemory = function (index, value)
@@ -298,7 +453,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this._scenario["Mem"] = JSON.parse(JSON_string);;
     };
     
-    Acts.prototype.Setup2 = function (timeline_objs)
+    Acts.prototype.SetupTimeline = function (timeline_objs)
     {  
         var timeline = timeline_objs.instances[0];
         if ((cr.plugins_.Rex_TimeLine) && (timeline instanceof cr.plugins_.Rex_TimeLine.prototype.Instance))
@@ -306,7 +461,48 @@ cr.plugins_.Rex_Scenario = function(runtime)
         else
             alert ("Scenario should connect to a timeline object");
     };
-
+    
+    Acts.prototype.SetupCallback = function (callback_type)
+	{	
+        var plugins = this.runtime.types;
+        var name, inst;
+        if (callback_type === 0)
+        {
+            if(!cr.plugins_.Function)
+                return;
+                
+            for (name in plugins)
+            {
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Function.prototype.Instance)
+                {		
+				    this.callback_type = FNTYPE_OFFICIALFN;
+                    this.callback = inst;
+                    this.act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
+                    this.exp_call = cr.plugins_.Function.prototype.exps.Call;                    
+                    return;
+                }                                          
+            }
+        }
+        else if (callback_type === 1)
+        {
+            if (!cr.plugins_.Rex_Function2)
+                return;   
+                
+            for (name in plugins)
+            {
+                inst = plugins[name].instances[0];
+                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
+                {
+				    this.callback_type = FNTYPE_REXFN2;
+                    this.callback = inst;
+                    this.act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
+                    this.exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;                     
+                    return;
+                }                                          
+            }                
+        }
+	};	
     //////////////////////////////////////
     // Expressions
     function Exps() {};
@@ -314,7 +510,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 
     Exps.prototype.LastTag = function(ret)
     {
-        ret.set_string(this._scenario.get_last_tag());
+        ret.set_string(this._scenario.GetLastTag());
     };
     
     Exps.prototype.Mem = function(ret, index)
@@ -342,12 +538,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.cmd_table = new CmdQueueKlass(this);        
         // default is the same as worksheet 
         // -status-
-        this.is_running = false;
+        this.IsRunning = false;
         this.is_pause = false;
         // --------
         this.timer = null;      
         this.pre_abs_time = 0;
-        this.offset = 0;  
+        this.Offset = 0;  
         // for other commands   
         this._extra_cmd_handlers = {"wait":new CmdWAITKlass(this),
                                     "time stamp":new CmdTIMESTAMPKlass(this),
@@ -368,11 +564,37 @@ cr.plugins_.Rex_Scenario = function(runtime)
         /**END-PREVIEWONLY**/	
     };
     var ScenarioKlassProto = cr.plugins_.Rex_Scenario.ScenarioKlass.prototype;
-    
+
+    // export methods
+	ScenarioKlassProto.Reset = function ()
+	{         
+        //this.cmd_table = new CmdQueueKlass(this);        
+        this.Clean();
+       
+        // -status-
+        this.IsRunning = false;
+        this.is_pause = false;
+        // --------
+        //this.timer = null;      
+        if (this.timer)
+            this.timer.Remove();   
+            
+        this.pre_abs_time = 0;
+        this.Offset = 0;  
+
+        // this["Mem"] = {};
+        for (var k in this["Mem"])
+            delete this["Mem"][k];
+            	
+        this.timer_save = null;       
+	};
+	                      
 	ScenarioKlassProto.onDestroy = function ()
 	{
         if (this.timer)
             this.timer.Remove();
+                    
+        this.Clean();
 	};
     
 	ScenarioKlassProto.SetTimescale = function (ts)
@@ -381,20 +603,41 @@ cr.plugins_.Rex_Scenario = function(runtime)
             this.timer.SetTimescale(ts);
 	};       
 	    
-    // export methods
-    ScenarioKlassProto.load = function (csv_string)
+    ScenarioKlassProto.Load = function (csv_string)
+    {        
+        this.Clean();
+        if (csv_string === "")
+            return;
+            
+        var arr = CSVToArray(csv_string);        
+        this.remove_invalid_commands(arr);
+        this.parse_commands(arr);        
+        this.cmd_table.Reset(arr);
+    };
+    
+    ScenarioKlassProto.Append = function (csv_string)
+    {        
+        if (csv_string === "")
+            return;
+            
+        var arr = CSVToArray(csv_string);        
+        this.remove_invalid_commands(arr);
+        this.parse_commands(arr);        
+        this.cmd_table.Append(arr);
+    };
+        
+    ScenarioKlassProto.Clean = function ()
     {        
         // reset all extra cmd handler
-        var extra_cmd_handler;
-        for(extra_cmd_handler in this._extra_cmd_handlers)
-            this._extra_cmd_handlers[extra_cmd_handler].on_reset();
-            
-        var _arr = (csv_string != "")? CSVToArray(csv_string):[];
-        this.cmd_table.reset(_arr);
-        var queue = this.cmd_table.queue;
-        // check vaild
-        var i, cmd;        
-        var cnt = queue.length;
+        for(var handler in this._extra_cmd_handlers)
+            this._extra_cmd_handlers[handler].on_reset();
+
+        this.cmd_table.Clean();
+    };
+    
+    ScenarioKlassProto.remove_invalid_commands = function (queue)
+    {
+        var i, cmd, cnt = queue.length;              
         var invalid_cmd_indexs = [];
         for (i=0;i<cnt;i++)
         {
@@ -409,35 +652,21 @@ cr.plugins_.Rex_Scenario = function(runtime)
                         log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");                   
                 }
             }
-        }        
+        } 
    
         // remove invalid commands
         cnt = invalid_cmd_indexs.length;
         if (cnt != 0)
-        {   
+        {
             invalid_cmd_indexs.reverse(); 
-            for (i=0;i<cnt;i++)
-                queue.splice(invalid_cmd_indexs[i],1);
-        }
-
-        // remove empty cell
-        //cnt = queue.length;
-        //var cell_cnt = queue[0].length;
-        //var cmd_pack, j;
-        //for (i=0;i<cnt;i++)
-        //{
-        //    cmd_pack = queue[i];
-        //    for(j=0;j<cell_cnt;j++)
-        //	{
-        //	    if (cmd_pack[j] == "")
-        //		    break;
-        //	}
-        //	if (j<cell_cnt)
-        //	    cmd_pack.splice(j, cell_cnt-j)
-        //}
-        
-        cnt = queue.length;
-        var cmd_pack;
+            for (i=0; i<cnt; i++)
+                queue.splice(invalid_cmd_indexs[i], 1);
+        }        
+    };  
+    
+    ScenarioKlassProto.parse_commands = function (queue)
+    {        
+        var i, cnt = queue.length, cmd_pack, cmd;
         for (i=0;i<cnt;i++)
         {
             cmd_pack = queue[i];
@@ -445,14 +674,14 @@ cr.plugins_.Rex_Scenario = function(runtime)
             if (isNaN(cmd) || (cmd == ""))  // might be other command
                 this.cmd_handler_get(cmd).on_parsing(i, cmd_pack);
         }
-    };
-    
-    ScenarioKlassProto.start = function (offset, tag)
+    };          
+
+    ScenarioKlassProto.Start = function (offset, tag)
     {
-        this.is_running = true;
+        this.IsRunning = true;
         this._reset_abs_time();
         if (offset != null)
-            this.offset = offset;
+            this.Offset = offset;
         if (this.timer == null)
         {
             this.timer = this.plugin._timeline_get().CreateTimer(on_timeout);
@@ -460,7 +689,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
         else
             this.timer.Remove();  // stop timer
-        this.cmd_table.reset();
+        this.cmd_table.Reset();
         var index = this.cmd_handler_get("tag").tag2index(tag);
         if (index == null)
         {
@@ -478,14 +707,14 @@ cr.plugins_.Rex_Scenario = function(runtime)
         return this._extra_cmd_handlers[cmd_name];
     };        
 
-    ScenarioKlassProto.get_last_tag = function ()
+    ScenarioKlassProto.GetLastTag = function ()
     {      
         return this.cmd_handler_get("tag").last_tag;
     };  
     
-    ScenarioKlassProto.has_tag = function (tag)
+    ScenarioKlassProto.HasTag = function (tag)
     {
-        return this.cmd_handler_get("tag").has_tag(tag);
+        return this.cmd_handler_get("tag").HasTag(tag);
     };
               
     // internal methods
@@ -524,7 +753,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (this.is_debug_mode)
             log ("Scenario: Scenario finished");  
             
-        this.is_running = false;
+        this.IsRunning = false;
         var inst = this.plugin;
         inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnCompleted, inst);
     };
@@ -533,9 +762,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this.is_pause = true;
     };
-    ScenarioKlassProto.resume = function(key)
+    ScenarioKlassProto.Resume = function(key)
     {
-        if (!(this.is_pause && this.is_running))
+        if (!(this.is_pause && this.IsRunning))
             return;
         var is_unlock = this.cmd_handler_get("wait").unlock(key);
         if (!is_unlock)
@@ -554,7 +783,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         var deltaT, cmd = parseFloat(cmd_pack[0]);
         if (this.is_accT_mode)
         {
-            var next_abs_time = cmd + this.offset;
+            var next_abs_time = cmd + this.Offset;
             deltaT = next_abs_time - this.pre_abs_time;
             this.pre_abs_time = next_abs_time                
         }
@@ -588,7 +817,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }
         return (deltaT == 0);  // is_continue
     }; 
-    
+       
     // expression:Call in function object
     var fake_ret = {value:0,
                     set_any: function(value){this.value=value;},
@@ -599,21 +828,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
     var _thisArg = null;
     ScenarioKlassProto["_getvalue_from_c2fn"] = function()
     {
+        // prepare arguments
         _params.length = 0;
         _params.push(fake_ret);
         var i, cnt=arguments.length;
         for (i=0; i<cnt; i++)
             _params.push(arguments[i]);
             
-        var plugin = _thisArg.plugin;
-        var has_rex_function = (plugin.callback != null);
-        if (has_rex_function)
-            cr.plugins_.Rex_Function.prototype.exps.Call.apply(plugin.callback, _params);
-        else    // run official function
-        {
-            var has_fnobj = plugin._timeline_get().Call(_params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback object.");
-        }
+        // call "exp:Call"
+        _thisArg.plugin.Call(_params);
         return fake_ret.value;
     };	
     
@@ -631,8 +854,24 @@ cr.plugins_.Rex_Scenario = function(runtime)
                 return "+param+"\
             }";
             _thisArg = this;
-            var fn = eval("("+code_string+")");
-            param = fn(this);
+                            
+            if (this.is_debug_mode)
+            {
+                var fn = eval("("+code_string+")");
+                param = fn(this);
+            }
+            else  // ignore error
+            {
+                try
+                {
+                    var fn = eval("("+code_string+")");
+                    param = fn(this);                    
+                }
+                catch (e) 
+                {
+                    param = 0;
+                }
+            }
         }
         else
         {
@@ -660,15 +899,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     ScenarioKlassProto._execute_c2fn = function(name, params)
     {
-        var plugin = this.plugin;
-        var has_rex_function = (plugin.callback != null);
-        if (has_rex_function)
-            plugin.callback.CallFn(name, params);
-        else    // run official function
-        {
-            var has_fnobj = plugin._timeline_get().RunCallback(name, params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback oject.");
-        }
+        this.plugin.RunCallback(name, params);
     };	   
     
     // handler of timeout for timers in this plugin, this=timer   
@@ -692,11 +923,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
             timer_save["__cbargs"] = [this.timer._cb_name, this.timer._cb_params];  // compatiable
         }
         return { "q": this.cmd_table.saveToJSON(),
-                 "isrun": this.is_running,
+                 "isrun": this.IsRunning,
                  "isp": this.is_pause,
                  "tim" : timer_save,
                  "pa": this.pre_abs_time,	       
-                 "off": this.offset,
+                 "off": this.Offset,
                  "mem": this["Mem"],
                  "CmdENDIF": this.cmd_handler_get("end if").saveToJSON(),
                 };
@@ -704,11 +935,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
     ScenarioKlassProto.loadFromJSON = function (o)
     {    
         this.cmd_table.loadFromJSON(o["q"]); 
-        this.is_running = o["isrun"];
+        this.IsRunning = o["isrun"];
         this.is_pause = o["isp"];
         this.timer_save = o["tim"];
         this.pre_abs_time = o["pa"];
-        this.offset = o["off"];
+        this.Offset = o["off"];
         this["Mem"] = o["mem"];
         if (o["CmdENDIF"])
             this.cmd_handler_get("end if").loadFromJSON(o["CmdENDIF"]);
@@ -731,17 +962,37 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this.scenario = scenario;
         this.queue = null;
-        this.reset(queue);
+        this.Reset(queue);
     };
     var CmdQueueKlassProto = CmdQueueKlass.prototype; 
 
-    CmdQueueKlassProto.reset = function(queue)
+    CmdQueueKlassProto.Reset = function(queue)
     {
         this.current_index = -1;
-        if (queue != null)
+        if (queue)
             this.queue = queue;
     };
 
+    CmdQueueKlassProto.Append = function(queue)
+    {
+        if (!queue)
+            return;
+            
+        if (!this.queue)
+            this.queue = [];
+            
+        var i, cnt=queue.length;
+        for (i=0; i<cnt; i++)
+        {
+            this.queue.push(queue[i]);
+        }
+    };
+    CmdQueueKlassProto.Clean = function()
+    {
+        this.current_index = -1;
+        this.queue = null;
+    };
+    
     CmdQueueKlassProto.get = function(index)
     {
         if (index == null)
@@ -898,7 +1149,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
             index = 0;
         return index;        
     };
-    CmdTAGKlassProto.has_tag = function(tag)
+    CmdTAGKlassProto.HasTag = function(tag)
     {	 
         return (this.tag2index(tag) != null);      
     };  	

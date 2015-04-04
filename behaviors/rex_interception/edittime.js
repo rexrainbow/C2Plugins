@@ -15,7 +15,9 @@
 // Conditions
 AddCondition(1, 0, "Has force", "Output", "{my} has force", 
              "Return true if force is not 0.", "HasForce");	 
-             
+  
+AddCondition(2, 0, "Is locking", "Target", "{my} is locking to target", 
+             "Return true if locking target.", "IsLocking");	   
 //////////////////////////////////////////////////////////////
 // Actions 
 AddObjectParam("Target", "Object of target");

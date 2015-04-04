@@ -62,13 +62,13 @@ AddCondition(104, cf_trigger, "On remove queried messages error", "Remove querie
             "On remove queried messages error",
             "Triggered when remove error.", "OnRemoveQueriedItemsError");    
             
-AddCondition(111, cf_trigger, "On get message count complete", "Queried message count",
-            "On get message count complete",
-            "Triggered when get message count.", "OnGetMessageCountComplete");
+AddCondition(111, cf_trigger, "On get messages count complete", "Queried messages count",
+            "On get messages count complete",
+            "Triggered when get messages count.", "OnGetMessagesCountComplete");
 
-AddCondition(112, cf_trigger, "On get message count error", "Queried message count",
-            "On get message count error",
-            "Triggered when get message count error.", "OnGetMessageCountError");                                                
+AddCondition(112, cf_trigger, "On get messages count error", "Queried messages count",
+            "On get messages count error",
+            "Triggered when get messages count error.", "OnGetMessagesCountError");                                                
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Sender ID", "Sender ID.", '""');
@@ -186,9 +186,9 @@ AddAction(102, 0, "Remove queried messages", "Remove",
           "Remove- Remove queried messages", 
           "Remove queried messages.", "RemoveQueriedMessages");   
 
-AddAction(111, 0, "Get message count", "Queried message count", 
-          "Get queried message count", 
-          "Get queried message count. Maximum of 160 requests per minute.", "GetMessageCount");   
+AddAction(111, 0, "Get messages count", "Queried messages count", 
+          "Get queried messages count", 
+          "Get queried messages count. Maximum of 160 requests per minute.", "GetMessagesCount");   
                                          
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -237,7 +237,7 @@ AddExpression(97, ef_return_number, "Last loaded sent unix timestamp", "Received
 AddExpression(101, ef_return_string, "Last removed messageID", "Remove", "LastRemovedMessageID", 
               'Get last removed messageID under "Condition:On remove complete".');   
                     
-AddExpression(111, ef_return_number, "Last message count", "Queried message count", "LastMessageCount", 
+AddExpression(111, ef_return_number, "Last message count", "Queried message count", "LastMessagesCount", 
               'Get last queried message count under "Condition: On get message count complete".');
                                            
 ACESDone();
@@ -248,7 +248,7 @@ var property_list = [
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "Message", "Class name for storing messages structure."), 
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),    
-	new cr.Property(ept_combo, "Order", "Later to eariler", "Order.", "Eariler to later|Later to eariler"),     
+	new cr.Property(ept_combo, "Order", "Later to eariler", "Order.", "Earlier to later|Later to earlier"),     
 	];
 	
 // Called by IDE when a new object type is to be created

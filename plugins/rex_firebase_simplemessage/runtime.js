@@ -84,6 +84,11 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
         this.exp_LastMessage = null;        
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	    this.inBox.StopUpdate();
+	};
+        	
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)

@@ -17,7 +17,9 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddAnyTypeParam("Name", "Timer's name", '""');
-AddCondition(0, 0, "Is timmer running", "Timer", "<i>{0}</i> is running", "", "IsRunning");
+AddCondition(0, 0, "Is timer running", "Timer", 
+             "<i>{0}</i> is running", 
+             "Return true if timer is running.", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -109,6 +111,12 @@ AddAction(40, 0, "Push timeline to", "TimeLine - manual",
           "Push timeline to <i>{0}</i>", 
           "Push timeline to specific time. It could not turn back the timeline.", "PushTimeLineTo");          
 		  
+AddComboParamOption("Official function");
+AddComboParamOption("Rex function2");
+AddComboParam("Callback", "Callback object.",0);          
+AddAction(101, 0, "Setup callback", "Setup", 
+          "Set callback to <i>{0}</i>", 
+          "Setup callback.", "SetupCallback");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "Timer's name.", '""');  

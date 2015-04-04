@@ -33,6 +33,7 @@ AddObjectParam("Function", "Function object for callback");
 AddAction(1, af_deprecated, "Setup", "Z: Deprecated", 
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
+          
 AddStringParam("Commands", "Commands in CSV format", "");
 AddAction(2, 0, "Load commands", "0: Load", 
           "Load commands <i>{0}</i>", 
@@ -54,7 +55,15 @@ AddAction(6, 0, "Stop scenario", "Control",
 AddNumberParam("Offset", "Time offset at start", 0);     
 AddAction(7, 0, "Set time offset", "Setting", 
           "Set offset to <i>{1}</i>", 
-          "Set time offset.", "SetOffset");   
+          "Set time offset.", "SetOffset");  
+AddAction(8, 0, "Clean commands", "0: Load", 
+          "Clean all commands", 
+          "Clean all commands.", "CleanCmds");
+AddStringParam("Commands", "Commands in CSV format", "");
+AddAction(9, 0, "Append commands", "0: Load", 
+          "Append commands <i>{0}</i>", 
+          "Append commands.", "AppendCmds");          
+                     
 AddAction(20, 0, "Continue all", "Response - Wait", 
           "Continue scenario (response of wait command)", 
           "Continue scenario, response of wait command.", "Continue");  
@@ -74,11 +83,19 @@ AddAction(32, 0, "Load from JSON", "Memory", "Load MEM form JSON string to <i>{0
 AddAnyTypeParam("Key", "Key of locked-wait command", "");         
 AddAction(33, 0, "Continue with key", "Response - Wait", 
           "Continue scenario (response of wait <i>{0}</i> command)", 
-          "Continue scenario, response of locked-wait command.", "Continue");           
+          "Continue scenario, response of locked-wait command.", "Continue");    
+          
 AddObjectParam("Timeline", "Timeline object to get timer");
-AddAction(41, 0, "Setup", "Setup", 
+AddAction(41, 0, "Setup timeline", "Setup", 
           "Get timer from <i>{0}</i>", 
-          "Setup.", "Setup2");	         
+          "Setup timeline.", "SetupTimeline");	
+AddComboParamOption("Official function");
+AddComboParamOption("Rex function2");
+AddComboParam("Callback", "Callback object.",0);          
+AddAction(42, 0, "Setup callback", "Setup", 
+          "Set callback to <i>{0}</i>", 
+          "Setup callback.", "SetupCallback");	
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_string, "Get last tag", 

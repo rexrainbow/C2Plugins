@@ -90,6 +90,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    this.exp_CurItem = null;   
 	    this.exp_LastFetchedItem = null;
 	    this.exp_LastRemovedItemID = "";
+	    this.exp_LastItemsCount = -1;   
 	};
 	
 	instanceProto.create_itemTable = function(page_lines)
@@ -296,6 +297,15 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    return true;
 	}; 
 	Cnds.prototype.OnRemoveQueriedItemsError = function ()
+	{
+	    return true;
+	};		
+	
+	Cnds.prototype.OnGetItemsCountComplete = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnGetItemsCountError = function ()
 	{
 	    return true;
 	};		
@@ -576,6 +586,25 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         // step 1. read items   
 	    query["find"](query_handler);
 	}; 	
+	
+    Acts.prototype.GetItemsCount = function ()
+	{
+	    var query = this.get_request_query(this.filters);
+	    
+	    var self = this;
+	    var on_query_success = function(count)
+	    {
+	        self.exp_LastItemsCount = count;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnGetItemsCountComplete, self); 	        
+	    };	    
+	    var on_query_error = function(error)
+	    {      
+	        self.exp_LastItemsCount = -1;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnGetItemsCountError, self); 
+	    };
+	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
+	    query["count"](query_handler);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -676,6 +705,11 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    }
 		ret.set_float(this.exp_LastFetchedItem["createdAt"].getTime());
 	};
+	    
+	Exps.prototype.LastItemsCount = function (ret)
+	{
+		ret.set_int(this.exp_LastItemsCount);
+	};	
 }());
 
 (function ()

@@ -74,6 +74,11 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    this.exp_PostPlayerName = "";
 	};
 	
+	instanceProto.onDestroy = function ()
+	{		
+	    this.ranks.StopUpdate(); 	    
+	};
+	
 	instanceProto.get_ref = function(k)
 	{
 	    if (k == null)
