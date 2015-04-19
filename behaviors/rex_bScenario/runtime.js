@@ -381,9 +381,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     Acts.prototype.Stop = function ()
     {  
-        var timer = this._scenario.timer;
-        if (timer)
-            timer.Remove();  
+        this._scenario.Stop();
     };     
     
     Acts.prototype.SetOffset = function (offset)
@@ -517,9 +515,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.IsRunning = false;
         this.is_pause = false;
         // --------
-        //this.timer = null;      
-        if (this.timer)
-            this.timer.Remove();   
+        //this.timer = null;       
             
         this.pre_abs_time = 0;
         this.Offset = 0;  
@@ -532,10 +528,7 @@ cr.behaviors.rex_bScenario = function(runtime)
 	};
 	
 	ScenarioKlassProto.onDestroy = function ()
-	{
-        if (this.timer)
-            this.timer.Remove();
-                    
+	{ 
         this.Clean();
 	};
     
@@ -570,6 +563,9 @@ cr.behaviors.rex_bScenario = function(runtime)
         
     ScenarioKlassProto.Clean = function ()
     {        
+        if (this.timer)
+            this.timer.Remove();
+                                      
         // reset all extra cmd handler
         for(var handler in this._extra_cmd_handlers)
             this._extra_cmd_handlers[handler].on_reset();
@@ -584,16 +580,13 @@ cr.behaviors.rex_bScenario = function(runtime)
         for (i=0;i<cnt;i++)
         {
             cmd = queue[i][0];
-            if (isNaN(cmd) || (cmd == ""))  // might be other command
+            if (this.get_command_type(cmd) === null)
             {
-                if (!(cmd.toLowerCase() in this._extra_cmd_handlers))
-                {
-                    // invalid command                
-                    invalid_cmd_indexs.push(i);
-                    if (this.is_debug_mode)
-                        log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");                   
-                }
-            }
+                // invalid command                
+                invalid_cmd_indexs.push(i);
+                if (this.is_debug_mode)
+                    log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");              
+            }                        
         } 
    
         // remove invalid commands
@@ -605,15 +598,43 @@ cr.behaviors.rex_bScenario = function(runtime)
                 queue.splice(invalid_cmd_indexs[i], 1);
         }        
     };  
-    
+
+    ScenarioKlassProto.get_command_type = function (cmd, no_eval)
+    {
+        if (cmd == "")
+            return null;
+            
+        // number: delay command
+        if (!isNaN(cmd))
+            return parseFloat(cmd);
+            
+        // other command types
+        if (this._extra_cmd_handlers.hasOwnProperty(cmd.toLowerCase()))
+            return cmd;
+        
+        // eval command
+        if (!this.is_eval_mode || no_eval)
+            return null;
+            
+        try 
+        {
+            cmd = this.param_get(cmd);            
+            return this.get_command_type(cmd, true);            
+        }
+        catch(err) 
+        {
+            return null;
+        }
+    };   
+        
     ScenarioKlassProto.parse_commands = function (queue)
     {        
         var i, cnt = queue.length, cmd_pack, cmd;
         for (i=0;i<cnt;i++)
         {
             cmd_pack = queue[i];
-            cmd = cmd_pack[0];             
-            if (isNaN(cmd) || (cmd == ""))  // might be other command
+            cmd = this.get_command_type(cmd_pack[0]);
+            if (isNaN(cmd))  // might be other command
                 this.cmd_handler_get(cmd).on_parsing(i, cmd_pack);
         }
     };       
@@ -621,6 +642,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     ScenarioKlassProto.Start = function (offset, tag, repeat_count)
     {        
         this.is_running = true;
+        this.is_pause = false;        
         this._reset_abs_time();
         if (offset != null)
             this.offset = offset;
@@ -648,6 +670,15 @@ cr.behaviors.rex_bScenario = function(runtime)
             log ("Scenario: Start at tag: "+ tag + " , index = " + index);  
         this._run_next_cmd(index);
     };
+    
+    ScenarioKlassProto.Stop = function ()
+    {        
+        this.IsRunning = false;
+        this.is_pause = false;
+        if (this.timer)
+            this.timer.Remove();    
+    };    
+        
     
     ScenarioKlassProto.cmd_handler_get = function (cmd_name)
     {
@@ -688,9 +719,9 @@ cr.behaviors.rex_bScenario = function(runtime)
                 else
                     return;               
             }
-            cmd = cmd_pack[0];
+            cmd = this.get_command_type(cmd_pack[0]);
             if (!isNaN(cmd))
-                is_continue = this._on_delay_execution_command(cmd_pack);
+                is_continue = this._on_delay_execution_command(cmd, cmd_pack);
             else  // might be other command
                 is_continue = this.cmd_handler_get(cmd.toLowerCase()).on_executing(cmd_pack);
         }
@@ -752,17 +783,17 @@ cr.behaviors.rex_bScenario = function(runtime)
         var inst = this.plugin;
         inst.runtime.trigger(cr.behaviors.rex_bScenario.prototype.cnds.OnTagChanged, inst.inst);
     };
-    ScenarioKlassProto._on_delay_execution_command = function(cmd_pack)
+    ScenarioKlassProto._on_delay_execution_command = function(delayT_, cmd_pack)
     {
-        var deltaT, cmd = parseFloat(cmd_pack[0]);
+        var deltaT;
         if (this.is_accT_mode)
         {
-            var next_abs_time = cmd + this.offset;
+            var next_abs_time = delayT_ + this.offset;
             deltaT = next_abs_time - this.pre_abs_time;
             this.pre_abs_time = next_abs_time                
         }
         else
-            deltaT = cmd;
+            deltaT = delayT_;
 
         // get function  name and parameters
         var fn_name=cmd_pack[1];

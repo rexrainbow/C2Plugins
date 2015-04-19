@@ -44,16 +44,7 @@ function tick()
 
 var runCommand = function (e)
 {
-    var cmd;
-    try
-    {
-	    cmd = JSON.parse(e.data);
-	}
-    catch(err)
-    {
-        return;
-    }
-    
+    var cmd = e.data;
 	var cmdFunction = cmdMap[cmd[0]];
 	if (cmdFunction == null)
 	    return;

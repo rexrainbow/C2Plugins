@@ -948,7 +948,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimerProto.Remove = function()
     {
-        if ((!this._is_alive) && (!this._is_active))
+        if (this._is_alive)
             this.timeline.RemoveTimer(this);
     };
     

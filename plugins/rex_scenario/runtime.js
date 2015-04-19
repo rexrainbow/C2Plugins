@@ -413,9 +413,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Acts.prototype.Stop = function ()
     {  
-        var timer = this._scenario.timer;
-        if (timer)
-            timer.Remove();  
+        this._scenario.Stop();
     };     
     
     Acts.prototype.SetOffset = function (offset)
@@ -575,9 +573,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.IsRunning = false;
         this.is_pause = false;
         // --------
-        //this.timer = null;      
-        if (this.timer)
-            this.timer.Remove();   
+        //this.timer = null;        
             
         this.pre_abs_time = 0;
         this.Offset = 0;  
@@ -590,10 +586,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
 	};
 	                      
 	ScenarioKlassProto.onDestroy = function ()
-	{
-        if (this.timer)
-            this.timer.Remove();
-                    
+	{       
         this.Clean();
 	};
     
@@ -628,6 +621,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
         
     ScenarioKlassProto.Clean = function ()
     {        
+        this.Stop();
+            
         // reset all extra cmd handler
         for(var handler in this._extra_cmd_handlers)
             this._extra_cmd_handlers[handler].on_reset();
@@ -642,15 +637,12 @@ cr.plugins_.Rex_Scenario = function(runtime)
         for (i=0;i<cnt;i++)
         {
             cmd = queue[i][0];
-            if (isNaN(cmd) || (cmd == ""))  // might be other command
+            if (this.get_command_type(cmd) === null)
             {
-                if (!(cmd.toLowerCase() in this._extra_cmd_handlers))
-                {
-                    // invalid command                
-                    invalid_cmd_indexs.push(i);
-                    if (this.is_debug_mode)
-                        log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");                   
-                }
+                // invalid command                
+                invalid_cmd_indexs.push(i);
+                if (this.is_debug_mode)
+                    log ("Scenario: line " +i+ " = '"+cmd+ "' is not a valid command");              
             }
         } 
    
@@ -664,14 +656,42 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }        
     };  
     
+    ScenarioKlassProto.get_command_type = function (cmd, no_eval)
+    {
+        if (cmd == "")
+            return null;
+            
+        // number: delay command
+        if (!isNaN(cmd))
+            return parseFloat(cmd);
+            
+        // other command types
+        if (this._extra_cmd_handlers.hasOwnProperty(cmd.toLowerCase()))
+            return cmd;
+        
+        // eval command
+        if (!this.is_eval_mode || no_eval)
+            return null;
+            
+        try 
+        {
+            cmd = this.param_get(cmd);            
+            return this.get_command_type(cmd, true);            
+        }
+        catch(err) 
+        {
+            return null;
+        }
+    };      
+    
     ScenarioKlassProto.parse_commands = function (queue)
     {        
         var i, cnt = queue.length, cmd_pack, cmd;
         for (i=0;i<cnt;i++)
         {
             cmd_pack = queue[i];
-            cmd = cmd_pack[0];             
-            if (isNaN(cmd) || (cmd == ""))  // might be other command
+            cmd = this.get_command_type(cmd_pack[0]);
+            if (isNaN(cmd))  // might be other command
                 this.cmd_handler_get(cmd).on_parsing(i, cmd_pack);
         }
     };          
@@ -679,6 +699,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     ScenarioKlassProto.Start = function (offset, tag)
     {
         this.IsRunning = true;
+        this.is_pause = false;
         this._reset_abs_time();
         if (offset != null)
             this.Offset = offset;
@@ -700,7 +721,15 @@ cr.plugins_.Rex_Scenario = function(runtime)
         if (this.is_debug_mode)
             log ("Scenario: Start at tag: "+ tag + " , index = " + index);  
         this._run_next_cmd(index);
-    };  
+    }; 
+
+    ScenarioKlassProto.Stop = function ()
+    {        
+        this.IsRunning = false;
+        this.is_pause = false;
+        if (this.timer)
+            this.timer.Remove();    
+    };    
     
     ScenarioKlassProto.cmd_handler_get = function (cmd_name)
     {
@@ -736,9 +765,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
                 this._exit();
                 return;
             }
-            cmd = cmd_pack[0];
+            cmd = this.get_command_type(cmd_pack[0]);
             if (!isNaN(cmd))
-                is_continue = this._on_delay_execution_command(cmd_pack);
+                is_continue = this._on_delay_execution_command(cmd, cmd_pack);
             else  // might be other command
                 is_continue = this.cmd_handler_get(cmd.toLowerCase()).on_executing(cmd_pack);
         }
@@ -764,8 +793,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     ScenarioKlassProto.Resume = function(key)
     {
-        if (!(this.is_pause && this.IsRunning))
+        if (!this.IsRunning)
+            return;            
+        if (!this.is_pause)
             return;
+            
         var is_unlock = this.cmd_handler_get("wait").unlock(key);
         if (!is_unlock)
             return;
@@ -778,17 +810,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
         var inst = this.plugin;
         inst.runtime.trigger(cr.plugins_.Rex_Scenario.prototype.cnds.OnTagChanged, inst);
     };
-    ScenarioKlassProto._on_delay_execution_command = function(cmd_pack)
+    ScenarioKlassProto._on_delay_execution_command = function(delayT_, cmd_pack)
     {
-        var deltaT, cmd = parseFloat(cmd_pack[0]);
+        var deltaT;
         if (this.is_accT_mode)
         {
-            var next_abs_time = cmd + this.Offset;
+            var next_abs_time = delayT_ + this.Offset;
             deltaT = next_abs_time - this.pre_abs_time;
             this.pre_abs_time = next_abs_time                
         }
         else
-            deltaT = cmd;
+            deltaT = delayT_;
 
         // get function  name and parameters
         var fn_name=cmd_pack[1];

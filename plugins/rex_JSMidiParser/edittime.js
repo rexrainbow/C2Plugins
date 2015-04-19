@@ -66,8 +66,8 @@ AddAction(12, 0, "Stop", "Play",
           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Last JSON result", "Midi", "LastJSON", 
-              "Get last JSON result.");  
+AddExpression(1, ef_return_string, "Midi in JSON", "Midi", "Midi2JSON", 
+              "Midi in JSON.");  
 AddExpression(2, ef_return_number, "End time of current midi", "Midi", "EndTime", 
               "End time of current midi, in seconds.");
               
@@ -99,7 +99,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_float, "Beat period", 0.5, "Beat period, in seconds."),  
+    new cr.Property(ept_float, "Beat period", 0.5, "Beat period, in seconds."), 
+    new cr.Property(ept_integer, "Octave offset", 0, "Octave offset for pitch key."),    
 	];
 	
 // Called by IDE when a new object type is to be created

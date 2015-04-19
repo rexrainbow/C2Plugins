@@ -1140,6 +1140,19 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 		//this.groupUpdateProgress((this.i / (this.duration + this.initiating + this.cooldown)));
 	}
 
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "Initial", "value": this.initial},
+				{"name": "Target", "value": this.target},   
+				{"name": "Progress", "value": this.i / (this.duration + this.initiating + this.cooldown)},                  
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/	    
 	//////////////////////////////////////
 	// Conditions
 	behaviorProto.cnds = {};

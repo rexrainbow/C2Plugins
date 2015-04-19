@@ -61,6 +61,9 @@ cr.plugins_.Rex_Lookup = function(runtime)
 	    {
 	        this.tests.RunTest(this.props);
 	        this.vaild_result = true;
+	        
+	        for (var n in this.props)
+	            delete this.props[n];		        
 	    }
 	    
         return this.tests.GetPassedName();
@@ -308,7 +311,7 @@ cr.plugins_.Rex_Lookup = function(runtime)
 	    var test_obj, test_name;
 	    for(i=1; i<cnt; i++)
 	    {
-	        test_obj = new cr.plugins_.Rex_Lookup.TestKlass();
+	        test_obj = new TestKlass();
 	        test_name = test_obj.CreateTestCode(prop_names, csv_table[i], i);   
 	        test_obj.extra["name"] = test_name;
 	        this.tests.push(test_obj);
@@ -390,7 +393,7 @@ cr.plugins_.Rex_Lookup = function(runtime)
         this.tests.length = 0;	   
         for (i=0; i<cnt; i++)
         {
-	        test_obj = new cr.plugins_.Rex_Lookup.TestKlass();
+	        test_obj = new TestKlass();
 	        test_obj.loadFromJSON(tests[i]);
 	        this.tests.push(test_obj);
         }        				 		      
@@ -418,17 +421,14 @@ cr.plugins_.Rex_Lookup = function(runtime)
         for(var n in this.passed_names_map)
             delete this.passed_names_map[n];
 	};   
-}());
 
-(function ()
-{
-    cr.plugins_.Rex_Lookup.TestKlass = function()
+    var TestKlass = function()
     {  
         this.test_handler = null;
         this.code_save = "";
         this.extra = {};
     };
-    var TestKlassProto = cr.plugins_.Rex_Lookup.TestKlass.prototype;
+    var TestKlassProto = TestKlass.prototype;
     
     var is_equation = function (cond)
     {

@@ -102,8 +102,10 @@ cr.plugins_.Rex_Waker = function(runtime)
     var WakerKlass = function (runtime)
     {   
         this.runtime = runtime;
-	    this.params = [];        
-	    this.worker = new Worker("waker.js"); 
+        if (typeof Worker !== "undefined") 
+	        this.worker = new Worker("waker.js"); 
+        else
+            return;
 
 	    	       
 	    this.IsAwake = false;
@@ -164,16 +166,18 @@ cr.plugins_.Rex_Waker = function(runtime)
 	
 	WakerKlassProto.SetFrameRate = function (fps)
 	{
+        if (!this.worker)
+            return;
+            
 	    this.period = Math.floor((1/fps)*1000);
-	    	    
-	    this.params.length = 2;
-	    this.params[0] = "setTimerPeriod";
-	    this.params[1] = this.period;
-	    this.worker.postMessage(JSON.stringify(this.params));
+	    this.worker.postMessage(["setTimerPeriod", this.period]);
 	}; 
 	
 	WakerKlassProto.Start = function ()
 	{
+        if (!this.worker)
+            return;
+            
 	    if (!this.enable)
 	        return;
             
@@ -181,16 +185,15 @@ cr.plugins_.Rex_Waker = function(runtime)
             return;
 	        	    
 	    this.IsAwake = true;        
-	    this.params.length = 1;
-	    this.params[0] = "startTimer";
-	    this.worker.postMessage(JSON.stringify(this.params));
+	    this.worker.postMessage(["startTimer"]);
 	}; 	
 	
 	WakerKlassProto.Stop = function ()
 	{
-	    this.params.length = 1;
-	    this.params[0] = "stopTimer";
-	    this.worker.postMessage(JSON.stringify(this.params));
+        if (!this.worker)
+            return;
+
+	    this.worker.postMessage(["stopTimer"]);
 	    this.IsAwake = false;
 	}; 		    
 

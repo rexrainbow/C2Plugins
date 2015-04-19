@@ -102,7 +102,7 @@ cr.behaviors.Rex_Replacer = function(runtime)
         
 	    if (!is_continue)
 	    {  
-	        if (this.cmd == CMD_FADEOUT)
+	        if (this.cmd === CMD_FADEOUT)
 	        {
 	            this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeOutFinish, this.inst);
 	            this.runtime.DestroyInstance(this.inst);
@@ -117,27 +117,42 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	
   	behinstProto.fadeout_start = function (duration)
 	{          
+        if (this.cmd === CMD_FADEIN)
+	        this.fadein_forceStop();
+	        	    
 	    if (this.fade == null)
 	    {
 	        this.fade = new cr.behaviors.Rex_Replacer.LinearInterpolationKlass();
 	    }
 	    
 	    this.cmd = CMD_FADEOUT;
-	    this.fade.start(this.inst.opacity, 0, duration);
+	    this.fade.fadeStart(this.inst.opacity, 0, duration);
 	    this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeOutStart, this.inst);   
 	};	
 	
   	behinstProto.fadein_start = function (duration)
-	{     
+	{            	     
 	    if (this.fade == null)
 	    {
 	        this.fade = new cr.behaviors.Rex_Replacer.LinearInterpolationKlass();
 	    }
 
 	    this.cmd = CMD_FADEIN;
-	    this.fade.start(0, this.inst.opacity, duration);
+	    this.fade.fadeStart(0, this.inst.opacity, duration);
+	    
+	    // start from 0
+        this.inst.opacity = 0;
+        this.runtime.redraw = true;	    
 	    this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeInStart, this.inst);  
 	};
+	
+  	behinstProto.fadein_forceStop = function ()
+	{     
+        this.inst.opacity = this.fade.end;
+        this.runtime.redraw = true;	    
+	    this.runtime.trigger(cr.behaviors.Rex_Replacer.prototype.cnds.OnFadeInFinish, this.inst);
+	    this.cmd = CMD_IDLE;
+	};	
 	
 	function GetReplacerBehavior(inst)
 	{
@@ -227,17 +242,17 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	
 	Cnds.prototype.IsFadeOut = function ()
 	{
-		return (this.cmd == CMD_FADEOUT);
+		return (this.cmd === CMD_FADEOUT);
 	};
 
 	Cnds.prototype.IsFadeIn = function ()
 	{
-		return (this.cmd == CMD_FADEIN);
+		return (this.cmd === CMD_FADEIN);
 	};
 
 	Cnds.prototype.IsIdle = function ()
 	{
-		return (this.cmd == CMD_IDLE);
+		return (this.cmd === CMD_IDLE);
 	};	
 	//////////////////////////////////////
 	// Actions
@@ -245,7 +260,10 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	behaviorProto.acts = new Acts();
 
     Acts.prototype.ReplaceInst = function (objtype)
-	{ 
+	{ 	    
+	    if (this.cmd === CMD_FADEOUT)
+	        return;  // could not replace fade out instance
+
         this.replaceTo(objtype);                           
 	}; 
 	
@@ -272,10 +290,11 @@ cr.behaviors.Rex_Replacer = function(runtime)
     };
     var LinearInterpolationKlassProto = cr.behaviors.Rex_Replacer.LinearInterpolationKlass.prototype;
     
-    LinearInterpolationKlassProto.start = function(start, end, duration)
+    LinearInterpolationKlassProto.fadeStart = function(start, end, duration)
 	{
-        this.start_value = start;
-        this.delta_value = end - start;      
+        this.start = start;
+        this.end = end
+        this.delta = end - start;      
         this.duration = duration;
         this.accDt = 0; 
         this.value = start;           
@@ -285,14 +304,15 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	{
          this.accDt += dt;
          var p = (this.accDt >= this.duration)? 1 : (this.accDt/this.duration); 
-         this.value = (p*this.delta_value) + this.start_value;         
+         this.value = (p*this.delta) + this.start;         
          return (p < 1);
 	};	
 	
 	LinearInterpolationKlassProto.saveToJSON = function ()
 	{
-		return { "s": this.start_value,
-                 "dv": this.delta_value,
+		return { "start": this.start,
+		         "end": this.end,
+                 "delta": this.delta,
                  "dt": this.duration,
                  "accDt": this.accDt,
                  "v": this.value,
@@ -301,8 +321,9 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	
 	LinearInterpolationKlassProto.loadFromJSON = function (o)
 	{
-		this.start_value = o["s"];
-		this.delta_value = o["dv"];
+		this.start = o["start"];
+		this.end = o["end"];
+		this.delta = o["delta"];
 		this.duration = o["dt"];
 		this.accDt = o["accDt"];	
 		this.value = o["v"];				

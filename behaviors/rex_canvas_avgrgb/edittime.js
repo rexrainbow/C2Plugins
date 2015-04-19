@@ -6,8 +6,9 @@
 		"description":	"Get average RGBA value from the canvas.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_Canvasavgrgba.html",
-		"category":		"Rex - Canvas helper",
-		"flags":		bf_onlyone
+		"category":		"Rex - Canvas - Color analysis",
+		"dependency":	"avgRGB.js",        
+		"flags":		bf_onlyone,
 	};
 };
 
@@ -28,6 +29,7 @@ AddAction(2, 0, "Stop", "Process",
           "Stop process of getting average RGB", "Stop");  
 AddComboParamOption("One-tick");
 AddComboParamOption("Multi-ticks");
+AddComboParamOption("Webworker");
 AddComboParam("Mode", "Processing mode.", 0);
 AddAction(3, 0, "Set mode", "Mode", 
           "{my} Set processing mode to <b>{0}</b>", 
@@ -60,7 +62,7 @@ AddExpression(6, ef_return_string, "Get average rgba",
 AddExpression(7, ef_return_number, "Get luminance", 
               "Result", "Lum",
               "Get luminance.");
-AddExpression(8, ef_return_number, "Get percentage of progress", 
+AddExpression(8, ef_deprecated | ef_return_number, "Get percentage of progress", 
               "Process", "Progress",
               "Get percentage of progress.");
 			  
@@ -69,7 +71,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [  
     new cr.Property(ept_combo, "Mode", "One-tick", 'Mode of processing.', 
-                    "One-tick|Multi-ticks"),      
+                    "One-tick|Multi-ticks|Webworker"),      
     new cr.Property(ept_float, "Processing time", 1, "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time. Used for multi-ticks mode."),          
 	];
 	

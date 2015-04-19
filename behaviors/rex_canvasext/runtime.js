@@ -114,22 +114,53 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 	{
 		var img = new Image();
 		var self = this;
-		var curFrame_ = this.curFrame;
-		
+
 		img.onload = function ()
 		{
 		    var inst = self.inst;
 
+            var is_size_change = false;
+            // Resize to image size
 			if ((resize_ === 0) && 
 			    ((inst.width != img.width) || (inst.height != img.height)))
 			{
 				inst.width = img.width;
 				inst.height = img.height;
-				inst.set_bbox_changed();
-				inst.canvas.width = inst.width;
-				inst.canvas.height = inst.height;                
+                
+				is_size_change = true;            
 			}
+            else if (resize_ === 2)
+            {
+                var scale_width = inst.width / img.width;
+                var scale_height = inst.height / img.height;            
+                
+                // smaller than canvas, keep current size
+                if ((scale_width > 1) && (scale_height > 1))
+                {
+				    inst.width = img.width;
+				    inst.height = img.height;
+                    
+				    is_size_change = true;   
+                }
+                // larger than canvas, scale down
+                else if ((scale_width < 1) || (scale_height < 1))
+                {
+                    var min_scale = (scale_width < scale_height)? scale_width:scale_height;
+                    
+				    inst.width = img.width * min_scale;
+				    inst.height = img.height * min_scale;
+                    
+				    is_size_change = true; 
+                }
+            }
             
+            if (is_size_change)
+            {
+			    inst.set_bbox_changed();
+				inst.canvas.width = inst.width;
+				inst.canvas.height = inst.height;              
+            }
+
             inst.ctx.clearRect(0,0, inst.canvas.width, inst.canvas.height);
 		    inst.ctx.drawImage(img, 0, 0, inst.width, inst.height);
 			

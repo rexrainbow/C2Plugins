@@ -136,7 +136,7 @@ cr.behaviors.Rex_Slowdown = function(runtime)
     
 	Cnds.prototype.IsMoving = function ()
 	{
-		return (this.is_my_call && this.activated && this.is_moving);
+		return (this.activated && this.is_moving);
 	};
 		
 	//////////////////////////////////////
@@ -183,6 +183,6 @@ cr.behaviors.Rex_Slowdown = function(runtime)
 
  	Exps.prototype.MovingAngle = function (ret)
 	{
-		ret.set_float(this.cur_angle);
+		ret.set_float(cr.to_clamped_degrees(this.cur_angle));
 	};   	
 }());

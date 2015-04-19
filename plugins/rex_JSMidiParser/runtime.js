@@ -64,7 +64,11 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.beat_period = this.properties[0];
+        this.pitchKey_gen( this.properties[1] );
+        
 	    this.timeline = null;
+        this.timelineUid = -1;    // for loading          
+        
 	    this.midi_json = null;
 	    this.player = new cr.plugins_.Rex_JSMIDIparser.PlayerKlass(this);
 	    	    
@@ -75,7 +79,8 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
     
 	instanceProto.onDestroy = function ()
 	{
-	}; 
+        this.player.CleanAll();   
+	};
 
     instanceProto._timeline_get = function ()
     {
@@ -163,16 +168,67 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.runtime.trigger(cr.plugins_.Rex_JSMIDIparser.prototype.cnds.OnEnded, this); 
 	}; 
     
+    // note conversions    
+    var number2key = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];    
+	instanceProto.pitchKey_gen = function ( octave_offset )
+	{
+        this.octave_offset = octave_offset;
+        this.keyToNote = {};
+        this.noteToKey = {};
+                
+        var octave=-2+octave_offset
+        var note, kidx=0, name, klen=number2key.length;
+    	for (note=0; note<=127; note++) {
+            name = number2key[kidx].toString() + octave.toString();
+    		this.keyToNote[name] = note;
+    		this.noteToKey[note] = name;
+            
+            kidx += 1;
+    		if (kidx == klen)
+            {
+                kidx = 0;
+                octave += 1;
+            }
+    	}
+	}; 
+
 	instanceProto.saveToJSON = function ()
 	{
-		return { "res": this.midi_json,
+		return { "bp": this.beat_period,
+                 "of": this.octave_offset,
+                 "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
+                 "json": this.midi_json,
+                 "player": this.player.saveToJSON(),
+                 "exp_n": this.exp_note,
+                 "exp_t": this.exp_Tick,
+                 "exp_TID": this.exp_TrackID,
 		        };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-	    this.midi_json = o["res"];
+        this.beat_period = o["bp"];
+	    this.pitchKey_gen(o["of"]);
+        this.timelineUid = o["tlUid"];
+        this.player.loadFromJSON(o["player"]);
+        
+	    this.exp_note = o["exp_n"];
+	    this.exp_Tick = o["exp_t"];
+        this.exp_TrackID = o["exp_TID"];      
 	};
+    
+	instanceProto.afterLoad = function ()
+	{
+        if (this.timelineUid === -1)
+            this.timeline = null;
+        else
+        {
+            this.timeline = this.runtime.getObjectByUID(this.timelineUid);
+            assert2(this.timeline, "JSMidiParser: Failed to find timeline object by UID");
+        }
+        
+        this.player.afterLoad(); 
+	};   
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -234,13 +290,13 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	    this.ConvertMidi2JSON(url_);               
 	};
     
-    Acts.prototype.Play = function (url_)
+    Acts.prototype.Play = function ()
 	{
         this.player.Start();          
 	};         
      
-    Acts.prototype.Stop = function (url_)
-	{
+    Acts.prototype.Stop = function ()
+	{ 
         this.player.Stop();          
 	};     
     
@@ -249,10 +305,10 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
-	Exps.prototype.LastJSON = function (ret)
+	Exps.prototype.Midi2JSON = function (ret)
 	{
-	    var result = this.midi_json || {};
-		ret.set_string(JSON.stringify( result ));
+	    var json_ = this.midi_json || {};
+		ret.set_string(JSON.stringify( json_ ));
 	}; 	
     
     
@@ -276,7 +332,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 
     Exps.prototype.CurPitchKey = function(ret)
     {
-        var pitch = (this.exp_note)? noteToKey[ this.exp_note["pitch"] ]: "";
+        var pitch = (this.exp_note)? this.noteToKey[ this.exp_note["pitch"] ]: "";
         ret.set_string(pitch);
     };    
 
@@ -319,7 +375,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
     {
         var octave;
         if (this.exp_note)
-            octave = Math.floor(this.exp_note["pitch"]/12)-2;
+            octave = Math.floor(this.exp_note["pitch"]/12) - 2 + this.octave_offset;
         else
             octave = 0;
         
@@ -336,27 +392,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
     {
         ret.set_int(this.exp_TrackID);
     };    
-    
-    // note conversions
-    var keyToNote = {}; // C8  == 108
-    var noteToKey = {}; // 108 ==  C8
-    var number2key = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
-    (function () {
-        var note, kidx=0, octave=-2, name, klen=number2key.length;
-    	for (note=0; note<=127; note++) {
-            name = number2key[kidx].toString() + octave.toString();
-    		keyToNote[name] = note;
-    		noteToKey[note] = name;
-            
-            kidx += 1;
-    		if (kidx == klen)
-            {
-                kidx = 0;
-                octave += 1;
-            }
-    	}
-    })();
-    	
+        	
 }());
 
 (function ()
@@ -376,8 +412,8 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
     
     PlayerKlassProto.Load = function (midi_json)
     {
-        this.Stop();
-        
+        this.CleanAll();        
+
         this.set_tick_period(midi_json);
                 
         // load track
@@ -429,7 +465,15 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 
         this.playingTrackCnt = 0;            
     }; 
-
+    
+    PlayerKlassProto.CleanAll = function ()
+    {   
+        this.Stop();
+        var i, cnt=this.tracks.length;
+        for (i=0; i<cnt; i++)        
+            this.tracks[i].CleanAll();    
+    }; 
+    
     PlayerKlassProto.OnPlayingStart = function ()
     {     
         this.playingTrackCnt += 1;   
@@ -459,7 +503,45 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         return (end_time * this.tickPeriod);
     };    
     
-    
+	PlayerKlassProto.saveToJSON = function ()
+	{
+        var tracks_save = [];
+        var i, cnt=this.tracks.length;
+        for (i=0; i<cnt; i++)        
+            tracks_save.push(this.tracks[i].saveToJSON());
+            
+        this.IsPlaying = false;
+        this.playingTrackCnt = 0;
+		return { "ts": tracks_save,
+                 "tp": this.tickPeriod,
+                 "ip": this.IsPlaying,
+                 "ptc": this.playingTrackCnt,
+		        };
+	};
+	
+	PlayerKlassProto.loadFromJSON = function (o)
+	{
+        this.tracks.length = 0;
+        var tracks_save = o["ts"], t;
+        var i, cnt=tracks_save.length;
+        for (i=0; i<cnt; i++)
+        {
+            t = new TrackKlass(this, i);
+            t.loadFromJSON(tracks_save[i]);
+            this.tracks.push(t);
+        }        
+
+        this.tickPeriod = o["tp"];
+	    this.IsPlaying = o["ip"];
+        this.playingTrackCnt = o["ptc"];        
+	};
+	
+	PlayerKlassProto.afterLoad = function ()
+	{
+        var i, cnt=this.tracks.length;
+        for (i=0; i<cnt; i++)        
+            this.tracks[i].afterLoad(); 
+	};    
     
     var TrackKlass = function (player, id)
     {
@@ -473,6 +555,8 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.abs_time = 0;
         this.track_index = -1;
         this.onNotes = {};
+
+        this.timer_save = null;      
     };
     var TrackKlassProto = TrackKlass.prototype;  
     
@@ -493,7 +577,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
             is_note_off = (e["type"] === 8) || ((e["type"] === 9) && (e["data"][1] === 0));
             
             if (is_note_on || is_note_off)
-            {
+            {          
                 pitch = e["data"][0];
             }
                         
@@ -501,7 +585,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
             if (is_note_on && !current_notes.hasOwnProperty(pitch))
             {    
                 // create new note
-                note = {};
+                note = noteCache.allocLine();
                 note["channel"] = e["channel"];
                 note["start"] = t;
                 note["pitch"] = pitch;
@@ -510,25 +594,31 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
                 // add to notes
                 this.notes.push(note);  
                 note_idx = this.notes.length-1;
-                note["idx"] = note_idx;
-                current_notes[pitch] = note;                 
+                current_notes[pitch] = note_idx;                
                 
                 // add to track
-                cmd = [t, note_idx, true]; 
+                cmd = noteCmdCache.allocLine();
+                cmd["tick"] = t;
+                cmd["noteIdx"] = note_idx;
+                cmd["isOn"] = true;
                 this.track.push(cmd);      
             }
             else if (is_note_off && current_notes.hasOwnProperty(pitch))
             {
-                // get note
-                note = current_notes[pitch];
+                // get note   
+                note_idx = current_notes[pitch];                
+                note = this.notes[ note_idx ];
                 note["end"] = t;
-                delete current_notes[pitch]; 
+                delete current_notes[pitch];  
                 
                 // add to track
-                cmd = [t, note_idx, false]; 
+                cmd = noteCmdCache.allocLine();                
+                cmd["tick"] = t;
+                cmd["noteIdx"] = note_idx;
+                cmd["isOn"] = false;
                 this.track.push(cmd);    
             }
-        }                     
+        }        
     };
         
     TrackKlassProto.Start = function ()
@@ -555,20 +645,36 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         if (this.timer)
             this.timer.Remove();  // stop timer
     };    
-
+    
+    TrackKlassProto.CleanAll = function ()
+    {
+        this.player = null;    
+        this.plugin = null;      
+        this.Stop();
+        for (var n in this.onNotes)
+            delete this.onNotes[n];
+  
+        noteCmdCache.freeAllLines(this.track);  
+        noteCache.freeAllLines(this.notes);   
+        this.track.length = 0;
+        this.notes.length = 0;
+    };
+    
     TrackKlassProto.GetEndTime = function ()
     {
         var last = this.track[this.track.length-1];
-        return (last)? last[0]:0;
+        return (last)? last["tick"]:0;
     };      
     
     TrackKlassProto.run_next_cmd = function (idx)
     {
         if (idx != null)
             this.track_index = idx;
+        else
+            this.track_index += 1;
             
-        var is_continue=true, cmd, note, deltaT;
-        while (is_continue)
+        var cmd, note, deltaT;
+        while (1)
         {
             cmd = this.track[this.track_index];
             if (cmd == null)
@@ -576,19 +682,23 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
                 this.player.OnPlayingEnded(); 
                 return;
             }
-         
-            if (cmd[0] === this.abs_time)
-                this.play_note(this.notes[cmd[1]], cmd[2]);
+                         
+            if (cmd["tick"] === this.abs_time)
+            {
+                this.play_note(this.notes[cmd["noteIdx"]], cmd["isOn"]);
+            }
             else
             {
-                deltaT = cmd[0] - this.abs_time;
-                this.abs_time = cmd[0];
-                this.timer._note_index = cmd[1];
-                this.timer._is_on = cmd[2];
+                deltaT = cmd["tick"] - this.abs_time;
+                this.abs_time = cmd["tick"];
+                // add extra parameters into timer
+                this.timer._note_index = cmd["noteIdx"];
+                this.timer._is_on = cmd["isOn"];
                 this.timer.Start(deltaT * this.player.tickPeriod);
-                is_continue = false;
+                break;  // leave loop
             }
             
+            // run next command
             this.track_index += 1;
         }        
     };
@@ -605,11 +715,81 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
     };
     // handler of timeout for timers in this track, this=timer   
     var on_timeout = function ()
-    {        
+    {          
         var note = this.track.notes[this._note_index];
         this.track.play_note(note, this._is_on);
         this.track.run_next_cmd();
     };
-           
+    
+	TrackKlassProto.saveToJSON = function ()
+	{           
+        // --------
+        var timer_save = null;
+        if (this.timer != null)
+        {
+            timer_save = this.timer.saveToJSON();
+            timer_save["__cbargs"] = {"noteIdx": this.timer._note_index, 
+                                      "isOn": this.timer._is_on
+                                     };
+        }   
+
+		return { "t": this.track,
+                 "n": this.notes,
+                 "tim": timer_save,
+                 "at": this.abs_time,
+                 "tidx": this.track_index,
+                 "on": this.onNotes,
+		        };
+	};
+	
+	TrackKlassProto.loadFromJSON = function (o)
+	{
+        this.track = o["t"];
+        this.notes = o["n"];
+        this.abs_time = o["at"];
+        this.track_index = o["tidx"];
+        this.onNotes = o["on"];
+        
+        this.timer_save = o["tim"];
+	};    
+	
+	TrackKlassProto.afterLoad = function ()
+	{
+        if (this.timer_save != null)
+        {
+            var timeline = this.plugin._timeline_get();
+            this.timer = timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer.track = this;
+            this.timer._note_index = this.timer_save["__cbargs"]["noteIdx"];
+            this.timer._is_on = this.timer_save["__cbargs"]["isOn"];       
+            this.timer_save = null;
+        }
+	};     
+	
+    var ObjCacheKlass = function ()
+    {        
+        this.lines = [];       
+    };
+    var ObjCacheKlassProto = ObjCacheKlass.prototype;   
+    
+	ObjCacheKlassProto.allocLine = function()
+	{
+		return (this.lines.length > 0)? this.lines.pop(): {};
+	};
+	ObjCacheKlassProto.freeLine = function (l)
+	{
+		this.lines.push(l);
+	};	
+	ObjCacheKlassProto.freeAllLines= function (arr)
+	{
+		var i, len;
+		for (i = 0, len = arr.length; i < len; i++)
+			this.freeLine(arr[i]);
+		arr.length = 0;
+	};
+	
+	var noteCmdCache = new ObjCacheKlass();
+	var noteCache = new ObjCacheKlass();
+	
     cr.plugins_.Rex_JSMIDIparser.PlayerKlass = PlayerKlass;
 }());  
