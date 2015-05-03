@@ -23,17 +23,19 @@ AddAudioFileParam("Audio file", "Choose the audio file to play.");
 AddComboParamOption("not looping");
 AddComboParamOption("looping");
 AddComboParam("Loop", "Whether or not to initially play the sound in a loop (repeating).", 0);
-AddNumberParam("Volume", "Mapping from (1~0) to (0db~-60db) with linear interpolation.", 1);
+AddNumberParam("Stop volume", "Stop volume in dB.", 0);
 AddStringParam("Tag (optional)", "A tag, which can be anything you like, to use to reference this sound in future.", '""');
 AddNumberParam("Fade-in", "The duration of fade-in, in second.", 1);
+AddNumberParam("Start volume", "Start volume in dB.", -60);
 AddAction(1, 0, "Play", "Playback", 
-          "Play <b>{0}</b> {1} at volume to {2} (tag <i>{3}</i>) with fade-in to <b>{4}</b> second", 
+          "Play <b>{0}</b> {1} with volume fade-in from <i>{5}</i> dB to <i>{2}</i> dB in <b>{4}</b> second (tag <i>{3}</i>)", 
           "Play an audio file with fade-in.", "Play");    
 
 AddStringParam("Tag", "The tag identifying the sound to stop.  Leave empty to affect the last played sound.", '""');
 AddNumberParam("Fade-out", "The duration of fade-out, in second.", 1);
+AddNumberParam("Stop volume", "Stop volume in dB.", -60);
 AddAction(2, 0, "Stop", "Playback", 
-         "Stop <b>{0}</b> with fade-out to <b>{1}</b> second", 
+         "Stop <b>{0}</b> with volume fade-out to <b>{2}</b> dB in <b>{1}</b> second", 
          "Stop a sound from playing with fade-out.", "Stop");
 
 AddStringParam("Tag", "The tag identifying the sound to loop.  Leave empty to affect the last played sound.", '""');

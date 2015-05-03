@@ -4,7 +4,7 @@
 		"name":			"Function",
 		"id":			"Rex_Function",
 		"version":		"1.0",          
-		"description":	"Call named events from actions and expressions.",
+		"description":	"(Deprecated) Call named events from actions and expressions.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function.html",
 		"category":		"Deprecated",

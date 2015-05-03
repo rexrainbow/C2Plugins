@@ -38,12 +38,27 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Up
              "For each rank from index <i>{0}</i> to <i>{1}</i>", 
              "Repeat the event for each rank in a range.", "ForEachRank");  
 
+AddCondition(21, cf_trigger, "On get ranking", "Ranking", 
+            "On get ranking",
+            "Triggered when get ranking.", "OnGetRanking");
+
+AddCondition(22, cf_trigger, "On get ranking error", "Ranking", 
+            "On get ranking error",
+            "Triggered when get ranking error.", "OnGetRankingError");
+            
+AddCondition(31, cf_trigger, "On get users count", "Users count", 
+            "On get messages count",
+            "Triggered when get messages count.", "OnGeUsersCount");
+
+AddCondition(32, cf_trigger, "On get users count error", "Users count", 
+            "On get users count error",
+            "Triggered when get users count error.", "OnGetUsersCountError");             
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("UserID", "UserID from authentication.", '""');
-AddStringParam("Name", "Player name.", '""');
+AddStringParam("Name", "(Optional) Player name.", '""');
 AddAnyTypeParam("Score", "Player Score", 0);
-AddAnyTypeParam("Extra", "Extra data, could be number or (JSON) string.", '""');
+AddAnyTypeParam("Extra", "(Optional) Extra data, could be number or (JSON) string.", '""');
 AddAction(1, 0, "Post score", "Send", 
           "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i>", 
           "Post score by user ID.", "PostScore");
@@ -74,7 +89,16 @@ AddAction(6, 0, "Turn to previous page", "Request - page",
 AddStringParam("Leaderboard ID", "ID of leader board.", '"0"');
 AddAction(11, 0, "Set leaderboard ID", "Leaderboard", 
           "Set leaderboard ID to <i>{0}</i>", 
-          "Set leaderboard ID and clean all.", "SetLeaderboardID");            
+          "Set leaderboard ID and clean all.", "SetLeaderboardID");        
+          
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddAction(21, 0, "Get ranking", "Ranking", 
+          "Get ranking of User ID: <i>{0}</i>", 
+          "Get ranking.", "GetRanking");     
+          
+AddAction(31, 0, "Get users count", "Users count", 
+          "Get users count", 
+          "Get users count. Maximum of 160 requests per minute.", "GetUsersCount");                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current player name", "Update - for each", "CurPlayerName", 
@@ -87,25 +111,43 @@ AddExpression(4, ef_return_string, "Current user ID", "Update - for each", "CurU
               "Get the current user id in a For Each loop.");               
 AddExpression(5, ef_return_any, "Current extra data", "Update - for each", "CurExtraData", 
               "Get the current extra data in a For Each loop.");
-                            
+AddStringParam("Key", "Key of object.", '""');       
+AddExpression(6, ef_return_any, "Value of current user object", "Update - for each", "CurUserObject", 
+              "Get value of current user object in a For Each loop.");
+              
+                                       
 AddExpression(11, ef_return_string, "Post player name", "Post", "PostPlayerName", 
               'The post player name. Uses under "condition:On post complete".');
-
+              
 AddStringParam("UserID", "UserID from authentication.", '""');
 AddExpression(22, ef_return_number, "Get rank by user ID", "Rank", "UserID2Rank", 
               "Get rank by user ID. Return (-1) if not found."); 
 AddNumberParam("Rank", "Rank index (0-based).", 0);   
-AddExpression(23, ef_return_string, "Player name", "Rank index", "Rank2PlayerName", 
-              "Get player name by rank index.");                
+AddExpression(23, ef_return_string | ef_variadic_parameters, "Player name", "Rank index", "Rank2PlayerName", 
+              "Get player name by rank index. Add default value at 2nd parameter.");                
 AddNumberParam("Rank", "Rank index (0-based).", 0);                  			  
-AddExpression(24, ef_return_any, "Player score", "Rank index", "Rank2PlayerScore", 
-              "Get player score by rank index.");                                              
+AddExpression(24, ef_return_any | ef_variadic_parameters, "Player score", "Rank index", "Rank2PlayerScore", 
+              "Get player score by rank index. Add default value at 2nd parameter.");                                              
 AddNumberParam("Rank", "Rank index (0-based).", 0);               
-AddExpression(25, ef_return_any, "Extra data", "Rank index", "Rank2ExtraData",
-              "Get extra data by rank index."); 
+AddExpression(25, ef_return_any | ef_variadic_parameters, "Extra data", "Rank index", "Rank2ExtraData",
+              "Get extra data by rank index. Add default value at 2nd parameter."); 
+AddNumberParam("Rank", "Rank index (0-based).", 0);   
+AddExpression(26, ef_return_string | ef_variadic_parameters, "Player userID", "Rank index", "Rank2PlayerUserID",
+              "Get userID by rank index. Add default value at 2nd parameter."); 
+AddStringParam("Key", "Key of object.", '""');  
+AddExpression(27, ef_return_string | ef_variadic_parameters, "Player object", "Rank index", "Rank2PlayerObject",
+              "Get player object by rank index. Add default value at 2nd parameter.");               
 
 AddExpression(31, ef_return_number, "Get current page index", "Page", "PageIndex", 
               "Get current page index. (0-based)"); 
+
+AddExpression(51, ef_return_number, "Get ranking of userID", "Ranking", "LastRanking", 
+              'Get ranking of userID (0-based) under "Condition:On get ranking". Return (-1) if invalided.'); 
+AddExpression(52, ef_return_string, "Get requested userID", "Ranking", "LastUserID", 
+              'Get requested userID under "Condition:On get ranking". Return "" if invalided.'); 
+              
+AddExpression(61, ef_return_number, "Last users count", "Users count", "LastUsersCount", 
+              'Get users count under "Condition: On get users count".');              
               
 ACESDone();
 
@@ -117,6 +159,8 @@ var property_list = [
     new cr.Property(ept_text, "ID", "0", "ID of leader board."),
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),    
 	new cr.Property(ept_combo, "Order", "Large to small", "Ranking order.", "Small to large|Large to small"), 	
+	new cr.Property(ept_combo, "Access permission", "Public", "Access permission.", "Public|Private"),
+	new cr.Property(ept_text, "User class name", "", 'Class name of user. "" would ignore this feature.'), 
 	];
 	
 // Called by IDE when a new object type is to be created

@@ -77,15 +77,21 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var leaderboardID = this.properties[3];
 	    var page_lines = this.properties[4]
 	    this.ranking_order = this.properties[5];
+	    this.acl_mode = this.properties[6];
+	    this.user_class = this.properties[7];
 	    
 	    if (!this.recycled)
             this.leaderboard = this.create_leaderboard(page_lines);
         
         this.set_leaderBoardID(leaderboardID);
-        
+
 	    this.exp_CurPlayerRank = -1;
 	    this.exp_CurRankCol = null;
 	    this.exp_PostPlayerName = "";
+        
+        this.exp_LastRanking = -1;
+        this.exp_LastUserID = "";   
+        this.exp_LastUsersCount = -1;     
 	};
 	
 	instanceProto.create_leaderboard = function(page_lines)
@@ -135,6 +141,10 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         else        
             query["ascending"]("-score,updatedAt");        
 
+        if (this.user_class !== "")
+        {
+            query["include"]("userObject");
+        }
 	    return query;
 	};	
 	//////////////////////////////////////
@@ -157,7 +167,24 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	Cnds.prototype.ForEachRank = function (start, end)
 	{	            
 		return this.leaderboard.ForEachItem(this.runtime, start, end);
-	};     
+	};   
+	Cnds.prototype.OnGetRanking = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnGetRankingError = function ()
+	{
+	    return true;
+	}; 	
+	
+	Cnds.prototype.OnGeUsersCount = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnGetUsersCountError = function ()
+	{
+	    return true;
+	};		  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -186,6 +213,25 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	        rank_obj["set"]("name", name);
 	        rank_obj["set"]("score", score);
 	        rank_obj["set"]("extraData", extra_data);	
+	        
+	        if (self.acl_mode === 1)  // private
+	        {
+	            var current_user = window["Parse"]["User"]["current"]();
+	            if (current_user)
+	            {
+	                var acl = new window["Parse"]["ACL"](current_user);
+	                acl["setPublicReadAccess"](true);
+	                rank_obj["setACL"](acl);
+	            }
+	        }
+	        
+	        if (self.user_class !== "")
+	        {
+	            var t = window["Parse"].Object["extend"](self.user_class);
+	            var o = new t();
+	            o["id"] = userID;
+	            rank_obj["set"]("userObject", o);
+	        }
 	        
 	        var handler = {"success":OnPostComplete, "error": OnPostError};
 	        rank_obj["save"](null, handler);	        
@@ -243,7 +289,86 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
         this.set_leaderBoardID(leaderboardID);
 	};
-    
+
+    Acts.prototype.GetRanking = function (userID)
+	{	        
+	    var start = 0;
+	    var lines = 1000;
+	    
+        var self = this;
+	    var on_success = function(rank_obj)
+	    {	 
+	        if (!rank_obj)
+	        {
+	            // page not found, cound not find userID
+                self.exp_LastUserID = userID;
+	            self.exp_LastRanking = -1;
+	            self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRankingError, self);
+	        }
+	        else
+	        {
+	            var ranking = -1;
+	            var i, cnt = rank_obj.length;
+	            for(i=0; i<cnt; i++)
+	            {
+	                if (rank_obj[i]["get"]("userID") === userID)
+	                {
+	                    // found ranking
+	                    ranking = start + i;
+	                    break;
+	                }
+	            }
+	            
+	            // cound not find userID in this page, try get next page
+	            if (self.exp_LastRanking === -1)
+	            {
+	                start += lines;
+	                query_page(start);
+	            }
+	            else
+	            {
+                    self.exp_LastUserID = userID;
+	                self.exp_LastRanking = ranking;	                
+	                self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRanking, self);
+	            }
+	        }	            
+	    };	    
+	    var on_error = function(error)
+	    {
+	        // page not found, cound not find userID
+            self.exp_LastUserID = userID;
+	        self.exp_LastRanking = -1;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRankingError, self);
+	    };	    
+	    var handler = {"success":on_success, "error": on_error};	
+	    	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get userID
+	        var query = self.get_request_query(self.leaderBoardID);
+            query["skip"](start_)["limit"](lines)["select"]("userID")["find"](handler);
+        }
+        
+        query_page(start);
+	}; 
+	
+    Acts.prototype.GetUsersCount = function ()
+	{	    
+	    var self = this;
+	    var on_success = function(count)
+	    {
+	        self.exp_LastUsersCount = count;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGeUsersCount, self); 	        
+	    };	    
+	    var on_error = function(error)
+	    {      
+	        self.exp_LastUsersCount = -1;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetUsersCountError, self); 
+	    };
+	    
+	    var handler = {"success":on_success, "error": on_error};    	     	    
+	    this.get_request_query(self.leaderBoardID)["count"](handler);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -251,23 +376,25 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	Exps.prototype.CurPlayerName = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
+	    var name;
+	    if (this.exp_CurRankCol)
+	        name = this.exp_CurRankCol["get"]("name");
+	        
+	    if (!name)
+	        name = "";
 	    
-		ret.set_string(this.exp_CurRankCol["get"]("name"));
+		ret.set_string( name );
 	}; 	
 	Exps.prototype.CurPlayerScore = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_any(0);
-	        return;
-	    }
+	    var score;
+	    if (this.exp_CurRankCol)
+	        score = this.exp_CurRankCol["get"]("score");
+	        
+	    if (!score)
+	        score = 0;
 	    
-		ret.set_any(this.exp_CurRankCol["get"]("score"));
+		ret.set_any( score );
 	};
 	Exps.prototype.CurPlayerRank = function (ret)
 	{
@@ -275,60 +402,116 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	};
 	Exps.prototype.CurUserID = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
+	    var userID;
+	    if (this.exp_CurRankCol)
+	        userID = this.exp_CurRankCol["get"]("userID");
+	        
+	    if (!userID)
+	        userID = "";
 	    
-		ret.set_string(this.exp_CurRankCol["get"]("userID"));
+		ret.set_string( userID );
 	}; 	
 	Exps.prototype.CurExtraData = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_any("");
-	        return;
-	    }
-        
-		ret.set_any(this.exp_CurRankCol["get"]("extraData"));
+	    var v;
+	    if (this.exp_CurRankCol)
+	        v = this.exp_CurRankCol["get"]("extraData");
+	        
+	    if (!v)
+	        v = "";
+	    
+		ret.set_any( v );
 	};
-
+	Exps.prototype.CurUserObject = function (ret, k_)
+	{
+	    var extra;
+	    if (this.exp_CurRankCol)
+	    {
+	        var obj = this.exp_CurRankCol["get"]("userObject");
+	        if (obj)
+	            extra = obj["get"](k_);
+	    }
+	        
+	    if (!extra)
+	        extra = "";
+	    
+		ret.set_any( extra );
+	};
 		
 	Exps.prototype.PostPlayerName = function (ret)
 	{
 		ret.set_string(this.exp_PostPlayerName);
 	}; 	
-		
+	
 	Exps.prototype.UserID2Rank = function (ret, userID)
 	{
 		ret.set_int(this.leaderboard.FindFirst("userID", userID));
 	};
 	   	
-	Exps.prototype.Rank2PlayerName = function (ret, i)
+	Exps.prototype.Rank2PlayerName = function (ret, i, default_value)
 	{
 	    var rank_info = this.leaderboard.GetItem(i);
-	    var name = (!rank_info)? "":rank_info["get"]("name");
+	    var name = (!rank_info)? null:rank_info["get"]("name");
+        name = name || default_value || "";
 		ret.set_string(name);
 	};
-	Exps.prototype.Rank2PlayerScore = function (ret, i)
+	Exps.prototype.Rank2PlayerScore = function (ret, i, default_value)
 	{
 	    var rank_info = this.leaderboard.GetItem(i);    
-	    var score = (!rank_info)? "":rank_info["get"]("score");
+	    var score = (!rank_info)? null:rank_info["get"]("score");
+        score = score || default_value || 0;
 		ret.set_any(score);
 	};	
-	Exps.prototype.Rank2ExtraData = function (ret, i)
+	Exps.prototype.Rank2ExtraData = function (ret, i, default_value)
 	{
 	    var rank_info = this.leaderboard.GetItem(i);	    
-	    var extra_data = (!rank_info)? "":rank_info["get"]("extraData");
+	    var extra_data = (!rank_info)? null:rank_info["get"]("extraData");
+        extra_data = extra_data || default_value || "";
 		ret.set_any(extra_data);
 	};	
-		
+	Exps.prototype.Rank2PlayerUserID = function (ret, i, default_value)
+	{
+	    var rank_info = this.leaderboard.GetItem(i);	    
+	    var userID = (!rank_info)? null:rank_info["get"]("userID");
+        userID = userID || default_value || "";
+		ret.set_string(userID);
+	};	
+	Exps.prototype.Rank2PlayerObject = function (ret, k, default_value)
+	{
+        var rank_info = this.leaderboard.GetItem(i);	
+	    var v;
+	    if (rank_info)
+	    {
+	        var obj = rank_info["get"]("userObject");
+	        if (obj)
+	            v = obj["get"](k_);
+	    }
+	        
+	    if (!v)
+	        v = default_value || "";
+	    
+		ret.set_any( v );
+	};    
+    
 	Exps.prototype.PageIndex = function (ret)
 	{
 		ret.set_int(this.leaderboard.GetCurrentPageIndex());
 	};    
-    
+
+
+	Exps.prototype.LastRanking = function (ret)
+	{
+		ret.set_int(this.exp_LastRanking);
+	};	
+	Exps.prototype.LastUserID = function (ret)
+	{
+		ret.set_string(this.exp_LastUserID);
+	};	    
+	
+	Exps.prototype.LastUsersCount = function (ret)
+	{
+		ret.set_int(this.exp_LastUsersCount);
+	};	
 }());
 
 (function ()

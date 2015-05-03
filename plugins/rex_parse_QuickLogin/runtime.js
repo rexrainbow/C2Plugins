@@ -62,14 +62,15 @@ cr.plugins_.Rex_parse_QuickLogin = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{ 
-        this.last_error = null;
-        
+	{         
 	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
 	    }
+	    
+        this.last_error = null;
+        this.current_user = null;   // valid after login	    
 	};
 	
 	instanceProto.OnLoginSuccessfully = function()
@@ -108,13 +109,15 @@ cr.plugins_.Rex_parse_QuickLogin = function(runtime)
 	    var self = this;
 	    
 	    var OnLoginSuccessfully = function(user)
-	    { 	        
+	    { 	      
+	        self.current_user = user;  
 	        self.runtime.trigger(cr.plugins_.Rex_parse_QuickLogin.prototype.cnds.OnLoginSuccessfully, self);
 	    };	
 	    
 	    var OnLoginError = function(user, error)
-	    {       
-            this.last_error = error;
+	    {     
+	        self.current_user = user;  
+            self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_QuickLogin.prototype.cnds.OnLoginError, self);
 	    };	
 		    
@@ -180,5 +183,17 @@ cr.plugins_.Rex_parse_QuickLogin = function(runtime)
 	{
 	    var val = (!this.last_error)? "": this.last_error["message"];    
 		ret.set_string(val);
+	}; 
+	
+	Exps.prototype.UserID = function (ret)
+	{
+	    var val = (!this.current_user)? "": this.current_user["id"];    
+		ret.set_string(val);
 	}; 	
+	
+	Exps.prototype.UserName = function (ret)
+	{
+	    var val = (!this.current_user)? "": this.current_user["get"]("username");    
+		ret.set_string(val);
+	}; 			
 }());

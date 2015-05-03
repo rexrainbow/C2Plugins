@@ -360,7 +360,19 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    var ref = this.get_ref(k)["push"]((b==1), handler);
 		this.last_push_ref = k + "/" +  ref["key"]();
 	}; 	
-		
+
+    Acts.prototype.SetServerTimestamp = function (k, onComplete_cb)
+	{
+	    var handler = onComplete_get(this, onComplete_cb);
+	    this.get_ref(k)["set"](window["Firebase"]["ServerValue"]["TIMESTAMP"], handler);
+	};	
+	
+    Acts.prototype.PushServerTimestamp = function (k, onComplete_cb)
+	{
+	    var handler = onComplete_get(this, onComplete_cb);
+	    var ref = this.get_ref(k)["push"](window["Firebase"]["ServerValue"]["TIMESTAMP"], handler);
+		this.last_push_ref = k + "/" +  ref["key"]();
+	}; 		
     Acts.prototype.AddReadingCallback = function (k, type_, cbName)
 	{
 	    this.add_callback(this.get_ref(k), type_, cbName);                        
@@ -420,6 +432,16 @@ cr.plugins_.Rex_Firebase = function(runtime)
             return;
             	    
 	   this.add_callback_once(refObj, type_, cbName);   
+	};
+
+    Acts.prototype.GoOffline = function ()
+	{
+	    window["Firebase"]["goOffline"]();
+	};
+		
+    Acts.prototype.GoOnline = function ()
+	{
+	    window["Firebase"]["goOnline"]();
 	};	
 	//////////////////////////////////////
 	// Expressions

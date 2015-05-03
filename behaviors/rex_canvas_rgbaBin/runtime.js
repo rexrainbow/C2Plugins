@@ -107,7 +107,7 @@ cr.behaviors.Rex_Canvas_rgbaBin = function(runtime)
 	{
         var canvas = this.inst.canvas;
         this.img_data = this.inst.ctx.getImageData(0,0, canvas.width, canvas.height).data;
-        var bin_count = Math.ceil(256/this.bin_width);
+        var bin_count = Math.floor(256/this.bin_width);
         binArr(this.binR, bin_count);
 	    binArr(this.binG, bin_count);
         binArr(this.binB, bin_count);
@@ -282,7 +282,7 @@ cr.behaviors.Rex_Canvas_rgbaBin = function(runtime)
     
 	Exps.prototype.BinsCount = function (ret)
 	{
-		ret.set_int(Math.ceil(256/this.bin_width));
+		ret.set_int(Math.floor(256/this.bin_width));
 	};
 	Exps.prototype.CurBinIndex = function (ret)
 	{

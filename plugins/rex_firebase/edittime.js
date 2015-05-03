@@ -140,7 +140,19 @@ AddComboParam("Boolean", "Boolean value.", 1);
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
 AddAction(11, 0, "Push boolean value", "Send - Push", 
           "Push <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>",   
-          "Push boolean value at data ref.", "PushBooleanValue");                          
+          "Push boolean value at data ref.", "PushBooleanValue");   
+
+AddStringParam("DataRef", "The Firebase data ref URL", '""');
+AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
+AddAction(12, 0, "Set server timestamp", "Send - Set", 
+          "Set server timestamp at <i>{0}</i>, on complete callback to <i>{1}</i>", 
+          "Sets server timestamp at data ref.", "SetServerTimestamp");  
+
+AddStringParam("DataRef", "The Firebase data ref URL", '""');
+AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
+AddAction(13, 0, "Push server timestamp", "Send - Push", 
+          "Push server timestamp at <i>{0}</i>, on complete callback to <i>{1}</i>",   
+          "Push server timestamp at data ref.", "PushServerTimestamp");            
           
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddComboParamOption("Value changed");
@@ -238,7 +250,16 @@ AddComboParam("Type ", "Event type");
 AddStringParam("Callback function", "Callback function.", '"_"');
 AddAction(52, 0, "Add callback once", "Query", 
           "Add received callback: <i>{2}</i> once for query <i>{0}</i> (<i>{1}</i>)", 
-          "Add received callback once.", "AddQueryCallbackOnce");          
+          "Add received callback once.", "AddQueryCallbackOnce");         
+
+		
+// online       
+AddAction(61, 0, "Go offline", "Online", 
+          "Go offline", 
+          "Manually disconnect the Firebase client from the server and disable automatic reconnection. .", "GoOffline");
+AddAction(62, 0, "Go online", "Online", 
+          "Go online", 
+          "Manually reestablish a connection to the Firebase server and enable automatic reconnection. . .", "GoOnline");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Get root location reference", "Domain", "Domain", 

@@ -7,10 +7,10 @@
 		"description":	"Timer service. http://api.shephertz.com/app42-docs/timer-service/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_appwarp_timer.html",
-		"category":		"Rex - Appwarp",
+        "category":		"Rex - Web - appwarp",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
+		"flags":		pf_deprecated,
 		"dependency":	"App42-all-2.9.1.min.js"		
 	};
 };

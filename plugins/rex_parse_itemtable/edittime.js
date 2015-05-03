@@ -4,7 +4,7 @@
 		"name":			"Item table",
 		"id":			"Rex_parse_ItemTable",
 		"version":		"0.1",        
-		"description":	"Items table indexed by (itemID, key), supports writing a item or reading items back.",
+		"description":	"Items table indexed by (itemID, key), supports writing an item or reading items back.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_itemtable.html",
 		"category":		"Rex - Web - parse",
@@ -37,7 +37,7 @@ AddCondition(4, cf_trigger, "On remove error", "Remove",
             "On remove <i>{0}</i> error",
             "Triggered when remove current item error.", "OnRemoveError");
             
-AddCondition(11, cf_trigger, "On update complete", "Load", 
+AddCondition(11, cf_trigger, "On receive items", "Load", 
             "On update complete",
             "Triggered when update complete.", "OnReceived");
       
@@ -80,22 +80,28 @@ AddCondition(112, cf_trigger, "On get items count error", "Queried items count",
 // Actions 
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
-AddAction(1, 0, "Set value", "Prepare item", 
-          "Prepare- Set key <i>{0}</i> to <i>{1}</i>", 
+AddComboParamOption("");
+AddComboParamOption("Unique ");
+AddComboParam("Unique", "This key would have unique value.", 0); 
+AddAction(1, 0, "Set value", "Save - prepare item", 
+          "Prepare- Set <b>{2}</b>key <i>{0}</i> to <i>{1}</i>", 
           "Set value into current item.", "SetValue");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
-AddAction(2, 0, "Set boolean value", "Prepare item", 
+AddComboParamOption("");
+AddComboParamOption("Unique ");
+AddComboParam("Unique", "This key would have unique value.", 0); 
+AddAction(2, 0, "Set boolean value", "Save - prepare item", 
           "Prepare- Set key <i>{0}</i> to <i>{1}</i>", 
           "Set boolean value into current item.", "SetBooleanValue"); 
           
 AddStringParam("Key", "The name of the key.", '""');
-AddAction(3, 0, "Remove key", "Prepare item",
+AddAction(3, 0, "Remove key", "Save - prepare item", 
           "Prepare- Remove key <i>{0}</i>", 
-          "Remove key in firebase server.", "RemoveKey");            
+          "Remove key of current item.", "RemoveKey");            
           
 AddStringParam("ID", "ID of item.", '""');
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
@@ -106,19 +112,38 @@ AddAction(4, 0, "Save to itemID", "Save",
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(5, 0, "Push", "Save", 
           "Save- Push current item (tag <i>{0}</i>)", 
-          'Push current item into server. Get itemID by "expression:LastItemID".', "Push");       
+          'Push current item into server. Get itemID by "expression:LastSavedItemID".', "Push");       
 
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddAction(6, 0, "Save at first queried item", "Save", 
+AddAction(6, af_deprecated, "Save at first queried item", "Save - unique", 
           "Save- Save current item at first queried item (tag <i>{0}</i>)", 
           "Overwrite first queried item. Create one if there had no queried item.", "OverwriteQueriedItems");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 1);
-AddAction(7, 0, "Increase value", "Prepare item", 
+AddAction(7, 0, "Increase value", "Save - prepare item", 
           "Prepare- Increase value at key <i>{0}</i> by <i>{1}</i>", 
-          "Increase value at key into current item.", "IncValue");           		  
+          "Increase value at key into current item.", "IncValue");   
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("Append");
+AddComboParamOption("Add unique");
+AddComboParam("Append mode", "Append mode.", 0);
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddAction(8, 0, "Add item", "Save prepare item - array", 
+          "Prepare- <i>{1}</i> <i>{2}</i> at key <i>{0}</i>", 
+          "Add item at key of current item.", "ArrayAddItem");      
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddAction(9, 0, "Remove all items", "Save prepare item - array", 
+          "Prepare- Remove all items at key <i>{0}</i>", 
+          "Remove all items at key of current item.", "ArrayRemoveAllItems");
 
+AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
+AddAction(10, 0, "Save unique", "Save - unique", 
+          "Save- Save current item to unique object", 
+          'Save current item into server. Get itemID by "expression:LastSavedItemID".', "SaveUnique");            
+          
 AddNumberParam("Start", "Start index, 0-based.", 0);          
 AddNumberParam("Lines", "Count of lines", 10); 
 AddAction(11, 0, "Load in a range", "Load", 
@@ -147,19 +172,19 @@ AddAction(21, 0, "1. New", "Item filter - 1. new",
           "Create a new item filter.", "NewFilter");  
 
 AddStringParam("Key", "The name of the key.", '""');
-AddAction(22, 0, "2. add all values", "Item filter - 2. key", 
-          "Filter- 2. key <i>{0}</i>: add all values ", 
+AddAction(22, 0, "2. all values", "Item filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: all values ", 
           "Add all values for this key.", "AddAllValue");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
-AddAction(23, 0, "2. add to white list", "Item filter - 2. key", 
+AddAction(23, af_deprecated, "2. add to white list", "Item filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: add <i>{1}</i> to white list", 
           "Add a value into white list of this key.", "AddToWhiteList");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
-AddAction(24, 0, "2. add to black list", "Item filter - 2. key", 
+AddAction(24, af_deprecated, "2. add to black list", "Item filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: add <i>{1}</i> to black list", 
           "Add a value into black list of this key.", "AddToBlackList"); 
           
@@ -172,9 +197,9 @@ AddComboParamOption("greater than or equal to");
 AddComboParamOption("less than or equal to");
 AddComboParam("Conditions", "Condition type.", 0);
 AddAnyTypeParam("Value", "The value to comparsion, could be number or string.", 0);
-AddAction(25, 0, "2. add value compare", "Item filter - 2. key", 
+AddAction(25, 0, "2. value compare", "Item filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: value is <i>{1}</i> <i>{2}</i>", 
-          "Add a value compared for this key.", "AddValueComparsion");            
+          "Add a value compared for this key.", "AddValueComparsion");          
           
 AddComboParamOption("Before");
 AddComboParamOption("After");
@@ -186,9 +211,23 @@ AddComboParam("Include", "Include compared timestamp or excluded.", 1);
 AddComboParamOption("Created");
 AddComboParamOption("Updated");
 AddComboParam("Type", "Type of compared timestamp.", 0);  
-AddAction(26, 0, "2. add timestamp constraint", "Item filter - 2. key", 
+AddAction(26, 0, "2. timestamp constraint", "Item filter - 2. key", 
           "Filter- 2. add timestamp constraint: <i>{3}</i> <i>{0}</i> <i>{1}</i> (<i>{2}</i>)", 
           "Add a timestamp constraint into filter. They will be jointed by AND operation.", "AddTimeConstraint");
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddStringParam("Start", "Start with string.", '""');
+AddAction(27, 0, "2. string value start with", "Item filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: string start with <i>{1}</i>", 
+          "Add string start with for this key.", "AddStringStartWidth"); 
+
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("does not exist");
+AddComboParamOption("exist");
+AddComboParam("Exist", "Key exists or not.", 1); 
+AddAction(28, 0, "2. key exist", "Item filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: <i>{1}</i>", 
+          "Add existing for this key.", "AddExist");           
 
 AddComboParamOption("Descending");
 AddComboParamOption("Ascending");
@@ -229,7 +268,30 @@ AddAction(111, 0, "Get items count", "Queried items count",
 AddNumberParam("Count", "Count of picked item.", 1);    
 AddAction(112, 0, "Get random items", "Request", 
           "Request - get <i>{0}</i> random items", 
-          "Get random items.", "GetRandomItems");                                                                
+          "Get random items.", "GetRandomItems");
+
+     
+AddStringParam("Key", "The name of the key.", '""');
+AddStringParam("Class name", "Class name of linked object.", '""');
+AddStringParam("Object ID", "Object ID of linked object.", '""');
+AddAction(121, 0, "Link to object", "Save - prepare item", 
+          "Prepare- Link to objectID: <i>{2}</i> (<i>{1}</i>) at key <i>{0}</i>", 
+          "Link to object at key into current item.", "LinkToObject");          
+          
+// merge white list and black list
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("does not include");
+AddComboParamOption("include");
+AddComboParam("Include", "Include or not.", 1);   
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddAction(201, 0, "2. value include", "Item filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: value <i>{1}</i> <i>{2}</i>", 
+          "Add a value including/not including of this key.", "AddValueInclude");       
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAction(202, 0, "4. Get linked object", "Item filter - 4. fetching fields", 
+          "Filter- 4. key <i>{0}</i>: get linked object", 
+          "Get linked object at this key.", "AddGetLinkedObject");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current itemID", "Received - for each", "CurItemID", 
@@ -245,6 +307,9 @@ AddExpression(5, ef_return_any | ef_variadic_parameters, "Prepared item content"
 AddNumberParam("Index", "Global index, 0-based.", 0); 			  
 AddExpression(12, ef_return_any | ef_variadic_parameters, "Get item content by global insex", "Received", "Index2ItemContent", 
               "Get item content in JSON string by global index. Add 2nd parameter to get value at the specific key. Add 3rd parameter for default value if this key is not existed.");
+              
+AddExpression(31, ef_return_number, "Last saved itemID", "Save", "LastSavedItemID", 
+              "Get last saved itemID.");               
 			  
 AddExpression(91, ef_return_string, "Last fetched itemID", "Fetch one", "LastFetchedItemID", 
               "Get last fetched itemID.");               
@@ -261,7 +326,7 @@ ACESDone();
 var property_list = [
 	new cr.Property(ept_text, "Application ID", "", "Application ID"),
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
-    new cr.Property(ept_text, "Class name", "items", "Class name for storing leaderboard structure."), 
+    new cr.Property(ept_text, "Class name", "Item", "Class name for storing leaderboard structure."), 
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),
 	];
 	

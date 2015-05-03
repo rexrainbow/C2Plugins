@@ -248,7 +248,10 @@ var property_list = [
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "Message", "Class name for storing messages structure."), 
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),    
-	new cr.Property(ept_combo, "Order", "Later to eariler", "Order.", "Earlier to later|Later to earlier"),     
+	new cr.Property(ept_combo, "Order", "Later to eariler", "Order.", "Earlier to later|Later to earlier"),
+	new cr.Property(ept_combo, "Access permission", "Public", "Access permission.", "Public|Private"),   
+    new cr.Property(ept_text, "Sender class name", "", 'Class name of sender. "" would ignore this feature.'), 
+    new cr.Property(ept_text, "Receiver class name", "", 'Class name of receiver. "" would ignore this feature.'),     
 	];
 	
 // Called by IDE when a new object type is to be created

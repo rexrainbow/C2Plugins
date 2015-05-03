@@ -282,7 +282,18 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
     Acts.prototype.LoggingOut = function ()
 	{
 	    this.get_ref()["unauth"]();
-	};		
+	};
+		
+    Acts.prototype.GoOffline = function ()
+	{
+	    window["Firebase"]["goOffline"]();
+	};
+		
+    Acts.prototype.GoOnline = function ()
+	{
+	    window["Firebase"]["goOnline"]();
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

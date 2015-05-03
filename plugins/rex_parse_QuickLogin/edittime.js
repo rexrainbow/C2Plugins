@@ -10,7 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
+		"flags":		pf_deprecated,
 		"dependency":	"parse-1.3.2.min.js"
 	};
 };
@@ -43,7 +43,11 @@ AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode",
               "Error code.");
 AddExpression(2, ef_return_string, "Error message", "Error", "ErrorMessage", 
               "Error message."); 
-              
+AddExpression(3, ef_return_string, "User ID", "General auth data", "UserID", 
+              "Unique user ID (object ID in User class)");
+AddExpression(4, ef_return_string, "User name", "General auth data", "UserName", 
+              "Unique user name.");
+                            
 ACESDone();
 
 // Property grid properties for this plugin

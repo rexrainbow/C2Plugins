@@ -142,8 +142,14 @@ AddAction(22, 0, "Connect Facebook", "Authentication with token",
 AddAction(31, 0, "Logging out", "General", 
           "Logging out current account", 
           "Logging out current account.", "LoggingOut");                           
-		  
-		  
+		
+// online       
+AddAction(41, 0, "Go offline", "Online", 
+          "Go offline", 
+          "Manually disconnect the Firebase client from the server and disable automatic reconnection. .", "GoOffline");
+AddAction(42, 0, "Go online", "Online", 
+          "Go online", 
+          "Manually reestablish a connection to the Firebase server and enable automatic reconnection. . .", "GoOnline");  		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 
@@ -151,7 +157,7 @@ AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode",
 AddExpression(2, ef_return_string, "Error message", "Error", "ErrorMessage", 
               "Error message.");     
 AddExpression(3, ef_return_string, "User ID", "General auth data", "UserID", 
-              "A unique user ID, intended as the user's unique key across all providers.");
+              "Unique user ID, intended as the user's unique key across all providers.");
 AddExpression(4, ef_return_string, "Authentication method", "General auth data", "Provider", 
               "The authentication method used.");                           
 AddExpression(5, ef_return_string, "Display name", "General auth data", "DisplayName", 

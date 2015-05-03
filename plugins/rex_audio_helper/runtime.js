@@ -149,6 +149,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
         task.current += s;        
         var is_hit = (task.slope > 0)?  (task.current >= task.target) : (task.current <= task.target);
         var value_ = (is_hit)? task.target : task.current;
+        log(value_);
         this.AudioSetVolumeDB(task.tag, value_);
         return (!is_hit);
     };
@@ -213,25 +214,25 @@ cr.plugins_.Rex_audio_helper = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-    Acts.prototype.Play = function (file, looping, vol, tag, fadeIn_time)
+    Acts.prototype.Play = function (file, looping, stop_vol, tag, fadeIn_time, start_vol)
 	{          
-       var voldb = LinearScaleToDb(vol);       
+       var voldb = LinearScaleToDb(stop_vol);       
        this.AudioStart(file, looping, voldb, tag);
        
-       if ((fadeIn_time > 0) && (voldb > MINDB))
+       if ((fadeIn_time > 0) && (voldb > start_vol))
        {
            var task = this.tasksMgr.TaskGet(tag, PRIORITY_FADE);
            if (task != null)
            {
-               this.FadeTaskSet(task, MINDB, voldb, fadeIn_time);
+               this.FadeTaskSet(task, start_vol, voldb, fadeIn_time);
            }           
        }
 	};
     
-    Acts.prototype.Stop = function (tag, fadeOut_time)
+    Acts.prototype.Stop = function (tag, fadeOut_time, stop_vol)
 	{  
 	   var current_voldb = this.AudioGetVolumeDB(tag); 
-       if ((fadeOut_time == 0) || (current_voldb <= MINDB))
+       if ((fadeOut_time == 0) || (current_voldb <= stop_vol))
        {
            this.AudioStop(tag);
        }
@@ -240,7 +241,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
            var task = this.tasksMgr.TaskGet(tag, PRIORITY_STOP);
            if (task != null)
            {
-               this.FadeTaskSet(task, current_voldb, MINDB, fadeOut_time);
+               this.FadeTaskSet(task, current_voldb, stop_vol, fadeOut_time);
                task.FinishefHandlerSet("TaskStop");
            }
        }

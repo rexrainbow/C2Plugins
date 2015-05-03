@@ -12,7 +12,7 @@ var binArr = function (bin_count)
 
 var rgbaBins = function(img_data, bin_width)
 {
-    var bin_count = Math.ceil(256/bin_width);
+    var bin_count = Math.floor(256/bin_width);
     var binR = binArr(bin_count);
     var binG = binArr(bin_count);
     var binB = binArr(bin_count);

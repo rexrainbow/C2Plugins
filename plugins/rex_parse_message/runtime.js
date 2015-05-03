@@ -87,7 +87,10 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    }
 	    
         var page_lines = this.properties[3];
-	    this.order = (this.properties[4]==0)? "ascending":"descending";     
+	    this.order = (this.properties[4]==0)? "ascending":"descending"; 
+	    this.acl_mode = this.properties[5];
+	    this.sender_class = this.properties[6];
+	    this.receiver_class = this.properties[7];        
 	    
 	    if (!this.recycled)
 	        this.messagebox = this.create_messagebox(page_lines);
@@ -261,11 +264,11 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    return true;
 	};	
 	
-	Cnds.prototype.OnGetMessagesCountComplete = function ()
+	Cnds.prototype.OnGeUsersCount = function ()
 	{
 	    return true;
 	}; 
-	Cnds.prototype.OnGetMessagesCountError = function ()
+	Cnds.prototype.OnGetUsersCountError = function ()
 	{
 	    return true;
 	};				   
@@ -294,14 +297,42 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    };
         var handler = {"success":OnSendComplete, "error": OnSendError};        
         
-        var messageSender = new this.message_klass();
-	    messageSender["set"]("senderID", this.userID);
-	    messageSender["set"]("senderName", this.userName);
-	    messageSender["set"]("receiverID", receiverID);
-	    messageSender["set"]("title", title_);
-	    messageSender["set"]("content", content_);
-	    messageSender["set"]("tag", tag);
-        messageSender["save"](null, handler);	
+        var messageObj = new this.message_klass();
+	    messageObj["set"]("senderID", this.userID);
+	    messageObj["set"]("senderName", this.userName);
+	    messageObj["set"]("receiverID", receiverID);
+	    messageObj["set"]("title", title_);
+	    messageObj["set"]("content", content_);
+	    messageObj["set"]("tag", tag);
+	    
+	    if (this.acl_mode === 1)  // private
+	    {
+	        var current_user = window["Parse"]["User"]["current"]();
+	        if (current_user)
+	        {
+	            var acl = new window["Parse"]["ACL"](current_user);
+	            acl["setPublicReadAccess"](true);
+	            messageObj["setACL"](acl);
+	        }	        
+	    };
+        
+	    if (self.sender_class !== "")
+	    {
+	        var t = window["Parse"].Object["extend"](self.sender_class);
+	        var o = new t();
+	        o["id"] = self.userID;
+	        messageObj["set"]("senderObject", o);
+	    }        
+        
+	    if (self.receiver_class !== "")
+	    {
+	        var t = window["Parse"].Object["extend"](self.receiver_class);
+	        var o = new t();
+	        o["id"] = receiverID;
+	        messageObj["set"]("receiverObject", o);
+	    }
+        
+        messageObj["save"](null, handler);	
 	};  
 
     Acts.prototype.NewFilter = function ()

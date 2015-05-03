@@ -155,4 +155,10 @@ cr.plugins_.Rex_Date = function(runtime)
         var timestamp = new Date(year, month-1, day, hours, minutes, seconds, milliseconds); // build Date object
         ret.set_float(timestamp.getTime());
 	};
+	
+    Exps.prototype.LocalExpression = function (ret, timestamp, locales)
+	{
+	    var today = (timestamp != null)? new Date(timestamp): new Date();
+	    ret.set_string( today.toLocaleString(locales) );
+	};	
 }());

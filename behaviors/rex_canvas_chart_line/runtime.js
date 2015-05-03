@@ -291,12 +291,19 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
         }
 	    this.draw_chart(_data);
 	}; 
+	
 	Acts.prototype.Addlabel = function(label_name)
 	{   
+	    if (this.labels.indexOf(label_name) !== -1)
+	        return;
+	        
 	    this.labels.push(label_name);
 	}; 	
 	Acts.prototype.AddDataSetCfg = function(dataset_name, fill_color, stroke_color, point_color, point_stroke_color)
 	{
+	    if (this.datasets.indexOf(dataset_name) !== -1)
+	        return;	        	
+	        		    
 	    this.datasets.push(dataset_name);	    
 	    this.datasets_color.push([fill_color, stroke_color, point_color, point_stroke_color]);
 	};
