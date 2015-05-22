@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 
@@ -32,7 +32,12 @@ AddStringParam("File name", "File name of upload image.", '"MyImage.png"');
 AddAction(1, 0, "Upload image", "Upload", 
           "Upload image <i>{0}</i>", 
           "Upload image to parse server. Each uploaded file will have a new URL.", "UploadImage");
-                           
+          
+AddObjectParam("Sprite", "Sprite object.");
+AddStringParam("File name", "File name of upload image.", '"MyImage.png"');
+AddAction(2, 0, "Upload current frame", "Upload", 
+          "Upload <i>{0}</i> 's current frame", 
+          "Upload current frame of sprite to parse server. Each uploaded file will have a new URL.", "UploadSpriteCurrentFrame");                           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get URL", "Upload", "LastURL", 

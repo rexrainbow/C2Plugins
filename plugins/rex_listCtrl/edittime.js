@@ -42,7 +42,24 @@ AddCmpParam("Comparison", "Choose the way to compare data.");
 AddNumberParam("Value", "The value to compare the data to.");             
 AddCondition(14, cf_looping | cf_not_invertible, "For each matched line", "Filter", 
              "For each line which custom data[<i>{0}</i>] <i>{1}</i> <i>{2}</i>", 
-             "Repeat the event for each matched line.", "ForEachMatchedLine");              
+             "Repeat the event for each matched line.", "ForEachMatchedLine");  
+             
+AddComboParamOption("Top bound");
+AddComboParamOption("Bottom bound");
+AddComboParamOption("Top or bottom bounds");
+AddComboParam("Bound", "Bound types.", 2);             
+AddCondition(21, 0, "Is OY out of bound", "Bound", 
+             "Is OY out of <i>{0}</i>", 
+             "Retrurn true if OY is out of bound.", "IsOYOutOfBound");
+             
+AddComboParamOption("Top bound");
+AddComboParamOption("Bottom bound");
+AddComboParamOption("Top or bottom bounds");
+AddComboParam("Bound", "Bound types.", 2);              
+AddCondition(22, cf_trigger, "On OY out of bound", "Bound", 
+             "On OY out of <i>{0}</i>", 
+             "Triggered when OY out of bound.", "OnOYOutOfBound");    
+                                                    
 ////////////////////////////////////////
 // Actions
 AddNumberParam("OY", "Offset Y of this list, in pixels. Start at 0.", 0);
@@ -82,7 +99,7 @@ AddAction(11, 0, "Set value", "Custom data",
           "Set custom data in a line.", "SetValue"); 
 AddStringParam("Key", "The key of custom data.", '""');
 AddAction(12, 0, "Clean key in all lines", "Custom data", 
-          "Clean key <i>{1}</i> in all lines",
+          "Clean key <i>{0}</i> in all lines",
           "Clean key in all line.", "CleanKeyInAllLine");
 		  
 
@@ -151,21 +168,31 @@ AddExpression(6, ef_return_number, "Get position Y by line index", "Offset Y", "
 AddExpression(7, ef_return_number, "Get total lines count", "List", "TotalLinesCount", 
               "Get total lines count.");
 AddExpression(8, ef_return_number, "Get line height", "List", "DefaultLineHeight", 
-              "Get default line height.");
+              "Get default line height.");           
               
 AddNumberParam("Index", "Index of line.", 0);
 AddStringParam("Key", "The name of the key.", '""');
 AddExpression(11, ef_return_any | ef_variadic_parameters, "Get value at", "Custom data", "At", 
               "Get value by line index and key. Add 3rd parameter for default value if this key is not existed.");
 
-AddExpression(21, ef_return_string, "Get custom date last removed lines", "Custom data", "LastRemovedLines", 
-              'Get custom date of last removed lines in JSON string after "Action: Remove lines".');
+AddExpression(21, ef_return_string, "Get custom data last removed lines", "Custom data", "LastRemovedLines", 
+              'Get custom data of last removed lines in JSON string after "Action: Remove lines".');
               
 AddNumberParam("Start index", "Start index of line.", 0);
 AddNumberParam("Line number", "Line number.", 1);              
-AddExpression(22, ef_return_string, "Get custom date of lines", "Custom data", "CustomDataInLines", 
-              "Get custom date of lines.");              
-              
+AddExpression(22, ef_return_string, "Get custom data of lines", "Custom data", "CustomDataInLines", 
+              "Get custom data of lines.");
+
+AddExpression(31, ef_return_number, "Get current OY", "OY", "OY", 
+              "Get current OY.");                   
+AddExpression(32, ef_return_number, "Get bottom OY", "OY", "BotomOY", 
+              "Get bottom OY.");     
+AddExpression(33, ef_return_number, "Get top OY", "OY", "TopOY", 
+              "Get top OY.");              
+                          
+AddExpression(41, ef_return_number, "Get last bound of OY", "Bound", "LastBoundOY", 
+              'Get last bound of OY under "Condition:On OY out of top bound", or "Condition:On OY out of bottom bound".');  
+                            
 ACESDone();
 
 // Property grid properties for this plugin

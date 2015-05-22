@@ -120,6 +120,16 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the tile to set.", 0);
 AddCondition(24, cf_not_invertible, "Pick chess at LZ", "SOL - logical position", 
              "Pick <i>{0}</i> at LZ to <i>{1}</i>", 
              "Pick chess at Logic Z.", "PickChessAtLZ");
+AddObjectParam("Tile", "Tile object.");     
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);          
+AddCondition(25, 0, "Pick an empty cell on tiles", "Empty", 
+            "Pick an empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
+            "Pick an empty cell randomly on tiles, return false if all cells are occupied.", "PickEmptyCellOnTiles");
+AddObjectParam("Tile", "Tile object.");            
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);          
+AddCondition(26, 0, "Has any empty cell on tiles", "Empty", 
+            "Has any empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
+            "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");               
                        	
 //////////////////////////////////////////////////////////////
 // Actions   

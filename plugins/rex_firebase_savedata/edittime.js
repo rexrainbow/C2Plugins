@@ -70,13 +70,32 @@ AddComboParamOption("Header");
 AddComboParamOption("Body");
 AddComboParam("Slot", "Header or body.", 0);
 AddAction(2, 0, "Set value", "Save", 
-          "Set key <i>{0}</i> to value <i>{1}</i> in slot <i>{2}</i>", 
+          "Set key <i>{0}</i> to <i>{1}</i> in slot <i>{2}</i>", 
           "Sets value into slot.", "SetValue");
 		  
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddAction(3, 0, "Save", "Save", 
           "Save slot with name <i>{0}</i> into server", 
-          "Save slot into server.", "Save");	 
+          "Save slot into server.", "Save");	
+
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("False");
+AddComboParamOption("True");
+AddComboParam("Boolean", "Boolean value.", 1);
+AddComboParamOption("Header");
+AddComboParamOption("Body");
+AddComboParam("Slot", "Header or body.", 0);
+AddAction(4, 0, "Set boolean value", "Save", 
+          "Set key <i>{0}</i> to <i>{1}</i> in slot <i>{2}</i>", 
+          "Sets boolean value into slot.", "SetBooleanValue");   
+
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("Header");
+AddComboParamOption("Body");
+AddComboParam("Slot", "Header or body.", 0);
+AddAction(5, 0, "Set to current server timestamp", "Save", 
+          "Set key <i>{0}</i> to current server timestamp in slot <i>{2}</i>", 
+          "Sets current server timestamp into slot.", "SetCurrentServerTimestamp");                      
 
 AddAction(11, 0, "Get all headers", "Load", 
           "Get all slot headers from server", 

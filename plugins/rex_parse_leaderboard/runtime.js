@@ -1,4 +1,13 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<rankID>
+    userID - userID of owner
+    userName - name of owner
+    score - score of owner
+    extra - extra data of owner
+    userObject - object at user table indexed by userID (optional)
+*/
+
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");
@@ -27,7 +36,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.3.2.min.js");
+	    jsfile_load("parse-1.4.2.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -85,12 +94,14 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         
         this.set_leaderBoardID(leaderboardID);
 
+        this.exp_LoopIndex = -1;
 	    this.exp_CurPlayerRank = -1;
 	    this.exp_CurRankCol = null;
 	    this.exp_PostPlayerName = "";
         
         this.exp_LastRanking = -1;
-        this.exp_LastUserID = "";   
+        this.exp_LastUserID = ""; 
+        this.exp_LastScore = "";           
         this.exp_LastUsersCount = -1;     
 	};
 	
@@ -101,14 +112,21 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var self = this;
 	    var onReceived = function()
 	    {
-	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnUpdate, self);
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnReceived, self);
 	    }
 	    leaderboard.onReceived = onReceived;
 	    
+	    var onReceivedError = function()
+	    {
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnReceivedError, self);
+	    }
+	    leaderboard.onReceivedError = onReceivedError;	
+	        
 	    var onGetIterItem = function(item, i)
 	    {
 	        self.exp_CurPlayerRank = i;
 	        self.exp_CurRankCol = item;
+	        self.exp_LoopIndex = i - leaderboard.GetStartIndex();
 	    };	    	    
 	    leaderboard.onGetIterItem = onGetIterItem;
 	    
@@ -147,6 +165,27 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         }
 	    return query;
 	};	
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -160,14 +199,24 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
 	    return true;
 	}; 	 
-	Cnds.prototype.OnUpdate = function ()
+	Cnds.prototype.OnReceived = function ()
 	{
 	    return true;
 	}; 
+	Cnds.prototype.OnReceivedError = function ()
+	{
+	    return true;
+	}; 	
 	Cnds.prototype.ForEachRank = function (start, end)
 	{	            
 		return this.leaderboard.ForEachItem(this.runtime, start, end);
 	};   
+
+	Cnds.prototype.IsTheLastPage = function ()
+	{
+	    return this.leaderboard.IsTheLastPage();
+	}; 		
+	
 	Cnds.prototype.OnGetRanking = function ()
 	{
 	    return true;
@@ -176,7 +225,14 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
 	    return true;
 	}; 	
-	
+	Cnds.prototype.OnGetScore = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnGetScoreError = function ()
+	{
+	    return true;
+	}; 		
 	Cnds.prototype.OnGeUsersCount = function ()
 	{
 	    return true;
@@ -296,14 +352,20 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var lines = 1000;
 	    
         var self = this;
+        
+        var return_ranking = function (ranking)
+        {
+            self.exp_LastUserID = userID;
+	        self.exp_LastRanking = ranking;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRanking, self); 
+        };
+        
 	    var on_success = function(rank_obj)
-	    {	 
-	        if (!rank_obj)
+	    {		        
+	        if ((!rank_obj) || (rank_obj.length == 0))
 	        {
 	            // page not found, cound not find userID
-                self.exp_LastUserID = userID;
-	            self.exp_LastRanking = -1;
-	            self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRankingError, self);
+	            return_ranking(-1);
 	        }
 	        else
 	        {
@@ -320,16 +382,21 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	            }
 	            
 	            // cound not find userID in this page, try get next page
-	            if (self.exp_LastRanking === -1)
+	            if (ranking === -1)
 	            {
-	                start += lines;
-	                query_page(start);
+	                if (cnt < lines)
+	                {
+	                    return_ranking(-1);
+	                }
+	                else
+	                {
+	                    start += lines;
+	                    query_page(start);
+	                }
 	            }
 	            else
 	            {
-                    self.exp_LastUserID = userID;
-	                self.exp_LastRanking = ranking;	                
-	                self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRanking, self);
+	                return_ranking(ranking);
 	            }
 	        }	            
 	    };	    
@@ -346,12 +413,38 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    {
 	        // get 1000 lines for each request until get null or get userID
 	        var query = self.get_request_query(self.leaderBoardID);
-            query["skip"](start_)["limit"](lines)["select"]("userID")["find"](handler);
+            query["skip"](start_);
+            query["limit"](lines);
+            query["select"]("userID");
+            query["find"](handler);
         }
         
         query_page(start);
 	}; 
 	
+    Acts.prototype.GetScore = function (userID)
+	{	
+	    var self = this;
+	    
+	    // step 2
+	    var on_success = function(rank_obj)
+	    {	         
+            self.exp_LastUserID = userID;
+            self.exp_LastScore = (!rank_obj)? "": rank_obj["get"]("score");            
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetScore, self);
+	    };	    
+	    var on_error = function(error)
+	    {
+            self.exp_LastUserID = userID;
+            self.exp_LastScore = "";
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetScoreError, self);
+	    };
+        
+	    // step 1
+		var handler = {"success":on_success, "error": on_error};		
+	    this.get_base_query(this.leaderBoardID, userID)["first"](handler); 
+	}; 
+		
     Acts.prototype.GetUsersCount = function ()
 	{	    
 	    var self = this;
@@ -373,7 +466,12 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-
+	
+	Exps.prototype.LastSentMessageID = function (ret)
+	{
+		ret.set_string(this.exp_LastSentMessageID);
+	};
+	
 	Exps.prototype.CurPlayerName = function (ret)
 	{
 	    var name;
@@ -422,22 +520,34 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    
 		ret.set_any( v );
 	};
-	Exps.prototype.CurUserObject = function (ret, k_)
+	Exps.prototype.CurUserObject = function (ret, k_, default_value)
 	{
-	    var extra;
+	    var v;
 	    if (this.exp_CurRankCol)
 	    {
 	        var obj = this.exp_CurRankCol["get"]("userObject");
-	        if (obj)
-	            extra = obj["get"](k_);
+	        if (obj)           
+	            v = (k_ == null)? obj : obj["get"](k_);
 	    }
-	        
-	    if (!extra)
-	        extra = "";
-	    
-		ret.set_any( extra );
+
+		ret.set_any( din(v, default_value)  );
 	};
-		
+	
+	Exps.prototype.CurRankingCount = function (ret)
+	{
+		ret.set_int( this.leaderboard.GetItems().length );
+	};	
+    
+	Exps.prototype.CurStartIndex = function (ret)
+	{
+		ret.set_int(this.leaderboard.GetStartIndex());
+	};	
+    
+	Exps.prototype.LoopIndex = function (ret)
+	{
+		ret.set_int(this.exp_LoopIndex);
+	};	
+				
 	Exps.prototype.PostPlayerName = function (ret)
 	{
 		ret.set_string(this.exp_PostPlayerName);
@@ -483,14 +593,11 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    if (rank_info)
 	    {
 	        var obj = rank_info["get"]("userObject");
-	        if (obj)
-	            v = obj["get"](k_);
+	        if (obj)            
+	            v = (k==null)? obj:obj["get"](k_);
 	    }
 	        
-	    if (!v)
-	        v = default_value || "";
-	    
-		ret.set_any( v );
+		ret.set_any( din(v, default_value) );
 	};    
     
 	Exps.prototype.PageIndex = function (ret)
@@ -507,12 +614,17 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
 		ret.set_string(this.exp_LastUserID);
 	};	    
+	Exps.prototype.LastScore = function (ret)
+	{
+		ret.set_any(this.exp_LastScore);
+	};		
 	
 	Exps.prototype.LastUsersCount = function (ret)
 	{
 		ret.set_int(this.exp_LastUsersCount);
 	};	
 }());
+
 
 (function ()
 {
@@ -523,12 +635,14 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
     {
         // export
         this.onReceived = null;
+        this.onReceivedError = null;
         this.onGetIterItem = null;  // used in ForEachItem
         // export
 	    this.items = [];
         this.start = 0;
         this.page_lines = page_lines;   
         this.page_index = 0;     
+        this.is_last_page = false;
     };
     
     var ItemPageKlassProto = ItemPageKlass.prototype;  
@@ -539,32 +653,56 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         this.start = 0;     
 	};	
 	     
-	ItemPageKlassProto.request = function(query, start, lines)
+    ItemPageKlassProto.request = function (query, start, lines)
 	{
-        if (start < 0)
-            start = 0;
-            
-        var self = this;
-        
+	    if (start==null)
+	        start = 0;
+	    var is_onePage = (lines != null) && (lines <= 1000);
+	    var linesInPage = (is_onePage)? lines:1000;
+	                                       	    
+        var self = this;       
 	    var on_success = function(items)
 	    {
-	        self.items = items;
-            self.start = start;
-            self.page_index = Math.floor(start/self.page_lines);
-            
-            if (self.onReceived)
-                self.onReceived();
+	        self.items.push.apply(self.items, items);        
+	        var is_last_page = (items.length < linesInPage);   
+	        	        
+	        if ((!is_onePage) && (!is_last_page))  // try next page
+	        {
+	            start += linesInPage;
+	            query_page(start);
+	        }
+	        else  // finish
+	        {
+                self.start = start;
+                self.page_index = Math.floor(start/self.page_lines); 
+                             
+                self.is_last_page = is_last_page;
+	            
+                if (self.onReceived)
+                    self.onReceived();	            
+	        }
 	    };	    
 	    var on_error = function(error)
-	    {
-	        self.items.length = 0;        
+	    { 
+	        self.items.length = 0;
+	        self.is_last_page = false;
+	        	        
+            if (self.onReceivedError)
+                self.onReceivedError();	 	           
 	    };
-	    
-	    var handler = {"success":on_success, "error": on_error};
-	    query["skip"](start);
-        query["limit"](lines);	    
-	    query["find"](handler);	    
-	};	    
+	     
+	    var handler = {"success":on_success, "error": on_error};	    	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get userID	       
+            query["skip"](start_);
+            query["limit"](linesInPage);
+            query["find"](handler);
+        };
+
+        this.items.length = 0;
+	    query_page(start);
+	}; 	    
 
     ItemPageKlassProto.RequestInRange = function (query, start, lines)
 	{
@@ -593,7 +731,11 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         var start = this.start - this.page_lines;
 	    this.request(query, start, this.page_lines);
 	};  
-
+    
+    ItemPageKlassProto.LoadAllItems = function (query)
+	{
+	    this.request(query);
+	}; 
 	ItemPageKlassProto.ForEachItem = function (runtime, start, end)
 	{
         var items_end = this.start + this.items.length - 1;       
@@ -626,7 +768,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
             
 		    if (solModifierAfterCnds)
 		    {
-		        this.runtime.popSol(current_event.solModifiers);
+		        runtime.popSol(current_event.solModifiers);
 		    }            
 		}
     		
@@ -646,11 +788,26 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         }
 	    return -1;
 	};
-			
+
 	ItemPageKlassProto.GetItem = function(i)
 	{
 	    return this.items[i - this.start];
-	};
+	};	
+
+	ItemPageKlassProto.GetItems = function()
+	{
+	    return this.items;
+	};	
+	
+	ItemPageKlassProto.IsTheLastPage = function()
+	{
+	    return this.is_last_page;
+	};		
+	
+	ItemPageKlassProto.GetStartIndex = function()
+	{
+	    return this.start;
+	};	
 	
 	ItemPageKlassProto.GetCurrentPageIndex = function ()
 	{
@@ -658,4 +815,4 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	};	
 
 	window.ParseItemPageKlass = ItemPageKlass;
-}());                
+}());       

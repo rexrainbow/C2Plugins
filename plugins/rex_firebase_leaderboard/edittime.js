@@ -100,7 +100,10 @@ AddExpression(24, ef_return_any, "Player score", "Rank index", "Rank2PlayerScore
 AddNumberParam("Rank", "Rank index (0-based).", 0);               
 AddExpression(25, ef_return_any, "Extra data", "Rank index", "Rank2ExtraData",
               "Get extra data by rank index.");     
-              
+AddNumberParam("Rank", "Rank index (0-based).", 0);   
+AddExpression(26, ef_return_string | ef_variadic_parameters, "Player userID", "Rank index", "Rank2PlayerUserID",
+              "Get userID by rank index. Add default value at 2nd parameter."); 
+                            
 ACESDone();
 
 // Property grid properties for this plugin

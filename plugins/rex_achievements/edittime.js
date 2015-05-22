@@ -33,9 +33,9 @@ AddCondition(2, 0, "Is obtained", "Achievements",
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Data", "Data in CSV format.", "");
-AddAction(1, 0, "Load table", "Load", 
-          "Load table to <i>{0}</i>", 
-          "Load csv table for condition-items.", "LoadTable");
+AddAction(1, 0, "Load rules", "Load", 
+          "Load rules to <i>{0}</i>", 
+          "Load rules in csv table for condition-items.", "LoadRules");
        
 AddStringParam("Level", "Level or game name.", '""');
 AddAction(2, 0, "Set level name", "Prepare", 
@@ -48,19 +48,31 @@ AddAction(3, 0, "Set property", "Prepare",
           "Set property <i>{0}</i> to <i>{1}</i>", 
           "Set property.", "SetProperty");
           
+AddAction(4, 0, "Run tests", "Execute", 
+          "Run tests", 
+          "Run tests.", "RunTest");          
+          
 AddStringParam("JSON", "A string of the JSON data to load.");
 AddAction(11, 0, "Load", "JSON", 
           "Load from JSON string <i>{0}</i>", 
           "Load from an accomplishments previously encoded in JSON format.", "JSONLoad");
+          
+AddStringParam("JSON", "A string of the JSON data to load.");
+AddAction(12, 0, "Load states", "JSON", 
+          "Load states from JSON string <i>{0}</i>", 
+          "Load states from an accomplishments previously encoded in JSON format.", "StateJSONLoad");          
 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get achievement name", "For each", "CurAchievementName", 
               "Get achievement name in a For Each loop.");
               
-AddExpression(11, ef_return_string, "Get as JSON", "JSON", "AsJSON", 
-              "Return the contents of accomplishments in JSON format."); 
-                           
+AddExpression(11, ef_return_string, "Get achievements as JSON", "JSON", "AsJSON", 
+              "Return the contents of achievements in JSON format, include states and rules.");
+                             
+AddExpression(12, ef_return_string, "Get states as JSON", "JSON", "StatesAsJSON", 
+              "Return the states of accomplishments in JSON format.");     
+                                     
 ACESDone();
 
 // Property grid properties for this plugin

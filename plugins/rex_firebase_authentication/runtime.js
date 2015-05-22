@@ -254,7 +254,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	                                 cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessfully,
 	                                 cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginError);
         var d = {"remember":PRESISTING_TYPE[r_],
-                 "scopr":scope_};
+                 "scope":scope_};
 	    this.get_ref()[login_fn_name](provider, handler, d);
 	};
 
@@ -275,7 +275,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	                                 cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessfully,
 	                                 cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginError);	
         var d = {"remember":PRESISTING_TYPE[r_],
-                 "scopr":scope_};                                     
+                 "scope":scope_};                                     
         this.get_ref()["authWithOAuthToken"]("facebook", access_token, handler, d);		
 	};		
 		

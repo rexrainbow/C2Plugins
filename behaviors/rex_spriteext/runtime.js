@@ -43,11 +43,11 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
 	behinstProto.onCreate = function()
-	{    
+	{
         this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnCreating, this.inst);     
 	};  
 	behinstProto.onDestroy = function()
-	{	    	    
+	{
         this.runtime.trigger(cr.behaviors.Rex_SpriteExt.prototype.cnds.OnDestroying, this.inst);
 	};    
     

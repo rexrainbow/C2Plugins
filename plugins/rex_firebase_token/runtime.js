@@ -64,7 +64,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";         
-		this.token = new cr.plugins_.Rex_Firebase_Token.TokenClass(this);
+		this.token = new cr.plugins_.Rex_Firebase_Token.TokenKlass(this);
 		
 		var self = this;
         var on_tokenOwner_changed = function ()
@@ -239,7 +239,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 
 (function ()
 {
-    cr.plugins_.Rex_Firebase_Token.TokenClass = function(plugin)
+    cr.plugins_.Rex_Firebase_Token.TokenKlass = function(plugin)
     {        
         // export
         this.OnTokenOwnerChanged = null;
@@ -253,19 +253,19 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
         this.my_ref = null;
         this.on_owner_changed = null;
     };
-    var TokenClassProto = cr.plugins_.Rex_Firebase_Token.TokenClass.prototype;
+    var TokenKlassProto = cr.plugins_.Rex_Firebase_Token.TokenKlass.prototype;
     
-	TokenClassProto.IsInGroup = function()
+	TokenKlassProto.IsInGroup = function()
 	{
 	    return (this.my_ref != null);
 	}; 
 	
-	TokenClassProto.IsOwner = function()
+	TokenKlassProto.IsOwner = function()
 	{
 	    return (this.myID == this.ownerID);
 	};
 	
-	TokenClassProto.ListenOwner = function()
+	TokenKlassProto.ListenOwner = function()
 	{
 	    if (this.on_owner_changed)
 	        return;
@@ -289,7 +289,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
 	    this.on_owner_changed = on_owner_changed;
 	};	
 	
-    TokenClassProto.JoinGroup = function (UserID)
+    TokenKlassProto.JoinGroup = function (UserID)
 	{	   	    
 	    if (this.IsInGroup())
 	        this.LeaveGroup();
@@ -314,7 +314,7 @@ cr.plugins_.Rex_Firebase_Token = function(runtime)
         this.my_ref["set"](this.myID, on_complete);              
 	};
 	
-    TokenClassProto.LeaveGroup = function ()
+    TokenKlassProto.LeaveGroup = function ()
 	{
 	    if (!this.IsInGroup())
 	        return;

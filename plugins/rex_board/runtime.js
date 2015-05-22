@@ -966,9 +966,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (cnt > 0)
         {
              var i = cr.floor(Math.random() * cnt);      
-             var empty_cellXY = empty_cells[i];
-             this._exp_EmptyLX = empty_cellXY[0];
-             this._exp_EmptyLY = empty_cellXY[1];
+             this._exp_EmptyLX = empty_cells[i][0];
+             this._exp_EmptyLY = empty_cells[i][1];
              empty_cells.length = 0;
         }
         return (cnt > 0);
@@ -1029,6 +1028,60 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return false;
         return this._pick_chess_on_LZ(chess_type, lz);            
 	};		
+
+	Cnds.prototype.PickEmptyCellOnTiles = function (tile_type, z)
+	{
+	    if (!tile_type)
+	        return false;	        
+	    var tiles = tile_type.getCurrentSol().getObjects();	  
+	    
+	    empty_cells.length = 0;      
+        var xyz, i, cnt=tiles.length;
+        for(i=0; i<cnt; i++)
+        {
+            xyz = this.uid2xyz(tiles[i].uid);
+            if (xyz == null)
+                continue;
+            
+            if (this.IsEmpty(xyz.x, xyz.y, z))
+            {
+                empty_cells.push([xyz.x, xyz.y]);
+            }   
+        }        
+	    
+        cnt = empty_cells.length;
+        if (cnt > 0)
+        {
+             var i = cr.floor(Math.random() * cnt);
+             this._exp_EmptyLX = empty_cells[i][0];
+             this._exp_EmptyLY = empty_cells[i][1];
+             empty_cells.length = 0;
+        }
+        return (cnt > 0);
+	};
+	
+	Cnds.prototype.HasEmptyCellOnTiles = function (tile_type, z)
+	{
+	    if (!tile_type)
+	        return false;
+        var tiles = tile_type.getCurrentSol().getObjects();	        
+        var xyz, i, cnt=tiles.length;
+        for(i=0; i<cnt; i++)
+        {
+            xyz = this.uid2xyz(tiles[i].uid);
+            if (xyz == null)
+                continue;
+            
+            if (this.IsEmpty(xyz.x, xyz.y, z))
+            {
+                this._exp_EmptyLX = xyz.x;
+                this._exp_EmptyLY = xyz.y;
+                return true;
+            }   
+        }
+        
+        return false;
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

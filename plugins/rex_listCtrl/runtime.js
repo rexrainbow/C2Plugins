@@ -67,11 +67,15 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.pre_instX = this.x;
         this.pre_instY = this.y;
         this.pre_instHeight = this.height;
+        this.is_out_top_bound = false;
+        this.is_out_bottom_bound = false;
+        this.bound_type = null;
         
         this.exp_LineIndex = 0;
         this.exp_LineTLX = 0;
         this.exp_LineTLY = 0;
-        this.exp_LastRemovedLines = "";
+        this.exp_LastRemovedLines = "";        
+        this.exp_LastBoundOY = 0;
         
         this.runtime.tick2Me(this);
 	};
@@ -219,7 +223,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     };
         
 	instanceProto.set_OY = function(oy)
-	{
+	{  
+	    // check out-of-bound
+	    var is_out_top_bound = this.is_OY_out_bound(oy, 0);
+	    var is_out_bottom_bound = this.is_OY_out_bound(oy, 1);
+	    
+	    	      	                	    
 	    if (this.is_clamp_OY)
 	    {
 	  
@@ -227,13 +236,34 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	            oy = 0;
 	        else 
 	        {
-	            var list_height = (this.lines_mgr.GetLinesCount() - this.get_fullLinesCnt()) * this.default_lineHeight;
+	            var list_height = this.get_list_height();
 	            if (oy < -list_height)
 	                oy = -list_height;
 	        }
 	    }
+	    
 	    this.update_flag = this.update_flag || (this.OY !== oy );
 	    this.OY = oy;	    
+	    
+	    	   
+        // trigger out-of-bound	    	    
+	    if (is_out_top_bound && (!this.is_out_top_bound))
+	    {
+	        this.bound_type = 0;
+	        this.exp_LastBoundOY = 0;
+	        this.runtime.trigger(cr.plugins_.Rex_ListCtrl.prototype.cnds.OnOYOutOfBound, this);  
+	        this.bound_type = null;
+	    }
+	    if (is_out_bottom_bound && !this.is_out_bottom_bound)
+	    {
+	        this.bound_type = 1;
+	        this.exp_LastBoundOY = -this.get_list_height();
+	        this.runtime.trigger(cr.plugins_.Rex_ListCtrl.prototype.cnds.OnOYOutOfBound, this);
+	        this.bound_type = null;
+	    }
+	          
+        this.is_out_top_bound = is_out_top_bound;	
+        this.is_out_bottom_bound = is_out_bottom_bound;		    
 	};
 
 	instanceProto.is_visible = function(idx)
@@ -374,6 +404,22 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         return idx;
 	};
     
+    instanceProto.get_list_height = function ()
+	{
+        return (this.lines_mgr.GetLinesCount() - this.get_fullLinesCnt()) * this.default_lineHeight;
+	};    
+
+    instanceProto.is_OY_out_bound = function (OY, bound_type)
+	{
+	    var is_out_bound;
+	    if (bound_type === 0)
+	        is_out_bound = (OY > 0);
+	    else	    
+	        is_out_bound = (OY < -this.get_list_height()); 
+            
+	    return is_out_bound;
+	};
+	    
     var clean_table = function(o)
     {
         for(var k in o)
@@ -385,7 +431,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         // monitor ListCtrl changing
         this.pre_instX = this.x;
         this.pre_instY = this.y;
-        this.pre_instHeight = this.height;
+        this.pre_instHeight = this.height;      
         
 		return { "line_height": this.default_lineHeight,
 		         "update_flag": this.update_flag,
@@ -398,7 +444,9 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		         
 		         "pre_instX": this.pre_instX,
 		         "pre_instY": this.pre_instY,
-		         "pre_instHeight": this.pre_instHeight,      
+		         "pre_instHeight": this.pre_instHeight,    
+		         "topb": this.is_out_top_bound,
+		         "botb": this.is_out_bottom_bound  
 		       };
 	};
 	
@@ -416,6 +464,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    this.pre_instX = o["pre_instX"];
 	    this.pre_instY = o["pre_instY"];
 	    this.pre_instHeight = o["pre_instHeight"];	    
+        this.is_out_top_bound = o["topb"];	
+        this.is_out_bottom_bound = o["botb"];	  	    
 	};		  
 
 	/**BEGIN-PREVIEWONLY**/
@@ -473,7 +523,23 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         }
 		return this.for_each_line(null, null, filter_fn);
 	};	
-    
+
+	Cnds.prototype.IsOYOutOfBound = function (bound_type)
+	{
+	    if ((bound_type === 0) || (bound_type === 1))
+	        return this.is_OY_out_bound(this.OY, bound_type);
+	    else
+		    return this.is_OY_out_bound(this.OY, 0) || this.is_OY_out_bound(this.OY, 1);
+	}; 
+	
+	Cnds.prototype.OnOYOutOfBound = function (bound_type)
+	{
+	    if ((bound_type === 0) || (bound_type === 1))
+	        return (this.bound_type === bound_type);
+	    else
+	        return true;
+	}; 	 
+	  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -664,8 +730,27 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{	    
 	    var dataInLines = this.lines_mgr.GetCustomDataInLines(idx, cnt);
 		ret.set_string(JSON.stringify( dataInLines ));
-	};		
+	};	
 	
+    Exps.prototype.OY = function (ret)
+	{ 
+		ret.set_float(this.OY);
+	};	
+	
+    Exps.prototype.BotomOY = function (ret)
+	{ 
+		ret.set_float(-this.get_list_height());
+	};    
+	
+    Exps.prototype.TopOY = function (ret)
+	{ 
+		ret.set_float(0);
+	};  	
+	
+    Exps.prototype.LastBoundOY = function (ret)
+	{ 
+		ret.set_float(this.exp_LastBoundOY);
+	};    
 }());
 
 

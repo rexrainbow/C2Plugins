@@ -233,23 +233,23 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 
 	Exps.prototype.CurPlayerName = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
+	    var name;	    
+	    if (this.exp_CurRankCol != null)
+	        name = this.exp_CurRankCol["name"];
+	    else
+	        name = "";
 	    
-		ret.set_string(this.exp_CurRankCol["name"]);
+		ret.set_string(name);
 	}; 	
 	Exps.prototype.CurPlayerScore = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_any(0);
-	        return;
-	    }
-	    
-		ret.set_any(this.exp_CurRankCol["score"]);
+	    var score;	    
+	    if (this.exp_CurRankCol != null)
+	        score = this.exp_CurRankCol["score"];
+	    else
+	        score = 0;
+	        	    
+		ret.set_any(score);
 	};
 	Exps.prototype.CurPlayerRank = function (ret)
 	{
@@ -257,22 +257,16 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	};
 	Exps.prototype.CurUserID = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
+	    var userID;	    
+	    if (this.exp_CurRankCol != null)
+	        userID = this.exp_CurRankCol["userID"];
+	    else
+	        userID = "";
+
 		ret.set_string(this.exp_CurRankCol["userID"]);
 	}; 	
 	Exps.prototype.CurExtraData = function (ret)
 	{
-	    if (this.exp_CurRankCol == null)
-	    {
-	        ret.set_any("");
-	        return;
-	    }
-	    
 	    var extra_data = this.exp_CurRankCol["extra"];
 	    if (extra_data == null)
 	    {
@@ -322,7 +316,14 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    var rank_info = this.ranks.GetItems()[i];
 	    var extra_data = (!rank_info)? "":rank_info["extra"];
 		ret.set_any(extra_data);
-	};						 	
+	};
+	Exps.prototype.Rank2PlayerUserID = function (ret, i)
+	{
+	    var rank_info = this.ranks.GetItems()[i];
+	    var extra_data = (!rank_info)? "":rank_info["userID"];
+		ret.set_any(extra_data);
+	};	
+							 	
 }());
 
 (function ()

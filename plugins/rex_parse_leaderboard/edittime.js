@@ -11,32 +11,41 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On post complete", "Send", 
+AddCondition(1, cf_trigger, "On post complete", "Score - post", 
             "On post complete",
             "Triggered when post complete.", "OnPostComplete");
 
-AddCondition(2, cf_trigger, "On post error", "Send", 
+AddCondition(2, cf_trigger, "On post error", "Score- post", 
             "On post error",
             "Triggered when post error.", "OnPostError");
             
-AddCondition(3, cf_trigger, "On update", "Update", 
-            "On update ranks",
-            "Triggered when ranks updated.", "OnUpdate");     
+AddCondition(3, cf_trigger, "On receive", "Load", 
+            "On receive ranks",
+            "Triggered when receive updated.", "OnReceived");    
 
-AddCondition(11, cf_looping | cf_not_invertible, "For each rank", "Update - for each", 
+AddCondition(4, cf_trigger, "On receive error", "Load", 
+            "On receive ranks error",
+            "Triggered when receive ranks error.", "OnReceivedError");       
+            
+AddCondition(11, cf_looping | cf_not_invertible, "For each rank", "Load - for each", 
              "For each rank", 
              "Repeat the event for each rank.", "ForEachRank"); 
+             
 AddNumberParam("Start", "Start from rank index (0-based).", 0);  
 AddNumberParam("End", "End to rank index (0-based). This value should larger than Start.", 2);    
-AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Update - for each", 
+AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Load", 
              "For each rank from index <i>{0}</i> to <i>{1}</i>", 
              "Repeat the event for each rank in a range.", "ForEachRank");  
+             
+AddCondition(13, 0, "Last page", "Load", 
+             "Is the last page", 
+             "Return true if current page is the last page.", "IsTheLastPage");              
 
 AddCondition(21, cf_trigger, "On get ranking", "Ranking", 
             "On get ranking",
@@ -45,6 +54,14 @@ AddCondition(21, cf_trigger, "On get ranking", "Ranking",
 AddCondition(22, cf_trigger, "On get ranking error", "Ranking", 
             "On get ranking error",
             "Triggered when get ranking error.", "OnGetRankingError");
+            
+AddCondition(23, cf_trigger, "On get score", "Score - get", 
+            "On get score",
+            "Triggered when get score.", "OnGetScore");
+
+AddCondition(24, cf_trigger, "On get score error", "Score - get", 
+            "On get score error",
+            "Triggered when get score error.", "OnGetScoreError");            
             
 AddCondition(31, cf_trigger, "On get users count", "Users count", 
             "On get messages count",
@@ -59,7 +76,7 @@ AddStringParam("UserID", "UserID from authentication.", '""');
 AddStringParam("Name", "(Optional) Player name.", '""');
 AddAnyTypeParam("Score", "Player Score", 0);
 AddAnyTypeParam("Extra", "(Optional) Extra data, could be number or (JSON) string.", '""');
-AddAction(1, 0, "Post score", "Send", 
+AddAction(1, 0, "Post score", "Score", 
           "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i>", 
           "Post score by user ID.", "PostScore");
  
@@ -94,27 +111,37 @@ AddAction(11, 0, "Set leaderboard ID", "Leaderboard",
 AddStringParam("UserID", "UserID from authentication.", '""');
 AddAction(21, 0, "Get ranking", "Ranking", 
           "Get ranking of User ID: <i>{0}</i>", 
-          "Get ranking.", "GetRanking");     
+          "Get ranking.", "GetRanking");   
+          
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddAction(22, 0, "Get score", "Score", 
+          "Get score of User ID: <i>{0}</i>", 
+          "Get score.", "GetScore");             
           
 AddAction(31, 0, "Get users count", "Users count", 
           "Get users count", 
           "Get users count. Maximum of 160 requests per minute.", "GetUsersCount");                    
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Current player name", "Update - for each", "CurPlayerName", 
+AddExpression(1, ef_return_string, "Current player name", "Load - for each", "CurPlayerName", 
               "Get the current player name in a For Each loop.");   			  
-AddExpression(2, ef_return_any, "Current player score", "Update - for each", "CurPlayerScore", 
+AddExpression(2, ef_return_any, "Current player score", "Load - for each", "CurPlayerScore", 
               "Get the current player score in a For Each loop."); 
-AddExpression(3, ef_return_number, "Current player rank", "Update - for each", "CurPlayerRank", 
+AddExpression(3, ef_return_number, "Current player rank", "Load - for each - index", "CurPlayerRank", 
               "Get the current player rank (0-based) in a For Each loop."); 
-AddExpression(4, ef_return_string, "Current user ID", "Update - for each", "CurUserID", 
+AddExpression(4, ef_return_string, "Current user ID", "Load - for each", "CurUserID", 
               "Get the current user id in a For Each loop.");               
-AddExpression(5, ef_return_any, "Current extra data", "Update - for each", "CurExtraData", 
+AddExpression(5, ef_return_any, "Current extra data", "Load - for each", "CurExtraData", 
               "Get the current extra data in a For Each loop.");
-AddStringParam("Key", "Key of object.", '""');       
-AddExpression(6, ef_return_any, "Value of current user object", "Update - for each", "CurUserObject", 
+//AddStringParam("Key", "Key of object.", '""');       
+AddExpression(6, ef_return_any | ef_variadic_parameters, "Value of current user object", "Load - for each", "CurUserObject", 
               "Get value of current user object in a For Each loop.");
-              
+AddExpression(7, ef_return_number, "Current item count", "Received - for each", "CurRankingCount", 
+              "Get ranking count in current received page.");   
+AddExpression(8, ef_return_number, "Current start index", "Load - for each - index", "CurStartIndex", 
+              "Get start index in current received page.");           
+AddExpression(9, ef_return_number, "Current loop index", "Load - for each - index", "LoopIndex", 
+              "Get loop index in current received page.");                             
                                        
 AddExpression(11, ef_return_string, "Post player name", "Post", "PostPlayerName", 
               'The post player name. Uses under "condition:On post complete".');
@@ -134,7 +161,7 @@ AddExpression(25, ef_return_any | ef_variadic_parameters, "Extra data", "Rank in
 AddNumberParam("Rank", "Rank index (0-based).", 0);   
 AddExpression(26, ef_return_string | ef_variadic_parameters, "Player userID", "Rank index", "Rank2PlayerUserID",
               "Get userID by rank index. Add default value at 2nd parameter."); 
-AddStringParam("Key", "Key of object.", '""');  
+//AddStringParam("Key", "Key of object.", '""');  
 AddExpression(27, ef_return_string | ef_variadic_parameters, "Player object", "Rank index", "Rank2PlayerObject",
               "Get player object by rank index. Add default value at 2nd parameter.");               
 
@@ -145,7 +172,9 @@ AddExpression(51, ef_return_number, "Get ranking of userID", "Ranking", "LastRan
               'Get ranking of userID (0-based) under "Condition:On get ranking". Return (-1) if invalided.'); 
 AddExpression(52, ef_return_string, "Get requested userID", "Ranking", "LastUserID", 
               'Get requested userID under "Condition:On get ranking". Return "" if invalided.'); 
-              
+AddExpression(53, ef_return_any, "Get requested score", "Ranking", "LastScore", 
+              'Get requested score under "Condition:On get score". Return "" if invalided.');
+                             
 AddExpression(61, ef_return_number, "Last users count", "Users count", "LastUsersCount", 
               'Get users count under "Condition: On get users count".');              
               

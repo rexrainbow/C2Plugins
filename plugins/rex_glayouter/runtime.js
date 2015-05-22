@@ -538,6 +538,9 @@ cr.plugins_.Rex_Layouter = function(runtime)
 		
 	Acts.prototype.AddInsts = function (objtype)
 	{
+        if (!objtype)
+            return;
+
         this._remove_invalid_insts();	    
         var insts = objtype.getCurrentSol().getObjects();
         if (insts.length==0)
@@ -547,6 +550,9 @@ cr.plugins_.Rex_Layouter = function(runtime)
     
     Acts.prototype.PickInsts = function (objtype)
 	{
+        if (!objtype)
+            return;
+            
         this._remove_invalid_insts();	    
 	    this._pick_insts(objtype);
 	}; 
@@ -557,9 +563,12 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    this._pick_all_insts();
 	};	
 	
-	Acts.prototype.CreateInsts = function (obj_type,x,y,_layer)
+	Acts.prototype.CreateInsts = function (objtype,x,y,_layer)
 	{
-        var inst = this.create_inst(obj_type,x,y,_layer);
+        if (!objtype)
+            return;
+            
+        var inst = this.create_inst(objtype,x,y,_layer);
         if (inst==null)
             return;
         
@@ -572,6 +581,9 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	
 	Acts.prototype.RemoveInsts = function (objtype)
 	{
+        if (!objtype)
+            return;
+            
         this._remove_invalid_insts();	    
         var insts = objtype.getCurrentSol().getObjects();
         if (insts.length==0)

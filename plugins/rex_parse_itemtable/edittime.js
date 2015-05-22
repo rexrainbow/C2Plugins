@@ -11,61 +11,63 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddCondition(1, cf_trigger, "On save complete", "Save", 
-            "On save <i>{0}</i> complete",
+            "On save complete",
             "Triggered when save current item complete.", "OnSaveComplete");
 
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddCondition(2, cf_trigger, "On save error", "Save", 
-            "On save <i>{0}</i> error",
+            "On save error",
             "Triggered when save current item error.", "OnSaveError");
 
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddCondition(3, cf_trigger, "On remove complete", "Remove", 
-            "On remove <i>{0}</i> complete",
-            "Triggered when remove current item complete.", "OnRemoveComplete");
-
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddCondition(4, cf_trigger, "On remove error", "Remove", 
-            "On remove <i>{0}</i> error",
-            "Triggered when remove current item error.", "OnRemoveError");
-            
 AddCondition(11, cf_trigger, "On receive items", "Load", 
-            "On update complete",
-            "Triggered when update complete.", "OnReceived");
+            "On receive items",
+            "Triggered when receive items complete.", "OnReceived");
       
-AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Load", 
+AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Load - for each", 
              "For each itemID", 
              "Repeat the event for each itemID of load result.", "ForEachItem");
              
-AddCondition(91, cf_trigger, "On fetch one", "Load - itemID", 
-            "On fetch one complete",
-            "Triggered when fetch one item complete.", "OnFetchOneComplete");
-
-AddCondition(92, cf_trigger, "On fetch error", "Load - itemID", 
-            "On fetch one error",
-            "Triggered when fetch one item error.", "OnFetchOneError"); 
+AddCondition(13, cf_trigger, "On receive items error", "Load", 
+            "On receive items error",
+            "Triggered when receive items error.", "OnReceivedError");    
             
-AddCondition(101, cf_trigger, "On remove complete", "Remove - itemID", 
-            "On remove complete",
-            "Triggered when remove complete.", "OnRemoveComplete");
+AddCondition(14, 0, "Last page", "Load", 
+             "Is the last page", 
+             "Return true if current page is the last page.", "IsTheLastPage");   
+             
+AddNumberParam("Start", "Start from message index (0-based).", 0);  
+AddNumberParam("End", "End to message index (0-based). This value should larger than Start.", 2);    
+AddCondition(15, cf_looping | cf_not_invertible, "For each item in a range", "Load - for each", 
+             "For each item from index <i>{0}</i> to <i>{1}</i>", 
+             "Repeat the event for each item in a range.", "ForEachItem");                                
+             
+AddCondition(91, cf_trigger, "On load by itemID", "Load - itemID", 
+            "On load by itemID complete",
+            "Triggered when load by itemID item complete.", "OnLoadByItemIDComplete");
 
-AddCondition(102, cf_trigger, "On remove error", "Remove - itemID", 
-            "On remove error",
-            "Triggered when remove error.", "OnRemoveError"); 
+AddCondition(92, cf_trigger, "On load by itemID error", "Load - itemID", 
+            "On load by itemID error",
+            "Triggered when load by itemID item error.", "OnLoadByItemIDError"); 
             
-AddCondition(103, cf_trigger, "On remove items complete", "Remove - queried items", 
+AddCondition(101, cf_trigger, "On remove by itemID complete", "Remove by itemID", 
+            "On remove by itemID complete",
+            "Triggered when remove by itemID complete.", "OnRemoveByItemIDComplete");
+
+AddCondition(102, cf_trigger, "On remove by itemID error", "Remove by itemID", 
+            "On remove by itemID error",
+            "Triggered when remove by itemID error.", "OnRemoveByItemIDError"); 
+            
+AddCondition(103, cf_trigger, "On remove queried items complete", "Remove by queried items", 
             "On remove queried items complete",
             "Triggered when remove complete.", "OnRemoveQueriedItemsComplete");
 
-AddCondition(104, cf_trigger, "On remove items error", "Remove - queried items", 
+AddCondition(104, cf_trigger, "On remove queried items error", "Remove by queried items", 
             "On remove queried items error",
             "Triggered when remove error.", "OnRemoveQueriedItemsError");    
             
@@ -81,10 +83,10 @@ AddCondition(112, cf_trigger, "On get items count error", "Queried items count",
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddComboParamOption("");
-AddComboParamOption("Unique ");
-AddComboParam("Unique", "This key would have unique value.", 0); 
+AddComboParamOption("Primary ");
+AddComboParam("Key type", "Key type.", 0);
 AddAction(1, 0, "Set value", "Save - prepare item", 
-          "Prepare- Set <b>{2}</b>key <i>{0}</i> to <i>{1}</i>", 
+          "Prepare- Set {2}key <i>{0}</i> to <i>{1}</i>", 
           "Set value into current item.", "SetValue");
           
 AddStringParam("Key", "The name of the key.", '""');
@@ -92,10 +94,10 @@ AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
 AddComboParamOption("");
-AddComboParamOption("Unique ");
-AddComboParam("Unique", "This key would have unique value.", 0); 
+AddComboParamOption("Primary ");
+AddComboParam("Key type", "Key type.", 0); 
 AddAction(2, 0, "Set boolean value", "Save - prepare item", 
-          "Prepare- Set key <i>{0}</i> to <i>{1}</i>", 
+          "Prepare- Set {2}key <i>{0}</i> to <i>{1}</i>", 
           "Set boolean value into current item.", "SetBooleanValue"); 
           
 AddStringParam("Key", "The name of the key.", '""');
@@ -104,19 +106,16 @@ AddAction(3, 0, "Remove key", "Save - prepare item",
           "Remove key of current item.", "RemoveKey");            
           
 AddStringParam("ID", "ID of item.", '""');
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(4, 0, "Save to itemID", "Save", 
-          "Save- Save current item at itemID: <i>{0}</i> (tag <i>{1}</i>)", 
+          "Save- Save current item at itemID: <i>{0}</i>", 
           'Save current item into server. Push item if ID is equal to "".', "Save"); 
 
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(5, 0, "Push", "Save", 
-          "Save- Push current item (tag <i>{0}</i>)", 
+          "Save- Push current item", 
           'Push current item into server. Get itemID by "expression:LastSavedItemID".', "Push");       
 
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddAction(6, af_deprecated, "Save at first queried item", "Save - unique", 
-          "Save- Save current item at first queried item (tag <i>{0}</i>)", 
+AddAction(6, 0, "Save at first queried item", "Save", 
+          "Save- Save current item at first queried item", 
           "Overwrite first queried item. Create one if there had no queried item.", "OverwriteQueriedItems");
           
 AddStringParam("Key", "The name of the key.", '""');
@@ -139,10 +138,9 @@ AddAction(9, 0, "Remove all items", "Save prepare item - array",
           "Prepare- Remove all items at key <i>{0}</i>", 
           "Remove all items at key of current item.", "ArrayRemoveAllItems");
 
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
-AddAction(10, 0, "Save unique", "Save - unique", 
-          "Save- Save current item to unique object", 
-          'Save current item into server. Get itemID by "expression:LastSavedItemID".', "SaveUnique");            
+AddAction(10, 0, "Save primary", "Save - primary", 
+          "Save- Save current item to primary object", 
+          'Save current item into server. Get itemID by "expression:LastSavedItemID".', "SavePrimary");            
           
 AddNumberParam("Start", "Start index, 0-based.", 0);          
 AddNumberParam("Lines", "Count of lines", 10); 
@@ -165,26 +163,30 @@ AddAction(14, 0, "Turn to next page", "Load - page",
 
 AddAction(15, 0, "Turn to previous page", "Load - page", 
           "Load- turn to previous page", 
-          "Turn to previous page.", "RequestTurnToPreviousPage");     
+          "Turn to previous page.", "RequestTurnToPreviousPage");    
+          
+AddAction(16, 0, "Load all queried items", "Load - all", 
+          "Load- Load all queried items", 
+          "Load all queried items.", "LoadAllItems");            
 
-AddAction(21, 0, "1. New", "Item filter - 1. new", 
+AddAction(21, 0, "1. New", "Filter - 1. new", 
           "Filter- 1. Create a new item filter", 
           "Create a new item filter.", "NewFilter");  
 
 AddStringParam("Key", "The name of the key.", '""');
-AddAction(22, 0, "2. all values", "Item filter - 2. key", 
+AddAction(22, 0, "2. all values", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: all values ", 
           "Add all values for this key.", "AddAllValue");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
-AddAction(23, af_deprecated, "2. add to white list", "Item filter - 2. key", 
+AddAction(23, af_deprecated, "2. add to white list", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: add <i>{1}</i> to white list", 
           "Add a value into white list of this key.", "AddToWhiteList");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
-AddAction(24, af_deprecated, "2. add to black list", "Item filter - 2. key", 
+AddAction(24, af_deprecated, "2. add to black list", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: add <i>{1}</i> to black list", 
           "Add a value into black list of this key.", "AddToBlackList"); 
           
@@ -197,7 +199,7 @@ AddComboParamOption("greater than or equal to");
 AddComboParamOption("less than or equal to");
 AddComboParam("Conditions", "Condition type.", 0);
 AddAnyTypeParam("Value", "The value to comparsion, could be number or string.", 0);
-AddAction(25, 0, "2. value compare", "Item filter - 2. key", 
+AddAction(25, 0, "2. value compare", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: value is <i>{1}</i> <i>{2}</i>", 
           "Add a value compared for this key.", "AddValueComparsion");          
           
@@ -211,13 +213,13 @@ AddComboParam("Include", "Include compared timestamp or excluded.", 1);
 AddComboParamOption("Created");
 AddComboParamOption("Updated");
 AddComboParam("Type", "Type of compared timestamp.", 0);  
-AddAction(26, 0, "2. timestamp constraint", "Item filter - 2. key", 
+AddAction(26, 0, "2. timestamp constraint", "Filter - 2. key", 
           "Filter- 2. add timestamp constraint: <i>{3}</i> <i>{0}</i> <i>{1}</i> (<i>{2}</i>)", 
           "Add a timestamp constraint into filter. They will be jointed by AND operation.", "AddTimeConstraint");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddStringParam("Start", "Start with string.", '""');
-AddAction(27, 0, "2. string value start with", "Item filter - 2. key", 
+AddAction(27, 0, "2. string value start with", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: string start with <i>{1}</i>", 
           "Add string start with for this key.", "AddStringStartWidth"); 
 
@@ -225,24 +227,24 @@ AddStringParam("Key", "The name of the key.", '""');
 AddComboParamOption("does not exist");
 AddComboParamOption("exist");
 AddComboParam("Exist", "Key exists or not.", 1); 
-AddAction(28, 0, "2. key exist", "Item filter - 2. key", 
+AddAction(28, 0, "2. key exist", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: <i>{1}</i>", 
           "Add existing for this key.", "AddExist");           
 
+AddStringParam("Key", "The name of the key.", '""'); 
 AddComboParamOption("Descending");
 AddComboParamOption("Ascending");
-AddComboParam("Order", "Order of items.", 1);     
-AddStringParam("Key", "The name of the key.", '""');            
-AddAction(31, 0, "3. order", "Item filter - 3. order", 
-          "Filter- 3. sort with <i>{0}</i> order by key <i>{1}</i>", 
+AddComboParam("Order", "Order of items.", 1);                
+AddAction(31, 0, "3. order", "Filter - 3. order", 
+          "Filter- 3. sort with <i>{1}</i> order by key <i>{0}</i>", 
           "Order items.", "AddOrder");
           
-AddAction(41, 0, "4. add all keys", "Item filter - 4. fetching fields", 
+AddAction(41, 0, "4. add all keys", "Filter - 4. fetching fields", 
           "Filter- 4. add all keys into fetching fields", 
           "Add all keys into fetching fields.", "AddAllFields");          
 
 AddStringParam("Key", "The name of the key.", '""');          
-AddAction(42, 0, "4. add a key", "Item filter - 4. fetching fields", 
+AddAction(42, 0, "4. add a key", "Filter - 4. fetching fields", 
           "Filter- 4. add key <i>{0}</i> into fetching fields", 
           "Add a key into fetching fields.", "AddAField");          
 
@@ -252,9 +254,8 @@ AddAction(91, 0, "Load by itemID", "Load - itemID",
           "Load item by itemID.", "FetchByItemID");          
           
 AddStringParam("ID", "ID of item.", '""');
-AddStringParam("Tag", "A tag, to distinguish between different remove requests.", '"_"');
 AddAction(101, 0, "Remove by itemID", "Remove", 
-          "Remove- remove item by itemID: <i>{0}</i> (tag <i>{1}</i>)", 
+          "Remove- remove item by itemID: <i>{0}</i>", 
           "Remove item by itemID.", "RemoveByItemID");    
                    
 AddAction(102, 0, "Remove queried items", "Remove - queried items", 
@@ -266,10 +267,9 @@ AddAction(111, 0, "Get items count", "Queried items count",
           "Get queried items count. Maximum of 160 requests per minute.", "GetItemsCount");    
           
 AddNumberParam("Count", "Count of picked item.", 1);    
-AddAction(112, 0, "Get random items", "Request", 
-          "Request - get <i>{0}</i> random items", 
-          "Get random items.", "GetRandomItems");
-
+AddAction(112, 0, "Load random queried items", "Load - random", 
+          "Load - load <i>{0}</i> random queried items", 
+          "Load random queried items.", "LoadRandomItems");
      
 AddStringParam("Key", "The name of the key.", '""');
 AddStringParam("Class name", "Class name of linked object.", '""');
@@ -284,39 +284,64 @@ AddComboParamOption("does not include");
 AddComboParamOption("include");
 AddComboParam("Include", "Include or not.", 1);   
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
-AddAction(201, 0, "2. value include", "Item filter - 2. key", 
+AddAction(201, 0, "2. value include", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: value <i>{1}</i> <i>{2}</i>", 
           "Add a value including/not including of this key.", "AddValueInclude");       
 
 AddStringParam("Key", "The name of the key.", '""');
-AddAction(202, 0, "4. Get linked object", "Item filter - 4. fetching fields", 
+AddAction(202, 0, "4. Get linked object", "Filter - 4. fetching fields", 
           "Filter- 4. key <i>{0}</i>: get linked object", 
-          "Get linked object at this key.", "AddGetLinkedObject");           
+          "Get linked object at this key.", "AddGetLinkedObject"); 
+          
+AddStringParam("ItemID", "Object ID of item.", '""');
+AddAction(203, 0, "2. itemID include", "Filter - 2. itemID", 
+          "Filter- 2. itemID: include <i>{0}</i>", 
+          "Add an itemID including.", "AddItemIDInclude"); 
+                                        
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Current itemID", "Received - for each", "CurItemID", 
+AddExpression(1, ef_return_string, "Current itemID", "Load - for each", "CurItemID", 
               "Get the current itemID in a For Each loop.");               
-AddExpression(2, ef_return_any | ef_variadic_parameters, "Current item content", "Received - for each", "CurItemContent", 
+AddExpression(2, ef_return_any | ef_variadic_parameters, "Current item content", "Load - for each", "CurItemContent", 
               "Get current item content in JSON string in a For Each loop. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
-AddExpression(3, ef_return_number, "Current sent unix timestamp", "Received - for each", "CurSentAt", 
+AddExpression(3, ef_return_number, "Current sent unix timestamp", "Load - for each", "CurSentAt", 
               "Get the current sent unix timestamp (number of milliseconds since the epoch) in a For Each loop.");
-AddExpression(4, ef_return_number, "Current items index", "Received - for each", "CurItemIndex", 
-              "Get the current items index in a For Each loop."); 
+AddExpression(4, ef_return_number, "Current item index", "Load - for each - index", "CurItemIndex", 
+              "Get the current item index in a For Each loop."); 
 AddExpression(5, ef_return_any | ef_variadic_parameters, "Prepared item content", "Prepare item", "PreparedItemContent", 
               "Get prepared item content in JSON string. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
+AddExpression(6, ef_return_number, "Received items count", "Received", "ReceivedItemsCount", 
+              "Get received items count in current received page.");
+AddExpression(7, ef_return_number, "Current start index", "Load - for each - index", "CurStartIndex", 
+              "Get start index in current received page.");
+AddExpression(8, ef_return_number, "Current loop index", "Load - for each - index", "LoopIndex", 
+              "Get loop index in current received page.");              
+
+AddNumberParam("Index", "Global index, 0-based.", 0);                    
+AddExpression(11, ef_return_string, "Get itemID by global index", "Received", "Index2ItemID", 
+              "Get itemID by global index.");                                               
 AddNumberParam("Index", "Global index, 0-based.", 0); 			  
-AddExpression(12, ef_return_any | ef_variadic_parameters, "Get item content by global insex", "Received", "Index2ItemContent", 
+AddExpression(12, ef_return_any | ef_variadic_parameters, "Get item content by global index", "Received", "Index2ItemContent", 
               "Get item content in JSON string by global index. Add 2nd parameter to get value at the specific key. Add 3rd parameter for default value if this key is not existed.");
+AddNumberParam("Index", "Global index, 0-based.", 0); 	
+AddExpression(13, ef_return_number, "Get sent unix timestamp by global index", "Received", "Index2SentAt", 
+              "Get sent unix timestamp (number of milliseconds since the epoch) by global index.");              
               
-AddExpression(31, ef_return_number, "Last saved itemID", "Save", "LastSavedItemID", 
+AddExpression(21, ef_return_string, "All read items", "Received", "ItemsToJSON", 
+              "Get all read items in JSON string.");              
+              
+AddExpression(31, ef_return_string, "Last saved itemID", "Save", "LastSavedItemID", 
               "Get last saved itemID.");               
 			  
-AddExpression(91, ef_return_string, "Last fetched itemID", "Fetch one", "LastFetchedItemID", 
+AddExpression(91, ef_return_string, "Last fetched itemID", "Load by itemID", "LastFetchedItemID", 
               "Get last fetched itemID.");               
-AddExpression(92, ef_return_any | ef_variadic_parameters, "Last fetched item content", "Fetch one", "LastFetchedItemContent", 
+AddExpression(92, ef_return_any | ef_variadic_parameters, "Last fetched item content", "Load by itemID", "LastFetchedItemContent", 
               "Get last fetched item content in JSON string. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
-AddExpression(93, ef_return_number, "Last fetched item's sent unix timestamp", "Fetch one", "LastFetchedSentAt", 
+AddExpression(93, ef_return_number, "Last fetched item's sent unix timestamp", "Load by itemID", "LastFetchedSentAt", 
               "Get last fetched item's sent unix timestamp (number of milliseconds since the epoch).");
+              
+AddExpression(101, ef_return_string, "Last removed itemID", "Remove", "LastRemovedItemID", 
+              'Get last removed itemID under "Condition:On remove by itemID complete".');               
 
 AddExpression(111, ef_return_number, "Last items count", "Queried items count", "LastItemsCount", 
               'Get last queried items count under "Condition: On get items count complete".');              

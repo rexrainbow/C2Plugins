@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 

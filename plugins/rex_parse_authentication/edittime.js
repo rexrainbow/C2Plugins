@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 
@@ -40,7 +40,11 @@ AddCondition(31, cf_trigger, "On login successfully", "General - login",
             
 AddCondition(32, cf_trigger, "On login error", "General - login", 
             "On login error", 
-            "Triggered when login error.", "OnLoginError");                
+            "Triggered when login error.", "OnLoginError");
+
+AddCondition(101, 0, "Is first login", "Quick login", 
+            "Is first login", 
+            'Return true if first login by "action: Sign up & Login".', "IsFirstLogin");            
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("User name", "Unique user name.");
@@ -69,9 +73,23 @@ AddAction(31, 0, "Logging out", "General",
 
 AddStringParam("User name", "Unique user name.");
 AddStringParam("Password", "User password");
-AddAction(101, 0, "Sign up & Login", "User name & Password - login", 
+AddAction(101, 0, "Sign up & Login", "Quick login", 
           "Sign up & login with user name to <i>{0}</i>, password to <i>{1}</i>", 
-          "Sign up & login with user name & password.", "UsernamePassword_SignUpLogin");                               
+          "Sign up & login with user name & password.", "UsernamePassword_SignUpLogin");   
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddAction(111, 0, "Set value", "Initial user data", 
+          "User data- Set key <i>{0}</i> to <i>{1}</i>", 
+          "Set value into current item.", "SetValue");
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("False");
+AddComboParamOption("True");
+AddComboParam("Boolean", "Boolean value.", 1); 
+AddAction(112, 0, "Set boolean value", "Initial user data", 
+          "User data- Set key <i>{0}</i> to <i>{1}</i>", 
+          "Set boolean value into current item.", "SetBooleanValue");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 
@@ -83,13 +101,16 @@ AddExpression(3, ef_return_string, "User ID", "General auth data", "UserID",
 AddExpression(4, ef_return_string, "User name", "General auth data", "UserName", 
               "Unique user name.");
 
+AddExpression(11, ef_return_number, "Get login counter", "General auth data", "LoginCount", 
+              "Get login counter (1-base). Return 0 if this feature is not enable.");
                                                                                    
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
 	new cr.Property(ept_text, "Application ID", "", "Application ID"),
-	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key")
+	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
+    new cr.Property(ept_combo, "Login counter", "No", "Enable login counter.", "No|Yes"),	
 	];
 	
 // Called by IDE when a new object type is to be created

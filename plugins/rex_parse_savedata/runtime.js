@@ -27,7 +27,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.3.2.min.js");
+	    jsfile_load("parse-1.4.2.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -141,6 +141,27 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 		read_header();			
 	};
+	
+	var get_data = function(in_data, default_value)
+	{
+	    var val;
+	    if (in_data === null)
+	    {
+	        if (default_value === null)
+	            val = 0;
+	        else
+	            val = default_value;
+	    }
+        else if (typeof(in_data) == "object")
+        {
+            val = JSON.stringify(in_data);
+        }
+        else
+        {
+            val = in_data;
+        }	    
+        return val;
+	};  	
     
 	var clean_table = function (o)
 	{
@@ -306,7 +327,14 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 		this.read_slot(slot_name, save_slot, on_error);			
 	};
+
 	
+    Acts.prototype.SetBooleanValue = function (key_, b, is_body)
+	{
+        var table = (is_body==1)? this.save_body:this.save_header;
+		table[key_] = (b===1);
+	};
+		
     Acts.prototype.GetAllHeaders = function ()
 	{
 		var self = this;
@@ -440,12 +468,28 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	
 	Exps.prototype.CurHeaderValue = function (ret, key_, default_value)
 	{
-		ret.set_any(get_data(this.exp_CurHeader["get"](key_), default_value));
+        var value_;
+        if (key_ === "id")
+	        value_ = this.exp_CurHeader["id"];
+	    else if ((key_ === "updatedAt") || (key_ === "createdAt"))
+	        value_ = this.exp_CurHeader[key_]["getTime"]();
+	    else
+	        value_ = this.exp_CurHeader["get"](key_);    
+		ret.set_any(get_data(value_, default_value));
 	};	
 	
 	Exps.prototype.BodyValue = function (ret, key_, default_value)
-	{	    
-	    var value_ = (this.load_body==null)? null:this.load_body["get"](key_);
+	{	
+	    var value_;
+	    if (this.load_body !=null)
+	    {
+	        if (key_ === "id")
+	            value_ = this.load_body["id"];
+	        else if ((key_ === "updatedAt") || (key_ === "createdAt"))
+	            value_ = this.load_body[key_]["getTime"]();
+	        else
+	            value_ = this.load_body["get"](key_);
+	    }
 		ret.set_any(get_data(value_, default_value));
 	};
 
@@ -463,16 +507,25 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	
 	Exps.prototype.HeaderValue = function (ret, slot_name, key_, default_value)
 	{	
-	    var value_ = this.load_body;
+	    var value_ = this.load_headers;
 	    if (value_ != null)
 	    {
 	        value_ = value_[slot_name];
 	        if (value_ != null)
 	        {
-	            value_ = value_["get"](key_);
+	            if (key_ === "id")
+	                value_ = value_["id"];
+	            else if ((key_ === "updatedAt") || (key_ === "createdAt"))
+	                value_ = value_[key_]["getTime"]();
+	            else
+	                value_ = value_["get"](key_);               
 	        }
 	    }
 		ret.set_any(get_data(value_, default_value));
 	};	
 	
+	Exps.prototype.KeyLastSaveTime = function (ret)
+	{
+		ret.set_string("updatedAt");
+	};		
 }());

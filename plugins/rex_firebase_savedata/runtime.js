@@ -276,6 +276,18 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		clean_table(this.save_header);	
 		clean_table(this.save_body);	
 	};
+    	
+    Acts.prototype.SetBooleanValue = function (key_, b, is_body)
+	{
+        var table = (is_body==1)? this.save_body:this.save_header;
+		table[key_] = (b==1);
+	};
+    	
+    Acts.prototype.SetCurrentServerTimestamp = function (key_, is_body)
+	{
+        var table = (is_body==1)? this.save_body:this.save_header;
+		table[key_] = window["Firebase"]["ServerValue"]["TIMESTAMP"];
+	};	
 	
     Acts.prototype.GetAllHeaders = function ()
 	{

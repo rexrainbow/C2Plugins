@@ -36,7 +36,13 @@ AddCondition(4, cf_trigger, "On received error", "Load",
 AddCondition(11, cf_looping | cf_not_invertible, "For each tag", "Load - for each", 
              "For each tag", 
              "Repeat the event for each tag.", "ForEachTag");    
-             
+
+AddNumberParam("Start", "Start from message index (0-based).", 0);  
+AddNumberParam("End", "End to message index (0-based). This value should larger than Start.", 2);    
+AddCondition(12, cf_looping | cf_not_invertible, "For each tag in a range", "Load - for each", 
+             "For each tag from index <i>{0}</i> to <i>{1}</i>", 
+             "Repeat the event for each tag in a range.", "ForEachTag"); 
+                          
 AddCondition(103, cf_trigger, "On remove queried tags complete", "Remove queried tags",
             "On remove queried tags complete",
             "Triggered when remove complete.", "OnRemoveQueriedTagsComplete");
@@ -74,21 +80,14 @@ AddCondition(123, cf_looping | cf_not_invertible, "For each kind of tag", "Tags 
 AddStringParam("OwnerID", "Object ID of owner.", '""');
 AddStringParam("TargetID", "Object ID of tagged target.", '""');
 AddStringParam("User tag", 'User tag.', '""');
-AddStringParam("Category", "Category.", '""');
+AddStringParam("Category", 'Category.', '""');
+AddStringParam("Description", '(Optional) Description of this tag. Input "" to ignore this field', '""');
+AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
+AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
 AddAction(11, 0, "Paste tag", "Paste", 
-          "Owner ID: <i>{0}</i> pastes tag: <i>{2}</i> (<i>{3}</i>) to target ID: <i>{1}</i>", 
+          "Owner ID: <i>{0}</i> pastes tag [<i>{3}</i>] <i>{2}</i>: <i>{4}</i> to target ID: <i>{1}</i>", 
           "Paste tag on an object.", "PasteTag");
           
-AddStringParam("OwnerID", "Object ID of owner.", '""');
-AddStringParam("Owner class", 'Class name of owner. Input "" to ignore this feature.', '""');
-AddStringParam("TargetID", "Object ID of tagged target.", '""');
-AddStringParam("Target class", 'Class name of tagged target. Input "" to ignore this feature.', '""');
-AddStringParam("User tag", 'User tag.', '""');
-AddStringParam("Category", "Category.", '""');
-AddAction(12, 0, "Paste tag (link to object)", "Paste", 
-          "Owner ID: <i>{0}</i> (<i>{1}</i>) pastes tag: <i>{4}</i> (<i>{5}</i>) to target ID: <i>{2}</i> (<i>{3}</i>)", 
-          "Paste tag on an object.", "PasteTagLinkToObject");          
-
 AddAction(21, 0, "New", "Filter - 1. new", 
           "Filter- 1. Create a new tag filter", 
           "Create a new tag filter.", "NewFilter");       
@@ -163,11 +162,14 @@ AddAction(111, 0, "Get tags count", "Queried tags count",
           "Get queried tags count", 
           "Get queried tags count. Maximum of 160 requests per minute.", "GetTagsCount");              
           
-AddAction(121, 0, "Request tag list", "Load - tag list", 
-          "Load- Request tag list", 
-          "Request tag list.", "RequestTagList");                                              
+AddAction(121, 0, "Request tags list", "Load - tags list", 
+          "Load- Request tags list", 
+          "Request tags list.", "RequestTagsList");                                              
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(3, ef_return_string, "Last pasted tagID", "Paste", "LastPastedTagID", 
+              'Get last pasted tagID under "Condition:On paste complete".');  
+              
 AddExpression(11, ef_return_string, "Current owner ID", "Load - for each", "CurOwnerID", 
               "Get the current ownerID in a For Each loop.");  
 AddExpression(12, ef_return_string, "Current target ID", "Load - for each", "CurTargetID", 
@@ -176,8 +178,32 @@ AddExpression(13, ef_return_string, "Current user tag", "Load - for each", "CurU
               "Get the current user tag in a For Each loop.");  
 AddExpression(14, ef_return_string, "Current category", "Load - for each", "CurCategory", 
               "Get the current category in a For Each loop."); 
+AddExpression(15, ef_return_string, "Current description", "Load - for each", "CurDescription", 
+              "Get the current description in a For Each loop.");               
+AddExpression(16, ef_return_string, "Current tagID", "Load - for each", "CurTagID", 
+              'Get the current tagID in "Condition: For each tag" or "Condition: For each kind of tag".');
+AddExpression(17, ef_return_string, "All read tags", "Load", "TagsToJSON", 
+              "Get all read tags in JSON string.");     
+AddExpression(18, ef_return_number, "Current tag index", "Load - for each - index", "CurTagIndex", 
+              "Get the current tag index in a For Each loop."); 
               
-
+//AddStringParam("Key", "Key of object.", '""');              
+AddExpression(19, ef_return_any | ef_variadic_parameters, "Current owner object", "Load - for each", "CurOwnerObject", 
+              "Get the current owner object in a For Each loop.");  
+//AddStringParam("Key", "Key of object.", '""');              
+AddExpression(20, ef_return_any | ef_variadic_parameters, "Current target object", "Load - for each", "CurTargetObject", 
+              "Get the current target object in a For Each loop.");              
+              
+AddExpression(21, ef_return_number, "Current tag count", "Load - for each", "CurTagCount", 
+              "Get tag count in current received page.");
+AddExpression(22, ef_return_number, "Current start index", "Load - for each - index", "CurStartIndex", 
+              "Get start index in current received page.");
+AddExpression(23, ef_return_number, "Current loop index", "Load - for each - index", "LoopIndex", 
+              "Get loop index in current received page."); 
+              
+AddExpression(111, ef_return_number, "Last tags count", "Queried tags count", "LastTagsCount", 
+              'Get last queried tags count under "Condition: On get tags count complete".');
+                                                                       
 AddExpression(121, ef_return_string, "Current user tag name", "Tags list - for each", "TLCurTagName", 
               'Get the current user tag under "Condition: For each kind of tag".');  
 AddExpression(122, ef_return_number, "Current tags count", "Tags list - for each", "TLCurTagsCount", 
@@ -185,7 +211,9 @@ AddExpression(122, ef_return_number, "Current tags count", "Tags list - for each
 AddExpression(123, ef_return_number, "Tag name count", "Tags list", "TLTagNameCount", 
               'Get tags count in tags list.');                  
 AddExpression(124, ef_return_number, "Total tags count", "Tags list", "TLTotalTagsCount", 
-              'Get total tags count in tags list.');              
+              'Get total tags count in tags list.');  
+AddExpression(125, ef_return_string, "Tags List in JSON", "Tags list", "TLToJSON", 
+              "Get tags List in JSON string.");                          
                                                                                      
 ACESDone();
 

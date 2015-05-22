@@ -432,6 +432,14 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                pattern_col = pattern[i].length;
 	                for(j=0;j<pattern_col;j++)
 	                {
+	                    // check pattern first
+	                    c = pattern[i][j];
+	                    if (c=="")
+	                    {
+	                        continue;
+	                    }
+	                    
+	                    // then check symbol on board
 	                    tlx = board.LX2WrapLX(x+j);
 	                    tly = board.LY2WrapLY(y+i);
 	                    s = this._symbol_at(tlx, tly);
@@ -439,13 +447,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    {
 	                        is_matched = false;
 	                        break;
-	                    }
-	                    	                   
-	                    c = pattern[i][j];
-	                    if (c=="")
-	                    {
-	                        continue;
-	                    }
+	                    }	                    	                   
+
 	                    else if (is_template_pattern)
 	                    {
 	                        _fill_2d_template_pattern(pattern, s.symbol);

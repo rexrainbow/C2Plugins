@@ -96,9 +96,11 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
         else
             clean_filters( this.filters );	        
 	    
+        this.exp_LoopIndex = -1;
+        this.exp_LastPastedTagID = "";
 	    this.exp_CurTagIndex = -1;
-	    this.exp_CurTag = null;  	    	        
-
+	    this.exp_CurTag = null; 
+	    this.exp_LastTagsCount = 0;
 	    
 	    // tag list    
 	    this.tagsList = {};
@@ -128,6 +130,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    {
             self.exp_CurTagIndex = i;
             self.exp_CurTag = item;
+            self.exp_LoopIndex = i - tagbox.GetStartIndex();
 	    };	    	    
 	    tagbox.onGetIterItem = onGetIterItem;
 	    
@@ -211,70 +214,28 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	        
 	    return query;
 	};
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };    
 	
-    instanceProto.paste_tag = function (ownerID, ownerKlass, targetID, targetKlass, userTag, category)
-	{	
-	    var self = this;
-	    // step 3    
-	    var OnPasteComplete = function(tag_obj)
-	    { 	        
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteComplete, self);
-	    };	
-	    
-	    var OnPasteError = function(tag_obj, error)
-	    {
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteError, self);
-	    };
-	    	    
-	    var save_tag = function(tag_obj)
-	    {
-	        tag_obj["set"]("ownerID", ownerID);
-	        tag_obj["set"]("targetID", targetID);
-	        tag_obj["set"]("category", category);
-	        tag_obj["set"]("tag", userTag);
-	        
-	        if (ownerKlass !== "")
-	        {
-	            var t = window["Parse"].Object["extend"](ownerKlass);
-	            var o = new t();
-	            o["id"] = ownerID;
-	            tag_obj["set"]("ownerObject", o);
-	        }
-	        if (targetKlass !== "")
-	        {
-	            var t = window["Parse"].Object["extend"](targetKlass);
-	            var o = new t();
-	            o["id"] = targetID;
-	            tag_obj["set"]("targetObject", o);
-	        }	        
-	        var handler = {"success":OnPasteComplete, "error": OnPasteError};
-	        tag_obj["save"](null, handler);	        
-	    };
-	    
-	    // step 2
-	    var on_success = function(tag_obj)
-	    {	 
-	        if (!tag_obj)
-	        {	            	        
-	            tag_obj = new self.tag_klass();	            	        
-	            save_tag(tag_obj);
-	        }
-	        else
-	        {
-	            // tag had already existed
-	        } 
-	       
-	    };	    
-	    var on_error = function(error)
-	    {
-	        OnPasteError(null, error);
-	    };
-        
-	    // step 1
-		var handler = {"success":on_success, "error": on_error};		
-	    this.get_base_query(ownerID, targetID, category, userTag)["first"](handler); 
-	}; 	
-		
     var clean_table = function (o)
     {
         for(var n in o)
@@ -393,7 +354,8 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
                 this.runtime.pushCopySol(current_event.solModifiers);
             }
             
-            this.exp_TLxx = l[i];
+            this.exp_TLxxx = l[i];
+            this.exp_LoopIndex = i;
             current_event.retrigger();
             
 		    if (solModifierAfterCnds)
@@ -409,15 +371,74 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
-    Acts.prototype.PasteTag = function (ownerID, targetID, userTag, category)
+    Acts.prototype.PasteTag = function (ownerID, targetID, userTag, category, description, ownerKlass, targetKlass)
 	{	
-	    this.paste_tag(ownerID, "", targetID, "", userTag, category);
-	}; 
- 
-    Acts.prototype.PasteTagLinkToObject = function (ownerID, ownerKlass, targetID, targetKlass, userTag, category)
-	{	
-	    this.paste_tag(ownerID, ownerKlass, targetID, targetKlass, userTag, category);
-	};     
+	    var self = this;
+	    // step 3    
+	    var OnPasteComplete = function(tag_obj)
+	    { 	        
+	        self.exp_LastPastedTagID = tag_obj["id"];
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteComplete, self);
+	    };	
+	    
+	    var OnPasteError = function(tag_obj, error)
+	    {
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteError, self);
+	    };
+	    	    
+	    var save_tag = function(tag_obj)
+	    {
+	        tag_obj["set"]("ownerID", ownerID);
+	        tag_obj["set"]("targetID", targetID);
+	        tag_obj["set"]("tag", userTag);
+	        tag_obj["set"]("category", category);            
+            
+            if (description !== "")
+                tag_obj["set"]("description", description);
+                
+	        if (ownerKlass !== "")
+	        {
+	            var t = window["Parse"].Object["extend"](ownerKlass);
+	            var o = new t();
+	            o["id"] = ownerID;
+	            tag_obj["set"]("ownerObject", o);
+	        }
+	        if (targetKlass !== "")
+	        {
+	            var t = window["Parse"].Object["extend"](targetKlass);
+	            var o = new t();
+	            o["id"] = targetID;
+	            tag_obj["set"]("targetObject", o);
+	        }	        
+	        var handler = {"success":OnPasteComplete, "error": OnPasteError};
+	        tag_obj["save"](null, handler);	        
+	    };
+	    
+	    // step 2
+	    var on_success = function(tag_obj)
+	    {	 
+	        if (!tag_obj)
+	        {	            	        
+	            tag_obj = new self.tag_klass();	            	        
+	            save_tag(tag_obj);
+	        }
+	        else
+	        {
+	            // tag had already existed
+	            OnPasteComplete(tag_obj);
+	        } 
+	       
+	    };	    
+	    var on_error = function(error)
+	    {
+	        OnPasteError(null, error);
+	    };
+        
+	    // step 1
+		var handler = {"success":on_success, "error": on_error};		
+	    this.get_base_query(ownerID, targetID, category, userTag)["first"](handler); 
+	}; 	
+  
     Acts.prototype.NewFilter = function ()
 	{    
         clean_filters(this.filters);
@@ -572,7 +593,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    query["count"](query_handler);
 	};	
     
-    Acts.prototype.RequestTagList = function ()
+    Acts.prototype.RequestTagsList = function ()
 	{
 	    var query = this.get_request_query(this.filters);
 	    query["select"]("tag");        
@@ -583,13 +604,13 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    
         var self = this;             
 
-        var get_tags = funtion ()
+        var get_tags = function (items)
         {        
             clean_table(self.tagsList);                
-            var tag, i, cnt=all_items.length;
+            var tag, i, cnt=items.length;
             for(i=0; i<cnt; i++)
             {
-                tag = all_items[i]["get"]("tag");
+                tag = items[i]["get"]("tag");
                 if (!self.tagsList.hasOwnProperty(tag))
                     self.tagsList[tag] = 0;
 
@@ -610,7 +631,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	        }
 	        else  // finish
 	        {
-                get_tags();  	   
+                get_tags(all_items);  	   
                 self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnGetTagsListComplete, self);
 	        }
 	    };	    
@@ -676,10 +697,87 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    if (this.exp_CurTag)
 	        category = this.exp_CurTag["get"]("category");
 	        
-	    if (!userTag)
+	    if (!category)
 	        category = "";
 	    
 		ret.set_string( category );
+	};	
+	Exps.prototype.CurDescription = function (ret)
+	{
+	    var category;
+	    if (this.exp_CurTag)
+	        category = this.exp_CurTag["get"]("category");
+	        
+	    if (!category)
+	        category = "";
+	    
+		ret.set_string( category );
+	};	    
+	Exps.prototype.CurTagID = function (ret)
+	{
+	    var tagID;
+	    if (this.exp_CurTag)
+	        tagID = this.exp_CurTag["id"];
+	        
+	    if (!tagID)
+	        tagID = "";
+	    
+		ret.set_string( tagID );
+	};
+	Exps.prototype.TagsToJSON = function (ret)
+	{
+		ret.set_string( JSON.stringify(this.tagbox.GetItems()) );
+	};
+
+	Exps.prototype.CurTagIndex = function (ret)
+	{
+		ret.set_int(this.exp_CurTagIndex);
+	}; 
+
+	Exps.prototype.CurOwnerObject = function (ret, k_, default_value)
+	{
+	    var v;
+	    if (this.exp_CurTag)
+	    {
+	        var obj = this.exp_CurTag["get"]("ownerObject");
+	        if (obj)           
+	            v = (k_ == null)? obj : obj["get"](k_);
+	    }
+
+		ret.set_any( din(v, default_value)  );
+	}; 
+    
+	Exps.prototype.CurTargetObject = function (ret, k_, default_value)
+	{
+	    var v;
+	    if (this.exp_CurTag)
+	    {
+	        var obj = this.exp_CurTag["get"]("targetObject");
+	        if (obj)           
+	            v = (k_ == null)? obj : obj["get"](k_);
+	    }
+
+		ret.set_any( din(v, default_value)  );
+	};     
+		
+	Exps.prototype.CurTagCount = function (ret)
+	{
+		ret.set_int(this.tagbox.GetItems().length);
+	};
+    
+	Exps.prototype.CurStartIndex = function (ret)
+	{
+		ret.set_int(this.tagbox.GetStartIndex());
+	};	
+    
+	Exps.prototype.LoopIndex = function (ret)
+	{
+		ret.set_int(this.exp_LoopIndex);
+	};
+	    
+	Exps.prototype.LastTagsCount = function (ret)
+	{
+		ret.set_int(this.exp_LastTagsCount);
 	};	
 	
 	Exps.prototype.TLCurTagName = function (ret)
@@ -708,6 +806,10 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	{
 		ret.set_int(this.exp_TLTotalTagsCount);
 	};
+	Exps.prototype.TLToJSON = function (ret)
+	{
+		ret.set_string( JSON.stringify(this.tagsList) );
+	};	
 }());
 
 (function ()
@@ -737,59 +839,31 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
         this.start = 0;     
 	};	
 	     
-	ItemPageKlassProto.request = function(query, start, lines)
+    ItemPageKlassProto.request = function (query, start, lines)
 	{
-        if (start < 0)
-            start = 0;
-            
-        var self = this;
-        
+	    if (start==null)
+	        start = 0;
+	    var is_onePage = (lines != null) && (lines <= 1000);
+	    var linesInPage = (is_onePage)? lines:1000;
+	                                       	    
+        var self = this;       
 	    var on_success = function(items)
 	    {
-	        self.items = items;
-            self.start = start;
-            self.page_index = Math.floor(start/self.page_lines);            
-	        self.is_last_page = (items.length < lines);         
-	        
-            if (self.onReceived)
-                self.onReceived();
-	    };	    
-	    var on_error = function(error)
-	    {
-	        self.items.length = 0;   
-	        self.is_last_page = false;	        
-	        
-            if (self.onReceivedError)
-                self.onReceivedError();	             
-	    };
-	    
-	    var handler = {"success":on_success, "error": on_error};
-	    query["skip"](start);
-        query["limit"](lines);	    
-	    query["find"](handler);	    
-	};	
-	
-    ItemPageKlassProto.load_all = function (query)
-	{
-	    var start = 0;
-	    var lines = 1000;
-	    
-        var self = this;
-        
-	    var on_success = function(items)
-	    {
-	        self.items.push.apply(self.items, items);
-	        var is_last_page = (items.length < lines);   
+	        self.items.push.apply(self.items, items);        
+	        var is_last_page = (items.length < linesInPage);   
 	        	        
-	        if (!is_last_page)  // try next page
+	        if ((!is_onePage) && (!is_last_page))  // try next page
 	        {
-	            start += lines;
+	            start += linesInPage;
 	            query_page(start);
 	        }
 	        else  // finish
 	        {
-	            self.start = 0;	            
-	            self.is_last_page = true;
+                self.start = start;
+                self.page_index = Math.floor(start/self.page_lines); 
+                             
+                self.is_last_page = is_last_page;
+	            
                 if (self.onReceived)
                     self.onReceived();	            
 	        }
@@ -808,9 +882,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    {
 	        // get 1000 lines for each request until get null or get userID	       
             query["skip"](start_);
-            query["limit"](lines);
+            query["limit"](linesInPage);
             query["find"](handler);
-        }
+        };
 
         this.items.length = 0;
 	    query_page(start);
@@ -846,7 +920,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
     
     ItemPageKlassProto.LoadAllItems = function (query)
 	{
-	    this.load_all(query);
+	    this.request(query);
 	}; 
 	ItemPageKlassProto.ForEachItem = function (runtime, start, end)
 	{

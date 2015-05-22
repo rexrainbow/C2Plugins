@@ -16,29 +16,54 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddComboParamOption("Pattern count in ascending order");
+AddComboParamOption("Pattern count in descending order");
+AddComboParamOption("Pattern name in ascending order");
+AddComboParamOption("Pattern name in descending order");
+AddComboParam("Order", "Sort by name or count.", 1);
+AddCondition(11, cf_looping | cf_not_invertible, "For each pattern", "Pattern - for each",
+             "For each pattern, sort by <i>{0}</i>", 
+             "Repeat the event for each pattern.", "ForEachPattern");    
 //////////////////////////////////////////////////////////////
 // Actions  
 AddComboParamOption("Shuffle");
 AddComboParamOption("Random");
+AddComboParamOption("Shuffle without restart");
 AddComboParam("Mode", "Mode of pattern generator.",0);
 AddAction(1, 0, "Set mode", "Mode", "Set mode to <i>{0}</i>", 
           "Set mode of pattern generator.", "SetMode");  
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddNumberParam("Count", "Pattern count.", 1);
-AddAction(2, 0, "Set pattern", "Pattern", "Set pattern <i>{0}</i> with count to <i>{1}</i>", 
+AddAction(2, 0, "Set pattern", "Pattern", 
+          "Set pattern <i>{0}</i> with count to <i>{1}</i>", 
           "Set pattern.", "SetPattern");
+          
 AddStringParam("Pattern", "Pattern in gererator.", '""');
-AddAction(3, 0, "Remove pattern", "Pattern", "Remove pattern <i>{0}</i>", 
+AddAction(3, 0, "Remove pattern", "Pattern - remove", 
+          "Remove pattern <i>{0}</i>", 
           "Remove pattern.", "RemovePattern"); 
-AddAction(4, 0, "Remove all patterns", "Pattern", "Remove all patterns", 
-          "Remove all patterns.", "RemoveAllPatterns");  
+AddAction(4, 0, "Remove all patterns", "Pattern - remove", 
+          "Remove all patterns", 
+          "Remove all patterns.", "RemoveAllPatterns");
+            
 AddAction(5, 0, "Start", "Generator", 
           "Start generator", 
           "Start generator.", "StartGenerator"); 
 AddAction(6, 0, "Generate", "Generator", 
           "Generate a new pattern", 
-          "Generate a new pattern.", "Generate");           
+          "Generate a new pattern.", "Generate");
+                     
+AddStringParam("Pattern", "Pattern in gererator.", '""');
+AddNumberParam("Count", "Pattern count.", 1);
+AddAction(7, 0, "Add pattern", "Pattern", 
+          "Add pattern <i>{0}</i> with count to <i>{1}</i>", 
+          "Add pattern.", "AddPattern");    
+AddStringParam("Pattern", "Pattern in gererator.", '""');
+AddNumberParam("Count", "Pattern count.", 1);
+AddAction(8, 0, "Put pattern back", "Pattern", 
+          "Put pattern <i>{0}</i> with count to <i>{1}</i> back", 
+          "Put pattern back without change total count of this pattern, do nothing if the pattern is not existed. It is only ussd in Shuffle mode.", "PutPatternBack");                 
+   
 
 AddStringParam("JSON", "A string of the JSON data to load.");
 AddAction(11, 0, "Load", "JSON", "Load from JSON string <i>{0}</i>", "Load from an object previously encoded in JSON format.", "JSONLoad");
@@ -54,21 +79,33 @@ AddExpression(2, ef_return_string,
               "Get pattern from generator.");
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddExpression(3, ef_return_number, 
-              "Get count of pattern", "Pattern", "TotalCount", "Get total count of pattern.");
+              "Get count of patterns", "Pattern", "TotalCount", "Get total count of patterns.");
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddExpression(4, ef_return_number, 
               "Manual pick pattern", "Generator", "ManualPick", 'Manual pick pattern. Return pattern if success, else return ""');
 AddExpression(5, ef_return_string, 
               "Get last pattern", "Generator", "LastPattern", 
-              "Get last generated pattern.")
+              "Get last generated pattern.");
+AddStringParam("Pattern", "Pattern in gererator.", '""');
+AddExpression(6, ef_return_number, 
+              "Get count of remain patterns", "Pattern", "RemainCount", "Get count of remain patterns.");              
               
 AddExpression(11, ef_return_string, "Get as JSON", "JSON", "AsJSON", "Return the contents of the patterngen in JSON format.");
+
+AddExpression(21, ef_return_string, "Current pattern name", "Pattern - for each", "CurPatternName", 
+              'Get current pattern name under "Condition: For each pattern".');
+AddExpression(22, ef_return_number, "Total count of current pattern", "Pattern - for each", "CurPatternTotalCount", 
+              'Get total count of current pattern under "Condition: For each pattern".');
+AddExpression(23, ef_return_number, "Remain count of current pattern", "Pattern - for each", "CurPatternRemainCount", 
+              'Get remain count of current pattern under "Condition: For each pattern".');   
+AddExpression(24, ef_return_number, "Loop index", "Pattern - for each", "LoopIndex", 
+              'Get loop index under "Condition: For each pattern".');      
               
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Mode", "Shuffle", "Generater mode.", "Shuffle|Random"),
+    new cr.Property(ept_combo, "Mode", "Shuffle", "Generater mode.", "Shuffle|Random|Shuffle wo restart"),
     new cr.Property(ept_text, "Patterns", "", 
                    'Set patterns. ex:"{"A":10,"B":20}".'),	
 	];

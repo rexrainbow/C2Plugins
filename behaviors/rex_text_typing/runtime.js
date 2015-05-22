@@ -100,9 +100,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
 			text_type = "Spritefont2";	  
+	    else if (cr.plugins_.TextBox &&
+		         (this.inst instanceof cr.plugins_.TextBox.prototype.Instance))
+		    text_type = "TextBox";					
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    text_type = "rex_TagText";
+		    text_type = "rex_TagText";   
 		else
 		    text_type = "";	 
 		return text_type;
@@ -116,8 +119,10 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
 	    else if (this.text_type == "Spritefont2")	
 			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (this.text_type == "TextBox")	
+			set_text_handler = cr.plugins_.TextBox.prototype.acts.SetText;				
 	    else if (this.text_type == "rex_TagText")	
-			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
+			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;		
 	    else
 		    set_text_handler = null;
 	    return set_text_handler;
@@ -126,7 +131,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto._get_raw_text_length = function (content)
 	{	    
 	    var len;
-		if ((this.text_type == "Text") || (this.text_type == "Spritefont2"))
+		if ((this.text_type == "Text") || (this.text_type == "Spritefont2") || (this.text_type == "TextBox"))
 		    len = content.length;
         else if (this.text_type == "rex_TagText")
             len = this.inst.rawTextGet(content).length;
@@ -145,7 +150,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	    if (end_index == null)
 	        end_index = this.raw_text_length;
 
-		if ((this.text_type == "Text") || (this.text_type == "Spritefont2"))
+		if ((this.text_type == "Text") || (this.text_type == "Spritefont2") || (this.text_type == "TextBox"))
 		{
 		    content = content.slice(start_index, end_index);
             this._set_text_handler.call(this.inst, content);

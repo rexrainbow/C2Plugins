@@ -106,6 +106,11 @@ cr.plugins_.Rex_Achievements = function(runtime)
                 "va": this.vaild_result};
 	};
 	
+	instanceProto.statesToJSON = function ()
+	{
+		return this.achievements.statesToJSON();
+	};	
+	
 	instanceProto.loadFromJSON = function (o)
 	{
 	    this.achievements.loadFromJSON(o["as"]);
@@ -113,7 +118,12 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	    this.props = o["ps"];
 		this.vaild_result = o["va"];	
 		 		      
-	};   
+	}; 
+	  
+	instanceProto.statesFromJSON = function (o)
+	{
+        this.achievements.statesFromJSON(o);
+	}; 	
 	
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
@@ -210,7 +220,6 @@ cr.plugins_.Rex_Achievements = function(runtime)
 
 	Cnds.prototype.ForEachAchievement = function (level_name)
 	{
-	    this.run_test();
 	    var achievements = this.achievements.GetAchievementsByLevelName(level_name);
 	    var names = [], names_map = {};
 	    var i,cnt=achievements.length, n;
@@ -228,8 +237,6 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	
 	Cnds.prototype.IsObtained = function (level_name, achievement_name, latest_obtained)
 	{
-	    debugger;
-	    this.run_test();
 	    var achievements = this.achievements.GetAchievementsByLevelName(level_name);
 	    var isObtained = false;
 	    var i,cnt=achievements.length;
@@ -256,7 +263,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	 
 	Cnds.prototype.ForEachNewObtainedAchievement = function ()
 	{	    
-	    var achievements = this.run_test();
+	    var achievements = this.achievements.GetAchievementsByLevelName(this.level_name);
 	    var names=[], results={}, pre_results={};
 	    var i,cnt=achievements.length, n, item;
 	    for(i=0; i<cnt; i++)
@@ -287,7 +294,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.LoadTable = function (csv_string)
+    Acts.prototype.LoadRules = function (csv_string)
 	{  	
         for (var n in this.props)
             delete this.props[n];
@@ -295,7 +302,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
         this.vaild_result = false;            
             
 	    var csv_table = CSVToArray(csv_string, this.strDelimiter);	    
-	    this.achievements.LoadTable(csv_table);
+	    this.achievements.LoadRules(csv_table);
 	};
 	
     Acts.prototype.SetLevelName = function (level_name)
@@ -309,7 +316,12 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	    this.props[prop] = val;	    
 	    this.vaild_result = false;    
 	};   
-
+	    
+    Acts.prototype.RunTest = function ()
+	{
+	    this.run_test(); 
+	}; 
+	
 	Acts.prototype.JSONLoad = function (json_)
 	{
 		var o;
@@ -320,7 +332,19 @@ cr.plugins_.Rex_Achievements = function(runtime)
 		catch(e) { return; }
 		
 		this.loadFromJSON(o);
-	};    
+	};
+	
+	Acts.prototype.StateJSONLoad = function (json_)
+	{
+		var o;
+		
+		try {
+			o = JSON.parse(json_);
+		}
+		catch(e) { return; }
+		
+		this.statesFromJSON(o);
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -336,6 +360,13 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	    var s = JSON.stringify( this.saveToJSON() );
 		ret.set_string(s);
 	};
+    
+	Exps.prototype.StatesAsJSON = function (ret)
+	{
+	    var s = JSON.stringify( this.statesToJSON() );
+		ret.set_string(s);
+	};	
+	
 }());
 
 (function ()
@@ -346,7 +377,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
     };
     var AchievementsMgrKlassProto = cr.plugins_.Rex_Achievements.AchievementsMgrKlass.prototype; 
 	
-    AchievementsMgrKlassProto.LoadTable = function (csv_table)
+    AchievementsMgrKlassProto.LoadRules = function (csv_table)
 	{  	
         for (var n in this.achievements)
             delete this.achievements[n];
@@ -401,6 +432,21 @@ cr.plugins_.Rex_Achievements = function(runtime)
 		        };
 	};
 	
+	AchievementsMgrKlassProto.statesToJSON = function ()
+	{   
+        var achievements = {};
+        for (var ln in this.achievements)
+        {
+            achievements[ln] = [];
+            var i, cnt = this.achievements[ln].length;
+            achievements[ln].length = cnt;
+            for(i=0; i<cnt; i++)
+                achievements[ln][i] = this.achievements[ln][i].statesToJSON();
+        }
+        
+		return achievements;
+	};	
+
 	AchievementsMgrKlassProto.loadFromJSON = function (o)
 	{
 	    for (var ln in this.achievements)
@@ -421,6 +467,20 @@ cr.plugins_.Rex_Achievements = function(runtime)
         }        				 		      
 	};	
 	
+	AchievementsMgrKlassProto.statesFromJSON = function (o)
+	{
+		var achievements = o;
+		for (var ln in this.achievements)
+        {
+            var i, cnt= achievements[ln].length;
+            for (i=0; i<cnt; i++)
+            {
+	            this.achievements[ln][i].statesFromJSON(achievements[ln][i]);
+	        }
+        }        				 		      
+	};	
+	
+		
     var AchievementKlass = function()
     {  
         this.name = "";
@@ -483,7 +543,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
     {
         this.previous_result = this.isObtained;
         this.current_result = this.test_handler(prop);
-        this.isObtained = this.isObtained || this.current_result;        
+        this.isObtained = this.isObtained || this.current_result;   
     };   
         
     AchievementKlassProto.saveToJSON = function ()
@@ -494,8 +554,16 @@ cr.plugins_.Rex_Achievements = function(runtime)
                 "res": this.current_result,
                 "code": this.code_save
                };
-    };      
+    };  
         
+    AchievementKlassProto.statesToJSON = function ()
+    {
+        return {"Obt": this.isObtained,
+                "pres": this.previous_result,
+                "res": this.current_result
+               };
+    };
+            
     AchievementKlassProto.loadFromJSON = function (o)
     {
         this.name = o["name"];
@@ -515,4 +583,10 @@ cr.plugins_.Rex_Achievements = function(runtime)
         } 
     };  
     
+    AchievementKlassProto.statesFromJSON = function (o)
+    {        
+        this.isObtained = o["Obt"];
+        this.previous_result = o["pres"];
+        this.current_result = o["res"];        
+    };      
 }());    

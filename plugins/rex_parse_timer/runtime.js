@@ -27,7 +27,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.3.2.min.js");
+	    jsfile_load("parse-1.4.2.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -356,7 +356,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["createdAt"];
+            t = this.exp_LastTimer["createdAt"].getTime();
         else
             t = 0;     
 		ret.set_float(t);
@@ -365,7 +365,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["updatedAt"];
+            t = this.exp_LastTimer["updatedAt"].getTime();
         else
             t = 0;       
 		ret.set_float(t);
@@ -374,7 +374,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["updatedAt"]-this.exp_LastTimer["createdAt"];
+            t = this.exp_LastTimer["updatedAt"].getTime() - this.exp_LastTimer["createdAt"].getTime();
         else
             t = 0;     
 		ret.set_float(t/1000);
@@ -392,7 +392,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["updatedAt"]-this.exp_LastTimer["createdAt"] - this.exp_LastTimer["get"]("time-out");
+            t = this.exp_LastTimer["updatedAt"].getTime() - this.exp_LastTimer["createdAt"].getTime() - this.exp_LastTimer["get"]("time-out");
         else
             t = 0;
 		ret.set_float(t/1000);

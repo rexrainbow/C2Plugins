@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 
@@ -80,7 +80,18 @@ AddAction(2, 0, "Set value", "Save",
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddAction(3, 0, "Save", "Save", 
           "Save slot with name <i>{0}</i> into server", 
-          "Save slot into server.", "Save");	 
+          "Save slot into server.", "Save");
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("False");
+AddComboParamOption("True");
+AddComboParam("Boolean", "Boolean value.", 1);
+AddComboParamOption("Header");
+AddComboParamOption("Body");
+AddComboParam("Slot", "Header or body.", 0);
+AddAction(4, 0, "Set boolean value", "Save", 
+          "Set key <i>{0}</i> to <i>{1}</i> in slot <i>{2}</i>", 
+          "Sets boolean value into slot.", "SetBooleanValue");              	 
 
 AddAction(11, 0, "Get all headers", "Load", 
           "Get all slot headers from server", 
@@ -122,6 +133,9 @@ AddStringParam("Slot name", "The name of the slot.", '""');
 AddStringParam("Key", "The name of the key.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get header value", "Headers", "HeaderValue", 
               "Get header value by slot name and key. Add default value at 3rd parameter if read data is null.");
+
+AddExpression(31, ef_return_string, "Key of Last saved time", "Key", "KeyLastSaveTime", 
+              'Key of Last saved time ("updatedAt")'); 
               
 ACESDone();
 

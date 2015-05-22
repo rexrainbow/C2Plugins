@@ -402,7 +402,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 
     Acts.prototype.UpdateJSONOnDisconnect = function (k, v)
 	{
-	    this.get_ref(k)["onDisconnect"]()["update"](v);
+	    this.get_ref(k)["onDisconnect"]()["update"](JSON.parse(v));
 	};	
 
     // query

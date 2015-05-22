@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.3.2.min.js"
+		"dependency":	"parse-1.4.2.min.js"
 	};
 };
 
@@ -29,14 +29,30 @@ AddCondition(3, cf_trigger, "On received", "Load",
             "On received messages",
             "Triggered when received messages.", "OnReceived");
             
+AddCondition(4, cf_trigger, "On received error", "Load", 
+            "On received messages error",
+            "Triggered when received messages error.", "OnReceivedError");   
+
+AddCondition(5, cf_trigger, "On set status complete", "Send",
+            "On set status complete",
+            "Triggered when set status complete.", "OnSetStatusComplete");
+
+AddCondition(6, cf_trigger, "On set status error", "Send",
+            "On set status error",
+            "Triggered when set status error.", "OnSetStatusError");            
+            
 AddCondition(11, cf_looping | cf_not_invertible, "For each message", "Load - for each", 
              "For each message", 
              "Repeat the event for each message.", "ForEachMessage"); 
 AddNumberParam("Start", "Start from message index (0-based).", 0);  
 AddNumberParam("End", "End to message index (0-based). This value should larger than Start.", 2);    
-AddCondition(12, cf_looping | cf_not_invertible, "For each message in a range", "Request - for each", 
+AddCondition(12, cf_looping | cf_not_invertible, "For each message in a range", "Load - for each", 
              "For each message from index <i>{0}</i> to <i>{1}</i>", 
-             "Repeat the event for each message in a range.", "ForEachMessage");                             
+             "Repeat the event for each message in a range.", "ForEachMessage");    
+             
+AddCondition(14, 0, "Last page", "Load", 
+             "Is the last page", 
+             "Return true if current page is the last page.", "IsTheLastPage");                                        
              
 AddCondition(91, cf_trigger, "On load by messageID complete", "Load by messageID", 
             "On load by messageID complete",
@@ -56,11 +72,11 @@ AddCondition(102, cf_trigger, "On remove by messageID error", "Remove by message
             
 AddCondition(103, cf_trigger, "On remove queried messages complete", "Remove queried messages",
             "On remove queried messages complete",
-            "Triggered when remove complete.", "OnRemoveQueriedItemsComplete");
+            "Triggered when remove complete.", "OnRemoveQueriedMessagesComplete");
 
 AddCondition(104, cf_trigger, "On remove queried messages error", "Remove queried messages",
             "On remove queried messages error",
-            "Triggered when remove error.", "OnRemoveQueriedItemsError");    
+            "Triggered when remove error.", "OnRemoveQueriedMessagesError");    
             
 AddCondition(111, cf_trigger, "On get messages count complete", "Queried messages count",
             "On get messages count complete",
@@ -80,12 +96,19 @@ AddAction(1, 0, "Set user", "User info",
 AddStringParam("Receiver UserID", "UserID of receiver.", '""');
 AddStringParam("Title", "Title of this message.", '""');
 AddStringParam("Content", "Content of this message. String or JSON string for object.", '""');
-AddStringParam("Tag", "Tag of this message for filtering.", '""');
+AddStringParam("Category", "Category of this message for filtering.", '""');
+AddStringParam("Status", "Status of this message.", '""');
 AddAction(11, 0, "Send", "Send", 
-          "Send- Send message to channel ID: <i>{0}</i> with title: <i>{1}</i>, content: <i>{2}</i>, tag to <i>{3}</i>", 
-          "Send message.", "Send");    
+          "Send- Send message to channel ID: <i>{0}</i> with title: <i>{1}</i>, content: <i>{2}</i>, category to <i>{3}</i> (status: <i>{4}</i>)", 
+          "Send message.", "Send");   
 
-AddAction(21, 0, "New", "Message filter - 1. new", 
+AddStringParam("Message ID", "Message ID.", '""');
+AddStringParam("Status", "Status of this message.", '""');
+AddAction(12, 0, "Set status", "Send", 
+          "Send- Set status of messageID: <i>{0}</i> to <i>{1}</i>", 
+          "Change status of message.", "SetStatus");              
+
+AddAction(21, 0, "New", "Filter - 1. new", 
           "Filter- 1. Create a new message filter", 
           "Create a new message filter.", "NewFilter");       
 
@@ -127,35 +150,35 @@ AddAction(26, 0, "Request previous page", "Load",
           "Load- Request message at previous page, <i>{0}</i> content",  
           "Request messages at previous page.", "RequestTurnToPreviousPage");           
 
-AddAction(31, 0, "All senders", "Message filter - 2. senderID", 
+AddAction(31, 0, "All senders", "Filter - 2. senderID", 
           "Filter- 2. add all senders into filter", 
           "Add all senders into filter.", "AddAllSenders"); 
           
 AddStringParam("Sender ID", "Sender ID.", '""');
-AddAction(32, 0, "Add sender", "Message filter - 2. senderID", 
+AddAction(32, 0, "Add sender", "Filter - 2. senderID", 
           "Filter- 2. add senderID: <i>{0}</i> into filter", 
           "Add a sender into filter.", "AddSender");          
 
-AddAction(41, 0, "All receivers", "Message filter - 3. receiverID", 
+AddAction(41, 0, "All receivers", "Filter - 3. receiverID", 
           "Filter- 3. add all receivers into filter", 
           "Add all receivers into filter.", "AddAllReceivers"); 
 
 AddStringParam("Receiver ID", "Receiver ID.", '""');
-AddAction(42, 0, "Add receiver", "Message filter - 3. receiverID", 
+AddAction(42, 0, "Add receiver", "Filter - 3. receiverID", 
           "Filter- 3. add receiverID: <i>{0}</i> into filter", 
           "Add a receiver into filter.", "AddReceiver");           
 
-AddAction(51, 0, "All tags", "Message filter - 4. tag", 
-          "Filter- 4. add all tags into filter", 
-          "Add all tags into filter.", "AddAllTags"); 
+AddAction(51, 0, "All categories", "Filter - 4. category", 
+          "Filter- 4. add all categories into filter", 
+          "Add all categories into filter.", "AddAllTags"); 
+
+AddStringParam("Category", "Category.", '""');
+AddAction(52, 0, "Add category", "Filter - 4. category", 
+          "Filter- 4. add category: <i>{0}</i> into filter", 
+          "Add a category into filter.", "AddTag");
           
-AddStringParam("Tag", "Tag.", '""');
-AddAction(52, 0, "Add tag", "Message filter - 4. tag", 
-          "Filter- 4. add tag: <i>{0}</i> into filter", 
-          "Add a tag into filter.", "AddTag");
-          
-AddAction(61, 0, "All timestamps", "Message filter - 5. timestamp", 
-          "Filter- 5. add all timestamps into filter", 
+AddAction(61, 0, "All timestamps", "Filter - 5. timestamp", 
+          "Filter- 6. add all timestamps into filter", 
           "Add all timestamps into filter.", "AddAllTimestamps"); 
                     
 AddComboParamOption("Before");
@@ -168,9 +191,18 @@ AddComboParam("Include", "Include compared timestamp or excluded.", 1);
 AddComboParamOption("Created");
 AddComboParamOption("Updated");
 AddComboParam("Type", "Type of compared timestamp.", 0);  
-AddAction(62, 0, "Add timestamp constraint", "Message filter - 5. timestamp", 
-          "Filter- 5. add timestamp constraint: <i>{3}</i> <i>{0}</i> <i>{1}</i> (<i>{2}</i>) into filter", 
-          "Add a timestamp constraint into filter. They will be jointed by AND operation.", "AddTimeConstraint");          
+AddAction(62, 0, "Add timestamp constraint", "Filter - 5. timestamp", 
+          "Filter- 6. add timestamp constraint: <i>{3}</i> <i>{0}</i> <i>{1}</i> (<i>{2}</i>) into filter", 
+          "Add a timestamp constraint into filter. They will be jointed by AND operation.", "AddTimeConstraint");    
+
+AddAction(71, 0, "All status", "Filter - 4. status", 
+          "Filter- 5. add all status into filter", 
+          "Add all status into filter.", "AddAllStatus"); 
+
+AddStringParam("Status", "Status.", '""');
+AddAction(72, 0, "Add status", "Filter - 4. status", 
+          "Filter- 5. add status: <i>{0}</i> into filter", 
+          "Add a status into filter.", "AddStatus");          
 
 AddStringParam("Message ID", "Message ID.", '""');
 AddAction(91, 0, "Load by messageID", "Load - messageID", 
@@ -200,24 +232,33 @@ AddExpression(2, ef_return_string, "My user name", "User info", "MyUserName",
 AddExpression(3, ef_return_string, "Last sent messageID", "Send", "LastSentMessageID", 
               'Get last sent messageID under "Condition:On send complete".');          
                    
-AddExpression(11, ef_return_string, "Current sender ID", "Received - for each", "CurSenderID", 
+AddExpression(11, ef_return_string, "Current sender ID", "Load - for each", "CurSenderID", 
               "Get the current senderID in a For Each loop.");         
-AddExpression(12, ef_return_string, "Current sender name", "Received - for each", "CurSenderName", 
+AddExpression(12, ef_return_string, "Current sender name", "Load - for each", "CurSenderName", 
               "Get the current sender name in a For Each loop.");      
-AddExpression(13, ef_return_string, "Current receiverID", "Received - for each", "CurReceiverID", 
+AddExpression(13, ef_return_string, "Current receiverID", "Load - for each", "CurReceiverID", 
               "Get the current receiverID in a For Each loop.");       
-AddExpression(14, ef_return_string, "Current title", "Received - for each", "CurTitle", 
+AddExpression(14, ef_return_string, "Current title", "Load - for each", "CurTitle", 
               "Get the current title in a For Each loop.");    
-AddExpression(15, ef_return_string, "Current content", "Received - for each", "CurContent", 
+AddExpression(15, ef_return_string, "Current content", "Load - for each", "CurContent", 
               "Get the current content in a For Each loop.");               
-AddExpression(16, ef_return_string, "Current messageID", "Received - for each", "CurMessageID", 
+AddExpression(16, ef_return_string, "Current messageID", "Load - for each", "CurMessageID", 
               "Get the current messageID in a For Each loop.");  
-AddExpression(17, ef_return_number, "Current sent unix timestamp", "Received - for each", "CurSentAt", 
+AddExpression(17, ef_return_number, "Current sent unix timestamp", "Load - for each", "CurSentAt", 
               "Get the current sent unix timestamp (number of milliseconds since the epoch) in a For Each loop.");
-AddExpression(18, ef_return_number, "Current message index", "Received - for each", "CurMessageIndex", 
-              "Get the current message index in a For Each loop.");      
+AddExpression(18, ef_return_number, "Current message index", "Load - for each - index", "CurMessageIndex", 
+              "Get the current message index in a For Each loop.");
 AddExpression(19, ef_return_string, "All read messages", "Received", "MessagesToJSON", 
-              "Get all read messages in JSON string.")                
+              "Get all read messages in JSON string.");
+AddExpression(20, ef_return_string, "Current status", "Load - for each", "CurStatus", 
+              "Get the current status of message in a For Each loop.");  
+AddExpression(21, ef_return_number, "Current message count", "Load - for each", "CurMessageCount", 
+              "Get message count in current received page.");
+AddExpression(22, ef_return_number, "Current start index", "Load - for each - index", "CurStartIndex", 
+              "Get start index in current received page.");
+AddExpression(23, ef_return_number, "Current loop index", "Load - for each - index", "LoopIndex", 
+              "Get loop index in current received page.");               
+                                                        
 
 AddExpression(91, ef_return_string, "Last loaded sender ID", "Received - messageID", "LastFetchedSenderID", 
               'Get senderID under "Condition: On load by messageID complete".');         
@@ -233,12 +274,14 @@ AddExpression(96, ef_return_string, "Last loaded messageID", "Received - message
               'Get messageID under "Condition: On load by messageID complete".');
 AddExpression(97, ef_return_number, "Last loaded sent unix timestamp", "Received - messageID", "LastFetchedSentAt", 
               'Get sent unix timestamp (number of milliseconds since the epoch) under "Condition: On load by messageID complete".');
+AddExpression(98, ef_return_string, "Last loaded status", "Received - messageID", "LastFetchedStatus", 
+              'Get status under "Condition: On load by messageID complete".');                 
                             
 AddExpression(101, ef_return_string, "Last removed messageID", "Remove", "LastRemovedMessageID", 
               'Get last removed messageID under "Condition:On remove complete".');   
                     
-AddExpression(111, ef_return_number, "Last message count", "Queried message count", "LastMessagesCount", 
-              'Get last queried message count under "Condition: On get message count complete".');
+AddExpression(111, ef_return_number, "Last messages count", "Queried messages count", "LastMessagesCount", 
+              'Get last queried messages count under "Condition: On get messages count complete".');
                                            
 ACESDone();
 

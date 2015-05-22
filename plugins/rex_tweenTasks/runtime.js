@@ -1398,7 +1398,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	
 	ParallelTasksKlassProto.Start = function (force_init) 
 	{
-	    if (forece_init)
+	    if (force_init)
 	    {	        
 	        this.remainRepeatCount = this.repeatCount;
 	        this.taskMgr.OnTaskStart(this);

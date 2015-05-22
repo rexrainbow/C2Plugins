@@ -27,7 +27,7 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.3.2.min.js");
+	    jsfile_load("parse-1.4.2.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -71,7 +71,25 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 	        window.RexC2IsParseInit = true;
 	    }
 	};
-
+ 
+    instanceProto.UploadImage = function (dataURI, file_name)
+	{
+	    var d = {'base64': dataURI};
+        this.file_obj = new Parse["File"](file_name, d, null);       
+        
+        var self = this;
+        var on_complete = function()
+        {
+            self.OnUploadComplete();
+        };   
+        var on_error = function(error)
+        {
+            self.OnUploadError();
+        };    
+         
+		this.file_obj["save"]()["then"](on_complete, on_error);        
+	};
+    
 	instanceProto.OnUploadComplete = function()
 	{ 
 	    this.runtime.trigger(cr.plugins_.Rex_Parse_FileUpload.prototype.cnds.OnUploadCompleted, this);
@@ -101,25 +119,21 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
- 
     Acts.prototype.UploadImage = function (dataURI, file_name)
 	{
-	    var d = {'base64': dataURI};
-        this.file_obj = new Parse["File"](file_name, d, null);       
-        
-        var self = this;
-        var on_complete = function()
-        {
-            self.OnUploadComplete();
-        };   
-        var on_error = function(error)
-        {
-            self.OnUploadError();
-        };    
-         
-		this.file_obj["save"]()["then"](on_complete, on_error);        
+	    this.UploadImage(dataURI, file_name);
 	};
-	
+    
+    Acts.prototype.UploadSpriteCurrentFrame = function (sprite_objs, file_name)
+	{
+        if (!sprite_objs)
+            return;
+        var inst = sprite_objs.instances[0];
+        if (inst.curFrame == null)
+            return;
+        var dataURI = inst.curFrame.getDataUri();
+	    this.UploadImage(dataURI, file_name);
+	};	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

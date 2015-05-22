@@ -64,16 +64,13 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	// called whenever an instance is created
+    var IsAPIReady = false;
 	instanceProto.onCreate = function()
 	{
 	    var elemId = this.uid.toString();	    
 		this.elem = document.createElement("div");
 		this.elem.id = elemId;
-		this.elem.setAttribute("id", elemId);
-        this.elem.width = Math.round(this.elem.width);
-		this.elem.height = Math.round(this.elem.height);
-		this.elem.x = Math.round(this.elem.x);
-		this.elem.y = Math.round(this.elem.y);		
+		this.elem.setAttribute("id", elemId);	
 		
 		jQuery(this.elem).appendTo(this.runtime.canvasdiv ? this.runtime.canvasdiv : "body");
 		if (this.properties[2] === 0)		// initially invisible
@@ -88,23 +85,24 @@ cr.plugins_.rex_youtube_player = function(runtime)
 
 		this.runtime.tickMe(this);
 
-        this.is_api_loaded = false;		
+        this.is_player_init = false;		
         this.youtube_player = null;
         this.init_videoId = this.properties[0];
         this.youtube_state = -1;
         this.is_autoplay = this.properties[1];
         //this.show_controls = this.properties[2];
         
-        var self=this;        
-        window["onYouTubeIframeAPIReady"] = function() 
+        
+        // init
+        if (!window["onYouTubeIframeAPIReady"])
         {
-            self.is_api_loaded = true;
-            if (self.init_videoId === "")
-                return;
-                
-            self.create_player(self.init_videoId);
-        };
-	};
+            window["onYouTubeIframeAPIReady"] = function() 
+            {            
+                IsAPIReady = true;                 
+            };
+        }
+        // init        
+	};       
 
 	instanceProto.onDestroy = function ()
 	{
@@ -117,6 +115,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 
 	instanceProto.tick = function ()
 	{
+        this.on_player_init();
 		this.updatePosition();
 	};
 
@@ -145,17 +144,13 @@ cr.plugins_.rex_youtube_player = function(runtime)
 			bottom = this.runtime.height - 1;
 
 		jQuery(this.elem).show();
-
-		var offx = left + jQuery(this.runtime.canvas).offset().left;
-		var offy = top + jQuery(this.runtime.canvas).offset().top;
+		
+		var offx = Math.round(left) + jQuery(this.runtime.canvas).offset().left;
+		var offy = Math.round(top) + jQuery(this.runtime.canvas).offset().top;
+		jQuery(this.elem).css("position", "absolute");
 		jQuery(this.elem).offset({left: offx, top: offy});
-		jQuery(this.elem).width(right - left);
-		jQuery(this.elem).height(bottom - top);
-		//rounding position & width to avoid jitter
-		this.elem.width = Math.round(this.elem.width);
-		this.elem.height = Math.round(this.elem.height);
-		this.elem.x = Math.round(this.elem.x);
-		this.elem.y = Math.round(this.elem.y);
+		jQuery(this.elem).width(Math.round(right - left));
+		jQuery(this.elem).height(Math.round(bottom - top));		
 		//	
 	};
 
@@ -167,10 +162,25 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	instanceProto.drawGL = function(glw)
 	{
 	};
+    
+    instanceProto.on_player_init = function ()
+    {
+        if (!IsAPIReady)
+            return;
+            
+        if (this.is_player_init)
+            return;                                    
+        this.is_player_init = true;
+        
+        if (this.init_videoId === "")
+            return;
+                
+        this.create_player(this.init_videoId);        
+    };    
 	
 	instanceProto.create_player = function (videoId)
 	{
-	    if (!this.is_api_loaded)
+	    if (!this.is_player_init)
 	        return;
 	        
         if (this.youtube_player != null)
@@ -268,7 +278,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{	   
 	    this.is_autoplay = is_autoplay;
 	    
-	    if (!this.is_api_loaded)
+	    if (!this.is_player_init)
 	        this.init_videoId = videoId;
 	    else if (this.youtube_player == null)
 		    this.create_player(videoId);

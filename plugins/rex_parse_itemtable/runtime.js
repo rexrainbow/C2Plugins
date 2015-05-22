@@ -27,7 +27,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.3.2.min.js");
+	    jsfile_load("parse-1.4.2.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -75,19 +75,19 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	        var page_lines = this.properties[3];	    
             this.itemTable = this.create_itemTable(page_lines);	
             this.filters = create_filters();    
-            this.unique_keys = {};            
+            this.primary_keys = {};            
 	    }
 	    else
 	    {
 	        this.itemTable.Reset();
 	        clean_filters( this.filters );
-            clean_table(this.unique_keys);
+            clean_table(this.primary_keys);
             
 	    }
 
         this.prepared_item = null;
-        this.trig_tag = null;
         
+        this.exp_LoopIndex = -1;
         this.exp_LastSaveItemID = "";
 	    this.exp_CurItemIndex = -1;
 	    this.exp_CurItem = null;   
@@ -107,10 +107,17 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    }
 	    itemTable.onReceived = onReceived;
 	    
+	    var onReceivedError = function()
+	    {	       
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnReceivedError, self);
+	    }
+	    itemTable.onReceivedError = onReceivedError;	    
+	    
 	    var onGetIterItem = function(item, i)
-	    {
+	    {        
 	        self.exp_CurItemIndex = i;
 	        self.exp_CurItem = item;
+	        self.exp_LoopIndex = i - itemTable.GetStartIndex()
 	    };	    	    
 	    itemTable.onGetIterItem = onGetIterItem;
 	    
@@ -141,15 +148,11 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         var OnSaveComplete = function(item)
 	    { 	        
             self.exp_LastSaveItemID = item["id"];
-            self.trig_tag = tag_;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveComplete, self);
-	        self.trig_tag = null;
 	    };	
 	    var OnSaveError = function(item, error)
 	    {
-	        self.trig_tag = tag_;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveError, self);
-	        self.trig_tag = null;
 	    };
         var handler = {"success":OnSaveComplete, "error": OnSaveError};
         	    
@@ -225,7 +228,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
             
         for (var i=0, cnt=linkedObjs.length; i<cnt; i++)
         {
-            query["includes"]( linkedObjs[i] );
+            query["include"]( linkedObjs[i] );
         }
     };	
 	
@@ -236,9 +239,115 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         add_orders(query, filters.orders);
         add_fields(query, filters.fields);
         add_linkedObjs(query, filters.linkedObjs);
-        clean_filters(filters);
         return query;	    
+	};
+
+    instanceProto.set_value = function (key_, value_, is_primary)
+	{
+	    if (this.prepared_item == null)
+	        this.prepared_item = new this.itemTable_klass();
+	        
+		this.prepared_item["set"](key_, value_);
+		
+		if (is_primary)
+            this.primary_keys[key_] = value_;
+	};
+	
+    instanceProto.set_booleanValue = function (key_, is_true, is_primary)
+	{
+	    is_true = (is_true == 1);
+	    if (this.prepared_item == null)
+	        this.prepared_item = new this.itemTable_klass();
+	        
+		this.prepared_item["set"](key_, is_true); 
+		
+		if (is_primary)
+            this.primary_keys[key_] = is_true;		       
 	};	
+	
+   instanceProto.get_all_itemID = function (query, on_success, on_error)
+   {	   	    
+	    var start = 0;
+	    var lines = 1000;
+	    var all_items = [];
+	    
+        var self = this;             
+	    var on_page_read = function(items)
+	    {
+	        all_items.push.apply(all_items, items);
+	        var is_last_page = (items.length < lines);   
+	        	        
+	        if (!is_last_page)  // try next page
+	        {
+	            start += lines;
+	            query_page(start);
+	        }
+	        else  // finish
+	        {
+                on_success(all_items);
+	        }
+	    };	    
+
+	    var handler = {"success":on_page_read, "error": on_error};	    	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get userID	       
+            query["skip"](start_);
+            query["limit"](lines);
+            query["find"](handler);
+        }
+        
+	    query_page(start);
+	}; 	
+
+ 	instanceProto.get_itemID = function (item)
+	{
+        var itemID;
+	    if (item == null)
+            itemID = "";
+        else
+            itemID = item["id"];
+		return itemID;	
+	};	
+ 	instanceProto.get_itemValue = function (item, k, default_value)
+	{
+        var v;
+	    if (item == null)
+            v = null;
+        else
+        {
+            if (k == null)
+                v = item;
+            else if (k.indexOf(".") == -1)
+                v = item["get"](k);
+            else
+            {
+                var kList = k.split(".");
+                v = item;
+                var i,cnt=kList.length;
+                for(i=0; i<cnt; i++)
+                {
+                    if (typeof(v) !== "object")
+                    {
+                        v = null;
+                        break;
+                    }
+                        
+                    v = v["get"](kList[i]);
+                }
+            }
+        }
+        return din(v, default_value);
+	};	
+ 	instanceProto.get_sentAt = function (item)
+	{
+        var updatedAt;        
+	    if (item == null)
+            updatedAt = 0;
+        else
+            updatedAt = item["updatedAt"].getTime();            
+        return updatedAt;
+	};		
 	
     var din = function (d, default_value)
     {       
@@ -271,23 +380,14 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 
-	Cnds.prototype.OnSaveComplete = function (tag_)
+	Cnds.prototype.OnSaveComplete = function ()
 	{
-	    return cr.equals_nocase(tag_, this.trig_tag);
+	    return true;
 	}; 
-	Cnds.prototype.OnSaveError = function (tag_)
+	Cnds.prototype.OnSaveError = function ()
 	{
-	    return cr.equals_nocase(tag_, this.trig_tag);
+	    return true;
 	};
-	
-	Cnds.prototype.OnRemoveComplete = function (tag_)
-	{
-	    return cr.equals_nocase(tag_, this.trig_tag);
-	}; 
-	Cnds.prototype.OnRemoveError = function (tag_)
-	{
-	    return cr.equals_nocase(tag_, this.trig_tag);
-	};	
 	
 	Cnds.prototype.OnReceived = function ()
 	{
@@ -299,20 +399,30 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    return this.itemTable.ForEachItem(this.runtime, start, end);
 	};  
 	
-	Cnds.prototype.OnFetchOneComplete = function ()
+	Cnds.prototype.OnReceivedError = function ()
+	{
+	    return true;
+	}; 	
+	
+	Cnds.prototype.IsTheLastPage = function ()
+	{
+	    return this.itemTable.IsTheLastPage();
+	}; 	
+	
+	Cnds.prototype.OnLoadByItemIDComplete = function ()
 	{
 	    return true;
 	}; 
-	Cnds.prototype.OnFetchOneError = function ()
+	Cnds.prototype.OnLoadByItemIDError = function ()
 	{
 	    return true;
 	};	
 		
-	Cnds.prototype.OnRemoveComplete = function ()
+	Cnds.prototype.OnRemoveByItemIDComplete = function ()
 	{
 	    return true;
 	}; 
-	Cnds.prototype.OnRemoveError = function ()
+	Cnds.prototype.OnRemoveByItemIDError = function ()
 	{
 	    return true;
 	};
@@ -339,26 +449,16 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 	      
-    Acts.prototype.SetValue = function (key_, value_, unique_)
+    Acts.prototype.SetValue = function (key_, value_, is_primaryKey)
 	{
-	    if (this.prepared_item == null)
-	        this.prepared_item = new this.itemTable_klass();
-	        
-		this.prepared_item["set"](key_, value_);
-        
-        if (unique_ === 1)
-            this.unique_keys[key_] = value_;
+	    is_primaryKey = (is_primaryKey === 1);
+	    this.set_value(key_, value_, is_primaryKey);
 	};
 	
-    Acts.prototype.SetBooleanValue = function (key_, is_true, unique_)
+    Acts.prototype.SetBooleanValue = function (key_, is_true, is_primaryKey)
 	{
-	    if (this.prepared_item == null)
-	        this.prepared_item = new this.itemTable_klass();
-	        
-		this.prepared_item["set"](key_, (is_true == 1));
-
-        if (unique_ === 1)
-            this.unique_keys[key_] = value_;        
+	    is_primaryKey = (is_primaryKey === 1);
+	    this.set_booleanValue(key_, is_true, is_primaryKey);     
 	};
 
     Acts.prototype.RemoveKey = function (key_)
@@ -369,25 +469,27 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 		this.prepared_item["unset"](key_);
 	};  	
 		
-    Acts.prototype.Save = function (itemID, tag_)
+    Acts.prototype.Save = function (itemID)
 	{	 
-	    this.Save(this.prepared_item, itemID, tag_);
+	    this.Save(this.prepared_item, itemID);
         this.prepared_item = null;
-        clean_table(this.unique_keys);
+        clean_table(this.primary_keys);
 	};	
 	
-    Acts.prototype.Push = function (tag_)
+    Acts.prototype.Push = function ()
 	{	 
-	    this.Save(this.prepared_item, "", tag_);
+	    this.Save(this.prepared_item, "");
         this.prepared_item = null;     
-        clean_table(this.unique_keys);        
+        clean_table(this.primary_keys);        
 	};
  	
-    Acts.prototype.OverwriteQueriedItems = function (tag_)
+    Acts.prototype.OverwriteQueriedItems = function ()
 	{	
 	    this.filters.fields.length = 0;
 		this.filters.fields.push("id");
-	    var query = this.get_request_query(this.filters);      
+	    var query = this.get_request_query(this.filters);
+	    clean_filters(this.filters);
+	          
         var self = this;
         var prepared_item = this.prepared_item;           // keep this.prepared_item at local
 
@@ -396,22 +498,20 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var on_query_success = function(item)
 	    {	
 		    if (item == null)
-			    self.Save(prepared_item, "", tag_);
+			    self.Save(prepared_item, "");
 	        else
-			    self.Save(prepared_item, item["id"], tag_);                     
+			    self.Save(prepared_item, item["id"]);                     
 	    };	    
 	    var on_query_error = function(error)
 	    {      
-	        self.trig_tag = tag_;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveError, self);
-	        self.trig_tag = null;
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};        
         // read
                 
         // step 1. read items   
 	    query["first"](query_handler);
-        clean_table(this.unique_keys); 
+        clean_table(this.primary_keys); 
         this.prepared_item = null;          
 	};   
 	
@@ -440,7 +540,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 		this.prepared_item["remove"](key_);
 	};   
     
-    Acts.prototype.SaveUnique = function (tag_)
+    Acts.prototype.SavePrimary = function ()
 	{	   
         var self = this;
         var prepared_item = this.prepared_item;           // keep this.prepared_item at local
@@ -450,15 +550,13 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var on_query_success = function(item)
 	    {	
 		    if (item == null)
-			    self.Save(prepared_item, "", tag_);
+			    self.Save(prepared_item, "");
 	        else
-			    self.Save(prepared_item, item["id"], tag_);
+			    self.Save(prepared_item, item["id"]);
 	    };	    
 	    var on_query_error = function(error)
 	    {      
-	        self.trig_tag = tag_;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveError, self);
-	        self.trig_tag = null;
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};        
         // read
@@ -466,44 +564,56 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         // step 1. read items
         // create query
         var query = new window["Parse"]["Query"](this.itemTable_klass);
-        for (var k in this.unique_keys)
-            query["equalTo"](k, this.unique_keys[k]);
+        for (var k in this.primary_keys)
+            query["equalTo"](k, this.primary_keys[k]);
         // try get unique item    
 	    query["first"](query_handler);
         this.prepared_item = null; 
-        clean_table(this.unique_keys);        
+        clean_table(this.primary_keys);        
 	};  
     
     Acts.prototype.RequestInRange = function (start, lines)
 	{
-	    var query = this.get_request_query(this.filters);	
+	    var query = this.get_request_query(this.filters);
+	    clean_filters(this.filters);	
 	    this.itemTable.RequestInRange(query, start, lines);
 	};
 
     Acts.prototype.RequestTurnToPage = function (page_index)
 	{
-	    var query = this.get_request_query(this.filters);	
+	    var query = this.get_request_query(this.filters);
+	    clean_filters(this.filters);	
 	    this.itemTable.RequestTurnToPage(query, page_index);
 	};	 
     
     Acts.prototype.RequestUpdateCurrentPage = function ()
 	{
 	    var query = this.get_request_query(this.filters);	
+	    clean_filters(this.filters);
 	    this.itemTable.RequestUpdateCurrentPage(query);
 	};    
     
     Acts.prototype.RequestTurnToNextPage = function ()
 	{
 	    var query = this.get_request_query(this.filters);	
+	    clean_filters(this.filters);
 	    this.itemTable.RequestTurnToNextPage(query);
 	};     
     
     Acts.prototype.RequestTurnToPreviousPage = function ()
 	{
 	    var query = this.get_request_query(this.filters);	
+	    clean_filters(this.filters);
 	    this.itemTable.RequestTurnToPreviousPage(query);
 	};  
-
+    
+    Acts.prototype.LoadAllItems = function ()
+	{
+	    var query = this.get_request_query(this.filters);	
+        clean_filters(this.filters);	    
+	    this.itemTable.LoadAllItems(query);
+	}; 
+	
     Acts.prototype.NewFilter = function ()
 	{    
         clean_filters(this.filters);
@@ -573,7 +683,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	}; 	
     
     var ORDER_TYPES = ["descending", "ascending"];
-    Acts.prototype.AddOrder = function (order_, k)
+    Acts.prototype.AddOrder = function (k, order_)
 	{
         if (order_ == 0)
             k = "-" + k;
@@ -598,12 +708,12 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var on_success = function(item)
 	    {
 	        self.exp_LastFetchedItem = item;
-	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnFetchOneComplete, self);
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnLoadByItemIDComplete, self);
 	    };	    
 	    var on_error = function(item, error)
 	    { 
 	        self.exp_LastFetchedItem = item;
-	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnFetchOneError, self);     
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnLoadByItemIDError, self);     
 	    };
 	    
 	    var handler = {"success":on_success, "error": on_error};
@@ -612,22 +722,18 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         query["get"](itemID, handler);
 	}; 	
 	
-    Acts.prototype.RemoveByItemID = function (itemID, tag_)
+    Acts.prototype.RemoveByItemID = function (itemID)
 	{
         var self = this;
         
 	    var on_success = function(message)
 	    {
 	        self.exp_LastRemovedItemID = itemID;
-	        self.trig_tag = tag_;
-	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveComplete, self);
-	        self.trig_tag = null;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveByItemIDComplete, self);
 	    };	    
 	    var on_error = function(message, error)
 	    { 
-	        self.trig_tag = tag_;
-	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveError, self);    
-	        self.trig_tag = null; 
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveByItemIDError, self);    
 	    };	    
 	    var handler = {"success":on_success, "error": on_error};
 	    	    
@@ -640,54 +746,33 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	{
 	    this.filters.fields.length = 0;
 		this.filters.fields.push("id");    
-	    var query = this.get_request_query(this.filters);  
-        query["limit"](1000);
-	        
-        var self = this;
-        // destroy        
-	    var on_destroy_success = function(message)
+	    var query = this.get_request_query(this.filters); 
+        clean_filters(this.filters);	    
+	    
+        var self = this;             
+     
+	    var on_destroy_success = function()
 	    {
-            self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveQueriedItemsComplete, self);
-	        
-	    };	    
-	    var on_destroy_error = function(message, error)
-	    { 
+            self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveQueriedItemsComplete, self);	        
+	    };	
+	    var on_error = function(error)
+	    {  
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveQueriedItemsError, self); 
-	    };	    
-	    var destroy_handler = {"success":on_destroy_success, "error": on_destroy_error};
-	    // destroy     
+	    };	           
+	    var destroy_handler = {"success":on_destroy_success, "error": on_error};           
         
-        // read
-        // step 2. destroy each item
-        var target_items = [];        
-        var skip_cnt = 0;
-	    var on_query_success = function(items)
-	    {	
-	        var cnt = items.length;
-	        if (cnt == 0)
-                window["Parse"]["Object"]["destroyAll"](target_items, destroy_handler);
-	        else
-            {
-                target_items.push.apply(target_items, items);
-                skip_cnt += cnt;
-                query["skip"](skip_cnt);
-                query["find"](query_handler);
-            }
+	    var on_read_all = function(all_items)
+	    {
+	        window["Parse"]["Object"]["destroyAll"](all_items, destroy_handler); 
 	    };	    
-	    var on_query_error = function(error)
-	    {      
-	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveQueriedItemsError, self); 
-	    };
-	    var query_handler = {"success":on_query_success, "error": on_query_error};        
-        // read
-                
-        // step 1. read items   
-	    query["find"](query_handler);
+	     
+	    this.get_all_itemID(query, on_read_all, on_error);
 	}; 	
 	
     Acts.prototype.GetItemsCount = function ()
 	{
 	    var query = this.get_request_query(this.filters);
+	    clean_filters(this.filters);	    
 	    
 	    var self = this;
 	    var on_query_success = function(count)
@@ -703,7 +788,101 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
 	    query["count"](query_handler);
 	};	
-    
+	
+    Acts.prototype.LoadRandomItems = function (pick_count_)
+	{		            	    
+        // query for get all itemID
+        var fields_save = this.filters.fields;
+	    this.filters.fields = ["id"];
+	    var all_itemID_query = this.get_request_query(this.filters); 
+	    this.filters.fields = fields_save;
+	    
+	    // save filters at local
+	    var filters_save = this.filters;    
+        this.filters = create_filters();        
+	    
+        var self = this;                  	
+	    var on_error = function(error)
+	    {  
+	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnReceivedError, self); 
+	    };
+	    	   
+        var get_random_items = function (itemsIn, pick_count)
+        {
+	        var picked_items=[], total_cnt=itemsIn.length;
+	        
+	        // put picked items in picked_items        
+	        if (total_cnt <= pick_count)
+	        {
+	            cr.shallowAssignArray(picked_items, itemsIn);
+	        }
+	        else if ((pick_count/total_cnt) < 0.5)
+	        {
+	            // random number picking
+                var i, rv, try_pick;
+                var rvList={};         // result of random numbers
+                for (i=0; i<pick_count; i++)
+                {
+                    try_pick = true;
+                    while (try_pick)
+                    {
+                        rv = Math.floor(Math.random() * total_cnt);
+                        if (!rvList.hasOwnProperty(rv))
+                        {
+                            rvList[rv] = true;
+                            try_pick = false;
+                        }
+                    }
+                }
+
+                for(i in rvList)
+                    picked_items.push(itemsIn[i]);
+	        }
+	        else
+	        {
+	            // shuffle index array picking
+	            cr.shallowAssignArray(picked_items, itemsIn);
+	            _shuffle(picked_items);
+	            picked_items.length = pick_count;
+	        }
+	        
+	        return picked_items;
+        };
+	    var on_read_all = function(all_items)
+	    {
+	        // get random items
+	        var picked_items = get_random_items(all_items, pick_count_)
+	        
+	        // query items by itemID
+	        var i, cnt=picked_items.length, cnd;
+	        for(i=0; i<cnt; i++)
+	        {
+	            cnd = get_filter(filters_save.filters, "objectId", "include");
+	            cnd.push(picked_items[i]["id"]);
+	        }
+	        
+	        var query = self.get_request_query(filters_save)
+	        self.itemTable.LoadAllItems(query);	        
+	    };	    
+	     
+	    this.get_all_itemID(all_itemID_query, on_read_all, on_error);
+	};
+	
+	var _shuffle = function (arr, random_gen)
+	{
+        var i = arr.length, j, temp, random_value;
+        if ( i == 0 ) return;
+        while ( --i ) 
+        {
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
+            j = Math.floor( random_value * (i+1) );
+            temp = arr[i]; 
+            arr[i] = arr[j]; 
+            arr[j] = temp;
+        }
+    };		
+		    
     Acts.prototype.LinkToObject = function (key_, t_, oid_)
 	{
         var t = window["Parse"].Object["extend"](t_);
@@ -722,7 +901,14 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
     Acts.prototype.AddGetLinkedObject = function (k)
 	{
 	    this.filters.linkedObjs.push(k);
-	};	    
+	};	  
+	
+    Acts.prototype.AddItemIDInclude = function (v)
+	{
+	    var cnd = get_filter(this.filters.filters, "objectId", "include");
+	    cnd.push(v);
+	};	  
+
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -730,36 +916,18 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
  	Exps.prototype.CurItemID = function (ret)
 	{
-	    if (this.exp_CurItem == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-		ret.set_string(this.exp_CurItem["id"]);
+		ret.set_string( this.get_itemID(this.exp_CurItem) );
 	};
 	
  	Exps.prototype.CurItemContent = function (ret, k, default_value)
 	{
-	    if (this.exp_CurItem == null)
-	    {
-	        ret.set_any(0);
-	        return;
-	    }
-	    
-	    var v = (k == null)? this.exp_CurItem:
-	                         this.exp_CurItem["get"](k);
-
-		ret.set_any( din(v, default_value) );
+	    var item = this.exp_CurItem;
+		ret.set_any( this.get_itemValue(item, k, default_value) );
 	};
 		
  	Exps.prototype.CurSentAt = function (ret)
 	{
-	    if (this.exp_CurItem == null)
-	    {
-	        ret.set_float(0);
-	        return;
-	    }
-		ret.set_float(this.exp_CurItem["createdAt"].getTime());
+		ret.set_float( this.get_sentAt(this.exp_CurItem) );
 	};
     
 	Exps.prototype.CurItemIndex = function (ret)
@@ -774,21 +942,40 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 		ret.set_any( din(v, default_value) );
 	};	
+    
+	Exps.prototype.ReceivedItemsCount = function (ret)
+	{
+		ret.set_int(this.itemTable.GetItems().length);
+	};	
+    
+	Exps.prototype.CurStartIndex = function (ret)
+	{
+		ret.set_int(this.itemTable.GetStartIndex());
+	};	
+    
+	Exps.prototype.LoopIndex = function (ret)
+	{
+		ret.set_int(this.exp_LoopIndex);
+	};	
 	
+ 	Exps.prototype.Index2ItemID = function (ret, index_)
+	{
+		ret.set_string( this.get_itemID( this.itemTable.GetItem(index_) ) );	
+	};		
  	Exps.prototype.Index2ItemContent = function (ret, index_, k, default_value)
 	{
 	    var item = this.itemTable.GetItem(index_);
-	    if (item == null)
-	    {
-	        ret.set_any(0);
-	        return;
-	    }
-	    
-	    var v = (k == null)? item:
-	                         item["get"](k);
-
-		ret.set_any( din(v, default_value) );
+		ret.set_any( this.get_itemValue(item, k, default_value) );				
 	};	
+ 	Exps.prototype.Index2SentAt = function (ret)
+	{
+		ret.set_float( this.get_sentAt( this.itemTable.GetItem(index_) ) );		
+	};
+	        
+	Exps.prototype.ItemsToJSON = function (ret)
+	{	    
+		ret.set_string( JSON.stringify(this.itemTable.GetItems()) );
+	};    
     
  	Exps.prototype.LastSavedItemID = function (ret)
 	{
@@ -797,43 +984,31 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	
  	Exps.prototype.LastFetchedItemID = function (ret)
 	{
-	    if (this.exp_LastFetchedItem == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-		ret.set_string(this.exp_LastFetchedItem["id"]);
+		ret.set_string( this.get_itemID( this.exp_LastFetchedItem ) );		
 	};
 	
  	Exps.prototype.LastFetchedItemContent = function (ret, k, default_value)
 	{
-	    if (this.exp_LastFetchedItem == null)
-	    {
-	        ret.set_any(0);
-	        return;
-	    }
-	    
-	    var v = (k == null)? this.exp_LastFetchedItem:
-	                         this.exp_LastFetchedItem["get"](k);
-
-		ret.set_any( din(v, default_value) );
+	    var item = this.exp_LastFetchedItem;
+		ret.set_any( this.get_itemValue(item, k, default_value) );		
 	};
 		
  	Exps.prototype.LastFetchedSentAt = function (ret)
 	{
-	    if (this.exp_LastFetchedItem == null)
-	    {
-	        ret.set_float(0);
-	        return;
-	    }
-		ret.set_float(this.exp_LastFetchedItem["createdAt"].getTime());
+		ret.set_float( this.get_sentAt( this.exp_LastFetchedItem ) );			
 	};
+	   
+	Exps.prototype.LastRemovedMessageID = function (ret)
+	{
+		ret.set_string(this.exp_LastRemovedItemID);
+	};		
 	    
 	Exps.prototype.LastItemsCount = function (ret)
 	{
 		ret.set_int(this.exp_LastItemsCount);
 	};	
 }());
+
 
 (function ()
 {
@@ -844,12 +1019,14 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
     {
         // export
         this.onReceived = null;
+        this.onReceivedError = null;
         this.onGetIterItem = null;  // used in ForEachItem
         // export
 	    this.items = [];
         this.start = 0;
         this.page_lines = page_lines;   
         this.page_index = 0;     
+        this.is_last_page = false;
     };
     
     var ItemPageKlassProto = ItemPageKlass.prototype;  
@@ -860,32 +1037,56 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         this.start = 0;     
 	};	
 	     
-	ItemPageKlassProto.request = function(query, start, lines)
+    ItemPageKlassProto.request = function (query, start, lines)
 	{
-        if (start < 0)
-            start = 0;
-            
-        var self = this;
-        
+	    if (start==null)
+	        start = 0;
+	    var is_onePage = (lines != null) && (lines <= 1000);
+	    var linesInPage = (is_onePage)? lines:1000;
+	                                       	    
+        var self = this;       
 	    var on_success = function(items)
 	    {
-	        self.items = items;
-            self.start = start;
-            self.page_index = Math.floor(start/self.page_lines);
-            
-            if (self.onReceived)
-                self.onReceived();
+	        self.items.push.apply(self.items, items);        
+	        var is_last_page = (items.length < linesInPage);   
+	        	        
+	        if ((!is_onePage) && (!is_last_page))  // try next page
+	        {
+	            start += linesInPage;
+	            query_page(start);
+	        }
+	        else  // finish
+	        {
+                self.start = start;
+                self.page_index = Math.floor(start/self.page_lines); 
+                             
+                self.is_last_page = is_last_page;
+	            
+                if (self.onReceived)
+                    self.onReceived();	            
+	        }
 	    };	    
 	    var on_error = function(error)
-	    {
-	        self.items.length = 0;        
+	    { 
+	        self.items.length = 0;
+	        self.is_last_page = false;
+	        	        
+            if (self.onReceivedError)
+                self.onReceivedError();	 	           
 	    };
-	    
-	    var handler = {"success":on_success, "error": on_error};
-	    query["skip"](start);
-        query["limit"](lines);	    
-	    query["find"](handler);	    
-	};	    
+	     
+	    var handler = {"success":on_success, "error": on_error};	    	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get userID	       
+            query["skip"](start_);
+            query["limit"](linesInPage);
+            query["find"](handler);
+        };
+
+        this.items.length = 0;
+	    query_page(start);
+	}; 	    
 
     ItemPageKlassProto.RequestInRange = function (query, start, lines)
 	{
@@ -914,7 +1115,11 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         var start = this.start - this.page_lines;
 	    this.request(query, start, this.page_lines);
 	};  
-
+    
+    ItemPageKlassProto.LoadAllItems = function (query)
+	{
+	    this.request(query);
+	}; 
 	ItemPageKlassProto.ForEachItem = function (runtime, start, end)
 	{
         var items_end = this.start + this.items.length - 1;       
@@ -947,7 +1152,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
             
 		    if (solModifierAfterCnds)
 		    {
-		        this.runtime.popSol(current_event.solModifiers);
+		        runtime.popSol(current_event.solModifiers);
 		    }            
 		}
     		
@@ -967,11 +1172,26 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         }
 	    return -1;
 	};
-			
+
 	ItemPageKlassProto.GetItem = function(i)
 	{
 	    return this.items[i - this.start];
-	};
+	};	
+
+	ItemPageKlassProto.GetItems = function()
+	{
+	    return this.items;
+	};	
+	
+	ItemPageKlassProto.IsTheLastPage = function()
+	{
+	    return this.is_last_page;
+	};		
+	
+	ItemPageKlassProto.GetStartIndex = function()
+	{
+	    return this.start;
+	};	
 	
 	ItemPageKlassProto.GetCurrentPageIndex = function ()
 	{
@@ -979,4 +1199,4 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	};	
 
 	window.ParseItemPageKlass = ItemPageKlass;
-}());        
+}());       

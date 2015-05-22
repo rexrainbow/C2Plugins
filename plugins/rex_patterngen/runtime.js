@@ -52,6 +52,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         this.start_gen(); 	
         
         this.exp_LastPattern = "";
+        this.exp_CurPatternName = "";
+        this.exp_LoopIndex = -1;
         
         this.randomGenUid = -1;    // for loading
         
@@ -61,7 +63,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	};
 	cr.plugins_.Rex_PatternGen._random_gen = null;  // random generator for Shuffing
 
-	instanceProto._reset_pat_rank = function(patterns)
+	instanceProto.reset_pat_rank = function(patterns)
 	{
 	    var pat;
 	    // clean this._pat_rank
@@ -86,7 +88,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    }
 	};
 	
-	instanceProto._get_random_value = function()
+	instanceProto.get_random_value = function()
 	{
 	    var gen = cr.plugins_.Rex_PatternGen._random_gen;
 	    var value = (gen == null)?
@@ -94,9 +96,9 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         return value;
 	};	
 	
-	instanceProto._get_rand_pattern = function(pat_rank)
+	instanceProto.get_rand_pattern = function(pat_rank)
 	{
-	    var value = this._get_random_value();
+	    var value = this.get_random_value();
 	    var pattern="", i, cnt=pat_rank.length;
 	    for (i=0; i<cnt; i++)
 	    {
@@ -124,7 +126,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	            this._shadow_patterns[pat] = this.patterns[pat];	        
 	    }
 	    if (this.mode == 1) // random mode
-	        this._reset_pat_rank(this._shadow_patterns);
+	        this.reset_pat_rank(this._shadow_patterns);
 	    this.restart_gen_flg = false; 
 	};
 	
@@ -139,6 +141,25 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    }
 	    return is_empty;
 	};
+	
+	instanceProto.add_shadow_patterns = function(pattern, inc, max_count)
+	{
+	    if ((pattern == null) || (inc == 0))
+	        return;
+	        
+        if (!this._shadow_patterns.hasOwnProperty(pattern))                    
+            this._shadow_patterns[pattern] = 0;            
+                                   
+        this._shadow_patterns[pattern] += inc;
+        if ((max_count != null) && (this._shadow_patterns[pattern] > max_count))
+            this._shadow_patterns[pattern] = max_count 
+                
+        if (this._shadow_patterns[pattern] <= 0)            
+            delete this._shadow_patterns[pattern];
+            
+        if ((this.mode == 0) && is_hash_empty(this._shadow_patterns))
+            this.restart_gen_flg = true;
+	};	
 		
 	instanceProto.get_pattern = function(pattern)
 	{
@@ -146,24 +167,15 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	        this.start_gen();	
 	    if (pattern == null)
 		{
-	        if (this.mode == 0) // shuffle mode
+	        if ((this.mode == 0) || (this.mode == 2))  // shuffle mode
 	        {
-	            this._reset_pat_rank(this._shadow_patterns);
-	            pattern = this._get_rand_pattern(this._pat_rank);
-	            if (pattern != null)
-	            {
-	                var count = this._shadow_patterns[pattern] - 1;	            
-	                if (count <= 0)
-	                    delete this._shadow_patterns[pattern];
-	                else
-	                    this._shadow_patterns[pattern] = count;
-	            }
-	            if (is_hash_empty(this._shadow_patterns))
-	                this.restart_gen_flg = true;	        
+	            this.reset_pat_rank(this._shadow_patterns);
+	            pattern = this.get_rand_pattern(this._pat_rank);
+	            this.add_shadow_patterns(pattern, -1);        
 	        }
-	        else  // random mode
+	        else if (this.mode == 1)   // random mode
 	        {
-	            pattern = this._get_rand_pattern(this._pat_rank);
+	            pattern = this.get_rand_pattern(this._pat_rank);
 	        }
 		}
 		else  // force pick
@@ -172,18 +184,20 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 				pattern = "";	
             else
             {
-			    if (this.mode == 0) // shuffle mode
+			    if ((this.mode == 0) || (this.mode == 2))  // shuffle mode
 	            {			    
-	                var count = this._shadow_patterns[pattern] - 1;	            
-	                if (count <= 0)
-	                    delete this._shadow_patterns[pattern];
-	                else
-	                    this._shadow_patterns[pattern] = count;
+	                this.add_shadow_patterns(pattern, -1);
 			    }
 			}
 		}
 	    return pattern;
 	};
+    
+	instanceProto.get_pattern_count = function (name, is_remain)
+	{
+        var patList = (is_remain)? this._shadow_patterns : this.patterns;
+        return patList[name] || 0;
+	};    
 
 	instanceProto.saveToJSON = function ()
 	{       	 
@@ -228,11 +242,12 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	instanceProto.getDebuggerValues = function (propsections)
 	{
 	    this.propsections.length = 0;
-        var pat;
+        var remain;
         var pat_list = (this.restart_gen_flg)? this.patterns : this._shadow_patterns
-        for (pat in pat_list)
+        for (var pat in this.patterns)
         {
-	        this.propsections.push({"name": pat, "value": pat_list[pat]});
+            remain = pat_list[pat] || 0;
+	        this.propsections.push({"name": pat, "value": remain +" ("+this.patterns[pat]+")"});
         }
 		propsections.push({
 			"title": this.type.name,
@@ -248,7 +263,78 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
-    
+
+    var CountAscending = function(a, b)
+    {                 
+        if (a[1] > b[1])
+            return 1;
+        else if (a[1] == b[1])
+            return 0;
+        else  // ay < by
+            return (-1);
+    };
+    var CountDescending = function(a, b)
+    {                 
+        if (a[1] < b[1])
+            return 1;
+        else if (a[1] == b[1])
+            return 0;
+        else  // ay < by
+            return (-1);
+    };
+    var NameAscending = function(a, b)
+    {                 
+        if (a[0] > b[0])
+            return 1;
+        else if (a[0] == b[0])
+            return 0;
+        else
+            return (-1);
+    };
+    var NameDescending = function(a, b)
+    {                 
+        if (a[0] < b[0])
+            return 1;
+        else if (a[0] == b[0])
+            return 0;
+        else
+            return (-1);
+    };        
+    var SortFns = [CountAscending, CountDescending, NameAscending, NameDescending];
+	Cnds.prototype.ForEachPattern = function (m)
+	{	    
+	    var l = [];
+	    for (var n in this.patterns)	    
+	        l.push([n, this.patterns[n]]);
+	    
+	    l.sort(SortFns[m]);
+	    
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		         
+		var i, cnt=l.length;
+		for(i=0; i<cnt; i++)
+		{
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            this.exp_CurPatternName = l[i][0];
+            this.exp_LoopIndex = i;
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }            
+		}
+        
+        this.exp_CurPatternName = "";
+    		
+		return false;
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -292,6 +378,55 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{  
         this.exp_LastPattern = this.get_pattern();
 	};	
+    Acts.prototype.AddPattern = function (pattern, count)
+	{
+	    if (pattern == "")
+	        return;
+            
+        // this.patterns
+        if (!this.patterns.hasOwnProperty(pattern))
+            this.patterns[pattern] = 0;
+
+        this.patterns[pattern] += count; 
+
+        if (this.restart_gen_flg)        
+            return;
+            
+        // pattern gen had started
+        
+	    if (this.mode == 1) // random mode
+	        this.reset_pat_rank(this._shadow_patterns);  
+	    else if ((this.mode == 0) || (this.mode == 2))  // shuffle mode   
+	        this.add_shadow_patterns(pattern, count);              
+        
+      
+	};
+	
+    Acts.prototype.PutPatternBack = function (pattern, count)
+	{
+	    if (this.mode == 1) // random mode
+	        return;
+	        
+	    if (pattern == "")
+	        return;
+            
+        // this.patterns
+        if (!this.patterns.hasOwnProperty(pattern))        
+            return;
+            
+        if ((this.mode == 2) && this.restart_gen_flg)
+            return;
+        
+        
+        
+        // pattern gen had started        
+        // this._shadow_patterns      
+        if (!this._shadow_patterns.hasOwnProperty(pattern))        
+            this._shadow_patterns[pattern] = 0;      
+        
+        this.add_shadow_patterns(pattern, count, this.patterns[pattern]);              
+	};	
+    
 	Acts.prototype.JSONLoad = function (json_)
 	{
 		var o;
@@ -325,10 +460,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	
 	Exps.prototype.TotalCount = function (ret, pattern)
 	{
-	    var count = this.patterns[pattern];
-	    if (count == null)
-	        count = 0;
-		ret.set_float(count);
+		ret.set_float(this.get_pattern_count(pattern));
 	};
 	
 	Exps.prototype.ManualPick = function (ret, pattern)
@@ -340,8 +472,35 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{
 		ret.set_string(this.exp_LastPattern);
 	};		
+    
+	Exps.prototype.RemainCount = function (ret, pattern)
+	{
+		ret.set_float(this.get_pattern_count(pattern, true));
+	};
+    
 	Exps.prototype.AsJSON = function (ret)
 	{
 		ret.set_string(JSON.stringify(this.saveToJSON()));
 	};
+    
+	Exps.prototype.CurPatternName = function (ret)
+	{
+		ret.set_string(this.exp_CurPatternName);
+	};    
+    
+	Exps.prototype.CurPatternTotalCount = function (ret)
+	{
+		ret.set_float(this.get_pattern_count(this.exp_CurPatternName) );
+	};     
+    
+	Exps.prototype.CurPatternRemainCount = function (ret)
+	{
+		ret.set_float(this.get_pattern_count(this.exp_CurPatternName, true) );
+	};  
+    
+	Exps.prototype.LoopIndex = function (ret)
+	{
+		ret.set_int(this.exp_LoopIndex );
+	}; 
+    
 }());
