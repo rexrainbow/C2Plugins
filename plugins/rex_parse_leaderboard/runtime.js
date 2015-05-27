@@ -97,7 +97,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         this.exp_LoopIndex = -1;
 	    this.exp_CurPlayerRank = -1;
 	    this.exp_CurRankCol = null;
-	    this.exp_PostPlayerName = "";
+	    this.exp_PostRankObj = null;
         
         this.exp_LastRanking = -1;
         this.exp_LastUserID = ""; 
@@ -165,6 +165,24 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         }
 	    return query;
 	};	
+    
+	var get_itemValue = function(item, key_, default_value)
+	{ 
+        var val;
+        if (item != null)
+        {
+            if (key_ === "id")
+                val = item[key_];
+            else if ((key_ === "createdAt") || (key_ === "updatedAt"))
+                val = item[key_].getTime();
+            else
+                val = item["get"](key_);
+        }
+        
+        if (val == null)
+            val = default_value;
+        return val;
+	};    
     
     var din = function (d, default_value)
     {       
@@ -252,13 +270,13 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    // step 3    
 	    var OnPostComplete = function(rank_obj)
 	    { 	        
-            self.exp_PostPlayerName = name;
+            self.exp_PostRankObj = rank_obj;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnPostComplete, self);
 	    };	
 	    
 	    var OnPostError = function(rank_obj, error)
 	    {
-            self.exp_PostPlayerName = name;
+            self.exp_PostRankObj = null;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnPostError, self);
 	    };
 	    	    
@@ -474,25 +492,11 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	
 	Exps.prototype.CurPlayerName = function (ret)
 	{
-	    var name;
-	    if (this.exp_CurRankCol)
-	        name = this.exp_CurRankCol["get"]("name");
-	        
-	    if (!name)
-	        name = "";
-	    
-		ret.set_string( name );
+		ret.set_string( get_itemValue(this.exp_CurRankCol, "name", "") );                
 	}; 	
 	Exps.prototype.CurPlayerScore = function (ret)
 	{
-	    var score;
-	    if (this.exp_CurRankCol)
-	        score = this.exp_CurRankCol["get"]("score");
-	        
-	    if (!score)
-	        score = 0;
-	    
-		ret.set_any( score );
+		ret.set_any( get_itemValue(this.exp_CurRankCol, "score", 0) );          
 	};
 	Exps.prototype.CurPlayerRank = function (ret)
 	{
@@ -500,37 +504,21 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	};
 	Exps.prototype.CurUserID = function (ret)
 	{
-	    var userID;
-	    if (this.exp_CurRankCol)
-	        userID = this.exp_CurRankCol["get"]("userID");
-	        
-	    if (!userID)
-	        userID = "";
-	    
-		ret.set_string( userID );
+		ret.set_string( get_itemValue(this.exp_CurRankCol, "userID", "") );             
 	}; 	
 	Exps.prototype.CurExtraData = function (ret)
 	{
-	    var v;
-	    if (this.exp_CurRankCol)
-	        v = this.exp_CurRankCol["get"]("extraData");
-	        
-	    if (!v)
-	        v = "";
-	    
 		ret.set_any( v );
+		ret.set_any( get_itemValue(this.exp_CurRankCol, "extraData", "") );         
 	};
 	Exps.prototype.CurUserObject = function (ret, k_, default_value)
 	{
-	    var v;
-	    if (this.exp_CurRankCol)
-	    {
-	        var obj = this.exp_CurRankCol["get"]("userObject");
-	        if (obj)           
-	            v = (k_ == null)? obj : obj["get"](k_);
-	    }
+        var v;    
+	    var obj = get_itemValue(this.exp_CurRankCol, "userObject", null);
+        if (obj)           
+	        v = (k_ == null)? obj : obj["get"](k_);
 
-		ret.set_any( din(v, default_value)  );
+		ret.set_any( din(v, default_value)  );        
 	};
 	
 	Exps.prototype.CurRankingCount = function (ret)
@@ -550,9 +538,22 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 				
 	Exps.prototype.PostPlayerName = function (ret)
 	{
-		ret.set_string(this.exp_PostPlayerName);
+		ret.set_string( get_itemValue(this.exp_PostRankObj, "name", "") );    
 	}; 	
-	
+				
+	Exps.prototype.PostlayerScore = function (ret)
+	{
+		ret.set_any( get_itemValue(this.exp_PostRankObj, "score", 0) );    
+	}; 		
+	Exps.prototype.PostPlayerUserID = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_PostRankObj, "userID", "") );    
+	}; 	
+				
+	Exps.prototype.PostExtraData = function (ret)
+	{
+		ret.set_any( get_itemValue(this.exp_PostRankObj, "extraData", "") );    
+	};    
 	Exps.prototype.UserID2Rank = function (ret, userID)
 	{
 		ret.set_int(this.leaderboard.FindFirst("userID", userID));
@@ -560,44 +561,28 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	   	
 	Exps.prototype.Rank2PlayerName = function (ret, i, default_value)
 	{
-	    var rank_info = this.leaderboard.GetItem(i);
-	    var name = (!rank_info)? null:rank_info["get"]("name");
-        name = name || default_value || "";
-		ret.set_string(name);
+		ret.set_string( get_itemValue(this.leaderboard.GetItem(i), "name", (default_value || "")) );
 	};
 	Exps.prototype.Rank2PlayerScore = function (ret, i, default_value)
 	{
-	    var rank_info = this.leaderboard.GetItem(i);    
-	    var score = (!rank_info)? null:rank_info["get"]("score");
-        score = score || default_value || 0;
-		ret.set_any(score);
+		ret.set_any( get_itemValue(this.leaderboard.GetItem(i), "score", (default_value || 0)) );        
 	};	
 	Exps.prototype.Rank2ExtraData = function (ret, i, default_value)
 	{
-	    var rank_info = this.leaderboard.GetItem(i);	    
-	    var extra_data = (!rank_info)? null:rank_info["get"]("extraData");
-        extra_data = extra_data || default_value || "";
-		ret.set_any(extra_data);
+		ret.set_any( get_itemValue(this.leaderboard.GetItem(i), "extraData", (default_value || "")) );          
 	};	
 	Exps.prototype.Rank2PlayerUserID = function (ret, i, default_value)
 	{
-	    var rank_info = this.leaderboard.GetItem(i);	    
-	    var userID = (!rank_info)? null:rank_info["get"]("userID");
-        userID = userID || default_value || "";
-		ret.set_string(userID);
+		ret.set_string( get_itemValue(this.leaderboard.GetItem(i), "userID", (default_value || "")) );          
 	};	
 	Exps.prototype.Rank2PlayerObject = function (ret, k, default_value)
 	{
-        var rank_info = this.leaderboard.GetItem(i);	
-	    var v;
-	    if (rank_info)
-	    {
-	        var obj = rank_info["get"]("userObject");
-	        if (obj)            
-	            v = (k==null)? obj:obj["get"](k_);
-	    }
-	        
-		ret.set_any( din(v, default_value) );
+        var v;    
+	    var obj = get_itemValue(this.leaderboard.GetItem(i), "userObject", null);
+        if (obj)           
+	        v = (k_ == null)? obj : obj["get"](k_);
+
+		ret.set_any( din(v, default_value)  );          
 	};    
     
 	Exps.prototype.PageIndex = function (ret)
@@ -625,6 +610,67 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	};	
 }());
 
+(function ()
+{
+    if (window.ParseQuery != null)
+        return;  
+        
+   var request = function (query, handler, start, lines)
+   {	   	          
+	    if (start==null)
+	        start = 0;
+        
+        var all_items = [];            
+	    var is_onePage = (lines != null) && (lines <= 1000);
+	    var linesInPage = (is_onePage)? lines:1000;
+	                                       	    
+        var self = this;       
+	    var on_success = function(items)
+	    {
+	        all_items.push.apply(all_items, items);
+	        var is_last_page = (items.length < linesInPage);   
+	        	        
+	        if ((!is_onePage) && (!is_last_page))  // try next page
+	        {               
+	            start += linesInPage;
+	            query_page(start);
+	        }
+	        else  // finish
+	        {
+                handler["success"](all_items);            
+	        }
+	    };
+	     
+	    var read_page_handler = {"success":on_success, "error": handler["error"]};	 	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get userID	       
+            query["skip"](start_);
+            query["limit"](linesInPage);
+            query["find"](read_page_handler);
+        };
+
+	    query_page(start);
+	}; 
+	
+	var remove_all_items = function (query, handler)
+    {
+	    var on_read_all = function(all_items)
+	    {
+	        if (all_items.length === 0)
+	        {
+	            handler["success"](all_items);
+	            return;
+	        }
+	        window["Parse"]["Object"]["destroyAll"](all_items, handler); 
+	    };	    
+	    var on_read_handler = {"success":on_read_all, "error": handler["error"]};  
+	    request(query, on_read_handler);
+    };
+    
+    window.ParseQuery = request;
+    window.ParseRemoveAllItems = remove_all_items;
+}());
 
 (function ()
 {
@@ -657,30 +703,23 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
 	    if (start==null)
 	        start = 0;
-	    var is_onePage = (lines != null) && (lines <= 1000);
-	    var linesInPage = (is_onePage)? lines:1000;
-	                                       	    
+        this.items.length = 0; 
+
         var self = this;       
 	    var on_success = function(items)
 	    {
-	        self.items.push.apply(self.items, items);        
-	        var is_last_page = (items.length < linesInPage);   
-	        	        
-	        if ((!is_onePage) && (!is_last_page))  // try next page
-	        {
-	            start += linesInPage;
-	            query_page(start);
-	        }
-	        else  // finish
-	        {
-                self.start = start;
-                self.page_index = Math.floor(start/self.page_lines); 
-                             
-                self.is_last_page = is_last_page;
+            self.items = items;
+            self.start = start;
+            self.page_index = Math.floor(start/self.page_lines); 
+
+            var is_onePage = (lines != null) && (lines <= 1000);
+            if (is_onePage)
+                self.is_last_page = (items.length < lines);
+            else
+                self.is_last_page = true;
 	            
-                if (self.onReceived)
-                    self.onReceived();	            
-	        }
+            if (self.onReceived)
+                self.onReceived();
 	    };	    
 	    var on_error = function(error)
 	    { 
@@ -690,18 +729,8 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
             if (self.onReceivedError)
                 self.onReceivedError();	 	           
 	    };
-	     
-	    var handler = {"success":on_success, "error": on_error};	    	    
-	    var query_page = function (start_)
-	    {
-	        // get 1000 lines for each request until get null or get userID	       
-            query["skip"](start_);
-            query["limit"](linesInPage);
-            query["find"](handler);
-        };
-
-        this.items.length = 0;
-	    query_page(start);
+        var on_read_handler = {"success":on_success, "error":on_error};               
+        window.ParseQuery(query, on_read_handler, start, lines);        
 	}; 	    
 
     ItemPageKlassProto.RequestInRange = function (query, start, lines)

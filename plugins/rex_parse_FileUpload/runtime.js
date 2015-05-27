@@ -80,25 +80,15 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
         var self = this;
         var on_complete = function()
         {
-            self.OnUploadComplete();
+            self.runtime.trigger(cr.plugins_.Rex_Parse_FileUpload.prototype.cnds.OnUploadCompleted, self);
         };   
         var on_error = function(error)
         {
-            self.OnUploadError();
+            self.runtime.trigger(cr.plugins_.Rex_Parse_FileUpload.prototype.cnds.OnUploadError, self);
         };    
          
 		this.file_obj["save"]()["then"](on_complete, on_error);        
-	};
-    
-	instanceProto.OnUploadComplete = function()
-	{ 
-	    this.runtime.trigger(cr.plugins_.Rex_Parse_FileUpload.prototype.cnds.OnUploadCompleted, this);
-	};	
-	
-	instanceProto.OnUploadError = function()
-	{ 
-	    this.runtime.trigger(cr.plugins_.Rex_Parse_FileUpload.prototype.cnds.OnUploadError, this);
-	};		  
+	};	  
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

@@ -1,5 +1,5 @@
 ﻿/*
-<rankID>
+<tagID>
     ownerID - userID of owner
     targetID - userID of target object
     category - category of this tag
@@ -97,7 +97,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
             clean_filters( this.filters );	        
 	    
         this.exp_LoopIndex = -1;
-        this.exp_LastPastedTagID = "";
+        this.exp_LastPastedTag = null;
 	    this.exp_CurTagIndex = -1;
 	    this.exp_CurTag = null; 
 	    this.exp_LastTagsCount = 0;
@@ -107,6 +107,11 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    this.exp_TLTotalTagsCount = 0;
 	    this.exp_TLxx = null;	
 	    this.exp_TLTagNameCount = 0;    
+        
+        // reset user tags
+        this.reset_tags = {};
+        // reset targets
+        this.reset_targets = {};
 	};
 
 	instanceProto.create_tagbox = function(page_lines)
@@ -214,6 +219,52 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	        
 	    return query;
 	};
+	
+	var fill_tagObj = function(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass)
+	{
+	    tagObj["set"]("ownerID", ownerID);
+	    tagObj["set"]("targetID", targetID);
+	    tagObj["set"]("tag", userTag);
+	    tagObj["set"]("category", category);            
+        
+        if (description !== "")
+            tagObj["set"]("description", description);
+            
+	    if (ownerKlass !== "")
+	    {
+	        var t = window["Parse"].Object["extend"](ownerKlass);
+	        var o = new t();
+	        o["id"] = ownerID;
+	        tagObj["set"]("ownerObject", o);
+	    }
+	    if (targetKlass !== "")
+	    {
+	        var t = window["Parse"].Object["extend"](targetKlass);
+	        var o = new t();
+	        o["id"] = targetID;
+	        tagObj["set"]("targetObject", o);
+	    }	        
+	    
+	    return tagObj;        
+	};	
+    
+	var get_itemValue = function(item, key_, default_value)
+	{ 
+        var val;
+        if (item != null)
+        {
+            if (key_ === "id")
+                val = item[key_];
+            else if ((key_ === "createdAt") || (key_ === "updatedAt"))
+                val = item[key_].getTime();
+            else
+                val = item["get"](key_);
+        }
+        
+        if (val == null)
+            val = default_value;
+        return val;
+	};    
     
     var din = function (d, default_value)
     {       
@@ -366,6 +417,24 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
     		
 		return false;
 	};
+	
+	Cnds.prototype.OnResetTagsComplete = function ()
+	{
+        return true;
+	}; 
+	Cnds.prototype.OnResetTagsError = function ()
+	{
+        return true;
+	}; 
+	
+	Cnds.prototype.OnResetTargetsComplete = function ()
+	{
+        return true;
+	}; 
+	Cnds.prototype.OnResetTargetsError = function ()
+	{
+        return true;
+	}; 		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -375,57 +444,40 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	{	
 	    var self = this;
 	    // step 3    
-	    var OnPasteComplete = function(tag_obj)
+	    var OnPasteComplete = function(tagObj)
 	    { 	        
-	        self.exp_LastPastedTagID = tag_obj["id"];
+	        self.exp_LastPastedTag = tagObj;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteComplete, self);
 	    };	
 	    
-	    var OnPasteError = function(tag_obj, error)
+	    var OnPasteError = function(tagObj, error)
 	    {
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteError, self);
 	    };
 	    	    
-	    var save_tag = function(tag_obj)
+	    var save_tag = function(tagObj)
 	    {
-	        tag_obj["set"]("ownerID", ownerID);
-	        tag_obj["set"]("targetID", targetID);
-	        tag_obj["set"]("tag", userTag);
-	        tag_obj["set"]("category", category);            
-            
-            if (description !== "")
-                tag_obj["set"]("description", description);
-                
-	        if (ownerKlass !== "")
-	        {
-	            var t = window["Parse"].Object["extend"](ownerKlass);
-	            var o = new t();
-	            o["id"] = ownerID;
-	            tag_obj["set"]("ownerObject", o);
-	        }
-	        if (targetKlass !== "")
-	        {
-	            var t = window["Parse"].Object["extend"](targetKlass);
-	            var o = new t();
-	            o["id"] = targetID;
-	            tag_obj["set"]("targetObject", o);
-	        }	        
+	        fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass);
 	        var handler = {"success":OnPasteComplete, "error": OnPasteError};
-	        tag_obj["save"](null, handler);	        
+	        tagObj["save"](null, handler);	        
 	    };
 	    
 	    // step 2
-	    var on_success = function(tag_obj)
+	    var on_success = function(tagObj)
 	    {	 
-	        if (!tag_obj)
+	        if (!tagObj)
 	        {	            	        
-	            tag_obj = new self.tag_klass();	            	        
-	            save_tag(tag_obj);
+	            tagObj = new self.tag_klass();	            	        
+	            save_tag(tagObj);
 	        }
 	        else
 	        {
 	            // tag had already existed
-	            OnPasteComplete(tag_obj);
+                var save_description = tagObj["get"]("description") || "";
+                if (save_description === description)
+	                OnPasteComplete(tagObj);
+                else
+                    save_tag(tagObj);
 	        } 
 	       
 	    };	    
@@ -516,61 +568,20 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	
     Acts.prototype.RemoveQueriedTags = function ()
 	{
-	    var query = this.get_request_query(this.filters);
-	    query["select"]("id");        
+	    var all_itemID_query = this.get_request_query(this.filters);
+	    all_itemID_query["select"]("id");        
 	    
-	    var start = 0;
-	    var lines = 1000;
-	    var all_items = [];
-	    
-        var self = this;             
-
-        // destroy        
+        var self = this;  
 	    var on_destroy_success = function()
 	    {
-	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveQueriedTagsComplete, self);
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnRemoveQueriedTagsComplete, self);
 	    };	    
 	    var on_destroy_error = function(message, error)
 	    { 
-	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveQueriedTagsError, self);
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnRemoveQueriedTagsError, self);
 	    };	    
-	    var destroy_handler = {"success":on_destroy_success, "error": on_destroy_error};
-        var delete_all = funtion ()
-        {  
-            window["Parse"]["Object"]["destroyAll"](all_items, destroy_handler);      
-        };        
-	    // destroy          
-        
-	    var on_success = function(items)
-	    {
-	        all_items.push.apply(all_items, items);
-	        var is_last_page = (items.length < lines);   
-	        	        
-	        if (!is_last_page)  // try next page
-	        {
-	            start += lines;
-	            query_page(start);
-	        }
-	        else  // finish
-	        {
-                delete_all();
-	        }
-	    };	    
-	    var on_error = function(error)
-	    {  
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnRemoveQueriedTagsError, self); 
-	    };
-	     
-	    var handler = {"success":on_success, "error": on_error};	    	    
-	    var query_page = function (start_)
-	    {
-	        // get 1000 lines for each request until get null or get userID	       
-            query["skip"](start_);
-            query["limit"](lines);
-            query["find"](handler);
-        }
-        
-	    query_page(start);	
+	    var on_destroy_handler = {"success":on_destroy_success, "error": on_destroy_error};
+	    window.ParseRemoveAllItems(all_itemID_query, on_destroy_handler);	    	    
 	};	
 	
     Acts.prototype.GetTagsCount = function ()
@@ -595,15 +606,10 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
     
     Acts.prototype.RequestTagsList = function ()
 	{
-	    var query = this.get_request_query(this.filters);
-	    query["select"]("tag");        
-	    
-	    var start = 0;
-	    var lines = 1000;
-	    var all_items = [];
-	    
-        var self = this;             
+	    var all_itemID_query = this.get_request_query(this.filters);
+	    all_itemID_query["select"]("tag");    
 
+        var self = this;
         var get_tags = function (items)
         {        
             clean_table(self.tagsList);                
@@ -621,108 +627,194 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
         
 	    var on_success = function(items)
 	    {
-	        all_items.push.apply(all_items, items);
-	        var is_last_page = (items.length < lines);   
-	        	        
-	        if (!is_last_page)  // try next page
-	        {
-	            start += lines;
-	            query_page(start);
-	        }
-	        else  // finish
-	        {
-                get_tags(all_items);  	   
-                self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnGetTagsListComplete, self);
-	        }
+	        get_tags(all_items);  	   
+            self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnGetTagsListComplete, self);
 	    };	    
 	    var on_error = function(error)
 	    { 
 	        clean_table(self.tagsList);   
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnGetTagsListError, self);
 	    };
-	     
-	    var handler = {"success":on_success, "error": on_error};	    	    
-	    var query_page = function (start_)
-	    {
-	        // get 1000 lines for each request until get null or get userID	       
-            query["skip"](start_);
-            query["limit"](lines);
-            query["find"](handler);
-        }
-        
-	    query_page(start);	    
+	    var on_read_handler = {"success":on_success, "error": on_error};
+	    window.ParseQuery(all_itemID_query, on_read_handler);	    
+	}; 	 
+  
+    Acts.prototype.ResetTag_AddTag = function (userTag, description)
+	{    
+        this.reset_tags[userTag] = description;
+	};    
+  
+    Acts.prototype.ResetTag_Reset = function (ownerID, targetID, category, ownerKlass, targetKlass)
+	{    	 	    
+	    var resetTags = this.reset_tags;
+	    this.reset_tags = {};
 	    
-	}; 	 		
+        var self = this;  
+	    var on_resetTags_success = function()
+	    {
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTagsComplete, self);
+	    };	    
+	    var on_resetTags_error = function(message, error)
+	    { 
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTagsError, self);
+	    };	
+	    
+	    // step 2. paste all tags
+	    var on_saveAll_handler = {"success":on_resetTags_success, "error": on_resetTags_error};  	  
+	    var pasteTags = function ()
+	    {
+	        var tagObjList = [];
+	        var tagObj, userTag, description;
+	        for (userTag in resetTags)
+	        {
+	            description = resetTags[userTag];
+	            tagObj = new self.tag_klass();	  
+	            fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass);
+	            tagObjList.push( tagObj );
+	        }
+	        
+	        if (tagObjList.length === 0)
+	        {
+	            on_resetTags_success();
+	            return;
+	        }
+	        	        
+	        window["Parse"]["Object"]["saveAll"](tagObjList, on_saveAll_handler);	        
+	    };
+	    // step 2. paste all tags
+	       
+	    // step 1. remove all user tags       	    
+	    var on_destroy_success = function()
+	    {
+	        pasteTags();
+	    };	        
+	    var on_destroy_handler = {"success":on_destroy_success, "error": on_resetTags_error};
+	    var remove_all_tags = function (ownerID_, targetID_, category_)
+	    {
+	        var all_itemID_query = self.get_base_query(ownerID_, targetID_, category_, null); 
+	        all_itemID_query["select"]("id");    	    
+	        window.ParseRemoveAllItems(all_itemID_query, on_destroy_handler);
+	    }
+	    // step 1. remove all user tags
+	    
+	    remove_all_tags(ownerID, targetID, category); 
+	};    
+
+    Acts.prototype.ResetTargetID_AddTargetID = function (targetID, description, targetKlass)
+	{    
+        this.reset_targets[targetID] = [description, targetKlass];
+	};    
+  
+    Acts.prototype.ResetTargetID_Reset = function (ownerID, userTag, category, ownerKlass)
+	{    	 	    
+	    var resetTargets = this.reset_targets;
+	    this.reset_targets = {};
+	    
+        var self = this;  
+	    var on_resetTargets_success = function()
+	    {
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTargetsComplete, self);
+	    };	    
+	    var on_resetTargets_error = function(message, error)
+	    { 
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTargetsError, self);
+	    };	
+	    
+	    // step 2. paste all tags
+	    var on_saveAll_handler = {"success":on_resetTargets_success, "error": on_resetTargets_error};  	  
+	    var pasteTags = function ()
+	    {
+	        var tagObjList = [];
+	        var tagObj, targetID, description, targetKlass;
+	        for (targetID in resetTargets)
+	        {
+	            description = resetTargets[targetID][0];
+	            targetKlass = resetTargets[targetID][1];
+	            tagObj = new self.tag_klass();	  
+	            fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass);
+	            tagObjList.push( tagObj );
+	        }
+	        
+	        if (tagObjList.length === 0)
+	        {
+	            on_resetTargets_success();
+	            return;
+	        }
+	        	        
+	        window["Parse"]["Object"]["saveAll"](tagObjList, on_saveAll_handler);	        
+	    };
+	    // step 2. paste all tags
+	       
+	    // step 1. remove all user tags       	    
+	    var on_destroy_success = function()
+	    {
+	        pasteTags();
+	    };	        
+	    var on_destroy_handler = {"success":on_destroy_success, "error": on_resetTargets_error};
+	    var remove_all_targets = function (ownerID_, category_, userTag_)
+	    {
+	        var all_itemID_query = self.get_base_query(ownerID_, null, category_, userTag_); 
+	        all_itemID_query["select"]("id");    	    
+	        window.ParseRemoveAllItems(all_itemID_query, on_destroy_handler);
+	    }
+	    // step 1. remove all user tags
+	    
+	    remove_all_targets(ownerID, category, userTag); 
+	};    	
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
+    Exps.prototype.LastPastedOwnerID = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_LastPastedTag, "ownerID", "") );
+	}; 	    
+	Exps.prototype.LastPastedTargetID = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_LastPastedTag, "targetID", "") );
+	}; 	
+	Exps.prototype.LastPastedTagID = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_LastPastedTag, "id", "") );           
+	};    
+	Exps.prototype.LastPastedUserTag = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_LastPastedTag, "tag", "") );
+	}; 	
+	Exps.prototype.LastPastedCategory = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_LastPastedTag, "category", "") );
+	};	
+	Exps.prototype.LastPastedDescription = function (ret)
+	{
+		ret.set_string( get_itemValue(this.exp_LastPastedTag, "description", "") );        
+	};	    
+    
 	Exps.prototype.CurOwnerID = function (ret)
 	{
-	    var ownerID;
-	    if (this.exp_CurTag)
-	        ownerID = this.exp_CurTag["get"]("ownerID");
-	        
-	    if (!ownerID)
-	        ownerID = "";
-	    
-		ret.set_string( ownerID );
+		ret.set_string( get_itemValue(this.exp_CurTag, "ownerID", "") );
 	}; 	    
 	Exps.prototype.CurTargetID = function (ret)
 	{
-	    var targetID;
-	    if (this.exp_CurTag)
-	        targetID = this.exp_CurTag["get"]("targetID");
-	        
-	    if (!targetID)
-	        targetID = "";
-	    
-		ret.set_string( targetID );
+		ret.set_string( get_itemValue(this.exp_CurTag, "targetID", "") );
 	}; 	
 	Exps.prototype.CurUserTag = function (ret)
 	{
-	    var userTag;
-	    if (this.exp_CurTag)
-	        userTag = this.exp_CurTag["get"]("tag");
-	        
-	    if (!userTag)
-	        userTag = "";
-	    
-		ret.set_string( userTag );
+		ret.set_string( get_itemValue(this.exp_CurTag, "tag", "") );
 	}; 	
 	Exps.prototype.CurCategory = function (ret)
 	{
-	    var category;
-	    if (this.exp_CurTag)
-	        category = this.exp_CurTag["get"]("category");
-	        
-	    if (!category)
-	        category = "";
-	    
-		ret.set_string( category );
+		ret.set_string( get_itemValue(this.exp_CurTag, "category", "") );
 	};	
 	Exps.prototype.CurDescription = function (ret)
 	{
-	    var category;
-	    if (this.exp_CurTag)
-	        category = this.exp_CurTag["get"]("category");
-	        
-	    if (!category)
-	        category = "";
-	    
-		ret.set_string( category );
+		ret.set_string( get_itemValue(this.exp_CurTag, "description", "") );        
 	};	    
 	Exps.prototype.CurTagID = function (ret)
 	{
-	    var tagID;
-	    if (this.exp_CurTag)
-	        tagID = this.exp_CurTag["id"];
-	        
-	    if (!tagID)
-	        tagID = "";
-	    
-		ret.set_string( tagID );
+		ret.set_string( get_itemValue(this.exp_CurTag, "id", "") );           
 	};
 	Exps.prototype.TagsToJSON = function (ret)
 	{
@@ -814,6 +906,68 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 
 (function ()
 {
+    if (window.ParseQuery != null)
+        return;  
+        
+   var request = function (query, handler, start, lines)
+   {	   	          
+	    if (start==null)
+	        start = 0;
+        
+        var all_items = [];            
+	    var is_onePage = (lines != null) && (lines <= 1000);
+	    var linesInPage = (is_onePage)? lines:1000;
+	                                       	    
+        var self = this;       
+	    var on_success = function(items)
+	    {
+	        all_items.push.apply(all_items, items);
+	        var is_last_page = (items.length < linesInPage);   
+	        	        
+	        if ((!is_onePage) && (!is_last_page))  // try next page
+	        {               
+	            start += linesInPage;
+	            query_page(start);
+	        }
+	        else  // finish
+	        {
+                handler["success"](all_items);            
+	        }
+	    };
+	     
+	    var read_page_handler = {"success":on_success, "error": handler["error"]};	 	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get userID	       
+            query["skip"](start_);
+            query["limit"](linesInPage);
+            query["find"](read_page_handler);
+        };
+
+	    query_page(start);
+	}; 
+	
+	var remove_all_items = function (query, handler)
+    {
+	    var on_read_all = function(all_items)
+	    {
+	        if (all_items.length === 0)
+	        {
+	            handler["success"](all_items);
+	            return;
+	        }
+	        window["Parse"]["Object"]["destroyAll"](all_items, handler); 
+	    };	    
+	    var on_read_handler = {"success":on_read_all, "error": handler["error"]};  
+	    request(query, on_read_handler);
+    };
+    
+    window.ParseQuery = request;
+    window.ParseRemoveAllItems = remove_all_items;
+}());
+
+(function ()
+{
     if (window.ParseItemPageKlass != null)
         return;    
 
@@ -843,30 +997,23 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	{
 	    if (start==null)
 	        start = 0;
-	    var is_onePage = (lines != null) && (lines <= 1000);
-	    var linesInPage = (is_onePage)? lines:1000;
-	                                       	    
+        this.items.length = 0; 
+
         var self = this;       
 	    var on_success = function(items)
 	    {
-	        self.items.push.apply(self.items, items);        
-	        var is_last_page = (items.length < linesInPage);   
-	        	        
-	        if ((!is_onePage) && (!is_last_page))  // try next page
-	        {
-	            start += linesInPage;
-	            query_page(start);
-	        }
-	        else  // finish
-	        {
-                self.start = start;
-                self.page_index = Math.floor(start/self.page_lines); 
-                             
-                self.is_last_page = is_last_page;
+            self.items = items;
+            self.start = start;
+            self.page_index = Math.floor(start/self.page_lines); 
+
+            var is_onePage = (lines != null) && (lines <= 1000);
+            if (is_onePage)
+                self.is_last_page = (items.length < lines);
+            else
+                self.is_last_page = true;
 	            
-                if (self.onReceived)
-                    self.onReceived();	            
-	        }
+            if (self.onReceived)
+                self.onReceived();
 	    };	    
 	    var on_error = function(error)
 	    { 
@@ -876,18 +1023,8 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
             if (self.onReceivedError)
                 self.onReceivedError();	 	           
 	    };
-	     
-	    var handler = {"success":on_success, "error": on_error};	    	    
-	    var query_page = function (start_)
-	    {
-	        // get 1000 lines for each request until get null or get userID	       
-            query["skip"](start_);
-            query["limit"](linesInPage);
-            query["find"](handler);
-        };
-
-        this.items.length = 0;
-	    query_page(start);
+        var on_read_handler = {"success":on_success, "error":on_error};               
+        window.ParseQuery(query, on_read_handler, start, lines);        
 	}; 	    
 
     ItemPageKlassProto.RequestInRange = function (query, start, lines)

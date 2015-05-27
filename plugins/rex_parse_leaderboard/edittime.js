@@ -143,8 +143,14 @@ AddExpression(8, ef_return_number, "Current start index", "Load - for each - ind
 AddExpression(9, ef_return_number, "Current loop index", "Load - for each - index", "LoopIndex", 
               "Get loop index in current received page.");                             
                                        
-AddExpression(11, ef_return_string, "Post player name", "Post", "PostPlayerName", 
-              'The post player name. Uses under "condition:On post complete".');
+AddExpression(11, ef_return_string, "Posted player name", "Post", "PostPlayerName", 
+              'Get posted player name under "condition:On post complete".');
+AddExpression(12, ef_return_any, "Current player score", "Post", "PostPlayerScore", 
+              'Get posted current player score under "condition:On post complete".'); 
+AddExpression(14, ef_return_string, "Current user ID", "Post", "PostPlayerUserID", 
+              'Get posted current user id under "condition:On post complete".');               
+AddExpression(15, ef_return_any, "Current extra data", "Post", "PostExtraData", 
+              'Get posted current extra data under "condition:On post complete".');
               
 AddStringParam("UserID", "UserID from authentication.", '""');
 AddExpression(22, ef_return_number, "Get rank by user ID", "Rank", "UserID2Rank", 

@@ -77,7 +77,15 @@ AddCondition(111, cf_trigger, "On get items count complete", "Queried items coun
 
 AddCondition(112, cf_trigger, "On get items count error", "Queried items count",
             "On get items count error",
-            "Triggered when get items count error.", "OnGetItemsCountError");                          
+            "Triggered when get items count error.", "OnGetItemsCountError");   
+            
+AddCondition(211, cf_trigger, "On save all complete", "Save all", 
+            "On save all complete",
+            "Triggered when save all items complete.", "OnSaveAllComplete");
+
+AddCondition(212, cf_trigger, "On save all error", "Save all", 
+            "On save all error",
+            "Triggered when save all items error.", "OnSaveAllError");                                   
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("Key", "The name of the key.", '""');
@@ -106,17 +114,17 @@ AddAction(3, 0, "Remove key", "Save - prepare item",
           "Remove key of current item.", "RemoveKey");            
           
 AddStringParam("ID", "ID of item.", '""');
-AddAction(4, 0, "Save to itemID", "Save", 
+AddAction(4, 0, "Save to itemID", "Z: Deprecated", 
           "Save- Save current item at itemID: <i>{0}</i>", 
-          'Save current item into server. Push item if ID is equal to "".', "Save"); 
+          'Save current item into server. Push item if ID is equal to "".', "_save"); 
 
-AddAction(5, 0, "Push", "Save", 
+AddAction(5, 0, "Push", "Z: Deprecated", 
           "Save- Push current item", 
-          'Push current item into server. Get itemID by "expression:LastSavedItemID".', "Push");       
+          'Push current item into server. Get itemID by "expression:LastSavedItemID".', "_push");       
 
-AddAction(6, 0, "Save at first queried item", "Save", 
+AddAction(6, 0, "Save at first queried item", "Z: Deprecated", 
           "Save- Save current item at first queried item", 
-          "Overwrite first queried item. Create one if there had no queried item.", "OverwriteQueriedItems");
+          "Overwrite first queried item. Create one if there had no queried item.", "_overwriteQueriedItems");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 1);
@@ -138,9 +146,9 @@ AddAction(9, 0, "Remove all items", "Save prepare item - array",
           "Prepare- Remove all items at key <i>{0}</i>", 
           "Remove all items at key of current item.", "ArrayRemoveAllItems");
 
-AddAction(10, 0, "Save primary", "Save - primary", 
+AddAction(10, 0, "Save primary", "Z: Deprecated", 
           "Save- Save current item to primary object", 
-          'Save current item into server. Get itemID by "expression:LastSavedItemID".', "SavePrimary");            
+          'Save current item into server. Get itemID by "expression:LastSavedItemID".', "_savePrimary");            
           
 AddNumberParam("Start", "Start index, 0-based.", 0);          
 AddNumberParam("Lines", "Count of lines", 10); 
@@ -257,7 +265,7 @@ AddStringParam("ID", "ID of item.", '""');
 AddAction(101, 0, "Remove by itemID", "Remove", 
           "Remove- remove item by itemID: <i>{0}</i>", 
           "Remove item by itemID.", "RemoveByItemID");    
-                   
+
 AddAction(102, 0, "Remove queried items", "Remove - queried items", 
           "Remove- remove queried items", 
           "Remove queried items.", "RemoveQueriedItems");  
@@ -296,7 +304,24 @@ AddAction(202, 0, "4. Get linked object", "Filter - 4. fetching fields",
 AddStringParam("ItemID", "Object ID of item.", '""');
 AddAction(203, 0, "2. itemID include", "Filter - 2. itemID", 
           "Filter- 2. itemID: include <i>{0}</i>", 
-          "Add an itemID including.", "AddItemIDInclude"); 
+          "Add an itemID including.", "AddItemIDInclude");
+          
+AddStringParam("ID", "ID of item.", '""');
+AddAction(204, 0, "Set itemID", "Save - prepare item", 
+          "Prepare- Set itemID to <i>{0}</i>", 
+          "Set itemID of current item.", "SetItemID"); 
+          
+AddAction(205, 0, "Save", "Save", 
+          "Save- Save prepared item", 
+          'Save prepared item into server.', "Save");                    
+          
+AddAction(211, 0, "Add to queue", "Save - save-all queue", 
+          "Add current prepared item into save-all queue", 
+          "Add current prepared item into save-all queue.", "AddToSaveAllQueue"); 
+
+AddAction(212, 0, "Save all", "Save - save-all queue", 
+          "Save all items in queue",
+          "Save all items in queue.", "SaveAll");                     
                                         
 //////////////////////////////////////////////////////////////
 // Expressions

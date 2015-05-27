@@ -181,7 +181,25 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         
         if (this.timerIDs.hasOwnProperty(timerName))
             delete this.timerIDs[timerName];
-	};      
+	};   
+
+	var get_itemValue = function(item, key_, default_value)
+	{ 
+        var val;
+        if (item != null)
+        {
+            if (key_ === "id")
+                val = item[key_];
+            else if ((key_ === "createdAt") || (key_ === "updatedAt"))
+                val = item[key_].getTime();
+            else
+                val = item["get"](key_);
+        }
+        
+        if (val == null)
+            val = default_value;
+        return val;
+	};     
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -353,22 +371,12 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 		ret.set_string(this.exp_LastTimerName);
 	};	
 	Exps.prototype.LastStartTimestamp = function (ret)
-	{
-        var t;
-        if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["createdAt"].getTime();
-        else
-            t = 0;     
-		ret.set_float(t);
+	{    
+		ret.set_float(get_itemValue(this.exp_LastTimer, "createdAt", 0));
 	}; 	
 	Exps.prototype.LastCurrentTimestamp = function (ret)
 	{
-        var t;
-        if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["updatedAt"].getTime();
-        else
-            t = 0;       
-		ret.set_float(t);
+		ret.set_float(get_itemValue(this.exp_LastTimer, "updatedAt", 0));        
 	}; 	    
 	Exps.prototype.LastElapsedTime = function (ret)
 	{
@@ -377,16 +385,12 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
             t = this.exp_LastTimer["updatedAt"].getTime() - this.exp_LastTimer["createdAt"].getTime();
         else
             t = 0;     
-		ret.set_float(t/1000);
+		ret.set_float(t/1000);        
 	};
 	Exps.prototype.LastTimeoutInterval = function (ret)
 	{
-        var t;
-        if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["get"]("time-out");
-        else
-            t = 0;    
-		ret.set_float(t/1000);
+        var t = get_itemValue(this.exp_LastTimer, "time-out", 0);    
+		ret.set_float(t/1000);     
 	};
 	Exps.prototype.LastRemainInterval = function (ret)
 	{

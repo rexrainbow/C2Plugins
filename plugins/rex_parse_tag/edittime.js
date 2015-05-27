@@ -74,7 +74,23 @@ AddComboParamOption("Tag name in descending order");
 AddComboParam("Order", "Sort by name or count.", 1);
 AddCondition(123, cf_looping | cf_not_invertible, "For each kind of tag", "Tags list",
              "For each kind of tag, sort by <i>{0}</i>", 
-             "Repeat the event for each kind of tag in tags list.", "ForEachKindOfTagInTagsList");                                                    
+             "Repeat the event for each kind of tag in tags list.", "ForEachKindOfTagInTagsList");  
+             
+AddCondition(131, cf_trigger, "On reset tags complete", "Reset user tags of a target", 
+            "On reset tags complete",
+            "Triggered when reset tags complete.", "OnResetTagsComplete");
+
+AddCondition(132, cf_trigger, "On reset tags error", "Reset user tags of a target", 
+            "On reset tags error",
+            "Triggered when reset tags error.", "OnResetTagsError");
+            
+AddCondition(141, cf_trigger, "On reset targets complete", "Reset targets of an user tag", 
+            "On reset targets complete",
+            "Triggered when reset targets complete.", "OnResetTargetsComplete");
+
+AddCondition(142, cf_trigger, "On reset targets error", "Reset targets of an user tag", 
+            "On reset targets error",
+            "Triggered when reset targets error.", "OnResetTargetsError");                                                                           
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("OwnerID", "Object ID of owner.", '""');
@@ -85,7 +101,7 @@ AddStringParam("Description", '(Optional) Description of this tag. Input "" to i
 AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
 AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
 AddAction(11, 0, "Paste tag", "Paste", 
-          "Owner ID: <i>{0}</i> pastes tag [<i>{3}</i>] <i>{2}</i>: <i>{4}</i> to target ID: <i>{1}</i>", 
+          "Owner ID: <i>{0}</i> pastes tag [<i>{3}</i>] <i>{2}</i>: <i>{4}</i> on target ID: <i>{1}</i>", 
           "Paste tag on an object.", "PasteTag");
           
 AddAction(21, 0, "New", "Filter - 1. new", 
@@ -164,11 +180,51 @@ AddAction(111, 0, "Get tags count", "Queried tags count",
           
 AddAction(121, 0, "Request tags list", "Load - tags list", 
           "Load- Request tags list", 
-          "Request tags list.", "RequestTagsList");                                              
+          "Request tags list.", "RequestTagsList");    
+
+AddStringParam("User tag", 'User tag.', '""');
+AddStringParam("Description", '(Optional) Description of this tag. Input "" to ignore this field', '""');
+AddAction(131, 0, "Add user tag", "Reset user tags of a target", 
+          "Add user tag <i>{0}</i>: <i>{1}</i>", 
+          "Add user tag.", "ResetTag_AddTag"); 
+
+AddStringParam("OwnerID", "Object ID of owner.", '""');
+AddStringParam("TargetID", "Object ID of tagged target.", '""');
+AddStringParam("Category", 'Category.', '""');
+AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
+AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
+AddAction(132, 0, "Reset user tags", "Reset user tags of a target", 
+          "Owner ID: <i>{0}</i> reset [<i>{2}</i>] user tags on target ID: <i>{1}</i>", 
+          "Reset user tags of a target.", "ResetTag_Reset");   
+          
+AddStringParam("TargetID", 'TargetID.', '""');
+AddStringParam("Description", '(Optional) Description of this tag. Input "" to ignore this field', '""');
+AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
+AddAction(141, 0, "Add targetID", "Reset targetID of an user tag", 
+          "Add targetID <i>{0}</i>: <i>{1}</i>", 
+          "Add targetID.", "ResetTargetID_AddTargetID"); 
+
+AddStringParam("OwnerID", "Object ID of owner.", '""');
+AddStringParam("User tag", 'User tag.', '""');
+AddStringParam("Category", 'Category.', '""');
+AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
+AddAction(142, 0, "Reset targets", "Reset targetID of an user tag", 
+          "Owner ID: <i>{0}</i> reset targets with tag [<i>{2}</i>] <i>{1}</i>",
+          "Reset targetID of a user tag.", "ResetTargetID_Reset");                   
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_string, "Last pasted ownerID", "Paste", "LastPastedOwnerID", 
+              'Get last pasted ownerID under "Condition:On paste complete".');  
+AddExpression(2, ef_return_string, "Last pasted targetID", "Paste", "LastPastedTargetID", 
+              'Get last pasted targetID under "Condition:On paste complete".');                
 AddExpression(3, ef_return_string, "Last pasted tagID", "Paste", "LastPastedTagID", 
               'Get last pasted tagID under "Condition:On paste complete".');  
+AddExpression(4, ef_return_string, "Last pasted user tag", "Paste", "LastPastedUserTag", 
+              'Get last pasted user tag under "Condition:On paste complete".');  
+AddExpression(5, ef_return_string, "Last pasted category", "Paste", "LastPastedCategory", 
+              'Get last pasted category under "Condition:On paste complete".');  
+AddExpression(6, ef_return_string, "Last pasted description", "Paste", "LastPastedDescription", 
+              'Get last pasted description under "Condition:On paste complete".');              
               
 AddExpression(11, ef_return_string, "Current owner ID", "Load - for each", "CurOwnerID", 
               "Get the current ownerID in a For Each loop.");  
@@ -186,13 +242,11 @@ AddExpression(17, ef_return_string, "All read tags", "Load", "TagsToJSON",
               "Get all read tags in JSON string.");     
 AddExpression(18, ef_return_number, "Current tag index", "Load - for each - index", "CurTagIndex", 
               "Get the current tag index in a For Each loop."); 
-              
-//AddStringParam("Key", "Key of object.", '""');              
+                         
 AddExpression(19, ef_return_any | ef_variadic_parameters, "Current owner object", "Load - for each", "CurOwnerObject", 
-              "Get the current owner object in a For Each loop.");  
-//AddStringParam("Key", "Key of object.", '""');              
+              "Get the current owner object in JSON string in a For Each loop. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");              
 AddExpression(20, ef_return_any | ef_variadic_parameters, "Current target object", "Load - for each", "CurTargetObject", 
-              "Get the current target object in a For Each loop.");              
+              "Get the current target object in JSON string in a For Each loop. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");              
               
 AddExpression(21, ef_return_number, "Current tag count", "Load - for each", "CurTagCount", 
               "Get tag count in current received page.");

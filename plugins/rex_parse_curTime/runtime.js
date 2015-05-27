@@ -63,8 +63,6 @@ cr.plugins_.Rex_Parse_CurTime = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    this.file_obj = null;
-	    
 	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
