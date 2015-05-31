@@ -24,8 +24,9 @@ AddCondition(2, cf_trigger, "On value changed from ...to ...", "Value",
 
 //////////////////////////////////////////////////////////////
 // Actions
+AddNumberParam("Count", "Bet count.", 1);
 AddAction(0, 0, "Bet", "Bet", 
-          "{my} bet", "Bet.", "Bet");  
+          "{my} bet <i>{0}</i>", "Bet.", "Bet");  
 
 //////////////////////////////////////////////////////////////
 // Expressions

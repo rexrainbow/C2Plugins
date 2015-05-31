@@ -188,7 +188,11 @@ AddExpression(7, ef_return_number,
 AddExpression(8, ef_return_number,
               "UID of request chess on mini board", "Main board: Put-able", "RequestChessUID",
               "Get UID of request chess on mini board.");
-                        
+              
+AddExpression(9, ef_return_number,
+              "UID of put main board", "Main board: Put-able", "RequestMainBoardUID",
+              "Get UID of put main board."); 
+                                     
 AddExpression(10, ef_deprecated | ef_return_number,
               "Logic X of empty on main board", "Main board: find empty", "EmptyLX",
               "Get logic X of empty on main board. Used under 'Condition:Can find empty logic index'");

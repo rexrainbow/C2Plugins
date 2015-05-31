@@ -216,7 +216,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    break;
 	    
 	    case EVEN_Q:	    
-	        px = (lx*this.width) + this.PositionOX;
+	        py = (ly*this.height) + this.PositionOY;
 	        if (lx&1)
 	            py -= this.half_height;	  	        
 	    break;	    

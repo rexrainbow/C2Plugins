@@ -405,6 +405,11 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    this.get_ref(k)["onDisconnect"]()["update"](JSON.parse(v));
 	};	
 
+    Acts.prototype.CancelOnDisconnect = function (k)
+	{
+	    this.get_ref(k)["onDisconnect"]()["cancel"]();
+	};
+	
     // query
     var get_query = function (queryObjs)
     {
@@ -492,7 +497,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
     if (window.FirebaseCallbackMapKlass != null)
         return;    
     
-    var FirebaseCallbackMapKlass = function ()
+    var CallbackMapKlass = function ()
     {
         this.map = {};
     };
@@ -659,5 +664,5 @@ cr.plugins_.Rex_Firebase = function(runtime)
         return this.map;
     };    
     
-	window.FirebaseCallbackMapKlass = FirebaseCallbackMapKlass;
+	window.FirebaseCallbackMapKlass = CallbackMapKlass;
 }()); 

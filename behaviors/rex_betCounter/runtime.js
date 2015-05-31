@@ -85,9 +85,11 @@ cr.behaviors.Rex_betCounter = function(runtime)
         if (this.bet_recorder.length != this.pre_value)
             this.runtime.trigger(cr.behaviors.Rex_betCounter.prototype.cnds.OnValueChanged, this.inst);  
 	}; 
-	behinstProto.bet = function ()
+	behinstProto.bet = function (count)
 	{   
-	    this.bet_recorder.push(this.cur_time);
+        for(var i=0; i<count; i++)
+	        this.bet_recorder.push(this.cur_time);
+            
         this.runtime.trigger(cr.behaviors.Rex_betCounter.prototype.cnds.OnValueChanged, this.inst);   
 	}; 
 	
@@ -126,9 +128,9 @@ cr.behaviors.Rex_betCounter = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.Bet = function ()
+	Acts.prototype.Bet = function (count)
 	{
-		this.bet();
+		this.bet(count);
 	};  
     
 	//////////////////////////////////////

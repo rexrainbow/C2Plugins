@@ -227,6 +227,12 @@ AddAction(34, 0, "Remove all callbacks", "Receive - Remove",
           "Remove all registered received callbacks", 
           "Remove all registered received callbacks.", "RemoveReadingCallback");
 
+AddStringParam("DataRef", "The Firebase data ref URL", '""');
+AddAction(35, 0, "Cancel", "On disconnect", 
+          "Cancel disconnected writing at <i>{0}</i>", 
+          'Cancel disconnected writing.', "CancelOnDisconnect");
+          
+
 // get query from Firebase_Query plugin
 AddObjectParam("Query", "Query object.");
 AddComboParamOption("Value changed");

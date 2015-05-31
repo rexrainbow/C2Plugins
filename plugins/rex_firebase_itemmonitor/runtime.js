@@ -676,7 +676,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
     if (window.FirebaseCallbackMapKlass != null)
         return;    
     
-    var FirebaseCallbackMapKlass = function ()
+    var CallbackMapKlass = function ()
     {
         this.map = {};
     };
@@ -843,5 +843,5 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         return this.map;
     };    
     
-	window.FirebaseCallbackMapKlass = FirebaseCallbackMapKlass;
+	window.FirebaseCallbackMapKlass = CallbackMapKlass;
 }()); 

@@ -1081,7 +1081,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
         
         return false;
-	};	
+	};
+	Cnds.prototype.IsChessOnBoard = function (chess_type)
+	{
+	    if (!chess_type)
+	        return false;
+        var chess = chess_type.getFirstPicked();
+        if (!chess)
+            return false;
+                    
+        return !!this.uid2xyz(chess.uid);
+	};
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

@@ -130,7 +130,10 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddCondition(26, 0, "Has any empty cell on tiles", "Empty", 
             "Has any empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
             "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");               
-                       	
+AddObjectParam("Chess", "Chess object.");      
+AddCondition(27, 0, "Chess is on board", "Chess", 
+            "<i>{0}</i> is on board", 
+            "Return true if this chess is on board.", "IsChessOnBoard");                        	
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);

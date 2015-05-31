@@ -102,6 +102,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.exp_RequestLY = (-1);
         this.exp_RequestLZ = (-1);   
         this.exp_RequestChessUID = (-1);
+        this.exp_RequestMainBoardUID = (-1);
         this.is_putable = 0;
 		this._kicked_chess_uid = -1;	      		
 	};
@@ -318,12 +319,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    return inst;
 	};
 	    
-	instanceProto.IsInside = function (board_inst, chess_uid, lx, ly, lz)
+	instanceProto.CellIsInside = function (board_inst, chess_uid, lx, ly, lz)
 	{
 		return board_inst.IsInsideBoard(lx, ly);
 	};	 
 	
-	instanceProto.IsEmpty = function (board_inst, chess_uid, lx, ly, lz)
+	instanceProto.CellIsEmpty = function (board_inst, chess_uid, lx, ly, lz)
 	{
 		if ( !board_inst.IsInsideBoard(lx, ly) )
 		    return false;
@@ -331,13 +332,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    return board_inst.IsEmpty(lx, ly, lz);
 	};	
 	
-	instanceProto.IsPutable = function (board_inst, chess_uid, lx, ly, lz)
+	instanceProto.CellIsPutable = function (board_inst, chess_uid, lx, ly, lz)
 	{
 		if ( !board_inst.IsInsideBoard(lx, ly) )
 		    return false;
 		
 		this.is_putable = false;
 		this.exp_RequestChessUID = chess_uid;
+		this.exp_RequestMainBoardUID = board_inst.uid;
 		this.exp_RequestLX = lx;
 		this.exp_RequestLY = ly
 	    this.exp_RequestLZ = lz;
@@ -349,14 +351,16 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	// export
 	instanceProto.CellCanPut = function (board_inst, chess_uid, lx, ly, lz, test_mode)
 	{	
+	    var cell_can_put;
 	    switch (test_mode)
 	    {
-	    case 0:  return true;
-	    case 1:  return this.IsInside(board_inst, chess_uid, lx, ly, lz);
-	    case 2:  return this.IsEmpty(board_inst, chess_uid, lx, ly, lz); 
-	    case 3:  return this.IsPutable(board_inst, chess_uid, lx, ly, lz);  
-	    default: return this.IsEmpty(board_inst, chess_uid, lx, ly, lz);   	       
+	    case 0:  cell_can_put = true;   break;
+	    case 1:  cell_can_put = this.CellIsInside(board_inst, chess_uid, lx, ly, lz);   break;
+	    case 2:  cell_can_put = this.CellIsEmpty(board_inst, chess_uid, lx, ly, lz);   break; 
+	    case 3:  cell_can_put = this.CellIsPutable(board_inst, chess_uid, lx, ly, lz);   break;  
+	    default: cell_can_put = this.CellIsEmpty(board_inst, chess_uid, lx, ly, lz);   break;   	       
 	    }
+	    return cell_can_put;
 	}; 	
 	
 	instanceProto.CanPut = function (board_inst, offset_lx, offset_ly, test_mode)
@@ -625,39 +629,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         _uids.length = 0;
         return has_inst;  
 	};		
-	
-	instanceProto.IsPutable = function (board_inst, offset_lx, offset_ly)
-	{
-		var board_xmax = board_inst.x_max;
-		var board_ymax = board_inst.y_max;
-		var board = board_inst.board;   
-		var xyz, lx, ly, lz;
-		var uid;
-		for (uid in this.items)
-		{		    
-		    xyz = this.uid2xyz(uid);
-			lx = xyz.x+offset_lx;
-			ly = xyz.y+offset_ly;
-			lz = xyz.z;
-        									
-			if ((lx < 0) || (lx > board_xmax) || 
-			    (ly < 0) || (ly > board_ymax)    )
-			    return false;
-		    else
-		    {
-                this.exp_RequestLX = xyz.x + offset_lx;	
-                this.exp_RequestLY = xyz.y + offset_ly;
-                this.exp_RequestLZ = xyz.z;
-                this.exp_RequestChessUID = parseInt(uid);
-                this.is_putable = false;
-                this.runtime.trigger(cr.plugins_.Rex_MiniBoard.prototype.cnds.OnPutAbleRequest, this);
-                if (!this.is_putable)
-                    return false;
-		    }
-		}	
-		return true;
-	};
-		
+
 	var hash_clean = function (obj)
 	{
 	    for (var k in obj)
@@ -995,7 +967,10 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	{
 	    ret.set_int(this.exp_RequestChessUID);
 	};	
-
+	Exps.prototype.RequestMainBoardUID = function (ret)
+	{
+	    ret.set_int(this.exp_RequestMainBoardUID);
+	};	
 	//ef_deprecated
 	Exps.prototype.EmptyLX = function (ret) { ret.set_int(0); };
 	// ef_deprecated

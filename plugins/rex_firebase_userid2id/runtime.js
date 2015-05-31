@@ -97,6 +97,27 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	{
 	    var ID_ref = this.get_ID_ref(ID);
 	    var self = this;
+	    
+	    // step 2: write userID
+        var on_setUserID_complete = function(error)
+        {
+            if (error)
+                log("[UserID2ID] Error: set correspond ID failed!");
+            else
+            {
+                self.exp_UserID = UserID;
+                self.on_getID_successful(ID);  
+                // done
+            };
+        };
+        var set_userID = function()
+        {
+            var UserID_ref = self.get_UserID_ref(UserID);          
+            UserID_ref["set"](ID, on_setUserID_complete);       
+        };
+        // step 2
+        	    
+        // step 1: write ID
         var on_write_ID = function(current_value)
         {
             if (current_value === null)  //this ID has not been occupied
@@ -111,20 +132,11 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                 if (on_retry)
                     on_retry();               
             }
-            else 
-            {
-                var UserID_ref = self.get_UserID_ref(UserID);
-                UserID_ref["set"](ID, on_setID_complete);
-                self.exp_UserID = UserID;
-                self.on_getID_successful(ID);         
-            }            
-        };
-        var on_setID_complete = function(error)
-        {
-            if (error)
-                log("[UserID2ID] Error: set correspond ID failed!");
+            else        
+                set_userID();                    
         };
         ID_ref["transaction"](on_write_ID, on_getID_complete);
+        // step 1
 	};  
 
 	instanceProto.generate_ID = function(digits)
