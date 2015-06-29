@@ -100,12 +100,12 @@ cr.behaviors.Rex_Boids = function(runtime)
                 cnt -= 1;
                 continue;
             }        
-            sum += inst.angle;
+            sum += cr.to_clamped_degrees(inst.angle);
         }
         if (cnt === 0)
             return;
             
-        var angle_alignment = sum/cnt;
+        var angle_alignment = cr.to_clamped_radians(sum/cnt);
         
         var p = alignment_weight;
         this.output_force["x"] += (Math.cos(angle_alignment) * p);

@@ -681,7 +681,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         this.map = {};
     };
     
-    var CallbackMapKlassProto = FirebaseCallbackMapKlass.prototype;
+    var CallbackMapKlassProto = CallbackMapKlass.prototype;
 
 	CallbackMapKlassProto.Reset = function(k)
 	{

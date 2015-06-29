@@ -7,7 +7,7 @@
 		"description":	"Get continuous date count.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_dateinarow.html",
-		"category":		"Rex - Web - parse",
+		"category":		"Rex - Web - parse - date",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

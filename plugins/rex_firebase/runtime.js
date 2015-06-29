@@ -502,7 +502,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
         this.map = {};
     };
     
-    var CallbackMapKlassProto = FirebaseCallbackMapKlass.prototype;
+    var CallbackMapKlassProto = CallbackMapKlass.prototype;
 
 	CallbackMapKlassProto.Reset = function(k)
 	{

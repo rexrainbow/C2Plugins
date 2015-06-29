@@ -16,31 +16,7 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddObjectParam("Board", "Board object");
-AddNumberParam("Radius", "Radius in grids.", 1);
-AddCondition(1, cf_looping | cf_not_invertible, "For each LXY in hexagon", "For each", 
-          "For each LXY in hexagon shape with radius to <i>{0}</i>", 
-          "For each LXY in hexagon shape.", "ForEachLXYHexagon"); 
 
-AddObjectParam("Board", "Board object");
-AddComboParamOption("Down/Right");
-AddComboParamOption("Top/Left");
-AddComboParam("Face", "Face of triangle.", 0);
-AddNumberParam("Height", "Height in grids.", 1);
-AddCondition(2, cf_looping | cf_not_invertible, "or each LXY in triangle","For each", 
-          "For each LXY in <i>{0}</i> triangle shape with height to <i>{1}</i>", 
-          "For each LXY in triangle shape.", "ForEachLXYTriangle");  
-
-AddObjectParam("Board", "Board object");
-AddComboParamOption("Type 0");
-AddComboParamOption("Type 1");
-AddComboParamOption("Type 2");
-AddComboParam("Type", "Type of parallelogram.", 0);
-AddNumberParam("Width", "Width in grids.", 1);
-AddNumberParam("Height", "Height in grids.", 1);
-AddCondition(3, cf_looping | cf_not_invertible, "or each LXY in parallelogram", "For each", 
-          "For each LXY in <i>{0}</i> parallelogram shape with <i>{1}</i>x<i>{2}</i>", 
-          "For each LXY in parallelogram shape.", "ForEachLXYParallelogram");   
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Board", "Board object");
@@ -68,7 +44,7 @@ AddLayerParam("Layer", "Layer name of number.");
 AddComboParamOption("Type 0");
 AddComboParamOption("Type 1");
 AddComboParamOption("Type 2");
-AddComboParam("Type", "Type of parallelogram.", 0);
+AddComboParam("Face", "Type of parallelogram.", 0);
 AddNumberParam("Width", "Width in grids.", 1);
 AddNumberParam("Height", "Height in grids.", 1);
 AddAction(3, 0, "Reset in parallelogram", "Reset board", 

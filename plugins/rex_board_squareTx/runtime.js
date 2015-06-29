@@ -366,8 +366,18 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         else
             d = quickAbs(dx) + quickAbs(dy);
        return d;
-	};   
-
+	};  
+	
+	instanceProto.OffsetLX = function (lx0, ly0, lz0, offsetx, offsety, offsetz)
+	{
+        return lx0 + offsetx;
+	}; 	 
+	
+	instanceProto.OffsetLY = function (lx0, ly0, lz0, offsetx, offsety, offsetz)
+	{
+        return ly0 + offsety;
+	}; 
+	
 	function quickAbs(x)
 	{
 		return x < 0 ? -x : x;

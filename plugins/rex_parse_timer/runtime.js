@@ -275,7 +275,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
          
 	    //1. delete all matched timers
         var remove_handler = {"success":start_timer, "error": on_error};
-	    this.remove_timers(userID, timer_name, remove_handler);
+	    this.remove_timers(userID, timerName, remove_handler);
         //1. delete all matched timers
 	             
 	};

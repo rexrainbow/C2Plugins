@@ -114,15 +114,15 @@ AddAction(3, 0, "Remove key", "Save - prepare item",
           "Remove key of current item.", "RemoveKey");            
           
 AddStringParam("ID", "ID of item.", '""');
-AddAction(4, 0, "Save to itemID", "Z: Deprecated", 
+AddAction(4, af_deprecated, "Save to itemID", "Z: Deprecated", 
           "Save- Save current item at itemID: <i>{0}</i>", 
           'Save current item into server. Push item if ID is equal to "".', "_save"); 
 
-AddAction(5, 0, "Push", "Z: Deprecated", 
+AddAction(5, af_deprecated, "Push", "Z: Deprecated", 
           "Save- Push current item", 
           'Push current item into server. Get itemID by "expression:LastSavedItemID".', "_push");       
 
-AddAction(6, 0, "Save at first queried item", "Z: Deprecated", 
+AddAction(6, af_deprecated, "Save at first queried item", "Z: Deprecated", 
           "Save- Save current item at first queried item", 
           "Overwrite first queried item. Create one if there had no queried item.", "_overwriteQueriedItems");
           
@@ -146,7 +146,7 @@ AddAction(9, 0, "Remove all items", "Save prepare item - array",
           "Prepare- Remove all items at key <i>{0}</i>", 
           "Remove all items at key of current item.", "ArrayRemoveAllItems");
 
-AddAction(10, 0, "Save primary", "Z: Deprecated", 
+AddAction(10, af_deprecated, "Save primary", "Z: Deprecated", 
           "Save- Save current item to primary object", 
           'Save current item into server. Get itemID by "expression:LastSavedItemID".', "_savePrimary");            
           
@@ -237,7 +237,15 @@ AddComboParamOption("exist");
 AddComboParam("Exist", "Key exists or not.", 1); 
 AddAction(28, 0, "2. key exist", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: <i>{1}</i>", 
-          "Add existing for this key.", "AddExist");           
+          "Add existing for this key.", "AddExist");    
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddComboParamOption("false");
+AddComboParamOption("true");
+AddComboParam("Compared value", "Compared value.", 1);
+AddAction(29, 0, "2. boolean value compare", "Filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: value is <i>{1}</i>", 
+          "Add a boolean value compared for this key.", "AddBooleanValueComparsion");                  
 
 AddStringParam("Key", "The name of the key.", '""'); 
 AddComboParamOption("Descending");
@@ -321,7 +329,12 @@ AddAction(211, 0, "Add to queue", "Save - save-all queue",
 
 AddAction(212, 0, "Save all", "Save - save-all queue", 
           "Save all items in queue",
-          "Save all items in queue.", "SaveAll");                     
+          "Save all items in queue.", "SaveAll");  
+          
+AddStringParam("Keys", 'Primary keys, separated by ","');         
+AddAction(213, 0, "Set primary keys", "Primary keys", 
+          "Set primary keys to <i>{0}</i>", 
+          "Set primary keys.", "SetPrimaryKeys");                             
                                         
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -378,6 +391,7 @@ var property_list = [
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "Item", "Class name for storing leaderboard structure."), 
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),
+	new cr.Property(ept_text, "Primary keys", "", 'Primary keys, separated by ","'),    
 	];
 	
 // Called by IDE when a new object type is to be created

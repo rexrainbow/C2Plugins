@@ -30,42 +30,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    this.layout = null;	
 	    this.layoutUid = -1;	
 	};
-
-    typeProto.GetLayout = function()
-    {
-        if (this.layout != null)
-            return this.layout;
-            
-        var plugins = this.runtime.types;
-        var name, inst;
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            
-            if ( (cr.plugins_.Rex_SLGSquareTx && (inst instanceof cr.plugins_.Rex_SLGSquareTx.prototype.Instance)) ||
-                 (cr.plugins_.Rex_SLGHexTx && (inst instanceof cr.plugins_.Rex_SLGHexTx.prototype.Instance))       ||
-                 (cr.plugins_.Rex_SLGCubeTx && (inst instanceof cr.plugins_.Rex_SLGCubeTx.prototype.Instance)) 
-                )
-            {
-                this.layout = inst;
-                return this.layout;
-            }            
-        }
-        assert2(this.layout, "Mini board: Can not find layout oject.");
-        return null;
-    };   
-    
-	typeProto.CreateChess = function (objtype, lx, ly, lz, layer, callback)
-	{
-        if ((objtype == null) || (layer == null))
-            return;
-         
-        var layout = this.GetLayout();         
-        var px = layout.LXYZ2PX(lx, ly, lz);
-        var py = layout.LXYZ2PY(lx, ly, lz);        
-        var inst = window.RexC2CreateObject.call(this, objtype, layer, px, py, callback);
-        return inst;
-	};    
+   
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -107,6 +72,30 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this._kicked_chess_uid = -1;	      		
 	};
 	
+    instanceProto.GetLayout = function()
+    {
+        if (this.type.layout != null)
+            return this.type.layout;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if ( (cr.plugins_.Rex_SLGSquareTx && (inst instanceof cr.plugins_.Rex_SLGSquareTx.prototype.Instance)) ||
+                 (cr.plugins_.Rex_SLGHexTx && (inst instanceof cr.plugins_.Rex_SLGHexTx.prototype.Instance))       ||
+                 (cr.plugins_.Rex_SLGCubeTx && (inst instanceof cr.plugins_.Rex_SLGCubeTx.prototype.Instance)) 
+                )
+            {
+                this.type.layout = inst;
+                return this.type.layout;
+            }            
+        }
+        assert2(this.type.layout, "Mini board: Can not find layout oject.");
+        return null;
+    }; 	
+	
 	instanceProto.ResetBoard = function ()
 	{
 		this.board = {};
@@ -118,10 +107,10 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	instanceProto.mainboard_ref_set = function (inst, lx, ly)
 	{
-	    this.mainboard.assign_board(inst, lx, ly);
+	    this.mainboard.SetBoard(inst, lx, ly);
         if (inst != null)
         {
-            this.mainboard_last.assign_board(inst, lx, ly);
+            this.mainboard_last.SetBoard(inst, lx, ly);
         }
 	};
 	
@@ -132,8 +121,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		// remove board instance
 		if (this.mainboard.inst === inst)
 		{
-		    this.mainboard.assign_board(null);
-		    this.mainboard_last.assign_board(null);
+		    this.mainboard.SetBoard(null);
+		    this.mainboard_last.SetBoard(null);
 		}
 	};
     
@@ -296,7 +285,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	instanceProto.CreateChess = function(obj_type, lx, ly, lz, layer)
 	{
-	    var layout = this.type.GetLayout();
+	    var layout = this.GetLayout();
         if ( (obj_type ==null) || (layout == null) )
             return;
             
@@ -311,9 +300,13 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         {
             self.AddChess(inst, lx, ly, lz); 
         }
-        // callback        		
-        var inst = this.type.CreateChess(obj_type, lx, ly, lz, layer, __callback);
-        
+        // callback          
+        var inst = window.RexC2CreateObject.call(this, obj_type, layer, 
+                                                 layout.LXYZ2PX(lx, ly, lz), 
+                                                 layout.LXYZ2PY(lx, ly, lz), 
+                                                 __callback);
+                
+
 		layout.SetPOX(pox_save);
 		layout.SetPOY(poy_save);
 	    return inst;
@@ -370,13 +363,14 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        
 	    if (test_mode == 0)
 	        return true;
-
+        
+        var layout = board_inst.GetLayout();
 		var uid, xyz, lx, ly, lz;
 		for (uid in this.items)
 		{		    
 		    xyz = this.uid2xyz(uid);
-		    lx = xyz.x + offset_lx;
-		    ly = xyz.y + offset_ly;
+		    lx = layout.OffsetLX(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0);
+		    ly = layout.OffsetLY(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0);
 		    lz = xyz.z;
 
 		    if (!this.CellCanPut(board_inst, parseInt(uid), lx, ly, lz, test_mode))
@@ -401,6 +395,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
             this.mainboard_ref_set(board_inst, offset_lx, offset_ly);       
                 
 		    var uid, xyz, inst;
+		    var layout = board_inst.GetLayout();
             // put lz = 0 first
 		    for (uid in this.items_lz0)
 		    {
@@ -409,8 +404,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		            continue;
 		        xyz = this.uid2xyz(uid);
 		    	board_inst.AddChess(inst,
-		    	                    xyz.x+offset_lx, 
-		    	                    xyz.y+offset_ly, 
+		    	                    layout.OffsetLX(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0), 
+		    	                    layout.OffsetLY(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0), 
 		    	                    xyz.z);
 		    	                    
 		    }
@@ -426,8 +421,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		            continue;
 		        xyz = this.uid2xyz(uid);
 		    	board_inst.AddChess(inst,
-		    	                    xyz.x+offset_lx, 
-		    	                    xyz.y+offset_ly, 
+		    	                    layout.OffsetLX(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0), 
+		    	                    layout.OffsetLY(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0),  
 		    	                    xyz.z);
 		    }
             
@@ -528,7 +523,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	instanceProto.chess_position_reset = function ()
 	{
-	    var layout = this.type.GetLayout();
+	    var layout = this.GetLayout();
 	    var pox_save = layout.GetPOX();
 		var poy_save = layout.GetPOY();
 		layout.SetPOX(this.x);
@@ -552,7 +547,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    
 	instanceProto.do_logical_transfer = function (options)
 	{ 
-        var layout = this.type.GetLayout(); 
+        var layout = this.GetLayout(); 
         var mainboard = this.mainboard_last;
         
 	    var uid, xyz, new_items = {};
@@ -563,8 +558,9 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        
 	        if (options.checkMode != null)
 	        {
-	            var lx = new_xyz.x + mainboard.LOX;
-	            var ly = new_xyz.y + mainboard.LOY;
+	            var layout = mainboard.inst.GetLayout();
+	            var lx = layout.OffsetLX(new_xyz.x, new_xyz.y, 0, mainboard.LOX, mainboard.LOY, 0); 
+	            var ly = layout.OffsetLY(new_xyz.x, new_xyz.y, 0, mainboard.LOX, mainboard.LOY, 0); 
 	            var lz = new_xyz.z;
 	            if (!this.CellCanPut(mainboard.inst, parseInt(uid), lx, ly, lz, options.checkMode))
 	                return null;
@@ -629,7 +625,69 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         _uids.length = 0;
         return has_inst;  
 	};		
-
+	
+	instanceProto.get_minX = function ()
+	{
+		var uid, xyz;
+		var minX;			
+		for (uid in this.items)
+		{
+		    xyz = this.items[uid];
+		    if ((minX == null) || (minX > xyz.x))
+		        minX = xyz.x;				                
+		};        	
+        return minX;
+	};
+	instanceProto.get_minY = function ()
+	{
+		var uid, xyz;
+		var minY;			
+		for (uid in this.items)
+		{
+		    xyz = this.items[uid];
+		    if ((minY == null) || (minY > xyz.y))
+		        minY = xyz.y;				                
+		};        	
+        return minY;
+	};    
+	instanceProto.get_maxX = function ()
+	{
+		var uid, xyz;
+		var maxX;			
+		for (uid in this.items)
+		{
+		    xyz = this.items[uid];
+		    if ((maxX == null) || (maxX < xyz.x))
+		        maxX = xyz.x;				                
+		};        	
+        return maxX;
+	};
+	instanceProto.get_maxY = function ()
+	{
+		var uid, xyz;
+		var maxY;			
+		for (uid in this.items)
+		{
+		    xyz = this.items[uid];
+		    if ((maxY == null) || (maxY < xyz.y))
+		        maxY = xyz.y;				                
+		};        	
+        return maxY;
+	};
+    
+	instanceProto.get_minY = function ()
+	{
+		var uid, xyz;
+		var minY;			
+		for (uid in this.items)
+		{
+		    xyz = this.items[uid];
+		    if ((minY == null) || (minY > xyz.y))
+		        minY = xyz.y;				                
+		};        	
+        return minY;
+	};    
+    
 	var hash_clean = function (obj)
 	{
 	    for (var k in obj)
@@ -929,7 +987,58 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	                                                // ignore_put_request
 	                  );                 
 	};		
-		    
+	
+	Acts.prototype.ShiftLOXY = function (pos_type)
+	{	
+	    if (is_hash_empty(this.items))
+	        return;
+			        
+		var minX= this.get_minX();
+        var minY= this.get_minY();
+		var maxX= this.get_maxX();
+        var maxY= this.get_maxY();
+        var new_LOX, new_LOY;
+        switch (pos_type)
+        {
+        case 0:
+		    new_LOX = Math.floor((maxX + minX)/2);
+		    new_LOY = Math.floor((maxY + minY)/2);	    
+        break;
+        case 1:
+		    new_LOX = minX;
+		    new_LOY = minY;	    
+        break;        
+        }
+        
+	    if ((new_LOX === 0) && (new_LOY === 0))
+	    {        
+	        return;
+	    }
+	    
+        var layout = this.GetLayout();	    
+	    var pox_save = layout.GetPOX();
+		var poy_save = layout.GetPOY();
+		layout.SetPOX(this.x);
+		layout.SetPOY(this.y);	
+        this.x = layout.LXYZ2PX(new_LOX, new_LOY);
+        this.y = layout.LXYZ2PY(new_LOX, new_LOY);	        
+
+        var pre_items = this.items;
+		this.ResetBoard();        
+        var uid, xyz;
+        var chess_inst, new_lx, new_ly;
+		for (var uid in pre_items)
+		{
+		    chess_inst = this.runtime.getObjectByUID(uid);
+		    xyz = pre_items[uid];
+		    new_lx = layout.OffsetLX(xyz.x, xyz.y, 0, -new_LOX, -new_LOY, 0);
+		    new_ly = layout.OffsetLY(xyz.x, xyz.y, 0, -new_LOX, -new_LOY, 0);
+		    this.AddChess(chess_inst, new_lx, new_ly, xyz.z);
+		};
+		
+		layout.SetPOX(pox_save);
+		layout.SetPOY(poy_save);		
+	};		    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -1003,7 +1112,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        px = -1;
 	    else
 	    {
-	        var layout = this.type.GetLayout();
+	        var layout = this.GetLayout();
 	        var pox_save = layout.GetPOX();
 		    var poy_save = layout.GetPOY();
 		    layout.SetPOX(this.x);
@@ -1022,7 +1131,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        py = -1;
 	    else
 	    {
-	        var layout = this.type.GetLayout();
+	        var layout = this.GetLayout();
 	        var pox_save = layout.GetPOX();
 		    var poy_save = layout.GetPOY();
 		    layout.SetPOX(this.x);
@@ -1046,7 +1155,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    this.saveUID = (-1);	// for loading	    
 	}
 	var MainboardRefKlassProto = MainboardRefKlass.prototype;
-	MainboardRefKlassProto.assign_board = function(inst, lx, ly)
+	MainboardRefKlassProto.SetBoard = function(inst, lx, ly)
 	{	    
 	    this.inst = inst;
 	    this.LOX = (inst==null)? (-1):lx;

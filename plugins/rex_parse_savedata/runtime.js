@@ -74,6 +74,9 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 		    this.header_klass = window["Parse"].Object["extend"](this.properties[2]);
 		    this.body_klass = window["Parse"].Object["extend"](this.properties[3]);
 		}
+        
+        this.acl_write_mode = this.properties[4];
+        this.acl_read_mode = this.properties[5];
 		
         this.owner_userID = "";
         
@@ -161,7 +164,26 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
             val = in_data;
         }	    
         return val;
-	};  	
+	};  
+	
+	var get_ACL = function (wm, rm)
+	{
+	    if ((wm === 0) && (rm === 0))
+	        return null;	    
+	    var current_user = window["Parse"]["User"]["current"]();
+	    if (!current_user)
+	        return null;
+  	        
+	    var acl = new window["Parse"]["ACL"](current_user);
+
+        if (wm === 0)
+            acl["setPublicWriteAccess"](true);
+            
+        if (rm === 0)
+            acl["setPublicReadAccess"](true); 	
+            
+        return acl;	    
+	};		
     
 	var clean_table = function (o)
 	{
@@ -313,6 +335,13 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
                 header_obj = new self.header_klass();
             if (body_obj == null)
                 body_obj = new self.body_klass();
+            
+            var acl = get_ACL(self.acl_write_mode, self.acl_read_mode);
+            if (acl)
+            {
+                header_obj["setACL"](acl);
+                body_obj["setACL"](acl);
+            }
                 
             var handler = {"success":isDone_handler, "error": on_error};
 			wait_events += 1;

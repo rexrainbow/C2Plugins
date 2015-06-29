@@ -29,7 +29,8 @@ cr.plugins_.rex_youtube_player = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("https://www.youtube.com/iframe_api");
+	    //jsfile_load("https://www.youtube.com/iframe_api");
+        // Function onYouTubeIframeAPIReady() should be defined before loading 
 	};
 	
 	var jsfile_load = function(file_name)
@@ -97,9 +98,11 @@ cr.plugins_.rex_youtube_player = function(runtime)
         if (!window["onYouTubeIframeAPIReady"])
         {
             window["onYouTubeIframeAPIReady"] = function() 
-            {            
+            {
                 IsAPIReady = true;                 
             };
+	        jsfile_load("https://www.youtube.com/iframe_api");            
+            // Function onYouTubeIframeAPIReady() should be defined before loading 
         }
         // init        
 	};       
@@ -201,7 +204,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	        if (self.is_autoplay)
 	            self.youtube_player["playVideo"]();
 	    };
-	
+
 	    var playerVars = {};
         this.youtube_player = new window["YT"]["Player"](
             this.elem.id, 

@@ -287,8 +287,8 @@ cr.behaviors.Rex_Timer = function(runtime)
     
 	Cnds.prototype.IsRunning = function (name)
 	{  
-        var timer = this.timers[name];        
-        return (timer != null);
+        var timer = this.timers[name];
+		return (timer)? timer.IsActive(): false;
 	};
     
 	Cnds.prototype.OnTimeout = function (name)
@@ -378,28 +378,28 @@ cr.behaviors.Rex_Timer = function(runtime)
 	    ret.set_float(val);
 	};
     
-	Exps.prototype.Elapsed = function (ret)
+	Exps.prototype.Elapsed = function (ret, name)
 	{
         var timer = this.timer_get(name);           
         var val = (timer)? timer.ElapsedTimeGet():0;     
 	    ret.set_float(val);
 	};  
 
-    Exps.prototype.RemainderPercent = function (ret)
+    Exps.prototype.RemainderPercent = function (ret, name)
 	{ 
         var timer = this.timer_get(name);     
         var val = (timer)? timer.RemainderTimePercentGet():0;     
 	    ret.set_float(val);
 	};
     
-	Exps.prototype.ElapsedPercent = function (ret)
+	Exps.prototype.ElapsedPercent = function (ret, name)
 	{
         var timer = this.timer_get(name);
         var val = (timer)? timer.ElapsedTimePercentGet():0;     
 	    ret.set_float(val);
 	};    
     
-	Exps.prototype.DelayTime = function (ret)
+	Exps.prototype.DelayTime = function (ret, name)
 	{
         var timer = this.timer_get(name);
         var val = (timer)? timer.DelayTimeGet():0;     

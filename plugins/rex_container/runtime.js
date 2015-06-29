@@ -318,6 +318,7 @@ cr.plugins_.Rex_Container.tag2container = {};
             if (inst != null)
                 sol.instances.push(inst);
         }
+        objtype.applySolToContainer();
         return  (sol.instances.length >0);       
 	};
  	

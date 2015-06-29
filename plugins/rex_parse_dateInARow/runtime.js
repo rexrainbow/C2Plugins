@@ -72,8 +72,6 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    this.file_obj = null;
-	    
 	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
@@ -101,6 +99,32 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 	    return query;
 	};	
 
+	var alis_date = function (timestamp, scale)
+	{
+	    var dateObj = new Date(timestamp);
+	    
+	    var year = dateObj.getFullYear();
+	    if (scale === 0)
+	        return new Date(year, 1, 1, 0, 0, 0, 0).getTime();
+	    
+	    var month = dateObj.getMonth();
+	    if (scale === 1)
+	        return new Date(year, month, 1, 0, 0, 0, 0).getTime();
+	        
+	    var date = dateObj.getDate();
+	    if (scale === 2)
+	        return new Date(year, month, date, 0, 0, 0, 0).getTime();	        
+	        
+	    var hour = dateObj.getHours();
+	    if (scale === 3)
+	        return new Date(year, month, date, hour, 0, 0, 0).getTime();
+	        
+	    var minute = dateObj.getMinutes();
+	    if (scale === 4)
+	        return new Date(year, month, date, hour, minute, 0, 0).getTime();	        
+	        	 	    
+	};
+	
     var year_diff = function(t1, t0)
 	{ 
         var date1=new Date(t1), date0=new Date(t0);
@@ -113,50 +137,29 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
         var m_diff = date1.getMonth() - date0.getMonth();       
         return (y_diff * 12) + m_diff;
 	};   
-    var day_diff = function(t1, t0)
+    var date_diff = function(t1, t0)
 	{ 
-        var date1=new Date(t1), date0=new Date(t0);
-        var y1=date1.getFullYear(), y0=date0.getFullYear();
-        var m1=date1.getMonth(), m0=date0.getMonth();
-        var d1=date1.getDate(), d0=date0.getDate();
-        var alis_t1 = new Date(y1, m1, d1, 0, 0, 0, 0);
-        var alis_t0 = new Date(y0, m0, d0, 0, 0, 0, 0);
-        var alis_diff = alis_t1 - alis_t0;
-        return alis_diff/(1000*60*60*24);
+	    var diff = alis_date(t1, 2) - alis_date(t0, 2);
+	    return diff/(1000*60*60*24);
 	};
     var hour_diff = function(t1, t0)
 	{ 
-        var date1=new Date(t1), date0=new Date(t0);
-        var y1=date1.getFullYear(), y0=date0.getFullYear();
-        var m1=date1.getMonth(), m0=date0.getMonth();
-        var d1=date1.getDate(), d0=date0.getDate();
-        var h1=date1.getHours(), h0=date0.getHours();
-        var alis_t1 = new Date(y1, m1, d1, h1, 0, 0, 0);
-        var alis_t0 = new Date(y0, m0, d0, h0, 0, 0, 0);
-        var alis_diff = alis_t1 - alis_t0;
-        return alis_diff/(1000*60*60);
+	    var diff = alis_date(t1, 3) - alis_date(t0, 3);
+	    return diff/(1000*60*60);
 	};    
     var minute_diff = function(t1, t0)
 	{ 
-        var date1=new Date(t1), date0=new Date(t0);
-        var y1=date1.getFullYear(), y0=date0.getFullYear();
-        var mo1=date1.getMonth(), mo0=date0.getMonth();
-        var d1=date1.getDate(), d0=date0.getDate();
-        var h1=date1.getHours(), h0=date0.getHours();
-        var m1=date1.getMinutes(), m0=date0.getMinutes();        
-        var alis_t1 = new Date(y1, mo1, d1, h1, m1, 0, 0);
-        var alis_t0 = new Date(y0, mo0, d0, h0, m0, 0, 0);
-        var alis_diff = alis_t1 - alis_t0;
-        return alis_diff/(1000*60);
+	    var diff = alis_date(t1, 4) - alis_date(t0, 4);
+	    return diff/(1000*60);
 	};     
-	var date_diff = function(t1, t0, scale)
+	var time_diff = function(t1, t0, scale)
 	{ 
         var inc;
         switch(scale)
         {
         case 0: inc = year_diff(t1, t0);  break;
         case 1: inc = month_diff(t1, t0);  break;
-        case 2: inc = day_diff(t1, t0);  break;
+        case 2: inc = date_diff(t1, t0);  break;
         case 3: inc = hour_diff(t1, t0);  break;
         case 4: inc = minute_diff(t1, t0);  break;        
         }
@@ -181,7 +184,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
         if (preTimestamp == null)
             preTimestamp = item_obj["get"]("lastTimestamp").getTime();	 
              
-        var inc = date_diff(curTimestamp, preTimestamp, scale);            
+        var inc = time_diff(curTimestamp, preTimestamp, scale);            
         item_obj["set"]("lastTimestamp", new Date(curTimestamp));
         item_obj["set"]("prevCount", item_obj["get"]("count"));  
         if (inc === 1) 

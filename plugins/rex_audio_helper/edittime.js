@@ -16,7 +16,11 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddStringParam("Tag", "A tag, which can be anything you like, to use to reference this sound in future.", '""');
+AddCondition(1, 0, "Is fading", "Fading", 
+             "Is <i>{0}</i> fading", 
+             "Return true if an audio is fading.", "IsFading");
+             
 //////////////////////////////////////////////////////////////
 // Actions     
 AddAudioFileParam("Audio file", "Choose the audio file to play.");

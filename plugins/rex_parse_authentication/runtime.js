@@ -68,6 +68,11 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    if (!window.RexC2IsParseInit)
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+	        
+	        if (this.properties[3] === 1)
+	        {
+	            window["Parse"]["User"]["enableRevocableSession"]();
+	        }
 	        window.RexC2IsParseInit = true;
 	    }
 	    
@@ -80,6 +85,24 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
         this.current_user = null;   // valid after login
 	};
 
+	instanceProto.logging_out = function()
+	{ 
+	    window["Parse"]["User"]["logOut"]();
+	    this.current_user = null;   // valid after login
+    };
+
+	instanceProto.do_invalid_session_token_handler = function(error, handler)
+	{ 
+	    var is_invalid_session_token = (error["code"] === window["Parse"]["Error"]["INVALID_SESSION_TOKEN"]);
+	    if (is_invalid_session_token)
+	    {	    
+	        this.logging_out();
+	        if (handler)
+	            handler();
+	        	        
+	    }
+	    return is_invalid_session_token;	    
+    };    
 	instanceProto.set_initial_data = function(user, initial_data)
 	{ 
         for(var n in initial_data)
@@ -87,7 +110,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
             user["set"](n, initial_data[n]);
             delete initial_data[n];
         }
-    };   
+    };       
 
 	instanceProto.update_login_counter = function(user)
 	{
@@ -153,21 +176,30 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    
 	    var on_error = function (user, error)
 	    {
-	        self.last_error = error;
-            self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.UsernamePassword_OnCreateAccountError, self);          
+	        var is_invalid_session_token = self.do_invalid_session_token_handler(error, sign_up);
+	        if (!is_invalid_session_token)
+	        {
+	            self.last_error = error;
+                self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.UsernamePassword_OnCreateAccountError, self);          
+            }
 	    };
+	    
 	    var user = new window["Parse"]["User"]();
         user["set"]("username", n_);
         user["set"]("password", p_);
-        
-        this.set_initial_data(user, this.initial_data);
-
-        
         if (e_ !== "")
-            user["set"]("email", e_);
+        {
+            user["set"]("email", e_);        
+        }
+        this.set_initial_data(user, this.initial_data);
+               
+        var sign_up = function()
+        {
+            var handler = {"success":on_success, "error":on_error}; 
+            user["signUp"](null, handler);
+        }
         
-        var handler = {"success":on_success, "error":on_error};
-        user["signUp"](null, handler);
+        sign_up();
 	}; 
 	
     Acts.prototype.UsernamePassword_Login = function (n_, p_)
@@ -182,13 +214,23 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    
 	    var on_error = function (user, error)
 	    {
-	        self.current_user = user;
-	        self.last_error = error;
-            self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginError, self);          
+	        var is_invalid_session_token = self.do_invalid_session_token_handler(error, login);
+	        if (!is_invalid_session_token)
+	        {	        
+	            self.current_user = user;
+	            self.last_error = error;
+                self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginError, self);          
+            }
 	    };
 	    
-	    var handler = {"success":on_success, "error":on_error};	    
-        window["Parse"]["User"]["logIn"](n_, p_, handler);
+	       	    
+	    var login = function ()
+	    {
+	        var handler = {"success":on_success, "error":on_error};	 
+            window["Parse"]["User"]["logIn"](n_, p_, handler);
+        }
+        
+        login();
 	}; 
 	
     Acts.prototype.UsernamePassword_SendPasswordResultEmail = function (e_)
@@ -211,19 +253,19 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	
     Acts.prototype.LoggingOut = function ()
 	{
-	    window["Parse"]["User"]["logOut"]();
+	    this.logging_out();
 	};	
 	
     Acts.prototype.UsernamePassword_SignUpLogin = function (n_, p_)
-	{
+	{    
         this.isFirstLogin = false;        
         var is_first_login = false;
         
 	    var self = this;
 	    
 	    var OnLoginSuccessfully = function(user)
-	    { 	      
-            this.isFirstLogin = is_first_login;
+	    {
+            self.isFirstLogin = is_first_login;
 	        self.current_user = user; 
 	        self.update_login_counter(user);   	         
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginSuccessfully, self);
@@ -254,8 +296,17 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	            login_again(username, password);
 	        };
 	        
+	        var _on_error = function (user, error)
+	        {
+	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, try_signingUp);
+	            if (!is_invalid_session_token)
+	            {	            
+                    OnLoginError(user, error);      
+                }
+	        };
+	        
 	        var handler = {"success": _on_success,
-                           "error": OnLoginError};
+                           "error": _on_error};
 	        var user = new window["Parse"]["User"]();
             user["set"]("username", username);
             user["set"]("password", password);
@@ -270,7 +321,11 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    {	 
 	        var _on_error = function (user, error) 
 	        {
-                try_signingUp(username, password);	            
+	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, try_login);
+	            if (!is_invalid_session_token)
+	            {	            
+	                try_signingUp(username, password);
+                }
 	        };
 	        
 	        var handler = {"success": OnLoginSuccessfully,
@@ -280,6 +335,8 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
         };            
         
         try_login(n_, p_);  
+        
+        //PASSWORD_MISSING
 	};	
     
     Acts.prototype.SetValue = function (key_, value_)
@@ -300,7 +357,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	Exps.prototype.ErrorCode = function (ret)
 	{
 	    var val = (!this.last_error)? "": this.last_error["code"];    
-		ret.set_string(val);
+		ret.set_int(val);
 	}; 
 	
 	Exps.prototype.ErrorMessage = function (ret)
@@ -318,6 +375,12 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	Exps.prototype.UserName = function (ret)
 	{
 	    var val = (!this.current_user)? "": this.current_user["get"]("username");    
+		ret.set_string(val);
+	}; 	
+	
+	Exps.prototype.Email = function (ret)
+	{
+	    var val = (!this.current_user)? "": this.current_user["get"]("email");    
 		ret.set_string(val);
 	}; 	
 	

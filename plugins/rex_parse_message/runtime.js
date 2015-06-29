@@ -90,9 +90,10 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    
         var page_lines = this.properties[3];
 	    this.order = (this.properties[4]==0)? "ascending":"descending"; 
-	    this.acl_mode = this.properties[5];
-	    this.sender_class = this.properties[6];
-	    this.receiver_class = this.properties[7];        
+        this.acl_write_mode = this.properties[5];
+        this.acl_read_mode = this.properties[6];
+	    this.sender_class = this.properties[7];
+	    this.receiver_class = this.properties[8];        
 	    
 	    if (!this.recycled)
 	        this.messagebox = this.create_messagebox(page_lines);
@@ -218,7 +219,26 @@ cr.plugins_.Rex_parse_message = function(runtime)
         clean_filters(filters); 
         return query;
 	}; 
-    
+
+	var get_ACL = function (wm, rm)
+	{
+	    if ((wm === 0) && (rm === 0))
+	        return null;	    
+	    var current_user = window["Parse"]["User"]["current"]();
+	    if (!current_user)
+	        return null;
+  	        
+	    var acl = new window["Parse"]["ACL"](current_user);
+
+        if (wm === 0)
+            acl["setPublicWriteAccess"](true);
+            
+        if (rm === 0)
+            acl["setPublicReadAccess"](true); 	
+            
+        return acl;	    
+	};	
+	    
 	var get_itemValue = function(item, key_, default_value)
 	{ 
         var val;
@@ -344,29 +364,24 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    messageObj["set"]("content", content_);
 	    messageObj["set"]("tag", tag);
         messageObj["set"]("status", status);
-	    
-	    if (this.acl_mode === 1)  // private
-	    {
-	        var current_user = window["Parse"]["User"]["current"]();
-	        if (current_user)
-	        {
-	            var acl = new window["Parse"]["ACL"](current_user);
-	            acl["setPublicReadAccess"](true);
-	            messageObj["setACL"](acl);
-	        }	        
-	    };
         
-	    if (self.sender_class !== "")
+        var acl = get_ACL(this.acl_write_mode, this.acl_read_mode);
+        if (acl)
+        {
+            messageObj["setACL"](acl);
+        }
+        
+	    if (this.sender_class !== "")
 	    {
-	        var t = window["Parse"].Object["extend"](self.sender_class);
+	        var t = window["Parse"].Object["extend"](this.sender_class);
 	        var o = new t();
-	        o["id"] = self.userID;
+	        o["id"] = this.userID;
 	        messageObj["set"]("senderObject", o);
 	    }        
         
-	    if (self.receiver_class !== "")
+	    if (this.receiver_class !== "")
 	    {
-	        var t = window["Parse"].Object["extend"](self.receiver_class);
+	        var t = window["Parse"].Object["extend"](this.receiver_class);
 	        var o = new t();
 	        o["id"] = receiverID;
 	        messageObj["set"]("receiverObject", o);

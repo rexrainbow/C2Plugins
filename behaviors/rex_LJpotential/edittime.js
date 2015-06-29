@@ -87,6 +87,12 @@ AddExpression(12, ef_return_number, "Get magnitude of force", "Output", "ForceMa
 AddExpression(13, ef_return_number, "Get dx of force", "Output", "ForceDx", "Get dx of total attracting force.");
 AddExpression(14, ef_return_number, "Get dy of force", "Output", "ForceDy", "Get dy of total attracting force.");
 
+AddExpression(15, ef_return_number, "Get param A (attracting force)", "Parameters", "A", "Get param A (attracting force)");
+AddExpression(16, ef_return_number, "Get param n (attracting declined)", "Parameters", "n", "Get param n (attracting declined)");
+AddExpression(17, ef_return_number, "Get param B (rejecting force)", "Parameters", "B", "Get param B (rejecting force)");
+AddExpression(18, ef_return_number, "Get param m (rejecting declined)", "Parameters", "m", "Get param m (rejecting declined)");
+
+
 ACESDone();
 
 // Property grid properties for this plugin

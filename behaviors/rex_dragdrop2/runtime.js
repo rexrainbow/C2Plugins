@@ -467,7 +467,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Acts.prototype.TryDrag = function ()
 	{
-        if (this.drag_info.is_on_dragged)  // always dragged
+        if (this.drag_info.is_on_dragged)  // already dragged
             return;
 
         var touch_obj = this.behavior.TouchWrapGet();  

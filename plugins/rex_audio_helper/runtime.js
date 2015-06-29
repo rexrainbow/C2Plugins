@@ -129,9 +129,6 @@ cr.plugins_.Rex_audio_helper = function(runtime)
     }; 
 
     // ---- task ----
-    var PRIORITY_FADE = 0;
-    var PRIORITY_PAUSE = 2;
-    var PRIORITY_STOP = 10;
     instanceProto.FadeTaskSet = function (task, start, end, time_)
 	{
         task.target = end;      
@@ -208,7 +205,11 @@ cr.plugins_.Rex_audio_helper = function(runtime)
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();      
-    
+
+	Cnds.prototype.IsFading = function (tag)
+	{
+	    return this.tasksMgr.HasTask(tag);
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -230,54 +231,49 @@ cr.plugins_.Rex_audio_helper = function(runtime)
        var stop_voldb = LinearScaleToDb(stop_vol);
        
        this.AudioStart(file, looping, stop_voldb, tag);
-       
+       this.tasksMgr.TaskCancel(tag);
+
        if ((fadeIn_time > 0) && (stop_voldb > start_voldB))
        {
-           var task = this.tasksMgr.TaskGet(tag, PRIORITY_FADE);
-           if (task != null)
-           {
-               this.FadeTaskSet(task, start_voldB, stop_voldb, fadeIn_time);
-           }           
+           var task = this.tasksMgr.TaskGet(tag);
+           this.FadeTaskSet(task, start_voldB, stop_voldb, fadeIn_time);          
        }
 	};
     
     Acts.prototype.Stop = function (tag, fadeOut_time, stop_vol)
 	{  
-	   var start_voldB = this.AudioGetVolumeDB(tag);  
-	   var stop_voldB = parse_voldBIn(stop_vol);
+	    var start_voldB = this.AudioGetVolumeDB(tag);  
+	    var stop_voldB = parse_voldBIn(stop_vol);
 	   	   
-       if ((fadeOut_time == 0) || (start_voldB <= stop_voldB))
-       {
-           this.AudioStop(tag);
-       }
-       else
-       {
-           var task = this.tasksMgr.TaskGet(tag, PRIORITY_STOP);
-           if (task != null)
-           {
-               this.FadeTaskSet(task, start_voldB, stop_voldB, fadeOut_time);
-               task.FinishefHandlerSet("TaskStop");
-           }
-       }
+        this.tasksMgr.TaskCancel(tag);           
+        if ((fadeOut_time == 0) || (start_voldB <= stop_voldB))
+        {
+            this.AudioStop(tag);
+        }
+        else
+        {
+            var task = this.tasksMgr.TaskGet(tag);
+            this.FadeTaskSet(task, start_voldB, stop_voldB, fadeOut_time);
+            task.FinishefHandlerSet("TaskStop");
+        }
 	};    
     
-	Acts.prototype.SetVolume = function (tag, vol, fade_time)
+	Acts.prototype.SetVolume = function (tag, stop_vol, fade_time)
 	{
 	   var start_voldB = this.AudioGetVolumeDB(tag);
 	   var stop_voldB = parse_voldBIn(stop_vol);	     
+       
+       this.tasksMgr.TaskCancel(tag);           
        if (stop_voldB != start_voldB)
        {
            if (fade_time > 0)
            {
-               var task = this.tasksMgr.TaskGet(tag, PRIORITY_FADE);
-               if (task != null)
-               {                              
-                   this.FadeTaskSet(task, start_voldB, stop_voldB, fade_time);             
-               }
+               var task = this.tasksMgr.TaskGet(tag);
+               this.FadeTaskSet(task, start_voldB, stop_voldB, fade_time); 
            }
            else
            {
-               this.AudioSetVolumeDB(tag, voldb);
+               this.AudioSetVolumeDB(tag, stop_voldB);
            }
        }       
 	};
@@ -287,20 +283,19 @@ cr.plugins_.Rex_audio_helper = function(runtime)
        var audio = this._audio_get();       
        var voldb = LinearScaleToDb(vol);
        
-       cr.plugins_.Audio.prototype.acts.PlayByName.call(audio, folder, filename, looping, voldb, tag);
+       cr.plugins_.Audio.prototype.acts.PlayByName.call(audio, folder, filename, looping, voldb, tag);       
+       this.tasksMgr.TaskCancel(tag);  
        
        if ((fadeIn_time > 0) && (voldb > MINDB))
        {
-           var task = this.tasksMgr.TaskGet(tag, PRIORITY_FADE);
-           if (task == null)
-           {                     
-               this.FadeTaskSet(task, MINDB, voldb, fadeIn_time);                   
-           }
+           var task = this.tasksMgr.TaskGet(tag);
+           this.FadeTaskSet(task, MINDB, voldb, fadeIn_time);    
        }
 	};   
 	 
     Acts.prototype.SetPaused = function (tag, state, fade_time)
 	{     
+        this.tasksMgr.TaskCancel(tag);  
         if (state == 0)  // pause
         {
             var current_voldb = this.AudioGetVolumeDB(tag); 
@@ -311,12 +306,9 @@ cr.plugins_.Rex_audio_helper = function(runtime)
             else
             {
                 this.pauseTag2Db[tag] = current_voldb;
-                var task = this.tasksMgr.TaskGet(tag, PRIORITY_PAUSE);
-                if (task != null)
-                {               
-                    this.FadeTaskSet(task, current_voldb, MINDB, fade_time);
-                    task.FinishefHandlerSet("TaskPause");
-                }
+                var task = this.tasksMgr.TaskGet(tag);
+                this.FadeTaskSet(task, current_voldb, MINDB, fade_time);
+                task.FinishefHandlerSet("TaskPause");
             }
         }
         else  // resume
@@ -329,9 +321,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
             delete this.pauseTag2Db[tag];
             if ((fade_time > 0) && (voldb > MINDB))
             {
-                var task = this.tasksMgr.TaskGet(tag, PRIORITY_FADE);
-                if (task == null)
-                    return;                
+                var task = this.tasksMgr.TaskGet(tag);               
                 this.FadeTaskSet(task, MINDB, voldb, fade_time);                  
             }  
         }
@@ -355,67 +345,51 @@ cr.plugins_.Rex_audio_helper = function(runtime)
     cr.plugins_.Rex_audio_helper.TaskMgrKlass = function(plugin)
     {                        
         this.plugin = plugin;
-        this.tasks = [];
-        this.tasks_tmp = [];
+        this.tasks = {};
         this.taskCache = [];
     };
     var TaskMgrKlassProto = cr.plugins_.Rex_audio_helper.TaskMgrKlass.prototype;
     
 	TaskMgrKlassProto.tick = function()
 	{     
-	    if (this.tasks.length == 0)
-	        return;
-	        
-        cr.shallowAssignArray(this.tasks_tmp, this.tasks);  
-        this.tasks.length = 0;
-        var i,cnt=this.tasks_tmp.length;
-        var task, is_continue;
-        for (i=0; i<cnt; i++)
-        {
-            task = this.tasks_tmp[i];
-            is_continue = task.OnTick();
-            if (is_continue)
-            {
-                this.tasks.push(task);                
-            }
-            else  // task finished, recycle structure
-            {
-                task.OnFinished();
-                this.taskCache.push(task);
-            }
-        } 
-        this.tasks_tmp.length = 0;
+	    var tag, task, is_continue;
+	    for (tag in this.tasks)
+	    {
+	        task = this.tasks[tag];
+	        is_continue = task.OnTick();
+	        if (!is_continue)
+	        {
+	            this.taskCache.push(task);
+	            delete this.tasks[tag];
+	        }
+	    }
     };
     
-    TaskMgrKlassProto.TaskGet = function (tag, priority)
+    TaskMgrKlassProto.TaskGet = function (tag)
     {
-        var task, is_found=false;
-        var i, cnt=this.tasks.length;
-        for (i=0; i<cnt; i++)
-        {
-            task = this.tasks[i];
-            if (task.tag == tag)
-            {
-                is_found = true;
-                break;
-            }
-        }
-        if (!is_found)
-        {
-            task = this.NewTask(tag, priority); 
-        }
-        else if (task.priority <= priority)
-        {
-            task.Init(tag, priority);
-        }
+        var task = this.tasks[tag];
+        if (!task)
+            task = this.NewTask(tag); 
         else
-        {
-            task = null; // could not overwrite high priority task
-        }
+            task.Init(tag);
+            
         return task;
     }; 
     
-    TaskMgrKlassProto.NewTask = function (tag, priority)
+    TaskMgrKlassProto.TaskCancel = function (tag)
+    {
+        if (this.tasks.hasOwnProperty(tag))
+        {
+            this.taskCache.push(this.tasks[tag]);
+            delete this.tasks[tag];
+        }
+    };  
+       
+    TaskMgrKlassProto.HasTask = function (tag)
+    {
+        return this.tasks.hasOwnProperty(tag);
+    };    
+    TaskMgrKlassProto.NewTask = function (tag)
     {
         var task;
         if (this.taskCache.length > 0)
@@ -426,51 +400,44 @@ cr.plugins_.Rex_audio_helper = function(runtime)
         {          
             task = new TaskKlass(this.plugin);
         }
-        task.Init(tag, priority);        
+        task.Init(tag);        
         
-        this.tasks.push(task); 
+        this.tasks[tag] = task; 
         return task;
     };    
     
 	TaskMgrKlassProto.saveToJSON = function ()
 	{
-	    var task_save = [];
-	    var i, cnt = this.tasks.length;
-	    for (i=0; i<cnt; i++)
-	    {
-	        task_save.push(this.tasks[i].saveToJSON());
-	    }
+	    var tag, task_save={};
+	    for (tag in this.tasks)	    
+	        task_save[tag] = this.tasks[tag].saveToJSON();	    
+	    
 		return { "ts": task_save
                 };
 	};
 	
 	TaskMgrKlassProto.loadFromJSON = function (o)
 	{
-	    var task_save = o["ts"];
-	    var i, cnt = task_save.length;
-	    var task
-	    for (i=0; i<cnt; i++)
+	    var tag, task_save=o["ts"], task;
+	    for (tag in task_save)
 	    {
-	        task = new TaskKlass(this.plugin);
-	        task.loadFromJSON(task_save[i]);
-	        this.tasks.push(task);
+	        task = new TaskKlass(this.plugin); 
+	        task.loadFromJSON(task_save[tag]);
+	        this.tasks[tag] = task;	    
 	    }
 	};    
            
     var TaskKlass = function(plugin)
     {        
         this.plugin = plugin;
-        this.tag = "";
-        this.priority = -1;
         this.__on_tick_handler = "";
         this.__on_finished_handler = "";        
     };
     var TaskKlassProto = TaskKlass.prototype;
     
-	TaskKlassProto.Init = function (tag, priority)
+	TaskKlassProto.Init = function (tag)
 	{  
-        this.tag = tag;	    
-        this.priority = priority;
+	    this.tag = tag;
         this.TickHandlerSet();
         this.FinishefHandlerSet();
     };
@@ -511,7 +478,6 @@ cr.plugins_.Rex_audio_helper = function(runtime)
 	TaskKlassProto.saveToJSON = function ()
 	{	    
 		return { "t": this.tag,
-		         "p": this.priority,
 		         "thdlr": this.__on_tick_handler,
 		         "fhdlr": this.__on_finished_handler,
 		         
@@ -524,7 +490,6 @@ cr.plugins_.Rex_audio_helper = function(runtime)
 	TaskKlassProto.loadFromJSON = function (o)
 	{
         this.tag = o["t"];
-        this.priority = o["p"];
         this.__on_tick_handler = o["thdlr"];
         this.__on_finished_handler = o["fhdlr"];
         

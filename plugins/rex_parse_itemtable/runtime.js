@@ -74,21 +74,23 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	        this.itemTable_klass = window["Parse"].Object["extend"](this.properties[2]);
 	        var page_lines = this.properties[3];	    
             this.itemTable = this.create_itemTable(page_lines);	
-            this.filters = create_filters();    
+            this.filters = create_filters();  
+            this.primary_key_candidates = {};  
             this.primary_keys = {};    
             this.saveAllQueue = {};
             this.saveAllQueue.prepare_items = [];
             this.saveAllQueue.primary_keys = [];
 	    }
 	    else
-	    {
+	    {	        	        
 	        this.itemTable.Reset();
 	        clean_filters( this.filters );
             clean_table(this.primary_keys);
             this.saveAllQueue.prepare_items.length = 0;
             this.saveAllQueue.primary_keys.length = 0;
-	    }
-
+	    }	   
+	    
+	    get_primary_key_candidates(this.properties[4], this.primary_key_candidates);	 
         this.prepared_item = null;
         
         
@@ -128,7 +130,22 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    
 	    return itemTable;
 	};	
-	
+
+	var get_primary_key_candidates = function(primary_keys_in, primary_key_candidates)
+	{ 
+        if (primary_key_candidates == null)
+            primary_key_candidates = {};
+        else
+            clean_table(primary_key_candidates);
+            
+	    var primary_keys=primary_keys_in.split(",");
+	    var i,cnt=primary_keys.length;
+	    for(i=0; i<cnt; i++)
+	        primary_key_candidates[primary_keys[i]] = true;
+
+	    return primary_key_candidates;
+	}; 
+		
 	var create_filters = function()
 	{ 
         var filters = {};   
@@ -292,21 +309,9 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	        
 		this.prepared_item["set"](key_, value_);
 		
-		if (is_primary)
+		if (is_primary || this.primary_key_candidates.hasOwnProperty(key_))		   
             this.primary_keys[key_] = value_;
 	};
-	
-    instanceProto.set_booleanValue = function (key_, is_true, is_primary)
-	{
-	    is_true = (is_true == 1);
-	    if (this.prepared_item == null)
-	        this.prepared_item = new this.itemTable_klass();
-	        
-		this.prepared_item["set"](key_, is_true); 
-		
-		if (is_primary)
-            this.primary_keys[key_] = is_true;		       
-	};	
 
  	instanceProto.get_itemValue = function (item, k, default_value)
 	{
@@ -468,8 +473,9 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	
     Acts.prototype.SetBooleanValue = function (key_, is_true, is_primaryKey)
 	{
+        is_true = (is_true === 1);
 	    is_primaryKey = (is_primaryKey === 1);
-	    this.set_booleanValue(key_, is_true, is_primaryKey);     
+	    this.set_value(key_, is_true, is_primaryKey);     
 	};
 
     Acts.prototype.RemoveKey = function (key_)
@@ -667,6 +673,12 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var cnd = get_filter(this.filters.filters, k, "exist");
 	    cnd.push(EXIST_TYPES[exist]);
 	}; 	
+	
+    Acts.prototype.AddBooleanValueComparsion = function (k, v)
+	{
+	    var cnd = get_filter(this.filters.filters, k, "cmp");
+	    cnd.push(["equalTo", (v === 1)]);
+	};	
     
     var ORDER_TYPES = ["descending", "ascending"];
     Acts.prototype.AddOrder = function (k, order_)
@@ -1008,6 +1020,10 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    // read items, or write all          
 	};	
 	
+    Acts.prototype.SetPrimaryKeys = function (keys)
+	{
+	    get_primary_key_candidates(keys, this.primary_key_candidates);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

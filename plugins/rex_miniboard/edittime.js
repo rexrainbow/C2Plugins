@@ -155,6 +155,13 @@ AddComboParam("Mode", "Mode of putting.", 1);
 AddAction(11, 0, "Put back", "Main board", 
           "Put back (<i>{3}</i>)", 
           "Put chess back on the previos board.", "PutBack");		  
+
+AddComboParamOption("Top-Left");
+AddComboParamOption("Center");
+AddComboParam("LOXY", "Position type.", 0);          
+AddAction(12, 0, "Shift LOXY", "Position", 
+          "Shift LOXY to <i>{0}</i>", 
+          "Shift the physical position of miniboard and the logic position of all chess.", "ShiftLOXY");
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,

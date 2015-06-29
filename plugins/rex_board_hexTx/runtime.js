@@ -462,7 +462,63 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    var dz = this.qr2z(q1,r1) - this.qr2z(q0,r0);
         
         return (quickAbs(dx) + quickAbs(dy) + quickAbs(dz)) / 2
-	};       
+	};   
+	
+	instanceProto.OffsetLX = function (lx0, ly0, lz0, offsetx, offsety, offsetz)
+	{
+	    var new_lx = lx0 + offsetx;
+	   
+        switch (this.mode)
+        {
+        case ODD_R:
+            if ((offsety&1) !== 0)
+            {
+                var new_ly = ly0 + offsety;
+                if ((new_ly&1) === 0)
+                    new_lx += 1;
+            }
+        break;
+        
+        case EVEN_R:
+            if ((offsety&1) !== 0)
+            {
+                var new_ly = ly0 + offsety;
+                if ((new_ly&1) === 0)
+                    new_lx -= 1;
+            }
+        break;                 
+        }
+
+        return new_lx;
+	}; 	 
+	
+	instanceProto.OffsetLY = function (lx0, ly0, lz0, offsetx, offsety, offsetz)
+	{	    
+	    var new_ly = ly0 + offsety;
+	   
+        switch (this.mode)
+        {
+        case ODD_Q:
+            if ((offsetx&1) !== 0)
+            {
+                var new_lx = lx0 + offsetx;
+                if ((new_lx&1) == 0)
+                    new_ly += 1;
+            }
+        break;
+        
+        case EVEN_Q:
+            if ((offsetx&1) !== 0)
+            {
+                var new_lx = lx0 + offsetx;
+                if ((new_lx&1) == 0)
+                    new_ly -= 1;
+            }
+        break;                 
+        }
+
+        return new_ly;
+	};	    
 
 	function quickAbs(x)
 	{

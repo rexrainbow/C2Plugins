@@ -7,7 +7,7 @@
 		"description":	"Get elapsed interval from parse.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_timer.html",
-		"category":		"Rex - Web - parse",
+		"category":		"Rex - Web - parse - date",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

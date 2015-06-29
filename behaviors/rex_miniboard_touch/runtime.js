@@ -51,7 +51,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	behtypeProto.TouchWrapGet = function ()
 	{
         if (this.touchwrap != null)
-            return;
+            return this.touchwrap;
             
         var plugins = this.runtime.types;
         var name, obj;
@@ -64,7 +64,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
                 this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
                 this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID; 
                 this.touchwrap.HookMe(this);
-                break;
+                return this.touchwrap;
             }
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for Cursor behavior");
@@ -168,7 +168,9 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.activated = (this.properties[0] == 1);    
+	    this.activated = (this.properties[0] == 1); 
+	    this.is_align = (this.properties[1] == 1);   
+	     
         this.drag_info = {touch_src:-1,
 		                  pre_x:0,
                           pre_y:0,
@@ -211,13 +213,17 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
                 var layout = mainboard.GetLayout();
 	            var lx = layout.PXY2LX(this.inst.x, this.inst.y);
 	            var ly = layout.PXY2LY(this.inst.x, this.inst.y);	            
-                this.inst.x = layout.LXYZ2PX(lx,ly,0);
-                this.inst.y = layout.LXYZ2PY(lx,ly,0);
-                this.overlap_mainboard.assign_board(mainboard, lx, ly); 
+	            
+	            if (this.is_align)
+	            {
+                    this.inst.x = layout.LXYZ2PX(lx,ly,0);
+                    this.inst.y = layout.LXYZ2PY(lx,ly,0);
+                }
+                this.overlap_mainboard.SetBoard(mainboard, lx, ly); 
             }
             else
             {
-                this.overlap_mainboard.assign_board(null)
+                this.overlap_mainboard.SetBoard(null)
             }
             this.inst.set_bbox_changed();
 
@@ -335,7 +341,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         {
 		    this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDropAtMainboard, this.inst);
         }
-		this.overlap_mainboard.assign_board(null);  
+		this.overlap_mainboard.SetBoard(null);  
 	};	
 	behinstProto.IsInTouch = function(touchX, touchY)
 	{
@@ -384,6 +390,17 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	{
 		this.activated = o["en"];
 	};		
+	
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "LXY", "value": this.overlap_mainboard.LOX.toString()+","+this.overlap_mainboard.LOY.toString()}
+			              ]
+		});
+	};
+	/**END-PREVIEWONLY**/	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -411,6 +428,10 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
     
 	Cnds.prototype.IsTouching = function ()
 	{
+        var touch_obj = this.type.TouchWrapGet();  
+        if (!touch_obj.IsInTouch())       // no touched
+            return false;
+            	    
 		var touch_pts = this.type.touchwrap.touches, touch_pt, tx, ty;
 		var i, cnt=touch_pts.length;
 		for (i=0; i<cnt; i++)
@@ -418,6 +439,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 		    touch_pt = touch_pts[i];
 			tx = touch_pt.x;
 			ty = touch_pt.y;
+			// tx, ty mapping is handled in this.IsInTouch(tx,ty)
 			if (this.IsInTouch(tx, ty))
 			    return true;
 		}
@@ -447,13 +469,52 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
     
 	Acts.prototype.SetDragable = function (en)
 	{
-		this.activated = (en == 1);
+		this.activated = (en === 1);
 	}; 
 
 	Acts.prototype.ForceDrop = function ()
 	{
         this.drop();
-	};     
+	}; 
+
+	Acts.prototype.TryDrag = function ()
+	{
+        if (this.drag_info.is_on_dragged)  // already dragged
+            return;
+
+        var touch_obj = this.type.TouchWrapGet();  
+        if (!touch_obj.IsInTouch())       // no touched
+            return;
+        
+        var touch_pts = touch_obj.touches;
+        var cnt=touch_pts.length;            
+        var i, touch_pt, tx, ty;
+        for (i=0; i<cnt; i++)
+        {
+		    touch_pt = touch_pts[i];		    
+			tx = touch_pt.x;
+			ty = touch_pt.y;
+            // tx, ty mapping is handled in this.IsInTouch(tx,ty)			
+			if (this.IsInTouch(tx, ty))
+            {
+		        this.drag(i);
+		        this.runtime.trigger(cr.behaviors.Rex_miniboard_touch.prototype.cnds.OnDragStart, this.inst);  
+                break;
+            }
+        }        
+	};  	
+    
+	Acts.prototype.SetAlign = function (en)
+	{
+		this.is_align = (en === 1);
+	    if ((this.is_align) && (this.overlap_mainboard.inst != null))
+	    {
+	        var lx = this.overlap_mainboard.LOX;
+	        var ly = this.overlap_mainboard.LOY;
+            this.inst.x = layout.LXYZ2PX(lx,ly,0);
+            this.inst.y = layout.LXYZ2PY(lx,ly,0);
+        }		
+	}; 	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

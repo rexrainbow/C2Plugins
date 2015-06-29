@@ -194,7 +194,8 @@ var property_list = [
     new cr.Property(ept_text, "ID", "0", "ID of leader board."),
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),    
 	new cr.Property(ept_combo, "Order", "Large to small", "Ranking order.", "Small to large|Large to small"), 	
-	new cr.Property(ept_combo, "Access permission", "Public", "Access permission.", "Public|Private"),
+	new cr.Property(ept_combo, "Write permission", "All users", "All user or only owner could write the save slot.", "All users|Owner"),  
+	new cr.Property(ept_combo, "Read permission", "All users", "All user or only owner could read the save slot.", "All users|Owner", true),  
 	new cr.Property(ept_text, "User class name", "", 'Class name of user. "" would ignore this feature.'), 
 	];
 	

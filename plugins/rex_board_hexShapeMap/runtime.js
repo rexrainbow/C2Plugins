@@ -156,11 +156,7 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
         align_map(layout, map);
         return map;        
     };  
-
-    var ODD_R = 0;
-    var EVEN_R = 1;
-    var ODD_Q = 2;
-    var EVEN_Q = 3;     
+       
     var align_map = function(layout, map)
     {
         var minX, minY;
@@ -175,46 +171,14 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
         }
         if ((minX !== 0) || (minY !== 0))
         {
+            var new_lx, new_ly;
             for(i=0; i<cnt; i++)
             {
                 lxy = map[i];
-                lxy.x -= minX;
-                lxy.y -= minY;
-                switch (layout.mode)
-                {
-                case ODD_R:
-                    if ((minY&1) !== 0)
-                    {
-                        if ((lxy.y&1) == 0)
-                            lxy.x += 1;
-                    }
-                break;
-                
-                case EVEN_R:
-                    if ((minY&1) !== 0)
-                    {
-                        if ((lxy.y&1) == 0)
-                            lxy.x -= 1;
-                    }
-                break; 
-
-                case ODD_Q:
-                    if ((minX&1) !== 0)
-                    {
-                        if ((lxy.x&1) == 0)
-                            lxy.y += 1;
-                    }
-                break;
-                
-                case EVEN_Q:
-                    if ((minX&1) !== 0)
-                    {
-                        if ((lxy.x&1) == 0)
-                            lxy.y -= 1;
-                    }
-                break;                 
-                }
-
+                new_lx = layout.OffsetLX(lxy.x, lxy.y, 0, -minX, -minY, 0);
+                new_ly = layout.OffsetLY(lxy.x, lxy.y, 0, -minX, -minY, 0);
+                lxy.x = new_lx;
+                lxy.y = new_ly;
             }
         }        
         return map        
@@ -250,13 +214,8 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
-	pluginProto.cnds = new Cnds();   
-    
-	Cnds.prototype.ForEachLXYHexagon = function (radius)
-	{
-        this.current_table.ForEachCol();
-		return false;
-	};
+	pluginProto.cnds = new Cnds();    
+
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

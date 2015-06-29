@@ -108,7 +108,8 @@ AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY",
               "The Y co-ordinate of target position to move toward.");              
 AddExpression(7, ef_return_number, "Get current moving angle", "Current", "MovingAngle", 
               "Get current moving angle, in degree. Retrun last moving angle when object is not moving.");     
-              
+AddExpression(8, ef_return_number, "Get moving angle from start position to target position", "Start", "MovingAngleStart", 
+              "Get moving angle from start position to target position, in degree.");      
          
 ACESDone();
 

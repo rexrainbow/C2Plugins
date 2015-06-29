@@ -25,9 +25,10 @@ AddAnyTypeParam("Logic Z", "The logic Z index (0-based).", 0);
 AddAction(1, 0, "Put chess on board", "Chess", 
           "Put <i>{0}</i> on <i>{1}</i> with logic Z index to <i>{2}</i>", 
           "Put chess on board.", "Layout2Board");
+          
 AddNumberParam("Width", "Cell width in pixels.", 0);
 AddNumberParam("Height", "Cell height in pixels.", 0);
-AddAction(3, 0, "Set cell size", "Size", 
+AddAction(3, af_deprecated, "Set cell size", "Size", 
           "Set cell width to <i>{0}</i>, height to <i>{1}</i>", 
           "Set cell size.", "SetCellSize");          
 //////////////////////////////////////////////////////////////

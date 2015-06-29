@@ -53,7 +53,17 @@ AddAction(1, 0, "Set enable", "Drag & Drop",
           "Set drag-able of this miniboard.", "SetDragable");         
 AddAction(2, 0, "Force to drop", "Drop", 
           "Force {my} to drop", 
-          "Force the dragged object to drop.", "ForceDropp");    
+          "Force the dragged object to drop.", "ForceDropp");  
+          
+AddAction(3, 0, "Try drag", "Drag", "Try drag {my}", 
+          "Try to drag this object if is in touched.", "TryDrag");            
+          
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Align", "Enable to align this miniboard to grids.",1);
+AddAction(4, 0, "Set align mode", "Align", 
+          "Set {my} align mode to <i>{0}</i>", 
+          "Set align mode of this miniboard.", "SetAlign");             
           
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -85,6 +95,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [ 
     new cr.Property(ept_combo, "Enable", "Yes", "Enable to drag mini board.", "No|Yes"),
+    new cr.Property(ept_combo, "Align to grids", "Yes", "Enable to align mini board to grids.", "No|Yes"),    
 	];
 	
 // Called by IDE when a new behavior type is to be created

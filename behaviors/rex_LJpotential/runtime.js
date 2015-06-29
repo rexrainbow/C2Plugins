@@ -379,6 +379,32 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
             delete uid2behaviorInst[uid];
 	};    
 
+	/**BEGIN-PREVIEWONLY**/	
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		var params = this.LJ_potential_param;
+		
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "A", "value": params["A"]},
+				{"name": "n", "value": params["n"]},
+				{"name": "B", "value": params["B"]},
+				{"name": "m", "value": params["m"]},
+			]
+		});
+	};
+	
+	behinstProto.onDebugValueEdited = function (header, name, value)
+	{
+		switch (name) {
+		case "A":		this.LJ_potential_param["A"] = value;		break;
+		case "n":		this.LJ_potential_param["n"] = value;		break;
+		case "B":		this.LJ_potential_param["B"] = value;		break;
+		case "m":		this.LJ_potential_param["m"] = value;		break;
+		}
+	};	
+	/**END-PREVIEWONLY**/
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -567,5 +593,24 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 	{
 		ret.set_float(this.output_force["y"]);
 	};   
-    
+
+	Exps.prototype.A = function (ret)
+	{
+		ret.set_float(this.LJ_potential_param["A"]);
+	};  	
+
+	Exps.prototype.n = function (ret)
+	{
+		ret.set_float(this.LJ_potential_param["n"]);
+	};  	
+
+	Exps.prototype.B = function (ret)
+	{
+		ret.set_float(this.LJ_potential_param["B"]);
+	};  	
+
+	Exps.prototype.m = function (ret)
+	{
+		ret.set_float(this.LJ_potential_param["m"]);
+	};     
 }());

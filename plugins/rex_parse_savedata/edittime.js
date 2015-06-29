@@ -145,6 +145,8 @@ var property_list = [
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name of header", "Header", "Class name for storing header structure."), 
     new cr.Property(ept_text, "Class name of body", "Body", "Class name for storing body structure."),
+	new cr.Property(ept_combo, "Write permission", "All users", "All user or only owner could write the save slot.", "All users|Owner"),  
+	new cr.Property(ept_combo, "Read permission", "All users", "All user or only owner could read the save slot.", "All users|Owner"),      
 	];
 	
 // Called by IDE when a new object type is to be created

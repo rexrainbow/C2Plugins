@@ -70,7 +70,7 @@ cr.behaviors.rex_miniboard_rotate = function(runtime)
 	{    
 	    // prepare
 	    var self = this;
-	    var layout = this.inst.type.GetLayout();   
+	    var layout = this.inst.GetLayout();   
 	    var on_transfer_cell = function (xyz, options)
 	    {     
 	        var new_xyz = {};

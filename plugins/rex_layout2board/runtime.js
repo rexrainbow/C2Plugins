@@ -41,22 +41,20 @@ cr.plugins_.Rex_layout2board = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.boards = {};
 	};
     
     instanceProto.board_setup = function(board, instances)
     {      
         var board_layout = board.GetLayout();
         assert2(board_layout, "[Layout to Board] please add squareTx or hexTx plugin into project.");
-        var board_info = this.boards[board.uid];        
         var i, cnt=instances.length, chess;
         // assume OXY is at first instance
         chess = instances[0];
         board_layout.SetPOX(chess.x);
         board_layout.SetPOY(chess.y);        
-        var lxmin=0, lymin=0, lxmax=0, lymax=0;
+        var lxmin=chess.x, lymin=chess.y;
+        var lxmax=chess.x, lymax=chess.y;
         var lx,ly;
-        var error_flg;
         for (i=1; i<cnt; i++)
         {
             chess = instances[i];
@@ -72,26 +70,15 @@ cr.plugins_.Rex_layout2board = function(runtime)
                 lymax = ly;                        
         }
         // offset logic position
-        board_info.px0 = board_layout.LXYZ2PX(lxmin, lymin);
-        board_info.py0 = board_layout.LXYZ2PY(lxmin, lymin);      
-        lxmax -= lxmin;
-        lymax -= lymin;
-        board.reset_board(lxmax+1, lymax+1);
-        board_layout.SetPOX(board_info.px0);
-        board_layout.SetPOY(board_info.py0);
+		var w = board_layout.OffsetLX(lxmax, lymax, 0, -lxmin, -lymin, 0);
+		var h = board_layout.OffsetLY(lxmax, lymax, 0, -lxmin, -lymin, 0);
+        board.reset_board(w, h);
+                
+        var px0 = board_layout.LXYZ2PX(lxmin, lymin);
+        var py0 = board_layout.LXYZ2PY(lxmin, lymin);      
+        board_layout.SetPOX(px0);
+        board_layout.SetPOY(py0);
     };
-	
-	instanceProto.saveToJSON = function ()
-	{
-		return { "w": this.cell_width,
-                 "h": this.cell_height };
-	};
-	
-	instanceProto.loadFromJSON = function (o)
-	{
-		this.cell_width = o["w"];
-		this.cell_height = o["h"];		
-	};
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -111,14 +98,16 @@ cr.plugins_.Rex_layout2board = function(runtime)
         if (instances.length == 0)
             return;
             
-        var board = board_objs.getFirstPicked();        
-        if (!(board.uid in this.boards))
-            this.boards[board.uid] = {px0:null, py0:null};        
-        if (lz==0)
+        var board = board_objs.getFirstPicked();
+        if (!board)
+            return;
+        
+        var is_board = (cr.plugins_.Rex_SLGBoard && (board instanceof cr.plugins_.Rex_SLGBoard.prototype.Instance));
+        if (is_board && (lz === 0))
             this.board_setup(board, instances);
+            
         var i, cnt=instances.length, chess; 
-        var lx, ly;       
-        var board_info = this.boards[board.uid];
+        var lx, ly;
         var board_layout = board.GetLayout();
         var error_flg;
         for (i=0; i<cnt; i++)
@@ -132,10 +121,9 @@ cr.plugins_.Rex_layout2board = function(runtime)
         }
 	};
     
+    //af_deprecated
     Acts.prototype.SetCellSize = function (width, height)
     {
-        this.cell_width = width;
-        this.cell_height = height; 
 	};
 	//////////////////////////////////////
 	// Expressions

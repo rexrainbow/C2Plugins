@@ -86,8 +86,9 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var leaderboardID = this.properties[3];
 	    var page_lines = this.properties[4]
 	    this.ranking_order = this.properties[5];
-	    this.acl_mode = this.properties[6];
-	    this.user_class = this.properties[7];
+        this.acl_write_mode = this.properties[6];
+        this.acl_read_mode = this.properties[7];
+	    this.user_class = this.properties[8];
 	    
 	    if (!this.recycled)
             this.leaderboard = this.create_leaderboard(page_lines);
@@ -164,6 +165,25 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
             query["include"]("userObject");
         }
 	    return query;
+	};	
+	
+	var get_ACL = function (wm, rm)
+	{
+	    if ((wm === 0) && (rm === 0))
+	        return null;	    
+	    var current_user = window["Parse"]["User"]["current"]();
+	    if (!current_user)
+	        return null;
+  	        
+	    var acl = new window["Parse"]["ACL"](current_user);
+
+        if (wm === 0)
+            acl["setPublicWriteAccess"](true);
+            
+        if (rm === 0)
+            acl["setPublicReadAccess"](true); 	
+            
+        return acl;	    
 	};	
     
 	var get_itemValue = function(item, key_, default_value)
@@ -288,16 +308,12 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	        rank_obj["set"]("score", score);
 	        rank_obj["set"]("extraData", extra_data);	
 	        
-	        if (self.acl_mode === 1)  // private
-	        {
-	            var current_user = window["Parse"]["User"]["current"]();
-	            if (current_user)
-	            {
-	                var acl = new window["Parse"]["ACL"](current_user);
-	                acl["setPublicReadAccess"](true);
-	                rank_obj["setACL"](acl);
-	            }
-	        }
+	        
+            var acl = get_ACL(self.acl_write_mode, self.acl_read_mode);
+            if (acl)
+            {
+                rank_obj["setACL"](acl);
+            }
 	        
 	        if (self.user_class !== "")
 	        {

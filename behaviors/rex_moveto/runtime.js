@@ -72,16 +72,22 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         }
         this._pre_pos["x"] = 0;
         this._pre_pos["y"] = 0;
-        if (!this.recycled)
-        {
-            this._moving_angle_info = {"x":0,"y":0,"a":(-1)};
-        }
-        this._moving_angle_info["x"] = 0;
-        this._moving_angle_info["y"] = 0;
-        this._moving_angle_info["a"] = -1;
+        
+        this._moving_angle_info = new_point(this._moving_angle_info);
+        this._moving_angle_start_info = new_point(this._moving_angle_start_info);
         this._last_tick = null;
         this.is_my_call = false;
 	};
+    
+    var new_point = function (point)
+    {
+        if (point == null)
+            point = {};
+        point["x"] = 0;
+        point["y"] = 0;
+        point["a"] = -1;
+        return point;
+    };
 
 	behinstProto.tick = function ()
 	{
@@ -192,8 +198,13 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this.SetCurrentSpeed(null);
         this._reset_current_pos();        
 		this._moving_angle_info["x"] = this.inst.x;
-		this._moving_angle_info["y"] = this.inst.y;         
+		this._moving_angle_info["y"] = this.inst.y;
         this.is_moving = true;  
+        
+        // start position
+        this._moving_angle_start_info["x"] = this.inst.x;
+        this._moving_angle_start_info["y"] = this.inst.y;
+        this._moving_angle_start_info["a"] = cr.to_clamped_degrees(cr.angleTo(this.inst.x, this.inst.y, _x, _y));
         
         if (this.is_continue_mode)		
             this.move(this.remain_dt);
@@ -229,6 +240,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
                  "rd" : this.remain_distance,
                  "pp": this._pre_pos,
                  "ma": this._moving_angle_info,
+                 "ms": this._moving_angle_start_info,
                  "lt": this._last_tick,
                };
 	};
@@ -243,6 +255,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 		this.remain_distance = o["rd"];	
         this._pre_pos = o["pp"];
         this._moving_angle_info = o["ma"];
+        this._moving_angle_start_info = o["ms"];
         this._last_tick = o["lt"];      
 	};	    
 	
@@ -412,5 +425,11 @@ cr.behaviors.Rex_MoveTo = function(runtime)
  	Exps.prototype.MovingAngle = function (ret)
 	{
 		ret.set_float(this.moving_angle_get());
-	};     
+	}; 
+
+ 	Exps.prototype.MovingAngleStart = function (ret)
+	{
+		ret.set_float(this._moving_angle_start_info["a"]);
+	};
+    
 }());

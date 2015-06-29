@@ -42,14 +42,21 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
     var SIMPLEMODE_KEY = "_";
 	instanceProto.onCreate = function()
 	{
-	    this.handler = (this.properties[0] == 0)? new steps_handler(this):
+	    this.handler = (this.properties[0] === 0)? new steps_handler(this):
                                                    new states_handler(this)
-	    this.is_states_mode = (this.properties[0] == 0);
+	    this.is_states_mode = (this.properties[0] === 0);
         this.max_record_length = this.properties[1];
         this.recorder = [];
         this.cur_step = null;
         this.tmp_dict = {};
         this.clean_all();
+        
+        // disable official save load
+        if (this.properties[2] === 0)
+        {
+            this.saveToJSON = null;
+            this.loadFromJSON = null;
+        }
 	};
 
 	instanceProto.clean_all = function()

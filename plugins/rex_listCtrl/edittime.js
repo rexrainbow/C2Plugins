@@ -59,7 +59,15 @@ AddComboParam("Bound", "Bound types.", 2);
 AddCondition(22, cf_trigger, "On OY out of bound", "Bound", 
              "On OY out of <i>{0}</i>", 
              "Triggered when OY out of bound.", "OnOYOutOfBound");    
-                                                    
+
+AddNumberParam("Line index", "Line index.", 0);
+AddObjectParam("Object", "Object for picking");
+AddCondition(101, cf_not_invertible, "Pick instances", "SOL: instances", 
+             "Pick <i>{0}</i> on line <i>{1}</i>", "Pick instances on line.", "PickInstsOnLine"); 
+
+AddNumberParam("Line index", "Line index.", 0);             
+AddCondition(102, cf_not_invertible, "Pick all instances", "SOL: instances", 
+             "Pick all instances on line <i>{0}</i>", "Pick all instances on line.", "PickAllInstsOnLine");                                                                 
 ////////////////////////////////////////
 // Actions
 AddNumberParam("OY", "Offset Y of this list, in pixels. Start at 0.", 0);
@@ -150,7 +158,16 @@ AddAction(41, 0, "Set", "Line - offset Y",
 		  
 AddAction(51, 0, "Refresh", "Visible", 
           "Refresh visible lines", 
-          "Refresh visible lines.", "RefreshVisibleLines");           
+          "Refresh visible lines.", "RefreshVisibleLines");      
+          
+AddNumberParam("Line index", "Line index.", 0);
+AddObjectParam("Object", "Object for picking");
+AddAction(101, 0, "Pick instances", "SOL: instances", 
+          "Pick <i>{0}</i> on line <i>{1}</i>", "Pick instances on line.", "PickInstsOnLine"); 
+
+AddNumberParam("Line index", "Line index.", 0);             
+AddAction(102, 0, "Pick all instances", "SOL: instances", 
+          "Pick all instances on line <i>{0}</i>", "Pick all instances on line.", "PickAllInstsOnLine");                   
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get selected line index", "Visible", "LineIndex", 

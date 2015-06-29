@@ -92,7 +92,7 @@ AddAction(112, 0, "Set boolean value", "Initial user data",
           "Set boolean value into current item.", "SetBooleanValue");           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 
+AddExpression(1, ef_return_number, "Error code", "Error", "ErrorCode", 
               "Error code.");
 AddExpression(2, ef_return_string, "Error message", "Error", "ErrorMessage", 
               "Error message.");
@@ -100,6 +100,8 @@ AddExpression(3, ef_return_string, "User ID", "General auth data", "UserID",
               "Unique user ID (object ID in User class)");
 AddExpression(4, ef_return_string, "User name", "General auth data", "UserName", 
               "Unique user name.");
+AddExpression(5, ef_return_string, "Email", "General auth data", "Email", 
+              "Registered Email address.");              
 
 AddExpression(11, ef_return_number, "Get login counter", "General auth data", "LoginCount", 
               "Get login counter (1-base). Return 0 if this feature is not enable.");
@@ -111,6 +113,7 @@ var property_list = [
 	new cr.Property(ept_text, "Application ID", "", "Application ID"),
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_combo, "Login counter", "No", "Enable login counter.", "No|Yes"),	
+    new cr.Property(ept_combo, "Revocable session", "No", "Enable revocable session.", "No|Yes"),    
 	];
 	
 // Called by IDE when a new object type is to be created
