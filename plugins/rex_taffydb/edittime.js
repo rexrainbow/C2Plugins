@@ -44,7 +44,13 @@ AddComboParamOption("true");
 AddComboParam("Compared value", "Compared value.", 1);
 AddCondition(23, 0, "2. boolean value compare", "Filter - 2. key", 
              "Filter- 2. key <i>{0}</i>: value is <i>{1}</i>", 
-             "Add a boolean value compared for this key.", "AddBooleanValueComparsion");                                      
+             "Add a boolean value compared for this key.", "AddBooleanValueComparsion");       
+             
+AddStringParam("Key", "The name of the key.", '""');  
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddCondition(24, 0, "2. value include", "Filter - 2. key", 
+             "Filter- 2. key <i>{0}</i>: value include <i>{1}</i>", 
+             "Add a value including of this key.", "AddValueInclude");                                                
              
 AddStringParam("Key", "The name of the key.", '""'); 
 AddComboParamOption("Descending");
@@ -52,7 +58,13 @@ AddComboParamOption("Ascending");
 AddComboParam("Order", "Order of items.", 1);                
 AddCondition(31, 0, "3. order", "Filter - 3. order", 
              "Filter- 3. sort with <i>{1}</i> order by key <i>{0}</i>", 
-             "Order items.", "AddOrder");             
+             "Order items.", "AddOrder");         
+             
+//AddNumberParam("Start index", "Index of queried rows.", 0);
+//AddNumberParam("Rows", "Number of rows.", 10);
+//AddCondition(41, 0, "4. page", "Page", 
+//             "Page- start from <i>{0}</i> with <i>{1}</i> rows", 
+//             "Get queried rows in a range.", "Page");                   
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("CSV string", "The CSV string for inserting.", '""');
@@ -69,13 +81,24 @@ AddAction(2, 0, "Insert JSON data", "Insert",
          "Insert data to <i>{0}</i> (JSON format)",
          "Insert data from JSON string.", "InsertJSON");
 
-AddAction(3, 0, "Remove all", "Remove", "Remove all rows",
+AddAction(3, 0, "Remove all", "Remove - queried rows", 
+         "Remove all rows",
          "Remove all rows.", "RemoveAll");
          
-AddStringParam("Keys", 'Index keys, separated by ","');         
+AddStringParam("Keys", 'Index keys, separated by ","'); 
 AddAction(4, 0, "Set index keys", "Index keys", 
           "Set index keys to <i>{0}</i>", 
-          "Set index keys.", "SetIndexKeys");
+          "Set index keys.", "SetIndexKeys");   
+
+AddStringParam("Row ID", "Row ID");           
+AddAction(5, 0, "Remove by row ID", "Remove - row ID",
+         "Remove row by row ID to <i>{0}</i>",
+         "Remove row by row ID.", "RemoveByRowID");
+
+AddNumberParam("Index", "Index of queried rows.", 0);         
+AddAction(6, 0, "Remove by row index", "Remove - row ID",
+         "Remove row by row index to <i>{0}</i>",
+         "Remove row by row index.", "RemoveByRowIndex");            
          
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
@@ -108,6 +131,16 @@ AddComboParam("Boolean", "Boolean value.", 1);
 AddAction(15, 0, "Update boolean value", "Update queried rows", 
           "Update key <i>{0}</i> to <i>{1}</i> in all queried rows", 
           "Update queried rows.", "UpdateQueriedRows_BooleanValue");
+                    
+AddStringParam("Row ID", "Row ID"); 
+AddAction(16, 0, "Set row ID", "Save - row ID", 
+          "Prepare- Set row ID to <i>{0}</i>", 
+          'Set row ID.', "SetRowID");    
+
+AddNumberParam("Index", "Index of queried rows.", 0);
+AddAction(17, 0, "Set row index", "Save - row ID", 
+          "Prepare- Set index of queried rows to <i>{0}</i>", 
+          "Convert index of queried rows to row ID for saving. Append row if row ID had not found.", "SetRowIndex");            
           
 AddAction(21, 0, "1. New", "Filter - 1. new", 
           "Filter- 1. Create a new row filter", 
@@ -134,15 +167,27 @@ AddAction(23, 0, "2. boolean value compare", "Filter - 2. key",
           "Filter- 2. key <i>{0}</i>: value is <i>{1}</i>", 
           "Add a boolean value compared for this key.", "AddBooleanValueComparsion"); 
           
+AddStringParam("Key", "The name of the key.", '""');  
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddAction(24, 0, "2. value include", "Filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: value include <i>{1}</i>", 
+          "Add a value including of this key.", "AddValueInclude");                
+          
 AddStringParam("Key", "The name of the key.", '""'); 
 AddComboParamOption("Descending");
 AddComboParamOption("Ascending");
 AddComboParam("Order", "Order of items.", 1);                
 AddAction(31, 0, "3. order", "Filter - 3. order", 
           "Filter- 3. sort with <i>{1}</i> order by key <i>{0}</i>", 
-          "Order items.", "AddOrder");                         
-
-AddAction(101, 0, "Remove queried rows", "Remove", 
+          "Order items.", "AddOrder");                     
+          
+//AddNumberParam("Start index", "Index of queried rows.", 0);
+//AddNumberParam("Rows", "Number of rows.", 10);
+//AddAction(41, 0, "4. page", "Page", 
+//          "Page- start from <i>{0}</i> with <i>{1}</i> rows", 
+//          "Get queried rows in a range.", "Page");                     
+          
+AddAction(101, 0, "Remove queried rows", "Remove - queried rows",
           "Remove- remove queried rows", 
           "Remove queried rows.", "RemoveQueriedRows");                         
 //////////////////////////////////////////////////////////////
@@ -173,11 +218,28 @@ AddExpression(7, ef_return_number, "Max in current queried rows of a key", "Quer
               'Get max in current queried rows of a key.');  
               
 AddExpression(8, ef_return_string, "Queried rows to string", "Queried rows", "QueriedRowsAsJSON", 
-              "Get JSON string of queried rows.");                  
-                                                                     
+              "Get JSON string of queried rows.");     
+              
+AddExpression(9, ef_return_string, "Key name of row ID", "Key name", "KeyRowID", 
+              "Get key name of row ID.");
+              
+AddExpression(10, ef_return_string, "Last saved row ID", "Save", "LastSavedRowID", 
+              "Get last saved row ID.");   
+
+AddStringParam("Row ID", "Row ID.", '""');
+AddExpression(11, ef_return_any | ef_variadic_parameters, "Row ID to row content", "Row ID", "ID2RowContent", 
+              "Get rows content by row ID in JSON format. Add 2nd parameter to get value at the specific key. Add 3rd parameter for default value if this key is not existed.");
+
+AddNumberParam("Index", "Index of queried rows.", 0);
+AddExpression(12, ef_return_string, "Get rowID by Index of queried rows", "Row ID", "QueriedRowsIndex2RowID", 
+              'Get rowID by Index of queried rows. Return "" if the specific row had not existed.');
+                                    
+
 AddExpression(101, ef_return_string, "All rows to string", "All data", "AllRowsAsJSON", 
               "Get JSON string of all rows.");              
-
+AddExpression(102, ef_return_number, "Count of all rows", "All data", "AllRowsCount", 
+              "Get count of all rows.");  
+              
 ACESDone();
 
 // Property grid properties for this plugin

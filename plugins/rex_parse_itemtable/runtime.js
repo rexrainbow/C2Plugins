@@ -27,7 +27,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -63,7 +63,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 	    
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -100,7 +100,8 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    this.exp_CurItem = null;   
 	    this.exp_LastFetchedItem = null;
 	    this.exp_LastRemovedItemID = "";
-	    this.exp_LastItemsCount = -1;   
+	    this.exp_LastItemsCount = -1; 
+	    this.last_error = null;	      
 	};
 	
 	instanceProto.create_itemTable = function(page_lines)
@@ -114,8 +115,9 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    }
 	    itemTable.onReceived = onReceived;
 	    
-	    var onReceivedError = function()
+	    var onReceivedError = function(error)
 	    {	       
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnReceivedError, self);
 	    }
 	    itemTable.onReceivedError = onReceivedError;	    
@@ -184,6 +186,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    };	
 	    var OnSaveError = function(item, error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveError, self);
 	    };
  
@@ -521,6 +524,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    };	    
 	    var on_query_error = function(error)
 	    {      
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveError, self);
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};        
@@ -711,6 +715,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var on_error = function(item, error)
 	    { 
 	        self.exp_LastFetchedItem = item;
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnLoadByItemIDError, self);     
 	    };
 	    
@@ -731,6 +736,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    };	    
 	    var on_error = function(message, error)
 	    { 
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveByItemIDError, self);    
 	    };	    
 	    var handler = {"success":on_success, "error": on_error};
@@ -742,8 +748,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	
     Acts.prototype.RemoveQueriedItems = function ()
 	{
-	    this.filters.fields.length = 0;
-		this.filters.fields.push("id");    
+	    this.filters.fields.length = 0;  
 	    var all_itemID_query = this.get_request_query(this.filters); 
         clean_filters(this.filters);	    
 	    
@@ -754,6 +759,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    };	
 	    var on_error = function(error)
 	    {  
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnRemoveQueriedItemsError, self); 
 	    };	           
 	    var on_destroy_handler = {"success":on_destroy_success, "error": on_error};
@@ -774,6 +780,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var on_query_error = function(error)
 	    {      
 	        self.exp_LastItemsCount = -1;
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnGetItemsCountError, self); 
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
@@ -795,6 +802,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         var self = this;                  	
 	    var on_error = function(error)
 	    {  
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnReceivedError, self); 
 	    };
 	    	   
@@ -961,6 +969,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    };	
 	    var OnSaveAllError = function(items, error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveAllError, self);
 	    };
 	    
@@ -979,7 +988,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         {
 	        var on_read_success = function(item_)
 	        {	
-	            if (item_ !== null)
+	            if (item_)
 	                prepared_item_["id"] = item_["id"];
 	            
                 ReadCounter --;
@@ -1119,6 +1128,20 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	{
 		ret.set_int(this.exp_LastItemsCount);
 	};	
+	
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};
+		
 }());
 
 (function ()
@@ -1166,6 +1189,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	
 	var remove_all_items = function (query, handler)
     {
+        query["select"]("id");    
 	    var on_read_all = function(all_items)
 	    {
 	        if (all_items.length === 0)
@@ -1238,7 +1262,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	        self.is_last_page = false;
 	        	        
             if (self.onReceivedError)
-                self.onReceivedError();	 	           
+                self.onReceivedError(error);	 	           
 	    };
         var on_read_handler = {"success":on_success, "error":on_error};               
         window.ParseQuery(query, on_read_handler, start, lines);        

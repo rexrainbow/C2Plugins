@@ -162,11 +162,11 @@ cr.plugins_.Rex_Stopwatch = function(runtime)
     
 	instanceProto.destroy_all_timers = function ()
 	{
-	    var name, timer
-	    for (name in this.timers)
+	    var n, timer
+	    for (n in this.timers)
 	    {
-	        timer = this.timer[n];
-	        delete this.timer[n];	        
+	        timer = this.timers[n];
+	        delete this.timers[n];	        
 	        this.timer_cache.free(timer);
 	    }
 	};    
@@ -176,7 +176,7 @@ cr.plugins_.Rex_Stopwatch = function(runtime)
 	    var timers_save = {};
 	    for (var n in this.timers)
 	    {
-	        timers_save[n] = this.timers.saveToJSON();
+	        timers_save[n] = this.timers[n].saveToJSON();
 	    }
 	    
 		return { "tim": timers_save

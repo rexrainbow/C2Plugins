@@ -75,12 +75,15 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 	
 	instanceProto._run_dynamic_mode = function()
 	{
+        var is_timeout = false;
         var start_time = Date.now();
-        while ((Date.now() - start_time) <= this.processing_time)
+        while (!is_timeout)
         {
             this.runtime.trigger(cr.plugins_.Rex_EventBalancer.prototype.cnds.OnProcessing, this);
             if (!this.is_running)
                 break;
+            
+            is_timeout = ((Date.now() - start_time) > this.processing_time);
         }
 	};  
 	
@@ -226,7 +229,7 @@ cr.plugins_.Rex_EventBalancer = function(runtime)
 		
 	Acts.prototype.StopLoop = function()
 	{
-	    this.is_looping = false;
+	    this.is_running = false;
 	}; 	     
 	//////////////////////////////////////
 	// Expressions

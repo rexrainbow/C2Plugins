@@ -303,10 +303,9 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
         var dx = source_behavior.inst.x - this.inst.x;
         var dy = source_behavior.inst.y - this.inst.y;
         // get force
-        var r = Math.sqrt( (dx*dx) + (dy*dy) );
         var params = source_behavior.LJ_potential_param;        
-        var fA = _term_value_get(params["A"], params["n"], r);
-        var fB = _term_value_get(params["B"], params["m"], r);
+        var fA = _term_value_get(params["A"], params["n"], dx, dy);
+        var fB = _term_value_get(params["B"], params["m"], dx, dy);
         var U = fA - fB;
         // accumulate force
         var a = Math.atan2(dy, dx);        
@@ -314,16 +313,18 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
         this.output_force["y"] += U * Math.sin(a);
 	};
     
-    var _term_value_get = function (A, n, r)
+    var _term_value_get = function (A, n, dx, dy)
     {
         var val;
         if (A == 0)
             val = 0;
+        else if (n === 0)
+            val = A;
         else
         {
+            var r = Math.sqrt( (dx*dx) + (dy*dy) );
             switch (n)
             {
-            case 0: val = A;                break;
             case 1: val = A/r;              break;
             case 2: val = A/(r*r);          break;
             case 3: val = A/(r*r*r);        break;
@@ -442,7 +443,7 @@ cr.behaviors.Rex_LJ_potential.uid2behaviorInst = {};
 
 	Cnds.prototype.HasForce = function ()
 	{
-		return (this.output_force["x"] != 0) && (this.output_force["y"] != 0);
+		return (this.output_force["x"] != 0) || (this.output_force["y"] != 0);
 	};    
 	//////////////////////////////////////
 	// Actions

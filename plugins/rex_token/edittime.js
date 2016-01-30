@@ -42,7 +42,11 @@ AddAction(4, 0, "Set next index", "Order",
           "Set next player index.", "SetNextIndex"); 
 AddAction(5, 0, "Turn off", "Order", 
           "Turn off token", 
-          "Turn off token.", "TurnOff");                 
+          "Turn off token.", "TurnOff");
+AddAction(6, 0, "Next random", "Index", 
+          "Turn to next random player", 
+          "Turn to next random player.", "NextRandomIndex");
+		  
 AddStringParam("ID", "Player ID string", "1,2");
 AddAction(10, 0, "Set list", "ID", 
           "Set ID list to <i>{0}</i>", 
@@ -66,7 +70,12 @@ AddAction(14, 0, "Clean list", "ID",
 AddAnyTypeParam("ID", "Player ID", 1);
 AddAction(15, 0, "Set next ID", "Order", 
           "Set next player ID to <i>{0}</i>", 
-          "Set next player ID.", "SetNextID");           
+          "Set next player ID.", "SetNextID");    
+
+AddObjectParam("Random generator", "Random generator object");
+AddAction(20, 0, "Set random generator", "Setup", 
+          "Set random generator object to <i>{0}</i>", 
+          "Set random generator object.", "SetRandomGenerator"); 		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number,

@@ -24,6 +24,15 @@ AddCondition(5,	cf_trigger, "On hit top boundary", "Hit",
 AddCondition(6,	cf_trigger, "On hit bottom boundary", "Hit", 
              "On {my} hit bottom boundary", "Triggered when object hit bottom boundary.", "OnHitBottomBoundary"); 
              
+AddComboParamOption("Any");
+AddComboParamOption("Left");
+AddComboParamOption("Right");
+AddComboParamOption("Top");
+AddComboParamOption("Bottom");
+AddComboParam("Boundary", "Enable the horizontal boundary.",1);
+AddCondition(12,	0, "Is hit boundary", "Hit", 
+             "Is {my} hit <i>{0}</i> boundary", "Return true if object hit any boundary.", "IsHitBoundary");             
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");

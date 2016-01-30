@@ -1,4 +1,11 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<itemID>
+    ownerID - userID of timer owner    
+    timerName - timer name
+    time-out - interval of time-out
+*/
+
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");
@@ -27,7 +34,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -63,7 +70,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -78,59 +85,25 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         if (this.cache_mode)
             this.cache = new CacheKlass();
             
-	    this.exp_LastUserID = "";
+	    this.exp_LastOwnerID = "";
 	    this.exp_LastTimerName = "";
-        this.exp_LastTimer = null;          
+        this.exp_LastTimer = null;   
+	    this.last_error = null;               
 	};
 
-    instanceProto.get_base_query = function(userID, timerName)
+    instanceProto.get_base_query = function(ownerID, timerName)
 	{ 
 	    var query = new window["Parse"]["Query"](this.timer_klass);
-	    query["equalTo"]("userID", userID);
+	    query["equalTo"]("ownerID", ownerID);
 	    if (timerName != null)
 	        query["equalTo"]("timerName", timerName);
 	    return query;
 	};
-    
-    instanceProto.remove_timers = function (userID, timerName, destroy_handler)
-	{
-	    var query = this.get_base_query(userID, timerName);
-	    query["limit"](1000);
-        
-        var self = this;    
-        
-        // read
-        // 2. destroy each item
-        var target_items = [];        
-        var skip_cnt = 0;
-	    var on_query_success = function(items)
-	    {
-            var cnt = items.length;
-	        if (cnt == 0)
-                window["Parse"]["Object"]["destroyAll"](target_items, destroy_handler);
-	        else
-            {
-                target_items.push.apply(target_items, items);
-                skip_cnt += cnt;
-                query["skip"](skip_cnt);
-                query["find"](query_handler);
-            }
-	    };	    
-	    var on_query_error = function(error)
-	    {      
-            destroy_handler["error"]();
-	    };
-	    var query_handler = {"success":on_query_success, "error": on_query_error};        
-        // read
-                
-        // 1. read items           
-	    query["find"](query_handler);
-	};  
-
-    instanceProto.start_timer = function(userID, timerName, interval, handler)
+	
+    instanceProto.start_timer = function(ownerID, timerName, interval, handler)
 	{ 
         var timer_obj = new this.timer_klass();
-	    timer_obj["set"]("userID", userID);
+	    timer_obj["set"]("ownerID", ownerID);
 	    timer_obj["set"]("timerName", timerName);
 	    timer_obj["set"]("time-out", interval);
 	    timer_obj["save"](null, handler);	
@@ -143,39 +116,39 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
     }
     var CacheKlassProto = CacheKlass.prototype;  
      
-	CacheKlassProto.set_owner = function(userID)
+	CacheKlassProto.set_owner = function(ownerID)
 	{        
-        if (this.ownerID === userID)
+        if (this.ownerID === ownerID)
             return;
         
         for (var n in this.timerIDs)
             delete this.timerIDs[n];
-        this.ownerID = userID;
+        this.ownerID = ownerID;
 	};     
-	CacheKlassProto.get = function(userID, timerName)
+	CacheKlassProto.get = function(ownerID, timerName)
 	{        
-        if (this.ownerID !== userID)
+        if (this.ownerID !== ownerID)
         {
-            this.set_owner(userID);
+            this.set_owner(ownerID);
             return null;
         }
         
         return this.timerIDs[timerName];
 	}; 
 
-	CacheKlassProto.set = function(userID, timerName, timerObj)
+	CacheKlassProto.set = function(ownerID, timerName, timerObj)
 	{          
-        if (this.ownerID !== userID)        
-            this.set_owner(userID);        
+        if (this.ownerID !== ownerID)        
+            this.set_owner(ownerID);        
         
         this.timerIDs[timerName] = timerObj;
 	};    
 
-	CacheKlassProto.remove = function(userID, timerName)
+	CacheKlassProto.remove = function(ownerID, timerName)
 	{             
-        if (this.ownerID !== userID)
+        if (this.ownerID !== ownerID)
         {
-            this.set_owner(userID);
+            this.set_owner(ownerID);
             return null;
         }
         
@@ -243,23 +216,24 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.StartTimer = function (userID, timerName, interval)
+    Acts.prototype.StartTimer = function (ownerID, timerName, interval)
 	{
 	    var self = this;
         
 	    var on_error = function(error)
 	    {
-	        self.exp_LastUserID = userID;
-	        self.exp_LastTimerName = timerName;        	        
+	        self.exp_LastOwnerID = ownerID;
+	        self.exp_LastTimerName = timerName;    
+	        self.last_error = error;    	        
             self.runtime.trigger(cr.plugins_.Rex_parse_Timer.prototype.cnds.OnStartTimerError, self); 
 	    };
         
 	    var on_start_timer = function(timer_obj) 
 	    {
             if (self.cache_mode)
-                self.cache.set(userID, timerName, timer_obj);
+                self.cache.set(ownerID, timerName, timer_obj);
                 
-	        self.exp_LastUserID = userID;
+	        self.exp_LastOwnerID = ownerID;
 	        self.exp_LastTimerName = timerName; 
             self.exp_LastTimer = timer_obj;               
             self.runtime.trigger(cr.plugins_.Rex_parse_Timer.prototype.cnds.OnStartTimerComplete, self); 
@@ -269,33 +243,35 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         var start_timer = function()
         {
 	        var handler = {"success":on_start_timer, "error": on_error};
-	        self.start_timer(userID, timerName, interval, handler);	       
+	        self.start_timer(ownerID, timerName, interval, handler);	       
         };
         //2 start timer
          
 	    //1. delete all matched timers
         var remove_handler = {"success":start_timer, "error": on_error};
-	    this.remove_timers(userID, timerName, remove_handler);
+        var item_query = this.get_base_query(ownerID, timerName);
+        window.ParseRemoveAllItems(item_query, remove_handler);
         //1. delete all matched timers
 	             
 	};
 	
-    Acts.prototype.GetTimer = function (userID, timerName, interval)
+    Acts.prototype.GetTimer = function (ownerID, timerName, interval)
 	{
 	    var self = this;
 	    var on_error = function(error)
 	    {
-	        self.exp_LastUserID = userID;
-	        self.exp_LastTimerName = timerName;        	        
+	        self.exp_LastOwnerID = ownerID;
+	        self.exp_LastTimerName = timerName; 
+            self.last_error = error;    	               	        
             self.runtime.trigger(cr.plugins_.Rex_parse_Timer.prototype.cnds.OnGetTimerError, self); 
 	    };
         
 	    var on_get_timer = function(timer_obj) 
 	    {
             if (self.cache_mode)
-                self.cache.set(userID, timerName, timer_obj);        
+                self.cache.set(ownerID, timerName, timer_obj);        
         
-	        self.exp_LastUserID = userID;
+	        self.exp_LastOwnerID = ownerID;
 	        self.exp_LastTimerName = timerName;  
             self.exp_LastTimer = timer_obj;            
             self.runtime.trigger(cr.plugins_.Rex_parse_Timer.prototype.cnds.OnGetTimerComplete, self); 
@@ -308,7 +284,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
             if (timer_obj)
 	            timer_obj["save"](null, handler);
             else
-                self.start_timer(userID, timerName, interval, handler);	    
+                self.start_timer(ownerID, timerName, interval, handler);	    
         };
         //2. update timer 
         
@@ -316,7 +292,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         var check_timer = function ()
         {
             var handler = {"success":update_timer, "error": on_error};             
-	        var query = self.get_base_query(userID, timerName);       
+	        var query = self.get_base_query(ownerID, timerName);       
 	        query["first"](handler);        
         }
         //1. check if timer is existed
@@ -324,7 +300,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         //0. get timerObj if possible
         var timer_obj;
         if (this.cache_mode)
-            timer_obj = this.cache.get(userID, timerName);
+            timer_obj = this.cache.get(ownerID, timerName);
         
         if (!timer_obj)
             check_timer();
@@ -333,38 +309,48 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         //0. get timerObj if possible            
 	};	
 	
-    Acts.prototype.RemoveTimer = function (userID, timerName)
+    Acts.prototype.RemoveTimer = function (ownerID, timerName)
 	{
 	    var self = this;
         
 	    var on_error = function(error)
 	    {
-	        self.exp_LastUserID = userID;
-	        self.exp_LastTimerName = timerName;        	        
+	        self.exp_LastOwnerID = ownerID;
+	        self.exp_LastTimerName = timerName;    
+	        self.last_error = error;        	        
             self.runtime.trigger(cr.plugins_.Rex_parse_Timer.prototype.cnds.OnRemoveTimerError, self); 
 	    };
         
 	    var on_delete = function() 
 	    {
             if (self.cahce_mode)
-                self.cache.remove(userID, timerName);
+                self.cache.remove(ownerID, timerName);
                 
-	        self.exp_LastUserID = userID;
+	        self.exp_LastOwnerID = ownerID;
 	        self.exp_LastTimerName = timerName;        	        
             self.runtime.trigger(cr.plugins_.Rex_parse_Timer.prototype.cnds.OnRemoveTimerComplete, self); 
         }; 
         var remove_handler = {"success":on_delete, "error": on_error};
-	    this.remove_timers(userID, timerName, remove_handler);        
+        var item_query = this.get_base_query(ownerID, timerName);
+        window.ParseRemoveAllItems(item_query, remove_handler);       
 	};	
 	
+    Acts.prototype.InitialTable = function ()
+	{	
+        var timer_obj = new this.timer_klass();
+	    timer_obj["set"]("ownerID", "");
+	    timer_obj["set"]("timerName", "");
+        window.ParseInitTable(timer_obj);
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 	
+	//deprecated
 	Exps.prototype.LastUserID = function (ret)
 	{
-		ret.set_string(this.exp_LastUserID);
+		ret.set_string(this.exp_LastOwnerID);
 	}; 	
 	Exps.prototype.LastTimerName = function (ret)
 	{
@@ -401,4 +387,110 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
             t = 0;
 		ret.set_float(t/1000);
 	};	
+	
+	Exps.prototype.LastOwnerID = function (ret)
+	{
+		ret.set_string(this.exp_LastOwnerID);
+	}; 
+	
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};		
+}());
+
+
+(function ()
+{
+    if (window.ParseQuery != null)
+        return;  
+        
+   var request = function (query, handler, start, lines)
+   {	   	          
+	    if (start==null)
+	        start = 0;
+        
+        var all_items = [];            
+	    var is_onePage = (lines != null) && (lines <= 1000);
+	    var linesInPage = (is_onePage)? lines:1000;
+	                                       	    
+        var self = this;       
+	    var on_success = function(items)
+	    {
+	        all_items.push.apply(all_items, items);
+	        var is_last_page = (items.length < linesInPage);   
+	        	        
+	        if ((!is_onePage) && (!is_last_page))  // try next page
+	        {               
+	            start += linesInPage;
+	            query_page(start);
+	        }
+	        else  // finish
+	        {
+                handler["success"](all_items);            
+	        }
+	    };
+	     
+	    var read_page_handler = {"success":on_success, "error": handler["error"]};	 	    
+	    var query_page = function (start_)
+	    {
+	        // get 1000 lines for each request until get null or get ownerID	       
+            query["skip"](start_);
+            query["limit"](linesInPage);
+            query["find"](read_page_handler);
+        };
+
+	    query_page(start);
+	}; 
+	
+	var remove_all_items = function (query, handler)
+    {
+        query["select"]("id");    
+	    var on_read_all = function(all_items)
+	    {
+	        if (all_items.length === 0)
+	        {
+	            handler["success"](all_items);
+	            return;
+	        }
+	        window["Parse"]["Object"]["destroyAll"](all_items, handler); 
+	    };	    
+	    var on_read_handler = {"success":on_read_all, "error": handler["error"]};  
+	    request(query, on_read_handler);
+    };
+    
+    window.ParseQuery = request;
+    window.ParseRemoveAllItems = remove_all_items;
+}());
+
+
+(function ()
+{
+    if (window.ParseInitTable != null)
+        return;  
+        
+    var init_table = function (item_obj)
+    { 
+	    var on_write_success = function(item_obj)
+	    {
+	        item_obj["destroy"]();
+	    };	
+	    
+	    var on_write_error = function(item_obj, error)
+	    {
+	    };
+        var write_handler = {"success":on_write_success, "error":on_write_error};
+        
+	    item_obj["save"](null, write_handler);
+    };
+
+    window.ParseInitTable = init_table;
 }());

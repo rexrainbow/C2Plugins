@@ -410,6 +410,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    this.get_ref(k)["onDisconnect"]()["cancel"]();
 	};
 	
+	
     // query
     var get_query = function (queryObjs)
     {

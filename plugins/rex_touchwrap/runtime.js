@@ -147,6 +147,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.y = y;
 		this.lastx = x;
 		this.lasty = y;
+		this.width = 0;
+		this.height = 0;
+		this.pressure = 0;
 		
 		this["id"] = id;
 		this.startindex = index;
@@ -155,7 +158,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.tooFarForHold = false;
 	};
 	
-	TouchInfo.prototype.update = function (nowtime, x, y)
+	TouchInfo.prototype.update = function (nowtime, x, y, width, height, pressure)
 	{
 		this.lasttime = this.time;
 		this.time = nowtime;
@@ -164,6 +167,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.lasty = this.y;
 		this.x = x;
 		this.y = y;
+		this.width = width;
+		this.height = height;
+		this.pressure = pressure;
 		
 		if (!this.tooFarForHold && cr.distanceTo(this.startx, this.starty, this.x, this.y) >= GESTURE_HOLD_THRESHOLD)
 		{
@@ -514,14 +520,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			);
 		}
 		
-		// Use AppMobi in case browser does not support accelerometer but device does
-		if (this.runtime.isAppMobi && !this.runtime.isDirectCanvas)
-		{
-			AppMobi["accelerometer"]["watchAcceleration"](AppMobiGetAcceleration, { "frequency": 40, "adjustForRotation": true });
-		}
 		
 		// Use PhoneGap in case browser does not support accelerometer but device does
-		if (this.runtime.isPhoneGap && navigator["accelerometer"] && navigator["accelerometer"]["watchAcceleration"])
+		if (!this.runtime.isiOS && this.runtime.isCordova && navigator["accelerometer"] && navigator["accelerometer"]["watchAcceleration"])
 		{
 			navigator["accelerometer"]["watchAcceleration"](PhoneGapGetAcceleration, null, { "frequency": 40 });
 		}
@@ -559,7 +560,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			if (nowtime - t.time < 2)
 				return;
 			
-			t.update(nowtime, info.pageX - offset.left, info.pageY - offset.top);
+			t.update(nowtime, info.pageX - offset.left, info.pageY - offset.top, info.width || 0, info.height || 0, info.pressure || 0);
 		}
 	};
 
@@ -573,7 +574,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			return;
 	
 	    this._is_mouse_mode = false;			
-		if (info.preventDefault)
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 		
 		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
@@ -616,7 +617,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			return;
 	
         this._is_mouse_mode = false;			
-		if (info.preventDefault)
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
 		var i = this.findTouch(info["pointerId"]);
@@ -684,7 +685,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				if (nowtime - u.time < 2)
 					continue;
 					
-				u.update(nowtime, t.pageX - offset.left, t.pageY - offset.top);
+				var touchWidth = (t.radiusX || t.webkitRadiusX || t.mozRadiusX || t.msRadiusX || 0) * 2;
+				var touchHeight = (t.radiusY || t.webkitRadiusY || t.mozRadiusY || t.msRadiusY || 0) * 2;
+				var touchForce = t.force || t.webkitForce || t.mozForce || t.msForce || 0;
+				u.update(nowtime, t.pageX - offset.left, t.pageY - offset.top, touchWidth, touchHeight, touchForce);
 				
                 for (hooki=0; hooki<cnt; hooki++)
 			    {
@@ -705,7 +709,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    if (!this.enable)
 	        return;
 	        	    
-		if (info.preventDefault)
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
 		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
@@ -758,7 +762,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    if (!this.enable)
 	        return;
 	        	    
-		if (info.preventDefault)
+		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
 		this.runtime.isInUserInputEvent = true;
@@ -807,9 +811,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	instanceProto.getAlpha = function ()
 	{
-		if (this.runtime.isAppMobi && this.orient_alpha === 0 && appmobi_accz !== 0)
-			return appmobi_accz * 90;
-		else if (this.runtime.isPhoneGap  && this.orient_alpha === 0 && pg_accz !== 0)
+		if (this.runtime.isCordova && this.orient_alpha === 0 && pg_accz !== 0)
 			return pg_accz * 90;
 		else
 			return this.orient_alpha;
@@ -817,19 +819,15 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	instanceProto.getBeta = function ()
 	{
-		if (this.runtime.isAppMobi && this.orient_beta === 0 && appmobi_accy !== 0)
-			return appmobi_accy * -90;
-		else if (this.runtime.isPhoneGap  && this.orient_beta === 0 && pg_accy !== 0)
-			return pg_accy * -90;
+		if (this.runtime.isCordova && this.orient_beta === 0 && pg_accy !== 0)
+			return pg_accy * 90;
 		else
 			return this.orient_beta;
 	};
 	
 	instanceProto.getGamma = function ()
 	{
-		if (this.runtime.isAppMobi && this.orient_gamma === 0 && appmobi_accx !== 0)
-			return appmobi_accx * 90;
-		else if (this.runtime.isPhoneGap  && this.orient_gamma === 0 && pg_accx !== 0)
+		if (this.runtime.isCordova && this.orient_gamma === 0 && pg_accx !== 0)
 			return pg_accx * 90;
 		else
 			return this.orient_gamma;
@@ -1020,7 +1018,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			sol.select_all = false;
 			cr.shallowAssignArray(sol.instances, touching);
 			type.applySolToContainer();
-			touching.length = 0;
+			cr.clearArray(touching);
 			return true;
 		}
 		else
@@ -1196,10 +1194,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			oldZoomRate = layer.zoomRate;
 			oldParallaxX = layer.parallaxX;
 			oldAngle = layer.angle;
-			layer.scale = this.runtime.running_layout.scale;
+			layer.scale = 1;
 			layer.zoomRate = 1.0;
 			layer.parallaxX = 1.0;
-			layer.angle = this.runtime.running_layout.angle;
+			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
@@ -1241,10 +1239,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			oldZoomRate = layer.zoomRate;
 			oldParallaxX = layer.parallaxX;
 			oldAngle = layer.angle;
-			layer.scale = this.runtime.running_layout.scale;
+			layer.scale = 1;
 			layer.zoomRate = 1.0;
 			layer.parallaxX = 1.0;
-			layer.angle = this.runtime.running_layout.angle;
+			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, true));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
@@ -1288,10 +1286,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			oldZoomRate = layer.zoomRate;
 			oldParallaxX = layer.parallaxX;
 			oldAngle = layer.angle;
-			layer.scale = this.runtime.running_layout.scale;
+			layer.scale = 1;
 			layer.zoomRate = 1.0;
 			layer.parallaxX = 1.0;
-			layer.angle = this.runtime.running_layout.angle;
+			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(touch.x, touch.y, true));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
@@ -1333,10 +1331,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			oldZoomRate = layer.zoomRate;
 			oldParallaxY = layer.parallaxY;
 			oldAngle = layer.angle;
-			layer.scale = this.runtime.running_layout.scale;
+			layer.scale = 1;
 			layer.zoomRate = 1.0;
 			layer.parallaxY = 1.0;
-			layer.angle = this.runtime.running_layout.angle;
+			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
@@ -1378,10 +1376,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			oldZoomRate = layer.zoomRate;
 			oldParallaxY = layer.parallaxY;
 			oldAngle = layer.angle;
-			layer.scale = this.runtime.running_layout.scale;
+			layer.scale = 1;
 			layer.zoomRate = 1.0;
 			layer.parallaxY = 1.0;
-			layer.angle = this.runtime.running_layout.angle;
+			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(this.touches[index].x, this.touches[index].y, false));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
@@ -1425,10 +1423,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			oldZoomRate = layer.zoomRate;
 			oldParallaxY = layer.parallaxY;
 			oldAngle = layer.angle;
-			layer.scale = this.runtime.running_layout.scale;
+			layer.scale = 1;
 			layer.zoomRate = 1.0;
 			layer.parallaxY = 1.0;
-			layer.angle = this.runtime.running_layout.angle;
+			layer.angle = 0;
 			ret.set_float(layer.canvasToLayer(touch.x, touch.y, false));
 			layer.scale = oldScale;
 			layer.zoomRate = oldZoomRate;
@@ -1645,6 +1643,48 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	Exps.prototype.TouchID = function (ret)
 	{
 		ret.set_float(this.trigger_id);
+	};
+	
+	Exps.prototype.WidthForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+		ret.set_float(touch.width);
+	};
+	
+	Exps.prototype.HeightForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+		ret.set_float(touch.height);
+	};
+	
+	Exps.prototype.PressureForID = function (ret, id)
+	{
+		var index = this.findTouch(id);
+		
+		if (index < 0)
+		{
+			ret.set_float(0);
+			return;
+		}
+		
+		var touch = this.touches[index];
+		ret.set_float(touch.pressure);
 	};
 	
 	pluginProto.exps = new Exps();

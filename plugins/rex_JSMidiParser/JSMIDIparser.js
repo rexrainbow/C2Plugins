@@ -146,6 +146,7 @@ JSMIDIParser = {
 			var chunkLength	 	= file.readInt(4);								// var NOT USED, just for pointer move. get chunk size (bytes length)
 			var e		  		= 0;											// init event counter
 			var endOfTrack 		= false;										// FLAG for track reading secuence breaking
+            
 			// ** read EVENT CHUNK
 			while(!endOfTrack){
 				e++;															// increase by 1 event counter
@@ -185,9 +186,13 @@ JSMIDIParser = {
 							MIDI.track[t-1].event[e-1].data[2] = file.readInt(1);
 							MIDI.track[t-1].event[e-1].data[3] = file.readInt(1);
 							break;
+                        case 0x7F:                                              // Sequencer Specific
+                            MIDI.track[t-1].event[e-1].data	   = file.readStr(metaEventLength);
+                            //log("Sequencer Specific:" + ", data=" + MIDI.track[t-1].event[e-1].data);
+                            break;
 						default :
-							file.readInt(metaEventLength);
 							MIDI.track[t-1].event[e-1].data = file.readInt(metaEventLength);
+                            //log("Event:" + MIDI.track[t-1].event[e-1].metaType.toString(16) + ", data=" + MIDI.track[t-1].event[e-1].data);
 							if (this.debug) console.log("Unimplemented 0xFF event! data block readed as Integer");
 					};
 				}else{															// MIDI Control Events OR System Exclusive Events
@@ -220,7 +225,7 @@ JSMIDIParser = {
 					};
 				};
 			};		
-		};
+		}  // for each track
 		return MIDI;
 	}
 };

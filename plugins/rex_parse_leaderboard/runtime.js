@@ -36,7 +36,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -72,7 +72,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 	   
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -103,7 +103,8 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         this.exp_LastRanking = -1;
         this.exp_LastUserID = ""; 
         this.exp_LastScore = "";           
-        this.exp_LastUsersCount = -1;     
+        this.exp_LastUsersCount = -1; 
+        this.last_error = null;	            
 	};
 	
 	instanceProto.create_leaderboard = function(page_lines)
@@ -117,8 +118,9 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    }
 	    leaderboard.onReceived = onReceived;
 	    
-	    var onReceivedError = function()
+	    var onReceivedError = function(error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnReceivedError, self);
 	    }
 	    leaderboard.onReceivedError = onReceivedError;	
@@ -166,7 +168,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
         }
 	    return query;
 	};	
-	
+    	
 	var get_ACL = function (wm, rm)
 	{
 	    if ((wm === 0) && (rm === 0))
@@ -297,6 +299,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var OnPostError = function(rank_obj, error)
 	    {
             self.exp_PostRankObj = null;
+            self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnPostError, self);
 	    };
 	    	    
@@ -439,6 +442,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	        // page not found, cound not find userID
             self.exp_LastUserID = userID;
 	        self.exp_LastRanking = -1;
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetRankingError, self);
 	    };	    
 	    var handler = {"success":on_success, "error": on_error};	
@@ -471,6 +475,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    {
             self.exp_LastUserID = userID;
             self.exp_LastScore = "";
+            self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetScoreError, self);
 	    };
         
@@ -490,12 +495,21 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var on_error = function(error)
 	    {      
 	        self.exp_LastUsersCount = -1;
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnGetUsersCountError, self); 
 	    };
 	    
 	    var handler = {"success":on_success, "error": on_error};    	     	    
 	    this.get_request_query(self.leaderBoardID)["count"](handler);
 	};	
+	
+    Acts.prototype.InitialTable = function ()
+	{	
+	    var rank_obj = new this.rank_klass();
+	    rank_obj["set"]("boardID", "");
+	    rank_obj["set"]("userID", "");
+	    window.ParseInitTable(rank_obj);
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -624,6 +638,19 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	{
 		ret.set_int(this.exp_LastUsersCount);
 	};	
+	
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};	
 }());
 
 (function ()
@@ -671,6 +698,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	
 	var remove_all_items = function (query, handler)
     {
+        query["select"]("id");
 	    var on_read_all = function(all_items)
 	    {
 	        if (all_items.length === 0)
@@ -743,7 +771,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	        self.is_last_page = false;
 	        	        
             if (self.onReceivedError)
-                self.onReceivedError();	 	           
+                self.onReceivedError(error);	 	           
 	    };
         var on_read_handler = {"success":on_success, "error":on_error};               
         window.ParseQuery(query, on_read_handler, start, lines);        
@@ -861,3 +889,26 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	window.ParseItemPageKlass = ItemPageKlass;
 }());       
+
+(function ()
+{
+    if (window.ParseInitTable != null)
+        return;  
+        
+    var init_table = function (item_obj)
+    { 
+	    var on_write_success = function(item_obj)
+	    {
+	        item_obj["destroy"]();
+	    };	
+	    
+	    var on_write_error = function(item_obj, error)
+	    {
+	    };
+        var write_handler = {"success":on_write_success, "error":on_write_error};
+        
+	    item_obj["save"](null, write_handler);
+    };
+
+    window.ParseInitTable = init_table;
+}());

@@ -50,6 +50,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    this._pat_rank = [];
         this._shadow_patterns = {};
         this.start_gen(); 	
+		this.random_gen = null;
         
         this.exp_LastPattern = "";
         this.exp_CurPatternName = "";
@@ -61,8 +62,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         this.propsections = [];      
         /**END-PREVIEWONLY**/           
 	};
-	cr.plugins_.Rex_PatternGen._random_gen = null;  // random generator for Shuffing
-
+	
 	instanceProto.reset_pat_rank = function(patterns)
 	{
 	    var pat;
@@ -90,9 +90,8 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	
 	instanceProto.get_random_value = function()
 	{
-	    var gen = cr.plugins_.Rex_PatternGen._random_gen;
-	    var value = (gen == null)?
-			        Math.random(): gen.random();
+	    var value = (this.random_gen == null)?
+			        Math.random(): this.random_gen.random();
         return value;
 	};	
 	
@@ -201,8 +200,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 
 	instanceProto.saveToJSON = function ()
 	{       	 
-        var randomGen = cr.plugins_.Rex_PatternGen._random_gen;
-        var randomGenUid = (randomGen != null)? randomGen.uid:(-1);    
+        var randomGenUid = (this.random_gen != null)? this.random_gen.uid:(-1);    
 		return { "m": this.mode,
 		         "pats": this.patterns,
 		         "pr": this._pat_rank,
@@ -235,7 +233,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 			assert2(randomGen, "Pattern gen: Failed to find random gen object by UID");
 		}		
 		this.randomGenUid = -1;			
-		cr.plugins_.Rex_PatternGen._random_gen = randomGen;
+		this.random_gen = randomGen;
 	};
     
 	/**BEGIN-PREVIEWONLY**/
@@ -443,7 +441,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{
         var random_gen = random_gen_objs.instances[0];
         if (random_gen.check_name == "RANDOM")
-            cr.plugins_.Rex_PatternGen._random_gen = random_gen;        
+            this.random_gen = random_gen;        
         else
             alert ("[Pattern generator] This object is not a random generator object.");
 	}; 	

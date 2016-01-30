@@ -140,7 +140,7 @@ cr.behaviors.Rex_cdmask = function(runtime)
         {
             canvas_inst.set_bbox_changed();
             canvas_inst.runtime.redraw = true; 
-            inst.update_tex = true; 
+            canvas_inst.update_tex = true; 
         }
 	};
     

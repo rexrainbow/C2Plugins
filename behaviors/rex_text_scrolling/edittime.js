@@ -54,7 +54,7 @@ AddExpression(2, ef_return_number, "Get visible lines count", "Lines count", "Vi
 AddExpression(3, ef_return_number, "Get current lines index", "Lines index", "CurrIndex", "Get current lines index.");
 AddExpression(4, ef_return_number, "Get current last lines index", "Lines index", "CurrLastIndex", "Get current last lines index.");
 AddNumberParam("Line index", "Start line index (0-based).", 0);
-AddNumberParam("Line index", "End line index (0-based).", 0);
+AddNumberParam("Line index", "End line index (0-based). Not included this line.", 0);
 AddExpression(5, ef_return_string, "Get text by line index", "Text", "Lines", "Get text by line index.");
 
 

@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
@@ -44,7 +44,12 @@ AddExpression(1, ef_return_string, "Get URL", "Upload", "LastURL",
               "Get URL of last upload file .");
 AddExpression(2, ef_return_string, "Get File name", "Upload", "LastFileName", 
               "Get file name of last upload file .");
-                                                        
+
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");
+                                                                      
 ACESDone();
 
 // Property grid properties for this plugin

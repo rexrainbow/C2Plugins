@@ -1,4 +1,15 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<UserID>
+    headers\
+	    <slotName>
+		    <key> - value
+
+	bodies\
+	    <slotName>
+		    <key> - value
+	
+*/
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");
@@ -71,6 +82,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         {
 		    this.save_header = {};
 		    this.save_body = {};
+			this.save_item = {};
 		}
 		else
 		{
@@ -139,9 +151,19 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	var is_empty = function (o)
 	{
 		for (var k in o)
-		    return false;
+        {
+            if (o[k] !== null)
+		        return false;
+        }
 	    return true;
-	};	
+	};
+
+    var get_path = function (slot_name, is_body, key)
+    {
+        var p = (is_body)? "bodies":"headers";
+        p += "/" + slot_name + "/" + key;
+        return p;
+    };	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -244,37 +266,32 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	};
 	
     Acts.prototype.Save = function (slot_name)
-	{		
-	    var ref = this.get_ref(this.owner_userID);
-        var header_ref = ref["child"]("headers")["child"](slot_name);
-		var body_ref = ref["child"]("bodies")["child"](slot_name);
-				
+	{
 		var self = this;				
-		var complete_cnt = 0;
-		var error_cnt = 0;
 	    var on_complete = function(error) 
 	    {
-		    complete_cnt += 1;   
-		    if (error)
-			    error_cnt += 1;   
-				
-		    if (complete_cnt == 2)
-			{
-			    var trig = (error_cnt==0)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveComplete:
-				                           cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveError;
-				self.runtime.trigger(trig, self); 					   
-			}
+			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveComplete:
+				                 cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveError;
+			self.runtime.trigger(trig, self); 					   
         };
 		
 		// header could not be empty
 		if (is_empty(this.save_header))
 		    this.save_header["is-empty"] = true;
 			
-		header_ref["set"](this.save_header, on_complete);	
-		body_ref["set"](this.save_body, on_complete);
+        var k;
+        for (k in this.save_header)
+            this.save_item[ get_path(slot_name, false, k) ] = this.save_header[k];
+            
+        for (k in this.save_body)
+            this.save_item[ get_path(slot_name, true, k) ] = this.save_body[k];            
+	    
+	    var ref = this.get_ref(this.owner_userID);	
+        ref["update"](this.save_item, on_complete);		
 		
 		clean_table(this.save_header);	
-		clean_table(this.save_body);	
+		clean_table(this.save_body);
+		clean_table(this.save_item);
 	};
     	
     Acts.prototype.SetBooleanValue = function (key_, b, is_body)
@@ -288,6 +305,13 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         var table = (is_body==1)? this.save_body:this.save_header;
 		table[key_] = window["Firebase"]["ServerValue"]["TIMESTAMP"];
 	};	
+    	
+    Acts.prototype.RemoveKey = function (key_, is_body)
+	{
+        var table = (is_body==1)? this.save_body:this.save_header;
+		table[key_] = null;
+	};	    
+    
 	
     Acts.prototype.GetAllHeaders = function ()
 	{

@@ -209,7 +209,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this._check_rollingover(is_touch_inside);           
 	}; 
 	
-	behinstProto.is_enable = function(frame_index)
+	behinstProto.is_enable = function()
 	{
 	    var is_visible;
 	    if (this._is_visible_checking)
@@ -385,9 +385,9 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.loadFromJSON = function (o)
 	{
 		var activated = o["en"];
-		if (activated && (this._state != ACTIVE_STATE))
+		if (activated)
 		    this._goto_active_state();
-		else ((!activated) && (this._state != INACTIVE_STATE))
+		else
 		    this._goto_inactive_state(); 
         this._display.normal = o["fn"];
         this._display.click = o["fc"];
@@ -458,6 +458,12 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	{
         return true;
 	};    
+
+	Cnds.prototype.IsEnable = function ()
+	{
+        return this.is_enable();
+	};    	
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -488,7 +494,23 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this._display.rollingin = display_rollingin;        
         this._init();
 	};   
-  
+	 
+	Acts.prototype.ManualTriggerCondition = function (condition_type)
+	{
+        var conds = cr.behaviors.Rex_Button2.prototype.cnds;
+        var trig;
+        switch (condition_type)
+        {
+        case 0: trig = conds.OnClick;        break;
+        case 1: trig = conds.OnClickCancel;  break; 
+        case 2: trig = conds.OnClickStart;   break;
+        case 3: trig = conds.OnActivated;    break; 
+        case 4: trig = conds.OnInactivated;  break;
+        case 5: trig = conds.OnRollingIn;    break; 
+        case 6: trig = conds.OnRollingOut;   break;
+        }
+        this.runtime.trigger(trig, this.inst);      
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

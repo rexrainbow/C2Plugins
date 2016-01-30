@@ -86,7 +86,7 @@ AddComboParamOption("Set");
 AddComboParam("Set mode", "Update, or clean then set item values", 0);
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddAction(4, 0, "Save", "Save", 
-          "Save- <i>{1}</i> current item at itemID: <i>{0}</i> (tag <i>{1}</i>)", 
+          "Save- <i>{1}</i> current item at itemID: <i>{0}</i> (tag <i>{2}</i>)", 
           'Save current item into server. Push item if ID is equal to "".', "Save"); 
 
 AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
@@ -103,12 +103,12 @@ AddAction(6, 0, "Remove", "Remove",
 AddAction(7, 0, "Generate", "ItemID", 
           "Generate a new itemID", 
           'Generate a new itemID. Get it by "Expression:LastGeneratedKey". Or use "Expression:GenerateKey" directly.', "GenerateKey");           
-          
+             
 AddNumberParam("X", "The X position.", 0);
 AddNumberParam("Y", "The Y position.", 0); 
 AddAction(8, 0, "Set to position", "Prepare - position", 
           'Prepare- Set key "pos" to (<i>{0}</i>, <i>{1}</i>)', 
-          'Set position value into current item with key "pos".', "SetPosValue");
+          'Set position value into current item.', "SetPosValue");
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAction(9, 0, "Set to timestamp", "Prepare", 
@@ -137,7 +137,7 @@ AddAction(21, 0, "Cancel disconnected handler", "On disconnected",
 AddStringParam("ID", "ID of item.", '""');
 AddAction(22, 0, "Auto remove", "On disconnected", 
           "Auto remove itemID: <i>{0}</i> when disconnected", 
-          "Auto remov item when disconnected.", "RemoveOnDisconnected");             
+          "Auto remov item when disconnected.", "RemoveOnDisconnected");              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get itemID", "For Each", "CurItemID", 

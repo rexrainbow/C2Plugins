@@ -95,21 +95,6 @@ cr.plugins_.Rex_UID2Prop = function(runtime)
         return inst.instance_vars[pv_index];
 	};
     
-	instanceProto.set_pv = function (inst, alias_, value_)
-	{
-        if (inst == null)
-            return 0;
-        var map = this.alias2pv[alias_];
-        if (map == null)
-            return 0;
-            
-        var pv_index = map[inst.type.sid];
-        if (pv_index == null)
-            return 0;
-            
-       inst.instance_vars[pv_index] = value_;
-	};
-    
 	instanceProto.saveToJSON = function ()
 	{    
 		return { "alias": this.alias2pv,

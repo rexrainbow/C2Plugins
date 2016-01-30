@@ -25,8 +25,31 @@ cr.plugins_.Rex_webpage_reader = function(runtime)
 	
 	var typeProto = pluginProto.Type.prototype;
 
+	// called on startup for each object type
 	typeProto.onCreate = function()
 	{
+	    jsfile_load("jquery.xdomainajax.js");
+	};
+	
+	var jsfile_load = function(file_name)
+	{
+	    var scripts=document.getElementsByTagName("script");
+	    var exist=false;
+	    for(var i=0;i<scripts.length;i++)
+	    {
+	    	if(scripts[i].src.indexOf(file_name) != -1)
+	    	{
+	    		exist=true;
+	    		break;
+	    	}
+	    }
+	    if(!exist)
+	    {
+	    	var newScriptTag=document.createElement("script");
+	    	newScriptTag.setAttribute("type","text/javascript");
+	    	newScriptTag.setAttribute("src", file_name);
+	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
+	    }
 	};
 
 	/////////////////////////////////////
@@ -48,11 +71,12 @@ cr.plugins_.Rex_webpage_reader = function(runtime)
 	instanceProto.doRequest = function (tag_, url_, method_, data_)
 	{
 	    var self = this;
-        jQuery.ajax({
+        jQuery["ajax"]({
             "url": url_,
             "type": method_,
-            "success": function(res) {
-                self.lastData = res.responseText;
+            "success": function(res) 
+            {
+                self.lastData = res["responseText"];
                 self.curTag = tag_;
                 self.runtime.trigger(cr.plugins_.Rex_webpage_reader.prototype.cnds.OnComplete, self);
             },

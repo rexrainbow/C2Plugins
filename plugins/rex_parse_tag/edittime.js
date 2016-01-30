@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
@@ -98,8 +98,6 @@ AddStringParam("TargetID", "Object ID of tagged target.", '""');
 AddStringParam("User tag", 'User tag.', '""');
 AddStringParam("Category", 'Category.', '""');
 AddStringParam("Description", '(Optional) Description of this tag. Input "" to ignore this field', '""');
-AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
-AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
 AddAction(11, 0, "Paste tag", "Paste", 
           "Owner ID: <i>{0}</i> pastes tag [<i>{3}</i>] <i>{2}</i>: <i>{4}</i> on target ID: <i>{1}</i>", 
           "Paste tag on an object.", "PasteTag");
@@ -191,15 +189,12 @@ AddAction(131, 0, "Add user tag", "Reset user tags of a target",
 AddStringParam("OwnerID", "Object ID of owner.", '""');
 AddStringParam("TargetID", "Object ID of tagged target.", '""');
 AddStringParam("Category", 'Category.', '""');
-AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
-AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
 AddAction(132, 0, "Reset user tags", "Reset user tags of a target", 
           "Owner ID: <i>{0}</i> reset [<i>{2}</i>] user tags on target ID: <i>{1}</i>", 
           "Reset user tags of a target.", "ResetTag_Reset");   
           
 AddStringParam("TargetID", 'TargetID.', '""');
 AddStringParam("Description", '(Optional) Description of this tag. Input "" to ignore this field', '""');
-AddStringParam("Target class", '(Optional) Class name of tagged target. Input "" to ignore this feature.', '""');
 AddAction(141, 0, "Add targetID", "Reset targetID of an user tag", 
           "Add targetID <i>{0}</i>: <i>{1}</i>", 
           "Add targetID.", "ResetTargetID_AddTargetID"); 
@@ -207,10 +202,14 @@ AddAction(141, 0, "Add targetID", "Reset targetID of an user tag",
 AddStringParam("OwnerID", "Object ID of owner.", '""');
 AddStringParam("User tag", 'User tag.', '""');
 AddStringParam("Category", 'Category.', '""');
-AddStringParam("Owner class", '(Optional) Class name of owner. Input "" to ignore this feature.', '""');
 AddAction(142, 0, "Reset targets", "Reset targetID of an user tag", 
           "Owner ID: <i>{0}</i> reset targets with tag [<i>{2}</i>] <i>{1}</i>",
-          "Reset targetID of a user tag.", "ResetTargetID_Reset");                   
+          "Reset targetID of a user tag.", "ResetTargetID_Reset");    
+          
+          
+AddAction(2000, 0, "Initial table", "Initial", 
+          "Initial table", 
+          "Initial table.", "InitialTable");                         
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Last pasted ownerID", "Paste", "LastPastedOwnerID", 
@@ -268,7 +267,14 @@ AddExpression(124, ef_return_number, "Total tags count", "Tags list", "TLTotalTa
               'Get total tags count in tags list.');  
 AddExpression(125, ef_return_string, "Tags List in JSON", "Tags list", "TLToJSON", 
               "Get tags List in JSON string.");                          
-                                                                                     
+
+
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");
+          
+                                                                                               
 ACESDone();
 
 // Property grid properties for this plugin
@@ -276,7 +282,9 @@ var property_list = [
 	new cr.Property(ept_text, "Application ID", "", "Application ID"),
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "Tag", "Class name of this tags system."), 	
-    new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),        
+    new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),   
+    new cr.Property(ept_text, "Owner class name", "", 'Class name of owner. "" would ignore this feature.'), 
+    new cr.Property(ept_text, "Target class name", "", 'Class name of target. "" would ignore this feature.'),          
 	];
 	
 // Called by IDE when a new object type is to be created

@@ -42,9 +42,10 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-		var self = this;
-		
-		if (this.runtime.isCocoonJs)
+        this.enable_wrap = (this.properties[0] === 1);
+        
+		var self = this;		
+		if (this.runtime.isCocoonJs && this.enable_wrap)
 		{
 			CocoonJS["App"]["onTextDialogFinished"].addEventListener(function(text) {
 				input_text = text;
@@ -55,6 +56,8 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
 				self.runtime.trigger(cr.plugins_.Rex_PromptWrap.prototype.cnds.OnKeyboardCancelled, self);
 			});            
         }            
+        
+
 	};
     
 	instanceProto.cocoonJS_PromptKeyboard = function (title_, message_, initial_, type_, canceltext_, oktext_)
@@ -100,8 +103,8 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
 	pluginProto.acts = new Acts();
 	
 	Acts.prototype.PromptKeyboard = function (title_, message_, initial_, type_, canceltext_, oktext_)
-	{
-		if (this.runtime.isCocoonJs)
+	{	    
+		if (this.runtime.isCocoonJs && this.enable_wrap)
 			this.cocoonJS_PromptKeyboard(title_, message_, initial_, type_, canceltext_, oktext_);
         else
             this.web_prompt(title_, message_, initial_, type_, canceltext_, oktext_);

@@ -63,6 +63,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
                               (this.properties[2] == 1),  // isometric-0
                               (this.properties[2] == 1),  // isometric-1
                               ];  
+        
+		this.wildcard_symbol = this.properties[4];		
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -195,7 +197,19 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	};
 	instanceProto._is_valid_symbol = function(s)
 	{
-	    return ((s==null) || (s.symbol == ""))? false:true;	    
+	    if (s)
+		    return (s.symbol !== "");
+        else
+		    return false;	    
+	};	
+	instanceProto._is_wildcard_symbol = function(s)
+	{
+	    if (s && (this.wildcard_symbol !== ""))
+		{
+		    return (s.symbol === this.wildcard_symbol);
+	    }
+        else
+		    return false;  
 	};	
 	instanceProto.refilled_symbol_array = function()
 	{
@@ -261,6 +275,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var y_max=board.y_max;
         var cur_x,cur_y,next_x,next_y;		
 	    var m, mode_cnt=this._square_modes.length;
+		var is_wildcard;
 	    for (m=0; m<mode_cnt; m++)
 	    {
 	        if (!this._square_modes[m])
@@ -284,13 +299,19 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }
-                        else if (is_matchN_mode && (pattern==null))
+						
+						is_wildcard = this._is_wildcard_symbol(s);
+						
+						// matchN
+						if ((!is_wildcard) && is_matchN_mode && (pattern === null))
                         {
                             pattern = [];
                             for (var r=0; r<pattern_length; r++)
                                 pattern.push(s.symbol);
                         }
-	                    if (s.symbol != pattern[i])
+						
+						// symbol not matched
+						if ((!is_wildcard) && (s.symbol != pattern[i]))
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -343,6 +364,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    var x_max=board.x_max;
 	    var y_max=board.y_max;       
         var cur_x,cur_y,next_x,next_y;
+		var is_wildcard;
         for(dir=0;dir<3;dir++)  // dir = 0,1,2
         {
 	        for(x=0;x<=x_max;x++)
@@ -363,13 +385,19 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                        is_matched = false;
 	                        break;
 	                    }
-                        else if (is_matchN_mode && (pattern==null))
+						
+						is_wildcard = this._is_wildcard_symbol(s);
+						
+						// matchN
+						if ((!is_wildcard) && is_matchN_mode && (pattern === null))
                         {
                             pattern = [];
                             for (var r=0; r<pattern_length; r++)
                                 pattern.push(s.symbol);
-                        }                          
-	                    if (s.symbol != pattern[i])
+                        }    
+
+						// symbol not matched
+						if ((!is_wildcard) && (s.symbol != pattern[i]))
 	                    {
 	                        is_matched = false;
 	                        break;
@@ -823,4 +851,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
     {
         ret.set_string("");
     };    
+    	
+    Exps.prototype.Wildcard = function (ret)
+    {
+        ret.set_string(this.wildcard_symbol);
+    };    	
+	
 }());

@@ -1,4 +1,11 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<UserID>
+    name - user name
+	score - score
+	extra - extra data like photo
+	updateAt - timestamp of last score updating
+*/
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");

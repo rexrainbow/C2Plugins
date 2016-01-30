@@ -53,8 +53,9 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.cache = {};	    
-	    this.pended_jobs = {};  // keys
-	    this.waiting_jobs = {};
+	    this.pending_save = {};  // keys
+	    this.waiting_save = {};
+	    this.pending_remove = {};
 	    
         this.current_key = null;
         this.exp_Time = 0;
@@ -82,9 +83,9 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
     instanceProto.tick2 = function()
     { 
         var job_name, t, self=this;
-        for (job_name in this.pended_jobs)
+        for (job_name in this.pending_save)
         {
-            if (this.waiting_jobs.hasOwnProperty(job_name))
+            if (this.waiting_save.hasOwnProperty(job_name))
                 continue;
                 
             // do writting
@@ -92,7 +93,7 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
                 t = new Date().getTime();
                
             this.cache[job_name] = t;               
-            this.waiting_jobs[job_name] = true;
+            this.waiting_save[job_name] = true;
 		    localforage["setItem"](job_name, t, function (err, valueSet)
 		    {
 		    	if (err)
@@ -102,11 +103,17 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 		    	}
 		    	else
 		    	{
-		    		delete self.waiting_jobs[job_name];
+		    		delete self.waiting_save[job_name];
 		    	}
 		    });            
             
-            delete this.pended_jobs[job_name];
+            delete this.pending_save[job_name];
+        }
+        
+        
+        for (job_name in this.pending_remove)
+        {         
+            localforage["removeItem"](job_name);  
         }
     };
 	//////////////////////////////////////
@@ -130,9 +137,23 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 
 	Acts.prototype.StartTimer = function (key)
 	{
-        this.pended_jobs[key] = true;    
+        this.pending_save[key] = true;    
+        
+        if (this.pending_remove.hasOwnProperty(key))
+            delete this.pending_remove[key];
 	};	
 
+	Acts.prototype.RemoveTimer = function (key)
+	{
+        this.pending_remove[key] = true;   
+        	    
+	    if (this.pending_save.hasOwnProperty(key))
+            delete this.pending_save[key];
+            
+	    if (this.cache.hasOwnProperty(key))
+            delete this.cache[key];             
+	};	
+	
 	Acts.prototype.GetElapsedTime = function (key)
 	{
 	    if (this.cache.hasOwnProperty(key))
@@ -175,11 +196,21 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 	Exps.prototype.ElapsedTime = function (ret, timer_name)
 	{
 	    if (!timer_name)
-	        timer_name = this.current_key;	        	        
-	    var pretime = this.cache[timer_name];	    
-        var nowtime = new Date().getTime();
-        var delta = (pretime == null)? 0 : (nowtime - pretime);
-        ret.set_float(delta/1000);
+	        timer_name = this.current_key;	    
+	      
+	    var delta;
+	    if (this.cache.hasOwnProperty(timer_name))
+	    {  
+	        var pretime = this.cache[timer_name];	    
+            var nowtime = new Date().getTime();
+            delta = (nowtime - pretime)/1000;
+	    }
+	    else
+	    {
+	        delta = 0;
+	    }
+	
+        ret.set_float(delta);
 	};
 	
 }());

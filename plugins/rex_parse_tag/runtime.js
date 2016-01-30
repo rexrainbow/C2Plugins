@@ -37,7 +37,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -73,7 +73,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -85,6 +85,8 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    }	
 	    
 	    var page_lines = this.properties[3];
+	    this.owner_class = this.properties[4];
+	    this.target_class = this.properties[5];	    
 	    
 	    if (!this.recycled)
 	        this.tagbox = this.create_tagbox(page_lines);
@@ -106,7 +108,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    this.tagsList = {};
 	    this.exp_TLTotalTagsCount = 0;
 	    this.exp_TLxx = null;	
-	    this.exp_TLTagNameCount = 0;    
+	    this.exp_TLTagNameCount = 0; 
+	    this.last_error = null;
+	       
         
         // reset user tags
         this.reset_tags = {};
@@ -125,8 +129,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    }
 	    tagbox.onReceived = onReceived;
 	    
-	    var onReceivedError = function()
+	    var onReceivedError = function(error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnReceivedError, self);
 	    }
 	    tagbox.onReceivedError = onReceivedError;
@@ -440,8 +445,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
-    Acts.prototype.PasteTag = function (ownerID, targetID, userTag, category, description, ownerKlass, targetKlass)
+    Acts.prototype.PasteTag = function (ownerID, targetID, userTag, category, description)
 	{	
+	    debugger
 	    var self = this;
 	    // step 3    
 	    var OnPasteComplete = function(tagObj)
@@ -452,12 +458,13 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    
 	    var OnPasteError = function(tagObj, error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnPasteError, self);
 	    };
 	    	    
 	    var save_tag = function(tagObj)
 	    {
-	        fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass);
+	        fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, self.owner_class, self.target_class);
 	        var handler = {"success":OnPasteComplete, "error": OnPasteError};
 	        tagObj["save"](null, handler);	        
 	    };
@@ -569,15 +576,15 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
     Acts.prototype.RemoveQueriedTags = function ()
 	{
 	    var all_itemID_query = this.get_request_query(this.filters);
-	    all_itemID_query["select"]("id");        
 	    
         var self = this;  
 	    var on_destroy_success = function()
 	    {
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnRemoveQueriedTagsComplete, self);
 	    };	    
-	    var on_destroy_error = function(message, error)
+	    var on_destroy_error = function(tags, error)
 	    { 
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnRemoveQueriedTagsError, self);
 	    };	    
 	    var on_destroy_handler = {"success":on_destroy_success, "error": on_destroy_error};
@@ -598,6 +605,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    var on_query_error = function(error)
 	    {      
 	        self.exp_LastTagsCount = -1;
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnGetTagsCountError, self); 
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
@@ -632,7 +640,8 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    };	    
 	    var on_error = function(error)
 	    { 
-	        clean_table(self.tagsList);   
+	        clean_table(self.tagsList);  
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnGetTagsListError, self);
 	    };
 	    var on_read_handler = {"success":on_success, "error": on_error};
@@ -644,7 +653,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
         this.reset_tags[userTag] = description;
 	};    
   
-    Acts.prototype.ResetTag_Reset = function (ownerID, targetID, category, ownerKlass, targetKlass)
+    Acts.prototype.ResetTag_Reset = function (ownerID, targetID, category)
 	{    	 	    
 	    var resetTags = this.reset_tags;
 	    this.reset_tags = {};
@@ -654,8 +663,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    {
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTagsComplete, self);
 	    };	    
-	    var on_resetTags_error = function(message, error)
+	    var on_resetTags_error = function(tag, error)
 	    { 
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTagsError, self);
 	    };	
 	    
@@ -669,7 +679,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	        {
 	            description = resetTags[userTag];
 	            tagObj = new self.tag_klass();	  
-	            fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass);
+	            fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, self.owner_class, self.target_class);
 	            tagObjList.push( tagObj );
 	        }
 	        
@@ -700,12 +710,12 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    remove_all_tags(ownerID, targetID, category); 
 	};    
 
-    Acts.prototype.ResetTargetID_AddTargetID = function (targetID, description, targetKlass)
+    Acts.prototype.ResetTargetID_AddTargetID = function (targetID, description)
 	{    
-        this.reset_targets[targetID] = [description, targetKlass];
+        this.reset_targets[targetID] = description;
 	};    
   
-    Acts.prototype.ResetTargetID_Reset = function (ownerID, userTag, category, ownerKlass)
+    Acts.prototype.ResetTargetID_Reset = function (ownerID, userTag, category)
 	{    	 	    
 	    var resetTargets = this.reset_targets;
 	    this.reset_targets = {};
@@ -715,8 +725,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    {
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTargetsComplete, self);
 	    };	    
-	    var on_resetTargets_error = function(message, error)
+	    var on_resetTargets_error = function(tag, error)
 	    { 
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_tags.prototype.cnds.OnResetTargetsError, self);
 	    };	
 	    
@@ -728,10 +739,9 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	        var tagObj, targetID, description, targetKlass;
 	        for (targetID in resetTargets)
 	        {
-	            description = resetTargets[targetID][0];
-	            targetKlass = resetTargets[targetID][1];
+	            description = resetTargets[targetID];
 	            tagObj = new self.tag_klass();	  
-	            fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, ownerKlass, targetKlass);
+	            fill_tagObj(tagObj, ownerID, targetID, userTag, category, description, self.owner_class, self.target_class);
 	            tagObjList.push( tagObj );
 	        }
 	        
@@ -762,6 +772,15 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	    remove_all_targets(ownerID, category, userTag); 
 	};    	
 	
+    Acts.prototype.InitialTable = function ()
+	{	
+        var tagObj = new this.tag_klass();
+	    tagObj["set"]("ownerID", "");
+	    tagObj["set"]("targetID", "");
+	    tagObj["set"]("tag", "");
+	    tagObj["set"]("category", ""); 
+        window.ParseInitTable(tagObj);
+	}; 		
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -902,6 +921,19 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	{
 		ret.set_string( JSON.stringify(this.tagsList) );
 	};	
+	
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};	
 }());
 
 (function ()
@@ -949,6 +981,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	
 	var remove_all_items = function (query, handler)
     {
+        query["select"]("id");    
 	    var on_read_all = function(all_items)
 	    {
 	        if (all_items.length === 0)
@@ -1021,7 +1054,7 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 	        self.is_last_page = false;
 	        	        
             if (self.onReceivedError)
-                self.onReceivedError();	 	           
+                self.onReceivedError(error);	 	           
 	    };
         var on_read_handler = {"success":on_success, "error":on_error};               
         window.ParseQuery(query, on_read_handler, start, lines);        
@@ -1139,3 +1172,26 @@ cr.plugins_.Rex_Parse_tags = function(runtime)
 
 	window.ParseItemPageKlass = ItemPageKlass;
 }());       
+
+(function ()
+{
+    if (window.ParseInitTable != null)
+        return;  
+        
+    var init_table = function (item_obj)
+    { 
+	    var on_write_success = function(item_obj)
+	    {
+	        item_obj["destroy"]();
+	    };	
+	    
+	    var on_write_error = function(item_obj, error)
+	    {
+	    };
+        var write_handler = {"success":on_write_success, "error":on_write_error};
+        
+	    item_obj["save"](null, write_handler);
+    };
+
+    window.ParseInitTable = init_table;
+}());

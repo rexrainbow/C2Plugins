@@ -1,13 +1,9 @@
 ﻿/*
-<itemID>\
+<itemID>
     # monitor item added and removed
     <Key> : <value>
     # monitor key added and removed, and value changed
 */
-
-// ECMAScript 5 strict mode
-"use strict";
-
 // ECMAScript 5 strict mode
 "use strict";
 

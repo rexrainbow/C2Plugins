@@ -162,7 +162,10 @@ AddExpression(3, ef_return_number,
 AddExpression(4, ef_return_string,
               "Value of NOSYMBOL", "Symbol", "NOSYMBOL",
               "Get value of NOSYMBOL.");                            
-
+AddExpression(5, ef_return_string,
+              "Value of wildcard symbol", "Symbol", "Wildcard",
+              "Get value of wildcard symbol.");       
+			  
 ACESDone();
 
 // Property grid properties for this plugin
@@ -173,6 +176,7 @@ var property_list = [
     new cr.Property(ept_combo, "Vertical", "Yes", "Compare at vertical axis", "No|Yes"),   
     new cr.Property(ept_combo, "Isometric", "Yes", "Compare at isometric axis", "No|Yes"),    
     new cr.Property(ept_combo, "Update symbols", "Auto", "Auto or manual update symbol table", "Manual|Auto"), 	
+    new cr.Property(ept_text, "Wildcard", "", 'Wildcard symbol. Set to "" will ignore this feature.'),	
 	];
 	
 // Called by IDE when a new object type is to be created

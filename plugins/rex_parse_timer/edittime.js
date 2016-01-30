@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
@@ -66,10 +66,13 @@ AddStringParam("Timer", "Name of timer.", '""');
 AddAction(3, 0, "Remove", "Timer", 
           "Remove userID: <i>{0}</i> 's timer <i>{1}</i>", 
           "Remove timer.", "RemoveTimer");        
-                           
+          
+AddAction(2000, 0, "Initial table", "Initial", 
+          "Initial table", 
+          "Initial table.", "InitialTable");                                
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Get user ID", "Timer", "LastUserID", 
+AddExpression(1, ef_deprecated | ef_return_string, "Get user ID", "Timer", "LastUserID", 
               "Get user ID of last triggered timer");
 AddExpression(2, ef_return_string, "Get timer name", "Timer", "LastTimerName", 
               "Get timer name of last triggered timer");
@@ -83,7 +86,13 @@ AddExpression(6, ef_return_number, "Get time-out interval", "Timer", "LastTimeou
               'Get time-out interval of last triggered timer under "Condition: On get timer", in seconds.'); 
 AddExpression(7, ef_return_number, "Get remain interval", "Timer", "LastRemainInterval", 
               'Get   interval of last triggered timer under "Condition: On get timer", in seconds.'); 
-              
+AddExpression(8, ef_return_string, "Get owner ID", "Timer", "LastOwnerID", 
+              "Get owner ID of last triggered timer");
+
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");              
 ACESDone();
 
 // Property grid properties for this plugin

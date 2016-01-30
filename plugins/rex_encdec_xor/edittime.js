@@ -10,7 +10,7 @@
 		"category":		"Rex - String",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		pf_singleglobal
+		"flags":		pf_singleglobal | pf_deprecated
 	};
 };
 

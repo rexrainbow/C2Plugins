@@ -54,11 +54,14 @@ cr.behaviors.rex_ChessPin = function(runtime)
 		this.dLY = null;
 		
 		// Need to know if pinned object gets destroyed
-		this.myDestroyCallback = (function (self) {
+		if (!this.recycled)
+		{
+		    this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
 										})(this);
+        }										
 										
 		this.runtime.addDestroyCallback(this.myDestroyCallback);
 	};
@@ -108,8 +111,6 @@ cr.behaviors.rex_ChessPin = function(runtime)
             _xyz = current_board.uid2xyz(uid);
             if (_xyz != null)
                 return current_board;  // find out xyz on board
-            else  // chess no longer at board
-                this.board = null;
         }
             
         var plugins = this.runtime.types;
@@ -119,11 +120,10 @@ cr.behaviors.rex_ChessPin = function(runtime)
             obj = plugins[name].instances[0];
             if ((obj != null) && (obj.check_name == "BOARD"))
             {
-                _xyz = obj.uid2xyz(uid)
+                _xyz = obj.uid2xyz(uid);
                 if (_xyz != null)
-                { 
-                    this.board = obj;					
-                    return this.board;
+                {					
+                    return obj;
                 }
             }
         }
@@ -146,6 +146,30 @@ cr.behaviors.rex_ChessPin = function(runtime)
 	    else
 		    return this.pinedChess_board.uid2xyz(pined_chess.uid);
 	};
+    
+	behinstProto.pin = function (pined_chess)
+	{
+		if (!pined_chess)
+        {
+            this.pinChess = null;
+			return;
+        }
+			
+		var _xyz = this._pinedChessLXYZ_get(pined_chess);
+		var my_xyz = this._myLXYZ_get(this.inst);
+		if ((_xyz == null) || (my_xyz == null))
+		{
+		    this.pinChess = null;
+		    this.dLX = null;
+		    this.dLY = null;	
+		}
+		else
+		{
+		    this.pinChess = pined_chess;
+		    this.dLX = _xyz.x - my_xyz.x;
+		    this.dLY = _xyz.y - my_xyz.y;				
+	    }
+	};    
 	
 	behinstProto.saveToJSON = function ()
 	{
@@ -201,24 +225,7 @@ cr.behaviors.rex_ChessPin = function(runtime)
 			return;
 			
 		var pined_chess = obj.getFirstPicked();
-		
-		if (!pined_chess)
-			return;
-			
-		var _xyz = this._pinedChessLXYZ_get(pined_chess);
-		var my_xyz = this._myLXYZ_get(this.inst);
-		if ((_xyz == null) || (my_xyz == null))
-		{
-		    this.pinChess = null;
-		    this.dLX = null;
-		    this.dLY = null;	
-		}
-		else
-		{
-		    this.pinChess = pined_chess;
-		    this.dLX = _xyz.x - my_xyz.x;
-		    this.dLY = _xyz.y - my_xyz.y;				
-	    }
+        this.pin(pined_chess);
 	};
 	
 	Acts.prototype.Unpin = function ()
@@ -230,7 +237,12 @@ cr.behaviors.rex_ChessPin = function(runtime)
 	{
 		this.activated = (s==1);
 	};
-	
+
+	Acts.prototype.PinUID = function (uid)
+	{
+		var pined_chess = this.runtime.getObjectByUID(uid);
+        this.pin(pined_chess);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -4,7 +4,7 @@
 		"name":			"Tag Text",
 		"id":			"rex_TagText",
 		"version":		"0.1",
-		"description":	"Displays text with multi-color, font face, or font size with tags.",
+		"description":	"Displays text with multi-color, font face, or font size with tags. http://www.canvastext.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"",
 		"category":		"Rex - Text",
@@ -41,7 +41,7 @@ AddAction(2, 0, "Set font face", "Appearance", "Set font face to <i>{0}</i> (<i>
 AddNumberParam("Size (pt)", "The new font size.", "12");
 AddAction(3, 0, "Set font size", "Appearance", "Set font size to <i>{0}</i> pt", "Set the font size.", "SetFontSize");
 
-AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", "rgb(0, 0, 0)");
+AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
 AddAction(4, 0, "Set font color", "Appearance", "Set font color to <i>{0}</i>", "Set the font color.", "SetFontColor");
 
 AddStringParam("Family name", "Enter the font family name.");
@@ -113,14 +113,39 @@ AddAction(57, 0, "Set wrapping", "Properties",
 AddNumberParam("Wrapping", "Wrap text. 0=Word, 1=Character", 0);    
 AddAction(58, 0, "Set wrapping (#)", "Properties", 
           "{my} Set wrapping to <i>{0}</i>", 
-          "Set wrapping.", "SetWrapping");                                  
+          "Set wrapping.", "SetWrapping");   
+
+AddStringParam("Name", "Property name.", '""');
+AddAnyTypeParam("Value", "Property value.", 0);
+AddAction(60, 0, "Set custom property", "Properties", 
+          "Set custom property <i>{0}</i> to <i>{1}</i>", 
+		  "Set custom property.", "SetCustomProperty");	
+
+AddNumberParam("Offset X", "Offset X of shadow, in pixels.", 10);
+AddNumberParam("Offset Y", "Offset Y of shadow, in pixels.", 10);
+AddNumberParam("Blur", "Blur of shadow, in pixels.", 20);    
+AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
+AddAction(61, 0, "Set shadow", "Shadow", 
+          "Set shadow with offset to (<i>{0}</i>, <i>{1}</i>), blur to <i>{2}</i>, color to <i>{3}</i>", 
+          "Set shadow.", "SetShadow");
+
+AddStringParam("Tag", "Tag definitions.", '""');
+AddAction(62, 0, "Add by CSS", "Tag", 
+         "Add tags by CSS to <i>{0}</i>", 
+         "Add tags by CSS.", "AddCSSTags");
+          
 ////////////////////////
-AddExpression(0,	ef_return_string,	"Get text",			"Text",			"Text",		"Get the object's text.");
-AddExpression(1,	ef_return_string,	"Get face name",	"Appearance",	"FaceName",	"Get the current font face name.");
-AddExpression(2,	ef_return_number,	"Get face size",	"Appearance",	"FaceSize",	"Get the current font face size (pt).");
-AddExpression(3,	ef_return_number,	"Get text width",	"Text",			"TextWidth", "Get the width extent of the text in the object in pixels.");
-AddExpression(4,	ef_return_number,	"Get text height",	"Text",			"TextHeight", "Get the height extent of the text in the object in pixels.");
-AddExpression(5,	ef_return_string,	"Get raw text",	    "Text",			"RawText",		"Get the object's raw text.");
+AddExpression(0, ef_return_string, "Get text", "Text", "Text", "Get the object's text.");
+AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");
+AddExpression(2, ef_return_number, "Get face size", "Appearance", "FaceSize", "Get the current font face size (pt).");
+AddExpression(3, ef_return_number, "Get text width", "Text", "TextWidth", "Get the width extent of the text in the object in pixels.");
+AddExpression(4, ef_return_number, "Get text height", "Text", "TextHeight", "Get the height extent of the text in the object in pixels.");
+AddExpression(5, ef_return_string, "Get raw text", "Text", "RawText", "Get the object's raw text.");
+
+AddStringParam("Name", "Property name.", '""');
+AddExpression(21, ef_return_any | ef_variadic_parameters, "Get property value", "Class", 
+              "LastClassPropValue", 
+              "Get property value of last class. Add 2nd parameter for default value if this property had not found.");
 
 ACESDone();
 
@@ -132,11 +157,12 @@ var property_list = [
 	new cr.Property(ept_color, "Color", cr.RGB(0, 0, 0),	"Color of the text."),
 	new cr.Property(ept_combo, "Horizontal alignment", "Left", "Horizontal alignment of the text.", "Left|Center|Right"),
 	new cr.Property(ept_combo, "Vertical alignment", "Top", "Vertical alignment of the text.", "Top|Center|Bottom"),
-	new cr.Property(ept_combo, "Hotspot", "Top-left",	"Choose the location of the hot spot in the object.", "Top-left|Center"),
+	new cr.Property(ept_combo,	"Hotspot", "Top-left", "Choose the location of the hot spot in the object.", "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),
 	new cr.Property(ept_combo, "Wrapping", "Word", "Wrap text by space-separated words or nearest character.", "Word|Character"),
-	new cr.Property(ept_float, "Line height", 0, "Offset to the default line height, in pixels. 0 is default line height."),
+	new cr.Property(ept_float, "Line height", 0, "Offset to the default line height, in pixels. 0 is default line height."),	
 	new cr.Property(ept_combo, "Baseline", "Top", "Baseline of text alignment.", "Alphabetic|Top"),
 	new cr.Property(ept_float, "Shift down", 13, "Shift the text down for alphabetic baseline, in pixels."),	
+    new cr.Property(ept_combo, "Force render", "No", "Force rendering immediately after any property setting.", "No|Yes"),	
 	];
 	
 // Called by IDE when a new object type is to be created
@@ -238,10 +264,7 @@ IDEInstance.prototype.RecreateFont = function(renderer)
 
 IDEInstance.prototype.OnCreate = function()
 {
-	if (this.properties["Hotspot"] === "Top-left")
-		this.instance.SetHotspot(new cr.vector2(0, 0));
-	else
-		this.instance.SetHotspot(new cr.vector2(0.5, 0.5));
+	this.instance.SetHotspot(GetHotspot(this.properties["Hotspot"]));
 }
 
 // Called by the IDE after all initialization on this instance has been completed
@@ -249,7 +272,8 @@ IDEInstance.prototype.OnInserted = function()
 {
 	// Default to 200x30 with top left hotspot
 	this.instance.SetSize(new cr.vector2(200, 30));
-	this.instance.SetHotspot(new cr.vector2(0, 0));
+	
+	this.instance.SetHotspot(GetHotspot(this.properties["Hotspot"]));	
 }
 
 // Called by the IDE after a property has been changed
@@ -263,10 +287,7 @@ IDEInstance.prototype.OnPropertyChanged = function(property_name)
 	}
 	else if (property_name === "Hotspot")
 	{
-		if (this.properties["Hotspot"] === "Top-left")
-			this.instance.SetHotspot(new cr.vector2(0, 0));
-		else
-			this.instance.SetHotspot(new cr.vector2(0.5, 0.5));
+		this.instance.SetHotspot(GetHotspot(this.properties["Hotspot"]));
 	}
 }
 

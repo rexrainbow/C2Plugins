@@ -23,8 +23,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			if (this.width !== w)
 			{
 				this.width = w;
-				this.text_changed = true;	// also recalculate text wrapping
-				this.set_bbox_changed();
+				this.set_bbox_changed();								
+				this.render_text(this.is_force_render);
 			}
 		};
 	};
@@ -74,7 +74,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	instanceProto.onCreate = function()
 	{
-		this.text = this.properties[0];
+		this.text = this.properties[0];		    
 		this.visible = (this.properties[1] === 0);		// 0=visible, 1=invisible
 		
 		// "[bold|italic] 12pt Arial"
@@ -83,6 +83,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.color = this.properties[3];
 		this.halign = this.properties[4];				// 0=left, 1=center, 2=right
 		this.valign = this.properties[5];				// 0=top, 1=center, 2=bottom
+        
+        this.textShadow = [];
 		
 		this.wrapbyword = (this.properties[7] === 0);	// 0=word, 1=character
 		this.lastwidth = this.width;
@@ -90,8 +92,9 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.lastheight = this.height;
 		
 		this.line_height_offset = this.properties[8];
-
+        this.baseLine_mode = this.properties[9];
 		this.vshift = this.properties[10] * this.runtime.devicePixelRatio;
+		this.is_force_render = (this.properties[11] === 1);
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
@@ -124,11 +127,16 @@ cr.plugins_.rex_TagText = function(runtime)
         this._tag = null;
         if (!this.recycled)
         {
-		    this.canvas_text = new cr.plugins_.rex_TagText.CanvasTextKlass();
+		    this.canvas_text = new CanvasText();
         }
         this.canvas_text.Reset(this);
-        this.canvas_text.textBaseline = (this.properties[9] == 0)? "alphabetic":"top";
+        this.canvas_text.textBaseline = (this.baseLine_mode === 0)? "alphabetic":"top";
 		this.lines = this.canvas_text.rawTextLine;
+		
+		
+		// render text at object initialize
+		if (this.text)
+		    this.render_text(this.is_force_render);		
 	};
 	
 	instanceProto.parseFont = function ()
@@ -158,7 +166,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			}
 		}
 	};
-	
+
 	instanceProto.saveToJSON = function ()
 	{
 		return {
@@ -170,14 +178,15 @@ cr.plugins_.rex_TagText = function(runtime)
 			"wr": this.wrapbyword,
 			"lho": this.line_height_offset,
 			"vs": this.vshift,
-            "bl": this.canvas_text.textBaseline,
 			"fn": this.facename,
 			"fs": this.fontstyle,
 			"ps": this.ptSize,
 			"pxh": this.pxHeight,
 			"tw": this.textWidth,
 			"th": this.textHeight,
-			"lrt": this.last_render_tick
+			"lrt": this.last_render_tick,
+            "bl": this.canvas_text.textBaseline,			
+			"txtObj": this.canvas_text.saveToJSON(),
 		};
 	};
 	
@@ -205,6 +214,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.lastheight = this.height;
 
         this.canvas_text.textBaseline = o["bl"];	
+        
+        this.canvas_text.loadFromJSON(o["txtObj"]);
 	};
 	
 	instanceProto.tick = function ()
@@ -244,12 +255,11 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	instanceProto.updateFont = function ()
 	{
-		this.font = this.fontstyle + " " + this.ptSize.toString() + "pt " + this.facename;
-		this.text_changed = true;
-		this.runtime.redraw = true;
+		this.font = this.fontstyle + " " + this.ptSize.toString() + "pt " + this.facename;		
+		this.render_text(this.is_force_render);
 	};
 
-	instanceProto.draw = function(ctx, glmode)
+	instanceProto.draw = function(ctx, glmode, is_ignore)
 	{
 	    if (this.text == "")
 		    return;
@@ -299,18 +309,21 @@ cr.plugins_.rex_TagText = function(runtime)
         // configure
         this.canvas_text.canvas = ctx.canvas;
         this.canvas_text.context = ctx;
+        // default setting
         this.canvas_text.fontFamily = this.facename;
-        this.canvas_text.fontSize = this.ptSize.toString() + "pt";
+        this.canvas_text.ptSize = this.ptSize.toString() + "pt";
         this.canvas_text.fontStyle = this.fontstyle;
         this.canvas_text.fontColor = this.color;
         this.canvas_text.lineHeight = line_height;
+        this.canvas_text.textShadow = this.textShadow;
       
         this.canvas_text.drawText({
             "text":this.text,
             "x": penX,
             "y": penY,
             "boxWidth": this.width,
-            "boxHeight": this.height
+            "boxHeight": this.height,
+			"ignore": is_ignore
         });
         
 		
@@ -453,6 +466,47 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 		this.last_render_tick = this.runtime.tickcount;
 	};
+	
+	
+	// copy from rex_text_scrolling
+    instanceProto._get_webgl_ctx = function ()
+	{
+        var inst = this;            
+        var ctx = inst.myctx;
+		if (!ctx)
+		{
+			inst.mycanvas = document.createElement("canvas");
+            var scaledwidth = Math.ceil(inst.layer.getScale()*inst.width);
+            var scaledheight = Math.ceil(inst.layer.getAngle()*inst.height);
+			inst.mycanvas.width = scaledwidth;
+			inst.mycanvas.height = scaledheight;
+			inst.lastwidth = scaledwidth;
+			inst.lastheight = scaledheight;
+			inst.myctx = inst.mycanvas.getContext("2d");
+            ctx = inst.myctx;
+		}
+        return ctx;
+	};
+	
+    instanceProto.fake_render = function ()
+	{
+        var inst = this;  
+        var ctx = (this.runtime.enableWebGL)? 
+                  this._get_webgl_ctx():this.runtime.ctx;
+        inst.draw(ctx, null, true);
+    };
+    
+	instanceProto.render_text = function (is_render_now)
+    {
+        if (is_render_now)
+        {
+            this.text_changed = true;  
+            this.fake_render();
+        }
+        
+        this.text_changed = true;               
+        this.runtime.redraw = true;
+	};    
 
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
@@ -509,22 +563,20 @@ cr.plugins_.rex_TagText = function(runtime)
 	};
 	Cnds.prototype.DefineClass = function(name)
 	{
+		this._tag = {};
+        
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 		
-		this._tag = {};
-		if (solModifierAfterCnds)
-		{
-		    this.runtime.pushCopySol(current_event.solModifiers);
-		    current_event.retrigger();
-		    this.runtime.popSol(current_event.solModifiers);
-		}
-		else
-		{
-		    current_event.retrigger();
-		}
-		
+        if (solModifierAfterCnds)
+            this.runtime.pushCopySol(current_event.solModifiers);
+        
+        current_event.retrigger();
+        
+        if (solModifierAfterCnds)
+            this.runtime.popSol(current_event.solModifiers);
+            
 		this.canvas_text.defineClass(name, this._tag);           
 		return false;
 	};	
@@ -533,6 +585,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
+    
     
 	Acts.prototype.SetText = function(param)
 	{
@@ -543,9 +596,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 		if (this.text !== text_to_set)
 		{
-			this.text = text_to_set;
-			this.text_changed = true;
-			this.runtime.redraw = true;
+			this.text = text_to_set;			
+			this.render_text(this.is_force_render);
 		}
 	};
 	
@@ -558,9 +610,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 		if (text_to_append)	// not empty
 		{
-			this.text += text_to_append;
-			this.text_changed = true;
-			this.runtime.redraw = true;
+			this.text += text_to_append;			
+			this.render_text(this.is_force_render);
 		}
 	};
 	
@@ -576,8 +627,9 @@ cr.plugins_.rex_TagText = function(runtime)
 		    	    
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["fontFamily"] = face_;
-	        this._tag["fontStyle"] = newstyle;	       
+	        this._tag["font-family"] = face_;
+	        this._tag["font-style"] = newstyle;
+            this.render_text(false);
 	    }
 	    else    // global
 	    {
@@ -595,7 +647,8 @@ cr.plugins_.rex_TagText = function(runtime)
 	{	    
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["fontSize"] = size_.toString() + "px";
+	        this._tag["font-size"] = size_.toString() + "pt";
+            this.render_text(false);
 	    }
 	    else    // global
 	    {
@@ -617,16 +670,17 @@ cr.plugins_.rex_TagText = function(runtime)
             newcolor = rgb;
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["fontColor"] = newcolor;
+	        this._tag["color"] = newcolor;
+            this.render_text(false);
 	    }
 	    else    // global
-	    {    		    
+	    {    		    	        	        
 		    if (newcolor === this.color)
-		    	return;
-            
+		        return;
+		    
 		    this.color = newcolor;
-		    this.need_text_redraw = true;
-		    this.runtime.redraw = true;
+		    this.render_text(this.is_force_render);
+		    
 		}
 	};
 	
@@ -651,7 +705,8 @@ cr.plugins_.rex_TagText = function(runtime)
             
 	        if (this._tag != null)  // <class> ... </class>
 	        {
-	            this._tag["fontFamily"] = newfacename;                             
+	            this._tag["font-family"] = newfacename;
+                this.render_text(false);                
 	        }
 	        else    // global
 	        {
@@ -692,14 +747,13 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["fontFamily"] = newfacename;                              
+	        this._tag["font-family"] = newfacename;  
+            this.render_text(false);            
 	    }
         else
         {        
 		    this.facename = "'" + familyname_ + "'";
-		    this.updateFont();
-		
-           
+		    this.updateFont();		
 		}
         
         // Another refresh hack
@@ -716,7 +770,8 @@ cr.plugins_.rex_TagText = function(runtime)
 	{
 		this.compositeOp = cr.effectToCompositeOp(effect);
 		cr.setGLBlend(this, effect, this.runtime.gl);
-		this.runtime.redraw = true;
+		
+		this.render_text(this.is_force_render);
 	};
 	
 	Acts.prototype.SetFontStyle = function (style_)
@@ -731,7 +786,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		    	    
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["fontStyle"] = newstyle;	       
+	        this._tag["font-style"] = newstyle;	
+            this.render_text(false);            
 	    }
 	    else    // global
 	    {
@@ -748,7 +804,8 @@ cr.plugins_.rex_TagText = function(runtime)
 	{    
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["fontFamily"] = face_;	       
+	        this._tag["font-family"] = face_;
+            this.render_text(false);                       
 	    }
 	    else    // global
 	    {
@@ -763,47 +820,127 @@ cr.plugins_.rex_TagText = function(runtime)
     
 	Acts.prototype.SetLineHeight = function(line_height_offset)
 	{
-	    if (this.line_height_offset != line_height_offset)
-	    {
-	        this.need_text_redraw = true;
-	        this.runtime.redraw = true;
-	    }    
-        this.line_height_offset = line_height_offset;
+	    if (this.line_height_offset === line_height_offset)
+	        return;
+	    
+	    this.line_height_offset = line_height_offset;
+	    this.render_text(this.is_force_render);	                
 	};	
 
 	Acts.prototype.SetHorizontalAlignment = function(align)
 	{
-	    if (this.halign != align)
-	    {
-	        this.need_text_redraw = true;
-	        this.runtime.redraw = true;
-	    }
+	    if (this.halign === align)
+	        return;
 	    
-        this.halign = align;   // 0=left, 1=center, 2=right
+	    this.halign = align;   // 0=left, 1=center, 2=right
+	    this.render_text(this.is_force_render);
+	    	    
 	};
 
 	Acts.prototype.SetVerticalAlignment = function(align)
 	{
-	    if (this.valign != align)
-	    {
-	        this.need_text_redraw = true;
-	        this.runtime.redraw = true;
-	    }	    
-  
-        this.valign = align;   // 0=top, 1=center, 2=bottom
+	    if (this.valign === align)
+	        return;
+	    
+	    this.valign = align;   // 0=top, 1=center, 2=bottom
+	    this.render_text(this.is_force_render);
+	    	      
 	};	
 
 	Acts.prototype.SetWrapping = function(wrap_mode)
 	{
 	    wrap_mode = (wrap_mode === 0);  // 0=word, 1=character
-	    if (this.wrapbyword != wrap_mode)
-	    {
-	        this.need_text_redraw = true;
-	        this.runtime.redraw = true;
-	    }
+	    if (this.wrapbyword === wrap_mode)
+	        return;
 	    
-        this.wrapbyword = wrap_mode;   
+	    this.wrapbyword = wrap_mode;   
+	    this.render_text(this.is_force_render);	    	            
 	};
+	
+	
+	Acts.prototype.SetCustomProperty = function (name_, value_)
+	{    
+	    if (!this._tag)
+		    return;
+			
+	    // <class> ... </class>
+		this._tag[name_] = value_;	
+	};
+    
+	Acts.prototype.SetShadow = function(offsetX, offsetY, blur_, color_)
+	{
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+	        if (typeof(this._tag["text-shadow"]) !== "object")
+	            this._tag["text-shadow"] = [];
+	            
+	        this._tag["text-shadow"].length = 4;
+	        this._tag["text-shadow"][0] = offsetX;
+	        this._tag["text-shadow"][1] = offsetY;
+	        this._tag["text-shadow"][2] = blur_;
+	        this._tag["text-shadow"][3] = color_;	        
+            this.render_text(false);                       
+	    }
+	    else    // global
+	    {
+	        this.textShadow.length = 4;
+	        this.textShadow[0] = offsetX;
+	        this.textShadow[1] = offsetY;
+	        this.textShadow[2] = blur_;
+	        this.textShadow[3] = color_;
+            this.render_text(this.is_force_render);
+	    }              
+	};	
+
+	Acts.prototype.AddCSSTags = function (css_)
+	{  
+	    // reference - https://github.com/jotform/css.js
+	    var cssRegex = new RegExp('([\\s\\S]*?){([\\s\\S]*?)}', 'gi');	    
+	    var commentsRegex;
+	    
+	    var render_me = false;
+	    var arr;
+	    var tag_name, comments;
+	    var tag, rules, i, cnt, elems, prop_name, prop_value;
+	    while (true)
+	    {
+	        arr = cssRegex.exec(css_);
+	        if (arr === null)
+	            break;
+	        
+	        // selector
+	        tag_name = arr[1].split('\r\n').join('\n').trim();
+	        commentsRegex = new RegExp(this.cssCommentsRegex, 'gi');
+            comments = commentsRegex.exec(tag_name);
+            if (comments !== null) 
+            {
+                tag_name = tag_name.replace(commentsRegex, '').trim();
+            }
+            tag_name = tag_name.replace(/\n+/, "\n");
+      	        
+      	    // rules
+	        tag = {};	        
+	        rules = arr[2].split('\r\n').join('\n').split(';');
+	        cnt = rules.length;
+	        for (i=0; i<cnt ; i++) 
+	        {
+	            if (rules[i].indexOf(":") === (-1))
+	                continue;
+	                
+	            elems = rules[i].trim().split(':');	    
+	            prop_name = elems[0].trim().toLowerCase();
+	            prop_value = elems[1].trim();                 
+	            tag[ prop_name ] = prop_value;
+	        }
+	        
+	        this.canvas_text.defineClass(tag_name, tag);
+	        render_me = true;	        
+	    }
+	  	 
+	  	if (render_me)
+	  	    this.render_text(this.is_force_render);  
+	};    
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -842,7 +979,10 @@ cr.plugins_.rex_TagText = function(runtime)
 	Exps.prototype.TextHeight = function (ret)
 	{
 	    var text_height = this.lines.length * (this.pxHeight + this.line_height_offset) - this.line_height_offset;
-	    text_height += this.vshift
+	    
+	    if (this.baseLine_mode === 0)  // alphabetic
+	        text_height += this.vshift;
+	        
 		ret.set_float(text_height);
 	};
 
@@ -850,11 +990,24 @@ cr.plugins_.rex_TagText = function(runtime)
 	{
 		ret.set_string(this.canvas_text.rawTextGet());
 	};
-}());
 
-(function ()
-{
-    var savedClasses = {};        // global class define
+	Exps.prototype.LastClassPropValue = function(ret, name, default_value)
+	{
+	    var val;
+	    var last_class = this.canvas_text.last_pen;	
+	    if (last_class)
+	        val = last_class.prop[name];
+	        
+	    if (!val)
+	        val = default_value || 0;
+	        
+		ret.set_any(val);
+	};	
+	
+
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
     var CanvasText = function ()
     {
         // The property that will contain the ID attribute value.
@@ -865,24 +1018,27 @@ cr.plugins_.rex_TagText = function(runtime)
         this.context = null;
         // The property that will contain the created style class.
         
+        this.savedClasses = {};   // class define
+        
         // pens for draw        
         this.pens = [[]];
         this.text_changed = true; // update this.pens to redraw
         this.rawTextLine = [pkgCache.allocLine("", null, 0, 0)];
         this._text_pkg = [];
+        this.last_pen = null;
         
         /*
          * Default values.
          */
         this.fontFamily = "Verdana";
         this.fontWeight = "normal";
-        this.fontSize = "12px";
+        this.ptSize = "12pt";
         this.fontColor = "#000000";
         this.fontStyle = "normal";
         this.textAlign = "start";
         this.textBaseline = "alphabetic";
         this.lineHeight = "16";
-        this.textShadow = null; 
+        this.textShadow = []; 
         
     };
     var CanvasTextProto = CanvasText.prototype;
@@ -892,102 +1048,130 @@ cr.plugins_.rex_TagText = function(runtime)
        this.plugin = plugin;
     };
     
-    CanvasTextProto._text_prop_get = function (prop)
+    CanvasTextProto._text_prop_get = function (prop_in)
     {
-        var proFont={}, proColor, proShadow;
+        var text_prop = {};  // return value
+        var proFont={}, proColor, proShadow=[];
         // Default color
         proColor = this.fontColor;
         // Default font
         proFont.style = this.fontStyle;
         proFont.weight = this.fontWeight;
-        proFont.size = this.fontSize;
+        proFont.ptSize = this.ptSize;
         proFont.family = this.fontFamily;
 
-        // Default shadow
-        proShadow = this.textShadow;
+        // Default textShadow
+        cr.shallowAssignArray(proShadow, this.textShadow);
         
-        if (prop != null)
+        if (prop_in != null)
         {
             /*
             * Loop the class properties.
              */
             var atribute;
-            for (atribute in prop) 
+            for (atribute in prop_in) 
             {
                 switch (atribute) 
                 {
                 //case "font":
-                //    proFont = prop[atribute];
+                //    proFont = prop_in[atribute];
                 //    break;
-                case "fontFamily":
-                    proFont.family = prop[atribute];
+                
+                case "font-family":
+                    proFont.family = prop_in["font-family"];
                     break;
-                case "fontWeight":
-                    proFont.weight = prop[atribute];
+                    
+                case "font-weight":
+                    proFont.weight = prop_in["font-weight"];
                     break;
-                case "fontSize":
-                    proFont.size = prop[atribute];
+                    
+                case "font-size":
+                    proFont.ptSize = prop_in["font-size"];
                     break;
-                case "fontStyle":
-                    proFont.style = prop[atribute];
+                    
+                case "font-style":
+                    proFont.style = prop_in["font-style"];
                     break;
-                case "fontColor":
-                    proColor = prop[atribute];
+                    
+                case "color":
+                    proColor = prop_in["color"];
                     break;
-                //case "textShadow":
-                //    proShadow = this.trim(prop[atribute]);
-                //    proShadow = proShadow.split(" ");
-                //    if (proShadow.length != 4)
-                //       proShadow = null;                
-                //    break;
+                    
+                case "text-shadow":
+                    if (typeof(prop_in["text-shadow"]) === "string")  // parse input string
+                    {
+                        var shadow_ = this.trim(prop_in["text-shadow"]);                    
+                        shadow_ = shadow_.split(" ");
+                        if (shadow_.length === 4)
+                        {
+                            shadow_[0] = parseFloat(shadow_[0].replace("px", ""));
+                            shadow_[1] = parseFloat(shadow_[1].replace("px", ""));
+                            shadow_[2] = parseFloat(shadow_[2].replace("px", ""));
+                            prop_in[atribute] = shadow_;                       
+                        }
+                        else
+                            prop_in["text-shadow"] = [];
+                    }  
+                                      
+                    cr.shallowAssignArray(proShadow, prop_in[atribute]);  
+                        
+                    break;
+                
+                
+                // custom property
+                default:
+                    text_prop[atribute] = prop_in[atribute];
+                    break;
                 }
             }
         }
         
-
-        //// Font styles.
-        this.context.font = proFont.style + " " + proFont.weight + " " + proFont.size + " " + proFont.family;
-        // Set the color.
+        this.context.font = proFont.style + " " + proFont.weight + " " + proFont.ptSize + " " + proFont.family;
         this.context.fillStyle = proColor;
-        // Set the Shadow.
-        //if (proShadow != null) {
-        //    this.context.shadowOffsetX = proShadow[0].replace("px", "");
-        //    this.context.shadowOffsetY = proShadow[1].replace("px", "");
-        //    this.context.shadowBlur = proShadow[2].replace("px", "");
-        //    this.context.shadowColor = proShadow[3].replace("px", "");
-        //}  
+        if (proShadow.length === 4) 
+        {
+            this.context.shadowOffsetX = proShadow[0];
+            this.context.shadowOffsetY = proShadow[1];
+            this.context.shadowBlur = proShadow[2];
+            this.context.shadowColor = proShadow[3];
+        } 
+                
+        text_prop["font"] = this.context.font
+        text_prop["color"] = this.context.fillStyle
+        text_prop["text-shadow"] = proShadow;
         
-        return { font: this.context.font,
-                 color: this.context.fillStyle,
-                 //shadow: proShadow
-                };
+        
+        return text_prop;
     };
     
     
-    CanvasTextProto._draw_word = function (prop, offset_x, offset_y)
+    CanvasTextProto._draw_word = function (pen, offset_x, offset_y)
     {
+        var prop = pen.prop;
         this.context.save(); 
         
-        this.context.font = prop.font;
-        this.context.fillStyle = prop.color;
-        //var proShadow = prop.shadow;
-        //if (proShadow != null) {
-        //    this.context.shadowOffsetX = proShadow[0].replace("px", "");
-        //    this.context.shadowOffsetY = proShadow[1].replace("px", "");
-        //    this.context.shadowBlur = proShadow[2].replace("px", "");
-        //    this.context.shadowColor = proShadow[3].replace("px", "");
-        //} 
+        this.context.font = prop["font"];
+        this.context.fillStyle = prop["color"];
+        
+        var proShadow = prop["text-shadow"];
+        if (proShadow.length === 4) 
+        {
+            this.context.shadowOffsetX = proShadow[0];
+            this.context.shadowOffsetY = proShadow[1];
+            this.context.shadowBlur = proShadow[2];
+            this.context.shadowColor = proShadow[3];
+        } 
+        
         this.context.textBaseline = this.textBaseline;
         //this.context.textAlign = this.textAlign;
-        this.context.fillText(prop.text, offset_x + prop.x, offset_y + prop.y);
-        
+        this.context.fillText(pen.text, offset_x + pen.x, offset_y + pen.y);
         this.context.restore();
     };
     
     CanvasTextProto._draw_text = function (pens, boxWidth, boxHeight)
     {    
         var i,l,lcnt = pens.length;
-        var j,w,wcnt, last_word, line_width;
+        var j,pen,wcnt, last_word, line_width;
         var offset_x=0, offset_y=0;
 
 		// vertical alignment
@@ -1001,7 +1185,7 @@ cr.plugins_.rex_TagText = function(runtime)
         if (this.textBaseline == "alphabetic")
             offset_y += this.plugin.vshift;  // shift line down    
         
-			
+		var need_update_last_pen = (this.last_pen === null);
         for(i=0; i<lcnt; i++)
         {
             l = pens[i];            
@@ -1018,10 +1202,14 @@ cr.plugins_.rex_TagText = function(runtime)
 				          
             for(j=0; j<wcnt; j++)
             {
-                w = l[j];
-                if (w.text == "")
+                pen = l[j];
+                if (pen.text == "")
                     continue;
-                this._draw_word(w, offset_x, offset_y);
+
+                if (need_update_last_pen)
+                    this.last_pen = pen;
+                
+                this._draw_word(pen, offset_x, offset_y);
             }
         }
     };    
@@ -1039,28 +1227,23 @@ cr.plugins_.rex_TagText = function(runtime)
         pens[0].length = 0;
     };
     
-    var propname_map = 
-    {
-    "color":"fontColor",
-    "font-family":"fontFamily",
-    "font-size":"fontSize",
-    "font-weight":"fontWeight",
-    "font-style":"fontStyle",
-    };
+
     var _style2prop = function(properties)   // property list
     {
         var i, cnt=properties.length;
-        var prop = {}, property;
+        var prop = {}, property, k, v;
         for (i= 0; i<cnt; i++) 
         {
             property = properties[i].split(":");
-            if (isEmpty(property[0]) || isEmpty(property[1])) 
+			k = property[0], v = property[1];
+            if (isEmpty(k) || isEmpty(v)) 
             {
                 // Wrong property name or value. We jump to the
                 // next loop.
                 continue;
             }
-            prop[propname_map[property[0]]] = property[1];
+			
+			prop[k] = v;
         }
         return prop;
     };
@@ -1082,6 +1265,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		
         this.rawTextLine.length = 1;
 		this.rawTextLine[0].text = "";
+		this.rawTextLine[0].width = 0;
 		
         // The main regex. Looks for <style>, <class> or <br /> tags.
         var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>|[^<]+/g);
@@ -1091,7 +1275,7 @@ cr.plugins_.rex_TagText = function(runtime)
         var innerMatch = null;
 
 		var acc_line_len = 0;
-        
+
         // Let's draw something for each match found.
         for (i = 0; i < match_cnt; i++) 
         {
@@ -1139,33 +1323,38 @@ cr.plugins_.rex_TagText = function(runtime)
             // Reset textLines;
             textLines.length = 0;
 			// boxWidth comes from plugin
-            _word_wrap(proText, textLines, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );
+            _word_wrap(proText, textLines, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
 
             // save pen info
-            var lcnt=textLines.length, txt;         
+            var lcnt=textLines.length, txt, w;         
             var last_line_index=this.rawTextLine.length-1; 
             var cur_line, cur_line_char_cnt, is_new_line;         
             for (n = 0; n < lcnt; n++) {
                 cur_line = textLines[n];
                 txt = cur_line.text;
+                w = cur_line.width;
                        
                 var _word_pen = penCache.allocLine();
                 _word_pen.text = txt;
                 _word_pen.x = cursor_x;
                 _word_pen.y = y;
-                _word_pen.width = cur_line.width;
-                _word_pen.font = text_prop.font;
-                _word_pen.color = text_prop.color;
+                _word_pen.width = w;
+                _word_pen.prop = text_prop;
+                //_word_pen.font = text_prop.font;
+                //_word_pen.color = text_prop.color;
                 //_word_pen.shadow = text_prop.shadow; 
+			     		
+                this.last_pen = _word_pen;
+				
                 pens[last_line_index].push(_word_pen);
                 
                 is_new_line = (cur_line.new_line == RAW_NEWLINE) || (cur_line.new_line == WRAPPED_NEWLINE);
-				cursor_x = (is_new_line)? textInfo["x"]:(cursor_x+cur_line.width);
+				cursor_x = (is_new_line)? textInfo["x"]:( cursor_x + w );
 				if (is_new_line)
 				    y += this.lineHeight;
 								                
 				this.rawTextLine[last_line_index].text += txt;
-				this.rawTextLine[last_line_index].width = cursor_x;
+				this.rawTextLine[last_line_index].width += w;
 				if (is_new_line) // not the last line
 				{
 				    cur_line_char_cnt = this.rawTextLine[last_line_index].text.length;
@@ -1184,13 +1373,19 @@ cr.plugins_.rex_TagText = function(runtime)
     
     CanvasTextProto.drawText = function (textInfo) 
     {  	
+        this.last_pen = null;
+        
         if (this.text_changed)
         {
             this._update_pens(this.pens, textInfo);
             this.text_changed = false;
         }
-        // Let's draw the text
-        this._draw_text(this.pens, textInfo["boxWidth"], textInfo["boxHeight"]);
+		
+		if (!textInfo["ignore"])
+		{
+            // Let's draw the text
+            this._draw_text(this.pens, textInfo["boxWidth"], textInfo["boxHeight"]);
+	    }
                 
     }; 
 
@@ -1263,7 +1458,7 @@ cr.plugins_.rex_TagText = function(runtime)
      * Save a new class definition.
      */
     CanvasTextProto.defineClass = function (id, definition) {
-		savedClasses[id] = definition;
+		this.savedClasses[id] = definition;
         return true;
     }; 
     
@@ -1271,7 +1466,7 @@ cr.plugins_.rex_TagText = function(runtime)
      * Returns a saved class.
      */
     CanvasTextProto.getClass = function (id) {
-		return savedClasses[id];
+		return this.savedClasses[id];
     };
     
     /**
@@ -1296,6 +1491,20 @@ cr.plugins_.rex_TagText = function(runtime)
         }
         return str.slice(0, i + 1);
     };       
+    
+// ----
+
+	CanvasTextProto.saveToJSON = function ()
+	{
+		return {
+			"cls": this.savedClasses,
+		};
+	};
+	
+	CanvasTextProto.loadFromJSON = function (o)
+	{
+		this.savedClasses = o["cls"];
+	};    
 
 // ----
     var ObjCacheKlass = function ()
@@ -1352,7 +1561,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	
 	var wordsCache = [];
-	var _tokenise_words = function (text)
+	var TokeniseWords = function (text)
 	{
 		wordsCache.length = 0;
 		var cur_word = "";
@@ -1405,9 +1614,17 @@ cr.plugins_.rex_TagText = function(runtime)
 	    return wordsCache;
 	};	
 	
-	var _wrap_text = function (text, lines, ctx, width, wrapbyword, offset_x)
+	function trimSingleSpaceRight(str)
 	{
-		var wordArray = (wrapbyword)?  _tokenise_words(text) : text;
+		if (!str.length || str.charAt(str.length - 1) !== " ")
+			return str;
+		
+		return str.substring(0, str.length - 1);
+	};
+	
+	var WrapText = function (text, lines, ctx, width, wrapbyword, offset_x)
+	{
+		var wordArray = (wrapbyword)?  TokeniseWords(text) : text;
 			
 		var cur_line = "";
 		var prev_line;
@@ -1421,6 +1638,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			// Look for newline
 			if (wordArray[i] === "\n")
 			{
+			    cur_line = trimSingleSpaceRight(cur_line);		// for correct center/right alignment
+			    
 				// Flush line.  Recycle a line if possible
 				if (lineIndex >= lines.length)
 					lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, RAW_NEWLINE));
@@ -1441,6 +1660,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			// Line too long: wrap the line before this word was added
 			if (line_width >= (width - offset_x))
 			{
+			    prev_line = trimSingleSpaceRight(prev_line);
+			    
 				// Append the last line's width to the string object
 				if (lineIndex >= lines.length)
 					lines.push(lineCache.allocLine(prev_line, ctx.measureText(prev_line).width, WRAPPED_NEWLINE));
@@ -1459,6 +1680,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		// Add any leftover line
 		if (cur_line.length)
 		{
+		    cur_line = trimSingleSpaceRight(cur_line);
+		    
 			if (lineIndex >= lines.length)
 				lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, NO_NEWLINE));
 					
@@ -1503,8 +1726,6 @@ cr.plugins_.rex_TagText = function(runtime)
 			}
 		}
 			
-		return _wrap_text(text, lines, ctx, width, wrapbyword, offset_x);
-	};	
-	    
-    cr.plugins_.rex_TagText.CanvasTextKlass = CanvasText;     
+		return WrapText(text, lines, ctx, width, wrapbyword, offset_x);
+	};		       
 }());     

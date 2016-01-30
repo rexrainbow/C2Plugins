@@ -15,7 +15,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddAnyTypeParam("Timer", "Timer name", '"_"');
-AddCondition(0, 0, "Is timmer running", "Timer", "{my} <i>{0}</i> running", "", "IsRunning");
+AddCondition(0, 0, "Is timer running", "Timer", "{my} <i>{0}</i> running", "", "IsRunning");
 AddAnyTypeParam("Timer", "Timer name", '"_"');
 AddCondition(1, cf_trigger, "On time-out", "Time-out", "{my} on <i>{0}</i> timeout", 
              "Triggered when time-out.", "OnTimeout");

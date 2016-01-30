@@ -99,10 +99,7 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 		this.group = this.properties[11];
 		
 		// repeat count
-		this.repeatcount_save = this.properties[12];
-		if (this.repeatcount_save <= 0)
-		    this.repeatcount_save = -1;
-		this.repeatcount = this.repeatcount_save;
+		this.setRepeatCount(this.properties[12]);
 
 		this.targetObject = null;
 		this.pingpongCounter = 0;
@@ -1138,7 +1135,15 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 		    this.onCountEnd = false;
 		}
 		//this.groupUpdateProgress((this.i / (this.duration + this.initiating + this.cooldown)));
-	}
+	};
+	
+	behinstProto.setRepeatCount = function (cnt)
+    {	
+	    this.repeatcount_save = cnt;
+		if (this.repeatcount_save <= 0)
+		    this.repeatcount_save = -1;
+		this.repeatcount = this.repeatcount_save;
+    };
 
 	/**BEGIN-PREVIEWONLY**/
 	behinstProto.getDebuggerValues = function (propsections)
@@ -1466,7 +1471,11 @@ cr.behaviors.rex_lunarray_Tween_mod = function(runtime)
 		this.targetObject = otherinst;
 		this.target = "OBJ";
 	};
-
+	
+	acts.SetRepeatCount = function (cnt)
+	{
+	    this.setRepeatCount(cnt);
+	};
 
 	acts.SetTargetX = function (x)
 	{

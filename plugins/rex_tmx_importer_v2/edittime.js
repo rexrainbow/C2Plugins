@@ -30,13 +30,24 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each tile property", "For 
              "Repeat the event for each tile property.", "ForEachTileProperty");
 AddCondition(13, cf_looping | cf_not_invertible, "For each map property", "For each property", "For each map property", 
              "Repeat the event for each map property.", "ForEachMapProperty");               
-             
+AddCondition(14, cf_looping | cf_not_invertible, "For each layer", "For each layer", "For each layer", 
+             "Repeat the event for each layer.", "ForEachLayer"); 
+AddCondition(15, cf_looping | cf_not_invertible, "For each object property", "For each property", "For each object property", 
+             "Repeat the event for each object property.", "ForEachObjectProperty");
+                          
 // duration             
 AddCondition(20, cf_trigger, "On retrieving finished", "Duration", 
              "On retrieving finished", "Triggered when retrieving finished.", "OnRetrieveFinished");   
 AddCondition(21, cf_trigger, "On retrieving duration", "Duration", 
              "On retrieving duration", "Triggered during retrieving duration tick.", "OnRetrieveDurationTick"); 
         
+        
+// retrieve one logic position
+AddNumberParam("X", "Logic X.", 0);
+AddNumberParam("Y", "Logic Y.", 0);   
+AddCondition(31, cf_looping | cf_not_invertible, "For each tile at logic XY", "Logic XY", 
+             "For each tile at logic (<i>{0}</i>,<i>{1}</i>)",
+             "Repeat the event for each tile at logic XY.", "ForEachTileAtLXY");          
 //////////////////////////////////////////////////////////////
 // Actions 
 AddStringParam("Input", "Input string.", '""');
@@ -65,7 +76,7 @@ AddNumberParam("Processing time", "Processing time per tick in percentage. A tic
 AddAction(21, 0, "Retrieve tile array in a duration", "Duration mode", 
          "Retrieve tile array in a duration",
          'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
-         
+                 
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, 
@@ -89,14 +100,14 @@ AddExpression(9, ef_return_number,
 AddExpression(10, ef_return_number, 
               "Get image height of tileset", "Tileset", "ImageHeight", "Get image height of tileset.");			  
 AddExpression(11, ef_return_number, 
-              "Get tile id", "Tile: Layer", "TileID", "Get tile id.");           
+              "Get tile id", "Tile", "TileID", "Get tile id.");           
 AddExpression(12, ef_return_number, 
-              "Get logic X index", "Tile: Layer", "LogicX", "Get logic X index of created instance.");
+              "Get logic X index", "Tile", "LogicX", "Get logic X index of created instance.");
 AddExpression(13, ef_return_number, 
-              "Get logic Y index", "Tile: Layer", "LogicY", "Get logic Y index of created instance.");
+              "Get logic Y index", "Tile", "LogicY", "Get logic Y index of created instance.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(14, ef_return_any | ef_variadic_parameters, 
-              "Get layer properties", "Tile: Layer", "LayerProp", "Get layer properties of created instance. Add second parameters to set default value.");
+              "Get layer properties", "Tile", "LayerProp", "Get layer properties of created instance. Add second parameters to set default value.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(15, ef_return_any | ef_variadic_parameters,
               "Get tileset properties", "Tileset", "TilesetProp", "Get tileset properties of created instance.  Add second parameters to set default value.");
@@ -104,28 +115,28 @@ AddStringParam("Name", "Property name.", '""');
 AddExpression(16, ef_return_any | ef_variadic_parameters,
               "Get tile properties", "Tile", "TileProp", "Get tile properties of created instance.  Add second parameters to set default value.");
 AddExpression(17, ef_return_number, 
-              "Get physical X position", "Tile: Layer", "PhysicalX", "Get physical X position (in pixel) of created instance.");
+              "Get physical X position", "Tile", "PhysicalX", "Get physical X position (in pixel) of created instance.");
 AddExpression(18, ef_return_number, 
-              "Get physical Y position", "Tile: Layer", "PhysicalY", "Get logic Y position (in pixel) of created instance.");
+              "Get physical Y position", "Tile", "PhysicalY", "Get logic Y position (in pixel) of created instance.");
 AddExpression(19, ef_return_string, 
-              "Get layer name", "Tile: Layer", "LayerName", "Get layer name of created instance.");
+              "Get layer name", "Tile", "LayerName", "Get layer name of created instance.");
 AddExpression(20, ef_return_number, 
-              "Get layer opacity", "Tile: Layer", "LayerOpacity", "Get layer opacity of created instance.");
+              "Get layer opacity", "Tile", "LayerOpacity", "Get layer opacity of created instance.");
 AddExpression(21, ef_return_number, 
-              "Get mirrored", "Tile: Layer", "IsMirrored", "Get mirrored of created instance.");
+              "Get mirrored", "Tile", "IsMirrored", "Get mirrored of created instance.");
 AddExpression(22, ef_return_number, 
-              "Get flipped", "Tile: Layer", "IsFlipped", "Get flipped of created instance.");
+              "Get flipped", "Tile", "IsFlipped", "Get flipped of created instance.");
 AddExpression(23, ef_return_number, 
-              "Get instance UID", "Tile: Layer", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
+              "Get instance UID", "Tile", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
 AddExpression(24, ef_return_number, 
-              "Get frame number", "Tile: Layer", "Frame", "Get frame number.");                
+              "Get frame number", "Tile", "Frame", "Get frame number.");                
 AddExpression(25, ef_return_string, 
               "Get tileset name", "Tileset", "TilesetName", "Get tileset name.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(26, ef_return_any | ef_variadic_parameters, 
               "Get map properties", "Map", "MapProp", "Get map properties. Add second parameters to set default value.");
 AddExpression(27, ef_return_number, 
-              "Get angle", "Tile: Layer", "TileAngle", "Get angle of created instance.");
+              "Get angle", "Tile", "TileAngle", "Get angle of created instance.");
 AddExpression(28, ef_return_number, 
               "Get background color", "Map", "BackgroundColor", "Get background color.");
 	  
@@ -133,21 +144,26 @@ AddExpression(28, ef_return_number,
 // For each property
 AddExpression(30, ef_return_string, 
               "Current layer property name", "For Each", "CurLayerPropName", "Get the name of current layer property in a For Each loop."); 
-AddExpression(31, ef_return_string, 
+AddExpression(31, ef_return_any, 
               "Current layer property value", "For Each", "CurLayerPropValue", "Get the value of current layer property in a For Each loop.");               
 AddExpression(32, ef_return_string, 
               "Current tileset property name", "For Each", "CurTilesetPropName", "Get the name of current tileset property in a For Each loop."); 
-AddExpression(33, ef_return_string, 
+AddExpression(33, ef_return_any, 
               "Current tileset property value", "For Each", "CurTilesetPropValue", "Get the value of current tileset property in a For Each loop.");               
 AddExpression(34, ef_return_string, 
               "Current tile property name", "For Each", "CurTilePropName", "Get the name of current tile property in a For Each loop."); 
-AddExpression(35, ef_return_string, 
+AddExpression(35, ef_return_any, 
               "Current tile property value", "For Each", "CurTilePropValue", "Get the value of current tile property in a For Each loop."); 
 AddExpression(36, ef_return_string, 
               "Current map property name", "For Each", "CurMapPropName", "Get the name of current map property in a For Each loop."); 
-AddExpression(37, ef_return_string, 
+AddExpression(37, ef_return_any, 
               "Current map property value", "For Each", "CurMapPropValue", "Get the value of current map property in a For Each loop.");               
-                            
+AddExpression(38, ef_return_string, 
+              "Current object property name", "For Each", "CurObjectPropName", "Get the name of current object property in a For Each loop."); 
+AddExpression(39, ef_return_any, 
+              "Current object property value", "For Each", "CurObjectPropValue", "Get the value of current object property in a For Each loop.");               
+  
+                              
 // objects
 AddExpression(40, ef_return_string, 
               "Get object group name", "Object: Object group", "ObjGroupName", "Get object group name.");

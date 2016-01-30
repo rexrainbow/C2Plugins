@@ -1,4 +1,9 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<ID> - UserID
+
+Push UserID into a list
+*/
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");

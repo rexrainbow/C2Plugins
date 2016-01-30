@@ -209,7 +209,10 @@ AddExpression(33, ef_return_number, "Get top OY", "OY", "TopOY",
                           
 AddExpression(41, ef_return_number, "Get last bound of OY", "Bound", "LastBoundOY", 
               'Get last bound of OY under "Condition:On OY out of top bound", or "Condition:On OY out of bottom bound".');  
-                            
+
+AddExpression(51, ef_return_number, "Get position X of selected line", "Visible", "LineCX", 
+              'Get center position X of line in "Condition: On line visible", in pixels');
+                                          
 ACESDone();
 
 // Property grid properties for this plugin
@@ -218,6 +221,7 @@ var property_list = [
     new cr.Property(ept_float, "Line height", 30, "Default line height, in pixels."),    
     new cr.Property(ept_integer, "Total lines", 10, "Total lines count in this list."), 
     new cr.Property(ept_combo, "Clamp OY", "Yes", "Clamp offset Y in vertical boundary.", "NO|Yes"), 
+    new cr.Property(ept_combo, "Axis", "Vertical", "Axis of scrolling.", "Horizontal|Vertical"), 
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
                     "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),					
 	];

@@ -28,14 +28,21 @@ AddCondition(11, cf_trigger, "On elapsed time get", "Timer",
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key", "Key name of local storage", '""');
-AddAction(1, 0, "Start timer", "Timer", 
+AddAction(1, 0, "Start", "Timer", 
           "Start timer <i>{0}</i>", 
           "Start timer.", "StartTimer");
 
 AddStringParam("Key", "Key name of local storage", '""');
+AddAction(2, 0, "Remove", "Timer", 
+          "Remove timer <i>{0}</i>", 
+          "Remove timer.", "RemoveTimer");
+          
+AddStringParam("Key", "Key name of local storage", '""');
 AddAction(11, 0, "Get elapsed time", "Timer", 
           "Get elapsed time <i>{0}</i>", 
           "Get elapsed time.", "GetElapsedTime");
+          
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error message", "Local storage", "ErrorMessage", 

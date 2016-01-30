@@ -1,4 +1,12 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+<receiverID>
+    message - message
+    senderID - ID of sender, assume that each senders has an unique ID
+	senderName - name of sender
+	stamp - toggle between true and false
+	
+*/
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");

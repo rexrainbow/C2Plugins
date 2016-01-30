@@ -1,7 +1,4 @@
-﻿// ECMAScript 5 strict mode
-"use strict";
-
-/*
+﻿/*
 <itemID>\
     <Key> : <value>
 */
@@ -87,7 +84,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
             clean_table( this.load_items );           
         }
            
-        this.trig_tag = null;        
+        this.trig_tag = null;    
              
         this.exp_CurItemID = ""; 
         this.exp_CurItemContent = null;   
@@ -148,7 +145,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 		return false;
 	};	  
 	
-    instanceProto.Save = function (itemID, set_mode, tag_)
+    instanceProto.Save = function (itemID, save_item, set_mode, tag_)
 	{	 
 	    if (itemID === "")
 	    {
@@ -173,16 +170,32 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    };
 
 	    this.exp_LastItemID = itemID;	    
-	    var is_empty = is_empty_table(this.save_item);
-	    var save_data = is_empty? true: this.save_item;
+	    var is_empty = is_empty_table(save_item);
+	    var save_data = is_empty? true: save_item;
 	    
 	    var op = (set_mode == 1)? "set":"update";	    
 	    ref[op](save_data, on_save);
 	    
 	    if (!is_empty)
-	        this.save_item = {};
+	        save_item = {};
 	};	
-		
+	
+    instanceProto.Remove = function (itemID, tag_)
+	{
+	    var self = this;	
+	    var on_remove = function (error)
+	    {
+		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnRemoveComplete:
+		                         cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnRemoveError;
+            self.trig_tag = tag_;	
+            self.exp_CurItemID = itemID;	                         
+		    self.runtime.trigger(trig, self); 	   
+		    self.trig_tag = null;
+		    self.exp_CurItemID = "";
+	    };  
+	    this.get_ref(itemID)["remove"](on_remove);
+	};
+			
     instanceProto.At = function (itemID, key_, default_value)
 	{
 	    var v;
@@ -289,21 +302,21 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 
     var inc = function(a, b)
     {
-        return (a < b)?  1:
+        return (a > b)?  1:
                (a == b)? 0:
                          (-1);
     };
     var dec = function(a, b)
     {
-        return (a > b)?  1:
+        return (a < b)?  1:
                (a == b)? 0:
                          (-1);
     }; 
     	
-	Cnds.prototype.ForEachItemID = function ()
+	Cnds.prototype.ForEachItemID = function (order)
 	{
 	    var itemIDList = Object.keys(this.load_items);
-	    var sort_fn = (order == 0)? inc:dec;
+	    var sort_fn = (order === 0)? inc:dec;
 	    itemIDList.sort(sort_fn);
 	    return this.ForEachItemID(itemIDList, this.load_items);
 	};	
@@ -367,28 +380,17 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	
     Acts.prototype.Save = function (itemID, set_mode, tag_)
 	{	 
-	    this.Save(itemID, set_mode, tag_);
+	    this.Save(itemID, this.save_item, set_mode, tag_);
 	};	
 	
     Acts.prototype.Push = function (tag_)
 	{	 
-	    this.Save("", 1, tag_);
+	    this.Save("", this.save_item, 1, tag_);
 	};	
 	
     Acts.prototype.Remove = function (itemID, tag_)
 	{
-	    var self = this;	
-	    var on_remove = function (error)
-	    {
-		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnRemoveComplete:
-		                         cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnRemoveError;
-            self.trig_tag = tag_;	
-            self.exp_CurItemID = itemID;	                         
-		    self.runtime.trigger(trig, self); 	   
-		    self.trig_tag = null;
-		    self.exp_CurItemID = "";
-	    };  
-	    this.get_ref(itemID)["remove"](on_remove);
+	    this.Remove(itemID, tag_);
 	};
 	
     Acts.prototype.GenerateKey = function ()
@@ -507,8 +509,8 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         var ref = this.get_ref(itemID);
         ref["onDisconnect"]()["remove"]();
 	    this.disconnectRemove_absRefs[ref["toString"]()] = true;
-	};  
-       
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -555,6 +557,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	
     Exps.prototype.CurItemContent = function (ret, key_, default_value)
 	{
+	    var v;
         if (key_ == null)
             v = din(this.exp_CurItemContent);
         else

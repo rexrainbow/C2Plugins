@@ -19,15 +19,19 @@ AddCondition(1,	cf_trigger, "On logical position changed", "Logical position",
              "OnLogicalPositionChanged");
 ////////////////////////////////////////
 // Actions
-AddObjectParam("Pin to", "Choose the object to pin to.");
-AddAction(0, af_none, "Pin to object", "", "{my} Pin to {0}", "Pin the object to another object.", "Pin");
-AddAction(1, af_none, "Unpin", "", "{my} Unpin", "Unpin the object.", "Unpin");
+AddObjectParam("Pin to", "Choose the chess to pin to.");
+AddAction(0, af_none, "Pin to chess", "Pin", "{my} Pin to {0}", "Pin the chess to another chess.", "Pin");
+
+AddAction(1, af_none, "Unpin", "Unpin", "{my} Unpin", "Unpin the chess.", "Unpin");
+
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(2, 0, "Set activated", "", "Set {my} activated to <i>{0}</i>", 
+AddAction(2, 0, "Set activated", "Enable", "Set {my} activated to <i>{0}</i>", 
           "Enable this behavior.", "SetActivated");        
 
+AddNumberParam("UID of chess", "Choose the chess to pin to.", 0);
+AddAction(3, af_none, "Pin to chess by UID ", "Pin", "{my} Pin to UID: {0}", "Pin the chess to another chess by UID.", "PinUID");
 ////////////////////////////////////////
 // Expressions
 

@@ -191,39 +191,57 @@ AddAction(29, 0, "Clean & Add instance by UID", "Group: Add instances", "Clean a
 // Expressions
 AddExpression(1, ef_return_number, 
               "Get UID A of sorting function", "List: Sort function", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort group by function"');
+
 AddExpression(2, ef_return_number, 
               "Get UID B of sorting function", "List: Sort function", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort group by function"');              
+
 AddStringParam("Name", "Group name.", '""');
-AddExpression(3, ef_return_number | ef_variadic_parameters, 
+AddExpression(3, ef_return_number, 
               "Get item count", "Group", "InstCnt", "Get item count of group.");
+
 AddStringParam("Name", "Group name.", '""');
 AddNumberParam("UID", "The UID of instance.", 0);
-AddExpression(4, ef_return_number | ef_variadic_parameters, 
+AddExpression(4, ef_return_number, 
               "Get index by UID", "List", "UID2Index", "Get index by UID. Return (-1) if this UID is not in the group.");
+
 AddStringParam("Name", "Group name.", '""');
 AddNumberParam("Index", "The index of group.", 0);
-AddExpression(5, ef_return_number | ef_variadic_parameters, 
+AddExpression(5, ef_return_number, 
               "Get UID by index", "List", "Index2UID", "Get UID by index. Return (-1) if index is not in the group.");
+
 AddStringParam("Variable", "Variable name to store UID.", '""');
-AddExpression(6, ef_return_number | ef_variadic_parameters,
+AddExpression(6, ef_return_number,
               'Get UID from "For each"', "List: For each", "Item", 'Get UID in a group. Used in "Condition:For each UID".');                         
+
 AddStringParam("Variable", "Variable name to store UID.", '""');
-AddExpression(7, ef_return_number | ef_variadic_parameters,
+AddExpression(7, ef_return_number,
               'Get index from "For each"', "List: For each", "Index", 'Get index in a group. Used in "Condition:For each UID"');                         
+
 AddStringParam("Name", "Group name.", '""');
-AddExpression(8, ef_return_string | ef_variadic_parameters, 
+AddExpression(8, ef_return_string, 
               "Transfer group to string", "JSON", "GroupToString", "Transfer group to JSON string.");
+
 AddExpression(9, ef_return_string, 
               "Transfer all groups to string", "JSON", "AllToString", "Transfer all groups to JSON string.");              
+
 AddNumberParam("UID", "Group name.", '""');
 AddStringParam("Name", "Group name.", '""');              
-AddExpression(10, ef_return_string | ef_variadic_parameters, 
+AddExpression(10, ef_return_string, 
               "Get private group name", "Private group", "PrivateGroup", "Get instance's private group name.");
+
 AddStringParam("Name", "Group name.", '""'); 
 AddNumberParam("Index", "Pop index.", 0);
-AddExpression(11, ef_return_number | ef_variadic_parameters, 
+AddExpression(11, ef_return_number, 
               "Pop UID by index", "List", "Pop", "Pop UID by index. Index=-1 is the last one.");
-
+              
+AddStringParam("Name", "Group name.", '""');
+AddExpression(12, ef_return_number, 
+              "Get first UID", "List", "FirstUID", "Get first UID in a group. Return (-1) group is empty.");
+              
+AddStringParam("Name", "Group name.", '""');
+AddExpression(13, ef_return_number, 
+              "Get last UID", "List", "LastUID", "Get last UID in a group. Return (-1) group is empty.");
+                            
 ACESDone();
 
 // Property grid properties for this plugin

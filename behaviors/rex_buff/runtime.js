@@ -136,8 +136,8 @@ cr.behaviors.Rex_buff = function(runtime)
     behinstProto.RemoveAllBuffs = function ()
 	{
 	    this.queue.length = 0;
-        var n, buff;
-		for (n in this.buff)
+        var name, buff;
+		for (name in this.buff)
 		{
 	        buff = this.buff[name];
 	        delete this.buff[name];
@@ -156,11 +156,10 @@ cr.behaviors.Rex_buff = function(runtime)
 
 	    if (this.sum != sum)
 	    {
+	        this.sum = sum;
 	        this.is_my_call = true;
 	        this.runtime.trigger(cr.behaviors.Rex_buff.prototype.cnds.OnSumChanging, this.inst);
 	        this.is_my_call = false;
-	        
-	        this.sum = sum;
 	    }
 	};
 	

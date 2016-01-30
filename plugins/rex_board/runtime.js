@@ -57,12 +57,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this._exp_EmptyLY = -1;
         
 		// Need to know if pinned object gets destroyed
-		this.myDestroyCallback = (function (self) {
+		if (!this.recycled)
+		{
+		    this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
 										})(this);
-										
+        }										
 		this.runtime.addDestroyCallback(this.myDestroyCallback);        
 	};
 	

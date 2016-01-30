@@ -87,7 +87,7 @@ AddAction(12, 0, "Delete on disconnect", "On disconnect",
           "Delete timer when disconnected.", "DeleteTimerWhenDisconnect");             
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Get user ID", "Timer", "LastUserID", 
+AddExpression(1, ef_deprecated | ef_return_string, "Get user ID", "Timer", "LastUserID", 
               "Get user ID of last triggered timer");
 AddExpression(2, ef_return_string, "Get timer name", "Timer", "LastTimerName", 
               "Get timer name of last triggered timer");
@@ -101,7 +101,9 @@ AddExpression(6, ef_return_number, "Get time-out interval", "Timer", "LastTimeou
               'Get time-out interval of last triggered timer under "Condition: On get timer", in seconds.'); 
 AddExpression(7, ef_return_number, "Get remain interval", "Timer", "LastRemainInterval", 
               'Get   interval of last triggered timer under "Condition: On get timer", in seconds.');      
-              
+AddExpression(8, ef_return_string, "Get owner ID", "Timer", "LastOwnerID", 
+              "Get owner ID of last triggered timer");
+                            
 ACESDone();
 
 // Property grid properties for this plugin

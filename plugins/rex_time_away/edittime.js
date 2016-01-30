@@ -20,8 +20,10 @@
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key", "Key name of webstorage", '""');
-AddAction(1, 0, "Start timer", "Timer", "Start timer <i>{0}</i>", "Start timer.", "StartTimer");
+AddAction(1, 0, "Start", "Timer", "Start timer <i>{0}</i>", "Start timer.", "StartTimer");
 
+AddStringParam("Key", "Key name of webstorage", '""');
+AddAction(2, 0, "Remove", "Timer", "Remove timer <i>{0}</i>", "Remove timer.", "RemoveTimer");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key", "Key name of webstorage", '""');

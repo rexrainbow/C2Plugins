@@ -37,7 +37,19 @@ AddAction(5, 0, "Activate in layer", "Request - Activate",
 AddLayerParam("Layer", "Layer name of number.");           
 AddAction(6, 0, "Deactivate in layer", "Request - Deactivate", 
           "{my} goto INACTIVE state if in layer <i>{0}</i>, else goto ACTIVE state", 
-          "Goto INACTIVE state if in layer, else goto ACTIVE state.", "GotoINACTIVE");          	  
+          "Goto INACTIVE state if in layer, else goto ACTIVE state.", "GotoINACTIVE"); 
+
+AddComboParamOption("On clicked");
+AddComboParamOption("On click cancel");
+AddComboParamOption("On click detecting start");
+AddComboParamOption("On activated");
+AddComboParamOption("On inactivated");
+AddComboParamOption("On rolling in");
+AddComboParamOption("On rolling out");
+AddComboParam("Condition type", "Condition type.", 0);          
+AddAction(11, 0, "Manual trigger", "Condition", 
+          "Manual trigger {my} condition: <i>{0}</i>", 
+          "Manual trigger condition.", "ManualTriggerCondition");          
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1,	cf_trigger, "On clicked", "Click", "On {my} clicked", "Triggered when clicked.", "OnClick");
@@ -48,6 +60,8 @@ AddCondition(5,	cf_trigger, "On inactivated", "Button", "On {my} inactivated", "
 AddCondition(6,	cf_trigger, "On rolling in", "Rolling over", "On {my} rolling in", "Triggered when rolling-in.", "OnRollingIn");
 AddCondition(7,	cf_trigger, "On rolling out", "Rolling over", "On {my} rolling out", "Triggered when rolling-out.", "OnRollingOut");
 
+
+AddCondition(11, 0, "Is enable", "Enable", "Is {my} enable", "Return true if this button is enable.", "IsEnable");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Current state", "State", "CurState", "Get current button state.");

@@ -36,7 +36,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -72,7 +72,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -85,6 +85,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
         
         this.exp_pastedItem = null;
         this.exp_lastItem = null;
+        this.last_error = null;	    
 	};
     
 	instanceProto.get_base_query = function(ownerID, varName)
@@ -225,16 +226,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 	Cnds.prototype.OnPasteError = function ()
 	{
         return true;
-	}; 
-	
-	Cnds.prototype.OnGetRecordComplete = function ()
-	{
-        return true;
-	}; 
-	Cnds.prototype.OnGetRecordError = function ()
-	{
-        return true;
-	};     
+	};    
     
 	//////////////////////////////////////
 	// Actions
@@ -254,6 +246,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 	    var OnPasteError = function(item_obj, error)
 	    {
             self.exp_pastedItem = null;
+            self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_dateInARow.prototype.cnds.OnPasteError, self);
 	    };
         var update_handler = {"success":OnPasteComplete, "error":OnPasteError};
@@ -274,6 +267,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 	            update_dateItem(item_obj, timestamp, scale);
 	        } 
 	        
+	        var update_handler = {"success":OnPasteComplete, "error":OnPasteError};
 	        item_obj["save"](null, update_handler);
 	        // done
 	    };	    
@@ -301,6 +295,7 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 	    var OnPasteError = function(item_obj, error)
 	    {
             self.exp_pastedItem = null;
+            self.last_error = error;            
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_dateInARow.prototype.cnds.OnPasteError, self);
 	    };
         var write_count_handler = {"success":OnPasteComplete, "error":OnPasteError};
@@ -346,25 +341,13 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 	    this.get_base_query(ownerID, varName)["first"](read_handler); 
 	};
  
-    Acts.prototype.GetRecord = function (ownerID, varName)
-	{
-	    var self = this;    
-	    // step 2    
-	    var on_read_success = function(item_obj)
-	    {
-            self.exp_lastItem = item_obj;
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_dateInARow.prototype.cnds.OnGetRecordComplete, self);            
-	    };	    
-	    var on_read_error = function(error)
-	    {
-            self.exp_lastItem = null;
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_dateInARow.prototype.cnds.OnGetRecordError, self);
-	    };
-        
-	    // step 1
-		var read_handler = {"success":on_read_success, "error": on_read_error};		
-	    this.get_base_query(ownerID, varName)["first"](read_handler);       
-	};    
+    Acts.prototype.InitialTable = function ()
+	{        
+	    var item_obj = new this.item_klass();	 
+        item_obj["set"]("ownerID", "");
+        item_obj["set"]("varName", "");
+	    window.ParseInitTable(item_obj);
+	}; 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -403,27 +386,38 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 		ret.set_int( get_itemValue(this.exp_pastedItem, "prevCount", 0) );
 	};
     
-	Exps.prototype.LastContinuousCount = function (ret)
+	Exps.prototype.ErrorCode = function (ret)
 	{
-		ret.set_int( get_itemValue(this.exp_lastItem, "count", 0) );
-	};
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};  
+}());
 
-	Exps.prototype.LastLastTimestamp = function (ret)
-	{
-        var t = get_itemValue(this.exp_lastItem, "lastTimestamp", null);
-        t = (t)? t.getTime():0;
-		ret.set_float( t );        
-	};
-    
-	Exps.prototype.LastOwnerID = function (ret)
-	{
-		ret.set_string( get_itemValue(this.exp_lastItem, "ownerID", "") );
-	};
+(function ()
+{
+    if (window.ParseInitTable != null)
+        return;  
+        
+    var init_table = function (item_obj)
+    { 
+	    var on_write_success = function(item_obj)
+	    {
+	        item_obj["destroy"]();
+	    };	
+	    
+	    var on_write_error = function(item_obj, error)
+	    {
+	    };
+        var write_handler = {"success":on_write_success, "error":on_write_error};
+        
+	    item_obj["save"](null, write_handler);
+    };
 
-	Exps.prototype.LastRecordName = function (ret)
-	{
-		ret.set_string( get_itemValue(this.exp_lastItem, "varName", "") );
-	};    
-    
-    
+    window.ParseInitTable = init_table;
 }());

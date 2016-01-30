@@ -13,28 +13,41 @@
 };
 
 //////////////////////////////////////////////////////////////
+// Conditions
+AddCondition(0, cf_deprecated, "Is shown", "Appearance", 
+             "Is {my} shown", "True if the object's layer is visible and object is visible.", "IsShown");
+             
+AddCondition(1, cf_deprecated | cf_trigger, "On creating", "Constructor & destructor", 
+             "On creating", "Triggered when instance creating.", "OnCreating");  
+             
+AddCondition(2, cf_deprecated | cf_trigger, "On destroying", "Constructor & destructor", 
+             "On destroying", "Triggered when instance destroying.", "OnDestroying"); 
+
+AddCondition(11, 0, "Is solid", "Soild", 
+             "Is {my} solid", "Return true if the object has solid enable.", "IsSolid");
+             
+//////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Visible", "1 = visible, 0 = invisible, 2 = toggle", 0);
 AddAction(1, 0, "Set visible", "Appearance", 
           "Set {my} visible to <i>{0}</i>", 
           "Set the sprite is hidden or shown .", "SetVisible"); 
+          
 AddNumberParam("Mirrored", "1 = mirrored, 0 = not mirrored, 2 = toggle", 0);          
 AddAction(2, 0, "Set mirrored", "Animations", 
           "Set {my} mirrored to <i>{0}</i>", 
-          "Set the sprite is horizontally mirrored or back to normal.", "SetMirrored");       
+          "Set the sprite is horizontally mirrored or back to normal.", "SetMirrored");    
+             
 AddNumberParam("Flipped", "1 = flipped, 0 = not flipped, 2 = toggle", 0);          
 AddAction(3, 0, "Set flipped", "Animations", 
           "Set {my} flipped to <i>{0}</i>", 
           "Set the sprite is vertically flipped or back to normal.", "SetFlipped");           
-          
-//////////////////////////////////////////////////////////////
-// Conditions
-AddCondition(0, cf_deprecated, "Is shown", "Appearance", 
-             "Is {my} shown", "True if the object's layer is visible and object is visible.", "IsShown");
-AddCondition(1, cf_deprecated | cf_trigger, "On creating", "Constructor & destructor", 
-             "On creating", "Triggered when instance creating.", "OnCreating");  
-AddCondition(2, cf_deprecated | cf_trigger, "On destroying", "Constructor & destructor", 
-             "On destroying", "Triggered when instance destroying.", "OnDestroying");  
+ 
+AddNumberParam("Enable", "1 = enable, 0 = disable, 2 = toggle", 0);          
+AddAction(11, 0, "Set solid", "Solid", 
+          "Set {my} solid to <i>{0}</i>", 
+          "Set solid property.", "SetSolid");           
+             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_string, "get image url", "canvas", "imageUrl", "This returns a temporary url to the image on the canvas.");

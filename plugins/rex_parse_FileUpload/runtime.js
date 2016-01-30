@@ -27,7 +27,7 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -63,13 +63,14 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    this.file_obj = null;
-	    
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
 	    }
+	    
+	    this.file_obj = null;	    
+	    this.last_error = null;
 	};
  
     instanceProto.UploadImage = function (dataURI, file_name)
@@ -84,6 +85,7 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
         };   
         var on_error = function(error)
         {
+            self.last_error = error;
             self.runtime.trigger(cr.plugins_.Rex_Parse_FileUpload.prototype.cnds.OnUploadError, self);
         };    
          
@@ -146,4 +148,16 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 	    
 		ret.set_string(name);
 	};
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};	
 }());

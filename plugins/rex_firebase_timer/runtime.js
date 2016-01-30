@@ -1,9 +1,9 @@
 ﻿/*
-<userID>
+<ownerID>
     <timerName>
         start - timestamp of start
         current - timestamp of current     
-    
+        time-out - interval of time-out
 */
 
 
@@ -74,7 +74,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
 	    
-	    this.exp_LastUserID = "";
+	    this.exp_LastOwnerID = "";
 	    this.exp_LastTimerName = "";
         this.exp_LastTimer = null;    
 	};
@@ -153,15 +153,15 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 		this.rootpath = domain_ref + "/" + sub_domain_ref + "/";
 	};
 	
-    Acts.prototype.StartTimer = function (userID, timer_name, interval)
+    Acts.prototype.StartTimer = function (ownerID, timer_name, interval)
 	{  
-	    var ref = this.get_ref()["child"](userID)["child"](timer_name);
+	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
 	    
 	    var self = this;
 	    //2. read timer back	    
 	    var on_read = function (snapshot)
 	    {
-	        self.exp_LastUserID = userID;
+	        self.exp_LastOwnerID = ownerID;
 	        self.exp_LastTimerName = timer_name;
 	        
             self.exp_LastTimer = snapshot["val"]();
@@ -186,16 +186,16 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         //1. start timer        
 	};
 	
-    Acts.prototype.GetTimer = function (userID, timer_name, interval)
+    Acts.prototype.GetTimer = function (ownerID, timer_name, interval)
 	{
-	    var ref = this.get_ref()["child"](userID)["child"](timer_name);
+	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
 
 	    var self = this;
 	    
 	    //3. read timer back	    
 	    var on_read = function (snapshot)
 	    {
-	        self.exp_LastUserID = userID;
+	        self.exp_LastOwnerID = ownerID;
 	        self.exp_LastTimerName = timer_name;
 	        
             self.exp_LastTimer = snapshot["val"]();
@@ -212,7 +212,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	    {
 	        if (error)
 	        {
-	            self.exp_LastUserID = userID;
+	            self.exp_LastOwnerID = ownerID;
 	            self.exp_LastTimerName = timer_name;	            
 	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnGetTimerError, self); 
 	            return;	            
@@ -243,26 +243,26 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         //1. check if timer is existed
 	};	
 	
-    Acts.prototype.RemoveTimer = function (userID, timer_name)
+    Acts.prototype.RemoveTimer = function (ownerID, timer_name)
 	{
-	    var ref = this.get_ref()["child"](userID)["child"](timer_name);
+	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
 	    
 	    var self = this;
 	    var onComplete = function(error) 
 	    {
-	        self.exp_LastUserID = userID;
+	        self.exp_LastOwnerID = ownerID;
 	        self.exp_LastTimerName = timer_name;	        
 	        var trig = (error)? cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnRemoveTimerError:
 	                            cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnRemoveTimerComplete;
 	        self.runtime.trigger(trig, self); 
         };
 
-		ref["remove"](onComplete);
+		ref["remove"](onComplete)
 	};	
 	
-    Acts.prototype.StartTimerWhenDisconnect = function (userID, timer_name, interval)
+    Acts.prototype.StartTimerWhenDisconnect = function (ownerID, timer_name, interval)
 	{
-	    var ref = this.get_ref()["child"](userID)["child"](timer_name);
+	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
 	    
 	    var self = this;
 
@@ -289,9 +289,9 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         //1. read timer        
 	};	
 
-    Acts.prototype.DeleteTimerWhenDisconnect = function (userID, timer_name, interval)
+    Acts.prototype.DeleteTimerWhenDisconnect = function (ownerID, timer_name, interval)
 	{
-	    var ref = this.get_ref()["child"](userID)["child"](timer_name);
+	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
 	    
 	    var self = this;
 
@@ -321,7 +321,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	
 	Exps.prototype.LastUserID = function (ret)
 	{
-		ret.set_string(this.exp_LastUserID);
+		ret.set_string(this.exp_LastOwnerID);
 	}; 	
 	Exps.prototype.LastTimerName = function (ret)
 	{
@@ -372,4 +372,9 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
             t = 0;
 		ret.set_float(t/1000);
 	};	
+	
+	Exps.prototype.LastOwnerID = function (ret)
+	{
+		ret.set_string(this.exp_LastOwnerID);
+	}; 		
 }());

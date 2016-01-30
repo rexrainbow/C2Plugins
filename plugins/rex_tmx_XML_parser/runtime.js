@@ -108,10 +108,17 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
     {     
         var map = {};          
         map.orientation = xml_obj.get_string_value("@orientation");
+        map.renderorder = xml_obj.get_string_value("@renderorder");
         map.width =  xml_obj.get_number_value("@width");
         map.height = xml_obj.get_number_value("@height");
         map.tilewidth = xml_obj.get_number_value("@tilewidth");
         map.tileheight = xml_obj.get_number_value("@tileheight");
+        
+        map.hexsidelength = xml_obj.get_number_value("@hexsidelength");
+        map.staggeraxis = xml_obj.get_string_value("@staggeraxis");
+        map.staggerindex = xml_obj.get_string_value("@staggerindex");   
+        map.nextobjectid = xml_obj.get_number_value("@nextobjectid");             
+        
         map.backgroundcolor = _get_C2_color_number(xml_obj.get_string_value("@backgroundcolor"));
         var xml_properties = xml_obj.get_nodes("./properties/property");
         map.properties = _get_properties(xml_obj, xml_properties);
@@ -207,16 +214,16 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
         layer.opacity = xml_obj.get_number_value("@opacity", xml_layer, 1);
         var xml_properties = xml_obj.get_nodes("./properties/property", xml_layer);
         layer.properties = _get_properties(xml_obj, xml_properties);
+        
         var xml_data = xml_obj.get_nodes("./data", xml_layer).get_next_node();
-        layer.data = _get_data(xml_obj, xml_data);
+        var encoding = xml_obj.get_string_value("@encoding", xml_data);
+        var compression = xml_obj.get_string_value("@compression", xml_data); 
+        var data = _get_node_text(xml_data);        
+        layer.data = _get_data(data, encoding, compression);
         return layer;
     };
-    var _get_data = function (xml_obj, xml_data)
+    var _get_data = function (data, encoding, compression)
     {      
-        var encoding = xml_obj.get_string_value("@encoding", xml_data);
-        var compression = xml_obj.get_string_value("@compression", xml_data);      
-        var data = _get_node_text(xml_data);
-        
         if(typeof(String.prototype.trim) === "undefined")
         {
             String.prototype.trim = function() 
@@ -226,26 +233,26 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
         }
         
         data = data.trim();
-        if (encoding == "base64")
+        if (encoding === "base64")
         {
             data = atob(data);
             data = data.split('').map(function(e) {
                 return e.charCodeAt(0);
             });
             
-            if (compression == "zlib")
+            if (compression === "zlib")
             {
                 var inflate = new window["Zlib"]["Inflate"](data);
                 data = inflate["decompress"]();
             }
-            else if (compression == "gzip")
+            else if (compression === "gzip")
             {
                 var gunzip = new window["Zlib"]["Gunzip"](data);
                 data = gunzip["decompress"]();               
             }
             data = _array_merge(data);
         }
-        else if (encoding == "csv")
+        else if (encoding === "csv")
             data = _decCSV(data);
         else
             alert ("TMXImporter: could not decompress data");             

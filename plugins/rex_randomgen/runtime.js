@@ -258,7 +258,8 @@ MersenneTwister.prototype.loadFromJSON = function (o)
 	instanceProto.onCreate = function()
 	{
         this.check_name = "RANDOM";
-		this.rand_gen = new MersenneTwister();
+		this.seed = null;		
+		this.rand_gen = new MersenneTwister(this.seed);
 	};
 	
 	// export to other plugins
@@ -269,12 +270,14 @@ MersenneTwister.prototype.loadFromJSON = function (o)
 	
 	instanceProto.saveToJSON = function ()
 	{       	    
-		return { "rand": this.rand_gen.saveToJSON()
+		return { "seed": this.seed,
+		         "rand": this.rand_gen.saveToJSON()
 		         };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
+	    this.seed = o["seed"];
 	    this.rand_gen.loadFromJSON(o["rand"]);
 	};	
 	//////////////////////////////////////
@@ -289,13 +292,18 @@ MersenneTwister.prototype.loadFromJSON = function (o)
 	
     Acts.prototype.SetSeed = function (seed)
 	{  
-        this.rand_gen = new MersenneTwister(seed);
+	    this.seed = seed;
+        this.rand_gen = new MersenneTwister(this.seed);
 	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 	
+	Exps.prototype.Seed = function (ret)
+	{
+		ret.set_float(this.seed || 0);
+	};	
 	Exps.prototype.random = function (ret)
 	{
 		ret.set_float(this.random());

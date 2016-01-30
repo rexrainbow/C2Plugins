@@ -176,7 +176,7 @@ cr.behaviors.Rex_mode7ground = function(runtime)
 		}
 		
 		this.camera_instUid = -1;
-	};   
+	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

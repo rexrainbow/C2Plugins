@@ -83,7 +83,7 @@ AddAction(2, 0, "Set JSON", "Send - Set",
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddStringParam("JSON value", "JSON value to set", '"{}"');
 AddStringParam("On complete", 'On complete callback, ignored if enter an empty string "".', '""');
-AddAction(3, 0, "Update JSON", "Send - Update", 
+AddAction(3, 0, "Update JSON", "Send - Update JSON", 
           "Update JSON <i>{1}</i> at <i>{0}</i>, on complete callback to <i>{2}</i>",  
           "Updates JSON values at the data ref.", "UpdateJSON");
 
@@ -230,9 +230,8 @@ AddAction(34, 0, "Remove all callbacks", "Receive - Remove",
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddAction(35, 0, "Cancel", "On disconnect", 
           "Cancel disconnected writing at <i>{0}</i>", 
-          'Cancel disconnected writing.', "CancelOnDisconnect");
+          'Cancel disconnected writing.', "CancelOnDisconnect");          
           
-
 // get query from Firebase_Query plugin
 AddObjectParam("Query", "Query object.");
 AddComboParamOption("Value changed");

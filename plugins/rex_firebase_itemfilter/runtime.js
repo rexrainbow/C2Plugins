@@ -83,12 +83,12 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         
         if (!this.recycled)
         {
-            this.save_item = {};
+            this.prepared_item = {};
             this.request_itemIDs = {};
         }
         else
         {
-            clean_table( this.save_item );
+            clean_table( this.prepared_item );
             clean_table( this.request_itemIDs );
         }
            
@@ -98,7 +98,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	
 	instanceProto.onDestroy = function ()
 	{		
-        clean_table( this.save_item );
+        clean_table( this.prepared_item );
         clean_table( this.request_itemIDs );
 	};
 			
@@ -121,15 +121,133 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         return this.get_ref("filters")["child"](key_)["child"](itemID);
 	};
 	
-	instanceProto.get_itemID2Keys_ref = function(itemID)
+	var get_key_path = function(itemID, key_)
 	{
-        return this.get_ref("itemID-keys")["child"](itemID);
+	    return "filters/" + key_ + "/" + itemID;
+	};	
+	
+	instanceProto.get_itemID2Keys_ref = function(itemID, key_)
+	{
+	    var ref = this.get_ref("itemID-keys")["child"](itemID);
+	    if (!key_)
+	        ref = ref["child"](key_);
+        return ref;
 	};
+	
+	var get_itemID2Keys_path = function(itemID, key_)
+	{
+	    var p = "itemID-keys/" + itemID;
+		if (key_)
+		    p += "/" + key_;
+        return p;
+	};	
 	
 	instanceProto.get_itemID_ref = function(itemID)
 	{
         return this.get_ref("itemIDs")["child"](itemID);
 	};
+	
+	var get_itemID_path = function(itemID)
+	{
+	    return "itemIDs/" + itemID;
+	};
+	
+	instanceProto.create_save_item = function (itemID, item_)
+	{
+	    var save_item = {};
+        save_item[ get_itemID_path(itemID) ] = true;
+	    var k, v;   
+	    for (k in item_)
+	    {
+	        v = item_[k];
+	        save_item[ get_key_path(itemID, k) ] = v;
+	        save_item[ get_itemID2Keys_path(itemID, k) ] = (v === null)? null : true;
+	    }	    
+	    return save_item;
+	};
+	
+	instanceProto.create_remove_item = function (itemID, keys)
+	{
+        var remove_item = {};
+        // remove itemID from list
+        remove_item[ get_itemID_path(itemID) ] = null;
+        // remove itemID-key
+        remove_item[ get_itemID2Keys_path(itemID, k) ] = null;
+                        
+	    // remove keys from filters
+	    var k;
+	    for(k in keys)
+	    {
+	        remove_item[ get_key_path(itemID, k) ] = null;
+        }
+	    return remove_item;
+	};
+	
+    instanceProto.save_item = function (itemID, item_, tag_)
+	{	
+        debugger
+	    var self = this;	    
+	    var onComplete_handler = function(error)
+	    {
+	        if (!tag_)
+	            return;
+	            
+		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnSaveComplete:
+		                         cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnSaveError;
+            self.trig_tag = tag_;	
+            self.exp_CurItemID = itemID;	                         
+		    self.runtime.trigger(trig, self); 	   
+		    self.trig_tag = null;
+		    self.exp_CurItemID = "";
+	    };
+
+
+	    // multi-location update
+	    var write_item = this.create_save_item(itemID, item_);    	     
+		this.get_ref()["update"](write_item, onComplete_handler);
+	    // multi-location update
+	    		
+	    clean_table(item_);			
+	};
+	
+    instanceProto.remove_item = function (itemID, tag_)
+	{
+	    var self = this;
+	    
+	    // try remove itemID
+	    var on_read_keys = function (snapshot)
+        {
+            var keys = snapshot.val();
+            if (keys == null)  // itemID is not existed
+            {
+                onComplete_handler(true);
+            }
+            else  // itemID is existed, get keys
+            {
+                var items = self.create_remove_item(itemID, keys);
+                self.get_ref()["update"](items, onComplete_handler);
+                
+            }
+        };
+	    // try remove itemID	    
+	    
+	    var onComplete_handler = function(error)
+	    {
+	        if (!tag_)
+	            return;
+	            	        
+		    var trig = (!error)? cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRemoveComplete:
+		                         cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRemoveError;
+            self.trig_tag = tag_;
+            self.exp_CurItemID = itemID;				                         
+		    self.runtime.trigger(trig, self); 	   
+		    self.trig_tag = null;    
+		    self.exp_CurItemID = "";   
+	    };  
+	    	    
+	    // read itemID-keys
+	    this.get_itemID2Keys_ref(itemID)["once"]("value", on_read_keys);   
+	};	
     
     instanceProto.get_Equal_codeString = function (key_, value_)
 	{
@@ -296,116 +414,27 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 		
     Acts.prototype.SetValue = function (key_, value_)
 	{
-		this.save_item[key_] = value_;
+		this.prepared_item[key_] = value_;
 	};
 	
     Acts.prototype.SetBooleanValue = function (key_, is_true)
 	{
-		this.save_item[key_] = (is_true == 1);
+		this.prepared_item[key_] = (is_true === 1);
 	};
 	
     Acts.prototype.Save = function (itemID, tag_)
-	{
-	    var self = this;
-	   
-	    // wait done
-        var wait_events = 0;
-        var has_error = false;	    
-	    var isDone_handler = function(error)
-	    {
-	        has_error |= (error != null);
-	        wait_events -= 1;
-	        if (wait_events == 0)
-	        {	            
-	            // all jobs done
-			    var trig = (!has_error)? cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnSaveComplete:
-				                         cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnSaveError;
-                self.trig_tag = tag_;	
-                self.exp_CurItemID = itemID;	                         
-				self.runtime.trigger(trig, self); 	   
-				self.trig_tag = null;
-				self.exp_CurItemID = "";	  
-	        }
-	    };
-	    // wait done
-	    
-	    // add itemID into itemID list
-	    wait_events += 1;
-	    this.get_itemID_ref(itemID)["set"](true, isDone_handler);
-	    // add key-value pairs		 
-	    var item_value, is_remove;   
-	    for (var k in this.save_item)
-	    {
-	        item_value = this.save_item[k];
-	        wait_events += 1;
-	        this.get_key_ref(itemID, k)["setWithPriority"](item_value, item_value, isDone_handler);
-	        wait_events += 1;
-	        is_remove = (item_value === null);
-	        this.get_itemID2Keys_ref(itemID)["child"](k)["set"]((is_remove)? null:true, isDone_handler);
-	    }
-		clean_table(this.save_item);	
+	{	
+	    this.save_item(itemID, this.prepared_item, tag_);
 	};
 	
     Acts.prototype.Remove = function (itemID, tag_)
 	{
-	    var self = this;
-	    
-	    // try remove itemID
-	    var on_read_keys = function (snapshot)
-        {
-            var keys = snapshot.val();
-            if (keys == null)  // itemID is not existed
-            {
-            }
-            else  // itemID is existed, get keys
-            {
-                // remove itemID from list
-                wait_events += 1;
-	            self.get_itemID_ref(itemID)["remove"](isDone_handler);
-                // remove itemID-key
-                wait_events += 1;
-	            self.get_itemID2Keys_ref(itemID)["remove"](isDone_handler);
-	            
-	            // remove keys from filters
-	            for(var k in keys)
-	            {
-                    wait_events += 1; 
-                    self.get_key_ref(itemID, k)["remove"](isDone_handler);
-                }
-            }           
-            isDone_handler();
-        };
-	    // try remove itemID	    
-	    
-	    // wait done
-        var wait_events = 0;
-        var has_error = false;	    
-	    var isDone_handler = function(error)
-	    {
-	        has_error |= (error != null);
-	        wait_events -= 1;
-	        if (wait_events == 0)
-	        {	            
-	            // all jobs done
-			    var trig = (!has_error)? cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRemoveComplete:
-				                         cr.plugins_.Rex_Firebase_ItemFilter.prototype.cnds.OnRemoveError;
-                self.trig_tag = tag_;
-                self.exp_CurItemID = itemID;				                         
-				self.runtime.trigger(trig, self); 	   
-				self.trig_tag = null;    
-				self.exp_CurItemID = "";     
-	        }
-	    };
-	    // wait done	    
-	    	    
-	    // read itemID-keys
-	    wait_events += 1;
-	    this.get_itemID2Keys_ref(itemID)["once"]("value", on_read_keys);   
+	    this.remove_item(itemID, tag_);
 	};
 
     Acts.prototype.RemoveKey = function (key_)
 	{
-		this.save_item[key_] = null;
+		this.prepared_item[key_] = null;
 	};
 	
     Acts.prototype.GetRandomItems = function (pick_count, tag_)
@@ -525,7 +554,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         };	    
         	    
 	    var query = this.get_ref("filters")["child"](key_);
-        query = query["orderByPriority"]();
+        query = query["orderByValue"]();
 	    query = query["startAt"](start)["endAt"](end);
 	    query = query[LIMITTYPE[limit_type]](limit_count);
 	    query["once"]("value", on_read_itemIDs);
@@ -558,7 +587,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         };	    
         	    
 	    var query = this.get_ref("filters")["child"](key_);	  
-        query = query["orderByPriority"]();        
+        query = query["orderByValue"]();        
 	    query = query[COMPARSION_TYPE[comparsion_type]](value_);	    
 	    query = query[LIMITTYPE[limit_type]](limit_count);
 	    query["once"]("value", on_read_itemIDs);
@@ -711,7 +740,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         // create query
         this.wait_events += 1;
         var query = this.plugin.get_ref("filters")["child"](key_);        
-        query = query["orderByPriority"]();
+        query = query["orderByValue"]();
         query = this[query_typeName](query, value0, value1);
         query["once"]("value", on_read);
         

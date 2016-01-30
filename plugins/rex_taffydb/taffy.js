@@ -35,10 +35,10 @@ var TAFFY, exports, T;
     isIndexable,  returnFilter, runFilters,
     numcharsplit, orderByCol,   run,    intersection,
     filter,       makeCid,      safeForJson,
-    isRegexp
+    isRegexp, sortArgs
     ;
-
-
+    
+    
   if ( ! TAFFY ){
     // TC = Counter for Taffy DBs on page, used for unique IDs
     // cmax = size of charnumarray conversion cache
@@ -48,6 +48,11 @@ var TAFFY, exports, T;
     idpad   = '000000';
     cmax    = 1000;
     API     = {};
+
+    sortArgs = function(args) {
+      var v = Array.prototype.slice.call(args);
+      return v.sort();
+    }
 
     protectJSON = function ( t ) {
       // ****************************************
@@ -163,14 +168,18 @@ var TAFFY, exports, T;
       // *
       // ****************************************  
       API[m] = function () {
-        return f.apply( this, arguments );
+        return f.apply( this, sortArgs(arguments) );
       };
     };
 
     isIndexable = function ( f ) {
       var i;
       // Check to see if record ID
-      if ( T.isString( f ) && /[t][0-9]*[r][0-9]*/i.test( f ) ){
+      
+      // ---- Edit by rex.rainbow, string is record ID ----
+      //if ( T.isString( f ) && /[t][0-9]*[r][0-9]*/i.test( f ) ){
+      
+      if ( T.isString( f ) ) {
         return true;
       }
       // Check to see if record
@@ -633,7 +642,7 @@ var TAFFY, exports, T;
       });
       nc.q = nq;
       // Hadnle passing of ___ID or a record on lookup.
-      each( arguments, function ( f ) {
+      each( sortArgs(arguments), function ( f ) {
         nc.q.push( returnFilter( f ) );
         nc.filterRaw.push( f );
       });
@@ -719,7 +728,7 @@ var TAFFY, exports, T;
       // *
       // * Takes: a object and passes it off DBI update method for all matched records
       // **************************************** 
-      var runEvent = true, o = {}, args = arguments, that;
+      var runEvent = true, o = {}, args = sortArgs(arguments), that;
       if ( TAFFY.isString( arg0 ) &&
         (arguments.length === 2 || arguments.length === 3) )
       {
@@ -848,7 +857,7 @@ var TAFFY, exports, T;
       // **************************************** 
       var total = 0, that = this;
       run.call( that );
-      each( arguments, function ( c ) {
+      each( sortArgs(arguments), function ( c ) {
         each( that.context().results, function ( r ) {
           total = total + (r[c] || 0);
         });
@@ -979,7 +988,7 @@ var TAFFY, exports, T;
         fnMain = function ( table ) {
           var
             right_table, i,
-            arg_list = arguments,
+            arg_list = sortArgs(arguments),
             arg_length = arg_list.length,
             result_list = []
             ;
@@ -1053,7 +1062,7 @@ var TAFFY, exports, T;
       // * Note if more than one column is given an array of arrays is returned
       // **************************************** 
 
-      var ra = [], args = arguments;
+      var ra = [], args = sortArgs(arguments);
       run.call( this );
       if ( arguments.length === 1 ){
 
@@ -1080,7 +1089,7 @@ var TAFFY, exports, T;
       // * Returns: array of values
       // * Note if more than one column is given an array of arrays is returned
       // **************************************** 
-      var ra = [], args = arguments;
+      var ra = [], args = sortArgs(arguments);
       run.call( this );
       if ( arguments.length === 1 ){
 
@@ -1450,8 +1459,9 @@ var TAFFY, exports, T;
             }
           }
           // Run a new query if there are no results or the run date has been cleared
+          // ---- Edit by rex.rainbow, add "=" in equation ----
           if ( !context.results || !context.run ||
-            (context.run && DBI.dm() > context.run) )
+            (context.run && DBI.dm() >= context.run) )
           {
             results = [];
 
@@ -1600,7 +1610,7 @@ var TAFFY, exports, T;
         // *
         // * Call the query method to setup a new query
         // **************************************** 
-        each( arguments, function ( f ) {
+        each( sortArgs(arguments), function ( f ) {
 
           if ( isIndexable( f ) ){
             context.index.push( f );
@@ -2014,4 +2024,3 @@ var TAFFY, exports, T;
 if ( typeof(exports) === 'object' ){
   exports.taffy = TAFFY;
 }
-

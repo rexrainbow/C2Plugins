@@ -5,8 +5,9 @@
     receiverID - userID of receiver
     title - title (header) of message
     content - content (body) of message, string or json object in string 
-    Category - category of message, like "system"
-    Status - status of message, like "unread"
+    tag - category of message, like "system"
+    status - status of message, like "unread"    
+    mark - array of some unique data, like userID
 */
 
 
@@ -39,7 +40,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -77,7 +78,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
     var MESSAGE_JSON = 1;
 	instanceProto.onCreate = function()
 	{ 
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -114,7 +115,8 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    this.exp_CurMessage = null;
 	    this.exp_LastFetchedMessage = null;   
 	    this.exp_LastRemovedMessageID = "";  
-	    this.exp_LastMessagesCount = -1;   
+	    this.exp_LastMessagesCount = -1;
+	    this.last_error = null;   
 	};
 	
 	instanceProto.create_messagebox = function(page_lines)
@@ -128,8 +130,9 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    }
 	    messagebox.onReceived = onReceived;
 	    
-	    var onReceivedError = function()
+	    var onReceivedError = function(error)
 	    {	       
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnReceivedError, self);
 	    }
 	    messagebox.onReceivedError = onReceivedError;		    
@@ -153,6 +156,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
         filters.tags = [];
         filters.timestamps = [];
         filters.status = [];
+        filters.marks = [];        
         return filters;
 	};    
     
@@ -172,6 +176,9 @@ cr.plugins_.Rex_parse_message = function(runtime)
             
         if (filters.status.length != 0)                
             filters.status = [];             
+            
+        if (filters.marks.length != 0)                
+            filters.marks = [];              
 	}; 
 	
     instanceProto.get_request_query = function (filters, fields_type)
@@ -207,7 +214,15 @@ cr.plugins_.Rex_parse_message = function(runtime)
         if (status_cnt == 1)
             query["equalTo"]("status", filters.status[0]);
         else if (status_cnt > 1)
-            query["containedIn"]("status", filters.status);
+            query["containedIn"]("status", filters.status);         
+            
+        var marks_cnt=filters.marks.length, cond;       
+        for(var i=0; i<marks_cnt;i++)
+        {
+            cond = filters.marks[i];
+            query[cond[0]]("mark", cond[1]);
+        }
+                    
             
         query[this.order]("createdAt");
         		
@@ -220,22 +235,61 @@ cr.plugins_.Rex_parse_message = function(runtime)
         return query;
 	}; 
 
-	var get_ACL = function (wm, rm)
+    // wm: All users|Sender|Receiver|Sender and receiver|Owner
+    // rm: All users|Sender|Receiver|Sender and receiver
+	var get_ACL = function (wm, rm, senderID, receiverID)
 	{
+	    // wm: All users, rm: All users
 	    if ((wm === 0) && (rm === 0))
-	        return null;	    
-	    var current_user = window["Parse"]["User"]["current"]();
-	    if (!current_user)
 	        return null;
-  	        
-	    var acl = new window["Parse"]["ACL"](current_user);
+	    
+	    var acl = new window["Parse"]["ACL"]();
+	    switch (wm)
+	    {
+	    case 0:
+	        acl["setPublicWriteAccess"](true);
+	    break;
+	   
+	    case 1: 
+	        acl["setWriteAccess"](senderID, true); 
+	    break;
+	    
+	    case 2:
+	        acl["setWriteAccess"](receiverID, true); 
+	    break;
+	    
+	    case 3: 
+	        acl["setWriteAccess"](senderID, true);
+	        acl["setWriteAccess"](receiverID, true);
+	    break;
+	    
+	    case 4: 
+	        var current_user = window["Parse"]["User"]["current"]();
+	        acl["setWriteAccess"](current_user["id"], true); 
+	    break;
+	    }
+	    
+	    
+	    switch (rm)
+	    {
+	    case 0:
+	        acl["setPublicReadAccess"](true);
+	    break;
+	   
+	    case 1: 
+	        acl["setReadAccess"](senderID, true); 
+	    break;
+	    
+	    case 2: 
+	        acl["setReadAccess"](receiverID, true); 
+	    break;
+	    
+	    case 3: 
+	        acl["setReadAccess"](senderID, true);
+	        acl["setReadAccess"](receiverID, true);
+	    break;
+	    }
 
-        if (wm === 0)
-            acl["setPublicWriteAccess"](true);
-            
-        if (rm === 0)
-            acl["setPublicReadAccess"](true); 	
-            
         return acl;	    
 	};	
 	    
@@ -285,7 +339,15 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	{
 	    return true;
 	};	    
-    
+	Cnds.prototype.OnUpdateMarkComplete = function ()
+	{
+	    return true;
+	};
+	Cnds.prototype.OnUpdateMarkError = function ()
+	{
+	    return true;
+	}; 
+	   
 	Cnds.prototype.ForEachMessage = function (start, end)
 	{	    
 	    return this.messagebox.ForEachItem(this.runtime, start, end);
@@ -352,6 +414,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    };	
 	    var OnSendError = function(message_obj, error)
 	    {
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnSendError, self);
 	    };
         var handler = {"success":OnSendComplete, "error": OnSendError};        
@@ -365,7 +428,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    messageObj["set"]("tag", tag);
         messageObj["set"]("status", status);
         
-        var acl = get_ACL(this.acl_write_mode, this.acl_read_mode);
+        var acl = get_ACL(this.acl_write_mode, this.acl_read_mode, this.userID, receiverID);
         if (acl)
         {
             messageObj["setACL"](acl);
@@ -401,6 +464,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    };	    
 	    var on_error = function(message, error)
 	    { 
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnSetStatusError, self);     
 	    };
 	    var handler = {"success":on_success, "error": on_error};
@@ -411,6 +475,49 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    messageObj["save"](null, handler);	
 	};
     
+    Acts.prototype.AppendMark = function (messageID, mark)
+	{
+        var self = this;
+        
+	    var on_success = function(message_obj)
+	    {
+            self.exp_LastSentMessageID = message_obj["id"];
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnUpdateMarkComplete, self);
+	    };	    
+	    var on_error = function(message_obj, error)
+	    { 
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnUpdateMarkError, self);     
+	    };
+	    var handler = {"success":on_success, "error": on_error};
+	    	    
+        var messageObj = new this.message_klass();
+	    messageObj["set"]("id", messageID);
+        messageObj["addUnique"]("mark", mark);
+	    messageObj["save"](null, handler);	
+	};
+	
+    Acts.prototype.RemoveMark = function (messageID, mark)
+	{
+        var self = this;
+        
+	    var on_success = function(message_obj)
+	    {
+            self.exp_LastSentMessageID = message_obj["id"];
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnUpdateMarkComplete, self);
+	    };	    
+	    var on_error = function(message_obj, error)
+	    { 
+	        self.last_error = error; 
+	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnUpdateMarkError, self);     
+	    };
+	    var handler = {"success":on_success, "error": on_error};
+	    	    
+        var messageObj = new this.message_klass();
+	    messageObj["set"]("id", messageID);
+        messageObj["remove"]("mark", mark);
+	    messageObj["save"](null, handler);	
+	};
+	
     Acts.prototype.NewFilter = function ()
 	{    
         clean_filters(this.filters);
@@ -445,7 +552,13 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    var query = this.get_request_query(this.filters, with_content);
 	    this.messagebox.RequestTurnToPreviousPage(query);
 	};  
-
+	
+    Acts.prototype.LoadAllMessages = function (with_content)
+	{
+	    var query = this.get_request_query(this.filters, with_content);
+	    this.messagebox.LoadAllItems(query);
+	}; 
+	
     Acts.prototype.AddAllSenders = function ()
 	{
         this.filters.senders.length = 0;     
@@ -502,7 +615,16 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	{
         this.filters.status.push(status);      
 	};
-    
+	
+    var MARK_CONDITIONS = ["notEqualTo", "equalTo"];
+    Acts.prototype.SetMarkConstraint = function (mark, is_included)
+	{
+	    this.filters.marks.length = 0;
+	    
+	    var query_fn = MARK_CONDITIONS[is_included];
+        this.filters.marks.push([query_fn, mark]);
+	}; 	
+		    
     Acts.prototype.FetchByMessageID = function (messageID)
 	{
         var self = this;
@@ -514,6 +636,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    };	    
 	    var on_error = function(message, error)
 	    { 
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnFetchOneError, self);     
 	    };
 	    
@@ -534,6 +657,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    };	    
 	    var on_error = function(message, error)
 	    { 
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveError, self);     
 	    };	    
 	    var handler = {"success":on_success, "error": on_error};
@@ -546,7 +670,6 @@ cr.plugins_.Rex_parse_message = function(runtime)
     Acts.prototype.RemoveQueriedMessages = function ()
 	{
 	    var all_itemID_query = this.get_request_query(this.filters);
-	    all_itemID_query["select"]("id");        
 
         var self = this; 
 	    var on_destroy_success = function()
@@ -555,6 +678,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    };	    
 	    var on_destroy_error = function(error)
 	    { 
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnRemoveQueriedItemsError, self);
 	    };	    
 	    var on_destroy_handler = {"success":on_destroy_success, "error": on_destroy_error};
@@ -575,11 +699,24 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	    var on_query_error = function(error)
 	    {      
 	        self.exp_LastMessagesCount = -1;
+	        self.last_error = error; 
 	        self.runtime.trigger(cr.plugins_.Rex_parse_message.prototype.cnds.OnGetMessagesCountError, self); 
 	    };
 	    var query_handler = {"success":on_query_success, "error": on_query_error};    	     
 	    query["count"](query_handler);
 	};	
+
+	
+    Acts.prototype.InitialTable = function ()
+	{        
+        var messageObj = new this.message_klass();
+	    messageObj["set"]("senderID", "");
+	    messageObj["set"]("receiverID", "");
+	    messageObj["set"]("tag", "");
+        messageObj["set"]("status", "");
+        messageObj["set"]("mark", []);
+        window.ParseInitTable(messageObj);
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -707,6 +844,19 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	{
 		ret.set_int(this.exp_LastMessagesCount);
 	};	
+	
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};		
 		    
 }());     
 
@@ -755,6 +905,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	
 	var remove_all_items = function (query, handler)
     {
+        query["select"]("id");    
 	    var on_read_all = function(all_items)
 	    {
 	        if (all_items.length === 0)
@@ -827,7 +978,7 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	        self.is_last_page = false;
 	        	        
             if (self.onReceivedError)
-                self.onReceivedError();	 	           
+                self.onReceivedError(error);	 	           
 	    };
         var on_read_handler = {"success":on_success, "error":on_error};               
         window.ParseQuery(query, on_read_handler, start, lines);        
@@ -944,4 +1095,28 @@ cr.plugins_.Rex_parse_message = function(runtime)
 	};	
 
 	window.ParseItemPageKlass = ItemPageKlass;
-}());       
+}());    
+
+
+(function ()
+{
+    if (window.ParseInitTable != null)
+        return;  
+        
+    var init_table = function (item_obj)
+    { 
+	    var on_write_success = function(item_obj)
+	    {
+	        item_obj["destroy"]();
+	    };	
+	    
+	    var on_write_error = function(item_obj, error)
+	    {
+	    };
+        var write_handler = {"success":on_write_success, "error":on_write_error};
+        
+	    item_obj["save"](null, write_handler);
+    };
+
+    window.ParseInitTable = init_table;
+}());   

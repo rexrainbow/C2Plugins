@@ -102,16 +102,24 @@ AddComboParamOption("All instances");
 AddComboParam("All instances", "Pick from current picked instances or all instances", 1);
 AddAction(7, 0, "Pick inverse", "SOL", 
           "Pick <i>{0}</i> with UID NOT <i>{1}</i>, form <i>{2}</i>", 
-          "Pick inverse instances.", "PickInverse");                
+          "Pick inverse instances.", "PickInverse"); 
+          
+AddNumberParam("UID A", "UID of object A", 0);
+AddNumberParam("UID B", "UID of object B", 0);
+AddAction(11, 0, "Swap objects", "Position", 
+          "Swap position of two objects - UID: <i>{0}</i> and UID: <i>{1}</i>", 
+          "Swap position of objects by UID.", "SwapPosByUID");                           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddStringParam('""', "Code string.", '""');
+AddStringParam('Code string', "Code string.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
 AddNumberParam("Number", "Decimal number", 0);
 AddExpression(1, ef_return_string, "Get hex string", "Math", "ToHexString", "Transfer decimal value to hex string.");
 AddNumberParam("Number", "Decimal number", 0);
 AddExpression(2, ef_return_string | ef_variadic_parameters, "Get decimal mark", "Math", "ToDecimalMark", 
               "Transfer decimal value with decimal mark.");
+AddStringParam('Input', "Input string.", '""');            
+AddExpression(3, ef_return_number, "Get byte count", "String", "String2ByteCount", "Get byte count of a string.");
 
 ACESDone();
 

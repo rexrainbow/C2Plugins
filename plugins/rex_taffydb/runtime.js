@@ -89,16 +89,14 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             this.index_keys = index_keys_input.split(",");
         }
         
-        
-        if (!this.recycled)
-        {
-            this.prepared_item = {};
-            this.NewFilters();
-        }
+        this.rowID = "";
+        this.prepared_item = {};
+        this.NewFilters();
             
         this.current_rows = null;
         
         this.exp_CurRow = null;
+        this.exp_LastSavedRowID = "";
         
         
         /**BEGIN-PREVIEWONLY**/
@@ -142,38 +140,68 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         }
 	};  
 
-	instanceProto.SaveRow = function (row, index_keys)
-	{
-	    if ((index_keys == null) || (index_keys.length === 0))	    
+	instanceProto.SaveRow = function (row, index_keys, rowID)
+	{   
+	    var invalid_rowID = (rowID == null) || (rowID === "");
+	    
+	    // valid row ID
+	    if (!invalid_rowID)
+	    {
+	        this.db(rowID)["update"](row);
+	    }
+	    
+	    // insert a row
+	    else if ((index_keys == null) || (index_keys.length === 0))	    
         {
             this.db["insert"](row);            
         }
+        
+        // has index keys definition
         else
         {
             var index_keys = {}, key_name; 
             var i, cnt=this.index_keys.length;
+            var has_index_keys = false;
             for (i=0; i<cnt; i++)
             {
                 key_name = this.index_keys[i];
                 if (row.hasOwnProperty(key_name))
                 {                  
                     index_keys[key_name] = row[key_name];
+                    has_index_keys = true;
                 }
             }
-            var items = this.db(index_keys);
-            var cnt = items["count"]();
-            if (cnt === 0)
-                this.db["insert"](row);   
-            else if (cnt > 1)
+            
+            
+            if (has_index_keys)
             {
-                item["remove"]();
-                this.db["insert"](row);  
+                var items = this.db(index_keys);
+                var cnt = items["count"]();
+                if (cnt === 0)
+                    this.db["insert"](row);   
+                else if (cnt > 1)
+                {
+                    items["remove"]();
+                    this.db["insert"](row);  
+                }
+                else
+                {
+                    items["update"](row);
+                }                                         
             }
+            
+            // no index keys setting
             else
-                items["update"](row);
+            {
+                this.db["insert"](row);   
+            }
         }
-	};	
-		
+        
+
+        if (row["___id"])
+            this.exp_LastSavedRowID = row["___id"];
+	};
+    
     instanceProto.NewFilters = function ()
 	{    
 	    this.ShadowFilters();
@@ -207,6 +235,20 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    this.current_rows = null;
 	};	
 	
+    instanceProto.AddValueInclude = function (k, v)
+	{
+	    if (this.current_rows)
+	    {
+	        this.current_rows = null;
+	        this.NewFilters();
+	    }
+	    
+	    if (!this.filters.hasOwnProperty(k))
+	        this.filters[k] = [];
+	    
+	    this.filters[k].push(v);
+	    this.current_rows = null;
+	};		
     var ORDER_TYPES = ["desc", "asec"];
     instanceProto.AddOrder = function (k, order_)
 	{
@@ -228,7 +270,14 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	        this.NewFilters();
 	    }
 	    return this.current_rows;
-	};	
+	};
+
+	instanceProto.queriedRowIndex2RowId = function (index_, default_value)
+	{    
+	    var current_rows = this.get_current_queried_rows();
+	    var row = current_rows["get"]()[index_];
+	    return din(row, "___id", default_value);        
+	};
 		
 	var value_get = function(v, is_eval_mode)
 	{
@@ -257,7 +306,12 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	            v = row[k];
 	    }
 	    if (v == null)
-	        v = default_value || 0;
+        {
+            if (typeof(default_value) !== "undefined")
+                v = default_value;
+            else
+                v = 0;
+        }
 		return v;
 	};		
     
@@ -347,7 +401,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     };
     var color_JSON = function (o)
     {
-        var val = syntaxHighlight(JSON.stringify(r));
+        var val = syntaxHighlight(JSON.stringify(o));
         return "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+val+"</style>";
     };
     
@@ -357,11 +411,6 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         var self=this, rows=this.db(), n;
 		var for_each_row = function(r, i)
 		{
-            for (n in r)
-            {
-                if (n.substring(0,3) === "___")
-                    delete r[n];
-            }
             self.propsections.push({"name": i, 
                                     "value": color_JSON(r),
                                     "html": true,
@@ -435,12 +484,25 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    this.AddValueComparsion(k, 0, (v===1));
 	    return true;
 	}; 		
-
+	
+	Cnds.prototype.AddValueInclude = function (k, v)
+	{
+	    this.AddValueInclude(k, v);
+	    return true;
+	}; 	
     Cnds.prototype.AddOrder = function (k, order_)
 	{
         this.AddOrder(k, order_);
 	    return true;        
-	}; 		
+	}; 	
+	
+    //Cnds.prototype.Page = function (start_, limit_)
+	//{
+	//    debugger
+	//    var current_rows = this.get_current_queried_rows();
+	//    current_rows["start"](start_)["limit"](limit_);
+	//    return true;  
+	//}; 		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -479,15 +541,29 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             this.SaveRow(rows[i], this.index_keys);    
 	};	
     
-	Acts.prototype.RemoveAll = function ()
+	Acts.prototype.RemoveByRowID = function (rowID)
 	{
-        this.db()["remove"]();
+        this.db(rowID)["remove"]();
 	};	
+    
+	Acts.prototype.RemoveByRowIndex = function (index_)
+	{
+        var rowID = this.queriedRowIndex2RowId(index_, null);
+        if (rowID === null)
+            return;
+            
+        this.db(rowID)["remove"]();
+	};    
     
 	Acts.prototype.SetIndexKeys = function (params_)
 	{
         cr.shallowAssignArray(this.index_keys, params_.split(","));
 	};	
+    
+	Acts.prototype.RemoveAll = function ()
+	{
+        this.db()["remove"]();
+	};    
     
     Acts.prototype.SetValue = function (key_, value_)
 	{
@@ -501,8 +577,10 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     
 	Acts.prototype.Save = function ()
 	{
-	    this.SaveRow(this.prepared_item, this.index_keys);   
-	    this.prepared_item = {};
+        this.SaveRow(this.prepared_item, this.index_keys, this.rowID); 
+                          	    
+	    this.rowID = "";
+	    this.prepared_item = {};   
 	};	
 	    
     Acts.prototype.UpdateQueriedRows = function (key_, value_)
@@ -516,7 +594,17 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    var current_rows = this.get_current_queried_rows();
 	    current_rows["update"](key_, (is_true === 1));
 	};	
-	
+	    
+    Acts.prototype.SetRowID = function (rowID)
+	{    
+        this.rowID = rowID;
+	};		
+	    
+    Acts.prototype.SetRowIndex = function (index_)
+	{
+	    this.rowID = this.queriedRowIndex2RowId(index_, null);
+	};
+    
     Acts.prototype.NewFilters = function ()
 	{    
 	    if (this.current_rows)
@@ -535,20 +623,33 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{
 	    this.AddValueComparsion(k, 0, (v===1));
 	};	
+	
+    Acts.prototype.AddValueInclude = function (k, v)
+	{
+	    this.AddValueInclude(k, v);
+	};		
 
     Acts.prototype.AddOrder = function (k, order_)
 	{
         this.AddOrder(k, order_);
 	}; 	
 
+    //Acts.prototype.Page = function (start_, limit_)
+	//{
+	//    debugger
+	//    var current_rows = this.get_current_queried_rows();
+	//    current_rows["start"](start_)["limit"](limit_);
+	//}; 
+	
     Acts.prototype.RemoveQueriedRows = function ()
 	{
-	    if (this.current_rows == null)
-	        this.current_rows = this.db(this.filters);
+        var current_rows = this.current_rows;
+	    if (current_rows == null)
+	        current_rows = this.db(this.filters);
 	        
-	    this.current_rows["remove"]();	    
-	    this.current_rows = null;
+	    current_rows["remove"]();
 	    
+	    this.current_rows = null;	    
 	    this.NewFilters();	    
 	}; 		
 		
@@ -581,7 +682,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
  	Exps.prototype.Index2QueriedRowContent = function (ret, i, k, default_value)
 	{
 	    var current_rows = this.get_current_queried_rows();
-	    var row = current_rows["start"](i)["limit"](1)["first"]();
+	    var row = current_rows["get"]()[i];
 	    ret.set_any( din(row, k, default_value) );
 	};
 	
@@ -612,12 +713,32 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{
 	    var current_rows = this.get_current_queried_rows();
 		ret.set_string( current_rows["stringify"]() );
-	};		
+	};
+ 	Exps.prototype.KeyRowID = function (ret)
+	{
+		ret.set_string( "___id" );
+	};	
+ 	Exps.prototype.LastSavedRowID = function (ret)
+	{
+		ret.set_string( this.exp_LastSavedRowID );
+	};
+ 	Exps.prototype.ID2RowContent = function (ret, rowID, k, default_value)
+	{
+	    var row = this.db(rowID)["get"]()[0];
+	    ret.set_any( din(row, k, default_value) );
+	};
+ 	Exps.prototype.QueriedRowsIndex2RowID = function (ret, index_)
+	{
+		ret.set_string( this.queriedRowIndex2RowId(index_, "") );
+	};    
  	Exps.prototype.AllRowsAsJSON = function (ret)
 	{
 		ret.set_string( this.db()["stringify"]() );
 	};	
-	
+ 	Exps.prototype.AllRowsCount = function (ret)
+	{
+		ret.set_int( this.db()["count"]() );
+	};		
 
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm

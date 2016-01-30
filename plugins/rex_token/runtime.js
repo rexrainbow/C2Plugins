@@ -45,6 +45,8 @@ cr.plugins_.Rex_Token = function(runtime)
         this.index = this.properties[1];
         this.is_inc_order = (this.properties[2] == 0);
         this._pre_index = (-1);
+		this.random_gen = null;
+		this.randomGenUid = null;
 	};
 	
 	instanceProto._set_id_list = function(id_list_string)
@@ -91,16 +93,41 @@ cr.plugins_.Rex_Token = function(runtime)
 	    this.runtime.trigger(cr.plugins_.Rex_Token.prototype.cnds.OnIndexChanging, this);
 	};
 	
+	instanceProto.get_random_value = function()
+	{
+	    var value = (this.random_gen == null)?
+			        Math.random(): this.random_gen.random();
+        return value;
+	};		
+	
 	instanceProto.saveToJSON = function ()
 	{
+	    var randomGenUid = (this.random_gen != null)? this.random_gen.uid:(-1);   
 		return { "l": this.player_id_list,
-                 "i": this.index          };
+                 "i": this.index,
+				 "randomuid":randomGenUid
+			   };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
 		this.player_id_list = o["l"];
-		this.index = o["i"];		
+		this.index = o["i"];
+        this.randomGenUid = o["randomuid"];			
+	};	
+	
+	instanceProto.afterLoad = function ()
+	{
+        var randomGen;
+		if (this.randomGenUid === -1)
+			randomGen = null;
+		else
+		{
+			randomGen = this.runtime.getObjectByUID(this.randomGenUid);
+			assert2(randomGen, "Token: Failed to find random gen object by UID");
+		}		
+		this.randomGenUid = -1;			
+		this.random_gen = randomGen;
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -144,7 +171,27 @@ cr.plugins_.Rex_Token = function(runtime)
 	Acts.prototype.InvertOrder = function ()
 	{        
         this.is_inc_order = !this.is_inc_order;
-	};
+	};		
+	Acts.prototype.NextRandomIndex = function ()
+	{       
+        var cnt = this.player_id_list.length;
+        if (cnt === 0)
+            return;
+        else if (cnt === 1)
+        {
+            this._set_next_index(0);
+            return;
+        }
+
+	    var next_index = this.index;
+		while (next_index === this.index)
+		{
+		    next_index = Math.floor(this.get_random_value() *cnt);
+		}
+		
+	    this._set_next_index(next_index);
+	};		
+	
 	Acts.prototype.SetIDList = function (id_list_string)
 	{        
         this._set_id_list(id_list_string);
@@ -184,6 +231,15 @@ cr.plugins_.Rex_Token = function(runtime)
         if (index != (-1))
             this._set_next_index(index);
 	};
+	
+    Acts.prototype.SetRandomGenerator = function (random_gen_objs)
+	{
+        var random_gen = random_gen_objs.instances[0];
+        if (random_gen.check_name == "RANDOM")
+            this.random_gen = random_gen;        
+        else
+            alert ("[Pattern generator] This object is not a random generator object.");
+	}; 		
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

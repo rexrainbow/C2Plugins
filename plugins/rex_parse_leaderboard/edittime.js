@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
@@ -120,7 +120,11 @@ AddAction(22, 0, "Get score", "Score",
           
 AddAction(31, 0, "Get users count", "Users count", 
           "Get users count", 
-          "Get users count. Maximum of 160 requests per minute.", "GetUsersCount");                    
+          "Get users count. Maximum of 160 requests per minute.", "GetUsersCount");  
+          
+AddAction(2000, 0, "Initial table", "Initial", 
+          "Initial table", 
+          "Initial table.", "InitialTable");                             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current player name", "Load - for each", "CurPlayerName", 
@@ -183,7 +187,14 @@ AddExpression(53, ef_return_any, "Get requested score", "Ranking", "LastScore",
                              
 AddExpression(61, ef_return_number, "Last users count", "Users count", "LastUsersCount", 
               'Get users count under "Condition: On get users count".');              
+
               
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");
+                                    
+                                                  
 ACESDone();
 
 // Property grid properties for this plugin

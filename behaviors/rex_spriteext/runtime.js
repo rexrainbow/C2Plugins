@@ -59,22 +59,29 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	function Cnds() {};
 	behaviorProto.cnds = new Cnds();
 
+    // deprecated
 	Cnds.prototype.IsShown = function ()
 	{
         var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
 		return (layer.visible && this.inst.visible);  
 	};
 
+    // deprecated
 	Cnds.prototype.OnCreating = function ()
 	{
 		return true;
 	};
-
+  
+    // deprecated
 	Cnds.prototype.OnDestroying = function ()
 	{
 		return true;
 	};    
-    
+
+	Cnds.prototype.IsSolid = function ()
+	{
+		return !!this.inst.extra["solidEnabled"];  
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -110,7 +117,14 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	    // f: 0=flipped , 1=not flipped
 	    cr.plugins_.Sprite.prototype.acts.SetFlipped.call(this.inst, f);
 	};
-    
+	
+	Acts.prototype.SetSolid = function (e)
+	{	    
+	    if (e == 2)	    
+	        this.inst.extra["solidEnabled"] = !this.inst.extra["solidEnabled"];	   
+	    else
+	        this.inst.extra["solidEnabled"] = (e === 1);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -11,17 +11,17 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On send complete", "Send",
+AddCondition(1, cf_trigger, "On send complete", "Send - message",
             "On send complete",
             "Triggered when send complete.", "OnSendComplete");
 
-AddCondition(2, cf_trigger, "On send error", "Send",
+AddCondition(2, cf_trigger, "On send error", "Send - message",
             "On send error",
             "Triggered when send error.", "OnSendError");
             
@@ -33,13 +33,21 @@ AddCondition(4, cf_trigger, "On received error", "Load",
             "On received messages error",
             "Triggered when received messages error.", "OnReceivedError");   
 
-AddCondition(5, cf_trigger, "On set status complete", "Send",
+AddCondition(5, cf_trigger, "On set status complete", "Send - status",
             "On set status complete",
             "Triggered when set status complete.", "OnSetStatusComplete");
 
-AddCondition(6, cf_trigger, "On set status error", "Send",
+AddCondition(6, cf_trigger, "On set status error", "Send - status",
             "On set status error",
-            "Triggered when set status error.", "OnSetStatusError");            
+            "Triggered when set status error.", "OnSetStatusError");        
+            
+AddCondition(7, cf_trigger, "On update mark complete", "Send - mark",
+            "On update mark complete",
+            "Triggered when update mark complete.", "OnUpdateMarkComplete");
+
+AddCondition(8, cf_trigger, "On update mark error", "Send - mark",
+            "On update mark error",
+            "Triggered when update mark error.", "OnUpdateMarkError");                   
             
 AddCondition(11, cf_looping | cf_not_invertible, "For each message", "Load - for each", 
              "For each message", 
@@ -85,6 +93,11 @@ AddCondition(111, cf_trigger, "On get messages count complete", "Queried message
 AddCondition(112, cf_trigger, "On get messages count error", "Queried messages count",
             "On get messages count error",
             "Triggered when get messages count error.", "OnGetMessagesCountError");                                                
+            
+                                
+AddAction(2000, 0, "Initial table", "Initial", 
+          "Initial table", 
+          "Initial table.", "InitialTable");             
 //////////////////////////////////////////////////////////////
 // Actions      
 AddStringParam("Sender ID", "Sender ID.", '""');
@@ -98,16 +111,28 @@ AddStringParam("Title", "Title of this message.", '""');
 AddStringParam("Content", "Content of this message. String or JSON string for object.", '""');
 AddStringParam("Category", "Category of this message for filtering.", '""');
 AddStringParam("Status", "Status of this message.", '""');
-AddAction(11, 0, "Send", "Send", 
+AddAction(11, 0, "Send", "Send - message", 
           "Send- Send message to channel ID: <i>{0}</i> with title: <i>{1}</i>, content: <i>{2}</i>, category to <i>{3}</i> (status: <i>{4}</i>)", 
           "Send message.", "Send");   
 
 AddStringParam("Message ID", "Message ID.", '""');
 AddStringParam("Status", "Status of this message.", '""');
-AddAction(12, 0, "Set status", "Send", 
-          "Send- Set status of messageID: <i>{0}</i> to <i>{1}</i>", 
+AddAction(12, 0, "Set status", "Send - status", 
+          "Send- Set status to <i>{1}</i> on messageID: <i>{0}</i>", 
           "Change status of message.", "SetStatus");              
 
+AddStringParam("Message ID", "Message ID.", '""');
+AddStringParam("Mark", "Unique mark.", '""');
+AddAction(13, 0, "Append mark", "Send - mark", 
+          "Send- Append an unique mark <i>{1}</i> on messageID: <i>{0}</i>", 
+          "Append an unique mark on message.", "AppendMark"); 
+          
+AddStringParam("Message ID", "Message ID.", '""');
+AddStringParam("Mark", "Unique mark.", '""');
+AddAction(14, 0, "Remove mark", "Send - mark", 
+          "Send- Remove mark <i>{1}</i> on messageID: <i>{0}</i>", 
+          "Remove mark on message.", "RemoveMark");           
+          
 AddAction(21, 0, "New", "Filter - 1. new", 
           "Filter- 1. Create a new message filter", 
           "Create a new message filter.", "NewFilter");       
@@ -118,7 +143,7 @@ AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);                    
 AddAction(22, 0, "Request in a range", "Load", 
-          "Load- Request message start from <i>{0}</i> with <i>{1}</i> lines, <i>{2}</i> content", 
+          "Load- Request messages start from <i>{0}</i> with <i>{1}</i> lines, <i>{2}</i> content", 
           "Request messages in a range.", "RequestInRange");   
 
 AddNumberParam("Index", "Page index, 0-based.", 0);
@@ -126,29 +151,36 @@ AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);   
 AddAction(23, 0, "Request to page", "Load", 
-          "Load- Request message at page <i>{0}</i>, <i>{1}</i> content", 
+          "Load- Request messages at page <i>{0}</i>, <i>{1}</i> content", 
           "Request messages at page.", "RequestTurnToPage");
 
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);             
 AddAction(24, 0, "Request current page",  "Load", 
-          "Load- Request message at current page, <i>{0}</i> content",  
+          "Load- Request messages at current page, <i>{0}</i> content",  
           "Request messages at current page.", "RequestUpdateCurrentPage"); 
           
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);             
 AddAction(25, 0, "Request next page", "Load", 
-          "Load- Request message at next page, <i>{0}</i> content",  
+          "Load- Request messages at next page, <i>{0}</i> content",  
           "Request messages at next page.", "RequestTurnToNextPage");  
 
 AddComboParamOption("without");
 AddComboParamOption("with");
 AddComboParam("Content", "Get content.", 0);             
 AddAction(26, 0, "Request previous page", "Load", 
-          "Load- Request message at previous page, <i>{0}</i> content",  
-          "Request messages at previous page.", "RequestTurnToPreviousPage");           
+          "Load- Request messages at previous page, <i>{0}</i> content",  
+          "Request messages at previous page.", "RequestTurnToPreviousPage");   
+
+AddComboParamOption("without");
+AddComboParamOption("with");
+AddComboParam("Content", "Get content.", 0);             
+AddAction(27, 0, "Request all messages", "Load - all", 
+          "Load- Request all messages, <i>{0}</i> content", 
+          "Load all messages.", "LoadAllMessages");                   
 
 AddAction(31, 0, "All senders", "Filter - 2. senderID", 
           "Filter- 2. add all senders into filter", 
@@ -177,7 +209,7 @@ AddAction(52, 0, "Add category", "Filter - 4. category",
           "Filter- 4. add category: <i>{0}</i> into filter", 
           "Add a category into filter.", "AddTag");
           
-AddAction(61, 0, "All timestamps", "Filter - 5. timestamp", 
+AddAction(61, 0, "All timestamps", "Filter - 6. timestamp", 
           "Filter- 6. add all timestamps into filter", 
           "Add all timestamps into filter.", "AddAllTimestamps"); 
                     
@@ -191,18 +223,26 @@ AddComboParam("Include", "Include compared timestamp or excluded.", 1);
 AddComboParamOption("Created");
 AddComboParamOption("Updated");
 AddComboParam("Type", "Type of compared timestamp.", 0);  
-AddAction(62, 0, "Add timestamp constraint", "Filter - 5. timestamp", 
+AddAction(62, 0, "Add timestamp constraint", "Filter - 6. timestamp", 
           "Filter- 6. add timestamp constraint: <i>{3}</i> <i>{0}</i> <i>{1}</i> (<i>{2}</i>) into filter", 
           "Add a timestamp constraint into filter. They will be jointed by AND operation.", "AddTimeConstraint");    
 
-AddAction(71, 0, "All status", "Filter - 4. status", 
+AddAction(71, 0, "All status", "Filter - 5. status", 
           "Filter- 5. add all status into filter", 
           "Add all status into filter.", "AddAllStatus"); 
 
 AddStringParam("Status", "Status.", '""');
-AddAction(72, 0, "Add status", "Filter - 4. status", 
+AddAction(72, 0, "Add status", "Filter - 5. status", 
           "Filter- 5. add status: <i>{0}</i> into filter", 
-          "Add a status into filter.", "AddStatus");          
+          "Add a status into filter.", "AddStatus");    
+          
+AddStringParam("Mark", "Unique mark.", '""');
+AddComboParamOption("Excluded");
+AddComboParamOption("Included");
+AddComboParam("Include", "Include compared timestamp or excluded.", 0);
+AddAction(82, 0, "Set mark constraint", "Filter - 7. mark", 
+          "Filter- 7. set mark constraint: <i>{1}</i> <i>{0}</i> into filter", 
+          "Set mark constraint into filter.", "SetMarkConstraint");            
 
 AddStringParam("Message ID", "Message ID.", '""');
 AddAction(91, 0, "Load by messageID", "Load - messageID", 
@@ -282,7 +322,13 @@ AddExpression(101, ef_return_string, "Last removed messageID", "Remove", "LastRe
                     
 AddExpression(111, ef_return_number, "Last messages count", "Queried messages count", "LastMessagesCount", 
               'Get last queried messages count under "Condition: On get messages count complete".');
-                                           
+
+
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");
+                                                         
 ACESDone();
 
 // Property grid properties for this plugin
@@ -291,9 +337,9 @@ var property_list = [
 	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "Message", "Class name for storing messages structure."), 
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),    
-	new cr.Property(ept_combo, "Order", "Later to eariler", "Order.", "Earlier to later|Later to earlier"),
-	new cr.Property(ept_combo, "Write permission", "All users", "All user or only owner could write the save slot.", "All users|Owner"),  
-	new cr.Property(ept_combo, "Read permission", "All users", "All user or only owner could read the save slot.", "All users|Owner"),  
+	new cr.Property(ept_combo, "Order", "Later to earlier", "Order.", "Earlier to later|Later to earlier"),
+	new cr.Property(ept_combo, "Write permission", "All users", "All user or sender or receiver could write the save slot.", "All users|Sender|Receiver|Sender and receiver|Owner"),  
+	new cr.Property(ept_combo, "Read permission", "All users", "All user or sender or receiver could read the save slot.", "All users|Sender|Receiver|Sender and receiver"),
     new cr.Property(ept_text, "Sender class name", "", 'Class name of sender. "" would ignore this feature.'), 
     new cr.Property(ept_text, "Receiver class name", "", 'Class name of receiver. "" would ignore this feature.'),     
 	];

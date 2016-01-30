@@ -129,11 +129,7 @@ AddObjectParam("Tile", "Tile object.");
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);          
 AddCondition(26, 0, "Has any empty cell on tiles", "Empty", 
             "Has any empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
-            "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");               
-AddObjectParam("Chess", "Chess object.");      
-AddCondition(27, 0, "Chess is on board", "Chess", 
-            "<i>{0}</i> is on board", 
-            "Return true if this chess is on board.", "IsChessOnBoard");                        	
+            "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");                                     	
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -323,7 +319,7 @@ AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
 AddAction(33, 0, "Move chess to xy", "Logic: Move", 
           "Move chess <i>{0}</i> 's LXY to [<i>{1}</i>,<i>{2}</i>]", 
-          "Move chess's LXY on the board.", "MoveChessLXY");            
+          "Move chess to logic X,Y on the board.", "MoveChessLXY");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddNumberParam("UID", "The UID of chess.", 0);

@@ -67,8 +67,8 @@ cr.behaviors.Rex_boundary = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        this.horizontal_boundary_update();
-        this.vertical_boundary_update();
+        //this.horizontal_boundary_update();
+        //this.vertical_boundary_update();
 		
 		var hit_horizontal, hit_vertical;
 		if (this.mode == 0)
@@ -115,7 +115,7 @@ cr.behaviors.Rex_boundary = function(runtime)
         this.vertical_boundary[1] = pin_inst.getImagePoint(pin["p1"], false);    
         _sort_boundary(this.vertical_boundary);
 	};
-    
+	    
 	// clamp
 	behinstProto.horizontal_boundary_clamp = function ()
 	{
@@ -125,12 +125,15 @@ cr.behaviors.Rex_boundary = function(runtime)
 		
 		if (this.align_mode == 0)    // origin
 		{
-		    if (this.inst.x < this.horizontal_boundary[0])
+		    // left
+		    if (this.is_hit_bound(1))
             {
 		        this.inst.x = this.horizontal_boundary[0];
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
             }
-            else if (this.inst.x > this.horizontal_boundary[1])
+            
+            // right
+            else if (this.is_hit_bound(2))
             {
 		        this.inst.x = this.horizontal_boundary[1];
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
@@ -139,13 +142,17 @@ cr.behaviors.Rex_boundary = function(runtime)
 		else    // boundaries
 		{
 		    this.inst.update_bbox();
-			var bbox = this.inst.bbox;			
-		    if (bbox.left < this.horizontal_boundary[0])
+			var bbox = this.inst.bbox;		
+			
+			// left	
+		    if (this.is_hit_bound(1))
             {			 
 		        this.inst.x = this.horizontal_boundary[0] + (this.inst.x - bbox.left);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
             }
-            else if (bbox.right > this.horizontal_boundary[1])
+            
+            // right
+            else if (this.is_hit_bound(2))
             {
 		        this.inst.x = this.horizontal_boundary[1] - (bbox.right - this.inst.x);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
@@ -162,12 +169,15 @@ cr.behaviors.Rex_boundary = function(runtime)
 		
 		if (this.align_mode == 0)    // origin
 		{
-		    if (this.inst.y < this.vertical_boundary[0])
+		    // top
+		    if (this.is_hit_bound(4))
             {
 		        this.inst.y = this.vertical_boundary[0];
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
             }
-            else if (this.inst.y > this.vertical_boundary[1])
+            
+            // bottom
+            else if (this.is_hit_bound(8))
             {
 		        this.inst.y = this.vertical_boundary[1];
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
@@ -177,12 +187,16 @@ cr.behaviors.Rex_boundary = function(runtime)
 		{
 		    this.inst.update_bbox();
 			var bbox = this.inst.bbox;		
-		    if (bbox.top < this.vertical_boundary[0])
+			
+			// top
+		    if (this.is_hit_bound(4))
             {
 		        this.inst.y = this.vertical_boundary[0] + (this.inst.y - bbox.top);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
             }
-            else if (bbox.bottom > this.vertical_boundary[1])
+            
+            // bottom
+            else if (this.is_hit_bound(8))
             {
 		        this.inst.y = this.vertical_boundary[1] - (bbox.bottom - this.inst.y);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
@@ -200,12 +214,15 @@ cr.behaviors.Rex_boundary = function(runtime)
 		
 		if (this.align_mode == 0)    // origin
 		{
-		    if (this.inst.x < this.horizontal_boundary[0])
+		    // left
+		    if (this.is_hit_bound(1))
             {
 		        this.inst.x = this.horizontal_boundary[1] + 1;
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
             }
-            else if (this.inst.x > this.horizontal_boundary[1])
+            
+            // right
+            else if (this.is_hit_bound(2))
             {
 		        this.inst.x = this.horizontal_boundary[0] - 1;
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
@@ -214,13 +231,17 @@ cr.behaviors.Rex_boundary = function(runtime)
 		else    // boundaries
 		{
 		    this.inst.update_bbox();
-			var bbox = this.inst.bbox;			
-		    if (bbox.right < this.horizontal_boundary[0])
+			var bbox = this.inst.bbox;		
+			
+			// left	
+		    if (this.is_hit_bound(1))
             {			 
 		        this.inst.x = this.horizontal_boundary[1] + 1 + (bbox.right - this.inst.x);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitLeftBoundary, this.inst);
             }
-            else if (bbox.left > this.horizontal_boundary[1])
+            
+            // right
+            else if (this.is_hit_bound(2))
             {
 		        this.inst.x = this.horizontal_boundary[0] - 1 - (this.inst.x - bbox.left);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitRightBoundary, this.inst);
@@ -237,12 +258,15 @@ cr.behaviors.Rex_boundary = function(runtime)
 		
 		if (this.align_mode == 0)    // origin
 		{
-		    if (this.inst.y < this.vertical_boundary[0])
+		    // top
+		    if (this.is_hit_bound(4))
             {
 		        this.inst.y = this.vertical_boundary[1] + 1;
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
             }
-            else if (this.inst.y > this.vertical_boundary[1])
+            
+            // bottom
+            else if (this.is_hit_bound(8))
             {
 		        this.inst.y = this.vertical_boundary[0] - 1;
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
@@ -251,13 +275,17 @@ cr.behaviors.Rex_boundary = function(runtime)
 		else    // boundaries
 		{
 		    this.inst.update_bbox();
-			var bbox = this.inst.bbox;		
-		    if (bbox.bottom < this.vertical_boundary[0])
+			var bbox = this.inst.bbox;	
+			
+			// top	
+		    if (this.is_hit_bound(4))
             {
 		        this.inst.y = this.vertical_boundary[1] + 1 + (bbox.bottom - this.inst.y) ;
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitTopBoundary, this.inst);
             }
-            else if (bbox.top > this.vertical_boundary[1])
+            
+            // bottom
+            else if (this.is_hit_bound(8))
             {
 		        this.inst.y = this.vertical_boundary[0] - 1- (this.inst.y - bbox.top);
                 this.runtime.trigger(cr.behaviors.Rex_boundary.prototype.cnds.OnHitBottomBoundary, this.inst);
@@ -273,8 +301,8 @@ cr.behaviors.Rex_boundary = function(runtime)
 		    return false;
 		
 		// mod wrap only support origin alignment
-		var hit_left = (this.inst.x < this.horizontal_boundary[0]);
-		var hit_right = (this.inst.x > this.horizontal_boundary[1]);
+		var hit_left = this.is_hit_bound(1);
+		var hit_right = this.is_hit_bound(2);
 		var is_hit = (hit_left || hit_right);
 		
 		if (is_hit)
@@ -301,8 +329,8 @@ cr.behaviors.Rex_boundary = function(runtime)
 		    return false;
 		    
 		// mod wrap only support origin alignment		
-		var hit_top = (this.inst.y < this.vertical_boundary[0]);
-		var hit_bottom = (this.inst.y > this.vertical_boundary[1]);
+		var hit_top = this.is_hit_bound(4);
+		var hit_bottom = this.is_hit_bound(8);
 		var is_hit = (hit_top || hit_bottom);
 		
 		if (is_hit)
@@ -322,7 +350,81 @@ cr.behaviors.Rex_boundary = function(runtime)
                     
 	    return is_hit;			
 	};		
-    
+	
+	behinstProto.is_hit_bound = function (bound_type)
+	{
+        this.horizontal_boundary_update();
+        this.vertical_boundary_update();
+        	    
+        var is_hit = false;
+        if (this.align_mode == 0) 
+        {
+	        // left
+		    if ((bound_type&1) === 1)
+		        is_hit |= (this.inst.x < this.horizontal_boundary[0]);
+		        
+		    // right
+		    if (((bound_type>>1)&1) === 1)
+		        is_hit |=  (this.inst.x > this.horizontal_boundary[1]);
+		        
+	        // top
+		    if (((bound_type>>2)&1) === 1)
+		        is_hit |=  (this.inst.y < this.vertical_boundary[0]);
+		        
+		    // bottom
+		    if (((bound_type>>3)&1) === 1)
+		        is_hit |=  (this.inst.y > this.vertical_boundary[1]);
+		        
+		}
+		
+		else
+		{
+		    this.inst.update_bbox();
+			var bbox = this.inst.bbox;	
+					
+            if (this.mode === 0)
+            {
+	            // left
+		        if ((bound_type&1) === 1)
+		            is_hit |= (bbox.left < this.horizontal_boundary[0]);
+		        
+		        // right
+		        if (((bound_type>>1)&1) === 1)
+		            is_hit |= (bbox.right > this.horizontal_boundary[1]);
+		        
+	            // top
+		        if (((bound_type>>2)&1) === 1)
+		            is_hit |= (bbox.top < this.vertical_boundary[0]);
+		        
+		        // bottom
+		        if (((bound_type>>3)&1) === 1)
+		            is_hit |= (bbox.bottom > this.vertical_boundary[1]);				
+            }			
+			else if ((this.mode === 1) || (this.mode === 2))
+		    {
+	            // left
+		        if ((bound_type&1) === 1)
+		            is_hit |= (bbox.right < this.horizontal_boundary[0]);
+		        
+		        // right
+		        if (((bound_type>>1)&1) === 1)
+		            is_hit |= (bbox.left > this.horizontal_boundary[1]);
+		        
+	            // top
+		        if (((bound_type>>2)&1) === 1)
+		            is_hit |= (bbox.bottom < this.vertical_boundary[0]);
+		        
+		        // bottom
+		        if (((bound_type>>3)&1) === 1)
+		            is_hit |= (bbox.top > this.vertical_boundary[1]);			
+			}
+
+		        		    
+		}
+		
+		return is_hit;
+	}; 
+	    
 	behinstProto._horizontal_percent_get = function ()
 	{
 	    var offset_inst, offset_bound;
@@ -425,6 +527,13 @@ cr.behaviors.Rex_boundary = function(runtime)
 	{
 		return true;
 	};        
+    
+	var BOUNDTYPE_MAP = [15,1,2,4,8];
+	Cnds.prototype.IsHitBoundary = function (bound_type)
+	{
+		return this.is_hit_bound( BOUNDTYPE_MAP[bound_type] );
+	};    	
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

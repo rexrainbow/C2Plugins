@@ -44,6 +44,7 @@ cr.plugins_.Rex_TimeAway = function(runtime)
         this._webstorage_obj = null;
         this._save_fn = null;
         this._load_fn = null;
+        this._remove_fn = null;
 	    this.fake_ret = {value:0,
 	                     set_any: function(value){this.value=value;},
 	                     set_int: function(value){this.value=value;},	 
@@ -64,6 +65,7 @@ cr.plugins_.Rex_TimeAway = function(runtime)
         var plugins = this.runtime.types;
         this._save_fn = cr.plugins_.WebStorage.prototype.acts.StoreLocal;
         this._load_fn = cr.plugins_.WebStorage.prototype.exps.LocalValue;
+        this._remove_fn = cr.plugins_.WebStorage.prototype.acts.RemoveLocal;
         var name, plugin;
         for (name in plugins)
         {
@@ -90,7 +92,12 @@ cr.plugins_.Rex_TimeAway = function(runtime)
         var webstorage_obj = this.webstorage_get();
         this._save_fn.call(webstorage_obj, key, value);
     };
-
+    
+    instanceProto.remove_value = function (key)
+    {
+        var webstorage_obj = this.webstorage_get();
+        this._remove_fn.call(webstorage_obj, key);
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -107,6 +114,12 @@ cr.plugins_.Rex_TimeAway = function(runtime)
         var nowtime = today.getTime();
         this.save_value(key, nowtime);        
 	};	
+
+	Acts.prototype.RemoveTimer = function (key)
+	{
+        this.remove_value(key);        
+	};		
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

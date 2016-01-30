@@ -45,7 +45,15 @@ AddAnyTypeParam("Text", "Enter the text to set the object's content to.", "\"\""
 AddAction(6, 0, "Append text", "Typing", 
           "{my} append <i>{0}</i>", 
           "Type text letter by letter in the end of current content.", "AppendText");
-          
+      
+AddAction(11, 0, "Pause", "Control", 
+          "Pause", 
+          "Pause typing.", "Pause"); 
+         
+AddAction(12, 0, "Resume", "Control", 
+          "Resume", 
+          "Resume typing.", "Resume");
+                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,	"Get typing speed", "Type", "TypingSpeed", "Get typing speed.");

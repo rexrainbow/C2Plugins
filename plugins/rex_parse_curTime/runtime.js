@@ -27,7 +27,7 @@ cr.plugins_.Rex_Parse_CurTime = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -63,7 +63,7 @@ cr.plugins_.Rex_Parse_CurTime = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;

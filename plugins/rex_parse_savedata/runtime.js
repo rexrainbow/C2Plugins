@@ -27,7 +27,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.4.2.min.js");
+	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
 	var jsfile_load = function(file_name)
@@ -63,7 +63,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if (!window.RexC2IsParseInit)
+	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
 	    {
 	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
 	        window.RexC2IsParseInit = true;
@@ -99,7 +99,9 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 		if (!this.recycled)
 		    this.exp_CurHeader = {};
 		else
-		    clean_table( this.exp_CurHeader );	
+		    clean_table( this.exp_CurHeader );
+		    
+        this.last_error = null;
 	};
     
 	instanceProto.get_query = function (klass_obj, userID, slot_name)
@@ -314,6 +316,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 	    var on_error = function(error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_saveslot.prototype.cnds.OnSaveError, self);
 	    };
         
@@ -381,6 +384,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	    var on_error = function(error)
 	    {
             self.load_headers = null;
+            self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_saveslot.prototype.cnds.OnGetAllHeadersError, self); 
 	    };
         
@@ -400,6 +404,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	    var on_error = function(error)
 	    {
             self.load_body = null;
+            self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_saveslot.prototype.cnds.OnGetBodyError, self); 
 	    };
         
@@ -414,6 +419,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 	    var on_error = function(error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_saveslot.prototype.cnds.OnCleanError, self);
 	    };
         
@@ -455,6 +461,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 	    var on_error = function(error)
 	    {
+	        self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_parse_saveslot.prototype.cnds.OnCleanError, self);
 	    };
         
@@ -485,6 +492,19 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 		this.read_slot(slot_name, clean_slot, on_error);	
 	};
+	
+    Acts.prototype.InitialTable = function ()
+	{	
+	    var header_obj = new this.header_klass();
+        header_obj["set"]("userID", "");
+        header_obj["set"]("slotName", "");
+        window.ParseInitTable(header_obj);
+
+	    var body_obj = new self.body_klass();        
+        body_obj["set"]("userID", "");
+        body_obj["set"]("slotName", "");
+        window.ParseInitTable(body_obj);
+	}; 		
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -557,4 +577,40 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	{
 		ret.set_string("updatedAt");
 	};		
+	
+	Exps.prototype.ErrorCode = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["code"];    
+		ret.set_int(val);
+	}; 
+	
+	Exps.prototype.ErrorMessage = function (ret)
+	{
+	    var val = (!this.last_error)? "": this.last_error["message"];    
+		ret.set_string(val);
+	};		
+		 	
+}());
+
+(function ()
+{
+    if (window.ParseInitTable != null)
+        return;  
+        
+    var init_table = function (item_obj)
+    { 
+	    var on_write_success = function(item_obj)
+	    {
+	        item_obj["destroy"]();
+	    };	
+	    
+	    var on_write_error = function(item_obj, error)
+	    {
+	    };
+        var write_handler = {"success":on_write_success, "error":on_write_error};
+        
+	    item_obj["save"](null, write_handler);
+    };
+
+    window.ParseInitTable = init_table;
 }());

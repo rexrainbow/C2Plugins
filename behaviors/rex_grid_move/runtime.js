@@ -243,8 +243,12 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.set_move_target(target_x, target_y, target_z, dir);
         this.exp_BlockerUID = (-1);
       
-        if (!this.board.IsInsideBoard(target_x, target_y))  // tile does not exist
-            return null;        
+        var my_xyz = this.chess_xyz_get();
+        if ((target_x === my_xyz.x) && (target_y === my_xyz.y) && (target_z === my_xyz.z))
+            return 1; // can move to target
+        else if (!this.board.IsInsideBoard(target_x, target_y))  // tile does not exist
+            return null;
+                    
         var _target_uid = this.board.xyz2uid(target_x, target_y, target_z);
         this._target_uid = _target_uid;  // pass _target_uid out
         

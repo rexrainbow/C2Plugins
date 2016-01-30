@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
@@ -24,15 +24,7 @@ AddCondition(1, cf_trigger, "On paste complete", "Paste",
 AddCondition(2, cf_trigger, "On paste error", "Paste", 
             "On paste error",
             "Triggered when paste error.", "OnPasteError");
-            
-//AddCondition(11, cf_trigger, "On get record complete", "Load", 
-//            "On get record complete",
-//            "Triggered when get record complete.", "OnGetRecordComplete");
-
-//AddCondition(12, cf_trigger, "On get record error", "Load", 
-//            "On get record error",
-//            "Triggered when get record error.", "OnGetRecordError");            
-                             
+                                       
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("OwnerID", "Object ID of owner.", '""');
@@ -59,12 +51,10 @@ AddComboParam("Scale", "Scale of date.", 2);
 AddAction(2, 0, "Paste server time", "Paste", 
           "Owner ID: <i>{0}</i> paste <i>{1}</i> to current server timestamp, in <i>{2}</i> scale", 
           "Paste current server timestamp.", "PasteServerTimestamp");          
-                               
-//AddStringParam("OwnerID", "Object ID of owner.", '""');
-//AddStringParam("Record name", "Record name.", '""');
-//AddAction(11, 0, "Get record", "Load", 
-//          "Get record of Owner ID: <i>{0}</i>, record <i>{1}</i>", 
-//          "Get record.", "GetRecord");                               
+                 
+AddAction(2000, 0, "Initial table", "Initial", 
+          "Initial table", 
+          "Initial table.", "InitialTable");                                                             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Pasted continuous count", "Paste", "PastedContinuousCount", 
@@ -81,18 +71,12 @@ AddExpression(4, ef_return_string, "Pasted record name", "Paste", "PastedRecordN
               
 AddExpression(5, ef_return_number, "Pasted previous continuous count", "Paste", "PastedPreviousContinuousCount", 
               "Get previous continuous count in a row of pasted record.");            
+          
               
-//AddExpression(11, ef_return_number, "Last continuous count", "Receive", "LastContinuousCount", 
-//              "Get continuous count in a row of last record.");
-              
-//AddExpression(12, ef_return_number, "Last last-pasted-timestamp", "Receive", "LastLastTimestamp", 
-//              "Get last pasted timestamp of last record.");
-              
-//AddExpression(13, ef_return_string, "Last ownerID", "Receive", "LastOwnerID", 
-//              "Get ownerID of last record.");
-              
-//AddExpression(14, ef_return_string, "Last record name", "Receive", "LastRecordName", 
-//              "Get record name of last record.");
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");
 
 ACESDone();
 

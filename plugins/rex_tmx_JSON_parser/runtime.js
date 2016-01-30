@@ -107,9 +107,16 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     {     
         var map = {};  
         map.orientation = _get_value(dict_obj, "orientation");
+        map.renderorder = _get_value(dict_obj, "renderorder");
         map.width =  _get_value(dict_obj, "width");
         map.height = _get_value(dict_obj, "height");
         map.tilewidth = _get_value(dict_obj, "tilewidth");
+        
+        map.hexsidelength = _get_value(dict_obj, "hexsidelength");
+        map.staggeraxis = _get_value(dict_obj, "staggeraxis");
+        map.staggerindex = _get_value(dict_obj, "staggerindex");
+        map.nextobjectid = _get_value(dict_obj, "nextobjectid");
+        
         map.tileheight = _get_value(dict_obj, "tileheight");
         map.backgroundcolor = _get_C2_color_number(_get_value(dict_obj, "backgroundcolor", ""));
         map.properties = _get_properties(dict_obj, "properties");
@@ -209,9 +216,71 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
         layer.height = _get_value(dict_obj, "height");        
         layer.opacity = _get_value(dict_obj, "opacity", 1);
         layer.properties = _get_properties(dict_obj, "properties");
-        layer.data = dict_obj["data"];
+
+        var encoding = dict_obj["encoding"];
+        var compression = dict_obj["compression"];
+        var data = dict_obj["data"];      
+        layer.data = _get_data(data, encoding, compression);
         return layer;
     };
+    
+    var _get_data = function (data, encoding, compression)
+    {      
+        // CSV
+        if (encoding == null)
+            return data;
+            
+        // base64     
+        if(typeof(String.prototype.trim) === "undefined")
+        {
+            String.prototype.trim = function() 
+            {
+                return String(this).replace(/^\s+|\s+$/g, '');
+            };
+        }
+        
+        data = data.trim();
+        if (encoding == "base64")
+        {
+            data = atob(data);
+            data = data.split('').map(function(e) {
+                return e.charCodeAt(0);
+            });
+            
+            if (compression == "zlib")
+            {
+                var inflate = new window["Zlib"]["Inflate"](data);
+                data = inflate["decompress"]();
+            }
+            else if (compression == "gzip")
+            {
+                var gunzip = new window["Zlib"]["Gunzip"](data);
+                data = gunzip["decompress"]();               
+            }
+            data = _array_merge(data);
+        }
+        else
+            alert ("TMXImporter: could not get tiles data");             
+        return data;
+    };
+    var _array_merge = function(data) 
+    {
+   	    var bytes = 4;
+   	    var len = data.length / bytes;
+   	    var arr = [];
+   	    var i, j, tmp;
+   
+   	    for (i = 0; i<len; i++) 
+   	    {
+            tmp = 0;
+   		    for (j = bytes - 1; j >= 0; --j) 
+                tmp += ( data[(i * bytes) + j] << (j << 3) );
+            arr[i] = tmp;
+   	    }  
+        arr.length = len;
+        return arr;
+    };
+    
     var _get_objectgroups = function (dict_obj)
     {
         if (dict_obj.hasOwnProperty("layers"))

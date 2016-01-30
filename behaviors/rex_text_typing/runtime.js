@@ -72,8 +72,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this.content = "";
         this.raw_text_length = 0;
         this.timer_save = null;
-		this._text_type = "";        
-		this._set_text_handler = this._set_text_handler_get();
+		this.text_type = this._text_type_get();  
+		this._set_text_handler = this._set_text_handler_get(this.text_type);
 	};
 
 	behinstProto.onDestroy = function()
@@ -111,17 +111,16 @@ cr.behaviors.Rex_text_typing = function(runtime)
 		return text_type;
 	};
 	
-	behinstProto._set_text_handler_get = function ()
+	behinstProto._set_text_handler_get = function (text_type)
 	{
-	    this.text_type = this._text_type_get();
 	    var set_text_handler;
-        if (this.text_type == "Text")		
+        if (text_type === "Text")		
 	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
-	    else if (this.text_type == "Spritefont2")	
+	    else if (text_type === "Spritefont2")	
 			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
-	    else if (this.text_type == "TextBox")	
+	    else if (text_type === "TextBox")	
 			set_text_handler = cr.plugins_.TextBox.prototype.acts.SetText;				
-	    else if (this.text_type == "rex_TagText")	
+	    else if (text_type === "rex_TagText")	
 			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;		
 	    else
 		    set_text_handler = null;
@@ -305,8 +304,15 @@ cr.behaviors.Rex_text_typing = function(runtime)
 
 	Acts.prototype.SetTypingSpeed = function(speed)
 	{
-        this.typing_speed = speed;
+	    if (this.typing_speed === speed)
+	        return;
+	        
+	        
+        this.typing_speed = speed;                   
         var timer = this.typing_timer;
+        if (timer == null)
+            return;
+                    
         if (timer.IsActive())
         {
             timer.Restart(speed);
@@ -332,7 +338,22 @@ cr.behaviors.Rex_text_typing = function(runtime)
         if (!this.is_typing())
             this._start_typing(this.content, this.typing_speed, start_index);
 	};    
-    
+
+    Acts.prototype.Pause = function ()
+	{
+	    if (this.typing_timer == null)
+	        return;
+	        
+	    this.typing_timer.Suspend();
+	};   
+
+    Acts.prototype.Resume = function ()
+	{
+	    if (this.typing_timer == null)
+	        return;
+	    
+	    this.typing_timer.Resume();
+	};       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

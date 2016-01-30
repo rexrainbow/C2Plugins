@@ -78,6 +78,16 @@ AddExpression(18, ef_return_number,
               "Direction code of right-up.");              
 
 
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);       
+AddExpression(51, ef_return_number,
+              "Get X co-ordinate by logic index", "Physical", "LXY2PX",
+              "Get physical X co-ordinate by logic X,Y index. Return (-1) if this position does not exist.");
+AddNumberParam("X", "The logic X.", 0);
+AddNumberParam("Y", "The logic Y.", 0);                              
+AddExpression(52, ef_return_number,
+              "Get Y co-ordinate by logic index", "Physical", "LXY2PY",
+              "Get physical Y co-ordinate by logic X,Y index. Return (-1) if this position does not exist."); 
 
 			  
 ACESDone();

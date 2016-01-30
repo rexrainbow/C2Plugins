@@ -42,7 +42,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.onCreate = function()
 	{        
         this.check_name = "LAYOUT";
-        this.layout_mode = this.properties[0];
+        this.mode = this.properties[0];
         this.is_8dir = (this.properties[5] == 1);
                 
         this.SetPOX(this.properties[1]);
@@ -79,15 +79,15 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.LXYZ2PX = function(lx, ly, lz)
 	{
 	    var x;
-	    if (this.layout_mode == 0)  // Orthogonal
+	    if (this.mode == 0)  // Orthogonal
 	    {
 	        x = lx * this.width;
 	    }
-	    else if (this.layout_mode == 1)  // Isometric
+	    else if (this.mode == 1)  // Isometric
 	    {
 	        x = (lx - ly) * this.half_width;
 	    }
-	    else if (this.layout_mode == 2)  // Staggered
+	    else if (this.mode == 2)  // Staggered
 	    {
 	        x = lx * this.width;
 	        if (ly&1)
@@ -99,15 +99,15 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.LXYZ2PY = function (lx, ly, lz)
 	{
 	    var y;
-	    if (this.layout_mode == 0)  // Orthogonal
+	    if (this.mode == 0)  // Orthogonal
 	    {
 	        y = ly * this.height;
 	    }
-	    else if (this.layout_mode == 1)  // Isometric
+	    else if (this.mode == 1)  // Isometric
 	    {
 	        y = (lx + ly) * this.half_height;
 	    }
-	    else if (this.layout_mode == 2)  // Staggered
+	    else if (this.mode == 2)  // Staggered
 	    {
 	        y = ly * this.half_height;
 	    }
@@ -117,18 +117,18 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.PXY2LX = function(px, py)
 	{
 	    var lx;
-	    if (this.layout_mode == 0)   // Orthogonal
+	    if (this.mode == 0)   // Orthogonal
 	    {
 	        px -= this.PositionOX;
 	        lx = Math.round(px/this.width);
 	    }
-	    else if (this.layout_mode == 1)   // Isometric
+	    else if (this.mode == 1)   // Isometric
 		{
 		    px -= this.PositionOX;
 		    py -= this.PositionOY;
 		    lx = 0.5 * (Math.round(py/this.half_height) + Math.round(px/this.half_width));
 		}
-		else if (this.layout_mode == 2)  // Staggered
+		else if (this.mode == 2)  // Staggered
 		{
 		    var ly = Math.round((py - this.PositionOY)/this.half_height);
 		    px = px - this.PositionOX;
@@ -142,18 +142,18 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.PXY2LY = function(px,py)
 	{
 	    var ly;
-	    if (this.layout_mode == 0)   // Orthogonal
+	    if (this.mode == 0)   // Orthogonal
 	    {
 	        py -= this.PositionOY;
 	        ly = Math.round(py/this.height);
 	    }
-	    else if (this.layout_mode == 1)   // Isometric
+	    else if (this.mode == 1)   // Isometric
 		{
 		    px -= this.PositionOX;
 		    py -= this.PositionOY;
 		    ly = 0.5 * (Math.round(py/this.half_height) - Math.round(px/this.half_width));
 		}
-		else if (this.layout_mode == 2)  // Staggered
+		else if (this.mode == 2)  // Staggered
 	    {
 		    ly = Math.round((py - this.PositionOY)/this.half_height);
 		}
@@ -168,15 +168,15 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.GetNeighborLX = function(x, y, dir)
 	{
 	    var dx;
-	    if (this.layout_mode == 0)   // Orthogonal
+	    if (this.mode == 0)   // Orthogonal
 	    {
 	        dx = map_01[dir][0];
 	    }
-	    else if (this.layout_mode == 1)   // Isometric
+	    else if (this.mode == 1)   // Isometric
 		{
 	        dx = map_01[dir][0];
 		}
-		else if (this.layout_mode == 2)  // Staggered
+		else if (this.mode == 2)  // Staggered
 	    {
 	        if (y&1)
 	            dx = nlx_map_2_1[dir];
@@ -191,15 +191,15 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.GetNeighborLY = function(x, y, dir)
 	{
 	    var dy;
-	    if (this.layout_mode == 0)   // Orthogonal
+	    if (this.mode == 0)   // Orthogonal
 	    {
 	        dy = map_01[dir][1];
 	    }
-	    else if (this.layout_mode == 1)   // Isometric
+	    else if (this.mode == 1)   // Isometric
 		{
 	        dy = map_01[dir][1];
 		}
-		else if (this.layout_mode == 2)  // Staggered
+		else if (this.mode == 2)  // Staggered
 	    {
 	        dy = nly_map_2[dir];
 		} 
@@ -211,10 +211,10 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         return (!this.is_8dir)? 4:8;						 
 	};
 	
-	var dxy2dir = function (dx, dy, x, y, layout_mode)
+	var dxy2dir = function (dx, dy, x, y, mode)
 	{
 	    var dir;
-	    if (layout_mode == 0)   // Orthogonal
+	    if (mode == 0)   // Orthogonal
 	    {
 	        dir = ((dx==1) && (dy==0))?  0:
 	              ((dx==0) && (dy==1))?  1:
@@ -226,7 +226,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	              ((dx==1) && (dy==-1))? 7:
 	                                     null;
 	    }
-	    else if (layout_mode == 1)   // Isometric
+	    else if (mode == 1)   // Isometric
 		{
 	        dir = ((dx==1) && (dy==0))?  0:
 	              ((dx==0) && (dy==1))?  1:
@@ -238,7 +238,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	              ((dx==1) && (dy==-1))? 7:
 	                                     null;
 		}
-		else if (layout_mode == 2)  // Staggered
+		else if (mode == 2)  // Staggered
 	    {
 	        if (y&1)
 	        {
@@ -294,7 +294,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	        dx = dx/vmax;
 	        dy = dy/vmax;
 	    }
-	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.mode);  
         return dir;				 
 	};
 	
@@ -302,7 +302,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	{  
 	    var dx = xyz_to.x - xyz_o.x;
 	    var dy = xyz_to.y - xyz_o.y;
-	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.layout_mode);  
+	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.mode);  
 	    
 	    if ((dir != null) && (!this.is_8dir) && (dir > 3))	    
 	        dir = null;
@@ -313,7 +313,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.LXYZRotate2LX = function (lx, ly, lz, dir)
 	{
         var new_lx;
-        switch (this.layout_mode)
+        switch (this.mode)
         {
         case 0:    // Orthogonal
         case 1:    // Isometric
@@ -336,7 +336,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	instanceProto.LXYZRotate2LY = function (lx, ly, lz, dir)
 	{
         var new_ly;
-        switch (this.layout_mode)
+        switch (this.mode)
         {
         case 0:    // Orthogonal
         case 1:    // Isometric
@@ -385,7 +385,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	
 	instanceProto.saveToJSON = function ()
 	{
-		return { "iso": this.layout_mode,
+		return { "iso": this.mode,
                  "w": this.width,
                  "h": this.height,
                  "ox": this.PositionOX,
@@ -395,7 +395,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-		this.layout_mode = o["iso"];
+		this.mode = o["iso"];
         this.SetWidth(o["w"]);
         this.SetHeight(o["h"]);   
         this.SetPOX(o["ox"]);
@@ -414,7 +414,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
     
     Acts.prototype.SetOrientation = function (m)
     {        
-        this.layout_mode = m;
+        this.mode = m;
 	};
     Acts.prototype.SetCellSize = function (width, height)
     {        
@@ -483,5 +483,17 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	Exps.prototype.DIRRIGHTUP = function (ret)
     {
 	    ret.set_int(7);
+	};	
+	
+	Exps.prototype.LXY2PX = function (ret,lx,ly)
+	{
+        var px = this.LXYZ2PX(lx,ly,0);
+	    ret.set_float(px);
+	};
+    
+	Exps.prototype.LXY2PY = function (ret,lx,ly)
+	{
+        var py = this.LXYZ2PY(lx,ly,0);
+	    ret.set_float(py);
 	};	
 }());

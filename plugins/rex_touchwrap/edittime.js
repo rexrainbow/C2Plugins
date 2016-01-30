@@ -148,6 +148,13 @@ AddExpression(26, ef_return_number, "", "Touch", "SpeedForID", "Get the speed of
 AddNumberParam("ID", "ID of the touch to get.");
 AddExpression(27, ef_return_number, "", "Touch", "AngleForID", "Get the angle of motion of a touch with a specific ID, in degrees.");
 
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(28, ef_return_number, "", "Touch", "WidthForID", "Get the width of a touch with a specific ID.");
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(29, ef_return_number, "", "Touch", "HeightForID", "Get the height of a touch with a specific ID.");
+AddNumberParam("ID", "ID of the touch to get.");
+AddExpression(30, ef_return_number, "", "Touch", "PressureForID", "Get the pressure (from 0 to 1) of a touch with a specific ID.");
+
 ACESDone();
 
 // Property grid properties for this plugin

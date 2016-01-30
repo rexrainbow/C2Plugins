@@ -54,12 +54,16 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		this.mainboard = new cr.plugins_.Rex_MiniBoard.MainboardRefKlass();
 		this.mainboard_last = new cr.plugins_.Rex_MiniBoard.MainboardRefKlass();              
 		this.ResetBoard();
-		
-		this.myDestroyCallback = (function (self) {
+
+        if (!this.recycled)		
+        {
+		    this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
 										})(this); 
+	    }
+	    
         this.runtime.addDestroyCallback(this.myDestroyCallback); 
 		this.runtime.tick2Me(this); 
 
@@ -1038,7 +1042,20 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		
 		layout.SetPOX(pox_save);
 		layout.SetPOY(poy_save);		
-	};		    
+	};	
+	
+	Acts.prototype.RemoveChess = function (obj_type)
+	{
+        if (!obj_type)
+            return;  
+        var chess = obj_type.getCurrentSol().getObjects();
+        var i, chess_cnt=chess.length;
+        for (i=0; i<chess_cnt; i++)  
+        {      
+	        this.RemoveChess(chess[i].uid);
+	    }
+	};	
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -1303,6 +1320,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
     window.RexC2PickUIDs = PickUIDs;
 }());    
 
+
 (function ()
 {   
     // general group class
@@ -1484,7 +1502,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	GroupKlassProto.Index2UID = function(index)
 	{
         var _list = this._list;
-        var uid = (index < _list.length)? _list[index]:(-1);
+        var uid = _list[index] || (-1);
         return uid;
 	};		
 		

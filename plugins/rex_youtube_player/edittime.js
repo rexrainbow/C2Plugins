@@ -7,7 +7,7 @@
 		"description":	"Play youtube video at iframe.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_youtube_player.html",
-		"category":		"Web",
+		"category":		"Web - Youtube",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":		pf_position_aces | pf_size_aces | pf_angle_aces
@@ -17,13 +17,17 @@
 ////////////////////////////////////////
 // Conditions
 							
-AddCondition(0, cf_none, "Is playing", "Video", "Is playing", "True if video is currently playing.", "IsPlaying");
+AddCondition(0, cf_none, "Is playing", "Video", "Is playing", 
+             "True if video is currently playing.", "IsPlaying");
 
-AddCondition(1, cf_none, "Is paused", "Video", "Is paused", "True if video is currently paused.", "IsPaused");
+AddCondition(1, cf_none, "Is paused", "Video", "Is paused", 
+             "True if video is currently paused.", "IsPaused");
 
-AddCondition(2, cf_none, "Has ended", "Video", "Has ended", "True if video has finished playing.", "HasEnded");
+AddCondition(2, cf_none, "Has ended", "Video", "Has ended", 
+             "True if video has finished playing.", "HasEnded");
 
-AddCondition(3, cf_none, "Is muted", "Video", "Is muted", "True if video sound is muted.", "IsMuted");
+AddCondition(3, cf_none, "Is muted", "Video", "Is muted", 
+             "True if video sound is muted.", "IsMuted");
 
 AddComboParamOption("Unstarted");			// 0
 AddComboParamOption("Ended");	            // 1
@@ -32,12 +36,23 @@ AddComboParamOption("Paused");				// 3
 AddComboParamOption("Buffering");		    // 4
 AddComboParamOption("Video cued");		    // 6
 AddComboParam("Event", "The playback event to check for.");
-AddCondition(4, cf_trigger, "On playback event", "Video", "On {0}", "Triggered when a playback event occurs.", "OnPlaybackEvent");
+AddCondition(4, cf_trigger, "On playback event", "Video", "On {0}", 
+             "Triggered when a playback event occurs.", "OnPlaybackEvent");
 
+AddCmpParam("Comparison", "Choose the way to compare the distance travelled.");
+AddNumberParam("Playback time", "Current playback time, in seconds.");
+AddCondition(5, 0, "Compare playback time", "Video", 
+             "Playback time {0} {1}", "Compare current playback time.", "ComparePlaybackTime");
+
+
+AddCondition(11, cf_trigger, "On player ready", "Initial", "On player ready", 
+             "Triggered when player ready.", "OnPlayerReady");
+AddCondition(12, cf_trigger, "On player error", "Video", "On player error",
+             "Triggered when player has error.", "OnPlayerError");
 ////////////////////////////////////////
 // Actions
 
-AddStringParam("Video ID", "Video ID to play.");
+AddStringParam("Video ID", "Video ID.", '""');
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Play", "Start playing upon buffered.", 1);
@@ -45,17 +60,21 @@ AddAction(0, af_none, "Load video", "Video",
           "Load video with ID to <i>{0}</i>, auto play to <i>{1}</i>", 
           "Load video with ID.", "LoadVideoID");
 
-AddNumberParam("Time", "Playback time in seconds to seek to.");
-AddAction(1, af_none, "Set playback time", "Video", "Set playback time to <b>{0}</b> seconds", "Set the current playback time in seconds.", "SetPlaybackTime");
+AddNumberParam("Time", "Playback time in seconds to seek to.", 0);
+AddAction(1, af_none, "Set playback time", "Video", 
+          "Set playback time to <b>{0}</b> seconds", 
+          "Set the current playback time in seconds.", "SetPlaybackTime");
 
 AddComboParamOption("not looping");
 AddComboParamOption("looping");
-AddComboParam("Mode", "Whether or not the video should loop when it reaches the end.");
-AddAction(2, af_none, "Set looping", "Video", "Set {0}", "Set whether the video loops when it reaches the end.", "SetLooping");
+AddComboParam("Mode", "Whether or not the video should loop when it reaches the end.", 0);
+AddAction(2, af_none, "Set looping", "Video", 
+          "Set {0}", 
+          "Set whether the video loops when it reaches the end.", "SetLooping");
 
 AddComboParamOption("not muted");
 AddComboParamOption("muted");
-AddComboParam("Mode", "Whether or not the audio should be muted.");
+AddComboParam("Mode", "Whether or not the audio should be muted.", 0);
 AddAction(3, af_none, "Set muted", "Video", "Set {0}", "Set whether the audio is muted.", "SetMuted");
 
 AddNumberParam("Volume", "The volume of the audio to set, from 0 to 100.", 100);
@@ -65,15 +84,26 @@ AddAction(5, af_none, "Pause", "Video", "Pause", "Pause the current playback.", 
 
 AddAction(6, af_none, "Play", "Video", "Play", "Start playing the video if stopped or paused. On mobile, may only work in a user input trigger.", "Play");
 
+AddAction(11, af_none, "Full screening", "Size", 
+          "Resize to full screen", 
+          "Resize to full screen.", "FullScreening");
+          
+AddComboParamOption("Invisible");
+AddComboParamOption("Visible");
+AddComboParam("Visibility", "Choose whether to hide or show this object.");
+AddAction(12, af_none, "Set visible", "Appearance", "Set <b>{0}</b>", "Hide or show this object.", "SetVisible");          
 ////////////////////////////////////////
 // Expressions
 
-AddExpression(0, ef_return_number, "", "Video", "PlaybackTime", "Current playback time in seconds.");
+AddExpression(0, ef_return_number, "Get current playback time", "Video", "PlaybackTime", "Current playback time, in seconds.");
 
-AddExpression(1, ef_return_number, "", "Video", "Duration", "Video duration in seconds, if known.");
+AddExpression(1, ef_return_number, "Get video duration", "Video", "Duration", "Video duration in seconds, if known.");
 
-AddExpression(2, ef_return_number, "", "Video", "Volume", "Current video volume in dB attenuation.");
+AddExpression(2, ef_return_number, "Get current video volume", "Video", "Volume", "Current video volume in dB attenuation.");
 
+AddExpression(3, ef_return_number, "Get current error code", "Video", "ErrorCode", "Current error code.");
+
+AddExpression(11, ef_return_string, "Get current video statee", "Debug", "VideoState", "Current video statee.");
 
 ACESDone();
 
@@ -81,7 +111,11 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_text, "Video ID", "r45t8CgSBeA", "Video ID to play."),
     new cr.Property(ept_combo, "Autoplay", "Yes", "Start playing upon buffered.", "No|Yes"),
-    //new cr.Property(ept_combo,	"Initial visibility",	"Visible",	"Choose whether the video is visible on startup.", "Invisible|Visible")
+    new cr.Property(ept_combo, "Looping", "No", "Restart video after ended.", "No|Yes"),
+    new cr.Property(ept_combo,	"Control bar", "Yes", "Enable control bar or not.", "No|Yes"),
+	new cr.Property(ept_combo,"Show info", "Yes", "Enable to show video information", "No|Yes"),
+	new cr.Property(ept_combo,"Keyboard control", "Yes", "Enable to control video by keyboard.", "Yes|No"),
+    new cr.Property(ept_combo, "Initial visibility", "Visible", "Choose whether the text box is visible on startup.", "Invisible|Visible"),
 	];
 
 // Called by IDE when a new object type is to be created

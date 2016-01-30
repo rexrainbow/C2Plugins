@@ -54,11 +54,14 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    this._inst_private_group_name = {};
 	    
 		// Need to know if pinned object gets destroyed
-		this.myDestroyCallback = (function (self) {
+		if (!this.recycled)
+		{
+		    this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
 										})(this);
+        }
 										
 		this.runtime.addDestroyCallback(this.myDestroyCallback); 
 		
@@ -689,14 +692,24 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    var uid_list = group.GetList();
 	    if (index == -1)
 	        index = uid_list.length -1;
-	    var uid = uid_list[index];
-	    if (uid == null)
-	        uid = -1;
-	    else
+	    var uid = uid_list[index] || (-1);
+	    if (uid !== -1)
 	        group.RemoveUID(uid);	
 	    ret.set_int(uid);
 	};
-	  
+	
+	Exps.prototype.FirstUID = function (ret, name)
+	{
+	    ret.set_int(this.GetGroup(name).Index2UID(0));
+	}; 
+	
+	Exps.prototype.LastUID = function (ret, name)
+	{
+	    var uid_list = this.GetGroup(name).GetList();
+	    var index = uid_list.length -1;
+	    var uid = uid_list[index] || (-1);
+	    ret.set_int(uid);
+	};     	  
 }());
 
 (function ()
@@ -880,7 +893,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	GroupKlassProto.Index2UID = function(index)
 	{
         var _list = this._list;
-        var uid = (index < _list.length)? _list[index]:(-1);
+        var uid = _list[index] || (-1);
         return uid;
 	};		
 		

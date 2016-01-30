@@ -1,4 +1,7 @@
-﻿// ECMAScript 5 strict mode
+﻿/*
+- counter value
+*/
+// ECMAScript 5 strict mode
 "use strict";
 
 assert2(cr, "cr namespace not created");

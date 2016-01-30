@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"parse-1.4.2.min.js"
+		"dependency":	"parse-1.5.0.min.js"
 	};
 };
 
@@ -109,7 +109,11 @@ AddAction(21, 0, "Clean all slots", "Clean",
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddAction(22, 0, "Clean slot", "Clean", 
           "Clean slot with name <i>{0}</i> on server", 
-          "Clean slot on server.", "CleanSlot");        
+          "Clean slot on server.", "CleanSlot");      
+          
+AddAction(2000, 0, "Initial table", "Initial", 
+          "Initial table", 
+          "Initial table.", "InitialTable");               
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any, "Get current slot name", "For each header", "CurSlotName", 
@@ -136,7 +140,14 @@ AddExpression(6, ef_return_any | ef_variadic_parameters, "Get header value", "He
 
 AddExpression(31, ef_return_string, "Key of Last saved time", "Key", "KeyLastSaveTime", 
               'Key of Last saved time ("updatedAt")'); 
-              
+
+
+AddExpression(1001, ef_return_number, "Error code", "Error", "ErrorCode", 
+              "Error code.");
+AddExpression(1002, ef_return_string, "Error message", "Error", "ErrorMessage", 
+              "Error message.");
+          
+                        
 ACESDone();
 
 // Property grid properties for this plugin

@@ -51,12 +51,14 @@ cr.plugins_.Rex_board_edge = function(runtime)
         this.boardUid = -1;    // for loading   
         
 		// Need to know if pinned object gets destroyed
-		this.myDestroyCallback = (function (self) {
+		if (!this.recycled)
+		{
+		    this.myDestroyCallback = (function (self) {
 											return function(inst) {
 												self.onInstanceDestroyed(inst);
 											};
 										})(this);
-										
+        }										
 		this.runtime.addDestroyCallback(this.myDestroyCallback);               	
 	};
 	
@@ -813,6 +815,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 		  	    
 }());
 
+
 (function ()
 {   
     // general group class
@@ -994,7 +997,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	GroupKlassProto.Index2UID = function(index)
 	{
         var _list = this._list;
-        var uid = (index < _list.length)? _list[index]:(-1);
+        var uid = _list[index] || (-1);
         return uid;
 	};		
 		

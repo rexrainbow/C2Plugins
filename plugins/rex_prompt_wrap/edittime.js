@@ -46,6 +46,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Enable wrap", "Yes", "Set No to popup prompt box by browser api.", "No|Yes"),  
 	];
 	
 // Called by IDE when a new object type is to be created

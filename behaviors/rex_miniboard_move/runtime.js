@@ -305,7 +305,12 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	{
         this.moveTo_offset(dx, dy, test_mode, false);
     };
-
+    
+ 	Acts.prototype.Stop = function ()
+	{
+        this._cmd_move_to.is_moving = false;
+	};   
+	
 	Acts.prototype.MoveToTargetChess = function (objtype, test_mode)
 	{
 	    var mainboard_ref = this.inst.mainboard;

@@ -50,7 +50,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
 	instanceProto.onCreate = function()
 	{  
-	    this.is_clamp_OY = (this.properties[3] == 1);
+	    this.is_vertical_scrolling = (this.properties[4] === 1); 	    
+	    this.is_clamp_OY = (this.properties[3] === 1);
 	    this.default_lineHeight = this.properties[1];
 	    this.update_flag = true;
 	    this.OY = 0;
@@ -66,7 +67,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         // monitor ListCtrl changing
         this.pre_instX = this.x;
         this.pre_instY = this.y;
-        this.pre_instHeight = this.height;
+        this.pre_instHeight = this.get_inst_height();
         this.is_out_top_bound = false;
         this.is_out_bottom_bound = false;
         this.bound_type = null;
@@ -78,6 +79,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.exp_LastBoundOY = 0;
         
         this.runtime.tick2Me(this);
+        
+        this.lines_mgr_save = null;
 	};
     
 	instanceProto.draw = function(ctx)
@@ -90,7 +93,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
     instanceProto.tick2 = function()
     {            
-        var is_heightChanged = (this.pre_instHeight !== this.height);
+        var cur_instHeight = this.get_inst_height();
+        var is_heightChanged = (this.pre_instHeight !== cur_instHeight);
         var is_XChanged = (this.pre_instX !== this.x);
         var is_YChanged = (this.pre_instY !== this.y);
         var is_areaChange = is_heightChanged || is_XChanged || is_YChanged;
@@ -105,7 +109,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         
         this.pre_instX = this.x;
         this.pre_instY = this.y;        
-        this.pre_instHeight = this.height;
+        this.pre_instHeight = cur_instHeight;
     };
     
 	instanceProto.onDestroy = function ()
@@ -113,7 +117,17 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         //this.set_lines_count(0);
 	};
         
-    	
+	instanceProto.get_inst_height = function()
+	{
+	    return (this.is_vertical_scrolling)? this.height : this.width;
+	};
+	
+	instanceProto.get_inst_width = function()
+	{
+	    return (this.is_vertical_scrolling)? this.width : this.height;
+	};	    	
+	    	
+	    	
     instanceProto.update = function(refresh)
     {     
         if (refresh)
@@ -141,13 +155,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
     instanceProto.show_lines = function()
     {            
-        this.update_bbox();
         // index
         var line_index = Math.floor( -this.OY / this.default_lineHeight );	            
-        var line_tlx = this.bquad.tlx;       
+        var line_tlx = this.get_tlx();       
         var line_tly = this.get_tlY(line_index);
         // end condition
-        var bottom_bound = this.bquad.bly;    
+        var bottom_bound = this.get_bottom_bound();    
         var last_index = this.lines_mgr.GetLinesCount() -1;
         
         var line;
@@ -167,7 +180,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
                 
                 line = this.lines_mgr.GetLine(line_index);
                 line_tly += line.offsety;
-                line.SetTopLeftPXY(line_tlx, line_tly);
+                line.SetTLXY(line_tlx, line_tly);
                 
                 if (this.pre_visibleLineIndexes.hasOwnProperty(line_index))
                 {
@@ -186,10 +199,20 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     }; 
     
     instanceProto.show_line = function(line_index, tlx, tly)
-    {          
+    {
         this.exp_LineIndex = line_index;
-        this.exp_LineTLX = tlx;
-        this.exp_LineTLY = tly;
+        
+        if (this.is_vertical_scrolling)
+        {
+            this.exp_LineTLX = tlx;
+            this.exp_LineTLY = tly;
+        }
+        else
+        {
+            this.exp_LineTLX = tly;
+            this.exp_LineTLY = tlx;            
+        }
+        
         this.runtime.trigger(cr.plugins_.Rex_ListCtrl.prototype.cnds.OnLineVisible, this);     
     };
     
@@ -214,14 +237,27 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         // destroy instances in the line  
         this.lines_mgr.DestroyPinedInsts(line_index);     
     };
-    
+
+    instanceProto.get_tlx = function()
+    {                
+        this.update_bbox(); 
+        return (this.is_vertical_scrolling)? this.bquad.tlx : this.bquad.tly;
+    };
+        
     instanceProto.get_tlY = function(line_index)
     {            
-        this.update_bbox();        
-        var py = ( this.OY + (line_index * this.default_lineHeight) ) + this.bquad.tly;        
+        this.update_bbox(); 
+        var poy = (this.is_vertical_scrolling)? this.bquad.tly : this.bquad.tlx;       
+        var py = ( this.OY + (line_index * this.default_lineHeight) ) + poy;        
         return py;
     };
         
+    instanceProto.get_bottom_bound = function()
+    {            
+        this.update_bbox(); 
+        return (this.is_vertical_scrolling)? this.bquad.bly : this.bquad.trx;
+    };  
+          
 	instanceProto.set_OY = function(oy)
 	{  
 	    // check out-of-bound
@@ -231,7 +267,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    if (this.is_clamp_OY)
 	    {
 	        var total_lines=this.lines_mgr.GetLinesCount();
-	        var visible_lines=this.get_fullLinesCnt();
+	        var visible_lines=this.get_page2LineCnt();
 	        
 	        if (total_lines < visible_lines)
 	            oy = 0;
@@ -279,9 +315,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    return (line_index >= this.visible_start) && (line_index <= this.visible_end);
 	};
 
-    instanceProto.get_fullLinesCnt = function()
-    {            
-        return (this.height/this.default_lineHeight);          
+    instanceProto.get_page2LineCnt = function(ignore_round)
+    {                    
+	    var page2lines = this.get_inst_height()/this.default_lineHeight;
+		if (!ignore_round)
+		    page2lines = Math.ceil(page2lines);
+        return page2lines;            
     };  
     
 	var NEWLINES = [];	
@@ -374,31 +413,35 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		var i;
 		for(i=start; i<=end; i++)
 		{
-            if (solModifierAfterCnds)
-            {
-                this.runtime.pushCopySol(current_event.solModifiers);
-            }
-            
             if ((!filter_fn) || filter_fn(i))
             {
+			
+                if (solModifierAfterCnds)
+                {
+                    this.runtime.pushCopySol(current_event.solModifiers);
+                }
+            
+
                 this.exp_LineIndex = i;
                 current_event.retrigger();
-            }
+
             
-		    if (solModifierAfterCnds)
-		    {
-		        this.runtime.popSol(current_event.solModifiers);
-		    }            
+		        if (solModifierAfterCnds)
+		        {
+		            this.runtime.popSol(current_event.solModifiers);
+		        }  
+
+            }			
 		}
     		
 		return false;	        
 	    
 	};	 
 
-    instanceProto.get_page_index = function (page)
+    instanceProto.get_page2Index = function (page)
 	{
         var line_index;
-	    var full_lines_cnt = this.get_fullLinesCnt();  
+	    var full_lines_cnt = this.get_page2LineCnt();  
         if (page == -1) // last full page      
             line_index = this.lines_mgr.GetLinesCount() - full_lines_cnt;        
         else        
@@ -413,7 +456,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{
 	    var h;
 	    var total_lines=this.lines_mgr.GetLinesCount();
-	    var visible_lines=this.get_fullLinesCnt();
+	    var visible_lines=this.get_page2LineCnt(true);
 	    
 	    if (total_lines > visible_lines)
 	        h = (total_lines - visible_lines) * this.default_lineHeight;
@@ -543,7 +586,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		         "pre_instY": this.pre_instY,
 		         "pre_instHeight": this.pre_instHeight,    
 		         "topb": this.is_out_top_bound,
-		         "botb": this.is_out_bottom_bound  
+		         "bottomb": this.is_out_bottom_bound  
 		       };
 	};
 	
@@ -552,7 +595,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    this.default_lineHeight = o["line_height"];	    
 	    this.update_flag = o["update_flag"];	   
 	    this.OY = o["OY"];	    
-	    this.lines_mgr.loadFromJSON( o["lines_mgr"] ); 
+	    this.lines_mgr_save = o["lines_mgr"]; 
 	    this.visibleLineIndexes = o["visible_lines"];
 	    this.pre_visibleLineIndexes = o["pre_visible_lines"];
 	    this.visible_start = o["visible_start"];
@@ -562,9 +605,15 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    this.pre_instY = o["pre_instY"];
 	    this.pre_instHeight = o["pre_instHeight"];	    
         this.is_out_top_bound = o["topb"];	
-        this.is_out_bottom_bound = o["botb"];	  	    
+        this.is_out_bottom_bound = o["bottomb"];	  	    
 	};		  
-
+	
+	instanceProto.afterLoad = function ()
+	{
+	    this.lines_mgr.afterLoad( this.lines_mgr_save ); 	    
+	    this.lines_mgr_save = null;
+	};
+	
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{	  
@@ -698,12 +747,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     
     Acts.prototype.SetOYToLineIndex = function (line_index)
 	{
-	    this.set_OY( this.get_tlY(line_index) );
+	    this.set_OY( -line_index * this.default_lineHeight );
 	};	
     
     Acts.prototype.SetOYByPercentage = function (percentage)
 	{
-		var last_line_index = this.get_page_index(-1);
+		var last_line_index = this.get_page2Index(-1);
         var p1 = (last_line_index * this.default_lineHeight)*percentage;
         this.set_OY( -p1 );
 	};			
@@ -870,7 +919,14 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     Exps.prototype.LastBoundOY = function (ret)
 	{ 
 		ret.set_float(this.exp_LastBoundOY);
-	};    
+	};  
+	
+    Exps.prototype.LineCX = function (ret)
+	{
+	    var x = this.exp_LineTLX + (0.5 * this.get_inst_width());
+		ret.set_float(x);
+	};
+	
 }());
 
 
@@ -1130,8 +1186,10 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		       };
 	};
 	
-	LinesMgrKlassProto.loadFromJSON = function (o)
+	LinesMgrKlassProto.afterLoad = function (o)
 	{	    
+	    this.lines.length = 0;
+	    
 	    var save_lines = o["lines"];
 	    var i,cnt=save_lines.length;
 	    var save_lines = [], save_line;
@@ -1143,7 +1201,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	        else
 	        {
 	            var new_line = this.GetNewLine();
-	            new_line.loadFromJSON(save_line);
+	            new_line.afterLoad(save_line);
 	            this.lines.push( new_line );
 	        }
 	    }
@@ -1171,20 +1229,21 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.offsety = 0; 
 	};	
     
-	LineKlassProto.SetTopLeftPXY = function(tlx, tly)
+	LineKlassProto.SetTLXY = function(tlx, tly)
 	{	   
         this.tlx = tlx;
         this.tly = tly;  
 	};	
+		
 	LineKlassProto.AddInst = function(inst)
 	{	   
 	    var uid = inst.uid;
 	    if (!this.pined_insts.hasOwnProperty(uid))
 	        this.pined_insts[uid] = {};
 	    
-	    var pin_info = this.pined_insts[uid];	   
-	    pin_info["dx"] = inst.x - this.tlx;
-	    pin_info["dy"] = inst.y - this.tly;	    
+	    var pin_info = this.pined_insts[uid];		       
+	    pin_info["dx"] = inst.x - this.get_px();
+	    pin_info["dy"] = inst.y - this.get_py();	    
 	};
 	LineKlassProto.RemoveInst = function(uid)
 	{	   
@@ -1217,14 +1276,25 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	            delete this.pined_insts[uid]; 
 	            continue;
 	        }
-	        pin_info = this.pined_insts[uid];
-	        pin_inst(inst, pin_info, this.tlx, this.tly);
+	        pin_info = this.pined_insts[uid];	        
+	        pin_inst(inst, pin_info, this.get_px(), this.get_py());
 	    }	
 	};	
 	
 	LineKlassProto.GetPinInstsUID = function()
 	{
 	    return this.pined_insts;
+	};		
+	
+	
+	LineKlassProto.get_px = function()
+	{
+	    return (this.plugin.is_vertical_scrolling)? this.tlx : this.tly;
+	};
+	
+	LineKlassProto.get_py = function()
+	{
+	    return (this.plugin.is_vertical_scrolling)? this.tly : this.tlx;
 	};		
 	
 	var pin_inst = function(inst, pin_info, ref_x, ref_y)
@@ -1304,7 +1374,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		       };
 	};
 	
-	LineKlassProto.loadFromJSON = function (o)
+	LineKlassProto.afterLoad = function (o)
 	{
 		this.pined_insts = o["insts"];
 		this.custom_data = o["data"];

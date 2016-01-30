@@ -24,6 +24,10 @@ AddAction(2, 0, "Set seed", "Seed", "Set seed to <i>{0}</i>",
           "Set seed.", "SetSeed");
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, 
+              "Get seed", "Seed", "Seed", 
+              "Get seed.");
+			  
 AddExpression(2, ef_return_number, 
               "Get random value", "Random", "random", 
               "Get random value from random generator.");

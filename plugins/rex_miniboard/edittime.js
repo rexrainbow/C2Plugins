@@ -162,6 +162,11 @@ AddComboParam("LOXY", "Position type.", 0);
 AddAction(12, 0, "Shift LOXY", "Position", 
           "Shift LOXY to <i>{0}</i>", 
           "Shift the physical position of miniboard and the logic position of all chess.", "ShiftLOXY");
+          
+AddObjectParam("Chess", "Chess object.");
+AddAction(13, 0, "Remove chess", "Mini-board: Remove", 
+          "Remove chess <i>{0}</i>", 
+          "Remove chess from mini board.", "RemoveChess");          
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,

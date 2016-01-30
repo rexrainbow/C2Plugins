@@ -370,7 +370,6 @@ cr.plugins_.Rex_SysExt = function(runtime)
 		
     Acts.prototype.SetGroupActive = function (group, active)
     {
-        debugger;
 		var g = this.runtime.groups_by_name[group.toLowerCase()];
         
 		if (!g)
@@ -409,7 +408,26 @@ cr.plugins_.Rex_SysExt = function(runtime)
 			layer.visible = is_visible;
 			this.runtime.redraw = true;
 		}
-    };     
+    };   
+
+    Acts.prototype.SwapPosByUID = function (uidA, uidB)
+    {
+        var instA = this.runtime.getObjectByUID(uidA);
+        var instB = this.runtime.getObjectByUID(uidB);
+        
+        if (!instA || !instB)
+            return;
+            
+        var pxA = instA.x, pyA = instA.y;
+        var pxB = instB.x, pyB = instB.y;
+        
+        instA.x = pxB; instA.y = pyB;
+        instB.x = pxA; instB.y = pyA;
+        
+        instA.set_bbox_changed();
+        instB.set_bbox_changed();        
+    };      
+      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -429,4 +447,11 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	{
 	    ret.set_string( number_in.toLocaleString(locales) );
 	};
+    
+    Exps.prototype.String2ByteCount = function (ret, s)
+	{
+	    var c = encodeURI(s).split(/%..|./).length - 1;
+	    ret.set_int( c );
+	};	
+	
 }());
