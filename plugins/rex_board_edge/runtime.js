@@ -159,7 +159,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 					
 	var key2lxy = function (k)
 	{   	      
-	    lxy = k.split(",");
+	    var lxy = k.split(",");
 	    lxy[0] = parseInt(lxy[0]);
 	    lxy[1] = parseInt(lxy[1]);
 	    lxy[2] = parseInt(lxy[2]);

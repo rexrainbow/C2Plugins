@@ -390,7 +390,7 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
 			if (isWindows8)
 	        {
 	            xml = new Windows["Data"]["Xml"]["Dom"]["XmlDocument"]()
-	            xml["loadXml"](str);
+	            xml["loadXml"](xml_string);
 	        }
 			else if (isIE)
 			{

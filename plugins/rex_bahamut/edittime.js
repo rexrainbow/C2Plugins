@@ -7,7 +7,7 @@
 		"description":	"Get user data from Bahamut website. http://www.gamer.com.tw/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bahamut.html",
-		"category":		"Rex - Web - service",
+		"category":		"Rex - Web - YQL",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,

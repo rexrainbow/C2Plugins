@@ -55,7 +55,8 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this.move_params["max"] = this.properties[1];
         this.move_params["acc"] = this.properties[2];
         this.move_params["dec"] = this.properties[3];
-        this.is_continue_mode = (this.properties[4] == 1);
+        this.soild_stop_enable = (this.properties[4] === 1);
+        this.is_continue_mode = (this.properties[5] === 1);
         
         if (!this.recycled)
         {        
@@ -96,7 +97,8 @@ cr.behaviors.Rex_MoveTo = function(runtime)
             return;        
         
 		var dt = this.runtime.getDt(this.inst);
-		this.move(dt);		        
+        
+		this.move(dt);	        	        
 	}; 
 	
 	behinstProto.move = function (dt)
@@ -104,7 +106,7 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         if (dt == 0)   // can not move if dt == 0
             return;
         
-        if ((this._pre_pos["x"] != this.inst.x) || (this._pre_pos["y"] != this.inst.y))
+        if ((this._pre_pos["x"] !== this.inst.x) || (this._pre_pos["y"] !== this.inst.y))
 		    this._reset_current_pos();    // reset this.remain_distance
 		    
         // assign speed
@@ -148,12 +150,32 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         } 
 
 		this.inst.set_bbox_changed();
+        
+        var is_solid_stop = false;
+        if (this.soild_stop_enable)
+        {
+		    var collobj = this.runtime.testOverlapSolid(this.inst);
+		    if (collobj)
+		    {
+			    this.runtime.registerCollision(this.inst, collobj);
+			    this.runtime.pushOutSolidNearest(this.inst);
+                is_solid_stop = true;
+		    }
+        }
+                
 		this._pre_pos["x"] = this.inst.x;
 		this._pre_pos["y"] = this.inst.y;  
 		
-        if (is_hit_target)
+        if (is_solid_stop)
         {
-            this.is_moving = false;
+            this.is_moving = false;  // stop
+            this.is_my_call = true;
+            this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnSolidStop, this.inst); 
+            this.is_my_call = false;        
+        }
+        else if (is_hit_target)
+        {
+            this.is_moving = false;  // stop
             this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.Rex_MoveTo.prototype.cnds.OnHitTarget, this.inst); 
             this.is_my_call = false;
@@ -265,6 +287,8 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         propsections.push({
             "title": this.type.name,
             "properties": [
+                {"name": "Activated", "value": this.enabled},
+                {"name": "Is moving", "value": this.is_moving},
                 {"name": "Target X", "value": this.target["x"]},
                 {"name": "Target Y", "value": this.target["y"]},
                 {"name": "Current speed", "value": this.current_speed},
@@ -317,7 +341,12 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 		    return cr.do_cmp(this.moving_angle_get(), cmp, s);
         else
             return false;
-	};     
+	};   
+
+	Cnds.prototype.OnSolidStop = function ()
+	{
+		return (this.is_my_call);
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

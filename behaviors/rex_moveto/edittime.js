@@ -14,25 +14,33 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On hit target position", "", 
+AddCondition(0, cf_trigger, "On hit target position", "Reach", 
              "On {my} hit target", 
 			 "Triggered when hit target position.", 
-			 "OnHitTarget");             
+			 "OnHitTarget");   
+             
 AddCmpParam("Comparison", "Choose the way to compare the current speed.");
 AddNumberParam("Speed", "The speed, in pixel per second, to compare the current speed to.");
 AddCondition(1, 0, "Compare speed", "Speed", 
              "{my} speed {0} {1}", 
              "Compare the current speed of the object.", 
              "CompareSpeed");
+
 AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");                          
+
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");                
 AddCmpParam("Comparison", "Choose the way to compare the current moving angle.");
 AddNumberParam("Angle", "The moving angle, in pixel per second, to compare the current moving angle to.");
+
 AddCondition(4, 0, "Compare moving angle", "Moving angle", 
              "{my} moving angle {0} {1}", 
              "Compare the current moving angle of the object.", 
              "CompareMovingAngle");
 
+AddCondition(5, cf_trigger, "On stop by solid", "Solid", 
+             "On {my} stop by solid", 
+			 "Triggered when stop by solid object.", 
+			 "OnSolidStop");                
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("Disabled");
@@ -121,6 +129,7 @@ var property_list = [
                     "Acceleration, in pixel per second per second."),
 	new cr.Property(ept_float, "Deceleration", 0, 
                     "Deceleration, in pixel per second per second."),
+    new cr.Property(ept_combo, "Stop by solid", "No", "Enable if you wish to stop while hitting a solid object.", "No|Yes"),                               
     new cr.Property(ept_combo, "Continued mode", "No", "Moving as in continued-time.", "No|Yes"),                       
 	];
 	

@@ -141,6 +141,10 @@ AddExpression(11, ef_return_number, "Get logic X of target tile", "Target tile",
               'Get logic X of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
 AddExpression(12, ef_return_number, "Get logic Y of target tile", "Target tile", "TileLY", 
               'Get logic Y of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
+              
+AddExpression(21, ef_return_number, "Get total moving points", "Moving ponts", "TotalMovingPoints", 
+              "Get total moving points of current moving."); 
+
 AddExpression(30, ef_return_number,
               "STOP property used in cost function", "Moving cost", "STOP",
               'STOP property used in cost function, used in action:"Set moving cost". The value is (-1)');   

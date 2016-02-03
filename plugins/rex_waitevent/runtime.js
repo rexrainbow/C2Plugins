@@ -124,14 +124,14 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 
 	Acts.prototype.WaitEvent = function(event_name, tag)
 	{       
-	    if (this.events[tag] == null)
+	    if (!this.events.hasOwnProperty(tag))
 		    this.events[tag] = {};
 	    this.events[tag][event_name] = true;
 	};  
 
 	Acts.prototype.EventFinished = function(event_name, tag)
 	{       
-	    if ((this.events[tag] == null) || (this.events[tag][event_name] == null))
+	    if (!this.events.hasOwnProperty(tag) || !this.events[tag].hasOwnProperty(event_name))
 		    return;
 	    delete this.events[tag][event_name];
         this._current_finished_tag = tag;
@@ -142,7 +142,15 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 		    this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAllEventsFinished, this); 
 			delete this.events[tag];
         }
-	};  	
+	};  
+	
+	Acts.prototype.CancelEvents = function(tag)
+	{       
+	    if (!this.events.hasOwnProperty(tag))
+		    return;
+		
+		delete this.events[tag];
+	};  		
 	
 	//////////////////////////////////////
 	// Expressions

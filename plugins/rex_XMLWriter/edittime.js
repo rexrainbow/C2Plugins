@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Wait Event",
-		"id":			"Rex_WaitEvent",
-		"version":		"0.1",   		
-		"description":	"Wait events finished.",
+		"name":			"XML Writer",
+		"id":			"Rex_XMLWriter",
+		"version":		"0.1",        
+		"description":	"Build XML structure. Reference: http://flesler.blogspot.com/2008/03/xmlwriter-for-javascript.html",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_waitevent.html",
-		"category":		"Rex - Logic - flow control",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_xmlwriter.html",
+		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -15,39 +15,32 @@
 };
 
 //////////////////////////////////////////////////////////////
-// Conditions
-AddStringParam("Tag","Event tag.","");
-AddCondition(1,cf_trigger,"On all events finished","Finsihed",
-             "On all events with tag <b>{0}</b> has finished",
-             "Triggered when all events with tag has finished.","OnAllEventsFinished");
-AddStringParam("Tag","Event tag.","");
-AddCondition(2,cf_trigger,"On any event finished","Finsihed",
-             "On any event with tag <b>{0}</b> has finished",
-             "Triggered when any event with tag has finished.","OnAnyEventFinished");
-AddStringParam("Tag","Event tag.","");
-AddCondition(3,0,"No wait event","Wait",
-             "No wait event in tag <b>{0}</b>",
-             "Return true if no wait event in tag.","NoWaitEvent");		 
+// Conditions            
+AddStringParam("Name", "Element name.", '""');
+AddCondition(1, cf_not_invertible, "Add element", "Add element", 
+             "Element <i>{0}</i>", 
+             "Add an element.", "AddElement");
+            
 //////////////////////////////////////////////////////////////
-// Actions
-AddStringParam("Event name","Event name.","");     
-AddStringParam("Tag","Event tag.","");
-AddAction(1,0,"Wait event","Wait",
-          "Wait event <b>{0}</b> with tag <b>{1}</b>",
-          "Wait event.","WaitEvent");
-AddStringParam("Event name","Event name.","");     
-AddStringParam("Tag","Event tag.","");
-AddAction(2,0,"Event has finished","Finished",
-          "Event <b>{0}</b> with tag <b>{1}</b> has finished",
-          "Event has finished.","EventFinished");		  
-   
-AddStringParam("Tag","Event tag.","");
-AddAction(11,0,"Cancel events","Cancel",
-          "Cancel events with tag <b>{0}</b>",
-          "Cancel events.","CancelEvents");		  
+// Actions 
+AddAction(1, 0, "Clean", "Clean", 
+          "Clean all",
+          "Clean all data.", "Clean");
+          
+AddStringParam("Name", "The name of attribute.", '""');
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddAction(2, 0, "Add attribute", "Add attribute", 
+          "Add attribute <i>{0}</i> to <i>{1}</i>",
+          "Add an attribute.", "AddAttribute");
+               
+AddAnyTypeParam("Value", "The value to set, could be number or string.", '""');
+AddAction(3, 0, "Set content", "Set content", 
+          "Set content to <i>{0}</i>",
+          "Set content.", "SetContent");               
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1,ef_return_string,"Get current finished event name","Event name","CurEventName","Get current finished event name.");
+AddExpression(1, ef_return_string, "Get XML", "Output", "AsXML", "Get XML string.");
+AddExpression(2, ef_return_string, "Get pretty print XML", "Output", "AsPrettyPrintXML", "Get pretty print XML string.");
 
 ACESDone();
 

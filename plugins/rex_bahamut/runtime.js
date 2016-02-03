@@ -268,7 +268,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	    this._current_user_name = user_name;	    
 	    var self = this;
 	    var is_success = false;
-        jQuery.ajax({
+        window["xdmAjax"]({
             "url": "http://home.gamer.com.tw/homeindex.php?owner="+user_name,
             "type": 'GET',
             "success": function(res) {
@@ -297,7 +297,7 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	    this._current_user_name = user_name;	    
 	    var self = this;
 	    var is_success = false;
-        jQuery.ajax({
+        window["xdmAjax"]({
             "url": "http://home.gamer.com.tw/friend.php?owner="+user_name,
             "type": 'GET',
             "success": function(res) {

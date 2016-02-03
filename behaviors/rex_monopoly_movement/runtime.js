@@ -62,6 +62,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		this.path_tiles = [];  // {uid, cost}
 		this._forkedroad_dir = null;
 		this._moving_cost = 1;
+        this.total_moving_points = 0;
 		
         this.exp_TargetFaceDir = 0;
         this.exp_TargetLX = 0;
@@ -374,6 +375,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		this.path_tiles.length = 0;
         var tile_info, cost;
 		var tile_info = this._tile_info_init();
+        this.total_moving_points = moving_points;
         while (moving_points > 0)
         {
             tile_info = this._get_target_tile_info(tile_info);
@@ -431,7 +433,8 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		         "de": this.hex_dir,
                  "fm": this.forked_selection_mode,
                  "ruid": randomGenUid,
-                 "p" : this.path_tiles
+                 "p" : this.path_tiles,
+                 "tmp": this.total_moving_points,
                };
 	};
 	
@@ -441,7 +444,8 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 		this.hex_dir = o["de"]; 
 		this.forked_selection_mode = o["fm"];
 		this.randomGenUid = o["ruid"]; 
-		this.path_tiles = o["p"];	
+		this.path_tiles = o["p"];
+        this.total_moving_points = o["tmp"];
 	};	
     
 	behinstProto.afterLoad = function ()
@@ -595,6 +599,11 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 	{
         ret.set_int(this.exp_TileLY);		
 	};
+    
+ 	Exps.prototype.TotalMovingPoints = function (ret)
+	{
+        ret.set_int(this.total_moving_points);		
+	};    
     
  	Exps.prototype.STOP = function (ret)
 	{

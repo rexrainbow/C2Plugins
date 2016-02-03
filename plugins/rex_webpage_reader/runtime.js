@@ -71,7 +71,7 @@ cr.plugins_.Rex_webpage_reader = function(runtime)
 	instanceProto.doRequest = function (tag_, url_, method_, data_)
 	{
 	    var self = this;
-        jQuery["ajax"]({
+        window["xdmAjax"]({
             "url": url_,
             "type": method_,
             "success": function(res) 
