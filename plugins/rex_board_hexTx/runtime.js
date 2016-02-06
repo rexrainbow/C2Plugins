@@ -52,12 +52,9 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.SetWidth(this.properties[2]);
         this.SetHeight(this.properties[3]);
         
-        var is_up2down = (this.properties[4]==1);
-        var is_even = (this.properties[5]==1);
-        this.mode = (!is_up2down && !is_even)? ODD_R:
-                    (!is_up2down &&  is_even)? EVEN_R:
-                    ( is_up2down && !is_even)? ODD_Q:
-                    ( is_up2down &&  is_even)? EVEN_Q:0;                                                
+        var is_up2down = (this.properties[4]===1);
+        var is_even = (this.properties[5]===1);
+        this.SetLayoutMode(is_up2down, is_even);                                              
 	};
 	instanceProto.SetPOX = function(pox)
 	{
@@ -85,6 +82,13 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.height = height; 
         this.half_height = height/2;
 	}; 
+	instanceProto.SetLayoutMode = function(is_up2down, is_even)
+	{
+        this.mode = (!is_up2down && !is_even)? ODD_R:
+                    (!is_up2down &&  is_even)? EVEN_R:
+                    ( is_up2down && !is_even)? ODD_Q:
+                    ( is_up2down &&  is_even)? EVEN_Q:0;       
+	};	
 	
 	instanceProto.qr2x = function(q, r)
 	{
@@ -525,6 +529,11 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 		return x < 0 ? -x : x;
 	};
 	
+	instanceProto.PXY2EdgePA = function (px1, py1, px0, py0)
+	{
+		return cr.angleTo(px1, py1, px0, py0);
+	}; 		
+	
 	instanceProto.saveToJSON = function ()
 	{
 		return { "m": this.mode,
@@ -562,7 +571,11 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
     {        
         this.SetPOX(x);
         this.SetPOY(y);
-	}; 
+	}; 	
+    Acts.prototype.SetLayoutMode = function (is_updown, is_indent)
+    {        
+        this.SetLayoutMode((is_updown===1), (is_indent===1));      
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

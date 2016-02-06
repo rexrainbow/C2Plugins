@@ -41,6 +41,9 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+	    this.POX = this.properties[0];
+	    this.POY = this.properties[1];
+	    
         // tiles
         this.exp_MapWidth = 0;
         this.exp_MapHeight = 0;  
@@ -95,7 +98,11 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_CurMapPropName = "";
         this.exp_CurMapPropValue =0;        
         this.exp_CurObjectPropName = "";
-        this.exp_CurObjectPropValue =0;     
+        this.exp_CurObjectPropValue =0; 
+        
+        // hexagon layout
+        this.exp_isUp2Down = 0;
+        this.exp_isIndent = 0;    
              
         // duration
         this.processing_time = 0.5;
@@ -163,7 +170,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
             case "isometric":   mode=1;  break;
             }
             
-            this.layout = new SquareLayoutKlass(this.properties[0], this.properties[1], 
+            this.layout = new SquareLayoutKlass(this.POX, this.POY, 
                                                 this.exp_TileWidth, this.exp_TileHeight, mode);
         }
         else if (this._tmx_obj.map.orientation === "hexagonal") 
@@ -174,9 +181,12 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
                        (!is_up2down &&  is_even)? EVEN_R:
                        ( is_up2down && !is_even)? ODD_Q:
                        ( is_up2down &&  is_even)? EVEN_Q:0; 
-
-            this.layout = new HexLayoutKlass(this.properties[0], this.properties[1], 
+        
+            this.layout = new HexLayoutKlass(this.POX, this.POY, 
                                              this.exp_TileWidth, this.exp_TileHeight, mode);
+                                             
+            this.exp_isUp2Down = is_up2down;
+            this.exp_isIndent = is_even;                                             
         }
                 
 	};
@@ -925,12 +935,16 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{	     
         this.release_tmxObj();   
 	};	
-    Acts.prototype.SetOPosition = function (poy, poy)
+    Acts.prototype.SetOPosition = function (pox, poy)
 	{	     
-        assert2(this.layout, "TMX Importer: Set POXY after import tmx source.");
-
-        this.layout.SetPOX(pox);
-        this.layout.SetPOY(poy);           
+	    this.POX = pox;
+	    this.POY = poy;
+	    
+	    if (this.layout)
+	    {
+            this.layout.SetPOX(pox);
+            this.layout.SetPOY(poy);           
+        }
 	};
     Acts.prototype.RetrieveTileArray = function ()
 	{	  
@@ -1212,6 +1226,24 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	    ret.set_float(this.exp_RetrievingPercent);
 	};	
 	
+	Exps.prototype.POX = function (ret)
+	{    
+	    ret.set_int(this.POX);
+	}; 
+	Exps.prototype.POY = function (ret)
+	{   
+	    ret.set_int(this.POY);
+	};	
+	
+	// hexagon
+	Exps.prototype.IsUp2Down = function (ret)
+	{    
+	    ret.set_int(this.exp_isUp2Down? 1:0);
+	}; 
+	Exps.prototype.IsIndent = function (ret)
+	{   
+	    ret.set_int(this.exp_isIndent? 1:0);
+	};		
 	
 // ----
 // square layout

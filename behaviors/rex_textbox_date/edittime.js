@@ -20,8 +20,17 @@
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get year", "Date", 
+              "Year", 
+              "Get year.");
+AddExpression(2, ef_return_number, "Get month", "Date", 
+              "Month", 
+              "Get month.");
+AddExpression(3, ef_return_number, "Get date", "Date", 
+              "Date", 
+              "Get date.");              
 
-
+              
 ACESDone();
 
 // Property grid properties for this plugin

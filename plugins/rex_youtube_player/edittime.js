@@ -84,14 +84,18 @@ AddAction(5, af_none, "Pause", "Video", "Pause", "Pause the current playback.", 
 
 AddAction(6, af_none, "Play", "Video", "Play", "Start playing the video if stopped or paused. On mobile, may only work in a user input trigger.", "Play");
 
-AddAction(11, af_none, "Full screening", "Size", 
-          "Resize to full screen", 
-          "Resize to full screen.", "FullScreening");
+AddAction(11, af_none, "Full windoe", "Size", 
+          "Resize to full windoe", 
+          "Resize to full windoe.", "ResizeFullWindow");       
           
 AddComboParamOption("Invisible");
 AddComboParamOption("Visible");
 AddComboParam("Visibility", "Choose whether to hide or show this object.");
 AddAction(12, af_none, "Set visible", "Appearance", "Set <b>{0}</b>", "Hide or show this object.", "SetVisible");          
+
+AddAction(13, af_none, "Full screen", "Size", 
+          "Resize to full screen", 
+          "Resize to full screen. It can only be called under a user input.", "ResizeFullScreen");   
 ////////////////////////////////////////
 // Expressions
 

@@ -194,7 +194,19 @@ AddExpression(58, ef_return_number | ef_deprecated,
 // duration
 AddExpression(70, ef_return_number, 
               "Get percent of retrieving process", "Duration", "RetrievingPercent", "Get percent of retrieving process.");  
-                         
+
+
+AddExpression(101, ef_return_number, 
+              "Get POX", "Map", "POX", "Get position X of logic (0,0).");
+AddExpression(102, ef_return_number, 
+              "Get POY", "Map", "POY", "Get position Y of logic (0,0).");
+
+// hexagon layout
+AddExpression(111, ef_return_number, 
+              "Is Up2down layout", "Hex layout", "IsUp2Down", "Return 1 if current hexagon map is up2down layout.");
+AddExpression(112, ef_return_number, 
+              "Is indent first line", "Hex layout", "IsIndent", "Return 1 if current hexagon map is indent first line.");
+                                                   
 ACESDone();
 
 // Property grid properties for this plugin

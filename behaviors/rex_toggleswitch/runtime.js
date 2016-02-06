@@ -45,7 +45,7 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.value = (this.properties[0]==1);
+        this.value = (this.properties[0]===1);
         this.is_my_call = false;
 	};
 
@@ -107,7 +107,7 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
 
 	Acts.prototype.SetValue = function (s)
 	{
-		this.set_value((s==1));
+		this.set_value((s===1));
 	};
     
 	//////////////////////////////////////
@@ -117,6 +117,6 @@ cr.behaviors.Rex_ToggleSwitch = function(runtime)
     
 	Exps.prototype.Value = function (ret)
 	{        
-		ret.set_int((this.value)? 1:0);
+		ret.set_int(this.value? 1:0);
 	};  
 }());

@@ -100,11 +100,11 @@ window.Candlestick = function(context, rawData, options){
     , l = oCandle.l
     , c = oCandle.c
     , v = oCandle.v;
-  var pixelsPerCandle = 4
-    , marginTop = 8
-    , marginBottom = 200
-    , marginLeft = 5
-    , marginRight = 23;
+  var pixelsPerCandle = options.candlewidth? options.candlewidth:4
+    , marginTop = options.margintop? options.margintop:8
+    , marginBottom = options.lowerheight? options.lowerheight:200
+    , marginLeft = options.marginleft? options.marginleft:5
+    , marginRight = options.marginright? options.marginright:23;
   var hh = this.Max(h.slice(0,Math.min(h.length, (width-marginLeft-marginRight) / pixelsPerCandle))); // find highest high in candles that will be drawn and add margin
   var ll = this.Min(l.slice(0,Math.min(l.length, (width-marginLeft-marginRight) / pixelsPerCandle)));
   // improve hh, ll
@@ -154,7 +154,7 @@ window.Candlestick = function(context, rawData, options){
   ///////////////////////////////////////////////////////
   // ---- upperIndicator ----     
   if (!lowerIndicator.data)  // no lowIndicator
-      marginBottom = 20;
+      marginBottom = options.marginbottom? options.marginbottom:20;
   
   context.fillStyle = options.backgroundcolor? options.backgroundcolor:"rgb(240,240,220)";//pale yellow
   context.fillRect(0,0,width-1,height-1);
@@ -228,7 +228,7 @@ window.Candlestick = function(context, rawData, options){
     // draw the background of the MACD chart
     context.fillStyle = options.lowerbackgroundcolor? options.lowerbackgroundcolor:"rgba(200,250,200, .5)";
     var liMarginTop = height-marginBottom+10;// li===LowerIndicator
-    var liMarginBottom = 10;
+    var liMarginBottom = options.marginbottom? options.marginbottom:10;
     context.fillRect  (marginLeft, liMarginTop, width-marginLeft-marginRight, marginBottom-20);
     // find out the highest high and lowest low of the MACD sub chart    
     var li = lowerIndicator.data; 
@@ -298,7 +298,12 @@ window.Candlestick = function(context, rawData, options){
     context.beginPath();//body of the candle
     context.moveTo(x0 + 1, Math.min(yo,yc));
     context.lineTo(x0 + 1, Math.max(yo,yc));
-    context.strokeStyle = o[i]<c[i] ? 'lightgreen' : 'red';
+    
+    if (o[i]<c[i])
+      context.strokeStyle = options.uppercandlefallcolor? options.uppercandlefallcolor:'lightgreen';
+    else
+      context.strokeStyle = options.uppercandlerisecolor? options.uppercandlerisecolor:'red';
+      
     if(o[i]>c[i]) {
       context.stroke();
     }
@@ -313,7 +318,7 @@ window.Candlestick = function(context, rawData, options){
     context.lineTo(x0 + 2, yc);
     context.lineTo(x0 + 2, yo);
     context.lineTo(x0, yo);
-    context.strokeStyle = 'black';
+    context.strokeStyle = options.uppercandlecolor? options.uppercandlecolor:'black';
     context.stroke();
   }
   upperIndicators.push(lowerIndicator);
@@ -325,13 +330,14 @@ window.Candlestick = function(context, rawData, options){
   //////////////////////////////////////////////////////////
   function convertYahooFinanceCsvToCandles(rawData) {
     var allTextLines = rawData.split(/\r\n|\n/);
-    allTextLines.pop();// remove last element which is empty due to the last /n at the end of the last line
+    //allTextLines.pop();// remove last element which is empty due to the last /n at the end of the last line
     allTextLines.shift();// remove first line - the headers of the array
     allTextLines = allTextLines.slice(options.offset);
     var d=[], o=[], h=[], l=[], c=[], v=[];
     if(typeof options.adjust=='undefined'){ options.adjust = 0; }
     for(var i=0; i<allTextLines.length; i++){
       var entries = allTextLines[i].split(',');
+      if (entries.length < 7) continue;          // skip invalid line
       d.push(new Date(entries[0]));
       var oo = entries[1]
         , hh = entries[2]

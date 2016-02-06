@@ -124,8 +124,8 @@ cr.plugins_.Rex_board_edge = function(runtime)
         var py1 = layout.LXYZ2PY(lx1, ly1, 0);
         
         inst.x = (px0 + px1)/2;
-        inst.y = (py0 + py1)/2;        
-	    inst.angle = cr.angleTo(inst.x, inst.y, px0, py0);
+        inst.y = (py0 + py1)/2;                
+	    inst.angle = layout.PXY2EdgePA(px1, py1, px0, py0); 
 	    inst.set_bbox_changed();
 	};
 	

@@ -52,11 +52,22 @@ cr.behaviors.Rex_canvas_chart_candlestick = function(runtime)
         this.options["upperverticalscalelinecolor"] = this.properties[4];  
         this.options["upperindicatorslinecolors"] = [this.properties[5], this.properties[6], this.properties[7], this.properties[8], 
                                                      this.properties[9], this.properties[10], this.properties[11]];
+        
+        this.options["uppercandlecolor"] = this.properties[12];
+        this.options["uppercandlerisecolor"] = this.properties[13];
+        this.options["uppercandlefallcolor"] = this.properties[14];
                                                      
-        this.options["lowerbackgroundcolor"] = this.properties[12]; 
-        this.options["lowerMACDlinecolor"] = this.properties[13];  
-        this.options["lowersignallinecolor"] = this.properties[14];  
-        this.options["lowerhistogrambinscolor"] = this.properties[15];          
+        this.options["lowerbackgroundcolor"] = this.properties[15]; 
+        this.options["lowerMACDlinecolor"] = this.properties[16];  
+        this.options["lowersignallinecolor"] = this.properties[17];  
+        this.options["lowerhistogrambinscolor"] = this.properties[18];       
+        
+        this.options["margintop"] = this.properties[19]; 
+        this.options["marginbottom"] = this.properties[20];  
+        this.options["marginleft"] = this.properties[21];  
+        this.options["marginright"] = this.properties[22];   
+        this.options["lowerheight"] = this.properties[23]; 
+        this.options["candlewidth"] = this.properties[24];                  
 	};  
 
 	behinstProto.tick = function ()
@@ -101,7 +112,18 @@ cr.behaviors.Rex_canvas_chart_candlestick = function(runtime)
 
 	Acts.prototype.Draw = function(data)
 	{
-	    var chart = new window["Candlestick"](this.inst.ctx, data, this.options);	
+	    if (data === "")  // invalid
+	    {
+	        var ctx = this.inst.ctx;
+	        var canvas = this.inst.canvas;
+		    ctx.fillStyle = this.options["backgroundcolor"];
+		    ctx.fillRect(0,0,canvas.width, canvas.height);	        
+	    }
+	    else
+	    {
+	        var chart =new window["Candlestick"](this.inst.ctx, data, this.options);	
+	    }
+	    
 	    this.inst.runtime.redraw = true;  
 	    this.inst.update_tex = true;
 	    	        

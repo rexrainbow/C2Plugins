@@ -469,15 +469,18 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	
 	AchievementsMgrKlassProto.statesFromJSON = function (o)
 	{
-		var achievements = o;
-		for (var ln in this.achievements)
-        {
-            var i, cnt= achievements[ln].length;
-            for (i=0; i<cnt; i++)
-            {
-	            this.achievements[ln][i].statesFromJSON(achievements[ln][i]);
-	        }
-        }        				 		      
+		var achievements = o, i, cnt;
+		for (var ln in achievements)
+		{
+		    if (!this.achievements.hasOwnProperty(ln))
+		        continue;
+		        
+		    cnt= Math.min(achievements[ln].length, this.achievements[ln].length);
+		    for (i=0; i<cnt; i++)
+		    {
+		        this.achievements[ln][i].statesFromJSON(achievements[ln][i]);
+		    }
+		}     				 		      
 	};	
 	
 		

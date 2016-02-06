@@ -381,7 +381,25 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	function quickAbs(x)
 	{
 		return x < 0 ? -x : x;
-	};    
+	};   
+	
+	instanceProto.PXY2EdgePA = function (px1, py1, px0, py0)
+	{
+	    var a, a01 = cr.angleTo(px1, py1, px0, py0);;
+	    switch (this.mode)
+	    {
+	    case 0:      // Orthogonal
+	        a = a01;   
+	        break;
+	        
+	    case 1:      // Isometric
+	    case 2:      // Staggered
+	        a = 4.7123889804 - a01; // 270 - a01 
+	        break;
+	        
+	    }
+		return a;
+	};
 	
 	instanceProto.saveToJSON = function ()
 	{

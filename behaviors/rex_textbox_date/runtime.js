@@ -74,4 +74,34 @@ cr.behaviors.Rex_textbox_date = function(runtime)
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 
+	Exps.prototype.Year = function (ret)
+	{
+	    if (this.runtime.isDomFree)
+	    {
+	        ret.set_int(0);
+	    }
+        var value = this.inst.elem.value;
+	    var year = parseInt(value.split("-")[0]);
+		ret.set_int(year);
+	};
+	Exps.prototype.Month = function (ret)
+	{
+	    if (this.runtime.isDomFree)
+	    {
+	        ret.set_int(0);
+	    }
+        var value = this.inst.elem.value;
+	    var month = parseInt(value.split("-")[1]);
+		ret.set_int(month);
+	};	
+	Exps.prototype.Date = function (ret)
+	{
+	    if (this.runtime.isDomFree)
+	    {
+	        ret.set_int(0);
+	    }
+        var value = this.inst.elem.value;
+	    var date = parseInt(value.split("-")[2]);
+		ret.set_int(date);
+	};	
 }());

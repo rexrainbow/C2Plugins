@@ -79,10 +79,20 @@ var property_list = [
     new cr.Property(ept_text, "Upper indicators line color 4", "chartreuse", "Upper indicators line color 4."),    
     new cr.Property(ept_text, "Upper indicators line color 5", "blueviolet", "Upper indicators line color 5."), 
     new cr.Property(ept_text, "Upper indicators line color 6", "darksalmon", "Upper indicators line color 6."),
+    new cr.Property(ept_text, "Upper candle color", "black", "Upper candle color."),
+    new cr.Property(ept_text, "Upper candle rise color", "red", "Upper candle rise color."),
+    new cr.Property(ept_text, "Upper candle fall color", "lightgreen", "Upper candle fall color."),
     new cr.Property(ept_text, "Lower background color", "rgba(200,250,200, .5)", "Lower background color."),
     new cr.Property(ept_text, "Lower MACD line color", "black", "Lower MACD line color."),    
     new cr.Property(ept_text, "Lower signal line color", "red", "Lower signal line color."),
     new cr.Property(ept_text, "Lower histogram bins color", "blue", "Lower histogram bins color."),    
+    
+    new cr.Property(ept_integer, "Top margin", 8, "Top margin of this chart, in pixels."),  
+    new cr.Property(ept_integer, "Bottom margin", 10, "Bottom margin of this chart, in pixels."), 
+    new cr.Property(ept_integer, "Left margin", 5, "Left margin of this chart, in pixels."),  
+    new cr.Property(ept_integer, "Right margin", 23, "Right margin of this chart, in pixels."),
+    new cr.Property(ept_integer, "Lower height", 200, "Height of lower chart, in pixels."),
+    new cr.Property(ept_integer, "Candle width", 4, "Candle width, in pixels."),             
 	];
 	
 // Called by IDE when a new behavior type is to be created

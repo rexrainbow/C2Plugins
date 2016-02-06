@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_webpage_reader = function(runtime)
+cr.plugins_.Rex_YahooFinance = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_webpage_reader.prototype;
+	var pluginProto = cr.plugins_.Rex_YahooFinance.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -68,22 +68,26 @@ cr.plugins_.Rex_webpage_reader = function(runtime)
 		this.curTag = "";	    
 	};
 
-	instanceProto.doRequest = function (tag_, url_, method_)
+	instanceProto.doRequest = function (tag_, url_, method_, callback_)
 	{
 	    var self = this;
         window["xdmAjax"]({
             "url": url_,
             "type": method_,
             "success": function(res) 
-            {
-                self.lastData = res["responseText"];
+            {              
+                if (callback_)
+                    self.lastData = callback_(res["responseText"]);
+                else
+                    self.lastData = res["responseText"];  
+
                 self.curTag = tag_;
-                self.runtime.trigger(cr.plugins_.Rex_webpage_reader.prototype.cnds.OnComplete, self);
+                self.runtime.trigger(cr.plugins_.Rex_YahooFinance.prototype.cnds.OnComplete, self);
             },
             "error": function()
 		    {
 		        self.curTag = tag_;
-		        self.runtime.trigger(cr.plugins_.Rex_webpage_reader.prototype.cnds.OnError, self);
+		        self.runtime.trigger(cr.plugins_.Rex_YahooFinance.prototype.cnds.OnError, self);
 		    }
         });	    
     };
@@ -108,9 +112,29 @@ cr.plugins_.Rex_webpage_reader = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-	Acts.prototype.Request = function (tag_, url_)
+	Acts.prototype.RequestStickHistoricalData = function (tag_, symbol, 
+	                                                      start_year, start_month, start_date, 
+	                                                      end_year, end_month, end_date )
 	{
-		this.doRequest(tag_, url_, "GET");
+	    var url_ = "http://ichart.finance.yahoo.com/table.csv?"+ 
+	               "s=" + symbol.toString() + 
+	               "&a=" + (start_month-1).toString() + 
+	               "&b=" + start_date.toString() + 
+	               "&c=" + start_year.toString() +
+	               "&d=" + (end_month-1).toString() + 
+	               "&e=" + end_date.toString() +
+	               "&f=" + end_year.toString() +
+	               "&g=d" + 
+	               "&ignore=.csv";
+	               
+	    var on_get_data = function (data)
+	    {
+	        var start_index = data.indexOf("<body>") + "<body>".length;
+	        var end_index = data.indexOf("</body>") - 1;
+	        data = data.substring(start_index, end_index);
+	        return data;
+	    };
+		this.doRequest(tag_, url_, "GET", on_get_data);
 	};   
     
 	//////////////////////////////////////

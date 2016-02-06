@@ -336,6 +336,13 @@ cr.plugins_.rex_youtube_player = function(runtime)
         // ready
 		this.youtube_player["seekTo"](s);
 	};
+
+	var SetFullScreen = function (elem)
+	{
+        var requestFullScreen = elem.requestFullScreen || elem.mozRequestFullScreen || elem.webkitRequestFullScreen;
+        if (requestFullScreen)        
+            requestFullScreen.bind(elem)();
+	};
 	
 	instanceProto.SetLooping = function (l)
 	{
@@ -605,7 +612,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    this.Play();
 	};
 	
-	Acts.prototype.FullScreening = function ()
+	Acts.prototype.ResizeFullWindow = function ()
 	{
 		if (this.runtime.isDomFree)
 			return;
@@ -617,6 +624,16 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    this.updatePosition();
 	};	
 	
+	Acts.prototype.ResizeFullScreen = function ()
+	{
+		if (this.runtime.isDomFree)
+			return;
+            
+        var requestFullScreen = this.elem.requestFullScreen || this.elem.mozRequestFullScreen || this.elem.webkitRequestFullScreen;
+        if (requestFullScreen)        
+            requestFullScreen.bind(this.elem)();
+	};
+    
 	Acts.prototype.SetVisible = function (vis)
 	{        
 		if (this.runtime.isDomFree)
