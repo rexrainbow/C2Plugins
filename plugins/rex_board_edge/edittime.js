@@ -23,8 +23,8 @@ AddNumberParam("LY1", "The logic Y of point 1.", 0);
 AddCondition(1, 0, "Has edge between points", "Has edge", 
           "Has edge between logic points (<i>{0}</i>, <i>{1}</i>) and (<i>{2}</i>, <i>{3}</i>)", 
           "Has edge between two points.", "HasEdgeBetweenLP");  
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);
+AddAnyTypeParam("UID0", "The UID of chess", 0);
+AddAnyTypeParam("UID1", "The UID of neighbor chess", 0);
 AddCondition(2, 0, "Has edge between chess", "Has edge", 
           "Has edge between chess UID:<i>{0}</i> and <i>{1}</i>", 
           "Has edge between chess.", "HasEdgeBetweenChess");        
@@ -78,8 +78,8 @@ AddCondition(12, cf_not_invertible, "Pick edge between points", "Pick edge",
           "Pick edge <i>{0}</i> between logic points (<i>{1}</i>, <i>{2}</i>) and (<i>{3}</i>, <i>{4}</i>)", 
           "Pick edge between two logic points.", "PickEdgeBetweenLP");                    
 AddObjectParam("Edge", "Edge object.");          
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);
+AddAnyTypeParam("UID0", "The UID of chess", 0);
+AddAnyTypeParam("UID1", "The UID of neighbor chess", 0);
 AddCondition(13, cf_not_invertible, "Pick edges between chess", "Pick edge", 
              "Pick edges <i>{0}</i> between chess UID:<i>{1}</i> and chess UID:<i>{2}</i>", 
              "Pick edges between chess.", "PickEdgeBetweenChess");              
@@ -162,8 +162,8 @@ AddAction(1, 0, "Create edge between points", "Physical: Create",
           "Create edge <i>{0}</i> between logic points (<i>{1}</i>, <i>{2}</i>) and (<i>{3}</i>, <i>{4}</i>) on layer <i>{5}</i>", 
           "Create edge between two logic points.", "CreateEdgeBetweenLP");
 AddObjectParam("Edge", "Edge object.");  
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);
+AddAnyTypeParam("UID0", "The UID of chess", 0);
+AddAnyTypeParam("UID1", "The UID of neighbor chess", 0);
 AddLayerParam("Layer", "Layer name of number."); 
 AddAction(2, 0, "Create edge between chess", "Physical: Create", 
           "Create edge <i>{0}</i> between chess UID:<i>{1}</i> and chess UID:<i>{2}</i> on layer <i>{3}</i>", 
@@ -231,8 +231,8 @@ AddAction(21, 0, "Move edge between points", "Logic: Move",
           "Move edge <i>{0}</i> between logic points (<i>{1}</i>, <i>{2}</i>) and (<i>{3}</i>, <i>{4}</i>)", 
           "Move edge between points.", "MoveEdgeBetweenLP");
 AddObjectParam("Edge", "Edge object.");  
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);	
+AddAnyTypeParam("UID0", "The UID of chess", 0);
+AddAnyTypeParam("UID1", "The UID of neighbor chess", 0);	
 AddAction(22, 0, "Move edge between chess", "Logic: Move", 
           "Move edge <i>{0}</i> between chess UID:<i>{1}</i> and chess UID:<i>{2}</i>", 
           "Move edge between chess.", "MoveEdgeBetweenChess");
@@ -290,8 +290,8 @@ AddAction(32, 0, "Pick edge between points", "Pick edge",
           "Pick edge <i>{0}</i> between logic points (<i>{1}</i>, <i>{2}</i>) and (<i>{3}</i>, <i>{4}</i>)", 
           "Pick edge between two logic points.", "PickEdgeBetweenLP");                    
 AddObjectParam("Edge", "Edge object.");          
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);
+AddAnyTypeParam("UID0", "The UID of chess", 0);
+AddAnyTypeParam("UID1", "The UID of neighbor chess", 0);
 AddAction(33, 0, "Pick edges between chess", "Pick edge", 
              "Pick edges <i>{0}</i> between chess UID:<i>{1}</i> and chess UID:<i>{2}</i>", 
              "Pick edges between chess.", "PickEdgeBetweenChess");              
@@ -362,30 +362,30 @@ AddNumberParam("LY1", "The logic Y of point 1.", 0);
 AddExpression(1, ef_return_number,
               "Get edge UID by LXY", "Edge", "LXY2EdgeUID",
               "Get edge UID by LXY index. Return (-1) if this position has no edge.");
-AddNumberParam("UID0", "The UID of chess", 0);
-AddNumberParam("UID1", "The UID of neighbor chess", 0);
+AddAnyTypeParam("UID0", "The UID of chess", 0);
+AddAnyTypeParam("UID1", "The UID of neighbor chess", 0);
 AddExpression(2, ef_return_number,
               "Get edge UID by chess UID", "Edge", "ChessUID2EdgeUID",
               "Get edge UID by chess UID. Return (-1) if this position has no edge.");
-AddNumberParam("UID", "The UID of chess", 0);
+AddAnyTypeParam("UID", "The UID of chess", 0);
 AddNumberParam("Direction", "The direction of chess.", 0);	
 AddExpression(3, ef_return_number,
               "Get edge UID by chess and direction", "Edge", "ChessDIR2EdgeUID",
               "Get edge UID by chess and direction. Return (-1) if this position has no edge.");
-AddNumberParam("UID", "The UID of chess", 0);	
+AddAnyTypeParam("UID", "The UID of chess", 0);	
 AddExpression(4, ef_return_number,
               "Get edge cout around the chess", "Edge", "ChessUID2EdgeCount",
               "Get edge cout around the chess. Return (-1) if this chess is not on the board.");
               
-AddNumberParam("UID", "The UID of edge", 0);
+AddAnyTypeParam("UID", "The UID of edge", 0);
 AddExpression(11, ef_return_number,
               "Get X co-ordinate of edge by UID", "Physical", "EdgeUID2PX",
               "Get physical X co-ordinate of edge by UID. Return (-1) if this edge is not valided.");  
-AddNumberParam("UID", "The UID of edge", 0);
+AddAnyTypeParam("UID", "The UID of edge", 0);
 AddExpression(12, ef_return_number,
               "Get Y co-ordinate of edge by UID", "Physical", "EdgeUID2PY",
               "Get physical Y co-ordinate of edge by UID. Return (-1) if this edge is not valided.");  
-AddNumberParam("UID", "The UID of edge", 0);
+AddAnyTypeParam("UID", "The UID of edge", 0);
 AddExpression(13, ef_return_number,
               "Get angle of edge by UID", "Physical", "EdgeUID2PA",
               "Get physical angle of edge by UID. Return (-1) if this edge is not valided.");  

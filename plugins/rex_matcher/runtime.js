@@ -119,7 +119,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         var uid;
 	    if (objs == null)
 	        uid = null;
-	    else if (typeof(objs) != "number")
+	    else if (typeof(objs) === "object")
 	    {
 	        var inst = objs.getFirstPicked();
 	        uid = (inst!=null)? inst.uid:null;
@@ -160,7 +160,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         this._symbol_cache = {};
     };    
     
-    instanceProto.write_symbol_cache = function (x,y)
+    instanceProto.write_symbol_cache = function (x,y, is_update_all)
     {
         var tile_uid = this.GetBoard().xyz2uid(x,y,0);
         if (tile_uid == null)
@@ -188,7 +188,10 @@ cr.plugins_.Rex_Matcher = function(runtime)
         cell.symbol = this._symbol_value;
         cell.uid = tile_uid;
         
-        this._last_tick = this.runtime.tickcount;
+        if (is_update_all)
+            this._last_tick = this.runtime.tickcount;
+        
+        return this._symbol_value;;
     };    
 	instanceProto._symbol_at = function(x,y)
 	{
@@ -221,7 +224,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         for (y=0; y<=y_max; y++)
         {
             for (x=0; x<=x_max; x++)
-                this.write_symbol_cache(x,y);
+                this.write_symbol_cache(x,y, true);
         }
 	};	
 	// ----
@@ -809,11 +812,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	{	     
         this.write_symbol_cache(lx, ly);   
 	};		
-	Acts.prototype.ForceUpdaeCellByTileUID = function (uid)	
-	{
-	    var _xyz = this.GetBoard().uid2xyz(uid);
-        this.write_symbol_cache(_xyz.x, _xyz.y);       
-	};	
+    
 	Acts.prototype.ForceUpdaeCellByTile = function (chess_type)	
 	{
         if (!chess_type)
@@ -824,9 +823,20 @@ cr.plugins_.Rex_Matcher = function(runtime)
         for (i=0; i<chess_cnt; i++)
         {
 		    _xyz = board.uid2xyz(chess[i].uid);
+            if (_xyz == null)
+                continue;
+                
 			this.write_symbol_cache(_xyz.x, _xyz.y);    
 		}      
 	};	
+
+	Acts.prototype.ForceUpdaeCellByTileUID = function (uid)	
+	{
+	    var _xyz = this.GetBoard().uid2xyz(uid);
+        if (_xyz == null)
+            return;
+        this.write_symbol_cache(_xyz.x, _xyz.y);       
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -834,7 +844,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	
     Exps.prototype.TileUID = function (ret)
     {
-        ret.set_int(this.exp_TileUID);
+        ret.set_any(this.exp_TileUID);
     };
 	
     Exps.prototype.TileX = function (ret)
@@ -856,5 +866,20 @@ cr.plugins_.Rex_Matcher = function(runtime)
     {
         ret.set_string(this.wildcard_symbol);
     };    	
-	
+    	
+    Exps.prototype.LXY2Symbol = function (ret, x, y)
+    {
+        ret.set_string(this.write_symbol_cache(x,y));
+    };
+    	
+    Exps.prototype.UID2Symbol = function (ret, uid)
+    {
+        var s = ""
+	    var _xyz = this.GetBoard().uid2xyz(uid);
+        if (_xyz !== null)
+            s = this.write_symbol_cache(_xyz.x, _xyz.y);  
+            
+        ret.set_string(s);
+    };
+ 	
 }());

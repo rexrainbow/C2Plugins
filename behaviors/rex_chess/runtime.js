@@ -86,7 +86,7 @@ cr.behaviors.Rex_chess = function(runtime)
         var uid;
 	    if (objs == null)
 	        uid = null;
-	    else if (typeof(objs) != "number")
+	    else if (typeof(objs) === "object")
 	    {
 	        var inst = objs.getFirstPicked();
 	        uid = (inst!=null)? inst.uid:null;
@@ -328,7 +328,7 @@ cr.behaviors.Rex_chess = function(runtime)
 	        if (ret_uid == null)
 	            ret_uid = (-1);
 	    }		
-	    ret.set_int(ret_uid);
+	    ret.set_any(ret_uid);
 	}; 	
 	
 	Exps.prototype.PX = function (ret,logic_x,logic_y)
@@ -408,6 +408,6 @@ cr.behaviors.Rex_chess = function(runtime)
 	        if (ret_uid == null)
 		        ret_uid = (-1);
 	    }
-	    ret.set_int(ret_uid);
+	    ret.set_any(ret_uid);
 	};		
 }());

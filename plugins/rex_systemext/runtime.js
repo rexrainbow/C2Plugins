@@ -453,5 +453,29 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	    var c = encodeURI(s).split(/%..|./).length - 1;
 	    ret.set_int( c );
 	};	
-	
+    
+    Exps.prototype.NormalRandom = function (ret, mean, stddev)
+	{
+        var u, v, r
+		do 
+        {
+			u = 2*Math.random() -1;
+			v = 2*Math.random() -1;
+			r = u*u + v*v;
+		} while (r > 1 || r == 0);
+
+		var gauss = u * Math.sqrt(-2*Math.log(r)/r);
+	    ret.set_float( mean + gauss*stddev );
+	};
+
+    Exps.prototype.NormalRandomApproximation = function (ret, mean, stddev)
+	{
+        var g=0;
+        for (var i=0; i<6; i++)
+            g += Math.random();
+        
+		g = (g - 3) / 3;
+	    ret.set_float( mean + g*stddev );
+	};
+    
 }());

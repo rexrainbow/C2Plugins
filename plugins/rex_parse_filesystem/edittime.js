@@ -10,8 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
-		"dependency":	"parse-1.5.0.min.js"
+		"flags":		0
 	};
 };
 
@@ -38,8 +37,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_text, "Application ID", "", "Application ID"),
-	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "data", "Class name of this function."), 	
     new cr.Property(ept_combo, "Response", "Yes", "Enable response event and get response message.", "NO|Yes"),     
 	];

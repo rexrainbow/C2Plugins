@@ -406,7 +406,7 @@ cr.behaviors.Rex_canvas_chart_line = function(runtime)
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 
-    Exps.prototype.StartAngle = function (ret, dataset_name, label_name)
+    Exps.prototype.Data = function (ret, dataset_name, label_name)
 	{       
 	    ret.set_float(this.get_data(dataset_name, label_name));
 	};

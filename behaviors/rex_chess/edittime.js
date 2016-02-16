@@ -33,7 +33,7 @@ AddCondition(6, cf_trigger, "On collision", "Collisions",
 AddObjectParam("Chess", "Chess object B.");             
 AddCondition(7, 0, "Is overlapping", "Collisions", 
             "Is {my} overlapping with <i>{0}</i>", "Test if the object is overlapping another object.", "IsOverlapping");
-AddNumberParam("UID of chess", "UID of chess B.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess B.", 0);
 AddCondition(9, 0, "Are neighbors (UID)", "Chess", 
              "Are {my} and <i>{0}</i> neighbors", "Testing if two chess are neighbors.", "AreNeighbors");             
 AddCondition(10, 0, "No chess above", "Empty", 
@@ -55,7 +55,7 @@ AddObjectParam("Tile", "Tile object.");
 AddAction(3, 0, "Move chess", "Logic: Move", 
           "{my} move to tile <i>{0}</i>", 
           "Move chess on the board.", "MoveChess");   
-AddNumberParam("Tile UID", "The UID of tile", 0);
+AddAnyTypeParam("Tile UID", "The UID of tile", 0);
 AddAction(4, 0, "Move chess by UID", "Logic: Move", 
           "{my} move to tile UID:<i>{0}</i>", 
           "Move chess by UID on the board.", "MoveChess");   
@@ -81,7 +81,7 @@ AddExpression(3, ef_return_any,
               "Get Z index of selected chess", "Chess", "LZ", 
               "Get Z index of selected chess.");
 AddAnyTypeParam("Z", "The logic Z.", 0);            
-AddExpression(5, ef_return_number | ef_variadic_parameters,
+AddExpression(5, ef_return_any | ef_variadic_parameters,
               "Get UID by Z", "Chess", "LZ2UID",
               "Get UID by Z.");    
 AddExpression(6, ef_return_number,
@@ -90,7 +90,7 @@ AddExpression(6, ef_return_number,
 AddExpression(7, ef_return_number,
               "Get Y co-ordinate", "Physical", "PY",
               "Get physical Y co-ordinate.");   
-AddNumberParam("FaceTo", "The UID of instance to face.", 0);         
+AddAnyTypeParam("FaceTo", "The UID of instance to face.", 0);         
 AddExpression(10, ef_return_number | ef_variadic_parameters,
               "Get Logic angle by UID", "Chess", "UID2LA",
               "Get Logic angle by UID, in degree. (-1) is invalid angle.");            
@@ -98,7 +98,7 @@ AddExpression(13, ef_return_number,
               "Get z count", "Chess", "ZCnt", 
               "Get z count.");
 AddAnyTypeParam("Direction", "The direction.", 0);            
-AddExpression(17, ef_return_number | ef_variadic_parameters,
+AddExpression(17, ef_return_any | ef_variadic_parameters,
               "Get neighbor UID by direction", "Chess", "DIR2UID",
               "Get neighbor UID by direction. Add 2nd parameter to indicate z-index. Return (-1) if no chess picked.");                                      
 ACESDone();

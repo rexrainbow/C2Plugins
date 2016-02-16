@@ -41,7 +41,7 @@ AddStringParam("Group", "Put result in this group", '""');
 AddAction(2, 0, "Get moveable area", "Request: Moveable area", 
           "Get moveable area of chess <i>{0}</i> by moving points to <i>{1}</i> and cost to <i>{2}</i>, filter to <i>{3}</i>. Then put result to group <i>{4}</i>", 
           "Get moveable area.", "GetMoveableArea");     
-AddNumberParam("UID", "The UID of chess", 0);
+AddAnyTypeParam("UID", "The UID of chess", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Filter", 'Filter function name to get avaiable uid, "" is passing default.', '""');
@@ -60,8 +60,8 @@ AddComboParam("Exact", "Exact or nearest.", 0);
 AddAction(4, 0, "Get moving path", "Request: Moving path", 
           "Get moving path start from chess <i>{0}</i> to <i>{5}</i> tile/chess <i>{1}</i> with moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");
-AddNumberParam("Chess UID", "The UID of chess", 0);
-AddNumberParam("Tile/Chess UID", "The UID of tile/chess", 0);
+AddAnyTypeParam("Chess UID", "The UID of chess", 0);
+AddAnyTypeParam("Tile/Chess UID", "The UID of tile/chess", 0);
 AddNumberParam("Moving points", "Moving points.", 0);
 AddAnyTypeParam("Moving cost", "A number or a function name to get moving cost for each tile.", 0);
 AddStringParam("Group", "Put result in this group", '""');
@@ -71,7 +71,7 @@ AddComboParam("Exact", "Exact or nearest.", 0);
 AddAction(5, 0, "Get moving path by UID", "Request: Moving path", 
           "Get moving path start from chess UID:<i>{0}</i> to <i>{5}</i> tile/chess UID:<i>{1}</i> with moving points to <i>{2}</i> and cost to <i>{3}</i>, then put result to group <i>{4}</i>", 
           "Get moving path.", "GetMovingPath");      
-AddNumberParam("UID", "Filter result", 0);
+AddAnyTypeParam("UID", "Filter result", 0);
 AddAction(6, 0, "Append filter result", "Filter", "Append filter result to UID:<i>{0}</i>", 
           "Append filter result in UID.", "AppendFilter");   
 AddComboParamOption("Random");
@@ -90,10 +90,10 @@ AddAction(11, 0, "Set random generator", "Setup",
           "Set random generator object.", "SetRandomGenerator");          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, 
+AddExpression(1, ef_return_any, 
               "Get UID of selected chess", "Request", "ChessUID", 
               "Get UID of selected chess.");
-AddExpression(2, ef_return_number,
+AddExpression(2, ef_return_any,
               "Get UID of target tile", "Request", "TileUID",
               "Get UID of target tile.");
 AddExpression(3, ef_return_number,
@@ -108,18 +108,18 @@ AddExpression(5, ef_return_number,
 AddExpression(6, ef_return_number,
               "Infinity property", "Moving point", "INFINITY",
               'Infinity property used in moving point, used in Moving point. The value is (-1)'); 
-AddNumberParam("UID", "UID of tile", 0);              
+AddAnyTypeParam("UID", "UID of tile", 0);              
 AddExpression(7, ef_return_number,
               "Get path cost of chess", "Result", "UID2PathCost",
               "Get path cost of chess/tile by UID. Retrun (-1) if unknown.");
-AddExpression(8, ef_return_number,
+AddExpression(8, ef_return_any,
               "Get UID of nearest tile", "Result", "NearestTileUID",
               "Get UID of nearest tile to target.");
-AddExpression(9, ef_return_number, 
+AddExpression(9, ef_return_any, 
               "Get UID of start tile", "Request", "StartTileUID", 
               "Get UID of start tile.");
                     
-AddExpression(11, ef_return_number,
+AddExpression(11, ef_return_any,
               "Get UID of previos tile", "Request: Previous", "PreTileUID",
               "Get UID of previos tile.");
 AddExpression(12, ef_return_number,

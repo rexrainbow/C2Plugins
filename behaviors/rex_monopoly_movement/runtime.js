@@ -139,7 +139,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     
     var _solid_get = function(inst)
     {
-        return (inst.extra != null) && (inst.extra["solidEnabled"]);
+        return (inst && inst.extra && inst.extra["solidEnabled"]);
     };
     
     behinstProto._solid_prop_get = function (target_tile_uid)
@@ -587,7 +587,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     
  	Exps.prototype.TileUID = function (ret)
 	{
-        ret.set_int(this.exp_TileUID);		
+        ret.set_any(this.exp_TileUID);		
 	};    
     
  	Exps.prototype.TileLX = function (ret)

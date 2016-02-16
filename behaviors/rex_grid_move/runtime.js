@@ -69,7 +69,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
         var uid;
 	    if (objs == null)
 	        uid = null;
-	    else if (typeof(objs) != "number")
+	    else if (typeof(objs) === "object")
 	    {
 	        var inst = objs.getFirstPicked();
 	        uid = (inst!=null)? inst.uid:null;
@@ -202,7 +202,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
     var _solid_get = function(inst)
     {
-        return (inst.extra != null) && (inst.extra["solidEnabled"]);
+        return (inst && inst.extra && inst.extra["solidEnabled"]);
     };
 
     behinstProto.target2dir = function (target_x, target_y, target_z)
@@ -976,7 +976,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 
  	Exps.prototype.BlockerUID = function (ret)
 	{
-        ret.set_int(this.exp_BlockerUID);		
+        ret.set_any(this.exp_BlockerUID);		
 	}; 
     
  	Exps.prototype.Direction = function (ret)

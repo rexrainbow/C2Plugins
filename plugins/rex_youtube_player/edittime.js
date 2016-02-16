@@ -49,6 +49,9 @@ AddCondition(11, cf_trigger, "On player ready", "Initial", "On player ready",
              "Triggered when player ready.", "OnPlayerReady");
 AddCondition(12, cf_trigger, "On player error", "Video", "On player error",
              "Triggered when player has error.", "OnPlayerError");
+             
+AddCondition(13, cf_none, "Is full screen", "Full screen", "Is full screen", 
+             "True if video is in full screen mode.", "IsFullScreen");             
 ////////////////////////////////////////
 // Actions
 
@@ -84,18 +87,27 @@ AddAction(5, af_none, "Pause", "Video", "Pause", "Pause the current playback.", 
 
 AddAction(6, af_none, "Play", "Video", "Play", "Start playing the video if stopped or paused. On mobile, may only work in a user input trigger.", "Play");
 
+AddComboParamOption("Exit");
+AddComboParamOption("Enter");
+AddComboParamOption("Toggle");
+AddComboParam("Command", "Enter or exit, or toggle fullscreen mode.", 1);
 AddAction(11, af_none, "Full windoe", "Size", 
-          "Resize to full windoe", 
-          "Resize to full windoe.", "ResizeFullWindow");       
+          "<i>{0}</i> full windoe", 
+          "Enter or exit full windoe.", "SetFullWindow");       
           
 AddComboParamOption("Invisible");
 AddComboParamOption("Visible");
-AddComboParam("Visibility", "Choose whether to hide or show this object.");
+AddComboParam("Visibility", "Choose whether to hide or show this object.", 1);
 AddAction(12, af_none, "Set visible", "Appearance", "Set <b>{0}</b>", "Hide or show this object.", "SetVisible");          
 
-AddAction(13, af_none, "Full screen", "Size", 
-          "Resize to full screen", 
-          "Resize to full screen. It can only be called under a user input.", "ResizeFullScreen");   
+AddComboParamOption("Exit");
+AddComboParamOption("Enter");
+AddComboParamOption("Toggle");
+AddComboParam("Command", "Enter or exit, or toggle fullscreen mode.", 1);
+AddAction(13, af_none, "Set full screen mode", "Full screen", 
+          "<i>{0}</i> full screen", 
+          'Enter or exit full screen mode. "Enter full screen" can only be called under a user input.', "SetFullScreen");   
+        
 ////////////////////////////////////////
 // Expressions
 

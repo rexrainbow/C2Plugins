@@ -27,28 +27,6 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.5.0.min.js");
-	};
-	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
 	};
 
 	/////////////////////////////////////
@@ -62,17 +40,11 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{ 	    
-	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
-	    {
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	        window.RexC2IsParseInit = true;
-	    }
-	    	    
+	{ 	       
 	    if (!this.recycled)
 	    {
-	        this.itemTable_klass = window["Parse"].Object["extend"](this.properties[2]);
-	        var page_lines = this.properties[3];	    
+	        this.itemTable_klass = window["Parse"].Object["extend"](this.properties[0]);
+	        var page_lines = this.properties[1];	    
             this.itemTable = this.create_itemTable(page_lines);	
             this.filters = create_filters();  
             this.primary_key_candidates = {};  
@@ -90,7 +62,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
             this.saveAllQueue.primary_keys.length = 0;
 	    }	   
 	    
-	    get_primary_key_candidates(this.properties[4], this.primary_key_candidates);	 
+	    get_primary_key_candidates(this.properties[2], this.primary_key_candidates);	 
         this.prepared_item = null;
         
         

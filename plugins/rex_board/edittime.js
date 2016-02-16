@@ -43,8 +43,8 @@ AddNumberParam("Y", "The Physical Y.", 0);
 AddCondition(8, 0, "Point is in board", "Board", 
              "Point (<i>{0}</i>,<i>{1}</i>) is in board", 
              "Testing if point is in board.", "PointIsInBoard");
-AddNumberParam("UID of chess", "UID of chess A.", 0);
-AddNumberParam("UID of chess", "UID of chess B.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess A.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess B.", 0);
 AddCondition(9, 0, "Are neighbors (UID)", "Neighborhood", 
              "Are <i>{0}</i> and <i>{1}</i> neighbors", 
              "Testing if two chess are neighbors.", "AreNeighbors");             
@@ -66,8 +66,10 @@ AddObjectParam("Tile", "Tile object.");
 AddCondition(13, cf_not_invertible, "Pick chess above tile", "SOL - above tile", 
              "Pick <i>{0}</i> above <i>{1}</i>", 
              "Pick chess above tile.", "PickChessAboveTile"); 
+             
+// Do you want to scan all tiles to pick matched symbol tiles?
 AddObjectParam("Chess", "Chess object.");
-AddAnyTypeParam("Tile UID", "Tile UID. Can be number or a tile UID list in JSON string.", 0);
+AddAnyTypeParam("Tile UID", "Tile UID. Can be tile UID/symbol or a tile UID list in JSON string.", 0);
 AddCondition(14, cf_not_invertible, "Pick chess above tile UID", "SOL - above tile", 
              "Pick <i>{0}</i> above tile UID: <i>{1}</i>", 
              "Pick chess above tile UID.", "PickChessAboveTileUID");           
@@ -96,8 +98,8 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddCondition(19, 0, "Has any empty cell", "Empty", 
             "Has any empty cell with logic Z to <i>{0}</i>", 
             "Return true if there has any empty cell.", "HasEmptyCell");  
-AddNumberParam("UID of chess", "UID of chess A.", 0);
-AddNumberParam("UID of chess", "UID of chess B.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess A.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess B.", 0);
 AddCondition(20, 0, "Are wrapped neighbors (UID)", "Neighborhood", 
              "Are <i>{0}</i> and <i>{1}</i> wrapped neighbors", 
              "Testing if two chess are wrapped neighbors.", "AreWrappedNeighbors");
@@ -129,7 +131,18 @@ AddObjectParam("Tile", "Tile object.");
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);          
 AddCondition(26, 0, "Has any empty cell on tiles", "Empty", 
             "Has any empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
-            "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");                                     	
+            "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");    
+
+AddComboParamOption("Top to bottom");
+AddComboParamOption("Bottom to top");
+AddComboParamOption("Left to right");
+AddComboParamOption("Right to left");
+AddComboParam("Direction", "Scan direction.", 0);
+AddCondition(3, cf_looping | cf_not_invertible, "For each cell", "For each cell", 
+             "For each cell, <i>{0}</i>", 
+             "Repeat the event for each cell in the board.", "ForEachCell");
+             
+            
 //////////////////////////////////////////////////////////////
 // Actions   
 AddNumberParam("X", "Initial number of elements on the X axis. 0 is unchanged.", 0);
@@ -154,7 +167,7 @@ AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile
 AddAction(3, 0, "Add chess", 
           "Logic: Add", "Add chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess");  
-AddAnyTypeParam("UID", "The UID of chess", 0);
+AddAnyTypeParam("UID", "The UID of chess, or a symbol of chess.", 0);
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
@@ -165,7 +178,7 @@ AddObjectParam("Chess", "Chess object.");
 AddAction(5, 0, "Remove chess", 
           "Logic: Remove", "Remove chess <i>{0}</i>", 
           "Remove chess from the board.", "RemoveChess");       
-AddNumberParam("UID", "The UID of chess", 0);
+AddAnyTypeParam("UID", "The UID of chess", 0);
 AddAction(6, 0, "Remove chess by UID", 
           "Logic: Remove", "Remove chess UID:<i>{0}</i>", 
           "Remove chess by UID from the board.", "RemoveChess");
@@ -174,8 +187,8 @@ AddObjectParam("Tile", "Tile object.");
 AddAction(7, 0, "Move chess", "Logic: Move", 
           "Move chess <i>{0}</i> to tile <i>{1}</i>", 
           "Move chess on the board.", "MoveChess");   
-AddNumberParam("Chess UID", "The UID of chess", 0);
-AddNumberParam("Tile UID", "The UID of tile", 0);
+AddAnyTypeParam("Chess UID", "The UID of chess", 0);
+AddAnyTypeParam("Tile UID", "The UID of tile", 0);
 AddAction(8, 0, "Move chess by UID", "Logic: Move", 
           "Move chess UID:<i>{0}</i> to tile UID:<i>{1}</i>", 
           "Move chess by UID on the board.", "MoveChess");     
@@ -185,8 +198,8 @@ AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddAction(9, 0, "Move chess to xyz", "Logic: Move", 
           "Move chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
-          "Move chess on the board.", "MoveChess2Index");  
-AddNumberParam("Chess UID", "The UID of chess", 0);
+          "Move chess on the board.", "MoveChess2LXYZ");  
+AddAnyTypeParam("Chess UID", "The UID of chess", 0);
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
@@ -216,14 +229,11 @@ AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
-AddComboParamOption("stand on a tile");
-AddComboParamOption("ignore tile checking");
-AddComboParam("Check condition", "Tile checking.",0);
 AddAction(14, 0, "Create chess", "Physical: Create", 
-          "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>] on layer <i>{4}</i>, <i>{5}</i>", 
+          "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>] on layer <i>{4}</i>", 
           "Create chess on the board.", "CreateChess");  
-AddNumberParam("UID of chess", "UID of chess A.", 0);
-AddNumberParam("UID of chess", "UID of chess B.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess A.", 0);
+AddAnyTypeParam("UID of chess", "UID of chess B.", 0);
 AddAction(15, 0, "Swap chess by UID", "Logic: Swap", 
           "Swap chess UID <i>{0}</i> with chess UID <i>{1}</i>", 
           "Swap two chess by UID.", "SwapChess");
@@ -279,9 +289,9 @@ AddAction(25, 0, "Set wrap mode", "Board",
           "Set wrap mode.", "SetWrapMode");   
 AddObjectParam("Chess", "Chess object.");
 AddLayerParam("Layer", "Layer name of number."); 
-AddNumberParam("Logic Z", "The Z index (0-based) of the chess to set.", 1);
+AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set.", 1);
 AddAction(26, 0, "Fill chess", "Physical: Create", 
-          "Fill LZ to <i>{2}</i> with <i>{0}</i>, on layer <i>{1}</i>", 
+          "Fill LZ <i>{2}</i> with <i>{0}</i>, on layer <i>{1}</i>", 
           "Fill chess.", "FillChess");
 AddObjectParam("Chess", "Chess object.");
 AddAction(27, 0, "Pick chess", "SOL", 
@@ -319,30 +329,31 @@ AddNumberParam("Logic X", "The X index (0-based) of the tile to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile to set.", 0);
 AddAction(33, 0, "Move chess to xy", "Logic: Move", 
           "Move chess <i>{0}</i> 's LXY to [<i>{1}</i>,<i>{2}</i>]", 
-          "Move chess to logic X,Y on the board.", "MoveChessLXY");            
+          "Move chess to logic X,Y on the board.", "MoveChessLXY"); 
+         
 //////////////////////////////////////////////////////////////
 // Expressions
-AddNumberParam("UID", "The UID of chess.", 0);
+AddAnyTypeParam("UID", "The UID of chess.", 0);
 AddExpression(1, ef_return_number, 
               "Get X index of chess", "Chess", "UID2LX", 
               "Get X index of chess by UID. Return (-1) if the chess is not on the board.");
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(2, ef_return_number, 
               "Get Y index of chess", "Chess", "UID2LY", 
               "Get Y index of chess by UID. Return (-1) if the chess is not on the board.");
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(3, ef_return_any, 
               "Get Z index of chess", "Chess", "UID2LZ", 
               "Get Z index of chess by UID. Return (-1) if the chess is not on the board.");
 AddNumberParam("X", "The logic X.", 0);
 AddNumberParam("Y", "The logic Y.", 0);           
 AddAnyTypeParam("Z", "The logic Z.", 0);   
-AddExpression(4, ef_return_number,
+AddExpression(4, ef_return_any,
               "Get UID by XYZ", "Chess", "LXYZ2UID",
               "Get UID by XYZ index. Return (-1) if this position has no chess.");
-AddNumberParam("UID", "The UID of chess.", 0);
+AddAnyTypeParam("UID", "The UID of chess.", 0);
 AddAnyTypeParam("Z", "The logic Z.", 0);            
-AddExpression(5, ef_return_number,
+AddExpression(5, ef_return_any,
               "Get UID by UID and Z", "Chess", "LZ2UID",
               "Get UID by relative UID and Z. Return (-1) if this position has no chess.");
 AddNumberParam("X", "The logic X.", 0);
@@ -355,32 +366,32 @@ AddNumberParam("Y", "The logic Y.", 0);
 AddExpression(7, ef_return_number,
               "Get Y co-ordinate by logic index", "Physical", "LXY2PY",
               "Get physical Y co-ordinate by logic X,Y index. Return (-1) if this position does not exist."); 
-AddNumberParam("UID", "The UID of chess.", 0);
+AddAnyTypeParam("UID", "The UID of chess.", 0);
 AddExpression(8, ef_return_number,
               "Get X co-ordinate by UID", "Physical", "UID2PX",
               "Get X co-ordinate by UID. Return (-1) if the chess is not on the board.");
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(9, ef_return_number,
               "Get Y co-ordinate by UID", "Physical", "UID2PY",
               "Get Y co-ordinate by UID. Return (-1) if the chess is not on the board.");
-AddNumberParam("Origin", "The UID of chess at origin.", 0);   
-AddNumberParam("FaceTo", "The UID of chess to face.", 0);         
+AddAnyTypeParam("Origin", "The UID of chess at origin.", 0);   
+AddAnyTypeParam("FaceTo", "The UID of chess to face.", 0);         
 AddExpression(10, ef_return_number,
               "Get Logic angle by UID", "Chess", "UID2LA",
               "Get Logic angle by UID, in degree. (-1) is invalid angle.");              
 AddNumberParam("X", "The logic X.", 0);
 AddNumberParam("Y", "The logic Y.", 0);   
-AddNumberParam("Z", "The logic Z.", 0);     
+AddAnyTypeParam("Z", "The logic Z.", 0);     
 AddExpression(11, ef_return_number,
               "Get X co-ordinate by logic index", "Physical", "LXYZ2PX",
               "Get physical X co-ordinate by logic X,Y,Z index.");
 AddNumberParam("X", "The logic X.", 0);
 AddNumberParam("Y", "The logic Y.", 0); 
-AddNumberParam("Z", "The logic Z.", 0);                              
+AddAnyTypeParam("Z", "The logic Z.", 0);                              
 AddExpression(12, ef_return_number,
               "Get Y co-ordinate by logic index", "Physical", "LXYZ2PY",
               "Get physical Y co-ordinate by logic X,Y,Z index."); 
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(13, ef_return_number, 
               "Get z count at select chess by UID", "Chess", "UID2ZCnt", 
               "Get z count at select chess by UID. Return 0 if the chess is not on the board.");
@@ -399,9 +410,9 @@ AddNumberParam("Y", "The physical Y.", 0);
 AddExpression(16, ef_return_number,
               "Get logic Y by physical co-ordinate", "Logic", "PXY2LY",
               "Get logic Y by physical X,Y co-ordinate."); 
-AddNumberParam("UID", "The UID of origin chess.", 0);
+AddAnyTypeParam("UID", "The UID of origin chess.", 0);
 AddAnyTypeParam("Direction", "The direction.", 0);            
-AddExpression(17, ef_return_number | ef_variadic_parameters,
+AddExpression(17, ef_return_any | ef_variadic_parameters,
               "Get neighbor UID by UID and direction", "Chess", "DIR2UID",
               "Get neighbor UID by UID and direction. Add 3rd parameter to indicate z-index. Return (-1) if no chess picked.");        
 AddExpression(18, ef_return_number,
@@ -420,8 +431,8 @@ AddNumberParam("Y", "The physical Y.", 0);
 AddExpression(21, ef_return_number,
               "Get nearest Y co-ordinate of cell", "Board", "PXY2NearestPY",
               "Get nearest Y co-ordinate of cell from physical position."); 
-AddNumberParam("UID", "The UID of chess A.", 0);    
-AddNumberParam("UID", "The UID of chess B.", 0);    
+AddAnyTypeParam("UID", "The UID of chess A.", 0);    
+AddAnyTypeParam("UID", "The UID of chess B.", 0);    
 AddExpression(22, ef_return_number,
               "Get logic distance of two chess", "Logic", "LogicDistance",
               "Get logic distance of two chess. Return (-1) if one of chess is not on the board."); 
@@ -434,15 +445,25 @@ AddExpression(24, ef_return_number,
 AddExpression(25, ef_return_number,
               "Get count of directions", "Layout", "DirCount",
               "Get count of directions.");
-AddNumberParam("UID", "The UID of chess A.", 0);    
-AddNumberParam("UID", "The UID of chess B.", 0);    
+AddAnyTypeParam("UID", "The UID of chess A.", 0);    
+AddAnyTypeParam("UID", "The UID of chess B.", 0);    
 AddExpression(26, ef_return_number,
               "Get logic direction of two neighbor chess", "Logic", "NeigborUID2DIR",
               "Get logic direction of two neighbor chess from chess A to chessB. Return (-1) if they are not on the board.");
 AddExpression(27, ef_return_number,
               "All directions", "Neighborhood", "ALLDIRECTIONS",
               'Direction code for all directions (-1), used in "Condition: Pick neighbor chess".'); 
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0);  
+//AddAnyTypeParam("Z", "The logic Z.", 0);         
+AddExpression(28, ef_return_any | ef_variadic_parameters,
+              "Get UID by physical X,Y co-ordinate", "Chess", "PXY2UID",
+              "Get UID by physical X,Y co-ordinate. Add 3rd parameter to indicate z-index. Return (-1) if no chess picked.");              
                             
+AddExpression(31, ef_return_number, "Current LX", "For Each cell", "CurLX", 
+              "Get the current logic X index in a For Each loop.");
+AddExpression(32, ef_return_number, "Current LY", "For Each cell", "CurLY", 
+              "Get the current logic Y index in a For Each loop.");                            
 ACESDone();
 
 // Property grid properties for this plugin
@@ -494,14 +515,14 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
-	if (this.properties["Width"] < 1)
-		this.properties["Width"] = 1;
+	if (this.properties["Width"] < 0)
+		this.properties["Width"] = 0;
 		
-	if (this.properties["Height"] < 1)
-		this.properties["Height"] = 1;
+	if (this.properties["Height"] < 0)
+		this.properties["Height"] = 0;
 		
-	if (this.properties["Depth"] < 1)
-		this.properties["Depth"] = 1;    
+	if (this.properties["Depth"] < 0)
+		this.properties["Depth"] = 0;    
 }
 	
 // Called by the IDE to draw this instance in the editor

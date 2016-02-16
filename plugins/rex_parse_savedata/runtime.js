@@ -27,28 +27,6 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.5.0.min.js");
-	};
-	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
 	};
 
 	/////////////////////////////////////
@@ -63,20 +41,14 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
-	    {
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	        window.RexC2IsParseInit = true;
-	    }
-	    	    
 	    if (!this.recycled)
 	    {
-		    this.header_klass = window["Parse"].Object["extend"](this.properties[2]);
-		    this.body_klass = window["Parse"].Object["extend"](this.properties[3]);
+		    this.header_klass = window["Parse"].Object["extend"](this.properties[0]);
+		    this.body_klass = window["Parse"].Object["extend"](this.properties[1]);
 		}
         
-        this.acl_write_mode = this.properties[4];
-        this.acl_read_mode = this.properties[5];
+        this.acl_write_mode = this.properties[2];
+        this.acl_read_mode = this.properties[3];
 		
         this.owner_userID = "";
         

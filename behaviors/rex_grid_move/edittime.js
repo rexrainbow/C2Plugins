@@ -124,7 +124,7 @@ AddNumberParam("Logic X", "The X index (0-based).", 0);
 AddNumberParam("Logic Y", "The Y index (0-based).", 0);
 AddAction(7, 0, "Move to LXY", "Request", "{my} move to [<i>{0}</i>, <i>{1}</i>]", 
           "Move to logical position.", "MoveToLXY"); 
-AddNumberParam("UID", "Target UID.");
+AddAnyTypeParam("UID", "Target UID.");
 AddAction(8, 0, "Swap", "Swap", "{my} swap with chess UID <i>{0}</i>", 
           "Swap with target chess.", "Swap");              
 AddComboParamOption("Right");
@@ -213,7 +213,7 @@ AddAction(25, 0, "Approach/Depart chess by UID", "AI: Approach/Depart",
 AddAction(30, 0, "Stop", "Stop", "{my} stop", 
           "Stop moving.", "Stop");   
           
-AddNumberParam("UID", "Target chess UID", 0);
+AddAnyTypeParam("UID", "Target chess UID", 0);
 AddAction(40, 0, "Move to chess by UID", "Request", "{my} move to chess UID: <i>{0}</i>", 
           "Move to target chess/tile.", "MoveToTargetChess");             
 //////////////////////////////////////////////////////////////
@@ -232,7 +232,7 @@ AddExpression(5, ef_return_number, "Get target position X", "Target", "TargetX",
               "The X co-ordinate of target position to move toward.");
 AddExpression(6, ef_return_number, "Get target position Y", "Target", "TargetY", 
               "The Y co-ordinate of target position to move toward."); 
-AddExpression(8, ef_return_number, "Get blocker UID", "Request", "BlockerUID", 
+AddExpression(8, ef_return_any, "Get blocker UID", "Request", "BlockerUID", 
               "Get UID of blocker when moving request rejected.");
 AddExpression(9, ef_return_number, "Get moving direction", "Request", "Direction", 
               "Get last moving direction of moving request. Return (-1) if not moving to neighbor.");

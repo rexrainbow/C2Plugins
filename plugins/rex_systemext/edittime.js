@@ -121,6 +121,18 @@ AddExpression(2, ef_return_string | ef_variadic_parameters, "Get decimal mark", 
 AddStringParam('Input', "Input string.", '""');            
 AddExpression(3, ef_return_number, "Get byte count", "String", "String2ByteCount", "Get byte count of a string.");
 
+AddNumberParam('Mean', "Mean value", 0);  
+AddNumberParam('Standard deviation', "Standard deviation value", 1);       
+AddExpression(11, ef_return_number, "Get normal distribution", "Random", 
+              "NormalRandom", 
+              "Get normal distribution by Box-Muller transformation.");
+
+AddNumberParam('Mean', "Mean value", 0);  
+AddNumberParam('Standard deviation', "Standard deviation value", 1);       
+AddExpression(12, ef_return_number, "Get normal distribution approximation", "Random", 
+              "NormalRandomApproximation", 
+              "Get normal distribution by central limit theorem with 6 random number.");
+
 ACESDone();
 
 // Property grid properties for this plugin

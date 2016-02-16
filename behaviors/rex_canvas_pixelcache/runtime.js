@@ -72,7 +72,7 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 		this.area_by = y+h-1;
 	};	
 
-	behinstProto.point_get = function (x,y)
+	behinstProto.get_point = function (x,y)
 	{	
 	    if (this.img_data == null)
 		    this.cache_area();
@@ -116,7 +116,7 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 
 	Exps.prototype.rgbaAt = function (ret, x, y)
 	{
-	    var i = this.point_get(x, y);
+	    var i = this.get_point(x, y);
 		if (i == -1)
 		{
 		    ret.set_string("black");
@@ -129,7 +129,7 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 
     Exps.prototype.redAt = function (ret, x, y)
 	{
-		var i = this.point_get(x, y);
+		var i = this.get_point(x, y);
 		if (i == -1)
 		{
 		    ret.set_int(0);
@@ -140,7 +140,7 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 	};
     Exps.prototype.greenAt = function (ret, x, y)
 	{
-		var i = this.point_get(x, y);
+		var i = this.get_point(x, y);
 		if (i == -1)
 		{
 		    ret.set_int(0);
@@ -151,7 +151,7 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 	};
    Exps.prototype.blueAt = function (ret, x, y)
 	{
-		var i = this.point_get(x, y);
+		var i = this.get_point(x, y);
 		if (i == -1)
 		{
 		    ret.set_int(0);
@@ -162,7 +162,7 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 	};
     Exps.prototype.alphaAt = function (ret, x, y)
 	{
-		var i = this.point_get(x, y);
+		var i = this.get_point(x, y);
 		if (i == -1)
 		{
 		    ret.set_int(0);

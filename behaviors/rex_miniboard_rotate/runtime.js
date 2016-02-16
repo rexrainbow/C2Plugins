@@ -72,13 +72,12 @@ cr.behaviors.rex_miniboard_rotate = function(runtime)
 	    var self = this;
 	    var layout = this.inst.GetLayout();   
 	    var on_transfer_cell = function (xyz, options)
-	    {     
-	        var new_xyz = {};
-            new_xyz.x = layout.LXYZRotate2LX(xyz.x, xyz.y, xyz.z, options.direction);
-            new_xyz.y = layout.LXYZRotate2LY(xyz.x, xyz.y, xyz.z, options.direction);
-	        new_xyz.z = xyz.z;
+	    {
+            var nx = layout.LXYZRotate2LX(xyz.x, xyz.y, xyz.z, options.direction);
+            var ny = layout.LXYZRotate2LY(xyz.x, xyz.y, xyz.z, options.direction);
+	        var nz = xyz.z;
 	        
-	        return new_xyz;
+	        return window.RexC2BoardLXYZCache.allocLine(nx, ny, nz);
 	    };
 
 	    var on_accepted = function ()
@@ -120,12 +119,11 @@ cr.behaviors.rex_miniboard_rotate = function(runtime)
 	    var self = this;
 	    var on_transfer_cell = function (xyz)
 	    {      
-	        var new_xyz = {};
-            new_xyz.x = xyz.x;
-            new_xyz.y = -xyz.y;
-	        new_xyz.z = xyz.z;
+            var nx = xyz.x;
+            var ny = -xyz.y;
+	        var nz = xyz.z;
 	        
-	        return new_xyz;
+	        return window.RexC2BoardLXYZCache.allocLine(nx, ny, nz);
 	    };
 	    var on_accepted = function ()
 	    {      
@@ -157,12 +155,11 @@ cr.behaviors.rex_miniboard_rotate = function(runtime)
 	    var self = this;
 	    var on_transfer_cell = function (xyz)
 	    {      
-	        var new_xyz = {};
-            new_xyz.x = -xyz.x;
-            new_xyz.y = xyz.y;
-	        new_xyz.z = xyz.z;
+            var nx = -xyz.x;
+            var ny = xyz.y;
+	        var nz = xyz.z;
 	        
-	        return new_xyz;
+	        return window.RexC2BoardLXYZCache.allocLine(nx, ny, nz);
 	    };
 	    var on_accepted = function ()
 	    {      

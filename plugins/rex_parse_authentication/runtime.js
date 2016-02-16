@@ -27,30 +27,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.5.0.min.js");
-	};
-	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
-	};
-
+	};   
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -62,25 +39,17 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{ 
-	    this.file_obj = null;
-	    
-	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
+	{                     
+	    this.login_counter_enable = (this.properties[0] === 1);        
+	    if (this.properties[1] === 1)
 	    {
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	        
-	        if (this.properties[3] === 1)
-	        {
-	            window["Parse"]["User"]["enableRevocableSession"]();
-	        }
-	        window.RexC2IsParseInit = true;
+	        window["Parse"]["User"]["enableRevocableSession"]();
 	    }
-	    
-	    this.login_counter_enable = (this.properties[2] === 1);
+        
 	    this.exp_LoginCount = 0;
 	    
         this.isFirstLogin = false;
-        this.initial_data = {};
+        this.initial_data = {};     // add init data when sign up
         this.last_error = null;	 
         this.current_user = null;   // valid after login
 	};
@@ -103,15 +72,18 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    }
 	    return is_invalid_session_token;	    
     };    
-	instanceProto.set_initial_data = function(user, initial_data)
+	instanceProto.get_user_save = function(initial_data)
 	{ 
+	    var user = new window["Parse"]["User"]();
         for(var n in initial_data)
         {
             user["set"](n, initial_data[n]);
             delete initial_data[n];
         }
+        return user;
     };       
 
+    // update login count when login
 	instanceProto.update_login_counter = function(user)
 	{
 	    if (!this.login_counter_enable)
@@ -146,7 +118,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    return true;
 	}; 	
 	
-	Cnds.prototype.OnLoginSuccessfully = function ()
+	Cnds.prototype.OnLoginSuccess = function ()
 	{
 	    return true;
 	}; 	
@@ -168,64 +140,61 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 
     Acts.prototype.UsernamePassword_CreateAccount = function (n_, p_, e_)
 	{
-	    var self=this;
-	    var on_success = function ()
-	    {
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.UsernamePassword_OnCreateAccountSuccessfully, self);  
-	    };
-	    
-	    var on_error = function (user, error)
-	    {
-	        var is_invalid_session_token = self.do_invalid_session_token_handler(error, sign_up);
-	        if (!is_invalid_session_token)
+	    var self=this;     
+        var sign_up = function(user)
+        {
+	        var on_success = function ()
 	        {
-	            self.last_error = error;
-                self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.UsernamePassword_OnCreateAccountError, self);          
-            }
-	    };
-	    
-	    var user = new window["Parse"]["User"]();
-        user["set"]("username", n_);
-        user["set"]("password", p_);
-        if (e_ !== "")
-        {
-            user["set"]("email", e_);        
-        }
-        this.set_initial_data(user, this.initial_data);
-               
-        var sign_up = function()
-        {
+	            self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.UsernamePassword_OnCreateAccountSuccessfully, self);  
+	        };
+	        
+	        var on_error = function (user, error)
+	        {
+	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, sign_up);
+	            if (!is_invalid_session_token)
+	            {
+	                self.last_error = error;
+                    self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.UsernamePassword_OnCreateAccountError, self);          
+                }
+	        };
+	                
             var handler = {"success":on_success, "error":on_error}; 
             user["signUp"](null, handler);
         }
-        
-        sign_up();
+
+        this.initial_data["username"] = n_;
+        this.initial_data["password"] = p_;
+        if (e_ !== "")
+        {
+            this.initial_data["email"] = e_;
+        }
+        var user = this.get_user_save(this.initial_data);                
+        sign_up(user);
 	}; 
 	
     Acts.prototype.UsernamePassword_Login = function (n_, p_)
 	{
 	    var self=this;
-	    var on_success = function (user)
-	    {
-	        self.current_user = user;  
-	        self.update_login_counter(user);      
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginSuccessfully, self);  
-	    };
-	    
-	    var on_error = function (user, error)
-	    {
-	        var is_invalid_session_token = self.do_invalid_session_token_handler(error, login);
-	        if (!is_invalid_session_token)
-	        {	        
-	            self.current_user = user;
-	            self.last_error = error;
-                self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginError, self);          
-            }
-	    };
-	    
-	       	    
 	    var login = function ()
 	    {
+	        var on_success = function (user)
+	        {
+	            self.current_user = user;  
+	            self.update_login_counter(user);      
+	            self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginSuccess, self);  
+	        };
+	        
+	        var on_error = function (user, error)
+	        {
+	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, login);
+	            if (!is_invalid_session_token)
+	            {	        
+	                self.current_user = user;
+	                self.last_error = error;
+                    self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginError, self);          
+                }
+	        };
+	    	        
 	        var handler = {"success":on_success, "error":on_error};	 
             window["Parse"]["User"]["logIn"](n_, p_, handler);
         }
@@ -263,12 +232,12 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
         
 	    var self = this;
 	    
-	    var OnLoginSuccessfully = function(user)
+	    var OnLoginSuccess = function(user)
 	    {
             self.isFirstLogin = is_first_login;
 	        self.current_user = user; 
 	        self.update_login_counter(user);   	         
-	        self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginSuccessfully, self);
+	        self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginSuccess, self);
 	    };	
 	    
 	    var OnLoginError = function(user, error)
@@ -282,7 +251,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    var login_again = function (username, password)
 	    {	 
             is_first_login = true;
-	        var handler = {"success": OnLoginSuccessfully,
+	        var handler = {"success": OnLoginSuccess,
                            "error": OnLoginError};
                            
             window["Parse"]["User"]["logIn"](username, password, handler);	   
@@ -291,12 +260,12 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
         // step 2
 	    var try_signingUp = function (username, password)
 	    {
-	        var _on_success = function (user)
+	        var on_success = function (user)
 	        {
 	            login_again(username, password);
 	        };
 	        
-	        var _on_error = function (user, error)
+	        var on_error = function (user, error)
 	        {
 	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, try_signingUp);
 	            if (!is_invalid_session_token)
@@ -305,21 +274,17 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
                 }
 	        };
 	        
-	        var handler = {"success": _on_success,
-                           "error": _on_error};
-	        var user = new window["Parse"]["User"]();
-            user["set"]("username", username);
-            user["set"]("password", password);
-            
-            self.set_initial_data(user, self.initial_data);
-            
+	        var handler = {"success": on_success, "error": on_error};
+            self.initial_data["username"] = n_;
+            self.initial_data["password"] = p_;
+            var user = self.get_user_save(self.initial_data);                         
             user["signUp"](null, handler);
 	    };        	
         
         // step 1
 	    var try_login = function (username, password)
 	    {	 
-	        var _on_error = function (user, error) 
+	        var on_error = function (user, error) 
 	        {
 	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, try_login);
 	            if (!is_invalid_session_token)
@@ -328,15 +293,11 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
                 }
 	        };
 	        
-	        var handler = {"success": OnLoginSuccessfully,
-                           "error": _on_error};                          
-                           
+	        var handler = {"success": OnLoginSuccess, "error": on_error};                                                     
             window["Parse"]["User"]["logIn"](username, password, handler);   
         };            
         
-        try_login(n_, p_);  
-        
-        //PASSWORD_MISSING
+        try_login(n_, p_);          
 	};	
     
     Acts.prototype.SetValue = function (key_, value_)

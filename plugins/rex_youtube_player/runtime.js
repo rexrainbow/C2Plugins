@@ -109,8 +109,10 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		this.show_info = (this.properties[4] === 1);
 		this.disablekb = (this.properties[5] === 0);
 		this.exp_errorCode = 0;
+        this.isInFullScreen = false;
 		
         this.pended_cmds = [];
+        this.beforefullwindow = {"x":null, "y":null, "w":null, "h":null};
 		this.runtime.tickMe(this);
         
         // init
@@ -451,7 +453,8 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		         "isMute": this.isMuted(),		         
 		         "vol": this.get_volume(),
 		         "isPlaying": (this.youtube_state === 1),
-		         "isPaused": (this.youtube_state === 2)
+		         "isPaused": (this.youtube_state === 2),
+                 "fw": this.beforefullwindow,
 		         };
 	};
 	
@@ -468,7 +471,9 @@ cr.plugins_.rex_youtube_player = function(runtime)
         if (o["isPlaying"])
             this.Play();
         if (o["isPaused"])
-            this.Pause();    
+            this.Pause(); 
+
+        this.beforefullwindow = o["fw"];            
 	};    
 	//////////////////////////////////////
 	// Conditions
@@ -551,6 +556,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{
 		return true;
 	};	
+	
+	Cnds.prototype.IsFullScreen = function ()
+	{
+		return this.isInFullScreen;
+	};    
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -612,27 +623,46 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    this.Play();
 	};
 	
-	Acts.prototype.ResizeFullWindow = function ()
-	{
+	Acts.prototype.SetFullWindow = function (m)
+	{   
 		if (this.runtime.isDomFree)
 			return;
+
+        var is_fullwindow = (this.beforefullwindow["x"] !== null);
+        if (m === 2)
+        {            
+            m = (is_fullwindow)? 0:1
+        }
+         
+        if ( (m === 0) && is_fullwindow ) // exit
+        {
+	        this.x = this.beforefullwindow["x"];
+	        this.y = this.beforefullwindow["y"];
+	        this.width = this.beforefullwindow["w"];
+	        this.height = this.beforefullwindow["h"];
+	        this.updatePosition();   
             
-	    this.x = this.layer.viewLeft;
-	    this.y = this.layer.viewTop;
-	    this.width = this.layer.viewRight - this.layer.viewLeft;
-	    this.height = this.layer.viewBottom - this.layer.viewTop;
-	    this.updatePosition();
+            this.beforefullwindow["x"] = null;
+            this.beforefullwindow["y"] = null;
+            this.beforefullwindow["w"] = null;
+            this.beforefullwindow["h"] = null;
+        }
+        else if ( (m === 1) && (!is_fullwindow) )  // enter
+        {
+            this.beforefullwindow["x"] = this.x;
+            this.beforefullwindow["y"] = this.y;
+            this.beforefullwindow["w"] = this.width;
+            this.beforefullwindow["h"] = this.height;
+            
+	        this.x = this.layer.viewLeft;
+	        this.y = this.layer.viewTop;
+	        this.width = this.layer.viewRight - this.layer.viewLeft;
+	        this.height = this.layer.viewBottom - this.layer.viewTop;
+	        this.updatePosition();        
+        }
+        
+
 	};	
-	
-	Acts.prototype.ResizeFullScreen = function ()
-	{
-		if (this.runtime.isDomFree)
-			return;
-            
-        var requestFullScreen = this.elem.requestFullScreen || this.elem.mozRequestFullScreen || this.elem.webkitRequestFullScreen;
-        if (requestFullScreen)        
-            requestFullScreen.bind(this.elem)();
-	};
     
 	Acts.prototype.SetVisible = function (vis)
 	{        
@@ -640,7 +670,40 @@ cr.plugins_.rex_youtube_player = function(runtime)
 			return;
 		
 		this.visible = (vis !== 0);
-	};    
+	};     
+	
+	Acts.prototype.SetFullScreen = function (m)
+	{
+		if (this.runtime.isDomFree)
+			return;
+         
+        if (m === 2)
+        {
+            m = (this.isInFullScreen)? 0:1;
+        }
+        
+        if (m === 0) // exit
+        {
+            this.isInFullScreen = false;
+            if(document["exitFullscreen"])
+                document["exitFullscreen"]();
+            else if(document["mozCancelFullScreen"])
+                document["mozCancelFullScreen"]();
+            else if(document["webkitExitFullscreen"])
+                document["webkitExitFullscreen"]();                
+        }        
+        else if (m === 1)  // enter
+        {                       
+            var requestFullScreen = this.elem["requestFullScreen"] || this.elem["mozRequestFullScreen"] || this.elem["webkitRequestFullScreen"];
+            if (requestFullScreen)    
+            {            
+                requestFullScreen["bind"](this.elem)();
+                this.isInFullScreen = true;;
+            }
+        }
+
+	};   
+   
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

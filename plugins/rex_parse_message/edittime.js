@@ -10,8 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
-		"dependency":	"parse-1.5.0.min.js"
+		"flags":		0
 	};
 };
 
@@ -333,8 +332,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_text, "Application ID", "", "Application ID"),
-	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name", "Message", "Class name for storing messages structure."), 
     new cr.Property(ept_integer, "Lines", 10, "Line count of each page."),    
 	new cr.Property(ept_combo, "Order", "Later to earlier", "Order.", "Earlier to later|Later to earlier"),

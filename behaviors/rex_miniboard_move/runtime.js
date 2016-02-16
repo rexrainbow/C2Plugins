@@ -47,7 +47,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
         var uid;
 	    if (objs == null)
 	        uid = null;
-	    else if (typeof(objs) != "number")
+	    else if (typeof(objs) === "object")
 	    {
 	        var inst = objs.getFirstPicked();
 	        uid = (inst!=null)? inst.uid:null;

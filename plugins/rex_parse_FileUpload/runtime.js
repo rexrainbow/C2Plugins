@@ -27,28 +27,6 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.5.0.min.js");
-	};
-	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
 	};
 
 	/////////////////////////////////////
@@ -63,12 +41,6 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 
-	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
-	    {
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	        window.RexC2IsParseInit = true;
-	    }
-	    
 	    this.file_obj = null;	    
 	    this.last_error = null;
 	};

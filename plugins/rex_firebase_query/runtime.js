@@ -122,6 +122,12 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 	    this.current_query = this.current_query["orderByPriority"]();
 	};		
 	
+    Acts.prototype.OrderByValue = function ()
+	{
+	    assert2(this.current_query, "Firebase Query: create a new first.");
+	    this.current_query = this.current_query["orderByValue"]();
+	};		
+    
     Acts.prototype.StartAt = function (v)
 	{
 	    assert2(this.current_query, "Firebase Query: create a new first.");

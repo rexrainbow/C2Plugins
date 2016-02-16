@@ -10,8 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
-		"dependency":	"parse-1.5.0.min.js"
+		"flags":		0
 	};
 };
 
@@ -36,7 +35,7 @@ AddCondition(6, cf_trigger, "On sending password result email error", "User name
 // general            
 AddCondition(31, cf_trigger, "On login successfully", "General - login", 
             "On login successfully", 
-            "Triggered when login successfully.", "OnLoginSuccessfully");
+            "Triggered when login successfully.", "OnLoginSuccess");
             
 AddCondition(32, cf_trigger, "On login error", "General - login", 
             "On login error", 
@@ -110,8 +109,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_text, "Application ID", "", "Application ID"),
-	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_combo, "Login counter", "No", "Enable login counter.", "No|Yes"),	
     new cr.Property(ept_combo, "Revocable session", "No", "Enable revocable session.", "No|Yes"),    
 	];

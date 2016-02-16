@@ -47,6 +47,10 @@ AddAction(13, 0, "Order by priority", "1. Create - Order",
           "1. Order current query by priority", 
           "Order query by priority.", "OrderByPriority");  
           
+AddAction(14, 0, "Order by value", "1. Create - Order", 
+          "1. Order current query by value", 
+          "Order query by value.", "OrderByValue");          
+          
 // 2. range condition
 AddAnyTypeParam("Value", "Start value.", 0);          
 AddAction(22, 0, "Start at", "2. Create - Range", 

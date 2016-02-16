@@ -1,0 +1,65 @@
+﻿// ECMAScript 5 strict mode
+"use strict";
+
+assert2(cr, "cr namespace not created");
+assert2(cr.plugins_, "cr.plugins_ not created");
+
+/////////////////////////////////////
+// Plugin class
+cr.plugins_.Rex_Parse_Initialize = function(runtime)
+{
+	this.runtime = runtime;
+};
+
+(function ()
+{
+	var pluginProto = cr.plugins_.Rex_Parse_Initialize.prototype;
+		
+	/////////////////////////////////////
+	// Object type class
+	pluginProto.Type = function(plugin)
+	{
+		this.plugin = plugin;
+		this.runtime = plugin.runtime;
+	};
+	
+	var typeProto = pluginProto.Type.prototype;
+
+	typeProto.onCreate = function()
+	{
+	};    
+	/////////////////////////////////////
+	// Instance class
+	pluginProto.Instance = function(type)
+	{
+		this.type = type;
+		this.runtime = type.runtime;
+	};
+	
+	var instanceProto = pluginProto.Instance.prototype;
+
+	instanceProto.onCreate = function()
+	{ 
+	    window["Parse"]["initialize"](this.properties[0], this.properties[1]);
+        
+        var url = this.properties[2];
+        if (url !== "")
+            window["Parse"]["serverURL"] = url;        
+	};
+    
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+	pluginProto.cnds = new Cnds();
+
+	//////////////////////////////////////
+	// Actions
+	function Acts() {};
+	pluginProto.acts = new Acts();
+
+	//////////////////////////////////////
+	// Expressions
+	function Exps() {};
+	pluginProto.exps = new Exps();
+		
+}());

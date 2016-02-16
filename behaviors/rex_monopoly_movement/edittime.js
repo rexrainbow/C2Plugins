@@ -135,7 +135,7 @@ AddExpression(2, ef_return_number, "Get target logic X", "Moving result", "Targe
               "Get target logic X of the latest moving result");  
 AddExpression(3, ef_return_number, "Get target logic Y", "Moving result", "TargetLY", 
               "Get target logic Y of the latest moving result");          
-AddExpression(10, ef_return_number, "Get UID of target tile", "Target tile", "TileUID", 
+AddExpression(10, ef_return_any, "Get UID of target tile", "Target tile", "TileUID", 
               'Get UID of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  
 AddExpression(11, ef_return_number, "Get logic X of target tile", "Target tile", "TileLX", 
               'Get logic X of target tile. Used under "condition: On get moving cost", "condition: On forked road", "condition: On get solid"');  

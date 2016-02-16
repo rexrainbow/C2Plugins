@@ -10,8 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
-		"dependency":	"parse-1.5.0.min.js"
+		"flags":		0
 	};
 };
 
@@ -152,8 +151,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_text, "Application ID", "", "Application ID"),
-	new cr.Property(ept_text, "Javascript Key", "", "Javascript Key"),
     new cr.Property(ept_text, "Class name of header", "Header", "Class name for storing header structure."), 
     new cr.Property(ept_text, "Class name of body", "Body", "Class name for storing body structure."),
 	new cr.Property(ept_combo, "Write permission", "All users", "All user or only owner could write the save slot.", "All users|Owner"),  

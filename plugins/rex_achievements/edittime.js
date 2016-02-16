@@ -25,7 +25,7 @@ AddStringParam("Level", "Level or game name.", '""');
 AddStringParam("Achievement", "achievement name.", '""');
 AddComboParamOption("");
 AddComboParamOption("in the latest test");
-AddComboParam("Latest", "Obtaine this achievement in the latest test.", 0);
+AddComboParam("Latest", "obtain this achievement in the latest test.", 0);
 AddCondition(2, 0, "Is obtained", "Achievements", 
              "<i>{0}</i>: <i>{1}</i> is obtained <i>{2}</i>", 
              "Return true if this achievement is obtained.", "IsObtained");
@@ -50,8 +50,17 @@ AddAction(3, 0, "Set property", "Prepare",
           
 AddAction(4, 0, "Run tests", "Execute", 
           "Run tests", 
-          "Run tests.", "RunTest");          
-          
+          "Run tests.", "RunTest");
+
+AddStringParam("Level", "Level or game name.", '""');
+AddStringParam("Achievement", "achievement name.", '""');
+AddComboParamOption("take out");
+AddComboParamOption("obtain");
+AddComboParam("Action", "Obtain or take out this achievement.", 0);
+AddAction(5, 0, "Force obtain", "Force", 
+             "Force <i>{2}</i> achievement <i>{0}</i>: <i>{1}</i>", 
+             "Force obtain or take out an achievement.", "Forceobtain");          
+
 AddStringParam("JSON", "A string of the JSON data to load.");
 AddAction(11, 0, "Load", "JSON", 
           "Load from JSON string <i>{0}</i>", 

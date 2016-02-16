@@ -144,13 +144,13 @@ AddObjectParam("Tile", "Tile object.");
 AddAction(14, 0, "Update cell by chess", "Symbol array: force update", 
           "Force updating symbol at <i>{0}</i>", 
           "Force updating symbol at tile.", "ForceUpdaeCellByTile");          
-AddNumberParam("UID", "The UID of chess", 0);
+AddAnyTypeParam("UID", "The UID of chess", 0);
 AddAction(15, 0, "Update cell by chess uid", "Symbol array: force update", 
           "Force updating symbol at UID: <i>{0}</i>", 
           "Force updating symbol at tile by UID.", "ForceUpdaeCellByTileUID");	          	              
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number,
+AddExpression(1, ef_return_any,
               "Get UID of target tile", "Request", "TileUID",
               "Get UID of target tile.");
 AddExpression(2, ef_return_number,
@@ -164,8 +164,19 @@ AddExpression(4, ef_return_string,
               "Get value of NOSYMBOL.");                            
 AddExpression(5, ef_return_string,
               "Value of wildcard symbol", "Symbol", "Wildcard",
-              "Get value of wildcard symbol.");       
-			  
+              "Get value of wildcard symbol.");
+
+AddNumberParam("Logic X", "The X index (0-based) of the chess.", 0);
+AddNumberParam("Logic Y", "The Y index (0-based) of the chess.", 0);              
+AddExpression(6, ef_return_string,
+              "Get symobl on LXY", "Symbol", "LXY2Symbol",
+              "Get symobl on logic X ,Y.");              
+
+AddAnyTypeParam("UID", "The UID of chess", 0);          
+AddExpression(7, ef_return_string,
+              "Get symobl by chess UID", "Symbol", "UID2Symbol",
+              "Get symobl by tile/chess UID.");      
+              
 ACESDone();
 
 // Property grid properties for this plugin

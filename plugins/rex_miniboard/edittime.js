@@ -197,7 +197,7 @@ AddExpression(7, ef_return_number,
               "Logic Z of request cell on main board", "Main board: Put-able", "RequestLZ",
               "Get logic Z of request cell on main board.");
               
-AddExpression(8, ef_return_number,
+AddExpression(8, ef_return_any,
               "UID of request chess on mini board", "Main board: Put-able", "RequestChessUID",
               "Get UID of request chess on mini board.");
               
@@ -213,24 +213,24 @@ AddExpression(11, ef_deprecated | ef_return_number,
               "Logic Y of empty on main board", "Main board: find empty", "EmptyLY",
               "Get logic Y of empty on main board. Used under 'Condition:Can find empty logic index'");
 
-AddNumberParam("UID", "The UID of chess.", 0);
+AddAnyTypeParam("UID", "The UID of chess.", 0);
 AddExpression(12, ef_return_number, 
               "Get X index of chess", "Mini board - Logical", "UID2LX", 
               "Get X index of chess by UID. Return (-1) if the chess is not on the mini board.");
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(13, ef_return_number, 
               "Get Y index of chess", "Mini board - Logical", "UID2LY", 
               "Get Y index of chess by UID. Return (-1) if the chess is not on the mini board.");
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(14, ef_return_any, 
               "Get Z index of chess", "Mini board - Logical", "UID2LZ", 
               "Get Z index of chess by UID. Return (-1) if the chess is not on the mini board.");
                             
-AddNumberParam("UID", "The UID of chess.", 0);
+AddAnyTypeParam("UID", "The UID of chess.", 0);
 AddExpression(15, ef_return_number,
               "Get X co-ordinate by UID", "Mini board - Physical", "UID2PX",
               "Get X co-ordinate by UID. Return (-1) if the chess is not on the mini board.");
-AddNumberParam("UID", "The UID of chess.", 0);              
+AddAnyTypeParam("UID", "The UID of chess.", 0);              
 AddExpression(16, ef_return_number,
               "Get Y co-ordinate by UID", "Mini board - Physical", "UID2PY",
               "Get Y co-ordinate by UID. Return (-1) if the chess is not on the mini board.");

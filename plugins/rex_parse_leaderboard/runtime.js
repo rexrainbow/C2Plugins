@@ -36,30 +36,8 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.5.0.min.js");
 	};
 	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
-	};
-
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -72,23 +50,17 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 
 	instanceProto.onCreate = function()
 	{ 	   
-	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
-	    {
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	        window.RexC2IsParseInit = true;
-	    }
-	    	     
 	    if (!this.recycled)
 	    {	    
-	        this.rank_klass = window["Parse"].Object["extend"](this.properties[2]);
+	        this.rank_klass = window["Parse"].Object["extend"](this.properties[0]);
 	    }
 	    
-	    var leaderboardID = this.properties[3];
-	    var page_lines = this.properties[4]
-	    this.ranking_order = this.properties[5];
-        this.acl_write_mode = this.properties[6];
-        this.acl_read_mode = this.properties[7];
-	    this.user_class = this.properties[8];
+	    var leaderboardID = this.properties[1];
+	    var page_lines = this.properties[2]
+	    this.ranking_order = this.properties[3];
+        this.acl_write_mode = this.properties[4];
+        this.acl_read_mode = this.properties[5];
+	    this.user_class = this.properties[6];
 	    
 	    if (!this.recycled)
             this.leaderboard = this.create_leaderboard(page_lines);

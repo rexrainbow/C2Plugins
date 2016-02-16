@@ -30,7 +30,7 @@ AddComboParamOption("Pop");
 AddComboParam("Operation", "Keep or pop", 0);
 AddCondition(3, cf_not_invertible, "Pick instances", "SOL", 
              "Pick and <i>{2}</i> <i>{1}</i> from group <i>{0}</i>", "Pick instances from group.", "PickInsts");
-AddNumberParam("UID", "The UID of instance to be tested.", 0);
+AddAnyTypeParam("UID", "The UID of instance to be tested.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddCondition(4, 0, "UID in group", "Group", 
              "Instance UID:<i>{0}</i> in group <i>{1}</i>", "Testing if UID is in a group.", "IsInGroup");
@@ -75,7 +75,7 @@ AddObjectParam("Instances", "Instances to be added into group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(6, 0, "Add instances", "Group: Add instances", "Add <i>{0}</i> into group <i>{1}</i>", 
           "Add instances into group.", "AddInsts");
-AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddAnyTypeParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddAction(7, 0, "Add instances by UID", "Group: Add instances", "Add instance UID:<i>{0}</i> into group <i>{1}</i>", 
           "Add instances into group by UID.", "AddInstByUID");          
@@ -83,7 +83,7 @@ AddObjectParam("Instances", "Instances to be removed from group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(8, 0, "Remove instances", "Group: Reomve instances", "Remove <i>{0}</i> from group <i>{1}</i>", 
           "Remove instances from group.", "RemoveInsts"); 
-AddNumberParam("UID", "The UID of instance to be removed from group.", 0);
+AddAnyTypeParam("UID", "The UID of instance to be removed from group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddAction(9, 0, "Remove instances by UID", "Group: Reomve instances", "Remove instance UID:<i>{0}</i> from group <i>{1}</i>", 
           "Remove instances from group by UID.", "RemoveInst");
@@ -165,7 +165,7 @@ AddAction(24, 0, "Push instances", "List: Push & Insert", "Push <i>{0}</i> <i>{1
 AddComboParamOption("back");
 AddComboParamOption("front");
 AddComboParam("Where", "Whether to insert at the beginning or the end of the group.");            
-AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddAnyTypeParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddAction(25, 0, "Push instance by UID", "List: Push & Insert", "Push <i>{0}</i> instance UID:<i>{1}</i> into group <i>{2}</i>", 
           "Push instances into group.", "PushInstByUID");       
@@ -174,7 +174,7 @@ AddStringParam("Name", "Group name.", '""');
 AddNumberParam("Index", "The zero-based index to insert to.");
 AddAction(26, 0, "Insert instances", "List: Push & Insert", "Insert <i>{0}</i> into group <i>{1}</i> at index <i>{2}</i>", 
           "Insert instances into group.", "InsertInsts");          
-AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddAnyTypeParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddNumberParam("Index", "The zero-based index to insert to.");
 AddAction(27, 0, "Insert instance by UID", "List: Push & Insert", "Insert instance UID:<i>{0}</i> into group <i>{1}</i> at index <i>{2}</i>", 
@@ -183,16 +183,16 @@ AddObjectParam("Instances", "Instances to be set into group.");
 AddStringParam("Name", "Group name.", '""');
 AddAction(28, 0, "Clean & Add instances", "Group: Add instances", "Clean and Add <i>{0}</i> into group <i>{1}</i>", 
           "Clean and Add instances into group.", "CleanAdddInsts");
-AddNumberParam("UID", "The UID of instance to be added into group.", 0);
+AddAnyTypeParam("UID", "The UID of instance to be added into group.", 0);
 AddStringParam("Name", "Group name.", '""');
 AddAction(29, 0, "Clean & Add instance by UID", "Group: Add instances", "Clean and Add instance UID: <i>{0}</i> into group <i>{1}</i>", 
           "Clean and Add instances into group.", "CleanAdddInstByUID");
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, 
+AddExpression(1, ef_return_any, 
               "Get UID A of sorting function", "List: Sort function", "CmpUIDA", 'Get Instance UID A of sorting function. Used in "Action: Sort group by function"');
 
-AddExpression(2, ef_return_number, 
+AddExpression(2, ef_return_any, 
               "Get UID B of sorting function", "List: Sort function", "CmpUIDB", 'Get Instance UID B of sorting function. Used in "Action: Sort group by function"');              
 
 AddStringParam("Name", "Group name.", '""');
@@ -200,17 +200,17 @@ AddExpression(3, ef_return_number,
               "Get item count", "Group", "InstCnt", "Get item count of group.");
 
 AddStringParam("Name", "Group name.", '""');
-AddNumberParam("UID", "The UID of instance.", 0);
+AddAnyTypeParam("UID", "The UID of instance.", 0);
 AddExpression(4, ef_return_number, 
               "Get index by UID", "List", "UID2Index", "Get index by UID. Return (-1) if this UID is not in the group.");
 
 AddStringParam("Name", "Group name.", '""');
 AddNumberParam("Index", "The index of group.", 0);
-AddExpression(5, ef_return_number, 
+AddExpression(5, ef_return_any, 
               "Get UID by index", "List", "Index2UID", "Get UID by index. Return (-1) if index is not in the group.");
 
 AddStringParam("Variable", "Variable name to store UID.", '""');
-AddExpression(6, ef_return_number,
+AddExpression(6, ef_return_any,
               'Get UID from "For each"', "List: For each", "Item", 'Get UID in a group. Used in "Condition:For each UID".');                         
 
 AddStringParam("Variable", "Variable name to store UID.", '""');
@@ -224,22 +224,22 @@ AddExpression(8, ef_return_string,
 AddExpression(9, ef_return_string, 
               "Transfer all groups to string", "JSON", "AllToString", "Transfer all groups to JSON string.");              
 
-AddNumberParam("UID", "Group name.", '""');
+AddAnyTypeParam("UID", "Group name.", '""');
 AddStringParam("Name", "Group name.", '""');              
 AddExpression(10, ef_return_string, 
               "Get private group name", "Private group", "PrivateGroup", "Get instance's private group name.");
 
 AddStringParam("Name", "Group name.", '""'); 
 AddNumberParam("Index", "Pop index.", 0);
-AddExpression(11, ef_return_number, 
+AddExpression(11, ef_return_any, 
               "Pop UID by index", "List", "Pop", "Pop UID by index. Index=-1 is the last one.");
               
 AddStringParam("Name", "Group name.", '""');
-AddExpression(12, ef_return_number, 
+AddExpression(12, ef_return_any, 
               "Get first UID", "List", "FirstUID", "Get first UID in a group. Return (-1) group is empty.");
               
 AddStringParam("Name", "Group name.", '""');
-AddExpression(13, ef_return_number, 
+AddExpression(13, ef_return_any, 
               "Get last UID", "List", "LastUID", "Get last UID in a group. Return (-1) group is empty.");
                             
 ACESDone();

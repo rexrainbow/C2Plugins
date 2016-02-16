@@ -40,30 +40,8 @@ cr.plugins_.Rex_parse_message = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("parse-1.5.0.min.js");
 	};
-	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
-	};
-
+    
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -77,24 +55,18 @@ cr.plugins_.Rex_parse_message = function(runtime)
     var MESSAGE_STRING = 0;
     var MESSAGE_JSON = 1;
 	instanceProto.onCreate = function()
-	{ 
-	    if ((!window.RexC2IsParseInit) && (this.properties[0] !== ""))
-	    {
-	        window["Parse"]["initialize"](this.properties[0], this.properties[1]);
-	        window.RexC2IsParseInit = true;
-	    }
-	    	    
+	{     
 	    if (!this.recycled)
 	    {
-	        this.message_klass = window["Parse"].Object["extend"](this.properties[2]);
+	        this.message_klass = window["Parse"].Object["extend"](this.properties[0]);
 	    }
 	    
-        var page_lines = this.properties[3];
-	    this.order = (this.properties[4]==0)? "ascending":"descending"; 
-        this.acl_write_mode = this.properties[5];
-        this.acl_read_mode = this.properties[6];
-	    this.sender_class = this.properties[7];
-	    this.receiver_class = this.properties[8];        
+        var page_lines = this.properties[1];
+	    this.order = (this.properties[2]==0)? "ascending":"descending"; 
+        this.acl_write_mode = this.properties[3];
+        this.acl_read_mode = this.properties[4];
+	    this.sender_class = this.properties[5];
+	    this.receiver_class = this.properties[6];        
 	    
 	    if (!this.recycled)
 	        this.messagebox = this.create_messagebox(page_lines);

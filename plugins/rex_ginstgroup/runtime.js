@@ -632,12 +632,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
 	Exps.prototype.CmpUIDA = function (ret)
 	{   
-	    ret.set_int(this._cmp_uidA);
+	    ret.set_any(this._cmp_uidA);
 	};    
 	
 	Exps.prototype.CmpUIDB = function (ret)
 	{   
-	    ret.set_int(this._cmp_uidB);
+	    ret.set_any(this._cmp_uidB);
 	};    	
     
 	Exps.prototype.InstCnt = function (ret, name)
@@ -652,7 +652,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
 	Exps.prototype.Index2UID = function (ret, name, index)
 	{
-	    ret.set_int(this.GetGroup(name).Index2UID(index));
+	    ret.set_any(this.GetGroup(name).Index2UID(index));
 	}; 
     
 	Exps.prototype.Item = function (ret, var_name)
@@ -660,7 +660,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    var item = this._foreach_item[var_name];
 	    if (item == null)
 	        item = (-1);
-	    ret.set_int(item);
+	    ret.set_any(item);
 	};	
     
 	Exps.prototype.Index = function (ret, var_name)
@@ -695,12 +695,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    var uid = uid_list[index] || (-1);
 	    if (uid !== -1)
 	        group.RemoveUID(uid);	
-	    ret.set_int(uid);
+	    ret.set_any(uid);
 	};
 	
 	Exps.prototype.FirstUID = function (ret, name)
 	{
-	    ret.set_int(this.GetGroup(name).Index2UID(0));
+	    ret.set_any(this.GetGroup(name).Index2UID(0));
 	}; 
 	
 	Exps.prototype.LastUID = function (ret, name)
@@ -708,7 +708,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    var uid_list = this.GetGroup(name).GetList();
 	    var index = uid_list.length -1;
 	    var uid = uid_list[index] || (-1);
-	    ret.set_int(uid);
+	    ret.set_any(uid);
 	};     	  
 }());
 

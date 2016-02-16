@@ -123,7 +123,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         var uid;
 	    if (objs == null)
 	        uid = null;
-	    else if (typeof(objs) != "number")
+        else if (typeof(objs) === "object")
 	    {
 	        var inst = objs.getFirstPicked();
 	        uid = (inst!=null)? inst.uid:null;
@@ -1109,12 +1109,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	Exps.prototype.ChessUID = function (ret)
 	{
-	    ret.set_int(this.exp_ChessUID);
+	    ret.set_any(this.exp_ChessUID);
 	};
 		
     Exps.prototype.TileUID = function (ret)
     {
-        ret.set_int(node2uid(this.exp_CurTile));
+        ret.set_any(node2uid(this.exp_CurTile));
     };	
 	
     Exps.prototype.BLOCKING = function (ret)
@@ -1148,18 +1148,18 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
     Exps.prototype.NearestTileUID = function (ret)
     {
-        ret.set_int(this.exp_NearestTileUID);
+        ret.set_any(this.exp_NearestTileUID);
     };
     
     Exps.prototype.StartTileUID = function (ret)
     {
-        ret.set_int(this.exp_StartTileUID);
+        ret.set_any(this.exp_StartTileUID);
     };    
     
     
     Exps.prototype.PreTileUID = function (ret)
     {
-        ret.set_int(node2uid(this.exp_PreTile));
+        ret.set_any(node2uid(this.exp_PreTile));
     };	
 	
     Exps.prototype.PreTileX = function (ret)

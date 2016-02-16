@@ -185,7 +185,6 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	
     instanceProto.save_item = function (itemID, item_, tag_)
 	{	
-        debugger
 	    var self = this;	    
 	    var onComplete_handler = function(error)
 	    {

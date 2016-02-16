@@ -42,7 +42,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.strDelimiter = this.properties[0];
-        this.achievements = new cr.plugins_.Rex_Achievements.AchievementsMgrKlass();
+        this.achievements = new AchievementsMgrKlass();
             
         this.vaild_result = false;   
         this.level_name = "";     
@@ -220,74 +220,35 @@ cr.plugins_.Rex_Achievements = function(runtime)
 
 	Cnds.prototype.ForEachAchievement = function (level_name)
 	{
-	    var achievements = this.achievements.GetAchievementsByLevelName(level_name);
-	    var names = [], names_map = {};
-	    var i,cnt=achievements.length, n;
-	    for(i=0; i<cnt; i++)
-	    {
-	        n = achievements[i].name;
-	        if (!names_map.hasOwnProperty(n))
-	        {
-	            names.push(n);
-	            names_map[n] = true;
-	        }
-	    }
-        return this.for_each_name(names);	    
+	    var names = this.achievements.GetAchievementNameList(level_name);
+        return this.for_each_name(names);
 	};  
 	
 	Cnds.prototype.IsObtained = function (level_name, achievement_name, latest_obtained)
 	{
-	    var achievements = this.achievements.GetAchievementsByLevelName(level_name);
-	    var isObtained = false;
-	    var i,cnt=achievements.length;
-	    for(i=0; i<cnt; i++)
+        var obtainedState = this.achievements.GetObtainedState(level_name, achievement_name);
+	    if (latest_obtained === 0)
 	    {
-	        if (achievements[i].name !== achievement_name)
-	            continue;
-	        
-	        if (latest_obtained === 0)
-	        {
-	            if (achievements[i].isObtained)
-	                return true;
-	        }
-	        else    // new
-	        {
-	            if((achievements[i].current_result) && 
-	               (!achievements[i].previous_result))
-	                return true;
-	        }
-	    }
-	    
-	    return false;
+            return obtainedState["isObtained"];
+        }
+        else
+        {
+            return obtainedState["cur"] && (!obtainedState["pre"]);
+        }
 	};  	 
 	 
 	Cnds.prototype.ForEachNewObtainedAchievement = function ()
 	{	    
-	    var achievements = this.achievements.GetAchievementsByLevelName(this.level_name);
-	    var names=[], results={}, pre_results={};
-	    var i,cnt=achievements.length, n, item;
-	    for(i=0; i<cnt; i++)
-	    {
-	        item = achievements[i];
-	        
-	        if (item.current_result)
-	            results[item.name] = true;
-	            	        
-	        if (item.previous_result)
-	            pre_results[item.name] = true;
-	    }
-	    
-	    for(i=0; i<cnt; i++)
-	    {
-	        n = achievements[i].name;	        
-	        if (results.hasOwnProperty(n))
-	        {
-	            if (!pre_results.hasOwnProperty(n))
-	                names.push(n);
-	            delete results[n];
-	        }
-	    }
-        return this.for_each_name(names);    
+        var achievement_names = this.achievements.GetAchievementNameList(this.level_name);
+        var i, cnt=achievement_names.length, obtainedState, names=[];
+        for(i=0; i<cnt; i++)
+        {
+            obtainedState = this.achievements.GetObtainedState(this.level_name, achievement_names[i]);
+            if (obtainedState["cur"] && (!obtainedState["pre"]))
+                names.push( achievement_names[i] );
+        }        
+        
+        return this.for_each_name( names );    
 	};  	
 	//////////////////////////////////////
 	// Actions
@@ -321,6 +282,11 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	{
 	    this.run_test(); 
 	}; 
+	
+	Acts.prototype.Forceobtain = function (level_name, achievement_name, isObtained)
+	{
+        this.achievements.SetObtainedState(level_name, achievement_name, (isObtained === 1));
+	};
 	
 	Acts.prototype.JSONLoad = function (json_)
 	{
@@ -363,19 +329,19 @@ cr.plugins_.Rex_Achievements = function(runtime)
     
 	Exps.prototype.StatesAsJSON = function (ret)
 	{
+        debugger
 	    var s = JSON.stringify( this.statesToJSON() );
 		ret.set_string(s);
 	};	
 	
-}());
-
-(function ()
-{
-    cr.plugins_.Rex_Achievements.AchievementsMgrKlass = function()
+    
+// --------
+    var AchievementsMgrKlass = function()
     {  
         this.achievements = {};
+        this.obtainedStates = {};
     };
-    var AchievementsMgrKlassProto = cr.plugins_.Rex_Achievements.AchievementsMgrKlass.prototype; 
+    var AchievementsMgrKlassProto = AchievementsMgrKlass.prototype; 
 	
     AchievementsMgrKlassProto.LoadRules = function (csv_table)
 	{  	
@@ -404,16 +370,70 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	{
 	    return this.achievements[level_name];
 	}; 	
-			       
+
+	AchievementsMgrKlassProto.GetAchievementNameList = function (level_name)
+	{
+	    var achievements = this.GetAchievementsByLevelName(level_name);
+	    var names = [], names_map = {};
+	    var i,cnt=achievements.length, n;
+	    for(i=0; i<cnt; i++)
+	    {
+	        n = achievements[i].name;
+	        if (!names_map.hasOwnProperty(n))
+	        {
+	            names.push(n);
+	            names_map[n] = true;
+	        }
+	    }
+        return names;	    
+	}; 
+
+
+    AchievementsMgrKlassProto.GetObtainedState = function(level_name, achievement_name)
+	{
+        if (!this.obtainedStates.hasOwnProperty(level_name))
+            this.obtainedStates[level_name] = {};
+        if (!this.obtainedStates[level_name].hasOwnProperty(achievement_name))
+            this.obtainedStates[level_name][achievement_name] = get_new_obtainState();
+            
+        return this.obtainedStates[level_name][achievement_name];
+	}; 	
+    
+    AchievementsMgrKlassProto.SetObtainedState = function(level_name, achievement_name, state)
+	{
+        var obtainedState = this.GetObtainedState(level_name, achievement_name);
+        obtainedState["isObtained"] = state;
+        obtainedState["cur"] = state;
+	};    
+    
+    var get_new_obtainState = function ()
+    {
+        return { "isObtained": false,
+                 "pre": false,
+                 "cur": false,
+                 };
+    };
+			
 	AchievementsMgrKlassProto.RunTest = function(level_name, props)
 	{
 	    var achievements = this.GetAchievementsByLevelName(level_name);
 	    if (!achievements)
 	        return;
-	            
-        var i, cnt=achievements.length;
+
+        var i, cnt=achievements.length, achievement, result, obtainedState;
         for (i=0; i<cnt; i++)
-            achievements[i].RunTest(props);
+        {
+            obtainedState = this.GetObtainedState(level_name, achievements[i].name);
+            obtainedState["pre"] = obtainedState["isObtained"];      
+            obtainedState["cur"] = false;              
+        }
+        
+        for (i=0; i<cnt; i++)
+        {
+            obtainedState = this.GetObtainedState(level_name, achievements[i].name);
+            obtainedState["cur"] = obtainedState["cur"] || achievements[i].RunTest(props);
+            obtainedState["isObtained"] = obtainedState["isObtained"] || obtainedState["cur"];               
+        }   
 	};    
 
 	AchievementsMgrKlassProto.saveToJSON = function ()
@@ -429,22 +449,13 @@ cr.plugins_.Rex_Achievements = function(runtime)
         }
         
 		return {"achievements": achievements,
+                "state": this.obtainedStates,
 		        };
 	};
 	
 	AchievementsMgrKlassProto.statesToJSON = function ()
 	{   
-        var achievements = {};
-        for (var ln in this.achievements)
-        {
-            achievements[ln] = [];
-            var i, cnt = this.achievements[ln].length;
-            achievements[ln].length = cnt;
-            for(i=0; i<cnt; i++)
-                achievements[ln][i] = this.achievements[ln][i].statesToJSON();
-        }
-        
-		return achievements;
+		return this.obtainedStates;
 	};	
 
 	AchievementsMgrKlassProto.loadFromJSON = function (o)
@@ -464,33 +475,20 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	            test_obj.loadFromJSON(achievements[ln][i]);
 	            this.achievements[ln][i] = test_obj;
 	        }
-        }        				 		      
+        }   
+
+        this.obtainedStates = o["state"];        
 	};	
 	
 	AchievementsMgrKlassProto.statesFromJSON = function (o)
 	{
-		var achievements = o, i, cnt;
-		for (var ln in achievements)
-		{
-		    if (!this.achievements.hasOwnProperty(ln))
-		        continue;
-		        
-		    cnt= Math.min(achievements[ln].length, this.achievements[ln].length);
-		    for (i=0; i<cnt; i++)
-		    {
-		        this.achievements[ln][i].statesFromJSON(achievements[ln][i]);
-		    }
-		}     				 		      
+        this.obtainedState = o;    				 		      
 	};	
 	
 		
     var AchievementKlass = function()
     {  
         this.name = "";
-        this.isObtained = false;
-        this.previous_result = false;
-        this.current_result = false;
-        
         this.test_handler = null;
         this.code_save = "";
     };
@@ -544,36 +542,19 @@ cr.plugins_.Rex_Achievements = function(runtime)
             
     AchievementKlassProto.RunTest = function (prop)
     {
-        this.previous_result = this.isObtained;
-        this.current_result = this.test_handler(prop);
-        this.isObtained = this.isObtained || this.current_result;   
-    };   
+        return this.test_handler(prop);
+    };      
         
     AchievementKlassProto.saveToJSON = function ()
     {
-        return {"name": this.name,
-                "Obt": this.isObtained,
-                "pres": this.previous_result,
-                "res": this.current_result,
+        return {"name": this.name,                
                 "code": this.code_save
                };
     };  
-        
-    AchievementKlassProto.statesToJSON = function ()
-    {
-        return {"Obt": this.isObtained,
-                "pres": this.previous_result,
-                "res": this.current_result
-               };
-    };
-            
+     
     AchievementKlassProto.loadFromJSON = function (o)
     {
-        this.name = o["name"];
-        this.isObtained = o["Obt"];
-        this.previous_result = o["pres"];
-        this.current_result = o["res"];
-        
+        this.name = o["name"];        
         var code_string = o["code"];
         try
         {
@@ -584,12 +565,5 @@ cr.plugins_.Rex_Achievements = function(runtime)
         {        
             assert2(null, "Lookup plugin: parse code " + code_string + " failed.");
         } 
-    };  
-    
-    AchievementKlassProto.statesFromJSON = function (o)
-    {        
-        this.isObtained = o["Obt"];
-        this.previous_result = o["pres"];
-        this.current_result = o["res"];        
-    };      
+    };       
 }());    
