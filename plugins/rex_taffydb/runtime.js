@@ -248,7 +248,23 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    
 	    this.filters[k].push(v);
 	    this.current_rows = null;
+	};	
+		
+    instanceProto.AddRegexTest = function (k, s, f)
+	{
+	    if (this.current_rows)
+	    {
+	        this.current_rows = null;
+	        this.NewFilters();
+	    }
+	    
+	    if (!this.filters.hasOwnProperty(k))
+	        this.filters[k] = {};
+	    
+	    this.filters[k]["regex"] = [s, f];
+	    this.current_rows = null;
 	};		
+	
     var ORDER_TYPES = ["desc", "asec"];
     instanceProto.AddOrder = function (k, order_)
 	{
@@ -260,11 +276,25 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    this.order_cond.push(k + " " + ORDER_TYPES[order_]);
 	};
 	
+	var process_filters = function (filters)
+	{
+	    for (var k in filters)
+	    {
+	        if (filters[k].hasOwnProperty("regex"))
+	        {
+	            var regex = filters[k]["regex"];
+	            filters[k]["regex"] = new RegExp(regex[0], regex[1]);
+	        }
+	    }
+	    return filters;
+	};
+	
     instanceProto.get_current_queried_rows = function ()
 	{
 	    if (this.current_rows == null)
 	    {
-	        var current_rows = this.db(this.filters)["order"](this.order_cond.join(", "));	         
+	        var filters = process_filters(this.filters);
+	        var current_rows = this.db(filters)["order"](this.order_cond.join(", "));	         
 	        	           
 	        this.current_rows = current_rows;
 	        this.NewFilters();
@@ -490,6 +520,13 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    this.AddValueInclude(k, v);
 	    return true;
 	}; 	
+    
+    Cnds.prototype.AddRegexTest = function (k, s, f)
+	{
+	    this.AddRegexTest(k, s, f);
+	    return true;
+	};
+		
     Cnds.prototype.AddOrder = function (k, order_)
 	{
         this.AddOrder(k, order_);
@@ -628,7 +665,12 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{
 	    this.AddValueInclude(k, v);
 	};		
-
+	
+    Acts.prototype.AddRegexTest = function (k, s, f)
+	{
+	    this.AddRegexTest(k, s, f);
+	};	
+	
     Acts.prototype.AddOrder = function (k, order_)
 	{
         this.AddOrder(k, order_);

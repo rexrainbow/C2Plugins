@@ -44,115 +44,313 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.img_data = null;	
-		this.area_lx = 0;
-		this.area_rx = 0;
-		this.area_ty = 0;
-		this.area_by = 0;        
+        //this.auto_push_out = this.properties[0];
+        
+	    this.pre_x = this.inst.x;
+	    this.pre_y = this.inst.y;
+	    this.dt = 0;  
+	};  
+    
+	behinstProto.onDestroy = function()
+	{
+	};  
+    
+	behinstProto.tick = function ()
+	{
+	    this.dt = this.runtime.getDt(this.inst);               
+	};  
+
+	behinstProto.tick2 = function ()
+	{
+	    var inst = this.inst;	    
+	    var dx = inst.x - this.pre_x;
+	    var dy = inst.y - this.pre_y;
+	    this.pre_x = inst.x;
+	    this.pre_y = inst.y;
+	};
+    
+    var __canvas_insts = [];
+	behinstProto.get_canvas_insts = function ()
+	{
+        __canvas_insts.length = 0;    
+        if (!cr.plugins_.c2canvas)
+            return __canvas_insts;
+        
+        var plugins = this.runtime.types;
+        var name, insts;
+        for (name in plugins)
+        {
+            insts = plugins[name].instances;
+            if (insts[0] && insts[0].ctx)  // has "canvas" property
+                cr.appendArray(__canvas_insts, insts);        
+        }
+                     
+        return __canvas_insts;
+	};
+        
+	behinstProto.get_first_overlap_inst = function (sprite_inst, canvas_insts)
+	{
+        var i,cnt=canvas_insts.length;
+        for (i=0; i<cnt; i++)
+        {
+            if (PixelTestOverlap.TestOverlap(sprite_inst, canvas_insts[i], 0.1))
+                return canvas_insts[i];
+        }
+        return null;
+	};
+    
+	// Push to try and move out of solid.  Pass -1, 0 or 1 for xdir and ydir to specify a push direction.
+	behinstProto.pushOutCanvas = function (sprite_inst, canvas_insts, xdir, ydir, dist)
+	{
+	    if (canvas_insts == null)
+	        canvas_insts = this.get_canvas_insts();
+	    
+		var push_dist = dist || 50;
+
+		var oldx = sprite_inst.x
+		var oldy = sprite_inst.y;
+
+		var i;
+        var overlap_canvas_inst;      
+
+		for (i = 0; i < push_dist; i++)
+		{
+			sprite_inst.x = (oldx + (xdir * i));
+			sprite_inst.y = (oldy + (ydir * i));
+			sprite_inst.set_bbox_changed();
+			
+            overlap_canvas_inst = this.get_first_overlap_inst(this.inst, canvas_insts); 
+            if (!overlap_canvas_inst)
+                return true;
+		}
+
+		// Didn't get out a canvas: oops, we're stuck.
+		// Restore old position.
+		sprite_inst.x = oldx;
+		sprite_inst.y = oldy;
+		sprite_inst.set_bbox_changed();
+		return false;
+	};
+    
+	// Find nearest position not overlapping a solid
+	behinstProto.pushOutCanvasNearest = function (sprite_inst, canvas_insts,max_dist_)
+	{
+	    if (canvas_insts == null)
+	        canvas_insts = this.get_canvas_insts();
+	        	    
+		var max_dist = (cr.is_undefined(max_dist_) ? 100 : max_dist_);
+		var dist = 0;
+		var oldx = sprite_inst.x
+		var oldy = sprite_inst.y;
+
+		var dir = 0;
+		var dx = 0, dy = 0;
+		
+		var overlap_inst = this.get_first_overlap_inst(sprite_inst, canvas_insts);
+		
+		if (!overlap_inst)
+			return true;		// no overlap candidate found
+		
+		// 8-direction spiral scan
+		while (dist <= max_dist)
+		{
+			switch (dir) {
+			case 0:		dx = 0; dy = -1; dist++; break;
+			case 1:		dx = 1; dy = -1; break;
+			case 2:		dx = 1; dy = 0; break;
+			case 3:		dx = 1; dy = 1; break;
+			case 4:		dx = 0; dy = 1; break;
+			case 5:		dx = -1; dy = 1; break;
+			case 6:		dx = -1; dy = 0; break;
+			case 7:		dx = -1; dy = -1; break;
+			}
+			
+			dir = (dir + 1) % 8;
+			
+			sprite_inst.x = cr.floor(oldx + (dx * dist));
+			sprite_inst.y = cr.floor(oldy + (dy * dist));
+			sprite_inst.set_bbox_changed();
+			
+			// Test if we've cleared the last instance we were overlapping
+            if (!PixelTestOverlap.TestOverlap(sprite_inst, overlap_inst, 0.1))
+			{
+				// See if we're still overlapping a different solid
+				overlap_inst = this.get_first_overlap_inst(sprite_inst, canvas_insts);
+				
+				// We're clear of all solids
+				if (!overlap_inst)
+					return true;
+			}
+		}
+		
+		// Didn't get pushed out: restore old position and return false
+		sprite_inst.x = oldx;
+		sprite_inst.y = oldy;
+		sprite_inst.set_bbox_changed();
+		return false;
+	}; 
+    
+	behinstProto.calculateCanvasBounceAngle = function(sprite_inst, canvas_insts, startx, starty)
+	{
+	    if (canvas_insts == null)
+	        canvas_insts = this.get_canvas_insts();
+	        	    
+		var objx = sprite_inst.x;
+		var objy = sprite_inst.y;
+		var radius = cr.max(10, cr.distanceTo(startx, starty, objx, objy));
+		var startangle = cr.angleTo(startx, starty, objx, objy);
+		var firstsolid = this.get_first_overlap_inst(sprite_inst, canvas_insts); 
+		
+		// Not overlapping a canvas: function used wrong, return inverse of object angle (so it bounces back in reverse direction)
+		if (!firstsolid)
+			return cr.clamp_angle(startangle + cr.PI);
+			
+		var cursolid = firstsolid;
+		
+		// Rotate anticlockwise in 5 degree increments until no longer overlapping
+		// Don't search more than 175 degrees around (36 * 5 = 180)
+		var i, curangle, anticlockwise_free_angle, clockwise_free_angle;
+		var increment = cr.to_radians(5);	// 5 degree increments
+		
+		for (i = 1; i < 36; i++)
+		{
+			curangle = startangle - i * increment;
+			sprite_inst.x = startx + Math.cos(curangle) * radius;
+			sprite_inst.y = starty + Math.sin(curangle) * radius;
+			sprite_inst.set_bbox_changed();
+			
+			// No longer overlapping current canvas
+            if (!PixelTestOverlap.TestOverlap(sprite_inst, cursolid, 0.1))
+			{
+				// Search for any other solid
+				cursolid = this.get_first_overlap_inst(sprite_inst, canvas_insts);
+				
+				// Not overlapping any other solid: we've now reached the anticlockwise free angle
+				if (!cursolid)
+				{
+					anticlockwise_free_angle = curangle;
+					break;
+				}
+			}
+		}
+		
+		// Did not manage to free up in anticlockwise direction: use reverse angle
+		if (i === 36)
+			anticlockwise_free_angle = cr.clamp_angle(startangle + cr.PI);
+			
+		var cursolid = firstsolid;
+			
+		// Now search in clockwise direction
+		for (i = 1; i < 36; i++)
+		{
+			curangle = startangle + i * increment;
+			sprite_inst.x = startx + Math.cos(curangle) * radius;
+			sprite_inst.y = starty + Math.sin(curangle) * radius;
+			sprite_inst.set_bbox_changed();
+			
+			// No longer overlapping current canvas
+             if (!PixelTestOverlap.TestOverlap(sprite_inst, cursolid, 0.1))
+			{
+				// Search for any other solid
+				cursolid = this.get_first_overlap_inst(sprite_inst, canvas_insts);
+				
+				// Not overlapping any other solid: we've now reached the clockwise free angle
+				if (!cursolid)
+				{
+					clockwise_free_angle = curangle;
+					break;
+				}
+			}
+		}
+		
+		// Did not manage to free up in clockwise direction: use reverse angle
+		if (i === 36)
+			clockwise_free_angle = cr.clamp_angle(startangle + cr.PI);
+			
+		// Put the object back to its original position
+		sprite_inst.x = objx;
+		sprite_inst.y = objy;
+		sprite_inst.set_bbox_changed();
+			
+		// Both angles match: can only be if object completely contained by solid and both searches went all
+		// the way round to backwards.  Just return the back angle.
+		if (clockwise_free_angle === anticlockwise_free_angle)
+			return clockwise_free_angle;
+		
+		// We now have the first anticlockwise and first clockwise angles that are free.
+		// Calculate the normal.
+		var half_diff = cr.angleDiff(clockwise_free_angle, anticlockwise_free_angle) / 2;
+		var normal;
+		
+		// Acute angle
+		if (cr.angleClockwise(clockwise_free_angle, anticlockwise_free_angle))
+		{
+			normal = cr.clamp_angle(anticlockwise_free_angle + half_diff + cr.PI);
+		}
+		// Obtuse angle
+		else
+		{
+			normal = cr.clamp_angle(clockwise_free_angle + half_diff);
+		}
+		
+		assert2(!isNaN(normal), "Bounce normal computed as NaN");
+		
+		// Reflect startangle about normal (r = v - 2 (v . n) n)
+		var vx = Math.cos(startangle);
+		var vy = Math.sin(startangle);
+		var nx = Math.cos(normal);
+		var ny = Math.sin(normal);
+		var v_dot_n = vx * nx + vy * ny;
+		var rx = vx - 2 * v_dot_n * nx;
+		var ry = vy - 2 * v_dot_n * ny;
+		return cr.angleTo(0, 0, rx, ry);
+	};
+    
+	behinstProto.getAngle = function ()
+	{
+        var dx=this.inst.x - this.pre_x;
+        var dy=this.inst.y - this.pre_y;
+		return Math.atan2(dy, dx);
 	};  
 	
-	behinstProto.tick = function ()
-	{	
+	behinstProto.getSpeed = function ()
+	{
+        var dx=(this.inst.x - this.pre_x)/this.dt;
+        var dy=(this.inst.y - this.pre_y)/this.dt;    
+		return Math.sqrt(dx*dx + dy*dy);
+	};   
+	
+	behinstProto.saveToJSON = function ()
+	{    
+		return { "pre_x": this.pre_x,
+		         "pre_y": this.pre_y,
+		         "dt": this.dt,
+		         };
 	};
 	
-	behinstProto.cache_area = function (x, y, w, h)
+	behinstProto.loadFromJSON = function (o)
 	{
-	    if (x == null)
-		{
-		    x = 0; 
-			y = 0; 
-			w = this.inst.canvas.width; 
-			h = this.inst.canvas.height;
-	    }
-	    x = Math.floor(x);
-        y = Math.floor(y);
-        w = Math.floor(w);
-        h = Math.floor(h);
-        this.img_data = this.inst.ctx.getImageData(x, y, w, h);
-		this.area_lx = x;
-		this.area_ty = y;
-		this.area_rx = x+w-1;
-		this.area_by = y+h-1;
-	};	
-
-	behinstProto.point_get = function (x,y)
-	{	
-	    if (this.img_data == null)
-		    return -1;
-        if ( (x < this.area_lx) || (x > this.area_rx) ||
-		     (y < this.area_ty) || (y > this.area_by) )
-			return -1;
-	    
-		x -= this.area_lx;
-		y -= this.area_ty;
-        return ((y*this.img_data.width) + x) * 4;
-	};	
-    behinstProto.get_color = function (i)
-	{
-		var data = this.img_data.data;
-		var val = data[i];
-		if (val == null)
-		{
-		    val = 0;
-	    }
-	    return val;
-	};	
+	    this.pre_x = this.inst.x;
+	    this.pre_y = this.inst.y;
+	    this.dt = 0;  
+	};		 
 	
-	behinstProto.get_alpha = function (x, y)
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
 	{
-	    var i = this.point_get(x,y);
-	    return this.get_color(i+3);
-    };
-  
-    behinstProto.has_pixel_inside_inst = function (test_inst, sample_rate)
-    {
-        test_inst.update_bbox();
-        // bbox
-        var bbox=test_inst.bbox;
-        var bbx = bbox.left, bby = bbox.top;
-        var bbw = (bbox.right - bbox.left), bbh = (bbox.bottom - bbox.top);
-        // bbox
-        var sample_cnt = bbw * bbh * sample_rate;
-        this.cache_area(bbx, bby, bbw, bbh);
-
-        // point
-        var randx, randy;  // position at this inst
-        var ptx, pty;  // position at canvas
-        var px, py;    // position at layer of test inst
-        // point
-        
-        // layer
-        var layera = this.inst.layer;
-        var layerb = test_inst.layer;
-        var different_layers = (layera !== layerb && (layera.parallaxX !== layerb.parallaxX || layerb.parallaxY !== layerb.parallaxY || layera.scale !== layerb.scale || layera.angle !== layerb.angle || layera.zoomRate !== layerb.zoomRate));
-        // layer
-        
-        for(var i=0; i<sample_cnt; i++)
-        {
-            randx = Math.floor((bbw*Math.random())+bbx);
-            randy = Math.floor((bbh*Math.random())+bby);
-            if (this.get_alpha(randx, randy) === 0)
-                continue;
-         
-            if (!different_layers)
-            {
-                px = randx;
-                py = randy;
-            }
-            else
-            {
-                ptx = this.inst.layer.layerToCanvas(randx, randy, true);
-                pty = this.inst.layer.layerToCanvas(randx, randy, false);
-                px = test_inst.layer.canvasToLayer(ptx, pty, true);
-                py = test_inst.layer.canvasToLayer(ptx, pty, false);
-            }
-            
-            if (test_inst.contains_pt(px, py))
-                return true;                  
-        }
-        return false;
-    };
-
+		propsections.push({
+			"title": "Pixel collision",
+			"properties": [
+				{"name": "Max check count", "value": PixelTestOverlap.max_collision_check},
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/	
+	//////////////////////////////////////
+	// Conditions
+	function Cnds() {};
+	behaviorProto.cnds = new Cnds();
+    
 	function GetThisBehavior(inst)
 	{
 		var i, len;
@@ -163,13 +361,8 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 		}
 		
 		return null;
-	};    
-	//////////////////////////////////////
-	// Conditions
-	function Cnds() {};
-	behaviorProto.cnds = new Cnds();
-
-
+	};  
+    
 	// For the collision memory in 'On collision'.
 	var arrCache = [];
 	
@@ -348,8 +541,8 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 				rinst = rinstances[r];
 				
 
-				//if (runtime.testOverlap(linst, rinst) || runtime.checkRegisteredCollision(linst, rinst))                
-                if (binst.has_pixel_inside_inst(rinst, 0.1) || runtime.checkRegisteredCollision(linst, rinst))
+				//if (runtime.testOverlap(linst, rinst) || runtime.checkRegisteredCollision(linst, rinst))    
+                if (PixelTestOverlap.TestOverlap(binst.inst, rinst, 0.1) || runtime.checkRegisteredCollision(linst, rinst))             
 				{
 					exists = collmemory_has(collmemory, linst, rinst);
 					run = (!exists || (last_coll_tickcount < lasttickcount));
@@ -460,7 +653,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 			rinst = rinstances[r];
 
             // if (this.runtime.testOverlap(this, rinst))
-			if (this.has_pixel_inside_inst(rinst, 0.1))
+            if (PixelTestOverlap.TestOverlap(this.inst, rinst, 0.1))
 			{
 				ret = true;
 				
@@ -485,19 +678,241 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 		return ret;
 	};	
 	
-	Cnds.prototype.IsOverlapping = function (rtype, offx, offy)
+	Cnds.prototype.IsOverlapping = function (rtype)
 	{
-		return DoOverlapCondition.call(this, rtype, offx, offy);
+		return DoOverlapCondition.call(this, rtype, 0, 0);
 	};
 	
+	Cnds.prototype.IsOverlappingAtOffset = function (offx, offy, rtype)
+	{
+		return DoOverlapCondition.call(this, rtype, offx, offy);
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
-
+	
+	Acts.prototype.PushOutCanvas = function (mode, canvas_type)
+	{
+	    var canvas_insts;
+	    if (canvas_type == null)
+	        canvas_insts = this.get_canvas_insts();
+	    else
+	        canvas_insts = canvas_type.getCurrentSol();
+	        
+        var dx=this.inst.x - this.pre_x;
+        var dy=this.inst.y - this.pre_y;    
+		var a, ux, uy;
+		switch (mode) {
+		// Opposite angle
+		case 0:
+			// Make unit motion of vector, invert it and push that way
+			a = this.getAngle();
+			ux = Math.cos(a);
+			uy = Math.sin(a);
+			this.pushOutCanvas(this.inst, canvas_insts, -ux, -uy, Math.max(this.getSpeed() * 3, 100));
+			break;
+		// Nearest
+		case 1:
+			this.pushOutCanvasNearest(this.inst, canvas_insts);
+			break;
+		// Up
+		case 2:
+            var dy=this.inst.y - this.pre_y;    
+			this.pushOutCanvas(this.inst, canvas_insts, 0, -1, Math.max(Math.abs(dy) * 3, 100));
+			break;
+		// Down
+		case 3:
+            var dy=this.inst.y - this.pre_y;    
+			this.pushOutCanvas(this.inst, canvas_insts, 0, 1, Math.max(Math.abs(dy) * 3, 100));
+			break;
+		// Left
+		case 4:
+            var dx=this.inst.x - this.pre_x;
+			this.pushOutCanvas(this.inst, canvas_insts, -1, 0, Math.max(Math.abs(dx) * 3, 100));
+			break;
+		// Right
+		case 5:
+            var dx=this.inst.x - this.pre_x;
+			this.pushOutCanvas(this.inst, canvas_insts, 1, 0, Math.max(Math.abs(dx) * 3, 100));
+			break;
+		}
+	};
+	
+	Acts.prototype.PushOutCanvasAngle = function (a, canvas_type)
+	{
+	    var canvas_insts;
+	    if (canvas_type == null)
+	        canvas_insts = this.get_canvas_insts();
+	    else
+	        canvas_insts = canvas_type.getCurrentSol();
+	        	    
+		a = cr.to_radians(a);
+		var ux = Math.cos(a);
+		var uy = Math.sin(a);
+		this.pushOutCanvas(this.inst, canvas_insts, ux, uy, Math.max(this.getSpeed() * 3, 100));
+	};    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 
+	Exps.prototype.BounceAngle = function (ret)
+	{
+	    var canvas_insts = this.get_canvas_insts();
+	    var a = this.calculateCanvasBounceAngle(this.inst, canvas_insts, this.pre_x, this.pre_y)
+		ret.set_float(cr.to_degrees(a));
+	};
+	    
+    
+// ----
+    var PixelTestOverlapKlass = function ()
+    {
+	    this.Reset();
+	    
+	    /**BEGIN-PREVIEWONLY**/
+	    this.max_collision_check = 0;
+	    /**END-PREVIEWONLY**/		    
+    };
+    
+    var PixelTestOverlapKlassProto = PixelTestOverlapKlass.prototype;
+
+    PixelTestOverlapKlassProto.Reset = function ()
+    {
+	    this.img_data = null;        
+		this.area_lx = 0;
+		this.area_rx = 0;
+		this.area_ty = 0;
+		this.area_by = 0;
+    };	
+	PixelTestOverlapKlassProto.cache_area = function (canvas_inst, x, y, w, h)
+	{
+	    if (x == null)
+		{
+		    x = 0; 
+			y = 0; 
+			w = canvas_inst.canvas.width; 
+			h = canvas_inst.canvas.height;
+	    }
+
+	    x = Math.floor(x);
+        y = Math.floor(y);
+        w = Math.floor(w);
+        h = Math.floor(h);
+        this.img_data = canvas_inst.ctx.getImageData(x, y, w, h);
+		this.area_lx = x;
+		this.area_ty = y;
+		this.area_rx = x+w-1;
+		this.area_by = y+h-1;
+	};	
+
+	PixelTestOverlapKlassProto.point_get = function (x,y)
+	{	
+	    if (this.img_data == null)
+		    return -1;
+        
+	    x = Math.floor(x);
+        y = Math.floor(y);
+        if ( (x < this.area_lx) || (x > this.area_rx) ||
+		     (y < this.area_ty) || (y > this.area_by) )
+			return -1;
+	    
+		x -= this.area_lx;
+		y -= this.area_ty;
+        return ((y*this.img_data.width) + x) * 4;
+	};	
+    PixelTestOverlapKlassProto.get_color = function (i)
+	{
+		var data = this.img_data.data;
+		var val = data[i];
+		if (val == null)
+		{
+		    val = 0;
+	    }
+	    return val;
+	};	
+	
+	PixelTestOverlapKlassProto.get_alpha = function (x, y)
+	{
+	    var i = this.point_get(x,y);
+	    return this.get_color(i+3);
+    };
+  
+    PixelTestOverlapKlassProto.TestOverlap = function (sprite_inst, canvas_inst, sample_rate)
+    {
+	    /**BEGIN-PREVIEWONLY**/
+	    var collision_check = 0;
+	    /**END-PREVIEWONLY**/
+	            
+        if (!sprite_inst || !canvas_inst)
+            return false;
+            
+        var isOverlap = false;
+        
+        sprite_inst.update_bbox();
+        // bbox
+        var bbox=sprite_inst.bbox;
+        var bbx=bbox.left, bby=bbox.top;
+        var bbw=(bbox.right - bbox.left), bbh=(bbox.bottom - bbox.top);
+        // bbox
+        var sample_cnt = bbw * bbh * sample_rate;
+        this.cache_area(canvas_inst, 
+                        bbx - canvas_inst.x, 
+                        bby - canvas_inst.y, 
+                        bbw, bbh);
+
+        // point
+        var randx, randy;  // position at this inst
+        var ptx, pty;  // position at canvas
+        var px, py;    // position at layer of test inst
+        // point
+        
+        // layer
+        var layera = sprite_inst.layer;
+        var layerb = canvas_inst.layer;
+        var different_layers = (layera !== layerb && (layera.parallaxX !== layerb.parallaxX || layerb.parallaxY !== layerb.parallaxY || layera.scale !== layerb.scale || layera.angle !== layerb.angle || layera.zoomRate !== layerb.zoomRate));
+        // layer
+        
+        for(var i=0; i<sample_cnt; i++)
+        {
+            randx = (bbw*Math.random())+bbx;
+            randy = (bbh*Math.random())+bby;
+            
+            if (this.get_alpha(randx-canvas_inst.x, randy-canvas_inst.y) === 0)
+                continue;
+         
+            if (!different_layers)
+            {
+                px = randx;
+                py = randy;
+            }
+            else
+            {
+                ptx = canvas_inst.layer.layerToCanvas(randx, randy, true);
+                pty = canvas_inst.layer.layerToCanvas(randx, randy, false);
+                px = sprite_inst.layer.canvasToLayer(ptx, pty, true);
+                py = sprite_inst.layer.canvasToLayer(ptx, pty, false);
+            }
+
+	        /**BEGIN-PREVIEWONLY**/
+	        collision_check ++;
+	        /**END-PREVIEWONLY**/            
+            if (sprite_inst.contains_pt(px, py))
+            {
+                isOverlap = true;
+                break;
+            }
+        }
+        
+        this.Reset();
+        
+	    /**BEGIN-PREVIEWONLY**/
+	    if (this.max_collision_check < collision_check)
+	        this.max_collision_check = collision_check;
+	    /**END-PREVIEWONLY**/   
+	                
+        return isOverlap;
+    };
+    var PixelTestOverlap = new PixelTestOverlapKlass();    
 }());

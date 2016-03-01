@@ -76,6 +76,12 @@ AddNumberParam("Processing time", "Processing time per tick in percentage. A tic
 AddAction(21, 0, "Retrieve tile array in a duration", "Duration mode", 
          "Retrieve tile array in a duration",
          'Retrieve tile array in a duration. It will trigger "Condition:On each tile cell"', "RetrieveTileArrayDuration");          
+
+AddStringParam("Layer", "TMX layer.", '""');
+AddObjectParam("Tilemap", "Tilemap object.");
+AddAction(51, 0, "Reset tilemap", "Tilemap", 
+         "Reset tilemap <i>{1}</i> with tmx layer <i>{0}</i>",
+         "Reset tilemap by tile array of a layer.", "ResetTilemap");
                  
 //////////////////////////////////////////////////////////////
 // Expressions

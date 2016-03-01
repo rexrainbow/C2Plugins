@@ -220,12 +220,14 @@ cr.plugins_.Rex_Achievements = function(runtime)
 
 	Cnds.prototype.ForEachAchievement = function (level_name)
 	{
+	    this.level_name = level_name;
 	    var names = this.achievements.GetAchievementNameList(level_name);
         return this.for_each_name(names);
 	};  
 	
 	Cnds.prototype.IsObtained = function (level_name, achievement_name, latest_obtained)
 	{
+	    this.level_name = level_name;
         var obtainedState = this.achievements.GetObtainedState(level_name, achievement_name);
 	    if (latest_obtained === 0)
 	    {
@@ -321,6 +323,11 @@ cr.plugins_.Rex_Achievements = function(runtime)
 		ret.set_string(this.exp_CurAchievementName);
 	};
     
+	Exps.prototype.LevelName = function (ret)
+	{
+		ret.set_string(this.level_name);
+	};    
+	
 	Exps.prototype.AsJSON = function (ret)
 	{
 	    var s = JSON.stringify( this.saveToJSON() );
@@ -328,8 +335,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	};
     
 	Exps.prototype.StatesAsJSON = function (ret)
-	{
-        debugger
+	{       
 	    var s = JSON.stringify( this.statesToJSON() );
 		ret.set_string(s);
 	};	
@@ -482,7 +488,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	
 	AchievementsMgrKlassProto.statesFromJSON = function (o)
 	{
-        this.obtainedState = o;    				 		      
+        this.obtainedStates = o;    				 		      
 	};	
 	
 		

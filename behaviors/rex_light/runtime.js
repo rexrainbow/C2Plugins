@@ -75,41 +75,41 @@ cr.behaviors.Rex_light = function(runtime)
         this.inst.set_bbox_changed();    
 	};     
 
-    var candidates = [];
-	behinstProto.candidates_update = function (types)
+    var __candidates = [];
+	behinstProto.get_candidates = function (types)
 	{
-        candidates.length = 0;    
+        __candidates.length = 0;    
         if (types == null)  // use solids
         {
             var solid = this.runtime.getSolidBehavior();
             if (solid)
-		        cr.appendArray(candidates, solid.my_instances.valuesRef());
+		        cr.appendArray(__candidates, solid.my_instances.valuesRef());
         }
         else
         {
             var i, cnt=types.length;
             for (i=0; i<cnt; i++)
             {
-                cr.appendArray(candidates, types[i].instances);
+                cr.appendArray(__candidates, types[i].instances);
             }
         }
         
         var width_save = this.inst.width;
         // remove overlap at start
         this.width_set(1);         
-        var i,cnt=candidates.length;
+        var i,cnt=__candidates.length;
         for (i=cnt-1; i>=0; i--)
         {
-            if (this.runtime.testOverlap(this.inst, candidates[i]))
+            if (this.runtime.testOverlap(this.inst, __candidates[i]))
             {                
-                cr.arrayRemove(candidates, i);
+                cr.arrayRemove(__candidates, i);
             }
         }
         this.width_set(width_save);
-        return (candidates.length > 0);
+        return __candidates;
 	}; 
    
-	behinstProto.test_hit = function ()
+	behinstProto.test_hit = function (candidates)
 	{
         var i,cnt=candidates.length;
         for (i=0; i<cnt; i++)
@@ -122,21 +122,21 @@ cr.behaviors.Rex_light = function(runtime)
 
 	behinstProto.PointTo = function (types)
 	{
-        var has_any_candidate = this.candidates_update(types);
-        if (!has_any_candidate)
+        var candidates = this.get_candidates(types);
+        if (candidates.length === 0)
         {
             this.width_set(this.max_width);
             this.exp_HitUID = -1;
             return;
         }
         
-        this.dec_approach();
-        this.inc_approach();
+        this.dec_approach(candidates);
+        this.inc_approach(candidates);
 	}; 
     
-	behinstProto.dec_approach = function ()
+	behinstProto.dec_approach = function (candidates)
 	{
-        if (this.test_hit() == null)
+        if (this.test_hit(candidates) == null)
             return;
             
         var w=this.inst.width, dw=1;        
@@ -148,14 +148,14 @@ cr.behaviors.Rex_light = function(runtime)
             this.width_set((out_of_range)? 0:w);
             if (out_of_range)     
                 return;
-            if (this.test_hit() == null)  // dec until miss
+            if (this.test_hit(candidates) == null)  // dec until miss
                 return;
             else
                 dw *= 2;   
         }
 	};   
 
-	behinstProto.inc_approach = function ()
+	behinstProto.inc_approach = function (candidates)
 	{     
         var w=this.inst.width, dw=1;        
         var out_of_range, hit_uid;    
@@ -169,7 +169,7 @@ cr.behaviors.Rex_light = function(runtime)
                 this.exp_HitUID = -1;
                 return;
             }
-            hit_uid = this.test_hit();
+            hit_uid = this.test_hit(candidates);
             if (hit_uid != null)
             {
                 if (dw == 1)
@@ -193,11 +193,41 @@ cr.behaviors.Rex_light = function(runtime)
         } 
 	};    
 
+	behinstProto.get_box_noraml = function (box_uid, hit_x, hit_y, to_angle)
+	{    
+		var box_inst = this.runtime.getObjectByUID(box_uid);
+		if (box_inst == null)
+		    return 0;
+		    
+		var abs_angle_hit = cr.angleTo(box_inst.x, box_inst.y, hit_x, hit_y) - box_inst.angle;		
+		abs_angle_hit = cr.clamp_angle(abs_angle_hit);
+		var _a = Math.atan2(box_inst.height , box_inst.width);
+		_a = cr.clamp_angle(_a);
+		var in_low_bound = (abs_angle_hit > _a) && (abs_angle_hit < (3.141592653589793 - _a));
+		var in_up_bound = (abs_angle_hit > (3.141592653589793 + _a)) && (abs_angle_hit < (6.283185307179586 - _a));
+		var normal = box_inst.angle;
+		if (in_low_bound || in_up_bound)
+		    normal += 1.5707963268;
+		    
+		 if (to_angle)
+		     normal = cr.to_clamped_degrees(normal);
+		
+		return normal;
+	};
+	
 	behinstProto.saveToJSON = function ()
 	{    
+		var i, len, obs = [];
+		for (i = 0, len = this.type.obstacleTypes.length; i < len; i++)
+		{
+			obs.push(this.type.obstacleTypes[i].sid);
+		}
+			    
 		return { "en": this.enabled,
 		         "mw": this.max_width,
-		         "hU": this.exp_HitUID
+		         "hU": this.exp_HitUID,
+		         "om": this.obstacleMode,
+		         "obs": obs,
 		         };
 	};
 	
@@ -206,6 +236,18 @@ cr.behaviors.Rex_light = function(runtime)
 	    this.enabled = o["en"];
 	    this.max_width = o["mw"];
 	    this.exp_HitUID = o["hU"];
+	    this.obstacleMode = o["om"];
+	    
+		// Reloaded by each instance but oh well
+		cr.clearArray(this.type.obstacleTypes);
+		var obsarr = o["obs"];
+		var i, len, t;
+		for (i = 0, len = obsarr.length; i < len; i++)
+		{
+			t = this.runtime.getObjectTypeBySid(obsarr[i]);
+			if (t)
+				this.type.obstacleTypes.push(t);
+		}	    
 	};
 		
 	//////////////////////////////////////
@@ -304,7 +346,17 @@ cr.behaviors.Rex_light = function(runtime)
 	
 	Exps.prototype.ReflectionAngle = function (ret, normal)
 	{    
-        var normalangle = cr.to_radians(normal);
+	    var normalangle;
+	    if (normal == null)
+	    {
+	        var hitx = this.inst.x + this.inst.width * Math.cos(this.inst.angle);
+	        var hity = this.inst.y + this.inst.width * Math.sin(this.inst.angle);
+	        normalangle = this.get_box_noraml(this.exp_HitUID, hitx, hity);
+	    }
+	    else
+	    {
+	        normalangle = cr.to_radians(normal);
+	    }
         var startangle = this.inst.angle;
 		var vx = Math.cos(startangle);
 		var vy = Math.sin(startangle);

@@ -42,9 +42,6 @@ cr.plugins_.Rex_WebstorageExt = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this._webstorage_obj = null;
-        this._save_fn = null;
-        this._load_fn = null;
-        this._key_exist_fn = null;
 	    this.fake_ret = {value:0,
 	                     set_any: function(value){this.value=value;},
 	                     set_int: function(value){this.value=value;},	 
@@ -64,8 +61,6 @@ cr.plugins_.Rex_WebstorageExt = function(runtime)
             
 	    assert2(cr.plugins_.WebStorage, "Webstorage Ext: Could not find webstorage.");
         var plugins = this.runtime.types;
-        this._save_fn = cr.plugins_.WebStorage.prototype.acts.StoreLocal;
-        this._load_fn = cr.plugins_.WebStorage.prototype.exps.LocalValue;
         this._key_exist_fn = cr.plugins_.WebStorage.prototype.cnds.LocalStorageExists;
         var name, plugin;
         for (name in plugins)
@@ -84,20 +79,20 @@ cr.plugins_.Rex_WebstorageExt = function(runtime)
     instanceProto.load_value = function (key)
     {
         var webstorage_obj = this.webstorage_get();
-        this._load_fn.call(webstorage_obj, this.fake_ret, key);
+        cr.plugins_.WebStorage.prototype.exps.LocalValue.call(webstorage_obj, this.fake_ret, key);
         return this.fake_ret.value;
     };
     
     instanceProto.save_value = function (key, value)
     {
         var webstorage_obj = this.webstorage_get();
-        this._save_fn.call(webstorage_obj, key, value);
+        cr.plugins_.WebStorage.prototype.acts.StoreLocal.call(webstorage_obj, key, value);
     };	
     
     instanceProto.key_exist = function (key)
     {
         var webstorage_obj = this.webstorage_get();
-        return this._key_exist_fn.call(webstorage_obj, key);
+        return cr.plugins_.WebStorage.prototype.cnds.LocalStorageExists.call(webstorage_obj, key);
     };    
 	//////////////////////////////////////
 	// Conditions

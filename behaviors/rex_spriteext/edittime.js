@@ -7,7 +7,7 @@
 		"description":	"Extension of sprite",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_spriteext.html",
-		"category":		"General",
+		"category":		"Rex - Sprite helper",
 		"flags":		bf_onlyone
 	};
 };

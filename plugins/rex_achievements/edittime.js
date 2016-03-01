@@ -76,6 +76,9 @@ AddAction(12, 0, "Load states", "JSON",
 AddExpression(1, ef_return_string, "Get achievement name", "For each", "CurAchievementName", 
               "Get achievement name in a For Each loop.");
               
+AddExpression(2, ef_return_string, "Get level name", "Level", "LevelName", 
+              "Level name of current achievements.");              
+              
 AddExpression(11, ef_return_string, "Get achievements as JSON", "JSON", "AsJSON", 
               "Return the contents of achievements in JSON format, include states and rules.");
                              

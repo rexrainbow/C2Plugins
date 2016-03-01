@@ -51,7 +51,10 @@ AddCondition(12, cf_trigger, "On player error", "Video", "On player error",
              "Triggered when player has error.", "OnPlayerError");
              
 AddCondition(13, cf_none, "Is full screen", "Full screen", "Is full screen", 
-             "True if video is in full screen mode.", "IsFullScreen");             
+             "True if video is in full screen mode.", "IsFullScreen");
+
+AddCondition(14, cf_none, "Is full window", "Full window", "Is full window", 
+             "True if video is in full window.", "IsFullWindow");             
 ////////////////////////////////////////
 // Actions
 

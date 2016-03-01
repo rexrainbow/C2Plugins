@@ -45,7 +45,7 @@ cr.behaviors.Rex_SpeedMoinitor = function(runtime)
 	{       
 	    this.pre_x = this.inst.x;
 	    this.pre_y = this.inst.y;
-	    this.dt = 0	    
+	    this.dt = 0; 
 		
 		this._speed = 0;
 		this._angle = 0;

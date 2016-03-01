@@ -53,21 +53,12 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         this.is_rotating = false;  
         this.current_speed = 0;       
         this.remain_distance = 0;
-        this.is_hit_target = false;
 
         this.is_my_call = false;
 	};
 
 	behinstProto.tick = function ()
 	{
-        if (this.is_hit_target)
-        {
-            this.is_my_call = true;
-            this.runtime.trigger(cr.behaviors.Rex_RotateTo.prototype.cnds.OnHitTarget, this.inst); 
-            this.is_my_call = false;
-            this.is_hit_target = false;
-        }
-        
         if ( (!this.activated) || (!this.is_rotating) ) 
         {
             return;
@@ -96,13 +87,14 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         var distance = this.current_speed * dt;
         this.remain_distance -= distance;   
         
+        var is_hit_target = false;        
         // is hit to target at next tick?
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {
             this.is_rotating = false;
             this.inst.angle = cr.to_clamped_radians(this.target["a"]);
             this.SetCurrentSpeed(0);
-            this.is_hit_target = true;
+            is_hit_target = true;
         }
         else
         {
@@ -111,7 +103,14 @@ cr.behaviors.Rex_RotateTo = function(runtime)
             else
                 this.inst.angle -= cr.to_clamped_radians(distance);
         } 
-		this.inst.set_bbox_changed();        
+		this.inst.set_bbox_changed();      
+		
+        if (is_hit_target)
+        {
+            this.is_my_call = true;
+            this.runtime.trigger(cr.behaviors.Rex_RotateTo.prototype.cnds.OnHitTarget, this.inst); 
+            this.is_my_call = false;
+        }		  
 	}; 
 	behinstProto.tick2 = function ()
 	{ 
@@ -153,8 +152,7 @@ cr.behaviors.Rex_RotateTo = function(runtime)
                  "t": this.target,
                  "ir": this.is_rotating,
                  "cs": this.current_speed,
-                 "rd": this.remain_distance,
-                 "iht": this.is_hit_target
+                 "rd": this.remain_distance
                  };
 	};
 	
@@ -166,7 +164,6 @@ cr.behaviors.Rex_RotateTo = function(runtime)
         this.is_rotating = o["ir"];
         this.current_speed = o["cs"];     
         this.remain_distance = o["rd"];
-        this.is_hit_target = o["iht"];
 	};
     
 	//////////////////////////////////////

@@ -43,7 +43,11 @@ AddComboParamOption(">");
 AddComboParam("Result", "Compared result", 0);   
 AddAction(4, 0, "Set compared result", "Custom sorting: result", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
           'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");           
-          
+AddComboParamOption("Increasing");
+AddComboParamOption("Decreasing");
+AddComboParam("Y order", "Sorting order of y co-ordinate.", 0);   
+AddAction(5, 0, "Set Y order", "Default sorting", "Set sorting order of y co-ordinate to <i>{0}</i>", 
+          "Set sorting order of y co-ordinate.", "SetYorder");          
   
 AddNumberParam("UID A", "UID of instance A", 0);
 AddComboParamOption("in front");
@@ -63,6 +67,7 @@ AddExpression(2, ef_return_number,
 ACESDone();
 
 var property_list = [
+    new cr.Property(ept_combo, "Y order", "Increasing", "Sorting order of y co-ordinate.", "Increasing|Decreasing"),
     new cr.Property(ept_combo, "X order", "Increasing", "Sorting order of x co-ordinate.", "Increasing|Decreasing")
 	];
 	

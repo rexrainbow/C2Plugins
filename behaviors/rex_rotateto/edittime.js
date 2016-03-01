@@ -109,7 +109,7 @@ AddExpression(3, ef_return_number, "Get acceleration", "Setting", "Acc",
 AddExpression(4, ef_return_number, "Get deceleration", "Setting", "Dec", 
               "The deceleration setting, in degree per second per second.");
 AddExpression(5, ef_return_number, "Get target angle", "Target", "TargetAngle", 
-              "The X co-ordinate of target position to move toward.");
+              "The angle to spin toward.");
               
          
 ACESDone();

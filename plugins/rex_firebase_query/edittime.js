@@ -26,7 +26,11 @@ AddCondition(2, 0, "LastData is null", "Receive",
              "Return true if LastData is null.", "LastDataIsNull");                         
 //////////////////////////////////////////////////////////////
 // Actions
-
+AddStringParam("Domain", "The Firebase data ref URL", '""');
+AddAction(0, 0, "Set domain", "Domain", 
+          "Set domain ref to <i>{0}</i>", 
+          "Set domain ref.", "SetDomainRef");
+          
 // 0. ref
 AddStringParam("DataRef", "The Firebase data ref URL", '""');
 AddAction(1, 0, "Create", "0. Create", 

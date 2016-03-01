@@ -44,145 +44,78 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        this.set_process_mode(this.properties[0]);
-        
-        // multi-tick
-	    this.processing_time = percentage2time(this.properties[1]);
-		this.is_tick_running = false;                
-	    this.img_data = null;
-		this.curi = 0;
-		this.endi = 0;	
-        this.pixel_cnt = 0;             
-        
-        // webworker
-        this.worker = null;  
-        this.is_webworker_running = false;
-		
+	    if (!this.recycled)
+	        this.calc_avgrgb = new window["CalcAvgRGB"]();
+	        	    
 	    this.avg_r = 0;
 		this.avg_g = 0;
 		this.avg_b = 0;
 		this.avg_a = 0;
 		this.lum = 0;
+		
+        // for official save/load    
+        this.current_task = null;
+        // for official save/load
 	};  
-    
-	behinstProto.set_process_mode = function (m)
+
+	behinstProto.onDestroy = function ()
 	{
-        this.process_mode = m;
-        // webworker does not support, use multi-tick mode
-        if ((this.process_mode == 2) && (typeof Worker === "undefined"))
-            this.process_mode = 1;
-	};
-    	
+	    this.Cencel();
+	}; 
+	
 	behinstProto.tick = function ()
 	{
-	    if (this.is_tick_running)		
-            this.tick_process();
-	};
-    
-	behinstProto.tick_process = function ()
-	{
-        var start_time = Date.now();
-        while ((Date.now() - start_time) <= this.processing_time)
-        {
-            this.is_tick_running = this.processing();
-            if (!this.is_tick_running)
-			{
-			    this.on_finished();
-                break;
-		    }
-        }			
-	};    
-
-	behinstProto.on_start = function ()
-	{
-	    var canvas = this.inst.canvas;
-        this.img_data = this.inst.ctx.getImageData(0,0, canvas.width, canvas.height).data;
-	    this.avg_r = 0;
-		this.avg_g = 0;
-		this.avg_b = 0;
-		this.avg_a = 0;
-		
-		this.curi = 0;
-		this.endi = canvas.width*canvas.height*4;		
-		this.is_tick_running = true;
-	};	
+	};	 
 	
-	behinstProto.processing = function ()
+    behinstProto.Start = function ()
 	{
-        if ( this.img_data[this.curi+3] != 0)
-        {    
-	        this.avg_r += this.img_data[this.curi];
-		    this.avg_g += this.img_data[this.curi+1];
-		    this.avg_b += this.img_data[this.curi+2];
-		    this.avg_a += this.img_data[this.curi+3]*100/255;
-            this.pixel_cnt ++;
-        }
-		
-		this.curi += 4;
-		return (this.curi < this.endi);
-	};	
-	
-	behinstProto.on_finished = function ()
-	{
-        if (this.pixel_cnt > 0)
-        {        	
-		    this.avg_r /= this.pixel_cnt;
-		    this.avg_g /= this.pixel_cnt;
-		    this.avg_b /= this.pixel_cnt;
-		    this.avg_a /= this.pixel_cnt;
-        }
-        
-		this.lum = (0.3 * this.avg_r) + (0.59 * this.avg_g) + (0.11 * this.avg_b);
-		this.avg_r = Math.floor(this.avg_r);
-		this.avg_g = Math.floor(this.avg_g);
-		this.avg_b = Math.floor(this.avg_b);
-		this.avg_a = Math.floor(this.avg_a);	
-		this.img_data = null;
-
-		this.runtime.trigger(cr.behaviors.Rex_CanvasAVGRGBA.prototype.cnds.OnFinished, this.inst);		
-	};
-
-	var percentage2time = function (percentage)
-    {
-	    if (percentage < 0.01)
-		    percentage = 0.01;
-	    return (1/60)*1000*percentage;
-    };
-    
-	behinstProto.one_tick_process = function ()
-	{
-	    this.on_start();
-        while (this.is_tick_running)        
-            this.is_tick_running = this.processing();
-                
-        this.on_finished();
-	};
-    
-	behinstProto.start_webworker = function ()
-	{
-        this.is_webworker_running = true;
-        if (!this.worker)
-            this.worker = new Worker("avgRGB.js");
-        
+	    this.calc_avgrgb["Stop"]();
+	    
         var self = this;
-        var on_complete = function (e)
+        var on_complete = function (args)
         {
-            self.is_webworker_running = true;
-            var avg_rgba = e.data;
-		    self.lum = (0.3 * avg_rgba[0]) + (0.59 * avg_rgba[1]) + (0.11 * avg_rgba[2]);
-		    self.avg_r = Math.floor(avg_rgba[0]);
-		    self.avg_g = Math.floor(avg_rgba[1]);
-		    self.avg_b = Math.floor(avg_rgba[2]);
-		    self.avg_a = Math.floor(avg_rgba[3]);
-            self.runtime.trigger(cr.behaviors.Rex_CanvasAVGRGBA.prototype.cnds.OnFinished, self.inst);		            
+		    self.lum = (0.3 * args[0]) + (0.59 * args[1]) + (0.11 * args[2]);
+		    self.avg_r = Math.floor(args[0]);
+		    self.avg_g = Math.floor(args[1]);
+		    self.avg_b = Math.floor(args[2]);
+		    self.avg_a = Math.floor(args[3]);  
+            self.current_task = null;		              
+            self.runtime.trigger(cr.behaviors.Rex_CanvasAVGRGBA.prototype.cnds.OnFinished, self.inst);	      
         };
-        this.worker.addEventListener("message", on_complete, false); 
-        
+
+        // for official save/load
+        this.current_task = true;
+        // for official save/load
+                
         var canvas = this.inst.canvas;
         var img_data = this.inst.ctx.getImageData(0,0, canvas.width, canvas.height).data;
-        this.worker.postMessage(["start", img_data]);        
-	};
+        this.calc_avgrgb["Start"](img_data, on_complete);
+	}; 		
     
+    behinstProto.Cencel = function (cell)
+	{
+	    this.current_task = null;
+	    this.calc_avgrgb["Stop"]();    
+	};		
+	
+	behinstProto.saveToJSON = function ()
+	{
+		return { "curTsk": this.current_task,
+               };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+		this.current_task = o["curTsk"];			
+	};
+	
+	behinstProto.afterLoad = function ()
+	{
+		if (this.current_task !== null)
+		{
+		    this.Start.apply(this, this.current_task);
+		}
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -195,7 +128,7 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	
 	Cnds.prototype.IsProcessing = function ()
 	{
-		return this.is_tick_running || this.is_webworker_running;
+		return this.calc_avgrgb["IsProcessing"]();
 	};	
 	//////////////////////////////////////
 	// Actions
@@ -204,34 +137,17 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	
 	Acts.prototype.Start = function ()
 	{	
-        if (this.process_mode == 0)
-            this.one_tick_process();
-        else if (this.process_mode == 1)
-	        this.on_start();		
-        else if (this.process_mode == 2)
-            this.start_webworker();           
+	    this.Start();         
 	};
 	
-	Acts.prototype.Stop = function ()
+	Acts.prototype.Cencel = function ()
 	{
-        if (this.is_tick_running)
-	        this.is_tick_running = false;		
-        else if (this.is_webworker_running)
-        {
-            this.worker.postMessage(["stop"]); 
-            this.is_webworker_running = false;
-        }
+	    this.Cencel();   
 	};
 	
-	Acts.prototype.SetProcessingMode = function(m)
-	{
-        this.set_process_mode(m);
-	};	
-	Acts.prototype.SetProcessingTime = function(percentage)
-	{
-        this.processing_time = percentage2time(percentage);
-	};
-	
+	// deprecated
+	Acts.prototype.SetProcessingMode = function ()  { };		
+	Acts.prototype.SetProcessingTime = function ()  { };	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -267,13 +183,6 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	};		
 	Exps.prototype.Progress = function (ret)
 	{
-        var p;
-        if (this.process_mode == 0)
-            p = 0;
-        else if (this.process_mode == 1)
-            p = this.curi/this.endi;
-        else if (this.process_mode == 2)
-            p = 0;
-		ret.set_float(p);
+		ret.set_float(0);
 	};			
 }());

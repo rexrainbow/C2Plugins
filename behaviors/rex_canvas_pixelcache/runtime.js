@@ -94,6 +94,25 @@ cr.behaviors.Rex_Canvas_PixelCahce = function(runtime)
 	    }
 	    return val;
 	};	
+	
+	behinstProto.saveToJSON = function ()
+	{    
+		return { "d": this.img_data,
+		         "lx": this.area_lx,
+		         "rx": this.area_rx,
+		         "ty": this.area_ty,
+		         "by": this.area_by,
+		         };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{
+	    this.img_data = o["d"];
+		this.area_lx = o["lx"];
+		this.area_rx = o["rx"];
+		this.area_ty = o["ty"];
+		this.area_by = o["by"];
+	};	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

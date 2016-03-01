@@ -110,14 +110,16 @@ cr.plugins_.Rex_MazeGen = function(runtime)
 		this.map = o["map"];
 		this.exp_MapWidth = o["w"];
 		this.exp_MapHeight = o["h"];
-		
-		
-		var current_task = o["curTsk"];			
-		if (current_task !== null)
-		{
-		    this.Start.apply(this, current_task);
-		}
+		this.current_task = o["curTsk"];			
 	};
+	
+	instanceProto.afterLoad = function ()
+	{
+		if (this.current_task !== null)
+		{
+		    this.Start.apply(this, this.current_task);
+		}
+    };
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

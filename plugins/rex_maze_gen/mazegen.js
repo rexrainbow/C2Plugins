@@ -31,7 +31,7 @@
                     console.error(e);
                 };
                 this.worker.addEventListener("message", on_complete, false);
-                this.worker.addEventListener("error", on_complete, false);
+                this.worker.addEventListener("error", on_error, false);
                 
                 this.is_processing = true;
                 var args = ["start", w, h, type, seed];
@@ -39,7 +39,7 @@
             }
             else
             {
-                callback([get_map(w, h, type, seed)()]);
+                callback([get_map(w, h, type, seed)]);
             }
 	    };
 	    

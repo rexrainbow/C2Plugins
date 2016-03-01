@@ -24,7 +24,7 @@ AddAction(11, 0, "Go to state", "Request",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(13, 0, "Set activated", "Setup", "{my} set activated to <i>{0}</i>", "Enable the object's cursor behavior.", "SetActivated");
+AddAction(13, 0, "Set activated", "Setup", "{my} set activated to <i>{0}</i>", "Enable the object's fsm behavior.", "SetActivated");
 AddStringParam("Name", "State name", '""');
 AddAction(14, 0, "Set next state", "Logic", 
           "{my} set next state to <i>{0}</i>", 'Set next state. Used in "Condition: On transfer logic"',  "NextStateSet");          

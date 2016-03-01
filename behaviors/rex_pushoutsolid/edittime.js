@@ -22,6 +22,14 @@ AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
 AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>", 
           "Set whether this behavior is enabled.", "SetEnabled");
 
+AddObjectParam("Obstacle", "Choose an object to add as an obstacle, obstructing line-of-sight.");
+AddAction(11, af_none, "Add obstacle", "Tick", 
+           "Add {my} obstacle {0}", 
+           "Add a custom object as an obstacle to line-of-sight.", "AddObstacle");
+
+AddAction(12, af_none, "Clear obstacles", "Tick", 
+          "Clear {my} obstacles", 
+          "Remove all added obstacle objects.", "ClearObstacles");
 //////////////////////////////////////////////////////////////
 // Expressions
 
@@ -30,8 +38,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [           
-    new cr.Property(ept_combo, "Activated", "Yes", 
-                    "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+    new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
+    new cr.Property(ept_combo, "Obstacles", "Solids", "Choose whether solids obstruct or if to use custom objects added by events.", "Solids|Custom"),    
 	];
 	
 // Called by IDE when a new behavior type is to be created

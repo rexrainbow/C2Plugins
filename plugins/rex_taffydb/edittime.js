@@ -50,7 +50,14 @@ AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddCondition(24, 0, "2. value include", "Filter - 2. key", 
              "Filter- 2. key <i>{0}</i>: value include <i>{1}</i>", 
-             "Add a value including of this key.", "AddValueInclude");                                                
+             "Add a value including of this key.", "AddValueInclude");   
+
+AddStringParam("Key", "The name of the key.", '""');  
+AddStringParam("Regex", "Test string with regular expression.", '""');  
+AddStringParam("Flags", "Test flags with regular expression.", '""');  
+AddCondition(25, 0, "2. regex matched", "Filter - 2. key", 
+             "Filter- 2. key <i>{0}</i>: regex matched with regex <i>{1}</i>, flags <i>{2}</i>", 
+             "Add a regex matched for this key.", "AddRegexTest");                                                          
              
 AddStringParam("Key", "The name of the key.", '""'); 
 AddComboParamOption("Descending");
@@ -171,7 +178,14 @@ AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(24, 0, "2. value include", "Filter - 2. key", 
           "Filter- 2. key <i>{0}</i>: value include <i>{1}</i>", 
-          "Add a value including of this key.", "AddValueInclude");                
+          "Add a value including of this key.", "AddValueInclude");    
+
+AddStringParam("Key", "The name of the key.", '""');  
+AddStringParam("Regex", "Test string with regular expression.", '""');  
+AddStringParam("Flags", "Test flags with regular expression.", '""');  
+AddAction(25, 0, "2. regex matched", "Filter - 2. key", 
+          "Filter- 2. key <i>{0}</i>: regex matched with regex <i>{1}</i>, flags <i>{2}</i>", 
+          "Add a regex matched for this key.", "AddRegexTest");         
           
 AddStringParam("Key", "The name of the key.", '""'); 
 AddComboParamOption("Descending");

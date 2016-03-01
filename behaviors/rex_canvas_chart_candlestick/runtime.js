@@ -67,7 +67,9 @@ cr.behaviors.Rex_canvas_chart_candlestick = function(runtime)
         this.options["marginleft"] = this.properties[21];  
         this.options["marginright"] = this.properties[22];   
         this.options["lowerheight"] = this.properties[23]; 
-        this.options["candlewidth"] = this.properties[24];                  
+        this.options["candlewidth"] = this.properties[24];   
+        
+        this.chart = null;            
 	};  
 
 	behinstProto.tick = function ()
@@ -121,7 +123,10 @@ cr.behaviors.Rex_canvas_chart_candlestick = function(runtime)
 	    }
 	    else
 	    {
-	        var chart =new window["Candlestick"](this.inst.ctx, data, this.options);	
+	        if (this.chart === null)  
+	            this.chart = new window["Candlestick"](this.inst.ctx);  
+	            
+	        this.chart["Draw"](data, this.options);	
 	    }
 	    
 	    this.inst.runtime.redraw = true;  

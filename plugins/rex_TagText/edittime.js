@@ -135,7 +135,7 @@ AddAction(62, 0, "Add by CSS", "Tag",
          "Add tags by CSS.", "AddCSSTags");
           
 ////////////////////////
-AddExpression(0, ef_return_string, "Get text", "Text", "Text", "Get the object's text.");
+AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");
 AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");
 AddExpression(2, ef_return_number, "Get face size", "Appearance", "FaceSize", "Get the current font face size (pt).");
 AddExpression(3, ef_return_number, "Get text width", "Text", "TextWidth", "Get the width extent of the text in the object in pixels.");

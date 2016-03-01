@@ -109,9 +109,9 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		this.show_info = (this.properties[4] === 1);
 		this.disablekb = (this.properties[5] === 0);
 		this.exp_errorCode = 0;
-        this.isInFullScreen = false;
-		
+        		
         this.pended_cmds = [];
+        this.isInFullScreen = false;
         this.beforefullwindow = {"x":null, "y":null, "w":null, "h":null};
 		this.runtime.tickMe(this);
         
@@ -338,13 +338,6 @@ cr.plugins_.rex_youtube_player = function(runtime)
         // ready
 		this.youtube_player["seekTo"](s);
 	};
-
-	var SetFullScreen = function (elem)
-	{
-        var requestFullScreen = elem.requestFullScreen || elem.mozRequestFullScreen || elem.webkitRequestFullScreen;
-        if (requestFullScreen)        
-            requestFullScreen.bind(elem)();
-	};
 	
 	instanceProto.SetLooping = function (l)
 	{
@@ -561,7 +554,11 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{
 		return this.isInFullScreen;
 	};    
-    
+	
+	Cnds.prototype.IsFullWindow = function ()
+	{
+		return (this.beforefullwindow["x"] !== null);
+	};        
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

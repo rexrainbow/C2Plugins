@@ -45,42 +45,93 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto.onCreate = function()
 	{ 
         this.content = "";
-	    this.content_lines = [];
-	    this.total_lines = 0;
+	    this.total_lines_cnt = 0;
 	    this.visible_lines = 0;
         this.line_pos_percent = 0;
         this.start_line_index = 0;        
         this.text_changed = false;
         this.lastwidth = this.inst.width;
         this.lastheight = this.inst.height;
-		this.text_type = this._text_type_get();
-		this._set_text_handler = this._set_text_handler_get();
+        
+		this.text_type = this.get_text_type();
+		this.SetText_handler = this.get_setText_handler();
+        this.init_content_lines();
 	};
-
+    
+	behinstProto.get_text_type = function ()
+	{
+	    var text_type;
+        if (cr.plugins_.Text &&
+		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
+	        text_type = "Text";	    
+	    else if (cr.plugins_.Spritefont2 &&
+		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
+			text_type = "Spritefont2";	  
+	    else if (cr.plugins_.rex_TagText &&
+		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
+		    text_type = "rex_TagText";
+	    else if (cr.plugins_.rex_bbcodeText &&
+		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
+		    text_type = "rex_bbcodeText";                        
+		else
+		    text_type = "";	 
+		return text_type;
+	};
+	
+	behinstProto.get_setText_handler = function ()
+	{
+	    var set_text_handler;
+        if (this.text_type === "Text")		
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (this.text_type === "Spritefont2")	
+			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (this.text_type === "rex_TagText")	
+			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
+	    else if (this.text_type === "rex_bbcodeText")	
+			set_text_handler = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;        
+	    else
+		    set_text_handler = null;
+	    return set_text_handler;
+    };  		
+	
+	behinstProto.init_content_lines = function ()
+	{
+	    var set_text_handler;
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))		
+	        this.content_lines = [];    
+	    else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+			this.content_lines = null;
+	    else
+		    this.content_lines = [];
+    }; 
+    
 	behinstProto.onDestroy = function()
 	{    
 	};    
-	
+
 	behinstProto.tick = function ()
+	{  	    
+	};
+	
+	behinstProto.tick2 = function ()
 	{  	    
         this.redraw_text();
 	};
     
 	behinstProto.redraw_text = function ()
 	{  	    
-        if ((this.lastwidth == this.inst.width) &&
-            (this.lastheight == this.inst.height) &&
-            (!this.text_changed) )
-            return;
-        
-        this.SetContent(); 
-        this.text_changed = false;
-        this.lastwidth = this.inst.width;
-        this.lastheight = this.inst.height;
+        var size_changed = (this.lastwidth !== this.inst.width) || (this.lastheight !== this.inst.height);        
+        if (size_changed || this.text_changed)
+        {
+            this.SetContent(); 
+            this.text_changed = false;
+            this.lastwidth = this.inst.width;
+            this.lastheight = this.inst.height;        
+        }
 	};    
-	behinstProto._get_last_start_line = function ()
+	behinstProto.get_lastStartLineIndex = function ()
 	{  
-        var idx = this.total_lines - this.visible_lines;
+        var idx = this.total_lines_cnt - this.visible_lines;
         if (idx < 0)
             idx = 0;
         return idx;
@@ -88,64 +139,141 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     
 	behinstProto.perent2line = function (percent)
 	{  
-        return Math.floor(this._get_last_start_line() * percent);
+        return Math.floor(this.get_lastStartLineIndex() * percent);
 	};
 
 	behinstProto.line2percent = function (line_index)
 	{  
-        var percent = line_index/this._get_last_start_line();
+        var percent = line_index/this.get_lastStartLineIndex();
         return cr.clamp(percent, 0, 1);
 	};    
+    	
+	behinstProto.copy_content_lines = function (lines)
+	{
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
+        {
+	        this.content_lines.length = 0;            
+	        var i, line, line_cnt=lines.length;
+	        for (i=0; i<line_cnt; i++)
+		    {
+		        this.content_lines.push(lines[i].text);
+	        }
+        }
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        {
+            this.content_lines = this.inst.copyPensMgr(this.content_lines);           
+        }
+        return this.content_lines;
+	};    
     
-	behinstProto._get_visible_text = function (start_line_index)
+	behinstProto.get_visible_text = function (start_line_index)
 	{
         this.start_line_index = (start_line_index < 0)? 0:start_line_index;
         var end_index = this.start_line_index + this.visible_lines;
-        if (end_index > this.total_lines)
-            end_index = this.total_lines;
-            
-        var text = this._lines_get(this.start_line_index, end_index);
-        return text;
+        if (end_index > this.total_lines_cnt)
+            end_index = this.total_lines_cnt;
+        
+        return this.getSubText(this.start_line_index, end_index);
 	};
     
-	behinstProto._lines_get = function (start, end)
-	{
-        var i,text;
-		
-		if ( (this.text_type == "Text") || (this.text_type == "Spritefont2") )
+	behinstProto.getSubText = function (start, end)  
+	{        
+        if (start >= end)
+            return "";
+        
+        var txt;		
+		if ( (this.text_type === "Text") || (this.text_type === "Spritefont2") )
 		{
-		    text = "";
-		    for (i=start; i<end; i++)
-			    text += (this.content_lines[i] + "\n");
+		    txt = "";
+		    for (var i=start; i<end; i++)
+			    txt += (this.content_lines[i] + "\n");
 		}
-		else if (this.text_type == "rex_TagText")
+		else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
 		{
-	        if (start == end)
-		        return "";
-            var start_char_index, end_char_index;
-            start_char_index = this.content_lines[start]["index"];            
-            var l = this.content_lines[end-1];
-            end_char_index = l["index"] + l["text"].length;
-			text = this.inst.subTextGet(this.content, start_char_index, end_char_index);
+            // get start chart index     
+            var si = this.content_lines.getLineStartChartIndex(start);
+            // get end chart index
+            var ei = this.content_lines.getLineEndChartIndex(end);
+            txt = this.content_lines.getSliceTagText(si, ei);
 		}
-        return text;    
+        return txt;    
 	};    
 	
-	behinstProto._copy_content_lines = function (lines)
+    
+	behinstProto.get_total_lines_cnt = function ()
 	{
-	    this.content_lines.length = 0;
-	    var i, line, line_cnt=lines.length;
-	    for (i=0; i<line_cnt; i++)
-		{
-		    if ((this.text_type == "Text") || (this.text_type == "Spritefont2"))
-                this.content_lines.push(lines[i].text);
-            else if (this.text_type == "rex_TagText")
-			{
-			    line = lines[i];
-                this.content_lines.push( { "text":line["text"], "index":line["index"] } );   // copy	
-		    }
-	    }
-	};	
+        var cnt;
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
+        {
+	        cnt = this.content_lines.length;
+        }
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        {
+            cnt = this.content_lines.getLines().length;        
+        }
+        return cnt;
+	};    
+
+    
+	behinstProto.SetContent = function ()
+	{               
+        // render all content
+        var inst = this.inst;              
+        this.SetText(this.content);         // start from line 0        
+        var ctx = (this.runtime.enableWebGL)? 
+                  this._get_webgl_ctx():this.runtime.ctx;
+        inst.draw(ctx);                      // call this function to get lines
+        
+        // copy content in lines, or pensMgr
+        this.copy_content_lines();
+        // get total lines count
+	    this.total_lines_cnt = this.get_total_lines_cnt();
+        // calc visible lines count
+		var line_height = this.get_line_height();
+	    this.visible_lines = Math.floor(inst.height/line_height);
+        if ((inst.height%line_height) == 0)
+            this.visible_lines -= 1;	    
+        
+        // only show visible lines
+        if (this.start_line_index != 0)
+	        this.SetText(this.get_visible_text(this.start_line_index));
+	};    
+	
+	behinstProto.get_line_height = function ()
+	{	
+	    var line_height, inst=this.inst;
+        if (this.text_type == "Text")
+	        line_height = inst.pxHeight;
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+	        line_height = inst.pxHeight;        
+	    else if (this.text_type == "Spritefont2")	
+			line_height = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
+
+	    assert2(line_height, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
+	    return line_height;
+    };  
+	
+
+	behinstProto.SetText = function (content)
+	{
+	    if (this.SetText_handler == null)
+		    return;
+        
+        if (this.text_type === "rex_TagText")
+        {
+            var is_force_render_save = this.inst.is_force_render;
+            this.inst.is_force_render = false;
+        }
+        
+        //this.SetText_handler.call(this.inst, "");      // clean remain text     
+		this.SetText_handler.call(this.inst, content); // set text
+        
+        if  ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        {
+            this.inst.is_force_render = is_force_render_save;
+        }        
+	};  
+    
 
     behinstProto._get_webgl_ctx = function ()
 	{
@@ -164,83 +292,12 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
             ctx = inst.myctx;
 		}
         return ctx;
-	};
-    
-	behinstProto.SetContent = function ()
-	{        
-        var inst = this.inst;              
-        this.SetText(this.content);         // start from line 0        
-        var ctx = (this.runtime.enableWebGL)? 
-                  this._get_webgl_ctx():this.runtime.ctx;
-        inst.draw(ctx);                      // call this function to get lines
-	    this.total_lines = inst.lines.length;
-		var line_height = this._get_line_height();
-	    this.visible_lines = Math.floor(inst.height/line_height);
-        if ((inst.height%line_height) == 0)
-            this.visible_lines -= 1;
-	    this._copy_content_lines(inst.lines);
-        
-        if (this.start_line_index != 0)
-	        this.SetText(this._get_visible_text(this.start_line_index));
 	};    
-	
-	behinstProto._get_line_height = function ()
-	{	
-	    var line_height, inst=this.inst;
-        if ( (this.text_type == "Text") || (this.text_type == "rex_TagText") )
-	        line_height = inst.pxHeight;
-	    else if (this.text_type == "Spritefont2")	
-			line_height = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
-
-	    assert2(line_height, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
-	    return line_height;
-    };  
-	
-	behinstProto._text_type_get = function ()
-	{
-	    var text_type;
-        if (cr.plugins_.Text &&
-		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        text_type = "Text";	    
-	    else if (cr.plugins_.Spritefont2 &&
-		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			text_type = "Spritefont2";	  
-	    else if (cr.plugins_.rex_TagText &&
-		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    text_type = "rex_TagText";
-		else
-		    text_type = "";	 
-		return text_type;
-	};
-	
-	behinstProto._set_text_handler_get = function ()
-	{
-	    var set_text_handler;
-        if (this.text_type == "Text")		
-	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
-	    else if (this.text_type == "Spritefont2")	
-			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
-	    else if (this.text_type == "rex_TagText")	
-			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
-	    else
-		    set_text_handler = null;
-	    return set_text_handler;
-    };  		
-	
-	behinstProto.SetText = function (content)
-	{
-	    if (this._set_text_handler == null)
-		    return;
-        
-        this._set_text_handler.call(this.inst, "");      // clean remain text     
-		this._set_text_handler.call(this.inst, content); // set text
-	};  
  	
 	behinstProto.saveToJSON = function ()
 	{
 		return { "raw" : this.content,
-		         "lines": this.content_lines,
-		         "lcnt": this.total_lines,
+		         "lcnt": this.total_lines_cnt,
 		         "vlcnt": this.visible_lines,
 		         "lper": this.line_pos_percent,
 		         "start": this.start_line_index, 
@@ -250,13 +307,16 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto.loadFromJSON = function (o)
 	{
         this.content = o["raw"];
-	    this.content_lines = o["lines"];
-	    this.total_lines = o["lcnt"];
+	    this.total_lines_cnt = o["lcnt"];
 	    this.visible_lines = o["vlcnt"];
         this.line_pos_percent = o["lper"];
         this.start_line_index = o["start"];
 	};
-    
+
+	behinstProto.afterLoad = function ()
+	{    
+        this.SetContent();    // get this.content_lines back
+	};    
     
 	/**BEGIN-PREVIEWONLY**/
 	behinstProto.getDebuggerValues = function (propsections)
@@ -266,7 +326,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 			"properties": [
 				{"name": "Content", "value": this.content},
                 {"name": "Start at", "value": this.start_line_index},
-				{"name": "Total lines", "value": this.total_lines},
+				{"name": "Total lines", "value": this.total_lines_cnt},
 				{"name": "Visible lines", "value": this.visible_lines}
 			]
 		});
@@ -283,7 +343,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	  
 	Cnds.prototype.IsLastPage = function ()
 	{
-		return (this.start_line_index + this.visible_lines >= this.total_lines);
+		return (this.start_line_index + this.visible_lines >= this.total_lines_cnt);
 	};	 
 	//////////////////////////////////////
 	// Actions
@@ -309,7 +369,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.redraw_text();            
         this.line_pos_percent = cr.clamp(percent, 0, 1);
         var start_line_index = this.perent2line(this.line_pos_percent);
-        this.SetText(this._get_visible_text(start_line_index));
+        this.SetText(this.get_visible_text(start_line_index));
 	};
     
 	Acts.prototype.AppendContent = function(param)
@@ -321,31 +381,31 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	Acts.prototype.ScrollByIndex = function(line_index)
 	{               
         this.redraw_text();       
-        this.SetText(this._get_visible_text(line_index));
+        this.SetText(this.get_visible_text(line_index));
 	}; 
 
 	Acts.prototype.NextLine = function()
 	{   
         this.redraw_text();      
-        this.SetText(this._get_visible_text(this.start_line_index+1));
+        this.SetText(this.get_visible_text(this.start_line_index+1));
 	}; 
 
 	Acts.prototype.PreviousLine = function()
 	{   
         this.redraw_text();      
-        this.SetText(this._get_visible_text(this.start_line_index-1));
+        this.SetText(this.get_visible_text(this.start_line_index-1));
 	};   
 
 	Acts.prototype.NextPage = function()
 	{   
         this.redraw_text();      
-        this.SetText(this._get_visible_text(this.start_line_index+this.visible_lines));
+        this.SetText(this.get_visible_text(this.start_line_index+this.visible_lines));
 	}; 
 
 	Acts.prototype.PreviousPage = function()
 	{   
         this.redraw_text();      
-        this.SetText(this._get_visible_text(this.start_line_index-this.visible_lines));
+        this.SetText(this.get_visible_text(this.start_line_index-this.visible_lines));
 	};   
 	  
 	//////////////////////////////////////
@@ -360,7 +420,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 
 	Exps.prototype.TotalCnt = function(ret)
 	{
-		ret.set_int(this.total_lines);
+		ret.set_int(this.total_lines_cnt);
 	};	
 
 	Exps.prototype.VisibleCnt = function(ret)
@@ -376,7 +436,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	Exps.prototype.CurrLastIndex = function(ret)
 	{
         var cur_last = this.start_line_index + this.visible_lines-1;
-        var last_index = this.total_lines -1;
+        var last_index = this.total_lines_cnt -1;
         if (cur_last > last_index)
             cur_last = last_index;
 		ret.set_int(cur_last);
@@ -387,12 +447,12 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{
         if (start < 0)
             start = 0;
-        if (end > this.total_lines)
-            end = this.total_lines;
+        if (end > this.total_lines_cnt)
+            end = this.total_lines_cnt;
         
         var text;
         if (end > start)
-            text = this._lines_get(start, end); 
+            text = this.getSubText(start, end); 
         else
             text = "";
             

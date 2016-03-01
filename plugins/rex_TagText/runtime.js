@@ -74,7 +74,8 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	instanceProto.onCreate = function()
 	{
-		this.text = this.properties[0];		    
+        this.text = "";
+		this.set_text(this.properties[0]);	    
 		this.visible = (this.properties[1] === 0);		// 0=visible, 1=invisible
 		
 		// "[bold|italic] 12pt Arial"
@@ -84,7 +85,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.halign = this.properties[4];				// 0=left, 1=center, 2=right
 		this.valign = this.properties[5];				// 0=top, 1=center, 2=bottom
         
-        this.textShadow = [];
+        this.textShadow = "";
 		
 		this.wrapbyword = (this.properties[7] === 0);	// 0=word, 1=character
 		this.lastwidth = this.width;
@@ -131,7 +132,7 @@ cr.plugins_.rex_TagText = function(runtime)
         }
         this.canvas_text.Reset(this);
         this.canvas_text.textBaseline = (this.baseLine_mode === 0)? "alphabetic":"top";
-		this.lines = this.canvas_text.rawTextLine;
+		//this.lines = this.canvas_text.getLines();
 		
 		
 		// render text at object initialize
@@ -310,21 +311,21 @@ cr.plugins_.rex_TagText = function(runtime)
         this.canvas_text.canvas = ctx.canvas;
         this.canvas_text.context = ctx;
         // default setting
-        this.canvas_text.fontFamily = this.facename;
-        this.canvas_text.ptSize = this.ptSize.toString() + "pt";
-        this.canvas_text.fontStyle = this.fontstyle;
-        this.canvas_text.fontColor = this.color;
+        this.canvas_text.default_propScope.family = this.facename;
+        // this.canvas_text.default_propScope.weight = ??
+        this.canvas_text.default_propScope.ptSize = this.ptSize.toString() + "pt";
+        this.canvas_text.default_propScope.style = this.fontstyle;
+        this.canvas_text.default_propScope.color = this.color;
+        this.canvas_text.default_propScope.shadow = this.textShadow;        
         this.canvas_text.lineHeight = line_height;
-        this.canvas_text.textShadow = this.textShadow;
-      
-        this.canvas_text.drawText({
-            "text":this.text,
-            "x": penX,
-            "y": penY,
-            "boxWidth": this.width,
-            "boxHeight": this.height,
-			"ignore": is_ignore
-        });
+
+        this.canvas_text.textInfo["text"] = this.text;
+        this.canvas_text.textInfo["x"] = penX;
+        this.canvas_text.textInfo["y"] = penY;  
+        this.canvas_text.textInfo["boxWidth"] = this.width;
+        this.canvas_text.textInfo["boxHeight"] = this.height;
+        this.canvas_text.textInfo["ignore"] = is_ignore;        
+        this.canvas_text.drawText();
         
 		
 		if (this.angle !== 0 || glmode)
@@ -507,7 +508,37 @@ cr.plugins_.rex_TagText = function(runtime)
         this.text_changed = true;               
         this.runtime.redraw = true;
 	};    
+    
+    instanceProto.set_text = function (txt)
+	{
+        txt = txt.replace(/<\s*br\s*\/>/g, "\n");  // replace "<br />" to "\n"
+		if (this.text !== txt)
+		{
+			this.text = txt;			
+			this.render_text(this.is_force_render);
+		}
+    };  
+    
+    var copy_dict = function (in_obj, out_obj, is_merge)
+    {
+        if (out_obj == null)
+            out_obj = {};
+        
+        if (!is_merge)
+        {
+            for (var k in out_obj)
+            {
+                if (!in_obj.hasOwnProperty(k))
+                    delete out_obj[k];
+            }
+        }
 
+        for (var k in in_obj)
+            out_obj[k] = in_obj[k];
+
+        return out_obj;
+    };
+    
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
@@ -540,15 +571,18 @@ cr.plugins_.rex_TagText = function(runtime)
 	/**END-PREVIEWONLY**/
 	
 	// export
-	instanceProto.subTextGet = function (text, start, end)
+	instanceProto.getRawText = function (text)
 	{
-		return this.canvas_text.textGet(start, end, text);
+		return this.canvas_text.getRawText(text);
+	};    
+	instanceProto.getSubText = function (start, end, text)
+	{
+		return this.canvas_text.getSubText(start, end, text);
 	};
-	instanceProto.rawTextGet = function (text)
+	instanceProto.copyPensMgr = function (pensMgr)
 	{
-		return this.canvas_text.rawTextGet(text);
+		return this.canvas_text.copyPensMgr(pensMgr);
 	};	
-
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -593,12 +627,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
 		
 		var text_to_set = param.toString();
-		
-		if (this.text !== text_to_set)
-		{
-			this.text = text_to_set;			
-			this.render_text(this.is_force_render);
-		}
+        this.set_text(text_to_set);
 	};
 	
 	Acts.prototype.AppendText = function(param)
@@ -607,12 +636,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
 			
 		var text_to_append = param.toString();
-		
-		if (text_to_append)	// not empty
-		{
-			this.text += text_to_append;			
-			this.render_text(this.is_force_render);
-		}
+		if (text_to_append.length > 0)	// not empty
+            this.set_text(this.text+text_to_append);
 	};
 	
 	Acts.prototype.SetFontFace = function (face_, style_)
@@ -869,31 +894,25 @@ cr.plugins_.rex_TagText = function(runtime)
     
 	Acts.prototype.SetShadow = function(offsetX, offsetY, blur_, color_)
 	{
+        color_ = color_.replace(/ /g,'');
+        
+        // 2px 2px 2px #000        
+        var shadow = offsetX.toString() + "px " + offsetY.toString() + "px " + blur_.toString() + "px " + color_;
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        if (typeof(this._tag["text-shadow"]) !== "object")
-	            this._tag["text-shadow"] = [];
-	            
-	        this._tag["text-shadow"].length = 4;
-	        this._tag["text-shadow"][0] = offsetX;
-	        this._tag["text-shadow"][1] = offsetY;
-	        this._tag["text-shadow"][2] = blur_;
-	        this._tag["text-shadow"][3] = color_;	        
+            
+            this._tag["text-shadow"] = shadow	        
             this.render_text(false);                       
 	    }
 	    else    // global
 	    {
-	        this.textShadow.length = 4;
-	        this.textShadow[0] = offsetX;
-	        this.textShadow[1] = offsetY;
-	        this.textShadow[2] = blur_;
-	        this.textShadow[3] = color_;
+	        this.textShadow = shadow;
             this.render_text(this.is_force_render);
 	    }              
 	};	
 
 	Acts.prototype.AddCSSTags = function (css_)
-	{  
+	{
 	    // reference - https://github.com/jotform/css.js
 	    var cssRegex = new RegExp('([\\s\\S]*?){([\\s\\S]*?)}', 'gi');	    
 	    var commentsRegex;
@@ -946,9 +965,14 @@ cr.plugins_.rex_TagText = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
-	Exps.prototype.Text = function(ret)
+	Exps.prototype.Text = function(ret, start, end)
 	{
-		ret.set_string(this.text);
+        var txt;
+        if ((start == null) && (end == null))
+            txt = this.text;
+        else
+            txt = this.getSubText(start, end);
+		ret.set_string(txt);
 	};
 	
 	Exps.prototype.FaceName = function (ret)
@@ -963,22 +987,13 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	Exps.prototype.TextWidth = function (ret)
 	{
-		var w = 0;
-		var i, len, x;
-		for (i = 0, len = this.lines.length; i < len; i++)
-		{
-			x = this.lines[i].width;
-			
-			if (w < x)
-				w = x;
-		}
-		
-		ret.set_int(w);
+		ret.set_int(this.canvas_text.getTextWidth());
 	};
 	
 	Exps.prototype.TextHeight = function (ret)
 	{
-	    var text_height = this.lines.length * (this.pxHeight + this.line_height_offset) - this.line_height_offset;
+        var total_line_count = this.canvas_text.getLines().length;
+	    var text_height = total_line_count * (this.pxHeight + this.line_height_offset) - this.line_height_offset;
 	    
 	    if (this.baseLine_mode === 0)  // alphabetic
 	        text_height += this.vshift;
@@ -988,15 +1003,15 @@ cr.plugins_.rex_TagText = function(runtime)
 
 	Exps.prototype.RawText = function(ret)
 	{
-		ret.set_string(this.canvas_text.rawTextGet());
+		ret.set_string(this.canvas_text.getRawText());
 	};
 
 	Exps.prototype.LastClassPropValue = function(ret, name, default_value)
 	{
 	    var val;
-	    var last_class = this.canvas_text.last_pen;	
-	    if (last_class)
-	        val = last_class.prop[name];
+	    var last_pen = this.canvas_text.getLastPen();	
+	    if (last_pen)
+	        val = last_pen.prop[name];
 	        
 	    if (!val)
 	        val = default_value || 0;
@@ -1008,61 +1023,82 @@ cr.plugins_.rex_TagText = function(runtime)
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
+
+// ---------
+// object pool class
+// ---------
+    var ObjCacheKlass = function ()
+    {        
+        this.lines = [];       
+    };
+    var ObjCacheKlassProto = ObjCacheKlass.prototype;   
+    
+	ObjCacheKlassProto.allocLine = function()
+	{
+		return (this.lines.length > 0)? this.lines.pop(): null;
+	};    
+	ObjCacheKlassProto.freeLine = function (l)
+	{
+		this.lines.push(l);
+	};	
+	ObjCacheKlassProto.freeAllLines= function (arr)
+	{
+		var i, len;
+		for (i = 0, len = arr.length; i < len; i++)
+			this.freeLine(arr[i]);
+		arr.length = 0;
+	};
+// ---------
+// object pool class
+// ---------
+
     var CanvasText = function ()
     {
-        // The property that will contain the ID attribute value.
-        this.canvasId = null;
-        // The property that will contain the Canvas element.
         this.canvas = null;
-        // The property that will contain the canvas context.
         this.context = null;
-        // The property that will contain the created style class.
-        
         this.savedClasses = {};   // class define
         
-        // pens for draw        
-        this.pens = [[]];
+        this.textInfo = {
+            "text":"",
+            "x":0,
+            "y":0,
+            "boxWidth":0,
+            "boxHeight":0,
+            "ignore":null,
+        };   
+        this.pensMgr = new PensMgrKlass();
         this.text_changed = true; // update this.pens to redraw
-        this.rawTextLine = [pkgCache.allocLine("", null, 0, 0)];
-        this._text_pkg = [];
-        this.last_pen = null;
         
         /*
-         * Default values.
+         * Default values, overwrite before draw by plugin
          */
-        this.fontFamily = "Verdana";
-        this.fontWeight = "normal";
-        this.ptSize = "12pt";
-        this.fontColor = "#000000";
-        this.fontStyle = "normal";
+        this.default_propScope = {
+            family:"Verdana",
+            weight:"normal",
+            ptSize:"12pt",
+            color:"#000000",
+            style:"normal",            
+            shadow:"",
+        };
         this.textAlign = "start";
-        this.textBaseline = "alphabetic";
-        this.lineHeight = "16";
-        this.textShadow = []; 
-        
+        this.lineHeight = "16";        
+        this.textBaseline = "alphabetic";        
     };
     var CanvasTextProto = CanvasText.prototype;
 
     CanvasTextProto.Reset = function(plugin)
     {
-       this.plugin = plugin;
+         this.plugin = plugin;
     };
-    
-    CanvasTextProto._text_prop_get = function (prop_in)
+    CanvasTextProto.getLines = function()
     {
-        var text_prop = {};  // return value
-        var proFont={}, proColor, proShadow=[];
-        // Default color
-        proColor = this.fontColor;
-        // Default font
-        proFont.style = this.fontStyle;
-        proFont.weight = this.fontWeight;
-        proFont.ptSize = this.ptSize;
-        proFont.family = this.fontFamily;
+        return this.pensMgr.getLines();
+    };    
 
-        // Default textShadow
-        cr.shallowAssignArray(proShadow, this.textShadow);
-        
+    CanvasTextProto.get_propScope = function (prop_in)
+    {
+         var propScope = {};
+
         if (prop_in != null)
         {
             /*
@@ -1078,102 +1114,80 @@ cr.plugins_.rex_TagText = function(runtime)
                 //    break;
                 
                 case "font-family":
-                    proFont.family = prop_in["font-family"];
+                    propScope["family"] = prop_in[atribute];
                     break;
                     
                 case "font-weight":
-                    proFont.weight = prop_in["font-weight"];
+                    propScope["weight"] = prop_in[atribute];
                     break;
                     
                 case "font-size":
-                    proFont.ptSize = prop_in["font-size"];
+                    propScope["ptSize"] = prop_in[atribute];
                     break;
+
+                case "color":
+                    propScope["color"] = prop_in[atribute];
+                    break;                    
                     
                 case "font-style":
-                    proFont.style = prop_in["font-style"];
+                    propScope["style"] = prop_in[atribute];
                     break;
                     
-                case "color":
-                    proColor = prop_in["color"];
-                    break;
-                    
+
                 case "text-shadow":
-                    if (typeof(prop_in["text-shadow"]) === "string")  // parse input string
-                    {
-                        var shadow_ = this.trim(prop_in["text-shadow"]);                    
-                        shadow_ = shadow_.split(" ");
-                        if (shadow_.length === 4)
-                        {
-                            shadow_[0] = parseFloat(shadow_[0].replace("px", ""));
-                            shadow_[1] = parseFloat(shadow_[1].replace("px", ""));
-                            shadow_[2] = parseFloat(shadow_[2].replace("px", ""));
-                            prop_in[atribute] = shadow_;                       
-                        }
-                        else
-                            prop_in["text-shadow"] = [];
-                    }  
-                                      
-                    cr.shallowAssignArray(proShadow, prop_in[atribute]);  
-                        
-                    break;
+                    propScope["shadow"] = prop_in[atribute];
+                    break;                
                 
                 
                 // custom property
                 default:
-                    text_prop[atribute] = prop_in[atribute];
+                    propScope[atribute] = prop_in[atribute];
                     break;
                 }
             }
-        }
-        
-        this.context.font = proFont.style + " " + proFont.weight + " " + proFont.ptSize + " " + proFont.family;
-        this.context.fillStyle = proColor;
-        if (proShadow.length === 4) 
-        {
-            this.context.shadowOffsetX = proShadow[0];
-            this.context.shadowOffsetY = proShadow[1];
-            this.context.shadowBlur = proShadow[2];
-            this.context.shadowColor = proShadow[3];
-        } 
-                
-        text_prop["font"] = this.context.font
-        text_prop["color"] = this.context.fillStyle
-        text_prop["text-shadow"] = proShadow;
-        
-        
-        return text_prop;
+        }        
+       
+        return propScope;
     };
     
-    
-    CanvasTextProto._draw_word = function (pen, offset_x, offset_y)
+    CanvasTextProto.apply_propScope = function (propScope)
     {
-        var prop = pen.prop;
+        var style = propScope["style"] || this.default_propScope.style;
+        var weight = propScope["weight"] || this.default_propScope.weight;
+        var ptSize = propScope["ptSize"] || this.default_propScope.ptSize;
+        var family = propScope["family"] || this.default_propScope.family;
+        var color = propScope["color"] || this.default_propScope.color;
+        var shadow = propScope["shadow"] || this.default_propScope.shadow;
+        
+        this.context.font = style + " " + weight + " " + ptSize + " " + family;
+        this.context.fillStyle = color;
+        if (shadow !== "") 
+        {            
+            shadow = shadow.split(" ");
+            this.context.shadowOffsetX = parseFloat(shadow[0].replace("px", ""));
+            this.context.shadowOffsetY = parseFloat(shadow[1].replace("px", ""));
+            this.context.shadowBlur = parseFloat(shadow[2].replace("px", ""));
+            this.context.shadowColor = shadow[3];
+        }      
+        
+    };
+    
+    CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
+    {
         this.context.save(); 
         
-        this.context.font = prop["font"];
-        this.context.fillStyle = prop["color"];
-        
-        var proShadow = prop["text-shadow"];
-        if (proShadow.length === 4) 
-        {
-            this.context.shadowOffsetX = proShadow[0];
-            this.context.shadowOffsetY = proShadow[1];
-            this.context.shadowBlur = proShadow[2];
-            this.context.shadowColor = proShadow[3];
-        } 
-        
-        this.context.textBaseline = this.textBaseline;
-        //this.context.textAlign = this.textAlign;
+        this.apply_propScope(pen.prop);
         this.context.fillText(pen.text, offset_x + pen.x, offset_y + pen.y);
+        
         this.context.restore();
     };
     
-    CanvasTextProto._draw_text = function (pens, boxWidth, boxHeight)
+    CanvasTextProto.drawPens = function (pensMgr, textInfo)
     {    
-        var i,l,lcnt = pens.length;
-        var j,pen,wcnt, last_word, line_width;
+        var boxWidth=textInfo["boxWidth"], boxHeight=textInfo["boxHeight"];
+        var lines=pensMgr.getLines(), lcnt=lines.length;        
+        
         var offset_x=0, offset_y=0;
-
 		// vertical alignment
 		if (this.plugin.valign === 1)		// center
 			offset_y = Math.max( (boxHeight - (lcnt * this.lineHeight)) / 2, 0);
@@ -1185,57 +1199,103 @@ cr.plugins_.rex_TagText = function(runtime)
         if (this.textBaseline == "alphabetic")
             offset_y += this.plugin.vshift;  // shift line down    
         
-		var need_update_last_pen = (this.last_pen === null);
-        for(i=0; i<lcnt; i++)
+
+        var li, line_width;
+        var pi, pcnt, pens, pen;
+        for (li=0; li<lcnt; li++)
         {
-            l = pens[i];            
-            wcnt = l.length;
-            if (wcnt == 0)
+            line_width = pensMgr.getLineWidth(li);
+            if (line_width === 0)
                 continue;
             
-            last_word = l[wcnt-1];
-            line_width = last_word.x + last_word.width;
 			if (this.plugin.halign === 1)		// center
 				offset_x = (boxWidth - line_width) / 2;
 			else if (this.plugin.halign === 2)	// right
-				offset_x = boxWidth - line_width;  
-				          
-            for(j=0; j<wcnt; j++)
+				offset_x = boxWidth - line_width; 
+                
+            pens = lines[li];
+            pcnt = pens.length;           
+            for (pi=0; pi<pcnt; pi++)
             {
-                pen = l[j];
-                if (pen.text == "")
+                pen = pens[pi];  
+                if (pen.text === "")
                     continue;
 
-                if (need_update_last_pen)
-                    this.last_pen = pen;
-                
-                this._draw_word(pen, offset_x, offset_y);
+                this.draw_pen(pen, offset_x, offset_y);
             }
         }
     };    
     
-    var _lines = [];
+    // split text into array
+    var __re_class_header = /<\s*class=/i;
+    var __re_class = /<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>/;
+    var __re_style_header = /<\s*style=/i;
+    var __re_style = /<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>/; 
     
-    CanvasTextProto._pens_clean = function(pens)
+    var RAWTEXTONLY_MODE = 1;   
+    var __result=[];
+    var split_text = function(txt, mode)
     {
-        var i,lcnt = pens.length;
-        for(i=0; i<lcnt; i++)
+        var re = /<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>/g;
+        __result.length = 0;
+        var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
+        var innerMatch;
+        while(true)    
         {
-            penCache.freeAllLines(pens[i]);  
-        }
-        pens.length = 1;
-        pens[0].length = 0;
-    };
-    
+            arr = re.exec(txt);
+            if (!arr)
+            {               
+                break; 
+            }
 
-    var _style2prop = function(properties)   // property list
+        
+            m = arr[0];
+            match_start = re["lastIndex"] - m.length;
+        
+            if (char_index < match_start)
+            {
+                __result.push(txt.substring(char_index,match_start));
+                
+            }            
+            if (mode == null)                  
+            {
+                __result.push(m); 
+            }
+            else if (mode === RAWTEXTONLY_MODE)
+            {
+                if (__re_class_header.test(m)) 
+                {
+                    innerMatch = m.match(__re_class);
+                    __result.push(innerMatch[2]);
+                }
+                else if (__re_style_header.test(m)) 
+                {
+                    innerMatch = m.match(__re_style);               
+                    __result.push(innerMatch[2]);                
+                }                 
+            }
+            
+            char_index = re["lastIndex"];            
+        }
+        
+    
+        if (char_index < total_length)
+        {
+            __result.push(txt.substring(char_index,total_length));
+        }           
+        return __result;
+    }; 
+    // split text into array    
+
+    var _style2prop = function(s)
     {
-        var i, cnt=properties.length;
-        var prop = {}, property, k, v;
+        s = s.split(";");
+        var i, cnt=s.length;
+        var result = {}, prop, k, v;
         for (i= 0; i<cnt; i++) 
         {
-            property = properties[i].split(":");
-			k = property[0], v = property[1];
+            prop = s[i].split(":");
+			k = prop[0], v = prop[1];
             if (isEmpty(k) || isEmpty(v)) 
             {
                 // Wrong property name or value. We jump to the
@@ -1243,217 +1303,199 @@ cr.plugins_.rex_TagText = function(runtime)
                 continue;
             }
 			
-			prop[k] = v;
+			result[k] = v;
         }
-        return prop;
+        return result;
     };
+ 
 
-    CanvasTextProto._update_pens = function (pens, textInfo) 
-    {  	
-        this._pens_clean(pens);
+    CanvasTextProto.updatePens = function (pensMgr, textInfo, ignore_wrap) 
+    {
+        if (textInfo == null)
+            textInfo = this.textInfo;
+        
+        pensMgr.freePens();
         
         // Save the textInfo into separated vars to work more comfortably.
-        var splittedText, xAux, textLines = _lines, boxWidth = textInfo["boxWidth"];
-        // Declaration of needed vars.
-        var classDefinition, proText;
+        var text=textInfo["text"], boxWidth=textInfo["boxWidth"], boxHeight=textInfo["boxHeight"];
+        if (text === "")
+            return;
+        
         // Loop vars
-        var text = textInfo["text"], start_x = textInfo["x"], y = textInfo["y"];
-        // Needed vars for automatic line break;
-        var i, j, k, n;
-		var cursor_x = start_x;
-		var text_prop;
+        var start_x = textInfo["x"], start_y = textInfo["y"];
+		var cursor_x=start_x, cursor_y=start_y;        
+		var curr_propScope, proText;
 		
-        this.rawTextLine.length = 1;
-		this.rawTextLine[0].text = "";
-		this.rawTextLine[0].width = 0;
 		
-        // The main regex. Looks for <style>, <class> or <br /> tags.
-        var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>|[^<]+/g);
-		if (!match)
+        // The main regex. Looks for <style>, <class> tags.
+        var m, match=split_text(text);
+		if (match.length === 0)
 		    return;
-        var match_cnt = match.length;
+        var i, match_cnt = match.length;
         var innerMatch = null;
 
-		var acc_line_len = 0;
-
-        // Let's draw something for each match found.
         for (i = 0; i < match_cnt; i++) 
         {
-            // Save the current context.
-            this.context.save();        
-            
+     
+            m = match[i];
             // Check if current fragment is a class tag.
-            if (/<\s*class=/i.test(match[i])) 
+            if (__re_class_header.test(m)) 
             { 
                 // Looks the attributes and text inside the class tag.
-                innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>/);
-               
-                classDefinition = this.getClass(innerMatch[1]);
+                innerMatch = m.match(__re_class);
+                curr_propScope = this.get_propScope(this.getClass(innerMatch[1]));
+                curr_propScope["class"] = innerMatch[1];
                 proText = innerMatch[2];
-                text_prop = this._text_prop_get(classDefinition);
             }
-            else if (/<\s*style=/i.test(match[i])) 
+            else if (__re_style_header.test(m)) 
             {
                 // Looks the attributes and text inside the style tag.
-                innerMatch = match[i].match(/<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>/);
+                innerMatch = m.match(__re_style);
 
-                // innerMatch[1] contains the properties of the attribute.
-                var properties = _style2prop(innerMatch[1].split(";"));                
+                // innerMatch[1] contains the properties of the attribute.               
+                curr_propScope = this.get_propScope(_style2prop(innerMatch[1]));                 
                 proText = innerMatch[2];
-                text_prop = this._text_prop_get(properties);
                 
-            } else if (/<\s*br\s*\/>/i.test(match[i])) 
-            {
-                // Check if current fragment is a line break.
-                y += this.lineHeight;
-                start_x = textInfo["x"];
-                continue;
-            } else 
+            } 
+            else 
             {
                 // Text without special style.
-                proText = match[i];
-                text_prop = this._text_prop_get();
+                proText = m;
+                curr_propScope = {};
             }
             
-            // Set the text Baseline
-            this.context.textBaseline = this.textBaseline;
-            // Set the text align
-            this.context.textAlign = this.textAlign;
 
-            // Reset textLines;
-            textLines.length = 0;
-			// boxWidth comes from plugin
-            _word_wrap(proText, textLines, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
-
-            // save pen info
-            var lcnt=textLines.length, txt, w;         
-            var last_line_index=this.rawTextLine.length-1; 
-            var cur_line, cur_line_char_cnt, is_new_line;         
-            for (n = 0; n < lcnt; n++) {
-                cur_line = textLines[n];
-                txt = cur_line.text;
-                w = cur_line.width;
-                       
-                var _word_pen = penCache.allocLine();
-                _word_pen.text = txt;
-                _word_pen.x = cursor_x;
-                _word_pen.y = y;
-                _word_pen.width = w;
-                _word_pen.prop = text_prop;
-                //_word_pen.font = text_prop.font;
-                //_word_pen.color = text_prop.color;
-                //_word_pen.shadow = text_prop.shadow; 
-			     		
-                this.last_pen = _word_pen;
-				
-                pens[last_line_index].push(_word_pen);
+            
+            
+            if (!ignore_wrap)
+            {
+                // Save the current context.
+                this.context.save();   
+            
+                this.apply_propScope(curr_propScope);
+            
+                // wrap text
+                var wrap_lines = wordWrap(proText, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
                 
-                is_new_line = (cur_line.new_line == RAW_NEWLINE) || (cur_line.new_line == WRAPPED_NEWLINE);
-				cursor_x = (is_new_line)? textInfo["x"]:( cursor_x + w );
-				if (is_new_line)
-				    y += this.lineHeight;
-								                
-				this.rawTextLine[last_line_index].text += txt;
-				this.rawTextLine[last_line_index].width += w;
-				if (is_new_line) // not the last line
-				{
-				    cur_line_char_cnt = this.rawTextLine[last_line_index].text.length;
-				    if (cur_line.new_line == RAW_NEWLINE)   // has "\n"
-				        cur_line_char_cnt ++;
-				    acc_line_len += cur_line_char_cnt;
-					this.rawTextLine.push(pkgCache.allocLine("", null, acc_line_len));  
-                    last_line_index ++; 
-                    
-                    pens.push([]);
-				}
+                // add pens
+                var lcnt=wrap_lines.length, n, wrap_line; 
+                for (n=0; n<lcnt; n++) 
+                {
+                    wrap_line = wrap_lines[n];                       
+                    pensMgr.addPen(wrap_line.text,       // text
+                                             cursor_x,             // x
+                                             cursor_y,             // y
+                                            wrap_line.width,      // width
+                                            curr_propScope,       // prop
+                                            wrap_line.newLineMode // new_line_mode
+                                           );
+                
+                    if (wrap_line.newLineMode !== NO_NEWLINE)
+                    {
+                        cursor_x = start_x;
+                        cursor_y += this.lineHeight;
+                    }
+                    else
+                    {
+			    	    cursor_x += wrap_line.width;                    
+                    }
+                
+                }
+                this.context.restore();                
             }
-            this.context.restore();
-        }
+            else
+            {
+                pensMgr.addPen(proText,                   // text
+                                         null,                        // x
+                                         null,                        // y
+                                         null,                        // width
+                                         curr_propScope,       // prop
+                                         0                            // new_line_mode
+                                         );            
+                 // new line had been included in raw text
+            }
+        }  // for (i = 0; i < match_cnt; i++) 
     }; 
     
-    CanvasTextProto.drawText = function (textInfo) 
-    {  	
-        this.last_pen = null;
-        
+    CanvasTextProto.drawText = function () 
+    {  	        
+        var textInfo = this.textInfo;
         if (this.text_changed)
         {
-            this._update_pens(this.pens, textInfo);
+            this.updatePens(this.pensMgr, textInfo);
             this.text_changed = false;
         }
 		
 		if (!textInfo["ignore"])
 		{
             // Let's draw the text
-            this._draw_text(this.pens, textInfo["boxWidth"], textInfo["boxHeight"]);
+            // Set the text Baseline
+            this.context.textBaseline = this.textBaseline;
+            // Set the text align
+            this.context.textAlign = this.textAlign;   
+            
+            this.drawPens(this.pensMgr, textInfo);
 	    }
                 
     }; 
 
-    CanvasTextProto._text_pkg_get = function (text) 
+    var __tempPensMgr = null;
+    CanvasTextProto.getSubText = function (start, end, text)
     {
-        pkgCache.freeAllLines(this._text_pkg);
-        // The main regex. Looks for <style>, <class> or <br /> tags.
-        var match = text.match(/<\s*br\s*\/>|<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>|[^<]+/g);
-		if (!match)
-		    return this._text_pkg;
-			
-        var innerMatch=null, classDefinition=null;
-        var i, icnt=match.length;
-        var start_index=0;
-        for (i=0; i<icnt; i++) 
-        {
-             // Check if current fragment is a class tag.
-            if (/<\s*class=/i.test(match[i]))
-            {
-                // Looks the attributes and text inside the class tag.
-                innerMatch = match[i].match(/<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>/);               
-                this._text_pkg.push( pkgCache.allocLine(innerMatch[2], innerMatch[1], start_index) );
-                start_index += innerMatch[2].length;
-            }
-            // Text without special style.
-            else
-            {
-                this._text_pkg.push( pkgCache.allocLine(match[i], null, start_index) );
-                start_index += match[i].length;
-            }
-        }
-        return this._text_pkg;
+        if (text == null)
+            return this.pensMgr.getSliceTagText(start, end);
+        
+        if (__tempPensMgr === null)
+            __tempPensMgr = new PensMgrKlass();
+        
+        var text_save = this.textInfo["text"];
+        this.textInfo["text"] = text;
+        this.updatePens(__tempPensMgr, this.textInfo, true);
+        this.textInfo["text"] = text_save;
+        
+        return __tempPensMgr.getSliceTagText(start, end);   
     };
-    CanvasTextProto.rawTextGet = function (text)
-    {
-        var text_pkg = (text == null)? this._text_pkg: this._text_pkg_get(text);
-        var raw_text="", i, icnt= text_pkg.length;
-        for (i=0; i<icnt; i++)
-            raw_text += text_pkg[i].text;
-        return raw_text;
-    };
-    CanvasTextProto.textGet = function (start, end, text)
-    {
-        var text_pkg = (text == null)? this._text_pkg: this._text_pkg_get(text);
-        var ret_text = "";
-        var i, icnt= text_pkg.length, string_start, string_end;
-        var _pkg;
-        for (i=0; i<icnt; i++)
-        {
-            _pkg = text_pkg[i];
-            string_start = _pkg.index;
-            string_end = string_start + _pkg.text.length;
-            if ((string_end < start) || (string_start >= end))
-                continue;
-                
-            if (_pkg.tag != null)
-                ret_text += "<class='"+_pkg.tag+"'>";
-            if ((string_start >= start) && (string_end < end))
-                ret_text += _pkg.text;
-            else
-                ret_text += _pkg.text.substring(start-string_start, end-string_start);
 
-            if (_pkg.tag != null)
-                ret_text += "</class>";            
-        }
-        return ret_text;
+    CanvasTextProto.getRawText = function (text)
+    {
+        if (text == null)
+            return this.pensMgr.getRawText();
+        
+        var m, match=split_text(text, RAWTEXTONLY_MODE);
+		if (match.length === 0)
+		    return "";
+        
+        var i, match_cnt = match.length;
+        var innerMatch, rawTxt ="";
+        for (i=0; i<match_cnt; i++) 
+        {
+            rawTxt += match[i];
+        }  // for (i = 0; i < match_cnt; i++)     
+
+        return rawTxt;       
+    };    
+        
+    CanvasTextProto.copyPensMgr = function (pensMgr)
+    {
+        return this.pensMgr.copy(pensMgr);
     }
-
+        
+    CanvasTextProto.getTextWidth = function (pensMgr)
+    {
+        if (pensMgr == null)
+            pensMgr = this.pensMgr;
+        
+        return pensMgr.getMaxLineWidth();
+    } ;
+        
+    CanvasTextProto.getLastPen = function (pensMgr)
+    {
+        if (pensMgr == null)
+            pensMgr = this.pensMgr;
+        
+        return pensMgr.getLastPen();
+    } ;
+    
     /**
      * Save a new class definition.
      */
@@ -1506,121 +1548,57 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.savedClasses = o["cls"];
 	};    
 
-// ----
-    var ObjCacheKlass = function ()
-    {        
-        this.lines = [];       
-    };
-    var ObjCacheKlassProto = ObjCacheKlass.prototype;   
-    
-	ObjCacheKlassProto._allocLine = function()
-	{
-		return (this.lines.length > 0)? this.lines.pop(): {};
-	};
-	ObjCacheKlassProto.freeLine = function (l)
-	{
-		this.lines.push(l);
-	};	
-	ObjCacheKlassProto.freeAllLines= function (arr)
-	{
-		var i, len;
-		for (i = 0, len = arr.length; i < len; i++)
-			this.freeLine(arr[i]);
-		arr.length = 0;
-	};
-	
-	var pkgCache = new ObjCacheKlass();
-    pkgCache.allocLine = function(_text, _tag, _index)
-	{
-	    var pkg = this._allocLine();
-		pkg.text = _text;
-		pkg.tag = _tag;
-		pkg.index = _index;
-        pkg.width = 0;       // line width of text
-		return pkg;
-	};
-	
+
+// ---------
+// wrap characters into lines
+// ---------	
 	var NO_NEWLINE = 0;
 	var RAW_NEWLINE = 1;
 	var WRAPPED_NEWLINE = 2;
 	var lineCache = new ObjCacheKlass();
-    lineCache.allocLine = function(_text, _width, new_line_type)
+    lineCache.newline = function(text, width, newLineMode)
 	{
-	    var l = this._allocLine();
-		l.text = _text;
-		l.width = _width;
-		l.new_line = new_line_type; // 0= no new line, 1=raw "\n", 2=wrapped "\n"
+	    var l = this.allocLine() || {};
+		l.text = text;
+		l.width = width;
+		l.newLineMode = newLineMode; // 0= no new line, 1=raw "\n", 2=wrapped "\n"
 		return l;
 	};	
-    
-	var penCache = new ObjCacheKlass();
-    penCache.allocLine = function()
-	{
-		return this._allocLine();
-	};	
-	
-	
-	var wordsCache = [];
-	var TokeniseWords = function (text)
-	{
-		wordsCache.length = 0;
-		var cur_word = "";
-		var ch;
-		
-		// Loop every char
-		var i = 0;
-		
-		while (i < text.length)
+
+    var __wrapped_lines=[];
+	var wordWrap = function (text, ctx, width, wrapbyword, offset_x)
+	{	    
+        var lines=__wrapped_lines;
+        lineCache.freeAllLines(lines);
+        
+		if (!text || !text.length)
 		{
-			ch = text.charAt(i);
+			return lines;
+		}
 			
-			if (ch === "\n")
-			{
-				// Dump current word if any
-				if (cur_word.length)
-				{
-					wordsCache.push(cur_word);
-					cur_word = "";
-				}
-				
-				// Add newline word
-				wordsCache.push("\n");
-				
-				++i;
-			}
-			// Whitespace or hyphen: swallow rest of whitespace and include in word
-			else if (ch === " " || ch === "\t" || ch === "-")
-			{
-				do {
-					cur_word += text.charAt(i);
-					i++;
-				}
-				while (i < text.length && (text.charAt(i) === " " || text.charAt(i) === "\t"));
-				
-				wordsCache.push(cur_word);
-				cur_word = "";
-			}
-			else if (i < text.length)
-			{
-				cur_word += ch;
-				i++;
-			}
+		if (width <= 2.0)
+		{
+			return lines;
 		}
 		
-		// Append leftover word if any
-		if (cur_word.length)
-			wordsCache.push(cur_word);
+		// If under 100 characters (i.e. a fairly short string), try a short string optimisation: just measure the text
+		// and see if it fits on one line, without going through the tokenise/wrap.
+		// Text musn't contain a linebreak!
+		if (text.length <= 100 && text.indexOf("\n") === -1)
+		{
+			var all_width = ctx.measureText(text).width;
 			
-	    return wordsCache;
+			if (all_width <= (width - offset_x))
+			{
+				// fits on one line
+				lineCache.freeAllLines(lines);
+				lines.push(lineCache.newline(text, all_width, NO_NEWLINE));
+				return lines;
+			}
+		}
+			
+		return WrapText(text, lines, ctx, width, wrapbyword, offset_x);
 	};	
-	
-	function trimSingleSpaceRight(str)
-	{
-		if (!str.length || str.charAt(str.length - 1) !== " ")
-			return str;
-		
-		return str.substring(0, str.length - 1);
-	};
 	
 	var WrapText = function (text, lines, ctx, width, wrapbyword, offset_x)
 	{
@@ -1638,11 +1616,9 @@ cr.plugins_.rex_TagText = function(runtime)
 			// Look for newline
 			if (wordArray[i] === "\n")
 			{
-			    cur_line = trimSingleSpaceRight(cur_line);		// for correct center/right alignment
-			    
 				// Flush line.  Recycle a line if possible
 				if (lineIndex >= lines.length)
-					lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, RAW_NEWLINE));
+					lines.push(lineCache.newline(cur_line, ctx.measureText(cur_line).width, RAW_NEWLINE));
 					
 				lineIndex++;
 				cur_line = "";
@@ -1660,11 +1636,9 @@ cr.plugins_.rex_TagText = function(runtime)
 			// Line too long: wrap the line before this word was added
 			if (line_width >= (width - offset_x))
 			{
-			    prev_line = trimSingleSpaceRight(prev_line);
-			    
 				// Append the last line's width to the string object
 				if (lineIndex >= lines.length)
-					lines.push(lineCache.allocLine(prev_line, ctx.measureText(prev_line).width, WRAPPED_NEWLINE));
+					lines.push(lineCache.newline(prev_line, ctx.measureText(prev_line).width, WRAPPED_NEWLINE));
 					
 				lineIndex++;
 				cur_line = wordArray[i];
@@ -1680,10 +1654,8 @@ cr.plugins_.rex_TagText = function(runtime)
 		// Add any leftover line
 		if (cur_line.length)
 		{
-		    cur_line = trimSingleSpaceRight(cur_line);
-		    
 			if (lineIndex >= lines.length)
-				lines.push(lineCache.allocLine(cur_line, ctx.measureText(cur_line).width, NO_NEWLINE));
+				lines.push(lineCache.newline(cur_line, ctx.measureText(cur_line).width, NO_NEWLINE));
 					
 			lineIndex++;
 		}
@@ -1695,37 +1667,344 @@ cr.plugins_.rex_TagText = function(runtime)
 		lines.length = lineIndex;
 		return lines;
 	};
-	
-	var _word_wrap = function (text, lines, ctx, width, wrapbyword, offset_x)
-	{	    
-		if (!text || !text.length)
-		{
-			lineCache.freeAllLines(lines);
-			return lines;
-		}
-			
-		if (width <= 2.0)
-		{
-			lineCache.freeAllLines(lines);
-			return lines;
-		}
+    
+	var __wordsCache = [];
+	var TokeniseWords = function (text)
+	{
+		__wordsCache.length = 0;
+		var cur_word = "";
+		var ch;
 		
-		// If under 100 characters (i.e. a fairly short string), try a short string optimisation: just measure the text
-		// and see if it fits on one line, without going through the tokenise/wrap.
-		// Text musn't contain a linebreak!
-		if (text.length <= 100 && text.indexOf("\n") === -1)
+		// Loop every char
+		var i = 0;
+		
+		while (i < text.length)
 		{
-			var all_width = ctx.measureText(text).width;
+			ch = text.charAt(i);
 			
-			if (all_width <= (width - offset_x))
+			if (ch === "\n")
 			{
-				// fits on one line
-				lineCache.freeAllLines(lines);
-				lines.push(lineCache.allocLine(text, all_width, NO_NEWLINE));
-				return lines;
+				// Dump current word if any
+				if (cur_word.length)
+				{
+					__wordsCache.push(cur_word);
+					cur_word = "";
+				}
+				
+				// Add newline word
+				__wordsCache.push("\n");
+				
+				++i;
+			}
+			// Whitespace or hyphen: swallow rest of whitespace and include in word
+			else if (ch === " " || ch === "\t" || ch === "-")
+			{
+				do {
+					cur_word += text.charAt(i);
+					i++;
+				}
+				while (i < text.length && (text.charAt(i) === " " || text.charAt(i) === "\t"));
+				
+				__wordsCache.push(cur_word);
+				cur_word = "";
+			}
+			else if (i < text.length)
+			{
+				cur_word += ch;
+				i++;
 			}
 		}
+		
+		// Append leftover word if any
+		if (cur_word.length)
+			__wordsCache.push(cur_word);
 			
-		return WrapText(text, lines, ctx, width, wrapbyword, offset_x);
-	};		       
+	    return __wordsCache;
+	};
+
+	   
+
+// ---------
+// wrap characters into lines
+// ---------
+
+// ---------
+// pens manager
+// ---------    
+    var __penMgr_penCache = new ObjCacheKlass();
+    var __penMgr_lineCache =new ObjCacheKlass();  
+    var PensMgrKlass = function ()    
+    { 
+        this.pens = [];   // all pens
+        this.lines= [];   // pens in lines [ [],[],[],.. ]
+       
+    };
+	var PensMgrKlassProto = PensMgrKlass.prototype;    
+    
+    PensMgrKlassProto.freePens = function ()
+    {     
+        var li, lcnt=this.lines.length;
+        for(li=0; li<lcnt; li++)
+            this.lines[li].length = 0;   // unlink pens 
+                
+        __penMgr_penCache.freeAllLines(this.pens);
+        __penMgr_lineCache.freeAllLines(this.lines);         
+    };
+    
+    
+    PensMgrKlassProto.addPen = function (txt, x, y, width, prop, new_line_mode)
+    {     
+        var pen = __penMgr_penCache.allocLine();
+        if (pen === null)
+        {
+            pen = new PenKlass();
+        }
+        pen.setPen(txt, x, y, width, prop, new_line_mode);
+
+        var prev_pen = this.pens[this.pens.length -1];
+        if (prev_pen == null)
+            pen.startIndex = 0;
+        else
+            pen.startIndex = prev_pen.getNextStartIndex();
+        this.pens.push(pen);
+        
+        // maintan lines
+        var line = this.lines[this.lines.length-1];
+        if (line == null)
+        {
+            line = __penMgr_lineCache.allocLine() || [];
+            this.lines.push(line);            
+        }
+        line.push(pen);      
+         
+        // new line, add an empty line
+        if (new_line_mode !== NO_NEWLINE)
+        {       
+            line = __penMgr_lineCache.allocLine() || [];
+            this.lines.push(line);   
+        }
+    };   
+    
+    PensMgrKlassProto.getPens = function ()
+    {     
+        return this.pens;
+    };
+    
+    PensMgrKlassProto.getLastPen = function ()
+    {     
+        return this.pens[this.pens.length -1];
+    };    
+    
+    PensMgrKlassProto.getLines = function ()
+    {     
+        return this.lines;
+    };  
+    
+    PensMgrKlassProto.getLineStartChartIndex = function (i)
+    {
+        var line = this.lines[i];
+        if (line == null)
+            return 0;
+        
+        return line[0].startIndex;
+    };  
+        
+    PensMgrKlassProto.getLineEndChartIndex = function (i)
+    {     
+        var li, has_last_pen=false, line;
+        for(li=i; li>=0; li--)
+        {
+            line = this.lines[li];
+            has_last_pen = (line != null) && (line.length>0);
+            if (has_last_pen)
+                break;
+        }
+        if (!has_last_pen)
+            return 0;
+        
+        var last_pen = line[line.length-1];
+        return last_pen.getEndIndex();
+    };
+    
+    PensMgrKlassProto.copy = function (targetPensMgr)
+    {     
+        if (targetPensMgr == null)
+            targetPensMgr = new PensMgrKlass();
+        
+        targetPensMgr.freePens();
+        
+        var li, lcnt=this.lines.length;
+        var pens, pi, pcnt, pen;
+        for (li=0; li<lcnt; li++ )
+        {
+            pens = this.lines[li];
+            pcnt = pens.length;
+            
+            for (pi=0; pi<pcnt; pi++)
+            {
+                pen = pens[pi];
+                targetPensMgr.addPen(pen.text, 
+                                                  pen.x, 
+                                                  pen.y, 
+                                                  pen.width, 
+                                                  pen.prop, 
+                                                  pen.newLineMode);
+                                                  
+            }
+        }
+        
+        return targetPensMgr;
+    };      
+
+    PensMgrKlassProto.getLineWidth = function (i)
+    {     
+        var line = this.lines[i];
+        if (!line)
+            return 0;
+        
+        var last_pen = line[line.length -1];
+        if (!last_pen)
+            return 0;
+        
+        return last_pen.getLastX();
+    };    
+    
+    PensMgrKlassProto.getMaxLineWidth = function ()
+    {     
+        var w, maxW=0, i, cnt=this.lines.length, line, last_pen;
+        for (i=0; i<cnt; i++)
+        {
+            w = this.getLineWidth(i);
+            if (w > maxW)
+                maxW = w;
+        }
+        
+        return w;
+    };    
+
+    PensMgrKlassProto.getRawText = function ()
+    {
+        var txt="", i, cnt=this.pens.length, pen;
+        for(i=0; i<cnt; i++)
+            txt += this.pens[i].getRawText();        
+        
+        return txt;
+    }; 
+
+    PensMgrKlassProto.getRawTextLength = function ()
+    {
+        var l=0, i, cnt=this.pens.length, pen;
+        for(i=0; i<cnt; i++)        
+            l += this.pens[i].getRawText().length;        
+        
+        return l;
+    }; 
+    
+    PensMgrKlassProto.getSliceTagText = function (start, end)
+    {     
+        if (start == null)
+            start = 0;
+        if (end == null)
+        {
+            var last_pen = this.getLastPen();
+            if (last_pen == null)
+                return "";
+            
+            end = last_pen.getEndIndex();
+        }
+
+        var txt="", i, cnt=this.pens.length, pen, pen_txt, pen_si, pen_ei, in_range;
+        for(i=0; i<cnt; i++)
+        {
+            pen = this.pens[i];
+            pen_txt = pen.getRawText();             
+            pen_si = pen.startIndex;
+            pen_ei = pen.getNextStartIndex();
+            
+            if (pen_ei <= start)
+                continue;
+            
+            in_range = (pen_si >= start) && (pen_ei < end);
+            if (!in_range)
+            {                
+                pen_txt = pen_txt.substring(start-pen_si, end-pen_si);
+            }
+            
+            txt += prop2TagText(pen_txt, pen.prop);
+            
+            if (pen_ei >= end)
+                break;           
+        }
+        
+        return txt;
+    };  
+
+    var __prop_list=[];
+    var prop2TagText = function (txt, prop)
+    {
+        if (prop["class"])  // class mode
+            txt = "<class='" + prop["class"] + "'>" + txt + "</class>";
+        else  // style mode
+        {
+            __prop_list.length = 0;
+            for (var k in prop)
+            {
+                __prop_list.push(k+":"+prop[k]);
+            }
+            
+            if (__prop_list.length > 0)
+                txt = "<style='" + __prop_list.join(";") + "'>" + txt + "</style>";
+        }
+        return txt;
+    };
+    
+    
+    var PenKlass = function ()
+    {
+        this.text = null;
+        this.x = null;
+        this.y = null;
+        this.width = null;
+        this.prop = {};
+        this.newLineMode = null;
+        this.startIndex = null;
+    }
+	var PenKlassProto = PenKlass.prototype;    
+    
+    PenKlassProto.setPen = function (txt, x, y, width, prop, new_line_mode, start_index)
+    {
+        this.text = txt;
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        copy_dict(prop, this.prop); // font, size, color, shadow, etc...
+        this.newLineMode = new_line_mode;  // 0= no new line, 1=raw "\n", 2=wrapped "\n"
+        this.startIndex = start_index;        
+    };       
+    
+    PenKlassProto.getRawText = function ()
+    {
+        var txt = this.text;
+        if (this.newLineMode == RAW_NEWLINE)
+            txt += "\n";
+        
+        return txt;
+    }
+    PenKlassProto.getNextStartIndex = function()
+    {
+        return this.startIndex + this.getRawText().length;
+    };
+    
+    PenKlassProto.getEndIndex = function()
+    {
+        return this.getNextStartIndex() - 1;
+    };
+    
+    PenKlassProto.getLastX = function()
+    {
+        return this.x + this.width;
+    };
+// ---------
+// pens manager
+// ---------        
 }());     

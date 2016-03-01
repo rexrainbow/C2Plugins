@@ -291,14 +291,13 @@ AddExpression(19, ef_return_string, "All read messages", "Received", "MessagesTo
               "Get all read messages in JSON string.");
 AddExpression(20, ef_return_string, "Current status", "Load - for each", "CurStatus", 
               "Get the current status of message in a For Each loop.");  
-AddExpression(21, ef_return_number, "Current message count", "Load - for each", "CurMessageCount", 
+AddExpression(21, ef_return_number, "Current message count", "Received", "CurMessageCount", 
               "Get message count in current received page.");
 AddExpression(22, ef_return_number, "Current start index", "Load - for each - index", "CurStartIndex", 
               "Get start index in current received page.");
 AddExpression(23, ef_return_number, "Current loop index", "Load - for each - index", "LoopIndex", 
               "Get loop index in current received page.");               
                                                         
-
 AddExpression(91, ef_return_string, "Last loaded sender ID", "Received - messageID", "LastFetchedSenderID", 
               'Get senderID under "Condition: On load by messageID complete".');         
 AddExpression(92, ef_return_string, "Last loaded sender name", "Received - messageID", "LastFetchedSenderName", 

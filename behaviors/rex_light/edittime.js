@@ -30,12 +30,15 @@ AddAction(2, af_none, "Point to object", "Manual",
 
 AddNumberParam("Width", "Maximum width in pixels.");
 AddAction(6, 0, "Set maximum width", "Configure", 
-          "Set {my} maximum width to <i>{0}</i>", "Set the maximum width in pixels.", "SetMaxWidth");   
+          "Set {my} maximum width to <i>{0}</i>", 
+          "Set the maximum width in pixels.", "SetMaxWidth");   
 
 AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
 AddComboParam("State", "Set whether to enable or disable the behavior.");
-AddAction(10, 0, "Set enabled", "Tick", "Set {my} <b>{0}</b>", "Set whether this behavior is enabled.", "SetEnabled");
+AddAction(10, 0, "Set enabled", "Tick", "Set {my} <b>{0}</b>", 
+          "Set whether this behavior is enabled.", 
+          "SetEnabled");
 
 AddObjectParam("Obstacle", "Choose an object to add as an obstacle, obstructing line-of-sight.");
 AddAction(11, af_none, "Add obstacle", "Tick", 
@@ -52,8 +55,8 @@ AddExpression(1, ef_return_number, "Hit X position", "Hit", "HitX", "Get hit X c
 AddExpression(2, ef_return_number, "Hit Y position", "Hit", "HitY", "Get hit Y co-ordinate.");
 AddExpression(3, ef_return_number, "Hit object UID", "Hit", "HitUID", "Get UID of hit object.");
 AddExpression(6, ef_return_number, "Max width", "Configure", "MaxWidth", "Get maximum width setting.");
-AddNumberParam("Normal", "Angle of normal", 90);
-AddExpression(11, ef_return_number, "Angle of reflection", "Reflection", "ReflectionAngle", "Get angle of refection.");
+//AddNumberParam("Normal", "Angle of normal", 90);
+AddExpression(11, ef_return_number | ef_variadic_parameters, "Angle of reflection", "Reflection", "ReflectionAngle", "Get angle of refection.");
 
 ACESDone();
 

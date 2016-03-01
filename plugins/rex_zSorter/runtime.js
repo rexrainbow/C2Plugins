@@ -43,10 +43,12 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	// called whenever an instance is created
+    var y_increasing = true;  
     var x_increasing = true;    
 	instanceProto.onCreate = function()
 	{
-        x_increasing = (this.properties[0] == 0);
+	    y_increasing = (this.properties[0] === 0);
+        x_increasing = (this.properties[1] === 0);
         this._cmp_uidA = 0;
 	    this._cmp_uidB = 0;
         this._compared_result = 0;        
@@ -97,19 +99,23 @@ cr.plugins_.Rex_ZSorter = function(runtime)
         var ay = instance_a.y;
         var bx = instance_b.x;
         var by = instance_b.y; 
+        
+        if (ay === by)
+        {
+            if (ax === bx)
+                return 0;
+            else if (x_increasing)            
+                return (ax > bx)? 1:0;            
+            else  // !x_increasing
+                return (ax < bx)? 1:0;
+                
+        }
+        else if (y_increasing)
+            return (ay > by)? 1:0;
+        else // !y_increasing
+            return (ay < by)? 1:0;
         if (ay > by)
             return 1;
-        else if (ay == by)
-        {
-            if (ax == bx)
-                return 0;
-            if ((x_increasing && (ax > bx)) || (!x_increasing && (ax < bx)))
-                return 1;
-            else
-                return (-1);
-        }
-        else  // ay < by
-            return (-1);
     }
 
     //Z-Sort all objects in current layer by their Y position
@@ -127,7 +133,7 @@ cr.plugins_.Rex_ZSorter = function(runtime)
     
 	Acts.prototype.SetXorder = function (x_order)
 	{
-        x_increasing = (x_order == 0);
+        x_increasing = (x_order === 0);
 	};    
     
 	Acts.prototype.SortByFn = function (layer, fn_name)
@@ -153,7 +159,12 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	{
 	    this._compared_result = result -1;
 	};
-	
+    
+	Acts.prototype.SetYorder = function (y_order)
+	{
+        y_increasing = (y_order === 0);
+	}; 
+		
     Acts.prototype.ZMoveToObject = function (uidA, where_, uidB)
 	{	        
 	    if (uidA == uidB)

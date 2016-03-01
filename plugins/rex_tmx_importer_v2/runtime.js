@@ -219,12 +219,12 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	var FlippedHorizontallyFlag		= 0x80000000;
 	var FlippedVerticallyFlag		= 0x40000000;
 	var FlippedAntiDiagonallyFlag   = 0x20000000;   	
-	instanceProto._read_tile_at_LXY = function(tmx_layer, x, y)
+	instanceProto._read_tile_at_LXY = function(tmx_layer, x, y, is_raw_data)
 	{
 	    var idx = (tmx_layer.height * y) + x;
 	    var _gid = tmx_layer.data[idx];	    
-        if ((_gid == null) || (_gid === 0))
-            return _gid;     // return gid
+        if ((_gid == null) || (_gid === 0) || is_raw_data)
+            return _gid;     // return gid                    
      
         // prepare expressions
         this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);  
@@ -959,7 +959,70 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{
         this.processing_time = processing_time;
 	    this._duration_start();	    
-	};     
+	}; 
+	
+    Acts.prototype.ResetTilemap = function (layer_name, objType)
+	{
+        if (!objType)
+            return;
+        var tilemap_inst = objType.instances[0];
+        if (!tilemap_inst || !this._tmx_obj)
+            return;
+            
+        // get tmx_layer
+		var layers=this._tmx_obj.layers, i, cnt=layers.length, tmx_layer;
+		for (i=0; i<cnt; i++)
+		{		    
+		    if (layers[i].name === layer_name)
+		    {
+		        tmx_layer = layers[i];
+		        break;
+		    }
+		}
+		if (!tmx_layer)
+		    return;
+            
+            
+        // resize tilemap
+		tilemap_inst.mapwidth = this.exp_MapWidth;
+		tilemap_inst.mapheight = this.exp_MapHeight;
+		tilemap_inst.maybeResizeTilemap(true);
+		//inst.setTilesFromRLECSV([...]);
+		tilemap_inst.setAllQuadMapChanged();
+		tilemap_inst.physics_changed = true;
+		
+		tilemap_inst.tilewidth = this.exp_TileWidth;
+		tilemap_inst.tileheight = this.exp_TileHeight;
+		var new_width = this.exp_TileWidth * this.exp_MapWidth;
+		var new_height = this.exp_TileHeight * this.exp_MapHeight;
+		if ((new_width !== tilemap_inst.width) || (new_height !== tilemap_inst.height))
+		{
+		    tilemap_inst.width = new_width;
+		    tilemap_inst.height = new_height;
+		    tilemap_inst.set_bbox_changed();
+		}  
+
+        // no sprite instance created
+        var obj_type_save = this._obj_type;
+        this._obj_type = null;
+        		
+		// fill tiles
+		var x, y, _gid;
+		for (y=0; y<this.exp_MapHeight; y++)
+		{
+		    for (x=0; x<this.exp_MapWidth; x++)
+		    {
+		        _gid = this._read_tile_at_LXY(tmx_layer, x,y, true);
+                if ((_gid == null) || (_gid === 0))  // null tile
+                    _gid = -1;
+                else
+                    _gid -= 1;
+                tilemap_inst.setTileAt(x, y, _gid);      
+		    }
+		}
+		
+		this._obj_type = obj_type_save;
+	}; 	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

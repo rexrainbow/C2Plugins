@@ -99,6 +99,11 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
  
+     Acts.prototype.SetDomainRef = function (ref)
+	{
+	    this.rootpath = ref + "/"; 
+	}; 	
+    
     Acts.prototype.CreateNewQuery = function (k)
 	{
 	    this.current_query = this.get_ref(k);
@@ -106,61 +111,81 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 	
     Acts.prototype.OrderByKey = function ()
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+
 	    this.current_query = this.current_query["orderByKey"]();
 	};	
 	
     Acts.prototype.OrderByChild = function (child_name)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["orderByChild"](child_name);
 	};	
 	
     Acts.prototype.OrderByPriority = function (child_name)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["orderByPriority"]();
 	};		
 	
     Acts.prototype.OrderByValue = function ()
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["orderByValue"]();
 	};		
     
     Acts.prototype.StartAt = function (v)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["startAt"](v);
 	};	
 	
     Acts.prototype.EndAt = function (v)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["endAt"](v);
 	};		
 	
     Acts.prototype.StartEndAt = function (v0, v1)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["startAt"](v0)["endAt"](v1);
 	};		
 	
     Acts.prototype.EqualTo = function (v)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["equalTo"](v);
 	};		
 
     Acts.prototype.LimitToFirst = function (l)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["limitToFirst"](l);
 	};	
 	
     Acts.prototype.LimitToLast = function (l)
 	{
-	    assert2(this.current_query, "Firebase Query: create a new first.");
+        if (this.current_query === null)
+            this.current_query = this.get_ref();
+            
 	    this.current_query = this.current_query["limitToLast"](l);
 	};		
 	//////////////////////////////////////

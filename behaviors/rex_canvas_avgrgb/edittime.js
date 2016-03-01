@@ -3,7 +3,7 @@
 	return {
 		"name":			"Average RGBA",
 		"id":			"Rex_CanvasAVGRGBA",
-		"description":	"Get average RGBA value from the canvas.",
+		"description":	"Get average RGBA value from the canvas asynchronously.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_Canvasavgrgba.html",
 		"category":		"Rex - Canvas - Color analysis",
@@ -24,19 +24,19 @@ AddCondition(4,0 ,"Is processing","Process",
 AddAction(1, 0, "Start", "Process", 
           "{my} Start process", 
 		  "Start process of getting average RGB.", "Start");
-AddAction(2, 0, "Stop", "Process",
-          "{my} Stop Process",
-          "Stop process of getting average RGB", "Stop");  
+AddAction(2, 0, "Cencel", "Process",
+          "{my} Cencel process",
+          "Cencel process of getting average RGB", "Cencel");  
 AddComboParamOption("One-tick");
 AddComboParamOption("Multi-ticks");
 AddComboParamOption("Webworker");
 AddComboParam("Mode", "Processing mode.", 0);
-AddAction(3, 0, "Set mode", "Mode", 
+AddAction(3, af_deprecated, "Set mode", "Mode", 
           "{my} Set processing mode to <b>{0}</b>", 
           "Set processing mode.", 
           "SetProcessingMode");   		  
 AddNumberParam("Processing time", "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time.", 0.5);          
-AddAction(4, 0, "Set processing time","Multi-ticks",
+AddAction(4, af_deprecated, "Set processing time","Multi-ticks",
           "Set processing time to <i>{0}</i>",
           "Set processing time","SetProcessingTime");		  
 //////////////////////////////////////////////////////////////
@@ -69,10 +69,7 @@ AddExpression(8, ef_deprecated | ef_return_number, "Get percentage of progress",
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [  
-    new cr.Property(ept_combo, "Mode", "One-tick", 'Mode of processing.', 
-                    "One-tick|Multi-ticks|Webworker"),      
-    new cr.Property(ept_float, "Processing time", 1, "Processing time per tick in percentage. A tick time is (1/60), 1 is using full tick time. Used for multi-ticks mode."),          
+var property_list = [          
 	];
 	
 // Called by IDE when a new behavior type is to be created

@@ -139,6 +139,9 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 	
 	behinstProto._get_physics_behavior_inst = function ()
     {
+        if (this.physics_behavior_inst)
+            return this.physics_behavior_inst;
+            
 	    if (!cr.behaviors.Physics)
 		{
 		    assert2("No physics behavior found in this object "+this.inst.type.name);
@@ -149,22 +152,19 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
 		{
 			if (behavior_insts[i] instanceof cr.behaviors.Physics.prototype.Instance)
 			{
-				return behavior_insts[i];
+                this.physics_behavior_inst =  behavior_insts[i];
+				return this.physics_behavior_inst;
 	        }
 		}
 		
 		assert2("No physics behavior found in this object."+this.inst.type.name);
     };
-    	
 		
 	behinstProto.tick = function ()
 	{
         if (!this.is_target)
             return;
-       
-        if (this.physics_behavior_inst == null)
-            this.physics_behavior_inst = this._get_physics_behavior_inst();                 
-        
+
         this.has_been_attracted = false;
         if (!(this.target_tag in this.sources))
             return;
@@ -258,7 +258,8 @@ cr.behaviors.Rex_physics_gravitation = function(runtime)
     
 	behinstProto._apply_force_toward = function (f, px, py)
 	{     
-       cr.behaviors.Physics.prototype.acts.ApplyForceToward.apply(this.physics_behavior_inst, [f, px, py, 0]);       
+       var physics_behavior_inst = this._get_physics_behavior_inst();
+       cr.behaviors.Physics.prototype.acts.ApplyForceToward.apply(physics_behavior_inst, [f, px, py, 0]);       
 	};    
 
     var clean_table = function (table)
