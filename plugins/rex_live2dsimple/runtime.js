@@ -27,29 +27,8 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("PlatformManager.js");    
 	};
-
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
-	};    
+   
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -73,6 +52,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{
 	};   
 
+	
 	instanceProto.tick = function()
 	{
     };
@@ -84,18 +64,6 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	instanceProto.drawGL = function(glw)
 	{  
 	};
-
-	instanceProto.load_resources = function()
-	{
-        // load textures
-        var paths = this.model["textures"];
-        var i, cnt=paths.length;
-        for (i=0; i<cnt; i++)
-        {
-            
-        }
-        
-    };   
 	   
 	//////////////////////////////////////
 	// Conditions
@@ -115,7 +83,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	Acts.prototype.SetModel = function (url_)
 	{
 	    this.model["model"] = url_;
-	};
+	};	
 
 	Acts.prototype.AddMotion = function (namne_, url_)
 	{
@@ -124,7 +92,6 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	
 	Acts.prototype.Initial = function ()
 	{
-        this.load_resources(this.model);
 	};
 	
 	//////////////////////////////////////

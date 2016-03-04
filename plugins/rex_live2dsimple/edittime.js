@@ -9,8 +9,7 @@
 		"category":		"Rex - Live2D",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
-		"flags":		pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces | pf_effects,
-		"dependency":	"PlatformManager.js"        
+		"flags":		pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces | pf_effects
 	};
 };
 
