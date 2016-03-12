@@ -51,7 +51,7 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Load",
 
 AddStringParam("ID", "ID of item.", '""');
 AddCondition(13, cf_looping | cf_not_invertible, "For each key", "Load", 
-             "For each key", 
+             "For each key in item: <i>{0}</i>", 
              "Repeat the event for each key of a item of load result.", "ForEachKey");             
 //////////////////////////////////////////////////////////////
 // Actions
@@ -143,7 +143,7 @@ AddAction(22, 0, "Auto remove", "On disconnected",
 AddExpression(1, ef_return_string, "Get itemID", "For Each", "CurItemID", 
               "Get current itemID in a For Each loop, in last load result. Or in save/remove callback.");
               
-AddExpression(2, ef_return_string, "Get load reslt in JSON", "JSON", "LoadResultToJSON", 
+AddExpression(2, ef_return_string, "Get load reslt in JSON", "Load items", "LoadResultToJSON", 
               "Get load reslt in JSON string.");    
 
 AddExpression(3, ef_return_string, "Get key", "For Each", "CurKey", 
@@ -163,15 +163,17 @@ AddExpression(6, ef_return_string, "Get last itemID", "ItemID", "LastItemID",
 AddExpression(7, ef_return_any | ef_variadic_parameters, "Get current item content", "For Each", "CurItemContent", 
               'Get current content in JSON stringin in a For Each loop, in last load result. Add 2nd parameter for specific key, 3rd parameter for default value if this key is not existed.');              
                                                                         
+AddExpression(8, ef_return_number, "Get loaded items count", "Load item", "ItemsCount", 
+              "Get loaded items count.");               
+       
+       
 AddExpression(21, ef_return_string, "Generate new key from push", "ItemID", "GenerateKey", 
               "Generate new key from push action."); 
               
 AddExpression(22, ef_return_string, "Get last generated key", "ItemID", "LastGeneratedKey", 
               "Get last generate a key from push action.");               
 
-//AddExpression(999, ef_return_any, "Get last attachment", "Callback attachment", "LastAttachment", 
-//              "Get last attachment under on success or on error event");   
-              
+
 ACESDone();
 
 // Property grid properties for this plugin

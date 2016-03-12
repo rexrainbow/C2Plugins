@@ -104,7 +104,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	{
 	    var ranks = new window.FirebaseItemListKlass();
 	    
-	    ranks.isAutoUpdate = isAutoUpdate;
+	    ranks.updateMode = (isAutoUpdate)? ranks.AUTOCHILDUPDATE : ranks.MANUALUPDATE;
 	    ranks.keyItemID = "userID";
 	    
 	    var self = this;
@@ -333,6 +333,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 							 	
 }());
 
+
 (function ()
 {
     if (window.FirebaseItemListKlass != null)
@@ -340,31 +341,52 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
     
     var ItemListKlass = function ()
     {
+        // -----------------------------------------------------------------------
         // export: overwrite these values
-        this.isAutoUpdate = true;
+        this.updateMode = 1;                  // AUTOCHILDUPDATE
         this.keyItemID = "__itemID__";
+        
+        // custom snapshot2Item function
         this.snapshot2Item = null;
+        
+        // auto child update, to get one item
         this.onItemAdd = null;
         this.onItemRemove = null;
         this.onItemChange = null;
-        this.onItemsFetch = null;   // manual update, to get all items
-        this.onGetIterItem = null;  // used in ForEachItem
+        
+        // manual update or
+        // auto all update, to get all items
+        this.onItemsFetch = null;
+        
+        // used in ForEachItem
+        this.onGetIterItem = null;  
+        
         this.extra = {};
         // export: overwrite these values
+        // -----------------------------------------------------------------------        
         
+        // -----------------------------------------------------------------------        
+        // internal
         this.query = null;
         this.items = [];
         this.itemID2Index = {}; 
-        
-        
+                
         // saved callbacks
         this.add_child_handler = null;
         this.remove_child_handler = null;
         this.change_child_handler = null;
+        this.items_fetch_handler = null;        
+        // internal       
+        // -----------------------------------------------------------------------        
     };
     
-    var ItemListKlassProto = ItemListKlass.prototype;    
+    var ItemListKlassProto = ItemListKlass.prototype;
     
+    ItemListKlassProto.MANUALUPDATE = 0;
+    ItemListKlassProto.AUTOCHILDUPDATE = 1;
+    ItemListKlassProto.AUTOALLUPDATE = 2;    
+    
+    // --------------------------------------------------------------------------
     // export
     ItemListKlassProto.GetItems = function ()
     {
@@ -395,75 +417,21 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
     {
         this.StopUpdate();            
         this.Clean();        
-        var self = this;        
-        if (this.isAutoUpdate)
-        {
-	        var add_child_handler = function (newSnapshot, prevName)
-	        {
-	            var item = self.add_item(newSnapshot, prevName);
-	            self.update_itemID2Index();
-	            if (self.onItemAdd)
-	                self.onItemAdd(item);
-	        };
-	        var remove_child_handler = function (snapshot)
-	        {
-	            var item = self.remove_item(snapshot);
-	            self.update_itemID2Index();
-	            if (self.onItemRemove)
-	                self.onItemRemove(item);
-	        };      	        
-	        var change_child_handler = function (snapshot, prevName)
-	        {
-	            var item = self.remove_item(snapshot);
-	            self.update_itemID2Index();
-	            self.add_item(snapshot, prevName);
-	            self.update_itemID2Index();
-	            if (self.onItemChange)
-	                self.onItemChange(item); 
-	        };
-	        
-	        query["on"]("child_added", add_child_handler);
-	        query["on"]("child_removed", remove_child_handler);
-	        query["on"]("child_moved", change_child_handler);
-	        query["on"]("child_changed", change_child_handler);  
-	        
-	        this.query = query;
-            this.add_child_handler = add_child_handler;
-            this.remove_child_handler = remove_child_handler;
-            this.change_child_handler = change_child_handler;	        
-        }
-        else
-        {
-            var read_item = function(childSnapshot)
-            {
-	            self.add_item(childSnapshot, null, true);
-            };            
-            var handler = function (snapshot)
-            {           
-                snapshot["forEach"](read_item);                
-                self.update_itemID2Index();   
-                if (self.onItemsFetch)
-                    self.onItemsFetch(self.items)
-            };
-        
-			query["once"]("value", handler);
-        }
+  
+        if (this.updateMode === this.MANUALUPDATE)
+            this.manual_update(query);
+        else if (this.updateMode === this.AUTOCHILDUPDATE)        
+            this.auto_child_update_start(query);        
+        else if (this.updateMode === this.AUTOALLUPDATE)   
+            this.auto_all_update_start(query);    
     };
     
     ItemListKlassProto.StopUpdate = function ()
 	{
-        if (this.query)
-        {
-            this.query["off"]("child_added", this.add_child_handler);
-	        this.query["off"]("child_removed", this.remove_child_handler);
-	        this.query["off"]("child_moved", this.change_child_handler);
-	        this.query["off"]("child_changed", this.change_child_handler);
-            this.add_child_handler = null;
-            this.remove_child_handler = null;
-            this.change_child_handler = null;	
-            //this.query["off"]();
-        }
-        this.query = null;
+        if (this.updateMode === this.AUTOCHILDUPDATE)        
+            this.auto_child_update_stop();        
+        else if (this.updateMode === this.AUTOALLUPDATE)   
+            this.auto_all_update_stop();
 	};	
 	
 	ItemListKlassProto.ForEachItem = function (runtime, start, end)
@@ -498,7 +466,10 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 		return false;
 	};    	    
 	// export
+    // --------------------------------------------------------------------------    
     
+    // --------------------------------------------------------------------------
+    // internal    
     ItemListKlassProto.add_item = function(snapshot, prevName, force_push)
 	{
 	    var item;
@@ -507,7 +478,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    else
 	    {
 	        var k = snapshot["key"]();
-	        var item = snapshot["val"]();
+	        item = snapshot["val"]();
 	        item[this.keyItemID] = k;
 	    }
         
@@ -551,13 +522,118 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	        this.itemID2Index[this.items[i][this.keyItemID]] = i;
 	    }	
 	};
-		  
+    
+    ItemListKlassProto.manual_update = function(query)
+    {
+        var self=this;
+        var read_item = function(childSnapshot)
+        {
+            self.add_item(childSnapshot, null, true);
+        };            
+        var handler = function (snapshot)
+        {           
+            snapshot["forEach"](read_item);                
+            self.update_itemID2Index();   
+            if (self.onItemsFetch)
+                self.onItemsFetch(self.items)
+        };
+      
+        query["once"]("value", handler);    
+    };
+    
+    ItemListKlassProto.auto_child_update_start = function(query)
+    {
+        var self = this;         
+	    var add_child_handler = function (newSnapshot, prevName)
+	    {
+	        var item = self.add_item(newSnapshot, prevName);
+	        self.update_itemID2Index();
+	        if (self.onItemAdd)
+	            self.onItemAdd(item);
+	    };
+	    var remove_child_handler = function (snapshot)
+	    {
+	        var item = self.remove_item(snapshot);
+	        self.update_itemID2Index();
+	        if (self.onItemRemove)
+	            self.onItemRemove(item);
+	    };      	        
+	    var change_child_handler = function (snapshot, prevName)
+	    {
+	        var item = self.remove_item(snapshot);
+	        self.update_itemID2Index();
+	        self.add_item(snapshot, prevName);
+	        self.update_itemID2Index();
+	        if (self.onItemChange)
+	            self.onItemChange(item); 
+	    };
+	    
+	    this.query = query;
+        this.add_child_handler = add_child_handler;
+        this.remove_child_handler = remove_child_handler;
+        this.change_child_handler = change_child_handler;
+        
+	    query["on"]("child_added", add_child_handler);
+	    query["on"]("child_removed", remove_child_handler);
+	    query["on"]("child_moved", change_child_handler);
+	    query["on"]("child_changed", change_child_handler);  	        
+    };
+    
+    ItemListKlassProto.auto_child_update_stop = function ()
+	{
+        if (!this.query)
+            return;
+        
+        this.query["off"]("child_added", this.add_child_handler);
+	    this.query["off"]("child_removed", this.remove_child_handler);
+	    this.query["off"]("child_moved", this.change_child_handler);
+	    this.query["off"]("child_changed", this.change_child_handler);
+        this.add_child_handler = null;
+        this.remove_child_handler = null;
+        this.change_child_handler = null;	
+        this.query = null;
+	};	    
+
+    ItemListKlassProto.auto_all_update_start = function(query)
+    {
+        var self=this;
+        var read_item = function(childSnapshot)
+        {
+            self.add_item(childSnapshot, null, true);
+        };            
+        var items_fetch_handler = function (snapshot)
+        {           
+            self.Clean();
+            snapshot["forEach"](read_item);                
+            self.update_itemID2Index();   
+            if (self.onItemsFetch)
+                self.onItemsFetch(self.items)
+        };
+        
+        this.query = query;
+        this.items_fetch_handler = items_fetch_handler;
+        
+        query["on"]("value", items_fetch_handler);    
+    };
+    
+    ItemListKlassProto.auto_all_update_stop = function ()
+	{
+        if (!this.query)
+            return;
+        
+        this.query["off"]("value", this.items_fetch_handler);
+        this.items_fetch_handler = null;
+        this.query = null;
+	};	      
+    
 	var clean_table = function (o)
 	{
 	    var k;
 	    for (k in o)
 	        delete o[k];
 	};
+    // internal 
+    // --------------------------------------------------------------------------
 	
 	window.FirebaseItemListKlass = ItemListKlass;
 }()); 

@@ -75,13 +75,14 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
             this.disconnectRemove_absRefs = {};        
             this.load_request_itemIDs = {};
             this.load_items = {};   
+            this.load_items_cnt = null;
         }
         else
         {
             clean_table( this.save_item );
             clean_table( this.disconnectRemove_absRefs );
             clean_table( this.load_request_itemIDs );
-            clean_table( this.load_items );           
+            this.clean_load_items();
         }
            
         this.trig_tag = null;    
@@ -91,8 +92,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         this.exp_CurKey = "";  
         this.exp_CurValue = 0;
         this.exp_LastItemID = ""; 
-        this.exp_LastGeneratedKey = "";  
-        this.exp_LastAttachment = "";
+        this.exp_LastGeneratedKey = "";
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -101,8 +101,14 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         clean_table( this.save_item );
         clean_table( this.disconnectRemove_absRefs );
         clean_table( this.load_request_itemIDs );
-        clean_table( this.load_items );   	    
+        this.clean_load_items(); 	    
 	};
+    
+	instanceProto.clean_load_items = function ()
+	{		
+        clean_table( this.load_items );   	    
+        this.load_items_cnt = null;
+	};    
 		
 	instanceProto.get_ref = function(k)
 	{
@@ -360,7 +366,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
     Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
 	{
 		this.rootpath = domain_ref + "/" + sub_domain_ref + "/"; 
-		clean_table(this.load_items);
+		this.clean_load_items();
 	};
 	      
     Acts.prototype.SetValue = function (key_, value_)
@@ -419,7 +425,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 			
     Acts.prototype.LoadItems = function (tag_)
 	{
-	    clean_table(this.load_items);
+	    this.clean_load_items();
 
         var self = this;
 	    // wait done
@@ -428,7 +434,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    {
 	        wait_events -= 1;
 	        if (wait_events == 0)
-	        {	            
+	        {                
 	            // all jobs done
                 self.trig_tag = tag_;	                    
                 var trig = cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnLoadComplete;     
@@ -565,7 +571,18 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
  
 		ret.set_any(v);
 	};
-
+	
+	Exps.prototype.ItemsCount = function (ret)
+	{
+        if (this.load_items_cnt === null)
+        {
+            this.load_items_cnt = 0;
+            for (var k in this.load_items)
+                this.load_items_cnt += 1;
+        }
+		ret.set_int(this.load_items_cnt);
+	};
+    
 	Exps.prototype.GenerateKey = function (ret)
 	{
 	    var ref = this.get_ref()["push"]();
@@ -577,10 +594,5 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	{
 	    ret.set_string(this.exp_LastGeneratedKey);
 	};
-    
-	Exps.prototype.LastAttachment = function (ret)
-	{
-	    ret.set_any(this.exp_LastAttachment);
-	};
-    
+
 }());

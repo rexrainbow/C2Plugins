@@ -105,17 +105,15 @@ cr.plugins_.Rex_ZSorter = function(runtime)
             if (ax === bx)
                 return 0;
             else if (x_increasing)            
-                return (ax > bx)? 1:0;            
+                return (ax > bx)? 1:-1;            
             else  // !x_increasing
-                return (ax < bx)? 1:0;
+                return (ax < bx)? 1:-1;
                 
         }
         else if (y_increasing)
-            return (ay > by)? 1:0;
+            return (ay > by)? 1:-1;
         else // !y_increasing
-            return (ay < by)? 1:0;
-        if (ay > by)
-            return 1;
+            return (ay < by)? 1:-1;
     }
 
     //Z-Sort all objects in current layer by their Y position

@@ -70,7 +70,7 @@ cr.behaviors.Rex_animation_loader = function(runtime)
 	behinstProto.load_imagee = function (target_frame, animation_name, frame_index, resize_, loader_task)
 	{
 	    var task_key = loader_task.key;
-        loader_task.add_wait( event_name_get(animation_name, frame_index) );
+        loader_task.addWait( event_name_get(animation_name, frame_index) );
 
         var url_ = this.request_url(animation_name, frame_index);    
         var thebehavior = this;
@@ -82,7 +82,7 @@ cr.behaviors.Rex_animation_loader = function(runtime)
 		
 		img.onload = function ()
 		{
-		    if (!loader_task.is_current_task(task_key))
+		    if (!loader_task.isCurrentTask(task_key))
 		        return;
 		        
 			// If this action was used on multiple instances, they will each try to create a
@@ -93,6 +93,14 @@ cr.behaviors.Rex_animation_loader = function(runtime)
 				// Still may need to switch to using the image's texture in WebGL renderer
 				if (self.runtime.glwrap && self.curFrame === curFrame_)
 					self.curWebGLTexture = curFrame_.webGL_texture;
+				
+				// Still may need to update object size
+				if (resize_ === 0)		// resize to image size
+				{
+					self.width = img.width;
+					self.height = img.height;
+					self.set_bbox_changed();
+				}
 				
 				// Still need to trigger 'On loaded'
 				self.runtime.redraw = true;
@@ -142,7 +150,7 @@ cr.behaviors.Rex_animation_loader = function(runtime)
 		
         img.onerror = function ()
         {
-		    if (!loader_task.is_current_task(task_key))
+		    if (!loader_task.isCurrentTask(task_key))
 		        return;
 		                    
             thebehavior.on_frame_loaded( animation_name, frame_index, url_, false, loader_task );               
@@ -167,8 +175,8 @@ cr.behaviors.Rex_animation_loader = function(runtime)
         else
             this.runtime.trigger(cr.behaviors.Rex_animation_loader.prototype.cnds.OnFrameLoadedFailed, this.inst);
             
-       loader_task.remove_wait( event_name_get(animation_name, frame_index) );
-       if ( !loader_task.is_waitting() )
+       loader_task.removeWait( event_name_get(animation_name, frame_index) );
+       if ( !loader_task.isWaitting() )
         {
             this.runtime.trigger(cr.behaviors.Rex_animation_loader.prototype.cnds.OnAllAnimationLoaded, this.inst);
         }
@@ -213,8 +221,8 @@ cr.behaviors.Rex_animation_loader = function(runtime)
     
 	Acts.prototype.LoadAllAnimations = function (resize_)
 	{
-	    var loader_task = cr.behaviors.Rex_animation_loader.loader_task_get(this.inst.type.sid.toString());	    
-	    loader_task.reset_task();
+	    var loader_task = loaderTaskGet(this.inst.type.sid.toString());	    
+	    loader_task.resetTask();
 	    
         var animations=this.inst.type.animations;
         var i, cnti=animations.length;
@@ -253,10 +261,12 @@ cr.behaviors.Rex_animation_loader = function(runtime)
 	{     
 	    ret.set_string(this.exp_URL);
 	};		
-}());
 
-(function ()
-{
+    
+// ------------------------------------------------------------------------   
+// ------------------------------------------------------------------------  
+// ------------------------------------------------------------------------  
+ 
     var LoaderKlass = function ()
     {
         this.key = 0;
@@ -265,30 +275,24 @@ cr.behaviors.Rex_animation_loader = function(runtime)
     
     var LoaderKlassProto = LoaderKlass.prototype;
     
-    LoaderKlassProto.reset_task = function ()
+    LoaderKlassProto.resetTask = function ()
 	{
-	    return;
-	    
-	    // TODO
-        this.key += 1;
-        var n;
-        for (n in this.wait_events)
-        {
-            delete this.wait_events[n];
-        }
+        this.key = 0;
+        for(var k in this.wait_events)
+            delete this.wait_events[k];
 	};
 	
-    LoaderKlassProto.is_current_task = function (key)
+    LoaderKlassProto.isCurrentTask = function (key)
 	{	
         return (this.key === key);
 	};	
 	    
-    LoaderKlassProto.add_wait = function (name)
+    LoaderKlassProto.addWait = function (name)
 	{
         this.wait_events[name] = true;
 	}; 
     
-	LoaderKlassProto.remove_wait = function (name)
+	LoaderKlassProto.removeWait = function (name)
 	{
         if (!this.wait_events.hasOwnProperty(name))
             return;
@@ -296,19 +300,19 @@ cr.behaviors.Rex_animation_loader = function(runtime)
         delete this.wait_events[name];
 	};  
 	
-    LoaderKlassProto.is_waitting = function (name)
+    LoaderKlassProto.isWaitting = function (name)
 	{
-        var n, is_waitting=false;
+        var n, isWaitting=false;
         for (n in this.wait_events)
         {
-            is_waitting = true;
+            isWaitting = true;
             break;
         }
-        return is_waitting;
+        return isWaitting;
 	};
 	
 	var _sid2task = {};
-	cr.behaviors.Rex_animation_loader.loader_task_get = function (sid)
+	var loaderTaskGet = function (sid)
 	{
 	    if (!_sid2task.hasOwnProperty(sid))
 	    {

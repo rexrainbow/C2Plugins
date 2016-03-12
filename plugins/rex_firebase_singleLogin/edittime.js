@@ -17,13 +17,25 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On success", "Test result", 
-            "On single login success",
-            "Triggered when single login success.", "OnSingleLoginSuccess");
+AddCondition(1, cf_trigger, "On success", "Login", 
+            "On login success",
+            "Triggered when single login success.", "OnLoginSuccess");
             
-AddCondition(2, cf_trigger, "On error", "Test result", 
-            "On single login error",
-            "Triggered when single login error.", "OnSingleLoginError");
+AddCondition(2, cf_trigger, "On error", "Login", 
+            "On login error",
+            "Triggered when single login error.", "OnLoginError");            
+            
+AddCondition(3, cf_trigger, "On kicked", "Multiple login", 
+            "On kicked",
+            "Triggered when kicked by multiple login.", "OnKicked");
+            
+AddCondition(4, cf_trigger, "On login list changed", "Multiple login", 
+            "On login list changed",
+            "Triggered when login list changed.", "OnLoginListChanged");            
+
+AddCondition(11, cf_looping | cf_not_invertible, "For each login", "Multiple login - for each", 
+             "For each login", 
+             "Repeat the event for each login.", "ForEachLogin");              
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Domain", "The root location of the Firebase data.", '""');
@@ -32,7 +44,7 @@ AddAction(0, 0, "Set domain", "Domain",
           "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
           "Set domain ref.", "SetDomainRef");
 
-AddStringParam("UserID", "User ID.", '""');          
+AddStringParam("UserID", "User ID.", '""');
 AddAction(1, 0, "Login", "Login", 
           "Login with user ID: <i>{0}</i>", 
           "Login.", "Login");
@@ -40,15 +52,28 @@ AddAction(1, 0, "Login", "Login",
 AddAction(2, 0, "Logging out", "General", 
           "Logging out", 
           "Logging out.", "LoggingOut"); 
+          
+AddNumberParam("Index", "Index in login list.", 0);
+AddAction(21, 0, "Kick by index", "Kick", 
+          "Kick login by index to <i>{0}</i>", 
+          "Kick login by index.", "KickByIndex");          
 //////////////////////////////////////////////////////////////
-// Expressions
-
+// Expressions	
+AddExpression(1, ef_return_number, "Get current login cout", "Multiple login",  "LoginCount", 
+              "Get the current login cout.");
+              
+AddExpression(11, ef_return_number, "Current login index", "Multiple login - for each",  "CurLoginIndex", 
+              "Get the current login index in a For Each loop.");
+AddExpression(12, ef_return_number, "Current login timestamp", "Multiple login - for each",  "CurLoginTimestamp", 
+              "Get the current login timestamp in a For Each loop."); 
+              
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
-    new cr.Property(ept_text, "Sub domain", "Single-login", "Sub domain for this function.")
+    new cr.Property(ept_text, "Sub domain", "Single-login", "Sub domain for this function."),
+    new cr.Property(ept_combo, "Kick mode", "Kick previous", "Choose the kicking action while multiple login.",  "Do nothing|Kick previous|Kick current"),       
 	];
 	
 // Called by IDE when a new object type is to be created

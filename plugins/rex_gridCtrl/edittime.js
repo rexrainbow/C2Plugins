@@ -7,7 +7,7 @@
 		"description":	"Manipulate instances of each grid in a table.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_gridctrl.html",
-		"category":		"Rex - Logic",
+		"category":		"Rex - GUI controller",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces
@@ -229,7 +229,7 @@ AddExpression(3, ef_return_number, "Get selected cell Y index", "Visible", "Cell
 AddExpression(4, ef_return_number, "Get position X of selected cell", "Visible", "CellTLX", 
               'Get top-left position X of cell in "Condition: On cell visible", in pixels');
 AddExpression(5, ef_return_number, "Get position Y of selected cell", "Visible", "CellTLY", 
-              'Get top-left position Y of cell in "Condition: On cell visible", in pixels');
+              'Get top-left position Y of cell in "Condition: On cell visible", in pixels');              
 			  
 AddNumberParam("UID", "UID of pinned instance.", 0);              
 AddExpression(11, ef_return_number, "Get cell index of pinned instance", "Cell index", "UID2CellIndex", 
@@ -277,7 +277,14 @@ AddExpression(62, ef_return_number, "Get left OX", "OX", "LeftOX",
               "Get left OY.");     
 AddExpression(63, ef_return_number, "Get right OY", "OX", "RightOX", 
               "Get right OY.");          
-                            
+                                          
+AddExpression(71, ef_return_number, "Get current cell index", "For each", "CurCellIndex", 
+              'Get current cell index in "Condition: For each cell", or "Condition: For each visible cell".');		
+AddExpression(72, ef_return_number, "Get current cell X index", "Visible/For each", "CurCellXIndex", 
+              'Get current cell X index in "Condition: For each cell", or "Condition: For each visible cell".');		
+AddExpression(73, ef_return_number, "Get current cell Y index", "Visible/For each", "CurCellYIndex", 
+              'Get current cell Y index in "Condition: For each cell", or "Condition: For each visible cell".');		
+              
 ACESDone();
 
 // Property grid properties for this plugin

@@ -56,7 +56,7 @@ cr.behaviors.Rex_light = function(runtime)
         if (!this.enabled)
             return;
         
-        if (this.obstacleMode == 0)  // 0 = solids
+        if (this.obstacleMode === 0)  // 0 = solids
         {
             this.PointTo();
         }
@@ -136,7 +136,7 @@ cr.behaviors.Rex_light = function(runtime)
     
 	behinstProto.dec_approach = function (candidates)
 	{
-        if (this.test_hit(candidates) == null)
+        if (this.test_hit(candidates) === null)
             return;
             
         var w=this.inst.width, dw=1;        
@@ -157,11 +157,11 @@ cr.behaviors.Rex_light = function(runtime)
 
 	behinstProto.inc_approach = function (candidates)
 	{     
-        var w=this.inst.width, dw=1;        
+        var w=this.inst.width, dw=1, next_width;        
         var out_of_range, hit_uid;    
         while(1)
         {
-            w += dw;
+            w += dw;    
             out_of_range = (w > this.max_width);
             this.width_set((out_of_range)? this.max_width:w);
             if (out_of_range)
@@ -170,25 +170,33 @@ cr.behaviors.Rex_light = function(runtime)
                 return;
             }
             hit_uid = this.test_hit(candidates);
+            //log(w + " :" + dw);            
             if (hit_uid != null)
             {
-                if (dw == 1)
+                if (dw === 1)  // hit
                 {
                     // done
                     //log("Hit");
                     this.exp_HitUID = hit_uid;   
                     return;
                 }
-                else
+                else    // overshot
                 {
-                    //log("overshot");
+                    //log("Hit - overshot: w is between "+ (w-dw).toString() + " - " + w.toString());
                     w -= dw;
                     dw = 1;
                 }
             }
             else
             {
-                dw *= 2;
+                dw *= 2;                
+                while ((w + dw) > this.max_width)  // overshot
+                {
+                    //log("Inc - overshot");
+                    dw /= 2;
+                    if (dw === 1)
+                        break;
+                }
             }
         } 
 	};    
@@ -250,6 +258,23 @@ cr.behaviors.Rex_light = function(runtime)
 		}	    
 	};
 		
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "Hit UID", "value": this.exp_HitUID},
+				{"name": "Max width", "value": this.max_width},
+				{"name": "Enabled", "value": this.enabled}
+			]
+		});
+	};
+	
+	behinstProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -257,7 +282,7 @@ cr.behaviors.Rex_light = function(runtime)
     
 	Cnds.prototype.IsHit = function ()
 	{
-		return (this.exp_HitUID != -1);
+		return (this.exp_HitUID !== -1);
 	};
 	//////////////////////////////////////
 	// Actions

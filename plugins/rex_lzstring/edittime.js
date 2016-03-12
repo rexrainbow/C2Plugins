@@ -9,8 +9,9 @@
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_lzstring.html",
 		"category":		"Rex - String",
 		"type":			"object",			// not in layout
-		"rotatable":	false,
-		"flags":		pf_singleglobal
+		"rotatable":	false,         
+		"flags":		pf_singleglobal,
+		"dependency":	"lz-string.min.js",            
 	};
 };
 

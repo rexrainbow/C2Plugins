@@ -42,8 +42,8 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
     var SIMPLEMODE_KEY = "_";
 	instanceProto.onCreate = function()
 	{
-	    this.handler = (this.properties[0] === 0)? new steps_handler(this):
-                                                   new states_handler(this)
+	    this.handler = (this.properties[0] === 0)? new StepsHandler(this):
+                                                                          new StatesHandler(this)
 	    this.is_states_mode = (this.properties[0] === 0);
         this.max_record_length = this.properties[1];
         this.recorder = [];
@@ -97,81 +97,7 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
 	    this.cur_step = this.handler.Redo()
 	    return this.cur_step;	        
 	};		
-    
-    
-    var steps_handler = function(plugin)
-    {
-        this.plugin = plugin;
-    };
-    var steps_handlerProto = steps_handler.prototype;
-    // undo
-	steps_handlerProto.CanUndo = function()
-	{
-	    return (this.plugin.current_index >= 0);
-	};
-	steps_handlerProto.Undo = function()
-	{	    
-	    if (!this.CanUndo())
-	        return 0;
-	    
-	    var plugin = this.plugin;
-	    var val = plugin.recorder[plugin.current_index];
-	    plugin.current_index -=1;
-	    return val;
-	};
-	// redo
-	steps_handlerProto.CanRedo = function()
-	{
-	    var plugin = this.plugin;
-	    return (plugin.current_index < (plugin.recorder.length-1));
-	};
-	steps_handlerProto.Redo = function()
-	{
-	    if (!this.CanRedo())
-	        return 0;
-	    
-	    var plugin = this.plugin;
-        plugin.current_index +=1;
-	    var val = plugin.recorder[plugin.current_index];
-	    return val;
-	};
-    
-    
-    var states_handler = function(plugin)
-    {
-        this.plugin = plugin;
-    };
-    var states_handlerProto = states_handler.prototype;
-    // undo
-	states_handlerProto.CanUndo = function()
-	{
-	    return (this.plugin.current_index > 0);
-	};
-	states_handlerProto.Undo = function()
-	{	    
-	    if (!this.CanUndo())
-	        return 0;
-	    
-	    var plugin = this.plugin;
-	    plugin.current_index -=1;
-	    return plugin.recorder[plugin.current_index];
-	};
-	// redo
-	states_handlerProto.CanRedo = function()
-	{
-	    var plugin = this.plugin;
-	    return (plugin.current_index < (plugin.recorder.length-1));
-	};
-	states_handlerProto.Redo = function()
-	{
-	    if (!this.CanRedo())
-	        return 0;
-	    
-	    var plugin = this.plugin;
-	    plugin.current_index +=1 ;
-	    return plugin.recorder[plugin.current_index];
-	};		
-	
+       
 	// current step
 	instanceProto.has_steps = function()
 	{
@@ -218,6 +144,33 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
 	{
 		return this.handler.CanRedo();        
 	};
+    
+	Cnds.prototype.ForEachStep = function ()
+	{
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
+        var cur_index_save = this.current_index;
+        var cur_step_save = this.cur_step;
+        for (var i=0; i<=cur_index_save; i++)
+        {
+            if (solModifierAfterCnds)
+		        this.runtime.pushCopySol(current_event.solModifiers);
+                
+            this.current_index = i;
+            this.cur_step = this.recorder[i];	        
+		    current_event.retrigger();
+		    	
+            if (solModifierAfterCnds)
+		    	this.runtime.popSol(current_event.solModifiers);
+            
+        }        
+        
+        this.current_index = cur_index_save;
+        this.cur_step = cur_step_save;        
+		return false;
+	};        
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -319,4 +272,83 @@ cr.plugins_.Rex_UndoRedo = function(runtime)
 	{
 	    ret.set_string(this.steps2string());
 	};
+    
+    
+    
+// ---------------------------------------------------------------------    
+// ---------------------------------------------------------------------    
+// ---------------------------------------------------------------------    
+    var StepsHandler = function(plugin)
+    {
+        this.plugin = plugin;
+    };
+    var StepsHandlerProto = StepsHandler.prototype;
+    // undo
+	StepsHandlerProto.CanUndo = function()
+	{
+	    return (this.plugin.current_index >= 0);
+	};
+	StepsHandlerProto.Undo = function()
+	{	    
+	    if (!this.CanUndo())
+	        return 0;
+	    
+	    var plugin = this.plugin;
+	    var val = plugin.recorder[plugin.current_index];
+	    plugin.current_index -=1;
+	    return val;
+	};
+	// redo
+	StepsHandlerProto.CanRedo = function()
+	{
+	    var plugin = this.plugin;
+	    return (plugin.current_index < (plugin.recorder.length-1));
+	};
+	StepsHandlerProto.Redo = function()
+	{
+	    if (!this.CanRedo())
+	        return 0;
+	    
+	    var plugin = this.plugin;
+        plugin.current_index +=1;
+	    var val = plugin.recorder[plugin.current_index];
+	    return val;
+	};
+    
+    
+    var StatesHandler = function(plugin)
+    {
+        this.plugin = plugin;
+    };
+    var StatesHandlerProto = StatesHandler.prototype;
+    // undo
+	StatesHandlerProto.CanUndo = function()
+	{
+	    return (this.plugin.current_index > 0);
+	};
+	StatesHandlerProto.Undo = function()
+	{	    
+	    if (!this.CanUndo())
+	        return 0;
+	    
+	    var plugin = this.plugin;
+	    plugin.current_index -=1;
+	    return plugin.recorder[plugin.current_index];
+	};
+	// redo
+	StatesHandlerProto.CanRedo = function()
+	{
+	    var plugin = this.plugin;
+	    return (plugin.current_index < (plugin.recorder.length-1));
+	};
+	StatesHandlerProto.Redo = function()
+	{
+	    if (!this.CanRedo())
+	        return 0;
+	    
+	    var plugin = this.plugin;
+	    plugin.current_index +=1 ;
+	    return plugin.recorder[plugin.current_index];
+	};		
+	    
 }());

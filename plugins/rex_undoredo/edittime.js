@@ -20,6 +20,9 @@ AddCondition(1, 0, "Can undo", "Undo",
              "Can undo", "Retrun true if can undo to previous step.", "CanUndo");
 AddCondition(2, 0, "Can redo", "Redo", 
              "Can redo", "Retrun true if can redo to next step.", "CanRedo");                         
+             
+AddCondition(11, cf_looping | cf_not_invertible, "For each step", "Step", "For each step", 
+             "Repeat the event for each step.", "ForEachStep");             
 //////////////////////////////////////////////////////////////
 // Actions
 AddAction(1, 0, "Clean", "Recorder", 
@@ -37,7 +40,7 @@ AddAction(10, 0, "Load steps from JSON string", "JSON",
 AddAnyTypeParam("Key", "The key of data.", '"_"');
 AddAnyTypeParam("Value", "The value of data", 0);
 AddAction(20, 0, "Set data", "Push", 
-          "Set key <i>{0}</i> with value to <i>{1}</i>", 
+          "Set key <i>{0}</i> to value <i>{1}</i>", 
           "Set date.", 
           "SetDate");   
 AddAction(21, 0, "Push", "Push - dictionary mode", 

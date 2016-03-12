@@ -92,7 +92,7 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
         this.calc_avgrgb["Start"](img_data, on_complete);
 	}; 		
     
-    behinstProto.Cencel = function (cell)
+    behinstProto.Cencel = function ()
 	{
 	    this.current_task = null;
 	    this.calc_avgrgb["Stop"]();    

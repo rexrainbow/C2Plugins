@@ -67,6 +67,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         
         this.last_error = null;
         this.last_authData = null;
+        this.isLogin = false;
                 
         var self = this;
         var onAuth_handler = function (authData)
@@ -163,7 +164,11 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	{
 	    return true;
 	}; 		
-	
+
+	Cnds.prototype.IsLogin = function ()
+	{
+	    return true;
+	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -175,7 +180,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
             self.last_error = error;
             self.last_authData = authData;
-            if (error === null) 
+            self.isLogin = (error == null);
+            if (error == null) 
             {
                 // get auth data by expression:UserID, and expression:Provider
                 self.runtime.trigger(success_trig, self);                

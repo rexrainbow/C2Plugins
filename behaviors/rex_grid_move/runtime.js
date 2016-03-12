@@ -442,30 +442,73 @@ cr.behaviors.Rex_GridMove = function(runtime)
         return target_uids;
     };
     
-	behinstProto._collide_test = function(objtype, group_name)
+	behinstProto._collide_test = function(colliding_xyz, objtype, group_name)
 	{
-        var target_uids = this._zhash2uids(this.board.xy2zHash(this._colliding_xyz.x, 
-                                                               this._colliding_xyz.y));
+        var is_collided = false;
+        var target_uids = this._zhash2uids(this.board.xy2zHash(colliding_xyz.x, 
+                                                               colliding_xyz.y));
         
-        // TODO:
-        var _sol = objtype.getCurrentSol();
-        var select_all_save = _sol.select_all;
-        _sol.select_all = true;         
-	    var test_insts = _sol.getObjects(); 
-        var test_insts_cnt = test_insts.length;     
-        var i, test_uid;
-       
-        var result_group = this.type.GetInstGroup().GetGroup(group_name);
-        result_group.Clean();
-        for (i=0; i<test_insts_cnt; i++)
+        // pick collided instances into group
+        var result_group, sol;
+        if (group_name != null)
         {
-            test_uid = test_insts[i].uid;
-            if (test_uid in target_uids)
-                result_group.AddUID(test_uid);
+            result_group = this.type.GetInstGroup().GetGroup(group_name);
+            result_group.Clean();
         }
-        _sol.select_all = select_all_save;
-        return (result_group.GetList().length != 0);
+        // pick collided instances into SOL
+        else
+        {
+            sol = objtype.getCurrentSol();  
+            sol.select_all = false;
+            sol.instances.length = 0;   // clear contents
+        }
+        
+        var uid, inst;
+        for (uid in target_uids)
+        {
+            uid = parseInt(uid);
+            if (uid === this.inst.uid)
+                continue;
+            
+            inst = this._uid2inst(uid, objtype);
+            if (inst === null)
+                continue;
+            
+            if (group_name != null)
+            {
+                result_group.AddUID(uid);
+            }
+            else
+            {
+                sol.instances.push(inst);
+            }
+            
+            is_collided = true
+        }            
+        return is_collided;
 	};
+    
+    behinstProto._uid2inst = function(uid, objtype)
+    {
+        var inst = this.runtime.getObjectByUID(uid);
+        if (inst == null)
+			return null;
+
+        if ((objtype == null) || (inst.type == objtype))
+            return inst;        
+        else if (objtype.is_family)
+        {
+            var families = inst.type.families;
+            var cnt=families.length, i;
+            for (i=0; i<cnt; i++)
+            {
+                if (objtype == families[i])
+                    return inst;
+            }
+        }
+        // objtype mismatch
+        return null;
+    };
 	
 	behinstProto.saveToJSON = function ()
 	{
@@ -581,7 +624,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 	
 	Cnds.prototype.OnCollidedBegin = function (objtype, group_name)
 	{
-		return this._collide_test(objtype, group_name);
+		return this._collide_test(this._colliding_xyz, objtype, group_name);
 	};
 	
     Cnds.prototype.OnGetSolid = function ()
@@ -601,7 +644,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
 
 	Acts.prototype.SetMaxSpeed = function (s)
 	{
-		this._cmd_move_to.move["max"] = s;
+		this._cmd_move_to.move_params["max"] = s;
         this._cmd_move_to._set_current_speed(null);
 	};      
     

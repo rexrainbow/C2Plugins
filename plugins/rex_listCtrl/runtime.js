@@ -926,6 +926,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    var x = this.exp_LineTLX + (0.5 * this.get_inst_width());
 		ret.set_float(x);
 	};
+    
+	
+    Exps.prototype.CurLineIndex = function (ret)
+	{
+		ret.set_int(this.exp_LineIndex);
+	};	    
 	
 }());
 

@@ -989,29 +989,33 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return this.pick_neighbor_chess(origin.getFirstPicked(), dir, chess_type);            
 	};
 	
-	var empty_cells=[];
+	var __empty_cells=[];
 	Cnds.prototype.PickEmptyCell = function (z)
 	{
         var x, y;
-        empty_cells.length = 0;
         for(x=0; x<=this.x_max; x++)
         {
             for(y=0; y<=this.y_max; y++)
             {                
                 if (this.IsEmpty(x,y,z))
                 {
-                    empty_cells.push([x,y]);
+                    __empty_cells.push([x,y]);
                 }
             }
         }
-        var cnt = empty_cells.length;
+        var cnt = __empty_cells.length;
         if (cnt > 0)
         {
              var i = cr.floor(Math.random() * cnt);      
-             this.exp_EmptyLX = empty_cells[i][0];
-             this.exp_EmptyLY = empty_cells[i][1];
-             empty_cells.length = 0;
+             this.exp_EmptyLX = __empty_cells[i][0];
+             this.exp_EmptyLY = __empty_cells[i][1];
         }
+        else
+        {
+            this.exp_EmptyLX = -1;
+            this.exp_EmptyLY = -1;     
+        }
+        __empty_cells.length = 0;        
         return (cnt > 0);
 	};
 	
@@ -1069,7 +1073,6 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	        return false;	        
 	    var tiles = tile_type.getCurrentSol().getObjects();	  
 	    
-	    empty_cells.length = 0;      
         var xyz, i, cnt=tiles.length;
         for(i=0; i<cnt; i++)
         {
@@ -1079,18 +1082,23 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             
             if (this.IsEmpty(xyz.x, xyz.y, z))
             {
-                empty_cells.push([xyz.x, xyz.y]);
+                __empty_cells.push([xyz.x, xyz.y]);
             }   
         }        
 	    
-        cnt = empty_cells.length;
+        cnt = __empty_cells.length;
         if (cnt > 0)
         {
-             var i = cr.floor(Math.random() * cnt);
-             this.exp_EmptyLX = empty_cells[i][0];
-             this.exp_EmptyLY = empty_cells[i][1];
-             empty_cells.length = 0;
+            var i = cr.floor(Math.random() * cnt);
+            this.exp_EmptyLX = __empty_cells[i][0];
+            this.exp_EmptyLY = __empty_cells[i][1];
         }
+        else
+        {
+            this.exp_EmptyLX = -1;
+            this.exp_EmptyLY = -1;            
+        }
+        __empty_cells.length = 0;        
         return (cnt > 0);
 	};
 	
@@ -1114,6 +1122,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }   
         }
         
+        this.exp_EmptyLX = -1;
+        this.exp_EmptyLY = -1;            
         return false;
 	};
 	Cnds.prototype.IsChessOnBoard = function (chess_type)

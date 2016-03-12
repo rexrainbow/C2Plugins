@@ -44,12 +44,63 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 
 	behinstProto.onCreate = function()
 	{               
-	    this.webGL_texture = null;
+        var overrideSL = this.properties[0];
+        if (overrideSL === 1)
+        {
+            this.my_saveToJSON = this.zlib_saveToJSON;
+            this.my_loadFromJSON = this.zlib_loadFromJSON;        
+        }
+        
+        if (overrideSL !== 0)
+        {
+            this.inst.saveToJSON = this.my_saveToJSON;
+            this.inst.loadFromJSON = this.my_loadFromJSON;        
+        }        
 	};  
 	
 	behinstProto.tick = function ()
 	{
 	};
+    
+    // ---------------------------------------------------------------------
+    // override original saving/loading
+    // ---------------------------------------------------------------------    
+	behinstProto.zlib_saveToJSON = function ()
+	{
+        var inst = this;
+        var w = inst.canvas.width;
+        var h = inst.canvas.height;
+        var plain = inst.ctx.getImageData(0, 0, w, h).data;
+        var d = window.RexC2ZlibU8Arr.u8a2String(plain);
+        
+		return {
+            "w":w,
+            "h":h,
+            "d":d,
+		};
+	};
+    
+	behinstProto.zlib_loadFromJSON = function (o)
+	{     
+        debugger
+        var inst = this;
+        inst.canvas.width = o["w"];
+        inst.canvas.height = o["h"];
+        
+        var plain = window.RexC2ZlibU8Arr.string2u8a(o["d"]);
+        var img_data = inst.ctx.createImageData(o["w"], o["h"]);
+        var data = img_data.data;
+        var i, cnt = data.length;
+        for (i=0; i<cnt; i++)
+        {
+            data[i] = plain[i];
+        }
+        inst.ctx.putImageData(img_data, 0, 0);
+        inst.update_tex = true;
+	};    
+    // ---------------------------------------------------------------------
+    // override original saving/loading
+    // ---------------------------------------------------------------------        
  	
 	//helper function
 	behinstProto.draw_instances = function (instances, canvas_inst, blend_mode)
@@ -91,6 +142,22 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 	
+	Acts.prototype.JSONLoad = function (json_)
+	{
+		var o;
+		
+		try {
+			o = JSON.parse(json_);
+		}
+		catch(e) { return; }
+		
+        this.my_loadFromJSON.call(this.inst, o);
+        
+		this.inst.runtime.redraw = true;
+        this.inst.update_tex = true;  
+	};
+		
+    
 	// http://www.scirra.com/forum/plugin-canvas_topic46006_post289303.html#289303
 	Acts.prototype.EraseObject = function (object)
 	{
@@ -167,14 +234,13 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 			// WebGL renderer: need to create texture (canvas2D just draws with img directly)
 			if (self.runtime.glwrap)
 			{
-				if (self.webGL_texture)
-					self.runtime.glwrap.deleteTexture(self.webGL_texture);
+				if (self.inst.tex)
+					self.runtime.glwrap.deleteTexture(self.inst.tex);
 					
-				self.webGL_texture = self.runtime.glwrap.loadTexture(img, false, self.runtime.linearSampling);
+				self.inst.tex = self.runtime.glwrap.loadTexture(img, false, self.runtime.linearSampling);
 			}
 			
 			self.runtime.redraw = true;
-            inst.update_tex = true; 
 			self.runtime.trigger(cr.behaviors.Rex_CanvasExt.prototype.cnds.OnURLLoaded, inst);
 		};
 		
@@ -188,5 +254,51 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
-
+	
+	Exps.prototype.AsJSON = function (ret)
+	{
+        var o = this.my_saveToJSON.call(this.inst);
+		ret.set_string(JSON.stringify(o));
+	};
 }());
+
+
+(function ()
+{
+    // dependency:	zlib_and_gzip.min.js
+    
+    if (window.RexC2ZlibU8Arr != null)
+        return;
+    
+    window.RexC2ZlibU8Arr = {};
+    
+        var CHUNK_SZ = 0x8000;    
+    var __arr = [];
+	window.RexC2ZlibU8Arr.u8a2String = function (u8a)
+	{
+        var deflate = new window["Zlib"]["Deflate"](u8a);
+        var d = deflate["compress"]();    
+
+        for (var i=0; i < d.length; i+=CHUNK_SZ) 
+        {
+            __arr.push(String.fromCharCode.apply(null, d.subarray(i, i+CHUNK_SZ)));
+        }
+        var s = __arr.join("");
+        s = btoa(s);
+        __arr.length = 0;
+        
+        return s;
+	};
+    
+	window.RexC2ZlibU8Arr.string2u8a = function (s)
+	{     
+        var d = atob(s);
+        d = d.split('').map(function(e) {
+                return e.charCodeAt(0);
+        });
+        var inflate = new window["Zlib"]["Inflate"](d);
+        var plain = inflate["decompress"]();
+        return plain;
+	}; 
+    
+}());    

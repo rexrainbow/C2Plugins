@@ -1232,6 +1232,20 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	{ 
 		ret.set_float(-this.get_list_width());
 	};     
+    	
+    Exps.prototype.CurCellIndex = function (ret)
+	{
+		ret.set_int(this.exp_CellIndex);
+	};	
+    Exps.prototype.CurCellXIndex = function (ret)
+	{
+		ret.set_int(this.exp_CellIndex % this.col_num);
+	};	
+	
+    Exps.prototype.CurCellYIndex = function (ret)
+	{
+		ret.set_int( Math.floor(this.exp_CellIndex / this.col_num) );
+	};	        
 }());
 
 

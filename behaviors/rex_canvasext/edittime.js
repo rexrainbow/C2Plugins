@@ -7,7 +7,8 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvasext.html",
 		"category":		"Rex - Canvas helper",
-		"flags":		bf_onlyone
+		"flags":		bf_onlyone,
+        "dependency":	"zlib_and_gzip.min.js"
 	};
 };
 
@@ -17,6 +18,10 @@ AddCondition(10, cf_trigger, "On image URL loaded", "Web", "On image URL loaded"
 
 //////////////////////////////////////////////////////////////
 // Actions
+AddStringParam("JSON", "A string of the zp data to load.");
+AddAction(1, 0, "Load", "Zlib", "Load from JSON string <i>{0}</i>", "Load from a image data previously encoded in zipped JSON format.", "JSONLoad");
+
+
 AddObjectParam("object", "Object to erase.");
 AddAction(4, 0, "Erase object", "Canvas", "Erase Object {0}", "Erase objects.", "EraseObject");
 
@@ -29,11 +34,13 @@ AddAction(10, 0, "Load image from URL", "Web", "Load image from <i>{0}</i> ({1})
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_string, "Get image data as JSON", "Zlib", "AsJSON", "Return the image data in JSON format after zip.");
 
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [                 
+var property_list = [ 
+	new cr.Property(ept_combo, "Override SL", "No", "Enable if you wish override original saving/loading.", "No|Zlib"),                       
 	];
 	
 // Called by IDE when a new behavior type is to be created

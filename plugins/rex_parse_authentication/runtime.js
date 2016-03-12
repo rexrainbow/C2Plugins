@@ -52,10 +52,12 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
         this.initial_data = {};     // add init data when sign up
         this.last_error = null;	 
         this.current_user = null;   // valid after login
+        this.isLogin = false;
 	};
 
 	instanceProto.logging_out = function()
 	{ 
+        this.isLogin = false;    
 	    window["Parse"]["User"]["logOut"]();
 	    this.current_user = null;   // valid after login
     };
@@ -128,6 +130,11 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    return true;
 	};
 
+	Cnds.prototype.IsLogin = function ()
+	{
+	    return (this.current_user !== null);
+	};
+    
 	Cnds.prototype.IsFirstLogin = function ()
 	{
 	    return this.isFirstLogin;
@@ -179,6 +186,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    {
 	        var on_success = function (user)
 	        {
+                self.isLogin = true;
 	            self.current_user = user;  
 	            self.update_login_counter(user);      
 	            self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginSuccess, self);  
@@ -189,6 +197,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	            var is_invalid_session_token = self.do_invalid_session_token_handler(error, login);
 	            if (!is_invalid_session_token)
 	            {	        
+                    self.isLogin = false;             
 	                self.current_user = user;
 	                self.last_error = error;
                     self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginError, self);          
@@ -234,6 +243,7 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    
 	    var OnLoginSuccess = function(user)
 	    {
+            self.isLogin = true;
             self.isFirstLogin = is_first_login;
 	        self.current_user = user; 
 	        self.update_login_counter(user);   	         
@@ -241,7 +251,8 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	    };	
 	    
 	    var OnLoginError = function(user, error)
-	    {     
+	    {   
+            self.isLogin = false;        
 	        self.current_user = user;  
             self.last_error = error;
 	        self.runtime.trigger(cr.plugins_.Rex_Parse_Authentication.prototype.cnds.OnLoginError, self);

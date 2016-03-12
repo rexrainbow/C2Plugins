@@ -41,6 +41,10 @@ AddCondition(32, cf_trigger, "On login error", "General - login",
             "On login error", 
             "Triggered when login error.", "OnLoginError");
 
+AddCondition(33, cf_trigger, "Is login", "General - login", 
+            "Is login", 
+            "Return true if logging now.", "IsLogin");
+            
 AddCondition(101, 0, "Is first login", "Quick login", 
             "Is first login", 
             'Return true if first login by "action: Sign up & Login".', "IsFirstLogin");            

@@ -7,7 +7,7 @@
 		"description":	"Manipulate instances of each line in a list.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_listctrl.html",
-		"category":		"Rex - Logic",
+		"category":		"Rex - GUI controller",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
 		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces
@@ -213,6 +213,9 @@ AddExpression(41, ef_return_number, "Get last bound of OY", "Bound", "LastBoundO
 AddExpression(51, ef_return_number, "Get position X of selected line", "Visible", "LineCX", 
               'Get center position X of line in "Condition: On line visible", in pixels');
                                           
+AddExpression(71, ef_return_number, "Get current line index", "For each", "CurLineIndex", 
+              'Get current line index in "Condition: For each line", or "Condition: For each visible line".');  
+              
 ACESDone();
 
 // Property grid properties for this plugin

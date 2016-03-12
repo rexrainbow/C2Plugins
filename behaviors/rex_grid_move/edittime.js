@@ -66,7 +66,7 @@ AddCondition(10, 0, "Can move to neighbor", "Test: Hexagon grid (Left-Right)",
              "Test if object can move to neighbor.", "TestMoveToNeighbor");                     
 AddObjectParam("Chess", "Chess object.");     
 AddStringParam("Group", "Put result in this group", '""');        
-AddCondition(11, cf_trigger, "On colliding begin", "Collisions", 
+AddCondition(11, cf_trigger, "On colliding begin - group", "Collisions", 
             "On {my} colliding begin with <i>{0}</i>, put collided result to group <i>{1}</i>", 
             "Triggered when this chess collides begin with another chess.", "OnCollidedBegin");
 AddCondition(12, cf_trigger, "On get solid", "Solid", 
@@ -81,6 +81,10 @@ AddComboParamOption("Up-right");
 AddComboParam("Direction", "Moving direction.", 0);             
 AddCondition(13, 0, "Can move to neighbor", "Test: Hexagon grid (Up-Down)", "{my} can move to <i>{0}</i>", 
              "Test if object can move to neighbor.", "TestMoveToNeighbor");   
+AddObjectParam("Chess", "Chess object.");        
+AddCondition(14, cf_trigger, "On colliding begin", "Collisions", 
+            "On {my} colliding begin with <i>{0}</i>", 
+            "Triggered when this chess collides begin with another chess.", "OnCollidedBegin");             
 //////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");

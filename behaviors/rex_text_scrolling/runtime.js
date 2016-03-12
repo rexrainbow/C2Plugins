@@ -148,10 +148,11 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         return cr.clamp(percent, 0, 1);
 	};    
     	
-	behinstProto.copy_content_lines = function (lines)
+	behinstProto.copy_content_lines = function ()
 	{
         if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
         {
+            var lines = this.inst.lines
 	        this.content_lines.length = 0;            
 	        var i, line, line_cnt=lines.length;
 	        for (i=0; i<line_cnt; i++)
@@ -193,8 +194,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
             // get start chart index     
             var si = this.content_lines.getLineStartChartIndex(start);
             // get end chart index
-            var ei = this.content_lines.getLineEndChartIndex(end);
-            txt = this.content_lines.getSliceTagText(si, ei);
+            var ei = this.content_lines.getLineEndChartIndex(end-1);
+            txt = this.content_lines.getSliceTagText(si, ei+1);
 		}
         return txt;    
 	};    
