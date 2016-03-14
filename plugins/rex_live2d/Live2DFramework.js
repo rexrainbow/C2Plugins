@@ -46,9 +46,7 @@
         this.textures = [];
         this.__texCounter = 0;
     }
-    
-    var texCounter = 0;
-    
+
     //============================================================
     //    L2DBaseModel # getModelMatrix()
     //============================================================
@@ -292,7 +290,7 @@
     //============================================================
     //    L2DBaseModel # loadPhysics()
     //============================================================
-    L2DBaseModel.prototype.loadPhysics     = function(path/*String*/)
+    L2DBaseModel.prototype.loadPhysics     = function(path/*String*/, callback )
     {
         var pm = Live2DFramework.getPlatformManager(); //IPlatformManager
         if( this.debugMode ) pm.log("Load Physics : " + path);
@@ -300,6 +298,7 @@
         try {
             pm.loadBytes(path, function(buf) {
                 thisRef.physics = L2DPhysics.load(buf);
+                if (typeof callback == "function") callback();                
             });
         }
         catch(e){

@@ -17,6 +17,7 @@
         this.modelHomeDir = "";
         this.modelSetting = null;
         this.tmpMatrix = [];
+        this.currentMotionName = "";
     }
     
     LAppModel.prototype = new L2DBaseModel();
@@ -31,148 +32,204 @@
         this.setUpdating(true);
         this.setInitialized(false);
     
-        this.modelHomeDir = modelSettingPath.substring(0, modelSettingPath.lastIndexOf("/") + 1); 
-    
+        this.modelHomeDir = modelSettingPath.substring(0, modelSettingPath.lastIndexOf("/") + 1);     
         this.modelSetting = new ModelSettingJson();
+        
+        var waitJobsCnt=0, errorFlag=false;        
+        var onJobDone = function (error)
+        {
+            waitJobsCnt -= 1;           
+            if (error)
+                errorFlag = true;
+            
+            if (waitJobsCnt === 0)
+            {
+                
+                thisRef.live2DModel.saveParam();
+                thisRef.live2DModel.setGL(gl);                
+                thisRef.mainMotionManager.stopAllMotions(); 
+            
+                thisRef.setUpdating(false);
+                thisRef.setInitialized(true);
+                
+                if (!errorFlag && (typeof callback === "function"))
+                    callback();
+                
+            }
+        }
         
         var thisRef = this;
         
-        this.modelSetting.loadModelSetting(modelSettingPath, function(){
-            // モデルデータを読み込む
-            var path = thisRef.modelHomeDir + thisRef.modelSetting.getModelFile();
-            thisRef.loadModelData(path, function(model){
+        var onLoadModelMoc = function (model)
+        {
+            loadTextures();
+            loadMotionGroups();
+            loadPose();            
+            loadExpressions();
+            loadPhysics();  
+
+            
+            setInstanceLayout();  
+            
+            if (thisRef.eyeBlink == null)
+            {
+                thisRef.eyeBlink = new L2DEyeBlink();
+            }            
+                   
+            log("setParamFloat");
+            var cnt=thisRef.modelSetting.getInitParamNum();
+            for (var j = 0; j <cnt; j++)
+            {
+                log(thisRef.modelSetting.getInitParamID(j) + " = " + thisRef.modelSetting.getInitParamValue(j))
+                thisRef.live2DModel.setParamFloat(
+                    thisRef.modelSetting.getInitParamID(j),
+                    thisRef.modelSetting.getInitParamValue(j)
+                );
+            }
+            
+            var cnt=thisRef.modelSetting.getInitPartsVisibleNum();            
+            for (var j = 0; j < cnt; j++)
+            {
+                thisRef.live2DModel.setPartsOpacity(
+                    thisRef.modelSetting.getInitPartsVisibleID(j),
+                    thisRef.modelSetting.getInitPartsVisibleValue(j)
+                );
+            }
+            
+            //console.log(waitJobsCnt);
+        };
+
+        var loadTextures = function()
+        {
+            // load textures
+            thisRef.__texCounter = 0;
+            var i, cnt=thisRef.modelSetting.getTextureNum(), texPaths;
+    	    for (i=0; i<cnt; i++)
+    	    {
+                texPaths = thisRef.modelHomeDir +  thisRef.modelSetting.getTextureFile(i);
+                waitJobsCnt += 1;
+                thisRef.loadTexture(i, gl, texPaths, function() {
+                    onJobDone();
+                });             
+            }            
+        };   
+
+        var loadExpressions = function ()        
+        {
+            var cnt=thisRef.modelSetting.getExpressionNum();
+            if (cnt > 0)
+            {
+                for (var k in thisRef.expressions)
+                    delete thisRef.expressions[k];
                 
-                thisRef.__texCounter = 0;
-    			for (var i = 0; i < thisRef.modelSetting.getTextureNum(); i++)
-    			{
-                    // テクスチャを読み込む
-                    var texPaths = thisRef.modelHomeDir + 
-                        thisRef.modelSetting.getTextureFile(i);
-                    
-    				thisRef.loadTexture(i, gl, texPaths, function() {
-                        // すべてのテクスチャを読み込んだ後の処理
-                        if( thisRef.isTexLoaded ) {
-                            // 表情
-                            if (thisRef.modelSetting.getExpressionNum() > 0)
-                            {
-                                // 古い表情を削除
-                                thisRef.expressions = {};
-                                
-                                for (var j = 0; j < thisRef.modelSetting.getExpressionNum(); j++)
-                                {
-                                    var expName = thisRef.modelSetting.getExpressionName(j);
-                                    var expFilePath = thisRef.modelHomeDir + 
-                                        thisRef.modelSetting.getExpressionFile(j);
-                                    
-                                    thisRef.loadExpression(expName, expFilePath);
-                                }
-                            }
-                            else
-                            {
-                                thisRef.expressionManager = null;
-                                thisRef.expressions = {};
-                            }
-                            
-                            
-                            // 自動目パチ
-                            if (thisRef.eyeBlink == null)
-                            {
-                                thisRef.eyeBlink = new L2DEyeBlink();
-                            }
-                            
-                            // 物理演算
-                            if (thisRef.modelSetting.getPhysicsFile() != null)
-                            {
-                                thisRef.loadPhysics(thisRef.modelHomeDir + 
-                                                    thisRef.modelSetting.getPhysicsFile());
-                            }
-                            else
-                            {
-                                thisRef.physics = null;
-                            }
-                            
-                            
-                            // パーツ切り替え
-                            if (thisRef.modelSetting.getPoseFile() != null)
-                            {
-                                thisRef.loadPose(
-                                    thisRef.modelHomeDir +
-                                    thisRef.modelSetting.getPoseFile(),
-                                    function() {
-                                        thisRef.pose.updateParam(thisRef.live2DModel);
-                                    }
-                                );
-                            }
-                            else
-                            {
-                                thisRef.pose = null;
-                            }
-                            
-                            
-                            // レイアウト
-                            if (thisRef.modelSetting.getLayout() != null)
-                            {
-                                var layout = thisRef.modelSetting.getLayout();
-                                if (layout["width"] != null)
-                                    thisRef.modelMatrix.setWidth(layout["width"]);
-                                if (layout["height"] != null)
-                                    thisRef.modelMatrix.setHeight(layout["height"]);
-    
-                                if (layout["x"] != null)
-                                    thisRef.modelMatrix.setX(layout["x"]);
-                                if (layout["y"] != null)
-                                    thisRef.modelMatrix.setY(layout["y"]);
-                                if (layout["center_x"] != null)
-                                    thisRef.modelMatrix.centerX(layout["center_x"]);
-                                if (layout["center_y"] != null)
-                                    thisRef.modelMatrix.centerY(layout["center_y"]);
-                                if (layout["top"] != null)
-                                    thisRef.modelMatrix.top(layout["top"]);
-                                if (layout["bottom"] != null)
-                                    thisRef.modelMatrix.bottom(layout["bottom"]);
-                                if (layout["left"] != null)
-                                    thisRef.modelMatrix.left(layout["left"]);
-                                if (layout["right"] != null)
-                                    thisRef.modelMatrix.right(layout["right"]);
-                            }
-                            
-                            for (var j = 0; j < thisRef.modelSetting.getInitParamNum(); j++)
-                            {
-                                // パラメータを上書き
-                                thisRef.live2DModel.setParamFloat(
-                                    thisRef.modelSetting.getInitParamID(j),
-                                    thisRef.modelSetting.getInitParamValue(j)
-                                );
-                            }
-    
-                            for (var j = 0; j < thisRef.modelSetting.getInitPartsVisibleNum(); j++)
-                            {
-                                // パーツの透明度を設定
-                                thisRef.live2DModel.setPartsOpacity(
-                                    thisRef.modelSetting.getInitPartsVisibleID(j),
-                                    thisRef.modelSetting.getInitPartsVisibleValue(j)
-                                );
-                            }
-                            
-                            
-                            // パラメータを保存。次回のloadParamで読みだされる
-                            thisRef.live2DModel.saveParam();
-                            thisRef.live2DModel.setGL(gl);
-                            
-                            // アイドリングはあらかじめ読み込んでおく。
-                            //thisRef.preloadMotionGroup(LAppDefine.MOTION_GROUP_IDLE);
-                            thisRef.mainMotionManager.stopAllMotions();
-    
-                            thisRef.setUpdating(false); // 更新状態の完了
-                            thisRef.setInitialized(true); // 初期化完了
-                            
-                            if (typeof callback == "function") callback();
-                            
-                        }
-                    });
+                var expName, expFilePath;
+                for (var j = 0; j < cnt; j++)
+                {
+                    expName = thisRef.modelSetting.getExpressionName(j);
+                    expFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getExpressionFile(j);
+                    waitJobsCnt += 1;
+                    thisRef.loadExpression(expName, expFilePath, function() {
+                        onJobDone();
+                    });  
                 }
-            });
-        });
+            }
+            else
+            {
+                thisRef.expressionManager = null;
+                thisRef.expressions = {};
+            }
+        };
+        
+        var loadPhysics = function()
+        {
+            if (thisRef.modelSetting.getPhysicsFile() != null)
+            {
+                var physicsFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getPhysicsFile();
+                waitJobsCnt += 1;                
+                thisRef.loadPhysics(physicsFilePath, function() {
+                    onJobDone();
+                });  
+            }
+            else
+            {
+                thisRef.physics = null;
+            }        
+        };
+        
+        var loadPose = function()
+        {
+            if (thisRef.modelSetting.getPoseFile() != null)
+            {
+                var poseFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getPoseFile();
+                waitJobsCnt += 1;
+                thisRef.loadPose(poseFilePath, function() {
+                    thisRef.pose.updateParam(thisRef.live2DModel);
+                    onJobDone();
+                });
+            }
+            else
+            {
+                thisRef.pose = null;
+            }   
+        };
+        
+        var loadMotionGroups = function()
+        {
+            var motions = thisRef.modelSetting.getMotions();
+            for (var name in motions)
+            {
+                var cnt = thisRef.modelSetting.getMotionNum(name);
+                for (var i = 0; i < cnt; i++)
+                {
+                    var file = thisRef.modelSetting.getMotionFile(name, i);
+                    waitJobsCnt += 1;
+                    thisRef.loadMotion(file, thisRef.modelHomeDir + file, function(motion) {
+                        motion.setFadeIn(thisRef.modelSetting.getMotionFadeIn(name, i));
+                        motion.setFadeOut(thisRef.modelSetting.getMotionFadeOut(name, i));
+                        onJobDone();
+                    });
+                    
+                }                
+            }
+        };
+        
+        var setInstanceLayout= function()
+        {        
+            if (thisRef.modelSetting.getLayout() != null)
+            {
+                var layout = thisRef.modelSetting.getLayout();
+                if (layout["width"] != null)
+                    thisRef.modelMatrix.setWidth(layout["width"]);
+                if (layout["height"] != null)
+                    thisRef.modelMatrix.setHeight(layout["height"]);
+            
+                if (layout["x"] != null)
+                    thisRef.modelMatrix.setX(layout["x"]);
+                if (layout["y"] != null)
+                    thisRef.modelMatrix.setY(layout["y"]);
+                if (layout["center_x"] != null)
+                    thisRef.modelMatrix.centerX(layout["center_x"]);
+                if (layout["center_y"] != null)
+                    thisRef.modelMatrix.centerY(layout["center_y"]);
+                if (layout["top"] != null)
+                    thisRef.modelMatrix.top(layout["top"]);
+                if (layout["bottom"] != null)
+                    thisRef.modelMatrix.bottom(layout["bottom"]);
+                if (layout["left"] != null)
+                    thisRef.modelMatrix.left(layout["left"]);
+                if (layout["right"] != null)
+                    thisRef.modelMatrix.right(layout["right"]);
+            }         
+        };
+        
+        var onLoadModelSetting = function()
+        {
+            // load model.moc
+            var path = thisRef.modelHomeDir + thisRef.modelSetting.getModelFile();
+            thisRef.loadModelData(path, onLoadModelMoc);
+        };
+        
+        this.modelSetting.loadModelSetting(modelSettingPath, onLoadModelSetting);
     };
     
     
@@ -220,13 +277,18 @@
     
     LAppModel.prototype.update = function()
     {
-        // 待機モーション判定
-        //if (this.mainMotionManager.isFinished())
-        //{
-        //    // モーションの再生がない場合、待機モーションの中からランダムで再生する
-        //    this.startRandomMotion(LAppDefine.MOTION_GROUP_IDLE, LAppDefine.PRIORITY_IDLE);
-        //}
+        // console.log("--> LAppModel.update()");
     
+        if(this.live2DModel == null) 
+        {
+            if (LAppDefine.DEBUG_LOG) console.error("Failed to update.");
+            
+            return;
+        }
+        
+        if (this.isMotionFinished())
+            this.currentMotionName = "";
+        
         //-----------------------------------------------------------------		
         
         // 前回セーブされた状態をロード
@@ -262,7 +324,7 @@
         }
         
         // リップシンクの設定
-        if (this.lipSync == null)
+        if (this.lipSync)
         {
             this.live2DModel.setParamFloat("PARAM_MOUTH_OPEN_Y",
                                            this.lipSyncValue);
@@ -302,6 +364,7 @@
         var max = this.modelSetting.getMotionNum(name);
         var no = parseInt(Math.random() * max);
         this.startMotion(name, no, priority);
+        this.currentMotionName = name;
     }
     
     
@@ -379,17 +442,47 @@
             var soundName = this.modelSetting.getMotionSound(name, no);
             // var player = new Sound(this.modelHomeDir + soundName);
             
-            var snd = document.createElement("audio");
-            snd.src = this.modelHomeDir + soundName;
+            //var snd = document.createElement("audio");
+            //snd.src = this.modelHomeDir + soundName;
             
-            if (LAppDefine.DEBUG_LOG)
-                console.log("Start sound : " + soundName);
+            //if (LAppDefine.DEBUG_LOG)
+            //    console.log("Start sound : " + soundName);
             
-            snd.play();
+            //snd.play();
             this.mainMotionManager.startMotionPrio(motion, priority);
         }
+        
     }
+
+    LAppModel.prototype.isMotionFinished = function()
+    {
+        return this.mainMotionManager.isFinished();
+    };
     
+    LAppModel.prototype.hasUpdated = function()
+    {
+        // motion updating is moved to live2D plugin
+        var isMotionUpdating = (this.currentName !== "") && (!this.isMotionFinished());
+        
+        var isEyeBlinking = (this.eyeBlink != null);
+        
+        var isExpressionPlaying = (this.expressionManager != null && 
+            this.expressions != null && 
+            !this.expressionManager.isFinished());
+
+        var isPhysicsPUpdatinig = (this.physics != null);
+        
+        var isLipSyncUpdating = this.lipSync;
+        
+        var isPosePlaying = ( this.pose != null );
+ 
+        return isMotionUpdating || 
+            isEyeBlinking || 
+            isExpressionPlaying || 
+            isPhysicsPUpdatinig ||
+            isLipSyncUpdating ||
+            isPosePlaying;
+    };    
     
     /*
      * 表情を設定する
@@ -448,5 +541,37 @@
         return false; // 存在しない場合はfalse
     }
 
+    var LAppDefine = 
+    {
+        
+        // デバッグ。trueのときにログを表示する。
+        DEBUG_LOG : true,
+        DEBUG_MOUSE_LOG : false, // マウス関連の冗長なログ
+        // DEBUG_DRAW_HIT_AREA : false, // 当たり判定の可視化
+        // DEBUG_DRAW_ALPHA_MODEL : false, // 半透明のモデル描画を行うかどうか。
+        
+        //  全体の設定
+        
+        // 画面
+        VIEW_MAX_SCALE : 2,
+        VIEW_MIN_SCALE : 0.8,
+    
+        VIEW_LOGICAL_LEFT : -1,
+        VIEW_LOGICAL_RIGHT : 1,
+    
+        VIEW_LOGICAL_MAX_LEFT : -2,
+        VIEW_LOGICAL_MAX_RIGHT : 2,
+        VIEW_LOGICAL_MAX_BOTTOM : -2,
+        VIEW_LOGICAL_MAX_TOP : 2,
+        
+        // モーションの優先度定数
+        PRIORITY_NONE : 0,
+        PRIORITY_IDLE : 1,
+        PRIORITY_NORMAL : 2,
+        PRIORITY_FORCE : 3,
+        
+    };
+    
     window.LAppModel = LAppModel;
+    window.LAppDefine = LAppDefine;
 }());

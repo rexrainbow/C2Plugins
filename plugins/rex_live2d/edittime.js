@@ -18,7 +18,8 @@
 // Conditions
 AddCondition(11, cf_trigger, "On successful", "Model - load", "On model loaded successful", 
              "Triggered when model is loaded successful.", 
-             "OnModelLoaded"); 
+             "OnModelLoaded");
+             
 AddCondition(12, cf_trigger, "On failed", "Model - load", "On model loaded failed", 
              "Triggered when model is loaded failed.", 
              "OnModelLoadedFailed");  
@@ -26,20 +27,55 @@ AddCondition(12, cf_trigger, "On failed", "Model - load", "On model loaded faile
 AddCondition(13, 0, "Is ready", "Model", "Is model ready", 
              "Retrun true if model is ready to use.", 
              "IsModelReady");                
+                    
+AddStringParam("Motion name", "Enter the name of the motion to check if playing.");
+AddCondition(21, 0, "Is playing", "Motion", "Is motion {0} playing", "Test which of the object's motion is currently playing.", "IsMotionPlaying");
+
+AddStringParam("Motion name", "Enter the name of the motion to check if playing.");
+AddCondition(22, cf_trigger, "On finished", "Motion", "On motion {0} finished", "Triggered when a motion has finished.", "OnMotionFinished");
+
+AddCondition(23, cf_trigger, "On any finished", "Motion", "On any motion finished", "Triggered when any motion has finished.", "OnAnyMotionFinished");
+
+AddNumberParam("X", "Position X.", 0);
+AddNumberParam("Y", "Position Y.", 0);
+AddStringParam("Area name", "Enter the name of the area to check.");
+AddCondition(51, 0, "Is inside area", "Hit test", "({0}, {1}) is inside {2}", 
+                   "Return true if the position is inside the area.", "IsInsideArea");
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("URI", "Enter the URL on the web, or data URI, of a model JSON to load.", "\"http://\"");
 AddAction(11, 0, "Load", "Load model", 
           "Load model from <i>{0}</i>", 
           "Load model from model.json.", "Load");
-
+          
 AddStringParam("Parameter name", "Parameter name.", '""');
 AddNumberParam("Value", "Value.", 0);
-AddAction(21, 0, "Set parameter", "Model", 
+AddAction(12, 0, "Set parameter", "Model", 
           "Set parameter <i>{0}</i> to <i>{1}</i>", 
-          "Set parameter value of model.", "SetParameterValue");            
+          "Set parameter value of model.", "SetParameterValue");             
+          
+AddStringParam("Motion name", "Motion name.", '""');
+AddAction(21, 0, "Start motion", "Motion", 
+          "Start motion <i>{0}</i>", 
+          "Start motion.", "StartMotion");                 
+
+AddStringParam("Motion name", "Motion name.", '""');
+AddAction(22, 0, "Set idle motion", "Motion", 
+          "Set idle motion to <i>{0}</i>", 
+          "Set idle motion.", "SetIdleMotion");            
+          
+AddStringParam("Expression name", "Expression name.", '""');
+AddAction(31, 0, "Set expression", "Expression", 
+          "Set expression to <i>{0}</i>", 
+          "Set expression.", "SetExpression");  
+
+//AddAction(32, 0, "Set random expression", "Expression", 
+//          "Set random expression", 
+//          "Set random expression.", "SetRandomExpression");             
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(21, ef_return_string, "Get motion name", "Motion", "MotionName", "The name of the current motion.");
 
 ACESDone();
 
@@ -47,7 +83,8 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_color, "Color",	cr.RGB(0, 0, 0), "Color for showing at editor.", "firstonly"),
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
-                    "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"),    
+                    "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"), 
+	new cr.Property(ept_text,	"Idle motion",	"idle",	"Motion name of idle."),                    
 	];
 	
 // Called by IDE when a new object type is to be created

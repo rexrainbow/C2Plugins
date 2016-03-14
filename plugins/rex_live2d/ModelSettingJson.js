@@ -131,6 +131,10 @@ ModelSettingJson.prototype.getInitParamNum = function()
     return (this.json[this.INIT_PARAM] == null) ? 0 : this.json[this.INIT_PARAM].length;
 }
 
+ModelSettingJson.prototype.getMotions = function()
+{
+    return this.json[this.MOTION_GROUPS];
+}
 
 ModelSettingJson.prototype.getMotionNum = function(name)
 {

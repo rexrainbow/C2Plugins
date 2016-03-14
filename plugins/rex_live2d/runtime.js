@@ -65,6 +65,13 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
       
         this.state = STATE_NONE;
         this.redrawModel = false;
+        
+        this.idleMotionName = this.properties[2];
+        this.currentMotionName = "";
+        this.previousMotionName = "";
+        this.currentExpression = "";
+        
+        this.runtime.tickMe(this);
 	};
     
     instanceProto.isReady = function()
@@ -111,6 +118,30 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{
         this.freeModel();              
 	};   
+    
+    instanceProto.tick = function()
+    {      
+        if (!this.isReady())
+            return;
+        
+        if (this.model["isMotionFinished"]())
+        {
+            // current motion had finished
+            this.previousMotionName = this.currentMotionName;
+            this.currentMotionName = "";
+            this.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnMotionFinished, this);
+            this.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnAnyMotionFinished, this);          
+        }
+        
+        // no new motion playing, play idle motion if existed            
+        if ((this.currentMotionName === "")  && (this.idleMotionName !== ""))
+        {
+            this.startMotion(this.idleMotionName, window["LAppDefine"]["PRIORITY_IDLE"]);
+        }
+        
+        if (this.model["hasUpdated"]())
+            this.updateModel();
+    };        
     
 	instanceProto.draw = function(ctx)
 	{
@@ -173,6 +204,33 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     	}
     	return null;
     };    
+    
+	instanceProto.startMotion = function (name_, priority)
+	{   
+        if (!this.isReady())
+            return;
+        
+        this.currentMotionName = name_;
+        this.model["startRandomMotion"](name_, priority);
+        this.updateModel();
+	};	            
+
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "Motion", "value": this.currentMotionName},
+			]
+		});
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -192,6 +250,36 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{  
 		return this.isReady();
 	};     
+    
+	Cnds.prototype.IsMotionPlaying = function (motionName)
+	{
+        if (!this.isReady())
+            return false;
+        
+        return cr.equals_nocase(this.model["getCurrentMotionName"](), motionName);
+	};    
+    
+	Cnds.prototype.OnMotionFinished = function (motionName)
+	{
+		return cr.equals_nocase(this.previousMotionName, motionName);
+	};
+	
+	Cnds.prototype.OnAnyMotionFinished = function ()
+	{
+		return true;
+	};
+	
+	Cnds.prototype.IsInsideArea = function (x, y, areaName)
+	{
+        if (!this.isReady())
+            return false;
+        
+        this.update_bbox(); 
+        x -= this.bbox.left;
+        y -= this.bbox.top;
+		return this.model["hitTest"](areaName, x, y);
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -219,9 +307,34 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         //this.live2DModel["setParamFloat"](name_, value_);
         this.updateModel();
 	};	
+    
+	Acts.prototype.StartMotion = function (name_)
+	{   
+        this.startMotion(name_, window["LAppDefine"]["PRIORITY_FORCE"]);
+	};	 
+
+	Acts.prototype.SetIdleMotion = function (name_)
+	{   
+        this.idleMotionName = name_;
+	};	    
+    
+	Acts.prototype.SetExpression = function (name_)
+	{   
+        this.model["setExpression"](name_);
+	};	     
+    
+	Acts.prototype.SetRandomExpression = function (name_)
+	{   
+        this.model["setRandomExpression"]();
+	};	       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-
+    
+	Exps.prototype.MotionName = function (ret)
+	{
+		ret.set_string(this.model["getCurrentMotionName"]());
+	};
+	
 }());
