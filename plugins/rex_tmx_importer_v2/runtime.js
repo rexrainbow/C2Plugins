@@ -221,7 +221,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	var FlippedAntiDiagonallyFlag   = 0x20000000;   	
 	instanceProto._read_tile_at_LXY = function(tmx_layer, x, y, is_raw_data)
 	{
-	    var idx = (tmx_layer.height * y) + x;
+        var idx = (tmx_layer.width * y) + x;
 	    var _gid = tmx_layer.data[idx];	    
         if ((_gid == null) || (_gid === 0) || is_raw_data)
             return _gid;     // return gid                    
@@ -929,6 +929,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};
     Acts.prototype.CreateTiles = function (obj_type)
 	{	     
+        debugger
         this.RetrieveTileArray(obj_type);
 	};
     Acts.prototype.ReleaseTMX = function ()

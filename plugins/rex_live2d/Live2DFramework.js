@@ -193,11 +193,12 @@
                 thisRef.live2DModel.getCanvasWidth(),
                 thisRef.live2DModel.getCanvasHeight()); //L2DModelMatrix
             
+            thisRef.modelMatrix.setWidth(2);
             // Edit: display all
-            if (thisRef.modelMatrix.width >= thisRef.modelMatrix.height)                        
-                thisRef.modelMatrix.setWidth(2);
-            else
-                thisRef.modelMatrix.setHeight(2);
+            //if (thisRef.modelMatrix.width >= thisRef.modelMatrix.height)                        
+            //    thisRef.modelMatrix.setWidth(2);
+            //else
+            //    thisRef.modelMatrix.setHeight(2);
             // Edit: display all            
             
             thisRef.modelMatrix.setCenterPosition(0, 0);
@@ -1603,7 +1604,7 @@
         Live2DFramework.platformManager = platformManager;
     }
     
-    
+    window.L2DMatrix44 = L2DMatrix44;
     window.L2DBaseModel = L2DBaseModel;
     window.L2DEyeBlink = L2DEyeBlink;
     window.Live2DFramework = Live2DFramework;

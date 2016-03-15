@@ -617,16 +617,16 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{	  
-	    var line_index = [];
-	    for (var k in this.visibleLineIndexes)
-	        line_index.push(parseInt(k));
-	        
-	    line_index.sort();
-	    
+        var visible_index_range;
+        if (this.visible_start != null)
+            visible_index_range = this.visible_start.toString() + " - " + this.visible_end.toString();
+        else
+            visible_index_range = "";
+	    	    
 		propsections.push({
 			"title": this.type.name,
 			"properties": [{"name": "Offset Y", "value": this.OY},	
-			               {"name": "Visible line indexes", "value": JSON.stringify(line_index)},		               			               
+			               {"name": "Visible line indexes", "value": visible_index_range},		               			               
 			               ]
 		});
 	};
@@ -926,13 +926,22 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    var x = this.exp_LineTLX + (0.5 * this.get_inst_width());
 		ret.set_float(x);
 	};
-    
-	
+    	
     Exps.prototype.CurLineIndex = function (ret)
 	{
 		ret.set_int(this.exp_LineIndex);
 	};	    
-	
+    	
+    Exps.prototype.FirstVisibleLineIndex = function (ret)
+	{         
+		ret.set_int(this.visible_start || 0);
+	};		
+    	
+    Exps.prototype.LastVisibleLineIndex = function (ret)
+	{     
+		ret.set_int(this.visible_end || 0);  
+	};	    
+    
 }());
 
 

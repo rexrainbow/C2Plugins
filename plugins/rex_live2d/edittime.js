@@ -49,11 +49,17 @@ AddAction(11, 0, "Load", "Load model",
           "Load model from <i>{0}</i>", 
           "Load model from model.json.", "Load");
           
-AddStringParam("Parameter name", "Parameter name.", '""');
-AddNumberParam("Value", "Value.", 0);
-AddAction(12, 0, "Set parameter", "Model", 
-          "Set parameter <i>{0}</i> to <i>{1}</i>", 
-          "Set parameter value of model.", "SetParameterValue");             
+//AddStringParam("Parameter name", "Parameter name.", '""');
+//AddNumberParam("Value", "Value.", 0);
+//AddAction(12, 0, "Set value", "Parameter", 
+//          "Set parameter <i>{0}</i> to <i>{1}</i>", 
+//          "Set the value of model's parameter.", "SetParameterValue");             
+//          
+//AddStringParam("Parameter name", "Parameter name.", '""');
+//AddNumberParam("Value", "Value.", 0);
+//AddAction(13, 0, "Add to", "Parameter", 
+//          "Add <i>{1}</i> to parameter <i>{0}</i>", 
+//          "Add to the value of a model's parameter.", "AddToParameterValue");     
           
 AddStringParam("Motion name", "Motion name.", '""');
 AddAction(21, 0, "Start motion", "Motion", 
@@ -63,16 +69,13 @@ AddAction(21, 0, "Start motion", "Motion",
 AddStringParam("Motion name", "Motion name.", '""');
 AddAction(22, 0, "Set idle motion", "Motion", 
           "Set idle motion to <i>{0}</i>", 
-          "Set idle motion.", "SetIdleMotion");            
+          "Set idle motion.", "SetIdleMotion");          
           
 AddStringParam("Expression name", "Expression name.", '""');
 AddAction(31, 0, "Set expression", "Expression", 
           "Set expression to <i>{0}</i>", 
           "Set expression.", "SetExpression");  
-
-//AddAction(32, 0, "Set random expression", "Expression", 
-//          "Set random expression", 
-//          "Set random expression.", "SetRandomExpression");             
+   
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(21, ef_return_string, "Get motion name", "Motion", "MotionName", "The name of the current motion.");
@@ -84,7 +87,7 @@ var property_list = [
     new cr.Property(ept_color, "Color",	cr.RGB(0, 0, 0), "Color for showing at editor.", "firstonly"),
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
                     "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"), 
-	new cr.Property(ept_text,	"Idle motion",	"idle",	"Motion name of idle."),                    
+	new cr.Property(ept_text,	"Idle motion",	"idle",	'Motion name of idle. Set "" if no idle motion.'),                    
 	];
 	
 // Called by IDE when a new object type is to be created

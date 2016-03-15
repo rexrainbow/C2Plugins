@@ -220,15 +220,15 @@ AddAction(102, cf_not_invertible, "Pick all instances", "SOL: instances",
           "Pick all instances on cell <i>{0}</i>", "Pick all instances on cell.", "PickAllInstsOnCell");           
 ////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "Get selected cell index", "Visible", "CellIndex", 
+AddExpression(1, ef_return_number, "Get selected cell index", "Visibl - On visible", "CellIndex", 
               'Get selected cell index in "Condition: On cell visible", or "Condition: On cell invisible".');		
-AddExpression(2, ef_return_number, "Get selected cell X index", "Visible", "CellXIndex", 
+AddExpression(2, ef_return_number, "Get selected cell X index", "Visibl - On visible", "CellXIndex", 
               'Get selected cell X index in "Condition: On cell visible", or "Condition: On cell invisible".');
-AddExpression(3, ef_return_number, "Get selected cell Y index", "Visible", "CellYIndex", 
+AddExpression(3, ef_return_number, "Get selected cell Y index", "Visibl - On visible", "CellYIndex", 
               'Get selected cell Y index in "Condition: On cell visible", or "Condition: On cell invisible".');					  
-AddExpression(4, ef_return_number, "Get position X of selected cell", "Visible", "CellTLX", 
+AddExpression(4, ef_return_number, "Get position X of selected cell", "Visibl - On visible", "CellTLX", 
               'Get top-left position X of cell in "Condition: On cell visible", in pixels');
-AddExpression(5, ef_return_number, "Get position Y of selected cell", "Visible", "CellTLY", 
+AddExpression(5, ef_return_number, "Get position Y of selected cell", "Visibl - On visible", "CellTLY", 
               'Get top-left position Y of cell in "Condition: On cell visible", in pixels');              
 			  
 AddNumberParam("UID", "UID of pinned instance.", 0);              
@@ -284,6 +284,16 @@ AddExpression(72, ef_return_number, "Get current cell X index", "Visible/For eac
               'Get current cell X index in "Condition: For each cell", or "Condition: For each visible cell".');		
 AddExpression(73, ef_return_number, "Get current cell Y index", "Visible/For each", "CurCellYIndex", 
               'Get current cell Y index in "Condition: For each cell", or "Condition: For each visible cell".');		
+              
+AddExpression(81, ef_return_number, "Get top-left visible cell index X", "Visible", "TLVisibleCellXIndex", 
+              "Get top-left visible cell X index.");    
+AddExpression(82, ef_return_number, "Get top-left visible cell index Y", "Visible", "TLVisibleCelYIndex", 
+              "Get top-left visible cell Y index.");                
+AddExpression(83, ef_return_number, "Get bottom-right visible cell index", "Visible", "BRVisibleCellXIndex", 
+              "Get top-left visible cell X index.");
+AddExpression(84, ef_return_number, "Get bottom-right visible cell index", "Visible", "BRVisibleCellYIndex", 
+              "Get top-left visible cell Y index.");    
+              
               
 ACESDone();
 

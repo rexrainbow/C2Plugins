@@ -1703,7 +1703,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 maxW = w;
         }
         
-        return w;
+        return maxW;
     };    
 
     PensMgrKlassProto.getRawText = function ()

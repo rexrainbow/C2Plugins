@@ -71,10 +71,13 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         this.previousMotionName = "";
         this.currentExpression = "";
         
+        this.deviceToScreen = null;  // transfer C2 point into live2D point
+        this.projMatrix = null;          // keep the ratio of width/height
+        
         this.runtime.tickMe(this);
 	};
     
-    instanceProto.isReady = function()
+    instanceProto.isModelInitialize = function()
     {
         return this.model["isInitialized"]();
     };
@@ -107,8 +110,30 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         }
 
         return this.gl;
-	};    
+	};  
 
+	instanceProto.getDeviceToScreenMat = function ()
+	{    
+        if (this.deviceToScreen === null)
+        {
+            this.deviceToScreen = new window["L2DMatrix44"]();
+            this.deviceToScreen["multTranslate"](-this.width / 2.0, -this.height / 2.0);
+            var s = this.width;
+            this.deviceToScreen["multScale"](2 / s, -2 / s);
+        }
+        return this.deviceToScreen;
+    };
+
+	instanceProto.getProjMat = function ()
+	{    
+        if (this.projMatrix === null)
+        {
+            this.projMatrix = new L2DMatrix44();
+            this.projMatrix.multScale(1, (this.width / this.height));
+        }
+        return this.projMatrix;
+    };
+    
 	instanceProto.freeModel = function ()
 	{        
         this.model["release"]();
@@ -121,10 +146,10 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     
     instanceProto.tick = function()
     {      
-        if (!this.isReady())
+        if (!this.isModelInitialize())
             return;
         
-        if (this.model["isMotionFinished"]())
+        if ((this.currentMotionName !== "") && this.model["isMotionFinished"]())
         {
             // current motion had finished
             this.previousMotionName = this.currentMotionName;
@@ -150,17 +175,13 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 
 	instanceProto.drawGL = function(glw)
 	{     
-        if (!this.isReady())
+        if (!this.isModelInitialize())
             return;
         
         var tempTexture = this.getTempTexture(glw);
         if (this.redrawModel)
-        {
-            var gl = this.getGL();
-            gl.clear(gl.COLOR_BUFFER_BIT);
-            this.model["update"]();
-            this.model["draw"]();
-            
+        {                   
+            this.drawLive2D();
             var canvas = this.getCanvas();        
             this.runtime.glwrap.videoToTexture(canvas, tempTexture);
             this.redrawModel = false;            
@@ -180,6 +201,25 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 			glw.quad(q.tlx, q.tly, q.trx, q.try_, q.brx, q.bry, q.blx, q.bly);       
 	};
   
+	instanceProto.drawLive2D = function ()
+	{
+        var gl = this.getGL();
+        gl.clear(gl.COLOR_BUFFER_BIT);    
+        
+        var MatrixStack = window["MatrixStack"];
+        MatrixStack["reset"]();
+        MatrixStack["loadIdentity"]();            
+        var projMatrix = this.getProjMat();
+        MatrixStack["multMatrix"](projMatrix["getArray"]());
+        //MatrixStack.multMatrix(viewMatrix.getArray());
+        MatrixStack["push"]();
+          
+        this.model["update"]();
+        this.model["draw"]();   
+        
+        MatrixStack["pop"]();
+    };
+    
 	instanceProto.updateModel = function ()
 	{
         this.redrawModel = true; 
@@ -207,7 +247,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     
 	instanceProto.startMotion = function (name_, priority)
 	{   
-        if (!this.isReady())
+        if (!this.isModelInitialize())
             return;
         
         this.currentMotionName = name_;
@@ -248,12 +288,12 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 
 	Cnds.prototype.IsModelReady = function ()
 	{  
-		return this.isReady();
+		return this.isModelInitialize();
 	};     
     
 	Cnds.prototype.IsMotionPlaying = function (motionName)
 	{
-        if (!this.isReady())
+        if (!this.isModelInitialize())
             return false;
         
         return cr.equals_nocase(this.model["getCurrentMotionName"](), motionName);
@@ -269,15 +309,19 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 		return true;
 	};
 	
-	Cnds.prototype.IsInsideArea = function (x, y, areaName)
+	Cnds.prototype.IsInsideArea = function (deviceX, deviceY, areaName)
 	{
-        if (!this.isReady())
+        if (!this.isModelInitialize())
             return false;
         
         this.update_bbox(); 
-        x -= this.bbox.left;
-        y -= this.bbox.top;
-		return this.model["hitTest"](areaName, x, y);
+        deviceX -= this.bbox.left;
+        deviceY -= this.bbox.top;
+        
+        var  deviceToScreenMat = this.getDeviceToScreenMat();
+        var screenX = deviceToScreenMat["transformX"](deviceX);
+        var screenY = deviceToScreenMat["transformY"](deviceY);
+		return this.model["hitTest"](areaName, screenX, screenY);
 	};
     
 	//////////////////////////////////////
@@ -287,7 +331,6 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 
 	Acts.prototype.Load = function (url_)
 	{   
-        debugger
         var self=this;
         var callback = function ()
         {           
@@ -300,13 +343,23 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 
 	Acts.prototype.SetParameterValue = function (name_, value_)
 	{   
-        if (!this.isReady())
+        if (!this.isModelInitialize())
             return;
         
-        // TODO
-        //this.live2DModel["setParamFloat"](name_, value_);
+        var model = this.model["getLive2DModel"]();
+        model["setParamFloat"](name_, value_);
         this.updateModel();
 	};	
+    
+	Acts.prototype.AddToParameterValue = function (name_, value_)
+	{   
+        if (!this.isModelInitialize())
+            return;
+        
+        var model = this.model["getLive2DModel"]();
+        model["addToParamFloat"](name_, value_);
+        this.updateModel();
+	};    
     
 	Acts.prototype.StartMotion = function (name_)
 	{   
@@ -322,11 +375,6 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{   
         this.model["setExpression"](name_);
 	};	     
-    
-	Acts.prototype.SetRandomExpression = function (name_)
-	{   
-        this.model["setRandomExpression"]();
-	};	       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -334,7 +382,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     
 	Exps.prototype.MotionName = function (ret)
 	{
-		ret.set_string(this.model["getCurrentMotionName"]());
+		ret.set_string(this.currentMotionName);
 	};
 	
 }());

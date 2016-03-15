@@ -65,11 +65,11 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         this.visibleLineIndexes = {};
         this.pre_visibleLineIndexes = {};
         
+        this.visibleX_start = 0;     
+        this.visibleX_end = 0;         
         this.visibleY_start = 0;     
         this.visibleY_end = 0;
-        this.visibleX_start = 0;     
-        this.visibleX_end = 0;        
-        
+       
         // monitor ListCtrl changing
         this.pre_instX = this.x;
         this.pre_instY = this.y;
@@ -1245,7 +1245,52 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
     Exps.prototype.CurCellYIndex = function (ret)
 	{
 		ret.set_int( Math.floor(this.exp_CellIndex / this.col_num) );
-	};	        
+	};	   
+
+    Exps.prototype.TLVisibleCellXIndex = function (ret)
+	{
+        var x;
+        if (this.is_vertical_scrolling)
+            x = this.visibleX_start;
+        else
+            x = this.visibleY_start;
+        
+		ret.set_int(x || 0);
+	};    
+
+    Exps.prototype.TLVisibleCellYIndex = function (ret)
+	{
+        var y;
+        if (this.is_vertical_scrolling)
+            y = this.visibleY_start;
+        else
+            y = this.visibleX_start;
+        
+		ret.set_int(y || 0);
+	};     
+
+    Exps.prototype.BRVisibleCellXIndex = function (ret)
+	{
+        var x;
+        if (this.is_vertical_scrolling)
+            x = this.visibleX_end;
+        else
+            x = this.visibleY_end;
+        
+		ret.set_int(x || 0);
+	};    
+
+    Exps.prototype.BRVisibleCellYIndex = function (ret)
+	{
+        var y;
+        if (this.is_vertical_scrolling)
+            y = this.visibleY_end;
+        else
+            y = this.visibleX_end;
+        
+		ret.set_int(y || 0);
+	};
+    
 }());
 
 

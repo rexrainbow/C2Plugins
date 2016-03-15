@@ -1879,7 +1879,7 @@ cr.plugins_.rex_TagText = function(runtime)
                 maxW = w;
         }
         
-        return w;
+        return maxW;
     };    
 
     PensMgrKlassProto.getRawText = function ()

@@ -265,7 +265,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    this.current_rows = null;
 	};		
 	
-    var ORDER_TYPES = ["desc", "asec"];
+    var ORDER_TYPES = ["desc", "asec", "logicaldesc", "logical"];
     instanceProto.AddOrder = function (k, order_)
 	{
 	    if (this.current_rows)

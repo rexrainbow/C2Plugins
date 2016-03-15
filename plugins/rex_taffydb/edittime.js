@@ -60,8 +60,10 @@ AddCondition(25, 0, "2. regex matched", "Filter - 2. key",
              "Add a regex matched for this key.", "AddRegexTest");                                                          
              
 AddStringParam("Key", "The name of the key.", '""'); 
-AddComboParamOption("Descending");
-AddComboParamOption("Ascending");
+AddComboParamOption("descending");
+AddComboParamOption("ascending");
+AddComboParamOption("logical descending");
+AddComboParamOption("logical ascending");
 AddComboParam("Order", "Order of items.", 1);                
 AddCondition(31, 0, "3. order", "Filter - 3. order", 
              "Filter- 3. sort with <i>{1}</i> order by key <i>{0}</i>", 
@@ -188,8 +190,10 @@ AddAction(25, 0, "2. regex matched", "Filter - 2. key",
           "Add a regex matched for this key.", "AddRegexTest");         
           
 AddStringParam("Key", "The name of the key.", '""'); 
-AddComboParamOption("Descending");
-AddComboParamOption("Ascending");
+AddComboParamOption("descending");
+AddComboParamOption("ascending");
+AddComboParamOption("logical descending");
+AddComboParamOption("logical ascending");
 AddComboParam("Order", "Order of items.", 1);                
 AddAction(31, 0, "3. order", "Filter - 3. order", 
           "Filter- 3. sort with <i>{1}</i> order by key <i>{0}</i>", 

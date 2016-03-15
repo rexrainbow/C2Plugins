@@ -76,11 +76,9 @@
                 thisRef.eyeBlink = new L2DEyeBlink();
             }            
                    
-            log("setParamFloat");
             var cnt=thisRef.modelSetting.getInitParamNum();
             for (var j = 0; j <cnt; j++)
             {
-                log(thisRef.modelSetting.getInitParamID(j) + " = " + thisRef.modelSetting.getInitParamValue(j))
                 thisRef.live2DModel.setParamFloat(
                     thisRef.modelSetting.getInitParamID(j),
                     thisRef.modelSetting.getInitParamValue(j)
