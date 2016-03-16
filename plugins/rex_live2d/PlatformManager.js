@@ -40,26 +40,15 @@
     			callback(request.response);
     			break;
     		default:
-    			console.error("Failed to load (" + request.status + ") : " + path);
+                callback(null);
+    			//console.error("Failed to load (" + request.status + ") : " + path);
     			break;
     		}
     	}
     	request.send(null);
     	//return request;
     }
-    
-    //============================================================
-    //    PlatformManager # loadString()
-    //============================================================
-    PlatformManager.prototype.loadString      = function(path/*String*/)
-    {
-        
-        this.loadBytes(path, function(buf) {        
-            return buf;
-        });
-        
-    }
-    
+       
     //============================================================
     //    PlatformManager # loadLive2DModel()
     //============================================================
@@ -69,8 +58,10 @@
         
         // load moc
     	this.loadBytes(path, function(buf){
-    		model = Live2DModelWebGL.loadModel(buf);
-            callback(model);
+            if (buf)
+    		    model = Live2DModelWebGL.loadModel(buf);
+
+            callback(model);  // null while error
     	});
     
     }
@@ -118,7 +109,8 @@
         };
         
         loadedImage.onerror = function() { 
-            console.error("Failed to load image : " + path); 
+            if (typeof callback == "function") callback(null);
+            //console.error("Failed to load image : " + path); 
         }
     }
     

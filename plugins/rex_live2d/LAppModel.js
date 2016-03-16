@@ -34,27 +34,33 @@
     
         this.modelHomeDir = modelSettingPath.substring(0, modelSettingPath.lastIndexOf("/") + 1);     
         this.modelSetting = new ModelSettingJson();
+        var mocFilePath;
         
-        var waitJobsCnt=0, errorFlag=false;        
-        var onJobDone = function (error)
+        var waitJobsCnt=0, errorPaths="";        
+        var onJobDone = function (errorPath)
         {
             waitJobsCnt -= 1;           
-            if (error)
-                errorFlag = true;
+            if (errorPath)
+            {
+                if (errorPaths !== "")
+                    errorPaths += ";";
+                
+                errorPaths += errorPath;
+            }
             
             if (waitJobsCnt === 0)
-            {
-                
-                thisRef.live2DModel.saveParam();
-                thisRef.live2DModel.setGL(gl);                
-                thisRef.mainMotionManager.stopAllMotions(); 
+            {                
+                if (errorPaths === "")
+                {
+                    thisRef.live2DModel.saveParam();
+                    thisRef.live2DModel.setGL(gl);                
+                    thisRef.mainMotionManager.stopAllMotions();                     
             
-                thisRef.setUpdating(false);
-                thisRef.setInitialized(true);
+                    thisRef.setUpdating(false);
+                    thisRef.setInitialized(true);
+                }
                 
-                if (!errorFlag && (typeof callback === "function"))
-                    callback();
-                
+                callback(errorPaths);
             }
         }
         
@@ -62,6 +68,13 @@
         
         var onLoadModelMoc = function (model)
         {
+            // error
+            if (!model)
+            {
+                callback(mocFilePath);
+                return;
+            } 
+            
             loadTextures();
             loadMotionGroups();
             loadPose();            
@@ -106,8 +119,9 @@
     	    {
                 texPaths = thisRef.modelHomeDir +  thisRef.modelSetting.getTextureFile(i);
                 waitJobsCnt += 1;
-                thisRef.loadTexture(i, gl, texPaths, function() {
-                    onJobDone();
+                thisRef.loadTexture(i, gl, texPaths, function(tex) {
+                    var errorPath = (tex)? null: texPaths;
+                    onJobDone(errorPath);
                 });             
             }            
         };   
@@ -126,8 +140,9 @@
                     expName = thisRef.modelSetting.getExpressionName(j);
                     expFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getExpressionFile(j);
                     waitJobsCnt += 1;
-                    thisRef.loadExpression(expName, expFilePath, function() {
-                        onJobDone();
+                    thisRef.loadExpression(expName, expFilePath, function(buf) {
+                        var errorPath = (buf)? null: expFilePath;
+                        onJobDone(errorPath);
                     });  
                 }
             }
@@ -144,8 +159,9 @@
             {
                 var physicsFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getPhysicsFile();
                 waitJobsCnt += 1;                
-                thisRef.loadPhysics(physicsFilePath, function() {
-                    onJobDone();
+                thisRef.loadPhysics(physicsFilePath, function(buf) {
+                    var errorPath = (buf)? null: physicsFilePath;
+                    onJobDone(errorPath);
                 });  
             }
             else
@@ -160,9 +176,12 @@
             {
                 var poseFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getPoseFile();
                 waitJobsCnt += 1;
-                thisRef.loadPose(poseFilePath, function() {
-                    thisRef.pose.updateParam(thisRef.live2DModel);
-                    onJobDone();
+                thisRef.loadPose(poseFilePath, function(buf) {
+                    if (buf)
+                        thisRef.pose.updateParam(thisRef.live2DModel);
+                    
+                    var errorPath = (buf)? null: poseFilePath;
+                    onJobDone(errorPath);
                 });
             }
             else
@@ -180,11 +199,17 @@
                 for (var i = 0; i < cnt; i++)
                 {
                     var file = thisRef.modelSetting.getMotionFile(name, i);
+                    var motionFilePath = thisRef.modelHomeDir + file;                    
                     waitJobsCnt += 1;
-                    thisRef.loadMotion(file, thisRef.modelHomeDir + file, function(motion) {
-                        motion.setFadeIn(thisRef.modelSetting.getMotionFadeIn(name, i));
-                        motion.setFadeOut(thisRef.modelSetting.getMotionFadeOut(name, i));
-                        onJobDone();
+                    thisRef.loadMotion(file, motionFilePath, function(motion) {
+                        if (motion)
+                        {
+                            motion.setFadeIn(thisRef.modelSetting.getMotionFadeIn(name, i));
+                            motion.setFadeOut(thisRef.modelSetting.getMotionFadeOut(name, i));
+                        }
+
+                        var errorPath = (motion)? null: motionFilePath;
+                        onJobDone(errorPath);                        
                     });
                     
                 }                
@@ -220,11 +245,18 @@
             }         
         };
         
-        var onLoadModelSetting = function()
+        var onLoadModelSetting = function(buf)
         {
+            // error
+            if (!buf)
+            {
+                callback(modelSettingPath);
+                return;
+            }
+            
             // load model.moc
-            var path = thisRef.modelHomeDir + thisRef.modelSetting.getModelFile();
-            thisRef.loadModelData(path, onLoadModelMoc);
+            mocFilePath = thisRef.modelHomeDir + thisRef.modelSetting.getModelFile();
+            thisRef.loadModelData(mocFilePath, onLoadModelMoc);
         };
         
         this.modelSetting.loadModelSetting(modelSettingPath, onLoadModelSetting);

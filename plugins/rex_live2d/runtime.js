@@ -45,11 +45,6 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
-    var STATE_NONE = 0;
-    var STATE_LOADING = 1;
-    var STATE_BUILD = 2;
-    var STATE_IDLE = 3;
-    var STATE_PLAY = 4;
 	instanceProto.onCreate = function()
 	{
         if(!this.runtime.glwrap)
@@ -63,7 +58,8 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	        this.model = new window["LAppModel"]();   
         }
       
-        this.state = STATE_NONE;
+        this.exp_LoadedFailedFilePaths = "";
+        
         this.redrawModel = false;
         
         this.idleMotionName = this.properties[2];
@@ -73,6 +69,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         
         this.deviceToScreen = null;  // transfer C2 point into live2D point
         this.projMatrix = null;          // keep the ratio of width/height
+        this.viewMatrix = null;
         
         this.runtime.tickMe(this);
 	};
@@ -118,8 +115,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         {
             this.deviceToScreen = new window["L2DMatrix44"]();
             this.deviceToScreen["multTranslate"](-this.width / 2.0, -this.height / 2.0);
-            var s = this.width;
-            this.deviceToScreen["multScale"](2 / s, -2 / s);
+            this.deviceToScreen["multScale"](2 / this.width, -2 / this.width);
         }
         return this.deviceToScreen;
     };
@@ -128,11 +124,36 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{    
         if (this.projMatrix === null)
         {
-            this.projMatrix = new L2DMatrix44();
-            this.projMatrix.multScale(1, (this.width / this.height));
+            this.projMatrix = new window["L2DMatrix44"]();
+            this.projMatrix["multScale"](1, (this.width / this.height));
         }
         return this.projMatrix;
     };
+    
+	instanceProto.getViewMat = function ()
+	{    
+        if (this.viewMatrix === null)
+        {
+            this.viewMatrix = new window["L2DViewMatrix"]();
+            var LAppDefine = window["LAppDefine"];
+
+            var ratio = this.height / this.width;
+            var left = LAppDefine["VIEW_LOGICAL_LEFT"];
+            var right = LAppDefine["VIEW_LOGICAL_RIGHT"];
+            var bottom = -ratio;
+            var top = ratio;
+            this.viewMatrix["setScreenRect"](left, right, bottom, top);
+            this.viewMatrix["setMaxScreenRect"](LAppDefine["VIEW_LOGICAL_MAX_LEFT"],
+                                     LAppDefine["VIEW_LOGICAL_MAX_RIGHT"],
+                                     LAppDefine["VIEW_LOGICAL_MAX_BOTTOM"],
+                                     LAppDefine["VIEW_LOGICAL_MAX_TOP"]);
+
+            this.viewMatrix["setMaxScale"](LAppDefine["VIEW_MAX_SCALE"]);
+            this.viewMatrix["setMinScale"](LAppDefine["VIEW_MIN_SCALE"]);
+            
+        }
+        return this.viewMatrix;
+    };    
     
 	instanceProto.freeModel = function ()
 	{        
@@ -208,10 +229,14 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         
         var MatrixStack = window["MatrixStack"];
         MatrixStack["reset"]();
-        MatrixStack["loadIdentity"]();            
+        MatrixStack["loadIdentity"]();     
+        
         var projMatrix = this.getProjMat();
         MatrixStack["multMatrix"](projMatrix["getArray"]());
-        //MatrixStack.multMatrix(viewMatrix.getArray());
+        
+        //var viewMatrix = this.getViewMat();
+        //MatrixStack["multMatrix"](viewMatrix["getArray"]());
+        
         MatrixStack["push"]();
           
         this.model["update"]();
@@ -243,7 +268,33 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     		catch(e){}
     	}
     	return null;
+    };  
+
+	instanceProto.pixelX2ModelX = function (deviceX)
+	{
+        this.update_bbox(); 
+        deviceX -= this.bbox.left;   
+        var  deviceToScreenMat = this.getDeviceToScreenMat();
+        var screenX = deviceToScreenMat["transformX"](deviceX);
+        return screenX;
+        
+        //var viewMatrix = this.getViewMat();
+        //var viewX = viewMatrix["invertTransformX"](screenX);
+        //return viewX;
     };    
+    
+	instanceProto.pixelY2ModelY = function (deviceY)
+	{
+        this.update_bbox(); 
+        deviceY -= this.bbox.top;   
+        var  deviceToScreenMat = this.getDeviceToScreenMat();
+        var screenY = deviceToScreenMat["transformY"](deviceY);
+        return screenY;
+        
+        //var viewMatrix = this.getViewMat();        
+        //var viewY = viewMatrix["invertTransformY"](screenY);
+        //return viewY;
+    };     
     
 	instanceProto.startMotion = function (name_, priority)
 	{   
@@ -314,14 +365,9 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         if (!this.isModelInitialize())
             return false;
         
-        this.update_bbox(); 
-        deviceX -= this.bbox.left;
-        deviceY -= this.bbox.top;
-        
-        var  deviceToScreenMat = this.getDeviceToScreenMat();
-        var screenX = deviceToScreenMat["transformX"](deviceX);
-        var screenY = deviceToScreenMat["transformY"](deviceY);
-		return this.model["hitTest"](areaName, screenX, screenY);
+        var viewX = this.pixelX2ModelX(deviceX);
+        var viewY = this.pixelY2ModelY(deviceY);
+		return this.model["hitTest"](areaName, viewX, viewY);
 	};
     
 	//////////////////////////////////////
@@ -332,10 +378,18 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	Acts.prototype.Load = function (url_)
 	{   
         var self=this;
-        var callback = function ()
+        var callback = function (errorPaths)
         {           
-            self.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnModelLoaded, self); 
-            self.updateModel();
+            self.exp_LoadedFailedFilePaths = errorPaths;
+            if (errorPaths === "")
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnModelLoaded, self); 
+                self.updateModel();
+            }
+            else
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnModelLoadedFailed, self); 
+            }
         };
         var gl = this.getGL();
         this.model["load"](gl, url_, callback);
@@ -379,6 +433,11 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
+    
+	Exps.prototype.LoadedFailedFilePaths = function (ret)
+	{
+		ret.set_string(this.exp_LoadedFailedFilePaths);
+	};  
     
 	Exps.prototype.MotionName = function (ret)
 	{

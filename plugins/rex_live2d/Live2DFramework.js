@@ -179,31 +179,29 @@
     
         var thisRef = this;
         pm.loadLive2DModel(path, function(l2dModel) {
-            thisRef.live2DModel = l2dModel;
-            thisRef.live2DModel.saveParam();
-            
-            var _err = Live2D.getError();
-    
-            if( _err != 0 ) {
-                console.error("Error : Failed to loadModelData().");
-                return;
+            if (l2dModel)
+            {
+                thisRef.live2DModel = l2dModel;
+                thisRef.live2DModel.saveParam();
+                
+                var _err = Live2D.getError();
+                
+                if( _err != 0 ) {
+                    //console.error("Error : Failed to loadModelData().");
+                    thisRef.live2DModel = null;
+                    callback(null);
+                    return;
+                }
+                
+                thisRef.modelMatrix = new L2DModelMatrix(
+                    thisRef.live2DModel.getCanvasWidth(),
+                    thisRef.live2DModel.getCanvasHeight()); //L2DModelMatrix
+                
+                thisRef.modelMatrix.setWidth(2);                    
+                thisRef.modelMatrix.setCenterPosition(0, 0);
             }
             
-            thisRef.modelMatrix = new L2DModelMatrix(
-                thisRef.live2DModel.getCanvasWidth(),
-                thisRef.live2DModel.getCanvasHeight()); //L2DModelMatrix
-            
-            thisRef.modelMatrix.setWidth(2);
-            // Edit: display all
-            //if (thisRef.modelMatrix.width >= thisRef.modelMatrix.height)                        
-            //    thisRef.modelMatrix.setWidth(2);
-            //else
-            //    thisRef.modelMatrix.setHeight(2);
-            // Edit: display all            
-            
-            thisRef.modelMatrix.setCenterPosition(0, 0);
-            
-            callback(thisRef.live2DModel);
+            callback(l2dModel);
         });
     }
     
@@ -221,10 +219,13 @@
         
         var thisRef = this;
         pm.loadTexture(this.live2DModel , no , gl, path, function(tex){
-            thisRef.textures.push(tex);
-            thisRef.__texCounter--;
-            if(thisRef.__texCounter == 0) thisRef.isTexLoaded = true;
-            if (typeof callback == "function") callback();
+            if (tex)
+            {
+                thisRef.textures.push(tex);
+                thisRef.__texCounter--;
+                if(thisRef.__texCounter == 0) thisRef.isTexLoaded = true;
+            }            
+            if (typeof callback == "function")    callback(tex);
         });
         
     }
@@ -242,11 +243,14 @@
         
         var thisRef = this;
         pm.loadBytes(path, function(buf) {
-            motion = Live2DMotion.loadMotion(buf);
-            if( name != null ) {
-                thisRef.motions[name] = motion;
+            if (buf)
+            {
+                motion = Live2DMotion.loadMotion(buf);
+                if( name != null ) {
+                    thisRef.motions[name] = motion;
+                }
             }
-            callback(motion);
+            callback(motion);  // null while error
         });
         
     }
@@ -262,10 +266,13 @@
         
         var thisRef = this;
         pm.loadBytes(path, function(buf) {
-            if(name != null) {
-                thisRef.expressions[name] = L2DExpressionMotion.loadJson(buf);
+            if (buf)
+            {
+                if(name != null) {
+                    thisRef.expressions[name] = L2DExpressionMotion.loadJson(buf);
+                }
             }
-            if (typeof callback == "function") callback();
+            if (typeof callback == "function")  callback(buf);
         });
     }
     
@@ -279,8 +286,10 @@
         var thisRef = this;
         try {
             pm.loadBytes(path, function(buf) {
-                thisRef.pose = L2DPose.load(buf);
-                if (typeof callback == "function") callback();
+                if (buf)
+                    thisRef.pose = L2DPose.load(buf);
+                
+                if (typeof callback == "function")  callback(buf);
             });
         }
         catch(e) {
@@ -298,8 +307,10 @@
         var thisRef = this;
         try {
             pm.loadBytes(path, function(buf) {
-                thisRef.physics = L2DPhysics.load(buf);
-                if (typeof callback == "function") callback();                
+                if (buf)
+                    thisRef.physics = L2DPhysics.load(buf);
+
+                if (typeof callback == "function")  callback(buf);       
             });
         }
         catch(e){
@@ -1605,6 +1616,7 @@
     }
     
     window.L2DMatrix44 = L2DMatrix44;
+    window.L2DViewMatrix = L2DViewMatrix;
     window.L2DBaseModel = L2DBaseModel;
     window.L2DEyeBlink = L2DEyeBlink;
     window.Live2DFramework = Live2DFramework;

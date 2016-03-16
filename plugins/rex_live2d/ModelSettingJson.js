@@ -27,9 +27,13 @@ ModelSettingJson.prototype.loadModelSetting = function(path, callback)
     var thisRef = this;
     var pm = Live2DFramework.getPlatformManager();
     pm.loadBytes(path, function(buf) {
-        var str = String.fromCharCode.apply(null,new Uint8Array(buf));
-        thisRef.json = JSON.parse(str);
-        callback();
+        if (buf)
+        {
+            var str = String.fromCharCode.apply(null,new Uint8Array(buf));
+            thisRef.json = JSON.parse(str);
+        }
+        
+        callback(buf);
     });
 };
 

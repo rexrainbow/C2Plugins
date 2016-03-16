@@ -411,10 +411,6 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		
 		var q = this.bquad;
 		
-		// Temporarily ignore the devicePixelRatio when translating to the canvas so we get
-		// canvas pixels and not CSS pixels. Otherwise text becomes misaligned.
-		var old_dpr = this.runtime.devicePixelRatio;
-		this.runtime.devicePixelRatio = 1;
 		var tlx = this.layer.layerToCanvas(q.tlx, q.tly, true, true);
 		var tly = this.layer.layerToCanvas(q.tlx, q.tly, false, true);
 		var trx = this.layer.layerToCanvas(q.trx, q.try_, true, true);
@@ -423,7 +419,6 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		var bry = this.layer.layerToCanvas(q.brx, q.bry, false, true);
 		var blx = this.layer.layerToCanvas(q.blx, q.bly, true, true);
 		var bly = this.layer.layerToCanvas(q.blx, q.bly, false, true);
-		this.runtime.devicePixelRatio = old_dpr;
 		
 		if (this.runtime.pixel_rounding || (this.angle === 0 && layer_angle === 0))
 		{
@@ -456,7 +451,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			rcTex.right = floatscaledwidth / scaledwidth;
 			rcTex.bottom = floatscaledheight / scaledheight;
 		}
-
+		
 		glw.quadTex(tlx, tly, trx, try_, brx, bry, blx, bly, rcTex);
 		
 		glw.resetModelView();
@@ -1015,7 +1010,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         var pi, pcnt, pens, pen;
         for (li=0; li<lcnt; li++)
         {
-            line_width = pensMgr.getLineWidth(li);
+            line_width = pensMgr.getLineWidth(li, true);
             if (line_width === 0)
                 continue;
             
@@ -1680,17 +1675,22 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         return targetPensMgr;
     };      
 
-    PensMgrKlassProto.getLineWidth = function (i)
+    PensMgrKlassProto.getLineWidth = function (i, text_only)
     {     
         var line = this.lines[i];
         if (!line)
             return 0;
-        
+
         var last_pen = line[line.length -1];
         if (!last_pen)
             return 0;
         
-        return last_pen.getLastX();
+        var first_pen = line[0];        
+        var line_width = last_pen.getLastX();
+        if (text_only)
+            line_width -= first_pen.x;
+        
+        return line_width;
     };    
     
     PensMgrKlassProto.getMaxLineWidth = function ()

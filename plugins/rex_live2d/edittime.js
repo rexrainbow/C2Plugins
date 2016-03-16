@@ -78,6 +78,8 @@ AddAction(31, 0, "Set expression", "Expression",
    
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(12, ef_return_string, "Get path of loaded failed files", "Model - load", "LoadedFailedFilePaths", 'Get path of loaded failed files. Joins by ";".');
+
 AddExpression(21, ef_return_string, "Get motion name", "Motion", "MotionName", "The name of the current motion.");
 
 ACESDone();
