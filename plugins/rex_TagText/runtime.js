@@ -262,9 +262,6 @@ cr.plugins_.rex_TagText = function(runtime)
 
 	instanceProto.draw = function(ctx, glmode, is_ignore)
 	{
-	    if (this.text == "")
-		    return;
-			
         ctx.globalAlpha = glmode ? 1 : this.opacity;
             
 		var myscale = 1;
@@ -1157,7 +1154,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this.context.font = style + " " + weight + " " + ptSize + " " + family;
         this.context.fillStyle = color;
         if (shadow !== "") 
-        {            
+        {
             shadow = shadow.split(" ");
             this.context.shadowOffsetX = parseFloat(shadow[0].replace("px", ""));
             this.context.shadowOffsetY = parseFloat(shadow[1].replace("px", ""));
@@ -1171,7 +1168,7 @@ cr.plugins_.rex_TagText = function(runtime)
     {
         this.context.save(); 
         
-        this.apply_propScope(pen.prop);
+        this.apply_propScope(pen.prop);        
         this.context.fillText(pen.text, offset_x + pen.x, offset_y + pen.y);
         
         this.context.restore();
@@ -1180,26 +1177,28 @@ cr.plugins_.rex_TagText = function(runtime)
     CanvasTextProto.drawPens = function (pensMgr, textInfo)
     {    
         var boxWidth=textInfo["boxWidth"], boxHeight=textInfo["boxHeight"];
+        var start_x = textInfo["x"], start_y = textInfo["y"];
         var lines=pensMgr.getLines(), lcnt=lines.length;        
-        
-        var offset_x=0, offset_y=0;
+                
+        var offset_x, offset_y;
 		// vertical alignment
 		if (this.plugin.valign === 1)		// center
 			offset_y = Math.max( (boxHeight - (lcnt * this.lineHeight)) / 2, 0);
 		else if (this.plugin.valign === 2)	// bottom
 			offset_y = Math.max(boxHeight - (lcnt * this.lineHeight) - 2, 0);
         else
-            offset_y = 0;
+            offset_y = 0;            
+        
+        offset_y += start_y;
         
         if (this.textBaseline == "alphabetic")
             offset_y += this.plugin.vshift;  // shift line down    
         
-
         var li, line_width;
         var pi, pcnt, pens, pen;
         for (li=0; li<lcnt; li++)
         {
-            line_width = pensMgr.getLineWidth(li, true);
+            line_width = pensMgr.getLineWidth(li);
             if (line_width === 0)
                 continue;
             
@@ -1207,6 +1206,10 @@ cr.plugins_.rex_TagText = function(runtime)
 				offset_x = (boxWidth - line_width) / 2;
 			else if (this.plugin.halign === 2)	// right
 				offset_x = boxWidth - line_width; 
+            else
+                offset_x = 0;                
+            
+            offset_x += start_x;
                 
             pens = lines[li];
             pcnt = pens.length;           
@@ -1219,7 +1222,7 @@ cr.plugins_.rex_TagText = function(runtime)
                 this.draw_pen(pen, offset_x, offset_y);
             }
         }
-    };    
+    };      
     
     // split text into array
     var __re_class_header = /<\s*class=/i;
@@ -1316,8 +1319,10 @@ cr.plugins_.rex_TagText = function(runtime)
         if (text === "")
             return;
         
-        // Loop vars
-        var start_x = textInfo["x"], start_y = textInfo["y"];
+        //var start_x = textInfo["x"], start_y = textInfo["y"];  
+        // textInfo["x"], textInfo["y"] had been moved to drawPens
+        
+        var start_x = 0, start_y = 0;
 		var cursor_x=start_x, cursor_y=start_y;        
 		var curr_propScope, proText;
 		
@@ -1413,7 +1418,7 @@ cr.plugins_.rex_TagText = function(runtime)
     }; 
     
     CanvasTextProto.drawText = function () 
-    {  	        
+    {  	
         var textInfo = this.textInfo;
         if (this.text_changed)
         {
@@ -1447,10 +1452,10 @@ cr.plugins_.rex_TagText = function(runtime)
         this.textInfo["text"] = text;
         this.updatePens(__tempPensMgr, this.textInfo, true);
         this.textInfo["text"] = text_save;
-        
+
         return __tempPensMgr.getSliceTagText(start, end);   
     };
-
+    
     CanvasTextProto.getRawText = function (text)
     {
         if (text == null)
@@ -1468,7 +1473,7 @@ cr.plugins_.rex_TagText = function(runtime)
         }  // for (i = 0; i < match_cnt; i++)     
 
         return rawTxt;       
-    };    
+    };
         
     CanvasTextProto.copyPensMgr = function (pensMgr)
     {
@@ -1851,7 +1856,7 @@ cr.plugins_.rex_TagText = function(runtime)
         return targetPensMgr;
     };      
 
-    PensMgrKlassProto.getLineWidth = function (i, text_only)
+    PensMgrKlassProto.getLineWidth = function (i)
     {     
         var line = this.lines[i];
         if (!line)
@@ -1862,12 +1867,9 @@ cr.plugins_.rex_TagText = function(runtime)
             return 0;
         
         var first_pen = line[0];        
-        var line_width = last_pen.getLastX();
-        if (text_only)
-            line_width -= first_pen.x;
-        
+        var line_width = last_pen.getLastX();  // start from 0
         return line_width;
-    };  
+    };    
     
     PensMgrKlassProto.getMaxLineWidth = function ()
     {     

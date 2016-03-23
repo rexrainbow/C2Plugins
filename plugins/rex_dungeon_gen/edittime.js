@@ -24,50 +24,68 @@ AddCondition(2, cf_trigger, "On completed", "State", "On completed",
              "Trigger when map generating completed.", "OnCompleted");
 
 AddNumberParam("X", "Logic X.", 0);
-AddNumberParam("Y", "Logic Y.", 0);  
-AddComboParamOption("empty space");
-AddComboParamOption("wall");
+AddNumberParam("Y", "Logic Y.", 0); 
+AddComboParamOption("invalid"); 
+AddComboParamOption("filled wall");
+AddComboParamOption("border wall");
+AddComboParamOption("room space");
+AddComboParamOption("corridor");
+AddComboParamOption("door");
 AddComboParam("Type", "Type of tile.",1);           
 AddCondition(11, 0, "Is a wall", "Value", 
-             "({0},{1}) is a {2}", 
-             "Return true if it is a empty space or a wll in a specific logic position.", "IsCharAt");             
+             "({0},{1}) is {2}", 
+             "Return true if it is a wall/room space/corridor in a specific logic position.", "IsCharAt");  
+
+AddCondition(21, cf_looping | cf_not_invertible, "For each room", "For each room", 
+             "For each room", 
+             "Repeat the event for each room.", "ForEachRoom");             
 //////////////////////////////////////////////////////////////
 // Actions
+AddNumberParam("Width", "Map width.", 40);
+AddNumberParam("Height", "Map height.", 25);
 AddNumberParam("Seed", "Random seed.", 1234);
-AddAction(1, 0, "Generate", "Map", 
-          "Generate dungeon map, with random seed to <i>{0}</i>",
-          "Generate dungeon map.", "GenerateMaze");  
+AddNumberParam("Room minimum width", "Room minimum width.", 3);
+AddNumberParam("Room maximum width", "Room maximum width.", 9);
+AddNumberParam("Room minimum height", "Room minimum height.", 3);
+AddNumberParam("Room maximum height", "Room maximum height.", 5);
+AddNumberParam("Corridor minimum length", "Corridor minimum length.", 3);
+AddNumberParam("Corridor maximum length", "Corridor maximum length.", 10);
+AddNumberParam("Dug percentage", "Stop after this percentage of level area has been dug out.", 0.2);
+AddNumberParam("Time limit", "Stop after this much time has passed, in seconds.", 1);
+AddAction(1, 0, "Digger", "Map - Generate", 
+          "Generate <i>{0}</i>x<i>{1}</i> Digger dungeon, with random seed to <i>{2}</i> , option: room width [<i>{3}</i>, <i>{4}</i>], room height [<i>{5}</i>, <i>{6}</i>], corridor length [<i>{7}</i>, <i>{8}</i>], stop when dug percentage to <i>{9}</i>, or elapsed time to <i>{10}</i>",
+          "Generate dungeon by digger algorithm.", "GenerateDungeonDigger");  
 
-AddAction(2, 0, "Cancel", "Map", 
+AddNumberParam("Width", "Map width.", 40);
+AddNumberParam("Height", "Map height.", 25);
+AddNumberParam("Seed", "Random seed.", 1234);
+AddNumberParam("Room minimum width", "Room minimum width.", 3);
+AddNumberParam("Room maximum width", "Room maximum width.", 9);
+AddNumberParam("Room minimum height", "Room minimum height.", 3);
+AddNumberParam("Room maximum height", "Room maximum height.", 5);
+AddNumberParam("Dug percentage", "Stop after this percentage of level area has been dug out.", 0.1);
+AddNumberParam("Time limit", "Stop after this much time has passed, in seconds.", 1);
+AddAction(2, 0, "Uniform", "Map - Generate", 
+          "Generate <i>{0}</i>x<i>{1}</i> Uniform dungeon, with random seed to <i>{2}</i> , option: room width [<i>{3}</i>, <i>{4}</i>], room height [<i>{5}</i>, <i>{6}</i>], stop when dug percentage to <i>{7}</i>, or elapsed time to <i>{8}</i>",
+          "Generate dungeon by uniform algorithm.", "GenerateDungeonUniform");
+
+AddNumberParam("Width", "Map width.", 10);
+AddNumberParam("Height", "Map height.", 10);
+AddNumberParam("Seed", "Random seed.", 1234);
+AddNumberParam("Cell width", "Cell width.", 3);
+AddNumberParam("Cell height", "Cell height.", 3);
+AddAction(3, 0, "Rogue", "Map - Generate", 
+          "Generate <i>{0}</i>x<i>{1}</i> Rogue dungeon, with random seed to <i>{2}</i> , option: cell size <i>{3}</i>x<i>{4}</i>",
+          "Generate dungeon by rogue algorithm.", "GenerateDungeonRogue");
+          
+AddAction(12, 0, "Cancel", "Map", 
           "Cancel generating process",
           "Cancel current generating process.", "Cencel"); 
 
-AddAction(3, 0, "Release", "Map",
+AddAction(13, 0, "Release", "Map",
          "Release map",
          "Release map", "Release");   
-         
-
-AddAnyTypeParam("Name", "Room name.", '"#0"');
-AddNumberParam("Width", "Witdh of room.", 10);   
-AddNumberParam("Height", "Height of room.", 10); 
-AddNumberParam("Count", "Count of this room.", 1);
-AddAnyTypeParam("Symbol", "Filled symbol.", '"."'); 
-AddAction(11, 0, "Define square rooms", "Define rooms - square",  
-          "Define <i>{3}</i> <i>{1}</i>x<i>{2}</i> rooms: <i>{0}</i>, filled with symbol <i>{4}</i>",
-          "Define square rooms.", "DefineSquareRooms");  
-          
-AddAnyTypeParam("Name", "Room name.", '"#0"');
-AddNumberParam("Count", "Count of this room.", 1);
-AddAction(21, 0, "Define rooms", "Define rooms",  
-          "Define <i>{1}</i> rooms: <i>{0}</i>",
-          "Define a kind of room.", "DefineRooms");    
-          
-AddNumberParam("X", "Logical X position related by origin point.", 0);   
-AddNumberParam("Y", "Logical Y position related by origin point.", 0);
-AddAnyTypeParam("Symbol", "Filled symbol.", '"."'); 
-AddAction(22, 0, "Add symbol", "Define rooms", 
-          "Add symbol <i>{2}</i> at [<i>{0}</i>, <i>{1}</i>]",
-          "Add a symbol to current defined room.", "AddSymbol");                                 
+                   
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get map width", "Map", "MapWidth", "Get width of map.");
@@ -76,8 +94,57 @@ AddExpression(2, ef_return_number, "Get map height", "Map", "MapHeight", "Get he
 AddNumberParam("X", "Logic X.", 0);
 AddNumberParam("Y", "Logic Y.", 0);
 AddExpression(11, ef_return_any, "Get cell value", "Map", "ValueAt", 
-              "Get cell value at logic X,Y. Return -1 if this cell is invalid.");
+              "Get cell value at logic X,Y. Return 1 if this cell is a wall, 0 if this cell is a room space/corridor/door, return -1 if this cell is invalid.");
 
+AddExpression(21, ef_return_number, "Get left X index of current room", "For each room", "CurRoomLeft", 
+              "Get left X index of current room in a For Each loop.");
+AddExpression(22, ef_return_number, "Get right X of current room", "For each room", "CurRoomRight", 
+              "Get right X index of current room in a For Each loop.");
+AddExpression(23, ef_return_number, "Get top Y index of current room", "For each room", "CurRoomTop", 
+              "Get top Y index of current room in a For Each loop.");
+AddExpression(24, ef_return_number, "Get bottom Y of current room", "For each room", "CurRoomBottom", 
+              "Get bottom Y index of current room in a For Each loop.");       
+AddExpression(25, ef_return_number, "Get center X index of current room", "For each room", "CurRoomCenterX", 
+              "Get center X index of current room in a For Each loop.");
+AddExpression(26, ef_return_number, "Get center Y of current room", "For each room", "CurRoomCenterY", 
+              "Get center Y index of current room in a For Each loop.");  
+AddExpression(27, ef_return_number, "Get width of current room", "For each room", "CurRoomWidth", 
+              "Get width of current room in a For Each loop.");
+AddExpression(28, ef_return_number, "Get height of current room", "For each room", "CurRoomHeight", 
+              "Get height of current room in a For Each loop."); 
+AddExpression(29, ef_return_number, "Get index of current room", "For each room", "CurRoomIndex", 
+              "Get index of current room in a For Each loop."); 
+AddExpression(30, ef_return_number, "Get amount of rooms", "Rooms", "RoomsCount", 
+              "Get amount of rooms.");              
+AddNumberParam("X", "Logic X.", 0);
+AddNumberParam("Y", "Logic Y.", 0);              
+AddExpression(31, ef_return_number, "Get room index by LXY", "Rooms", "LXY2RoomIndex", 
+              "Get room index by a specific position. Retrun -1 if this position is not in any room.");
+AddNumberParam("Index", "Index of room.", 0);
+AddExpression(32, ef_return_number, "Get left X index of room by index", "Room", "RoomLeft", 
+              "Get left X index of room by index.");
+AddNumberParam("Index", "Index of room.", 0);
+AddExpression(33, ef_return_number, "Get right X of room by index", "Room", "RoomRight", 
+              "Get right X of room by index.");
+AddNumberParam("Index", "Index of room.", 0);
+AddExpression(34, ef_return_number, "Get top Y index of room by index", "Room", "RoomTop", 
+              "Get top Y index of room by index.");
+AddNumberParam("Index", "Index of room.", 0);              
+AddExpression(35, ef_return_number, "Get bottom Y of room by index", "Room", "RoomBottom", 
+              "Get bottom Y of room by index.");    
+AddNumberParam("Index", "Index of room.", 0);              
+AddExpression(36, ef_return_number, "Get center X index of room by index", "Room", "RoomCenterX", 
+              "Get center X index of room by index.");
+AddNumberParam("Index", "Index of room.", 0);              
+AddExpression(37, ef_return_number, "Get center Y of room by index", "Room", "RoomCenterY", 
+              "Get center Y of room by index.");  
+AddNumberParam("Index", "Index of room.", 0);              
+AddExpression(38, ef_return_number, "Get width of room by index", "Room", "RoomWidth", 
+              "Get width of room by index.");
+AddNumberParam("Index", "Index of room.", 0);              
+AddExpression(39, ef_return_number, "Get height of room by index", "Room", "RoomHeight",     
+              "Get height of room by index.");          
+              
 ACESDone();
 
 // Property grid properties for this plugin

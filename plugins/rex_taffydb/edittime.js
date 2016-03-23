@@ -252,7 +252,10 @@ AddNumberParam("Index", "Index of queried rows.", 0);
 AddExpression(12, ef_return_string, "Get rowID by Index of queried rows", "Row ID", "QueriedRowsIndex2RowID", 
               'Get rowID by Index of queried rows. Return "" if the specific row had not existed.');
                                     
+AddExpression(13, ef_return_number, "index of current row", "Queried rows - For each row", "CurRowIndex", 
+              "Get index oif current row in a For Each loop.");
 
+              
 AddExpression(101, ef_return_string, "All rows to string", "All data", "AllRowsAsJSON", 
               "Get JSON string of all rows.");              
 AddExpression(102, ef_return_number, "Count of all rows", "All data", "AllRowsCount", 

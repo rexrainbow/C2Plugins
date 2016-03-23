@@ -864,15 +864,21 @@ cr.behaviors.Rex_GridMove = function(runtime)
     
     // AI - Approach / Depart
     // helper
-	var _physical_distance_get = function(target_insts, opx, opy)
+	var _get_logic_distance = function(board, target_insts, my_lx, my_ly, my_lz)
 	{
-        var i,cnt=target_insts.length, inst, total_dist_pow2=0;
+        var layout=board.GetLayout();
+        var i,cnt=target_insts.length, inst;
+        var target_xyz, total_dist_sum=0;
         for (i=0; i<cnt; i++)
         {
             inst = target_insts[i];
-            total_dist_pow2 += ( Math.pow((inst.x - opx), 2) + Math.pow((inst.y - opy), 2) );
+            target_xyz = board.uid2xyz(inst.uid);
+            if (target_xyz == null)
+                continue;
+            
+            total_dist_sum += layout.LXYZ2Dist(my_lx, my_ly, my_lz, target_xyz.x, target_xyz.y, target_xyz.z, true);         
         }
-        return total_dist_pow2;
+        return total_dist_sum;
 	};
     var _ApproachOrDepart_dist2lxy = [];
     var _ApproachOrDepart_dist2lxy_sort_fn = function(pA, pB)
@@ -914,19 +920,25 @@ cr.behaviors.Rex_GridMove = function(runtime)
                 return;
             target_insts = chess_objs.getCurrentSol().getObjects();
         }
-        if (target_insts.length == 0)
-            return;  
-            
-        if ((is_depart ==0) && 
-            (target_insts.length == 1) && 
-            (this.GetBoard().uid2NeighborDir(this.inst.uid, target_insts[0].uid) != null)
-           )
-            return;
+        if (target_insts.length === 0)
+            return;          
         // ----   
         var board = this.GetBoard();
-        var layout = board.layout;
+        var layout = board.GetLayout();        
         var i, dir_count=this._dir_sequence.length;
-        var tx, ty, tz=_xyz.z, can_move, opx, opy, pd;  
+        var tx, ty, tz=_xyz.z, can_move, pd;  
+        
+        // get current distance
+        pd = _get_logic_distance(board, target_insts, _xyz.x, _xyz.y, _xyz.z);
+        if (target_insts.length === 1)    // single target instance
+        {
+            if (pd === 0)
+                return;  // overlap with target
+        }
+        else    // mutiple target instances
+            _ApproachOrDepart_dist2lxy.push({d:pd, lx:tx, ly:ty});
+            
+        // get neighbors' distance
 		for (i=0; i<dir_count; i++)
 		{		  
 		    tx = board.GetNeighborLX(_xyz.x, _xyz.y, i);
@@ -934,9 +946,8 @@ cr.behaviors.Rex_GridMove = function(runtime)
 		    can_move = this.test_move_to(tx, ty, tz, i);	    
 			if (can_move != 1)
 			    continue;
-            opx = layout.LXYZ2PX(tx, ty, tz);
-            opy = layout.LXYZ2PY(tx, ty, tz);
-            pd = _physical_distance_get(target_insts, opx, opy);
+            
+            pd = _get_logic_distance(board, target_insts, tx, ty, tz);
             _ApproachOrDepart_dist2lxy.push({d:pd, lx:tx, ly:ty});
 	    } 
         var dist2lxy;
@@ -951,6 +962,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
             }
             dist2lxy = _ApproachOrDepart_dist2lxy[0];
             var i;
+            
             if (is_depart==0)  // find min
             {
                 for (i=1; i<cnt; i++)
@@ -968,7 +980,10 @@ cr.behaviors.Rex_GridMove = function(runtime)
                 }            
             }
         }
-        this.move_to_target(dist2lxy.lx, dist2lxy.ly, tz);	
+        
+        if ((dist2lxy.lx !== _xyz.x) || (dist2lxy.ly !== _xyz.y))
+            this.move_to_target(dist2lxy.lx, dist2lxy.ly, tz);	
+        
         _ApproachOrDepart_dist2lxy.length = 0;
 	};    
     // AI - Approach / Depart

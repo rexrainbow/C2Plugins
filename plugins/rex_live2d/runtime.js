@@ -14,7 +14,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         "isWindowsPhone8": this.runtime.isWindowsPhone8,
     }
     var pm = new window["PlatformManager"](cfg);
-    window["Live2DFramework"]["setPlatformManager"](pm);
+    window["Live2DFramework"]["setPlatformManager"](pm);    
 };
 
 (function ()
@@ -52,9 +52,9 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         
         if (!this.recycled)
         {         
-    		this.canvas = null;
+    		this.myCanvas = null;
             this.gl = null;
-            this.tempTexture = null;
+            this.myTex = null;
 	        this.model = new window["LAppModel"]();   
         }
       
@@ -64,12 +64,19 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         
         this.idleMotionName = this.properties[2];
         this.currentMotionName = "";
-        this.previousMotionName = "";
+        this.triggeredMotionName = "";
         this.currentExpression = "";
         
         this.deviceToScreen = null;  // transfer C2 point into live2D point
         this.projMatrix = null;          // keep the ratio of width/height
         this.viewMatrix = null;
+        this.dragMgr = new window["L2DTargetPoint"]();
+        this.model["breathingEnable"] = (this.properties[3] === 1);
+        
+        // camera
+        this.modelScale = 1;
+        this.modelShiftX = 0;
+        this.modelShiftY = 0;
         
         this.runtime.tickMe(this);
 	};
@@ -79,24 +86,24 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         return this.model["isInitialized"]();
     };
     
-	instanceProto.getTempTexture = function (glw)
+	instanceProto.getMyTexture = function (glw)
 	{
-        if (!this.tempTexture)
-            this.tempTexture = glw.createEmptyTexture(this.width, this.height, this.runtime.linearSampling);
+        if (!this.myTex)
+            this.myTex = glw.createEmptyTexture(this.width, this.height, this.runtime.linearSampling, this.runtime.isMobile);
         
-        return this.tempTexture;
+        return this.myTex;
 	}; 
     
 	instanceProto.getCanvas = function ()
 	{
-        if (!this.canvas)
+        if (!this.myCanvas)
         {
-		    this.canvas = document.createElement('canvas');
-		    this.canvas.width = this.width;
-		    this.canvas.height = this.height;            
+		    this.myCanvas = document.createElement('canvas');
+		    this.myCanvas.width = this.width;
+		    this.myCanvas.height = this.height;            
         }
         
-        return this.canvas;
+        return this.myCanvas;
 	};
     
 	instanceProto.getGL = function ()
@@ -142,15 +149,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
             var right = LAppDefine["VIEW_LOGICAL_RIGHT"];
             var bottom = -ratio;
             var top = ratio;
-            this.viewMatrix["setScreenRect"](left, right, bottom, top);
-            this.viewMatrix["setMaxScreenRect"](LAppDefine["VIEW_LOGICAL_MAX_LEFT"],
-                                     LAppDefine["VIEW_LOGICAL_MAX_RIGHT"],
-                                     LAppDefine["VIEW_LOGICAL_MAX_BOTTOM"],
-                                     LAppDefine["VIEW_LOGICAL_MAX_TOP"]);
-
-            this.viewMatrix["setMaxScale"](LAppDefine["VIEW_MAX_SCALE"]);
-            this.viewMatrix["setMinScale"](LAppDefine["VIEW_MIN_SCALE"]);
-            
+            this.viewMatrix["setScreenRect"](left, right, bottom, top);            
         }
         return this.viewMatrix;
     };    
@@ -173,10 +172,11 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         if ((this.currentMotionName !== "") && this.model["isMotionFinished"]())
         {
             // current motion had finished
-            this.previousMotionName = this.currentMotionName;
+            this.triggeredMotionName = this.currentMotionName;
             this.currentMotionName = "";
             this.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnMotionFinished, this);
             this.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnAnyMotionFinished, this);          
+            this.triggeredMotionName = "";
         }
         
         // no new motion playing, play idle motion if existed            
@@ -185,7 +185,14 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
             this.startMotion(this.idleMotionName, window["LAppDefine"]["PRIORITY_IDLE"]);
         }
         
-        if (this.model["hasUpdated"]())
+        if (this.dragMgr["enable"])
+        {
+            this.dragMgr["update"]();
+            this.model["setDrag"](this.dragMgr["getX"](), this.dragMgr["getY"]());
+        }
+        
+        var hasUpdate = this.model["hasUpdated"]() || this.dragMgr["enable"];
+        if (hasUpdate)
             this.updateModel();
     };        
     
@@ -199,16 +206,16 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         if (!this.isModelInitialize())
             return;
         
-        var tempTexture = this.getTempTexture(glw);
+        var mytex = this.getMyTexture(glw);
         if (this.redrawModel)
         {                   
             this.drawLive2D();
-            var canvas = this.getCanvas();        
-            this.runtime.glwrap.videoToTexture(canvas, tempTexture);
+            var mycanvas = this.getCanvas();
+            glw.videoToTexture(mycanvas, mytex, this.runtime.isMobile);
             this.redrawModel = false;            
         }
     
-        glw.setTexture(tempTexture);
+        glw.setTexture(mytex);
         glw.setOpacity(this.opacity);
         
 		var q = this.bquad;		
@@ -234,8 +241,8 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         var projMatrix = this.getProjMat();
         MatrixStack["multMatrix"](projMatrix["getArray"]());
         
-        //var viewMatrix = this.getViewMat();
-        //MatrixStack["multMatrix"](viewMatrix["getArray"]());
+        var viewMatrix = this.getViewMat();
+        MatrixStack["multMatrix"](viewMatrix["getArray"]());
         
         MatrixStack["push"]();
           
@@ -251,7 +258,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         this.runtime.redraw = true;        
     };
 
-    var getWebGLContext = function(canvas)
+    var getWebGLContext = function(myCanvas)
     {
     	var NAMES = [ "webgl" , "experimental-webgl" , "webkit-3d" , "moz-webgl"];
     	
@@ -262,7 +269,7 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         
     	for( var i = 0; i < NAMES.length; i++ ){
     		try{
-    			var ctx = canvas.getContext( NAMES[i], param );
+    			var ctx = myCanvas.getContext( NAMES[i], param );
     			if( ctx ) return ctx;
     		} 
     		catch(e){}
@@ -276,11 +283,10 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         deviceX -= this.bbox.left;   
         var  deviceToScreenMat = this.getDeviceToScreenMat();
         var screenX = deviceToScreenMat["transformX"](deviceX);
-        return screenX;
-        
-        //var viewMatrix = this.getViewMat();
-        //var viewX = viewMatrix["invertTransformX"](screenX);
-        //return viewX;
+
+        var viewMatrix = this.getViewMat();
+        var viewX = viewMatrix["invertTransformX"](screenX);
+        return viewX;
     };    
     
 	instanceProto.pixelY2ModelY = function (deviceY)
@@ -289,11 +295,10 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         deviceY -= this.bbox.top;   
         var  deviceToScreenMat = this.getDeviceToScreenMat();
         var screenY = deviceToScreenMat["transformY"](deviceY);
-        return screenY;
-        
-        //var viewMatrix = this.getViewMat();        
-        //var viewY = viewMatrix["invertTransformY"](screenY);
-        //return viewY;
+
+        var viewMatrix = this.getViewMat();        
+        var viewY = viewMatrix["invertTransformY"](screenY);
+        return viewY;
     };     
     
 	instanceProto.startMotion = function (name_, priority)
@@ -303,8 +308,43 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         
         this.currentMotionName = name_;
         this.model["startRandomMotion"](name_, priority);
+        
+        var triggeredMotionName_save = this.triggeredMotionName;
+        this.triggeredMotionName = name_;
+        this.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnMotionBegan, this);
+        this.runtime.trigger(cr.plugins_.Rex_Live2DObj.prototype.cnds.OnAnyMotionBegan, this); 
+        this.triggeredMotionName = triggeredMotionName_save;
+            
         this.updateModel();
 	};	            
+    
+	instanceProto.setModelScale = function (newScale)
+	{   
+        if (!this.isModelInitialize())
+            return;    
+        
+        var s = newScale/this.modelScale;
+        var viewMatrix = this.getViewMat();
+        viewMatrix["adjustScale"](0, 0, s);
+        this.updateModel();        
+        this.modelScale = newScale;
+	};        
+//	instanceProto.setModelShift = function (newShiftX, newShiftY)
+//	{   
+//        if (!this.isModelInitialize())
+//            return;    
+//        
+//        var dx = newShiftX - this.modelShiftX;
+//        var dy = newShiftY - this.modelShiftY;
+//        if ((dx === 0) && (dy === 0))
+//            return;
+//        
+//        var viewMatrix = this.getViewMat();
+//        viewMatrix["adjustTranslate"](dx, dy);
+//        this.updateModel();        
+//        this.modelShiftX = newShiftX;
+//        this.modelShiftY = newShiftY;
+//	};     
 
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
@@ -313,6 +353,9 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 			"title": this.type.name,
 			"properties": [
 				{"name": "Motion", "value": this.currentMotionName},
+				{"name": "Shift X", "value": this.modelShiftX}, 
+				{"name": "Shift Y", "value": this.modelShiftY},
+				{"name": "Scale", "value": this.modelScale},                
 			]
 		});
 	};
@@ -352,14 +395,24 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     
 	Cnds.prototype.OnMotionFinished = function (motionName)
 	{
-		return cr.equals_nocase(this.previousMotionName, motionName);
+		return cr.equals_nocase(this.triggeredMotionName, motionName);
 	};
 	
 	Cnds.prototype.OnAnyMotionFinished = function ()
 	{
 		return true;
 	};
+    
+	Cnds.prototype.OnMotionBegan = function (motionName)
+	{
+		return cr.equals_nocase(this.triggeredMotionName, motionName);
+	};
 	
+	Cnds.prototype.OnAnyMotionBegan = function ()
+	{
+		return true;
+	};	
+    
 	Cnds.prototype.IsInsideArea = function (deviceX, deviceY, areaName)
 	{
         if (!this.isModelInitialize())
@@ -427,8 +480,34 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
     
 	Acts.prototype.SetExpression = function (name_)
 	{   
+        if (!this.isModelInitialize())
+            return;    
+        
         this.model["setExpression"](name_);
-	};	     
+	};	  
+    
+	Acts.prototype.SetModelScale = function (scale)
+	{   
+        this.setModelScale(scale);
+	};    
+    
+	Acts.prototype.LookAt = function (deviceX, deviceY)
+	{   
+        var viewX = this.pixelX2ModelX(deviceX);
+        var viewY = this.pixelY2ModelY(deviceY);        
+        this.dragMgr["setPoint"](viewX, viewY);
+	};	  
+    
+	Acts.prototype.LookFront = function ()
+	{
+        this.dragMgr["setPoint"](0, 0);
+	};	 
+    
+	Acts.prototype.Breathing = function (e)
+	{
+        this.model["breathingEnable"] = (e === 1);
+	};	 
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -443,5 +522,50 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{
 		ret.set_string(this.currentMotionName);
 	};
-	
+    
+	Exps.prototype.TriggeredMotionName = function (ret)
+	{
+		ret.set_string(this.triggeredMotionName);
+	};    
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };    
+	Exps.prototype.MotionData = function (ret, key, defaultValue)
+	{
+        var v;
+        if (!this.isModelInitialize())
+            v = defaultValue || 0;
+        else
+        {
+            var d = this.model["getCurrentMotion"]()["data"];
+            if (key != null)
+                d = d[key];
+            
+            v = din(d, defaultValue);
+        }
+		ret.set_any(v);
+	};       
+    
+	Exps.prototype.ModelScale = function (ret)
+	{
+		ret.set_float(this.modelScale);
+	};	
 }());

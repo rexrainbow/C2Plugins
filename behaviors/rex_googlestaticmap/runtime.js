@@ -74,12 +74,22 @@ cr.behaviors.Rex_GoogleStaticMap = function(runtime)
 	behinstProto.tick = function ()
 	{    
 	};    
-
+    
+	behinstProto.getMapWidth = function ()
+	{    
+        return Math.floor(this.inst.width);
+	};    
+    
+	behinstProto.getMapHeight = function ()
+	{    
+        return Math.floor(this.inst.height);
+	};  
+    
 	behinstProto.get_map_url = function ()
 	{        
         var protocol = window["location"]["protocol"];
         var url_= 'http' + (/^https/.test(protocol)?'s':'') + '://maps.googleapis.com/maps/api/staticmap?' +
-                  'size=' + this.inst.width.toString() + "x" + this.inst.height.toString() + 
+                  'size=' + this.getMapWidth().toString() + "x" + this.getMapHeight().toString() + 
                   '&maptype=' + this.map_type +
                   '&format=' + this.image_format;
         

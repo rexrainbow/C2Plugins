@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 
  Software License Agreement (BSD License)
@@ -24,10 +26,12 @@
 
 // BUILD 193d48d, modified by mmikowski to pass jslint
 
-// Setup TAFFY name space to return an object with methods
-var TAFFY, exports, T;
 (function () {
-  'use strict';
+
+  // ---- Edit by rex.rainbow, move declaration inside function ----
+  // Setup TAFFY name space to return an object with methods
+  var TAFFY, exports, T;
+    
   var
     typeList,     makeTest,     idx,    typeKey,
     version,      TC,           idpad,  cmax,
@@ -118,7 +122,7 @@ var TAFFY, exports, T;
       //   False: skip. Default False;
       // * Purpose: Used to loop over arrays
       // *
-      // ****************************************  
+      // ****************************************        
       if ( a && ((T.isArray( a ) && a.length === 1) || (!T.isArray( a ))) ){
         fun( (T.isArray( a )) ? a[0] : a, 0 );
       }
@@ -2019,8 +2023,6 @@ var TAFFY, exports, T;
       TAFFY['is' + typeKey] = makeTest( typeKey );
     }
   }
+  
+  window.TAFFY = TAFFY;
 }());
-
-if ( typeof(exports) === 'object' ){
-  exports.taffy = TAFFY;
-}

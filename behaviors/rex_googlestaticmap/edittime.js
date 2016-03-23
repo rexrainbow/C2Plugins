@@ -17,7 +17,7 @@ AddCondition(1, cf_trigger, "On map loaded", "Map", "On map loaded", "Triggered 
 
 //////////////////////////////////////////////////////////////
 // Actions 
-AddAction(10, 0, "Load mao", "Map", "Load map", "Load map image into canvas.", "LoadMap");
+AddAction(10, 0, "Load map", "Map", "Load map", "Load map image into canvas.", "LoadMap");
 
 //////////////////////////////////////////////////////////////
 // Expressions

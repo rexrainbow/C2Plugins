@@ -1291,6 +1291,7 @@
         this.faceVX          = 0;
         this.faceVY          = 0;
         this.lastTimeSec     = 0;
+        this.enable          = false;
     }
     
     //============================================================
@@ -1303,6 +1304,7 @@
     {
         this.faceTargetX = x;
         this.faceTargetY = y;
+        this.enable = true;
     }
     
     //============================================================
@@ -1326,9 +1328,12 @@
     //============================================================
     L2DTargetPoint.prototype.update          = function()
     {
-       var TIME_TO_MAX_SPEED = 0.15;
-       var FACE_PARAM_MAX_V = 40.0 / 7.5;
-       var MAX_V = FACE_PARAM_MAX_V / L2DTargetPoint.FRAME_RATE;
+        if (!this.enable)
+            return;
+        
+        var TIME_TO_MAX_SPEED = 0.15;
+        var FACE_PARAM_MAX_V = 40.0 / 7.5;
+        var MAX_V = FACE_PARAM_MAX_V / L2DTargetPoint.FRAME_RATE;
         if(this.lastTimeSec == 0) {
             this.lastTimeSec = UtSystem.getUserTimeMSec();
             return;
@@ -1336,8 +1341,8 @@
         var curTimeSec = UtSystem.getUserTimeMSec();
         var deltaTimeWeight = (curTimeSec - this.lastTimeSec) * L2DTargetPoint.FRAME_RATE / 1000.0;
         this.lastTimeSec = curTimeSec;
-       var FRAME_TO_MAX_SPEED = TIME_TO_MAX_SPEED * L2DTargetPoint.FRAME_RATE;
-       var MAX_A = deltaTimeWeight * MAX_V / FRAME_TO_MAX_SPEED;
+        var FRAME_TO_MAX_SPEED = TIME_TO_MAX_SPEED * L2DTargetPoint.FRAME_RATE;
+        var MAX_A = deltaTimeWeight * MAX_V / FRAME_TO_MAX_SPEED;
         var dx = (this.faceTargetX - this.faceX);
         var dy = (this.faceTargetY - this.faceY);
         if(dx == 0 && dy == 0) return;
@@ -1448,13 +1453,13 @@
     //============================================================
     L2DViewMatrix.prototype.adjustTranslate = function(shiftX/*float*/, shiftY/*float*/)
     {
-        if(this.tr[0] * this.maxLeft + (this.tr[12] + shiftX) > this.screenLeft) 
+        if ((this.maxLeft !== null) && (this.tr[0] * this.maxLeft + (this.tr[12] + shiftX) > this.screenLeft))
             shiftX = this.screenLeft - this.tr[0] * this.maxLeft - this.tr[12];
-        if(this.tr[0] * this.maxRight + (this.tr[12] + shiftX) < this.screenRight) 
+        if ((this.maxRight !== null) && (this.tr[0] * this.maxRight + (this.tr[12] + shiftX) < this.screenRight))
             shiftX = this.screenRight - this.tr[0] * this.maxRight - this.tr[12];
-        if(this.tr[5] * this.maxTop + (this.tr[13] + shiftY) < this.screenTop) 
+        if ((this.maxTop !== null) && (this.tr[5] * this.maxTop + (this.tr[13] + shiftY) < this.screenTop))
             shiftY = this.screenTop - this.tr[5] * this.maxTop - this.tr[13];
-        if(this.tr[5] * this.maxBottom + (this.tr[13] + shiftY) > this.screenBottom) 
+        if ((this.maxTop !== null) && (this.tr[5] * this.maxBottom + (this.tr[13] + shiftY) > this.screenBottom))
             shiftY = this.screenBottom - this.tr[5] * this.maxBottom - this.tr[13];
         
         var tr1 = [1, 0, 0, 0, 
@@ -1619,6 +1624,7 @@
     window.L2DViewMatrix = L2DViewMatrix;
     window.L2DBaseModel = L2DBaseModel;
     window.L2DEyeBlink = L2DEyeBlink;
+    window.L2DTargetPoint = L2DTargetPoint;
     window.Live2DFramework = Live2DFramework;
     
     

@@ -3,7 +3,7 @@
 	return {
 		"name":			"Live2D Object",
 		"id":			"Rex_Live2DObj",      
-		"description":	"Live2D object.",
+		"description":	"Load and play Live2D object. http://www.live2d.com/en",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_live2dobj.html",
 		"category":		"Rex - Live2D",
@@ -16,11 +16,11 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(11, cf_trigger, "On successful", "Model - load", "On model loaded successful", 
+AddCondition(11, cf_trigger, "On loaded successful", "Model - load", "On model loaded successful", 
              "Triggered when model is loaded successful.", 
              "OnModelLoaded");
              
-AddCondition(12, cf_trigger, "On failed", "Model - load", "On model loaded failed", 
+AddCondition(12, cf_trigger, "On loaded failed", "Model - load", "On model loaded failed", 
              "Triggered when model is loaded failed.", 
              "OnModelLoadedFailed");  
 
@@ -29,12 +29,18 @@ AddCondition(13, 0, "Is ready", "Model", "Is model ready",
              "IsModelReady");                
                     
 AddStringParam("Motion name", "Enter the name of the motion to check if playing.");
-AddCondition(21, 0, "Is playing", "Motion", "Is motion {0} playing", "Test which of the object's motion is currently playing.", "IsMotionPlaying");
+AddCondition(21, 0, "Is motion playing", "Motion", "Is motion {0} playing", "Test which of the object's motion is currently playing.", "IsMotionPlaying");
 
 AddStringParam("Motion name", "Enter the name of the motion to check if playing.");
-AddCondition(22, cf_trigger, "On finished", "Motion", "On motion {0} finished", "Triggered when a motion has finished.", "OnMotionFinished");
+AddCondition(22, cf_trigger, "On motion finished", "Motion - finished", "On motion {0} finished", "Triggered when a motion has finished.", "OnMotionFinished");
 
-AddCondition(23, cf_trigger, "On any finished", "Motion", "On any motion finished", "Triggered when any motion has finished.", "OnAnyMotionFinished");
+AddCondition(23, cf_trigger, "On any motion finished", "Motion - finished", "On any motion finished", "Triggered when any motion has finished.", "OnAnyMotionFinished");
+
+AddStringParam("Motion name", "Enter the name of the motion to check if playing.");
+AddCondition(24, cf_trigger, "On motion began", "Motion - began", "On motion {0} began", "Triggered when a motion has began.", "OnMotionBegan");
+
+AddCondition(25, cf_trigger, "On any motion began", "Motion - began", "On any motion began", "Triggered when any motion has began.", "OnAnyMotionBegan");
+
 
 AddNumberParam("X", "Position X.", 0);
 AddNumberParam("Y", "Position Y.", 0);
@@ -63,7 +69,7 @@ AddAction(11, 0, "Load", "Load model",
           
 AddStringParam("Motion name", "Motion name.", '""');
 AddAction(21, 0, "Start motion", "Motion", 
-          "Start motion <i>{0}</i>", 
+          "Start motion <b>{0}</b>", 
           "Start motion.", "StartMotion");                 
 
 AddStringParam("Motion name", "Motion name.", '""');
@@ -75,12 +81,41 @@ AddStringParam("Expression name", "Expression name.", '""');
 AddAction(31, 0, "Set expression", "Expression", 
           "Set expression to <i>{0}</i>", 
           "Set expression.", "SetExpression");  
-   
+          
+AddNumberParam("Scale", "Set 1 to original size.", 1);     
+AddAction(41, 0, "Set model scale", "Camera", 
+          "Set model scale to <i>{0}</i>", 
+          "Set model scale without changing object size.", "SetModelScale");    
+
+AddNumberParam("X", "Position X.", 0);
+AddNumberParam("Y", "Position Y.", 0);          
+AddAction(101, 0, "Look at", "Look", 
+          "Look at ({0}, {1})", 
+          "Look at a specific position.", "LookAt");                
+        
+AddAction(102, 0, "Look front", "Look", 
+          "Look front", 
+          "Look front.", "LookFront"); 
+
+AddComboParamOption("Enable");
+AddComboParamOption("Disable");
+AddComboParam("Enable", "Enable the breathing behavior.",1);          
+AddAction(111, 0, "Breathing", "breathing", 
+          "{0} breathing", 
+          "Enable or disable Breathing.", "Breathing");                
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(12, ef_return_string, "Get path of loaded failed files", "Model - load", "LoadedFailedFilePaths", 'Get path of loaded failed files. Joins by ";".');
-
 AddExpression(21, ef_return_string, "Get motion name", "Motion", "MotionName", "The name of the current motion.");
+AddExpression(22, ef_return_string, "Gettriggered motion name", "Motion", "TriggeredMotionName", 
+    'The name of the triggered motion, used under "Condition: On any motion began", or "Condition: On any motion finished"');
+    
+//AddStringParam("Key", "Key.", '""');
+AddExpression(23, ef_return_any | ef_variadic_parameters, "Get current motion data", "Motion", "MotionData", 
+    "Get data of current motion. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
+
+AddExpression(41, ef_return_number, "Get model scale", "Model scale", "ModelScale", "Get current model scale. 1 is original size");
 
 ACESDone();
 
@@ -89,7 +124,8 @@ var property_list = [
     new cr.Property(ept_color, "Color",	cr.RGB(0, 0, 0), "Color for showing at editor.", "firstonly"),
     new cr.Property(ept_combo, "Hotspot", "Top-left", "Choose the location of the hot spot in the object.", 
                     "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"), 
-	new cr.Property(ept_text,	"Idle motion",	"idle",	'Motion name of idle. Set "" if no idle motion.'),                    
+	new cr.Property(ept_text,	"Idle motion",	"idle",	'Motion name of idle. Set "" if no idle motion.'),  
+    new cr.Property(ept_combo, "Breathing", "Enable", "Enable breathing.", "Disable|Enable"),     
 	];
 	
 // Called by IDE when a new object type is to be created

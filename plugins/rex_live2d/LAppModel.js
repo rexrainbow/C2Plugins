@@ -17,10 +17,15 @@
         this.modelHomeDir = "";
         this.modelSetting = null;
         this.tmpMatrix = [];
+        
+        this.breathingEnable = false;
+        this.currentMotion = {name:"", no:-1, data:null};
         this.currentMotionName = "";
+        this.currentMotionData = null;
     }
     
     LAppModel.prototype = new L2DBaseModel();
+      
     
     /*
      * モデルを初期化する
@@ -283,6 +288,10 @@
             
         for(var k in this.expressions)
             delete this.expressions[k];
+        
+        this.currentMotion.name = "";
+        this.currentMotion.no = -1;
+        this.currentMotion.data = null;
     }
     
     
@@ -317,7 +326,11 @@
         }
         
         if (this.isMotionFinished())
-            this.currentMotionName = "";
+        {
+            this.currentMotion.name = "";
+            this.currentMotion.no = -1;
+            this.currentMotion.data = null;
+        }
         
         //-----------------------------------------------------------------		
         
@@ -347,6 +360,47 @@
             this.expressionManager.updateParam(this.live2DModel); 
         }
         
+        // look at
+        // ドラッグによる顔の向きの調整
+        // -30から30の値を加える
+        this.live2DModel.addToParamFloat("PARAM_ANGLE_X", this.dragX * 30, 1);   // -30 ~ 30
+        this.live2DModel.addToParamFloat("PARAM_ANGLE_Y", this.dragY * 30, 1);   // -30 ~ 30
+        this.live2DModel.addToParamFloat("PARAM_ANGLE_Z", (this.dragX * this.dragY) * -30, 1);   // -30 ~ 30
+        
+        // ドラッグによる体の向きの調整
+        // -10から10の値を加える
+        this.live2DModel.addToParamFloat("PARAM_BODY_ANGLE_X", this.dragX*10, 1);    // -10 ~ 10
+        
+        // ドラッグによる目の向きの調整
+        // -1から1の値を加える
+        this.live2DModel.addToParamFloat("PARAM_EYE_BALL_X", this.dragX, 1);   // -1 ~ 1
+        this.live2DModel.addToParamFloat("PARAM_EYE_BALL_Y", this.dragY, 1);   // -1 ~ 1
+        // look at 
+
+
+        // Breathing
+        if (this.breathingEnable)
+        {
+            var timeMSec = UtSystem.getUserTimeMSec() - this.startTimeMSec;
+            var timeSec = timeMSec / 1000.0;
+            var t = timeSec * 2 * Math.PI; // 2πt
+            
+            // 呼吸など
+            this.live2DModel.addToParamFloat("PARAM_ANGLE_X", 
+                                             Number((15 * Math.sin(t / 6.5345))), 0.5);
+            this.live2DModel.addToParamFloat("PARAM_ANGLE_Y", 
+                                             Number((8 * Math.sin(t / 3.5345))), 0.5);
+            this.live2DModel.addToParamFloat("PARAM_ANGLE_Z", 
+                                             Number((10 * Math.sin(t / 5.5345))), 0.5);
+            this.live2DModel.addToParamFloat("PARAM_BODY_ANGLE_X", 
+                                             Number((4 * Math.sin(t / 15.5345))), 0.5);
+            this.live2DModel.setParamFloat("PARAM_BREATH", 
+                                           Number((0.5 + 0.5 * Math.sin(t / 3.2345))), 1);
+                                           
+        }
+        // Breathing                                       
+                                   
+    
         // 物理演算
         if (this.physics != null)
         {
@@ -394,7 +448,6 @@
         var max = this.modelSetting.getMotionNum(name);
         var no = parseInt(Math.random() * max);
         this.startMotion(name, no, priority);
-        this.currentMotionName = name;
     }
     
     
@@ -429,26 +482,14 @@
             return;
         }
     
-        var thisRef = this;
-        var motion;
-    
-        if (this.motions[name] == null) 
-        {
-            this.loadMotion(null, this.modelHomeDir + motionName, function(mtn) {
-                motion = mtn;
-                
-                // フェードイン、フェードアウトの設定
-                thisRef.setFadeInFadeOut(name, no, priority, motion);
-                
-            });
-        }
-        else 
-        {
-            motion = this.motions[name];
-            
-            // フェードイン、フェードアウトの設定
-            thisRef.setFadeInFadeOut(name, no, priority, motion);
-        }
+        // all motions had been loaded
+        var motion= this.motions[motionName];            
+        // フェードイン、フェードアウトの設定
+        this.setFadeInFadeOut(name, no, priority, motion);
+
+        this.currentMotion.name = name;
+        this.currentMotion.no = no;
+        this.currentMotion.data = this.modelSetting.getMotions()[name][no];    
     }
     
     
@@ -463,25 +504,8 @@
         if (LAppDefine.DEBUG_LOG)
                 console.log("Start motion : " + motionName);
     
-        if (this.modelSetting.getMotionSound(name, no) == null)
-        {
-            this.mainMotionManager.startMotionPrio(motion, priority);
-        }
-        else
-        {
-            var soundName = this.modelSetting.getMotionSound(name, no);
-            // var player = new Sound(this.modelHomeDir + soundName);
-            
-            //var snd = document.createElement("audio");
-            //snd.src = this.modelHomeDir + soundName;
-            
-            //if (LAppDefine.DEBUG_LOG)
-            //    console.log("Start sound : " + soundName);
-            
-            //snd.play();
-            this.mainMotionManager.startMotionPrio(motion, priority);
-        }
-        
+        this.mainMotionManager.startMotionPrio(motion, priority);
+        // no sound feature in C2 plugin        
     }
 
     LAppModel.prototype.isMotionFinished = function()
@@ -492,7 +516,7 @@
     LAppModel.prototype.hasUpdated = function()
     {
         // motion updating is moved to live2D plugin
-        var isMotionUpdating = (this.currentName !== "") && (!this.isMotionFinished());
+        var isMotionUpdating = (this.currentMotion.name !== "") && (!this.isMotionFinished());
         
         var isEyeBlinking = (this.eyeBlink != null);
         
@@ -511,8 +535,14 @@
             isExpressionPlaying || 
             isPhysicsPUpdatinig ||
             isLipSyncUpdating ||
-            isPosePlaying;
+            isPosePlaying ||
+            this.breathingEnable;
     };    
+    
+    LAppModel.prototype.getCurrentMotion = function()
+    {
+        return this.currentMotion;
+    };
     
     /*
      * 表情を設定する
@@ -582,18 +612,10 @@
         
         //  全体の設定
         
-        // 画面
-        VIEW_MAX_SCALE : 2,
-        VIEW_MIN_SCALE : 0.8,
-    
+        // 画面    
         VIEW_LOGICAL_LEFT : -1,
         VIEW_LOGICAL_RIGHT : 1,
     
-        VIEW_LOGICAL_MAX_LEFT : -2,
-        VIEW_LOGICAL_MAX_RIGHT : 2,
-        VIEW_LOGICAL_MAX_BOTTOM : -2,
-        VIEW_LOGICAL_MAX_TOP : 2,
-        
         // モーションの優先度定数
         PRIORITY_NONE : 0,
         PRIORITY_IDLE : 1,

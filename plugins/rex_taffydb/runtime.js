@@ -95,6 +95,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             
         this.current_rows = null;
         
+        this.exp_CurRowIndex = -1;
         this.exp_CurRow = null;
         this.exp_LastSavedRowID = "";
         
@@ -481,8 +482,9 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             }
             
             self.exp_CurRow = r;
+            self.exp_CurRowIndex = i;
             current_event.retrigger();
-            self.exp_CurRow = null;
+           
             
 		    if (solModifierAfterCnds)
 		    {
@@ -490,6 +492,10 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 		    } 
 		};
 		current_rows["each"](for_each_row);
+        
+        this.exp_CurRow = null;
+        this.exp_CurRowIndex = -1;         
+        
 		return false;
 	}; 
 	
@@ -772,7 +778,11 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
  	Exps.prototype.QueriedRowsIndex2RowID = function (ret, index_)
 	{
 		ret.set_string( this.queriedRowIndex2RowId(index_, "") );
-	};    
+	}; 
+ 	Exps.prototype.CurRowIndex = function (ret)
+	{
+		ret.set_int( this.exp_CurRowIndex);
+	};     
  	Exps.prototype.AllRowsAsJSON = function (ret)
 	{
 		ret.set_string( this.db()["stringify"]() );

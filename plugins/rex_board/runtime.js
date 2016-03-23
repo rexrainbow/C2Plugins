@@ -724,6 +724,37 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         _uids.length = 0;
         return has_inst;          
 	};
+    
+	instanceProto._pick_chess_inside_square = function (chess_type, lx0_, lx1_, ly0_, ly1_)
+	{
+        if (!chess_type)
+            return false;
+            
+        var lx0 = Math.min(lx0_, lx1_);
+        var lx1 = Math.max(lx0_, lx1_);       
+        var ly0 = Math.min(ly0_, ly1_);
+        var ly1 = Math.max(ly0_, ly1_);               
+        
+	    var lx, ly, lz, zHash, uid;
+        _uids.length = 0;	    
+	    for (ly=ly0; ly<=ly1; ly++)
+	    {
+	        for (lx=lx0; lx<=lx1; lx++)
+	        {            
+	            zHash = this.xy2zHash(lx, ly);
+                if (zHash == null)
+                    continue;
+                
+	            for (lz in zHash)
+	            {
+	                _uids.push(zHash[lz]);
+	            }
+            }
+	    }
+        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;          
+	};    
 	
 	instanceProto._pick_chess_on_LY = function (chess_type, ly)
 	{
@@ -897,6 +928,62 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();        
+    
+	Cnds.prototype.ForEachCell = function (direction)
+	{
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
+        // Top to bottom, or Bottom to top -> y axis
+        if ((direction === 0) || (direction === 1))        
+        {
+		    for (var y=0; y<=this.y_max; y++ )
+	        {
+	            this.exp_CurLY = (direction === 0)? y : (this.y_max - y);
+	            for (var x=0; x<=this.x_max; x++ )
+	            {
+                    if (solModifierAfterCnds)
+                    {
+                        this.runtime.pushCopySol(current_event.solModifiers);
+                    }
+                    
+                    this.exp_CurLX = x;	 
+		    	    current_event.retrigger();
+		    	    
+                    if (solModifierAfterCnds)
+                    {
+		    	        this.runtime.popSol(current_event.solModifiers);
+                    }
+		        }
+		    }
+        }
+        
+        // Left to right, or Right to left -> x axis
+        else if ((direction === 2) || (direction === 3))        
+        {
+		    for (var x=0; x<=this.x_max; x++ )
+	        {
+	            this.exp_CurLX = (direction === 2)? x : (this.x_max - x);        
+	            for (var y=0; y<=this.y_max; y++ )
+	            {
+                    if (solModifierAfterCnds)
+                    {
+                        this.runtime.pushCopySol(current_event.solModifiers);
+                    }
+                    
+                    this.exp_CurLY = y;	 
+		    	    current_event.retrigger();
+		    	    
+                    if (solModifierAfterCnds)
+                    {
+		    	        this.runtime.popSol(current_event.solModifiers);
+                    }
+		        }
+		    }
+        }        
+        return false;
+    };
     
 	Cnds.prototype.IsOccupied = function (x,y,z)
 	{
@@ -1137,61 +1224,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return !!this.uid2xyz(chess.uid);
 	};
 	  
-	Cnds.prototype.ForEachCell = function (direction)
+	Cnds.prototype.PickChessInsideSquare = function (chess_type, lx0, lx1, ly0, ly1)
 	{
-        var current_frame = this.runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-
-        // Top to bottom, or Bottom to top -> y axis
-        if ((direction === 0) || (direction === 1))        
-        {
-		    for (var y=0; y<=this.y_max; y++ )
-	        {
-	            this.exp_CurLY = (direction === 0)? y : (this.y_max - y);
-	            for (var x=0; x<=this.x_max; x++ )
-	            {
-                    if (solModifierAfterCnds)
-                    {
-                        this.runtime.pushCopySol(current_event.solModifiers);
-                    }
-                    
-                    this.exp_CurLX = x;	 
-		    	    current_event.retrigger();
-		    	    
-                    if (solModifierAfterCnds)
-                    {
-		    	        this.runtime.popSol(current_event.solModifiers);
-                    }
-		        }
-		    }
-        }
-        
-        // Left to right, or Right to left -> x axis
-        else if ((direction === 2) || (direction === 3))        
-        {
-		    for (var x=0; x<=this.x_max; x++ )
-	        {
-	            this.exp_CurLX = (direction === 2)? x : (this.x_max - x);        
-	            for (var y=0; y<=this.y_max; y++ )
-	            {
-                    if (solModifierAfterCnds)
-                    {
-                        this.runtime.pushCopySol(current_event.solModifiers);
-                    }
-                    
-                    this.exp_CurLY = y;	 
-		    	    current_event.retrigger();
-		    	    
-                    if (solModifierAfterCnds)
-                    {
-		    	        this.runtime.popSol(current_event.solModifiers);
-                    }
-		        }
-		    }
-        }        
-        return false;
-    };
+        return this._pick_chess_inside_square(chess_type, lx0, lx1, ly0, ly1);            
+	};	 
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -1464,6 +1500,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.RemoveChess(chess_uid);   
         this.AddChess(chess_uid, x, y, lz);       
 	}; 
+    
+	Acts.prototype.PickChessInsideSquare = function (chess_type, lx0, lx1, ly0, ly1)
+	{
+        this._pick_chess_inside_square(chess_type, lx0, lx1, ly0, ly1);            
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
