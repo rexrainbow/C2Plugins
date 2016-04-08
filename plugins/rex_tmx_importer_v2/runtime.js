@@ -160,20 +160,19 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         
         
         // setup this.layout
-        if ((this._tmx_obj.map.orientation === "orthogonal") || 
-            (this._tmx_obj.map.orientation === "isometric"))
+        var orientation = this._tmx_obj.map.orientation;
+        var is6DirMap = (orientation === "hexagonal");
+        var is4DirMap = (orientation === "orthogonal") || (orientation === "isometric") || (orientation === "staggered") ;
+        if (is4DirMap)
         {
-            var mode;
-            switch (this._tmx_obj.map.orientation)
-            {
-            case "orthogonal":  mode=0;  break;
-            case "isometric":   mode=1;  break;
-            }
+            var mode ={"orthogonal":0, 
+                               "isometric": 1,
+                               "staggered": 2}[orientation];
             
             this.layout = new SquareLayoutKlass(this.POX, this.POY, 
                                                 this.exp_TileWidth, this.exp_TileHeight, mode);
         }
-        else if (this._tmx_obj.map.orientation === "hexagonal") 
+        else if (is6DirMap) 
         {
             var is_up2down = (this._tmx_obj.map.staggeraxis === "x");
             var is_even = (this._tmx_obj.map.staggerindex === "even");

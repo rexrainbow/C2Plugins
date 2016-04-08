@@ -7,7 +7,7 @@
 		"description":	"Executing function from a csv table while time-out",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bscenario.html",
-		"category":		"Rex - Timeline",
+		"category":		"Rex - Script",
 		"flags":		0
 	};
 };

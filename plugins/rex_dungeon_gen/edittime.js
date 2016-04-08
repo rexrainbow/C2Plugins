@@ -32,9 +32,32 @@ AddComboParamOption("room space");
 AddComboParamOption("corridor");
 AddComboParamOption("door");
 AddComboParam("Type", "Type of tile.",1);           
-AddCondition(11, 0, "Is a wall", "Value", 
+AddCondition(11, 0, "Tile type", "Type", 
              "({0},{1}) is {2}", 
-             "Return true if it is a wall/room space/corridor in a specific logic position.", "IsCharAt");  
+             "Return true if it is a wall/room space/corridor in a specific logic position.", "TileType");  
+             
+AddNumberParam("X", "Logic X.", 0);
+AddNumberParam("Y", "Logic Y.", 0); 
+AddComboParamOption("dead end"); 
+AddComboParamOption("L-junction");
+AddComboParamOption("I-junction");
+AddComboParamOption("T-junction");
+AddComboParamOption("X-junction");
+AddComboParam("Type", "Type of corridor.",0);           
+AddCondition(12, 0, "Corridor type", "Type - corridor", 
+             "({0},{1}) is {2} corridor", 
+             "Return true if it is a dead end/L-junction/I-junction/T-junction/X-junction corridor in a specific logic position.", "IsCorridorType");
+             
+AddNumberParam("X", "Logic X.", 0);
+AddNumberParam("Y", "Logic Y.", 0); 
+AddComboParamOption("left"); 
+AddComboParamOption("right");
+AddComboParamOption("top");
+AddComboParamOption("bottom");
+AddComboParam("Neighbor", "Direction of room neighbor.",0);
+AddCondition(13, 0, "Door type", "Type - door", 
+             "({0},{1}) has room at {2} side", 
+             "Return true if there has a neighbor room.", "DoorType");              
 
 AddCondition(21, cf_looping | cf_not_invertible, "For each room", "For each room", 
              "For each room", 

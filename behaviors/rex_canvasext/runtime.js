@@ -81,8 +81,7 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 	};
     
 	behinstProto.zlib_loadFromJSON = function (o)
-	{     
-        debugger
+	{             
         var inst = this;
         inst.canvas.width = o["w"];
         inst.canvas.height = o["h"];
@@ -227,20 +226,18 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 				inst.canvas.width = inst.width;
 				inst.canvas.height = inst.height;              
             }
+            
+            var canvas = inst.canvas;
+            if (img.width !== canvas.width)
+                canvas.width = img.width;
+            if (img.height !== canvas.height)
+                canvas.height = img.height;            
 
-            inst.ctx.clearRect(0,0, inst.canvas.width, inst.canvas.height);
-		    inst.ctx.drawImage(img, 0, 0, inst.width, inst.height);
-			
-			// WebGL renderer: need to create texture (canvas2D just draws with img directly)
-			if (self.runtime.glwrap)
-			{
-				if (self.inst.tex)
-					self.runtime.glwrap.deleteTexture(self.inst.tex);
-					
-				self.inst.tex = self.runtime.glwrap.loadTexture(img, false, self.runtime.linearSampling);
-			}
+            inst.ctx.clearRect(0,0, img.width, img.height);
+		    inst.ctx.drawImage(img, 0, 0, img.width, img.height);
 			
 			self.runtime.redraw = true;
+            inst.update_tex = true; 
 			self.runtime.trigger(cr.behaviors.Rex_CanvasExt.prototype.cnds.OnURLLoaded, inst);
 		};
 		

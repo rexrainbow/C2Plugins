@@ -13,7 +13,6 @@ cr.plugins_.rex_youtube_player = function(runtime)
 
 (function ()
 {
-	var manuallyChanged = false;
 	/////////////////////////////////////
 	var pluginProto = cr.plugins_.rex_youtube_player.prototype;
 
@@ -27,16 +26,24 @@ cr.plugins_.rex_youtube_player = function(runtime)
 
 	var typeProto = pluginProto.Type.prototype;
 
+    var IsAPIReady = false;   
 	typeProto.onCreate = function()
 	{
-	    //jsfile_load("https://www.youtube.com/iframe_api");
-        // Function onYouTubeIframeAPIReady() should be defined before loading 
+        if (!window["onYouTubeIframeAPIReady"])
+        {
+            window["onYouTubeIframeAPIReady"] = function() 
+            {
+                IsAPIReady = true;                          
+            };
+	        jsfile_load("https://www.youtube.com/iframe_api");            
+            // Function onYouTubeIframeAPIReady() should be defined before loading 
+        }
 	};
 	
-	var jsfile_load = function(file_name)
+	var jsfile_load = function(file_name, callback)
 	{
 	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;	    
+	    var exist=false;
 	    for(var i=0;i<scripts.length;i++)
 	    {
 	    	if(scripts[i].src.indexOf(file_name) != -1)
@@ -48,8 +55,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    if(!exist)
 	    {
 	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
+            newScriptTag["type"] = "text/javascript";
+            newScriptTag["src"] = file_name;
+            
+            if (typeof callback === "function")
+                newScriptTag["onload"] = callback;
+            
 	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
 	    }
 	};
@@ -65,7 +76,6 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	// called whenever an instance is created
-    var IsAPIReady = false;
 	instanceProto.onCreate = function()
 	{
 		// Not supported in DC
@@ -98,7 +108,11 @@ cr.plugins_.rex_youtube_player = function(runtime)
 					
 		this.updatePosition(true);  // init position and size
 		
-		
+        if (!this.recycled)
+		    this.pendingCallbacks = [];
+        else
+            this.pendingCallbacks.length = 0;
+                
         this.is_player_init = false;		
         this.youtube_player = null;
         this.youtube_state = -1;        
@@ -110,22 +124,10 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		this.disablekb = (this.properties[5] === 0);
 		this.exp_errorCode = 0;
         		
-        this.pended_cmds = [];
         this.isInFullScreen = false;
         this.beforefullwindow = {"x":null, "y":null, "w":null, "h":null};
 		this.runtime.tickMe(this);
-        
-        // init
-        if (!window["onYouTubeIframeAPIReady"])
-        {
-            window["onYouTubeIframeAPIReady"] = function() 
-            {
-                IsAPIReady = true;                 
-            };
-	        jsfile_load("https://www.youtube.com/iframe_api");            
-            // Function onYouTubeIframeAPIReady() should be defined before loading 
-        }
-        // init        
+       
 	};       
 
 	instanceProto.onDestroy = function ()
@@ -302,14 +304,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	
     instanceProto.run_pended_cmds = function ()
     {
-        var i, cnt=this.pended_cmds.length, cmd;
-        for(i=0; i<cnt; i++)
-        {
-            cmd = this.pended_cmds[i];
-            this.youtube_player[cmd[0]].apply(this.youtube_player, cmd[1]);
-        }
-        
-        this.pended_cmds.length = 0;
+         var i, cnt=this.pendingCallbacks.length;
+         for (i=0; i<cnt; i++)
+         {
+             this.pendingCallbacks[i]();
+         }
+         this.pendingCallbacks.length = 0;           
     };
 
 	instanceProto.LoadVideoID = function (videoId, is_autoplay)
@@ -317,10 +317,18 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    this.cur_videoId = videoId;
 	    this.cur_isAutoPlay = is_autoplay;
 	    if (!this.youtube_player || !this.youtube_player["loadVideoById"])
-	    {	        
-		    this.pended_cmds.push(["loadVideoById", [videoId]]);
-		    var cmd = (is_autoplay)? "playVideo" : "pauseVideo";
-		    this.pended_cmds.push([cmd, []]);		        
+	    {
+            var self=this;
+            var callback = function ()
+            {
+                self.youtube_player["loadVideoById"](videoId);
+                if (is_autoplay)
+                    self.youtube_player["playVideo"]();
+                else
+                    self.youtube_player["pauseVideo"]();
+            };
+            this.pendingCallbacks.push(callback);
+	        
 		    return;	        
 	    }
 	    
@@ -331,7 +339,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{	    
 		if (!this.youtube_player || !this.youtube_player["seekTo"])
 		{
-		    this.pended_cmds.push(["seekTo", [s]]);
+            var self=this;
+            var callback = function ()
+            {
+                self.youtube_player["seekTo"](s);
+            };
+            this.pendingCallbacks.push(callback);            
 		    return;
 		}
 
@@ -346,10 +359,17 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	
 	instanceProto.SetMuted = function (m)
 	{
-	    var cmd = (m)? "mute" : "unMute";	
 		if (!this.youtube_player || !this.youtube_player[cmd])
 		{
-		    this.pended_cmds.push([cmd, []]);
+            var self=this;
+            var callback = function ()
+            {
+                if (m)
+                    self.youtube_player["mute"]();
+                else
+                    self.youtube_player["unMute"]();                    
+            };
+            this.pendingCallbacks.push(callback);            
 		    return;
 		}
 
@@ -362,7 +382,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    var vol = cr.clamp(v, 0, 100);
 		if (!this.youtube_player || !this.youtube_player["setVolume"])
 		{
-		    this.pended_cmds.push(["setVolume", [vol]]);
+            var self=this;
+            var callback = function ()
+            {
+                self.youtube_player["setVolume"](vol);                
+            }
+            this.pendingCallbacks.push(callback);            
 		    return;
 		}
 
@@ -374,7 +399,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{
 		if (!this.youtube_player || !this.youtube_player["pauseVideo"])
 		{
-		    this.pended_cmds.push(["pauseVideo", []]);
+            var self=this;
+            var callback = function ()
+            {
+                self.youtube_player["pauseVideo"]();                
+            }
+            this.pendingCallbacks.push(callback);            
 		    return;
 		}
 
@@ -386,7 +416,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{
 	    if (!this.youtube_player || !this.youtube_player["playVideo"])
 		{
-		    this.pended_cmds.push(["playVideo", []]);
+            var self=this;
+            var callback = function ()
+            {
+                self.youtube_player["playVideo"]();
+            }
+            this.pendingCallbacks.push(callback);
 		    return;
 		}
 
@@ -453,7 +488,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{   
-        this.pended_cmds.length = 0;
+        pendingCallbacks.length = 0;
         
         this.LoadVideoID(o["videoId"], o["isAutoPlay"]);
         this.SetPlaybackTime(o["playBackTime"]);

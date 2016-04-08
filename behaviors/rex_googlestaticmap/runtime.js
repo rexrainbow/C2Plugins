@@ -46,22 +46,40 @@ cr.behaviors.Rex_GoogleStaticMap = function(runtime)
     var MARKERSIZE_MAP = ['tiny', 'mid', 'small'];
 	behinstProto.onCreate = function()
 	{         
-        this.center = this.properties[1];
-        this.zoom_level = this.properties[2];
-        this.map_type = MAPTYPE_MAP[this.properties[3]];
-        this.image_format = FORMAT_MAP[this.properties[4]];
+        this.map_type = MAPTYPE_MAP[this.properties[1]];
+        this.image_format = FORMAT_MAP[this.properties[2]];
+        this.zoom_level = this.properties[3];        
+        
+        // center
+        this.center = this.properties[4];        
         
         // marker
-        this.marker_locations = this.properties[5];
-        this.marker_size = MARKERSIZE_MAP[this.properties[6]];
-        this.marker_color = this.properties[7];
-        this.marker_label = this.properties[8].substring(0, 1).toUpperCase(); 
+        this.markers = [];
+        if (this.properties[5] !== "")  // locations
+        {
+            var marker = [
+                this.properties[5],  // locations
+                MARKERSIZE_MAP[this.properties[6]],  // size
+                this.properties[7], // color
+                this.properties[8].substring(0, 1).toUpperCase(), // label
+                this.properties[9],  // icon
+            ];
+            this.markers.push(marker);
+        }
 
         // path
-        this.path_locations = this.properties[9]; 
-        this.path_weight = this.properties[10];
-        this.path_color = this.properties[11]; 
-        //this.area_fill_color = this.properties[12];         
+        this.paths = [];
+        if (this.properties[10] !== "")
+        {
+            var path = [
+                this.properties[10],  // locations
+                this.properties[11], // weight
+                this.properties[12], // color
+                this.properties[13],  // area fill color
+            ];
+            this.paths.push(path);
+        }
+
         
         if (this.properties[0] === 1)    // initial_loading
             this.load_image(this.get_map_url());
@@ -89,72 +107,98 @@ cr.behaviors.Rex_GoogleStaticMap = function(runtime)
 	{        
         var protocol = window["location"]["protocol"];
         var url_= 'http' + (/^https/.test(protocol)?'s':'') + '://maps.googleapis.com/maps/api/staticmap?' +
-                  'size=' + this.getMapWidth().toString() + "x" + this.getMapHeight().toString() + 
+                  'scale=' + ((window.devicePixelRatio === 1)? "1":"2") +
+                  '&mobile=' + ((this.runtime.isMobile)? "true":"false") +        
+                  '&size=' + this.getMapWidth().toString() + "x" + this.getMapHeight().toString() + 
                   '&maptype=' + this.map_type +
                   '&format=' + this.image_format;
+                  
+                  
+        if (this.zoom_level >= 0 )
+            url_ += '&zoom=' + this.zoom_level.toString();
         
-        var has_marker_or_path = (this.marker_locations !== "") || (this.path_locations !== "")
+        var has_marker_or_path = (this.markers.length > 0) || (this.paths.length > 0)
         if (!has_marker_or_path)
         {        
-            url_ += '&center=' + this.center;
-            url_ += '&zoom=' + this.zoom_level;
+            url_ += '&center=' + encodeURIComponent(this.center);
         }
 
-        if (this.marker_locations !== "")
+        if (this.markers.length > 0)
         {
-            url_ += '&markers=' + 
-                    "size:" + this.marker_size + "|";
-                    
-            if (this.marker_color !== "")
-                url_ += "color:" + this.marker_color + "|";
+            var i, cnt=this.markers.length, marker;
+            var locations, size, color, label, icon;
+            for (i=0; i<cnt; i++)
+            {
+                marker = this.markers[i];
+                locations = marker[0];
+                size = marker[1];
+                color = marker[2];
+                label = marker[3];
+                icon = marker[4];
                 
-            if (this.marker_label !== "")
-                url_ += "label:" + this.marker_label + "|";
+                url_ += '&markers=' + 
+                        "size:" + size + "|";
+                        
+                if (color !== "")
+                    url_ += "color:" + color + "|";
                 
-            url_ += this.marker_locations;
+                if (label !== "")
+                    url_ += "label:" + label + "|"; 
+
+                if (icon !== "")
+                    url_ += "icon:" + icon + "|";                 
+
+                url_ += encodeURIComponent(locations);
+            }                    
         }
         
-        if (this.path_locations !== "")
+        if (this.paths.length > 0)
         {
-            url_ += "&path=" +
-                    "weight:" + this.path_weight + "|";
-
-            if (this.path_color !== "")
-                url_ += "color:" + this.path_color + "|";
+            var i, cnt=this.paths.length, path;
+            var locations, weight, color, area_fill_color;
+            for (i=0; i<cnt; i++)
+            {
+                path = this.paths[i];
+                locations = path[0];
+                weight = path[1];
+                color = path[2];
+                area_fill_color = path[3];
                 
-            //if (this.area_fill_color !== "")
-            //    url_ = "fillcolor:" + this.area_fill_color + "|";
+                url_ += "&path=" +
+                    "weight:" + weight + "|";
+                        
+                if (color !== "")
+                    url_ += "color:" + color + "|";
                 
-            url_ += this.path_locations;
-        };
+                if (area_fill_color !== "")
+                    url_ += "fillcolor:" + area_fill_color + "|";                
+                
+                url_ += encodeURIComponent(locations);
+            }  
+        }
         
         return url_;
 	};    
     
 	behinstProto.load_image = function (url_)
-	{
+	{       
 		var img = new Image();
 		var self = this;
+        var inst = this.inst;
 
 		img.onload = function ()
 		{
-		    var inst = self.inst;
+            if ((!inst.canvas) ||  (!inst.ctx))
+                return;            
 
-		    inst.canvas.width = inst.width;
-			inst.canvas.height = inst.height;  
+            var w = inst.width;
+            var h = inst.height;
+		    inst.canvas.width = w
+			inst.canvas.height = h
                 
-            inst.ctx.clearRect(0,0, inst.canvas.width, inst.canvas.height);
-		    inst.ctx.drawImage(img, 0, 0, inst.width, inst.height);
-			
-			// WebGL renderer: need to create texture (canvas2D just draws with img directly)
-			if (self.runtime.glwrap)
-			{
-				if (self.webGL_texture)
-					self.runtime.glwrap.deleteTexture(self.webGL_texture);
-					
-				self.webGL_texture = self.runtime.glwrap.loadTexture(img, false, self.runtime.linearSampling);
-			}
-			
+            inst.ctx.clearRect(0,0, w, h);
+		    inst.ctx.drawImage(img, 0, 0, w, h);
+						
 			self.runtime.redraw = true;
             inst.update_tex = true; 
 			self.runtime.trigger(cr.behaviors.Rex_GoogleStaticMap.prototype.cnds.OnMapLoaded, inst);
@@ -165,6 +209,30 @@ cr.behaviors.Rex_GoogleStaticMap = function(runtime)
             
 		img.src = url_;
 	};
+    
+	behinstProto.saveToJSON = function ()
+	{ 
+		return {
+            "mt":this.map_type,
+            "if": this.image_format,
+            "zl": this.zoom_level,
+            
+            "c": this.center,
+            "m": this.markers,
+            "p": this.paths,
+        };
+	};
+    
+	behinstProto.loadFromJSON = function (o)
+	{    
+        this.map_type = o["mt"];
+        this.image_format = o["if"];
+        this.zoom_level = o["zl"];
+        
+        this.center = o["c"];
+        this.markers = o["m"];
+        this.paths = o["p"];
+	};	    
     	 
 	//////////////////////////////////////
 	// Conditions
@@ -181,7 +249,74 @@ cr.behaviors.Rex_GoogleStaticMap = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
     
-	Acts.prototype.LoadURL = function ()
+	Acts.prototype.SetMapType = function (type_)
+	{
+		this.map_type = MAPTYPE_MAP[type_];
+	};    
+    
+	Acts.prototype.SetImageFormat = function (format_)
+	{
+        this.image_format = FORMAT_MAP[format_];
+	};  
+    
+	Acts.prototype.SetZoomLevel = function (zoom_level)
+	{
+        this.zoom_level = zoom_level;   
+	};  
+    
+	Acts.prototype.SetCenter = function (center_)
+	{
+        this.center = center_;  
+	};  
+    
+	Acts.prototype.CleanMarkers = function ()
+	{
+        this.markers.length = 0;
+	};      
+    
+	Acts.prototype.AddMarker = function (locations, size, color, label, icon)
+	{
+        if (locations !== "")
+        {
+            var marker = [
+                locations,
+                MARKERSIZE_MAP[size], 
+                color,
+                label.substring(0, 1).toUpperCase(),
+                icon,
+            ];
+            this.markers.push(marker);
+        }
+	};        
+    
+	Acts.prototype.CleanPaths = function ()
+	{
+        this.paths.length = 0;
+	};      
+    
+	Acts.prototype.AddPath = function (pStart, pEnd, weight, path_color, area_fill_color)
+	{
+        var locations;
+        if (pStart === "")
+            locations = pEnd;
+        else if (pEnd === "")
+            locations = pStart;
+        else  // both pStart, and pEnd have value
+            locations = pStart + "|" + pEnd;
+            
+        if (locations !== "")
+        {
+            var path = [
+                locations,
+                weight,
+                path_color,
+                area_fill_color
+            ];
+            this.paths.push(path);
+        }
+	};       
+    
+	Acts.prototype.LoadMap = function ()
 	{
 		this.load_image(this.get_map_url());
 	};
@@ -190,4 +325,8 @@ cr.behaviors.Rex_GoogleStaticMap = function(runtime)
 	function Exps() {};
 	behaviorProto.exps = new Exps();
     
+	Exps.prototype.MapURL = function (ret)
+	{
+		ret.set_string(this.get_map_url());
+	};    
 }());

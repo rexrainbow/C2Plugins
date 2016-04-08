@@ -133,9 +133,7 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
 	{        
 	    return (this.ValueAt(x,y) === 0);
 	}; 
-    
-    
-   
+        
     instanceProto.isBorderWall = function (x, y)
 	{        
         if (this.isWall(x,y))
@@ -164,10 +162,13 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
 	{                   
         return (this.LXY2RoomIndex(x,y) !== -1);
 	};   
-    instanceProto.isCorridor = function (x, y)
+    instanceProto.isCorridor = function (x, y, simpleTest)
 	{               
         if (this.isEmptySpace(x,y) && (!this.isRoomSpace(x,y)))
         {               
+            if (simpleTest)  // include door-type
+                return true;
+            
             // 4 dir
             var hasRoomSpaceNeighbor = this.isRoomSpace(x, y-1);
             if (!hasRoomSpaceNeighbor) hasRoomSpaceNeighbor = this.isRoomSpace(x+1, y);
@@ -192,6 +193,34 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
 
         return false;
 	}; 
+    
+    instanceProto.getCorridorNeighborsCount = function (x, y)
+	{
+        var cnt = 0;
+        if (this.isCorridor(x, y-1, true))  cnt += 1;
+        if (this.isCorridor(x+1, y, true))  cnt += 1;
+        if (this.isCorridor(x, y+1, true))  cnt += 1;
+        if (this.isCorridor(x-1, y, true))  cnt += 1; 
+	    return cnt;
+	};    
+        
+    instanceProto.getCorridorNeighborsCode = function (x, y)
+	{
+        var code = 0;
+        // right
+        if (this.isCorridor(x+1, y, true))  code |= 1;
+        
+        // down
+        if (this.isCorridor(x, y+1, true))  code |= 2;
+        
+        // left
+        if (this.isCorridor(x-1, y, true))  code |= 4;
+        
+        // up
+        if (this.isCorridor(x, y-1, true))  code |= 8;
+
+	    return code;
+	};         
 
     instanceProto.getRoomLeft = function (room)
 	{
@@ -221,7 +250,7 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
 	{
         return (room === null)? (-1): (room[2] - room[0] + 1);
 	};    
-    instanceProto.CurRoomHeight = function (room)
+    instanceProto.getRoomHeight = function (room)
 	{
         return (room === null)? (-1): (room[3] - room[1] + 1);
 	}; 
@@ -264,7 +293,7 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
 		return true;
 	};
 	
-	Cnds.prototype.IsCharAt = function (x, y, type)
+	Cnds.prototype.TileType = function (x, y, type)
 	{
         switch (type)
         {
@@ -277,6 +306,43 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
         default: return false;
         }
 	};
+    
+	Cnds.prototype.IsCorridorType = function (x, y, type)
+	{
+        if (!this.isCorridor(x,y, true))
+            return false;
+
+        switch (type)
+        {
+        case 0:  return (this.getCorridorNeighborsCount(x,y) === 1);  // dead end
+        
+        case 1:  // L-junction
+            var code = this.getCorridorNeighborsCode(x,y);
+            return ((code === 3) || (code === 6) || (code === 12) || (code == 9));
+            
+        case 2:  // I-junction
+            var code = this.getCorridorNeighborsCode(x,y);
+            return ((code === 5) || (code === 10));
+            
+        case 3:  return (this.getCorridorNeighborsCount(x,y) === 3);  // T-junction
+        
+        case 4:  return (this.getCorridorNeighborsCount(x,y) === 4);  // X-junction
+        
+        default: return false;        
+        }
+	};   
+
+	Cnds.prototype.DoorType = function (x, y, dir)
+	{
+        switch (dir)
+        {
+        case 0:  return this.isRoomSpace(x-1, y);    // left
+        case 1:  return this.isRoomSpace(x+1, y);    // right
+        case 2:  return this.isRoomSpace(x, y-1);    // top 
+        case 3:  return this.isRoomSpace(x, y+1);    // bottom
+        default: return false;
+        }
+	};    
     
 	Cnds.prototype.ForEachRoom = function ()
 	{

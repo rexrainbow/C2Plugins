@@ -25,48 +25,11 @@ cr.plugins_.Rex_Geocoding = function(runtime)
 	
 	var typeProto = pluginProto.Type.prototype;
 
-    var isAPILoad = false;   
-    var pendingCallbacks = [];
 	typeProto.onCreate = function()
-	{
-        var callback = function()
-        {
-            isAPILoad = true;
-            var i, cnt=pendingCallbacks.length;
-            for (i=0; i<cnt; i++)
-            {
-                pendingCallbacks[i]();
-            }
-            pendingCallbacks.length = 0;
-        }
-	    jsfile_load("https://maps.googleapis.com/maps/api/js", callback);        
+	{     
+         assert2(cr.plugins_.rex_googlemap_api, "Error: missing Google Map API plugin.");    
 	};
 	
-	var jsfile_load = function(file_name, callback)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-            newScriptTag["type"] = "text/javascript";
-            newScriptTag["src"] = file_name;
-            
-            if (typeof callback === "function")
-                newScriptTag["onload"] = callback;
-            
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
-	};
-
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -78,22 +41,9 @@ cr.plugins_.Rex_Geocoding = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
  
 	instanceProto.onCreate = function()
-	{           
-        if (!this.recycled)
-        {         
-            this.addressResult = {"status": null, "results": null, "srcLat":0, "srcLng": 0};
-            this.latLngResult = {"status": null, "results": null, "srcAddr": ""};        
-        }
-        else
-        {
-            this.addressResult["status"] = null;
-            this.addressResult["results"] = null;  
-            this.addressResult ["srcLat"] = 0;
-            this.addressResult ["srcLng"] = 0;
-            this.latLngResult["status"] = null;
-            this.latLngResult["results"] = null;       
-            this.latLngResult["srcAddr"] = "";                
-        }
+	{                    
+         this.addressResult = {"status": null, "results": null, "srcLat":0, "srcLng": 0};
+         this.latLngResult = {"status": null, "results": null, "srcAddr": ""};    
 	};
 
 	instanceProto.latLng2Address = function (lat, lng)
@@ -285,32 +235,18 @@ cr.plugins_.Rex_Geocoding = function(runtime)
 
 	Acts.prototype.LatLng2Address = function (lat, lng)
 	{
-        if (isAPILoad)    
-            this.latLng2Address(lat, lng);
-        else
-        {
-            var self=this;
-            var callback = function ()
-            {
-                self.latLng2Address(lat, lng);
-            }
-            pendingCallbacks.push(callback);
-        }
+        if (!window.RexC2GoogleAPILoader.IsLoaded())
+            return;
+        
+        this.latLng2Address(lat, lng);
 	};   
 
 	Acts.prototype.AddressLatLng = function (address)
 	{
-        if (isAPILoad)    
-            this.address2LatLng(address);
-        else
-        {
-            var self=this;
-            var callback = function ()
-            {
-                self.address2LatLng(address);
-            }
-            pendingCallbacks.push(callback);
-        }
+        if (!window.RexC2GoogleAPILoader.IsLoaded())
+            return;
+        
+        this.address2LatLng(address);
 	};     
 	//////////////////////////////////////
 	// Expressions

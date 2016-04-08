@@ -1,12 +1,12 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Work Sheet",
-		"id":			"Rex_WorkSheet",
-		"version":		"1.0",           
-		"description":	"Executing instructions from a string while time-out",
+		"name":			"ScenarioJ Engine",
+		"id":			"Rex_ScenarioJEngine",
+		"version":		"0.1",        
+		"description":	"Engine of Scenario-Json.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_worksheet.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_scenariojengine.html",
 		"category":		"Rex - Script",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -16,52 +16,52 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On execution completed", "Control", "On completed", 
-             "Triggered when worksheet execution completed.", "OnCompleted");
-AddCondition(1, 0, "Is worksheet running", "Control", "Is running", 
-             "Is worksheet running.", "IsRunning");
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddObjectParam("Timeline", "Timeline object for getting timer");
-AddObjectParam("Function", "Function object for callback");
-AddAction(0, 0, "Setup work sheet", "Z: Deprecated", 
-          "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
-          "Setup work sheet.", "Setup");
-AddStringParam("Instructions", "Instructions in work sheet", '""');
-AddNumberParam("Offset", "Time offset at start", 0);
-AddAction(1, 0, "Start work sheet", "Control", 
-          "Start work sheet <i>{0}</i> with <i>{1}</i> offset", 
-          "Start work sheet.", "Start");          
-AddAction(2, 0, "Pause work sheet", "Control", 
-          "Pause work sheet", 
-          "Pause work sheet.", "Pause");
-AddAction(3, 0, "Resume work sheet", "Control", 
-          "Resume work sheet", 
-          "Resume work sheet.", "Resume"); 
-AddAction(4, 0, "Stop work sheet", "Control", 
-          "Stop work sheet", 
-          "Stop work sheet.", "Stop"); 
-AddNumberParam("Offset", "Time offset at start", 0);     
-AddAction(5, 0, "Set time offset", "Setting", 
-          "Set offset to <i>{1}</i>", 
-          "Set time offset.", "SetOffset");
-		  
-AddObjectParam("Timeline", "Timeline object for getting timer");
-AddAction(10, 0, "Setup work sheet", "Setup", 
+AddAction(1, 0, "Clean commands", "0: Load", 
+          "Clean all commands", 
+          "Clean all commands.", "CleanCmds");
+AddStringParam("Commands", "Commands in JSON format", "");
+AddAction(2, 0, "Append commands", "0: Load", 
+          "Append commands <i>{0}</i>", 
+          "Append commands.", "AppendCmds");    
+
+AddAnyTypeParam("Name", "Name of parameter", '""');
+AddAnyTypeParam("Value", "Value", "0");
+AddAction(11, 0, "Set parameter", "Function call", 
+    "Set parameter <b>{0}</b> to <b>{1}</b> at table <i>{2}</i>", 
+    "Set a parameter table.", "SetFunctionParameter");
+
+AddStringParam("Name", "The name of the function to call.", "\"\"");
+AddStringParam("Table", "Name of parameter table.", '"_"');
+AddAction(12, 0, "Call function","Function call", 
+    "Call <b>{0}</b>", 
+    "Call a function, running its 'On function' event.", "Call");              
+          
+ddAction(21, 0, "Pause scenario", "Control", 
+          "Pause scenario", 
+          "Pause scenario.", "Pause");
+AddAction(22, 0, "Resume scenario", "Control", 
+          "Resume scenario", 
+          "Resume scenario.", "Resume"); 
+AddAction(23, 0, "Stop scenario", "Control", 
+          "Stop scenario", 
+          "Stop scenario.", "Stop"); 
+
+AddObjectParam("Timeline", "Timeline object to get timer");
+AddAction(41, 0, "Setup timeline", "Setup", 
           "Get timer from <i>{0}</i>", 
-          "Setup work sheet.", "Setup2");
-		  
+          "Setup timeline.", "SetupTimeline");	          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Get offset", "Setting", "Offset", "Get offset time.");
-
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    ];
+    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),    
+	];
 	
 // Called by IDE when a new object type is to be created
 function CreateIDEObjectType()

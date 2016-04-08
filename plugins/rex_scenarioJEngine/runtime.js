@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_IframeFilter = function(runtime)
+cr.plugins_.Rex_ScenarioJEngine = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_IframeFilter.prototype;
+	var pluginProto = cr.plugins_.Rex_ScenarioJEngine.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -41,53 +41,52 @@ cr.plugins_.Rex_IframeFilter = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        this.commands = {};
 	};
+    
+	instanceProto.onDestroy = function ()
+	{
+	};   
+
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
-    
-    // deprecated   
-	Cnds.prototype.Check = function ()
-	{             
-		return false;
-	};
-    
-	Cnds.prototype.IsInIframe = function ()
-	{            
-        return (window.top != window);
-	};    
     
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-    // deprecated
-	Acts.prototype.Append = function (url)
-	{
-	}; 
+    Acts.prototype.CleanCmds = function ()
+	{        
+        for(var n in this.commands)
+            delete this.commands[n];
+	};    
     
-    // deprecated
-	Acts.prototype.SetJSON = function (JSON_string)
-	{
-	}; 	
-    
-	Acts.prototype.Redirection = function (url)
-	{
-        if (url == null)
-            url = window.location.href;
+    Acts.prototype.AppendCmds = function (json_)
+	{    
+		var o;    
+		try 
+        {
+			o = JSON.parse(json_);
+		}
+		catch(e) { return; }
         
-	    window.top.location.href=url;
-	}; 		
+        for(var n in o)
+            this.commands[n] = o[n];
+	};   
+    
+    Acts.prototype.SetFunctionParameter = function (name_, value_)
+	{        
+	};  
+
+    Acts.prototype.Call = function (name_)
+	{        
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
-    // deprecated    
-	Exps.prototype.MainFrameURL = function (ret)
-	{
-		ret.set_string("");
-	};        
 }());

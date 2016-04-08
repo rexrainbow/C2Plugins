@@ -4,10 +4,10 @@
 		"name":			"Iframe filter",
 		"id":			"Rex_IframeFilter",
 		"version":		"0.8",
-		"description":	"Check if current page is not in iframe, or in acceptable iframe.",
+		"description":	"Check if current page is in an iframe or not.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_iframe_filter.html",
-		"category":		"Web",
+		"category":		"Rex - Iframe",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -16,25 +16,31 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, 0, "Is acceptable", "Check", "Is in acceptable iframe", 
+AddCondition(1, cf_deprecated, "Is acceptable", "Check", "Is in acceptable iframe", 
              "Check If current page is not in iframe or in acceptable iframe.", "Check");
+
+AddCondition(21, 0, "Is in iframe", "iframe", "Is in iframe", 
+             "Return true if this application is in an iframe.", "IsInIframe");             
 
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("URL", "The URL in white-list.", '""');
-AddAction(1, 0, "Append", "White-list", "Append <i>{0}</i> into white-list", "Append a url into white-list.", "Append");
+AddAction(1, af_deprecated, "Append", "White-list", "Append <i>{0}</i> into white-list", "Append a url into white-list.", "Append");
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(2, 0, "Set", "White-list", "Set white-list to JSON string <i>{0}</i>", "Set white-list to JSON string.", "SetJSON");
-   
+AddAction(2, af_deprecated, "Set", "White-list", "Set white-list to JSON string <i>{0}</i>", "Set white-list to JSON string.", "SetJSON");
+
+AddAction(11, 0, "Redirect to original", "Redirection", "Redirect top url to my original url", "Redirect top url to my url.", "Redirection");   
+AddStringParam("URL", "The URL in white-list.", '""');
+AddAction(12, 0, "Redirect to", "Redirection", "Redirect top url to <i>{0}</i>", "Redirect top url to a specific url.", "Redirection");
 //////////////////////////////////////////////////////////////
 // Expressions
-
+AddExpression(21, ef_deprecated | ef_return_string, "Get URL of main frame", "Main frame", "MainFrameURL", 
+    'Get URL of main frame. Retrun "" if this application is in a main frame.');
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Busting all iframes", "No", "Enable if you wish to bust ALL iframes.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

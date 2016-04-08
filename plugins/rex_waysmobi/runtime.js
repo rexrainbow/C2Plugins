@@ -13,7 +13,6 @@ cr.plugins_.rex_waysmobi = function(runtime)
 
 (function ()
 {
-	var manuallyChanged = false;
 	/////////////////////////////////////
 	var pluginProto = cr.plugins_.rex_waysmobi.prototype;
 

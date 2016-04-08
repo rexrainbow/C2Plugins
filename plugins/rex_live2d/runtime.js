@@ -99,8 +99,9 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         if (!this.myCanvas)
         {
 		    this.myCanvas = document.createElement('canvas');
-		    this.myCanvas.width = this.width;
-		    this.myCanvas.height = this.height;            
+            var scale = this.layer.getScale();
+		    this.myCanvas.width = this.width * scale;
+		    this.myCanvas.height = this.height * scale;            
         }
         
         return this.myCanvas;

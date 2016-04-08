@@ -6,7 +6,7 @@
 		"description":	"Set full window of html element.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_htmlelem_fullwindow.html",
-		"category":		"Rex - Fromu",
+		"category":		"Rex - Iframe",
 		"flags":		bf_onlyone
 	};
 };
