@@ -262,7 +262,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    if ((xyz0 == null) || (xyz1 == null))
 	        return false;
 	                
-        var edgeuid = this.lxy2edgeuid(lx0, ly0, lx1, ly1);
+        var edgeuid = this.lxy2edgeuid(xyz0.x, xyz0.y, xyz1.x, xyz1.y);
         if (edgeuid != null)
         {
             this.pinstgroup.AddUID(edgeuid);
@@ -704,7 +704,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    ret.set_int(uid);
 	};
     
-	Exps.prototype.ChessUID2EdgeUID = function (ret, chess_uid, dir)
+	Exps.prototype.ChessUID2EdgeUID = function (ret, chess_uid0, chess_uid1)
 	{
         var board = this.GetBoard();
         var xyz0 = board.uid2xyz(chess_uid0);

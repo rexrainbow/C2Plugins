@@ -102,6 +102,61 @@ cr.plugins_.Rex_Function2 = function(runtime)
                 
         this.parameter_table_cache = new ObjCacheKlass();        
         this.param_index = 0;
+        
+		var self = this;
+		
+		window["c2_callRexFunction2"] = function (name_, params_)
+		{
+			var i, len, v;
+			var fs = pushFuncStack();
+			fs.name = name_.toLowerCase();
+			fs.retVal = 0;
+			
+			if (params_)
+			{
+				// copy only number and string types; all others just set to 0
+				fs.params.length = params_.length;
+				
+				for (i = 0, len = params_.length; i < len; ++i)
+				{
+					v = params_[i];
+					
+					if (typeof v === "number" || typeof v === "string")
+						fs.params[i] = v;
+					else if (typeof v === "boolean")
+						fs.params[i] = (v ? 1 : 0);
+					else
+						fs.params[i] = 0;
+				}
+			}
+			else
+			{
+				cr.clearArray(fs.params);
+			}
+            
+            if (self.is_debug_mode)
+            {
+                var i, lead = "+";
+                for(i=1; i<funcStackPtr; i++)
+                    lead += "-";                 
+                log(lead+ fs.name + " : " + fs.params.toString());
+            }              
+			
+            self.function_call_prelude();                
+			// Note: executing fast trigger path based on fs.name
+			var ran = self.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, self, fs.name);
+            self.function_call_finale();
+            
+            // In preview mode, log to the console if nothing was triggered
+            if (isInPreview && !ran)
+            {
+                log("[Construct 2] Rex_Function2 object: expression Rex_Function2.Call('" + name_ + "' ...) was used, but no event was triggered. Is the function call spelt incorrectly or no longer used?", "warn");
+            }            
+        
+			popFuncStack();
+			
+			return fs.retVal;
+		};        
     };
     
     instanceProto.function_call_prelude = function()

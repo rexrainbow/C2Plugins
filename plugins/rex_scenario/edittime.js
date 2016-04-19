@@ -10,7 +10,8 @@
 		"category":		"Rex - Script",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		0,
+		"dependency":	"mustache.min.js",    
 	};
 };
 
@@ -96,6 +97,11 @@ AddAction(42, 0, "Setup callback", "Setup",
           "Set callback to <i>{0}</i>", 
           "Setup callback.", "SetupCallback");	
           
+AddStringParam("Left delimiter", 'Left delimiter. Set "" to use default delimiter "{{"', '"{{"');
+AddStringParam("Right delimiter", 'Right delimiter. Set "" to use default delimiter "}}"', '"}}"');
+AddAction(101, 0, "Set delimiters", "Mustache", 
+         "Set delimiters to <i>{0}</i> <i>{1}</i>",
+         "Set delimiters .", "SetDelimiters ");             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(2, ef_return_string, "Get last tag", 
@@ -116,7 +122,10 @@ var property_list = [
     new cr.Property(ept_combo, "Debug mode", "No", "Enable to show log.", "No|Yes"),
     new cr.Property(ept_combo, "Time stamp", "Differential", "Time stamp type.", "Accumulation|Differential"),
     new cr.Property(ept_combo, "Eval mode", "Yes", 'Enable "Eval mode" for parameters. "Mem" feature only could be used in eval mode.', "No|Yes"),
-    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),      
+    new cr.Property(ept_combo, "Sync timescale", "Yes", "Sync to object's timescale.", "No|Yes"),   
+    new cr.Property(ept_combo, "Mustache", "Yes", "Enable to process string by Mustache templating engine.", "No|Yes"),
+	new cr.Property(ept_text, "Left delimiter", "{{", 'Left delimiter. Set "" to use default delimiter "{{"'),
+	new cr.Property(ept_text, "Right delimiter", "}}", 'Right delimiter. Set "" to use default delimiter "}}"'),        
 	];
 	
 // Called by IDE when a new object type is to be created

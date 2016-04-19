@@ -22,12 +22,16 @@
 AddKeybParam("Key", "Choose a key.  Note that international users and users on different operating systems or devices may not have the same keys available.");
 AddComboParamOption("down");
 AddComboParamOption("up");
-AddComboParamOption("press");
 AddComboParam("Event type", "Event type.",0);
 AddAction(1, 0, "Simulate keyboard event", "Keyboard", 
           "Simulate keyboard <i>{0}</i> <i>{1}</i>", "Simulate keyboard event.", "SimulateKeyboard");
            
-
+AddNumberParam("Keycode", "Choose a numeric key code to fire.");
+AddComboParamOption("down");
+AddComboParamOption("up");
+AddComboParam("Event type", "Event type.",0);
+AddAction(2, 0, "Simulate keyboard event by keycode", "Keyboard", 
+          "Simulate keyboard <i>{0}</i> <i>{1}</i>", "Simulate keyboard event.", "SimulateKeyboard");
 //////////////////////////////////////////////////////////////
 // Expressions
 

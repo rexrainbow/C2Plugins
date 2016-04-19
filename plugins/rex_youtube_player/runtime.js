@@ -736,6 +736,22 @@ cr.plugins_.rex_youtube_player = function(runtime)
 
 	};   
    
+	Acts.prototype.SetFocus = function ()
+	{
+		if (this.runtime.isDomFree)
+			return;
+		
+		this.elem.focus();
+	};   
+    
+	Acts.prototype.SetBlur = function ()
+	{
+		if (this.runtime.isDomFree)
+			return;
+		
+		this.elem.blur();
+	};
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

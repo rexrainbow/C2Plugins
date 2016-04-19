@@ -98,6 +98,25 @@ cr.plugins_.Rex_Geocoding = function(runtime)
         geocoder["geocode"]({'address': address}, on_getResult);        
 	}; 
     
+    var getObjectByType = function(objects, typeName)
+    {
+        var i, icnt=objects.length, types;
+        for (i=0; i<icnt; i++)
+        {
+            types = objects[i]["types"];
+            var j, jcnt=types.length;
+            for (j=0; j<jcnt; j++)
+            {
+                if (types[j] === typeName)
+                {
+                    return objects[i];
+                }
+            }
+        }
+        
+        return null;
+    }
+    
 	instanceProto.getAddressLevel = function (level)
 	{
         var results = this.addressResult["results"];
@@ -111,25 +130,13 @@ cr.plugins_.Rex_Geocoding = function(runtime)
         }
         else if (typeof level === "string")        
         {
-            var i, icnt=results.length, types;
-            for (i=icnt-1; i>=0; i--)
-            {
-                types = results[i]["types"];
-                var j, jcnt=types.length;
-                for (j=0; j<jcnt; j++)
-                {
-                    if (types[j] === level)
-                    {
-                        return results[i];
-                    }
-                }
-            }
+            return getObjectByType(results, level);
         }
         
 		return null;
 	};
 
-	instanceProto.getAddressComponments = function (level, ci)
+	instanceProto.getAddressComponments = function (level, ci, prop)
 	{
         var addr = this.getAddressLevel(level);
         if (addr === null)
@@ -138,26 +145,14 @@ cr.plugins_.Rex_Geocoding = function(runtime)
         var components = addr["address_components"];
         if (typeof ci === "number")
         {
-            return components[ci]["long_name"];
+            return components[ci][prop];
         }
         else if (typeof ci === "string")
         {
-            var i, icnt=components.length, types;
-            for (i=icnt-1; i>=0; i--)
-            {
-                types = components[i]["types"];
-                var j, jcnt=types.length;
-                for (j=0; j<jcnt; j++)
-                {
-                    if (types[j] === ci)
-                    {
-                        return components[i]["long_name"];
-                    }
-                }
-            }
-            
-            // could not find matched component
-            return null;
+            addr = getObjectByType(components, ci);
+            if (addr != null)
+                addr = addr[prop];
+            return addr;
         }
         else
         {
@@ -276,7 +271,7 @@ cr.plugins_.Rex_Geocoding = function(runtime)
 
 	Exps.prototype.LastAddressComponments = function (ret, level, ci)
 	{
-        var components = this.getAddressComponments(level, ci);
+        var components = this.getAddressComponments(level, ci, "long_name");
 		ret.set_string(din(components, ""));
 	};
 
@@ -301,9 +296,79 @@ cr.plugins_.Rex_Geocoding = function(runtime)
 	};   
 
 	Exps.prototype.LastLatLngResults = function (ret)
-	{
-        debugger
+	{        
 		ret.set_string(din(this.latLngResult["results"], ""));
 	}; 
     
+	Exps.prototype.LastPostalCode = function (ret)
+	{                
+        var postal_code = this.getAddressComponments(0, "postal_code", "long_name") || "";
+		ret.set_string(postal_code);
+	};
+    
+	Exps.prototype.LastCountry = function (ret)
+	{                
+        var country = this.getAddressComponments(0, "country", "long_name") || "";
+		ret.set_string(country);
+	};
+    
+	Exps.prototype.LastCountryShort = function (ret)
+	{                
+        var country = this.getAddressComponments(0, "country", "short_name") || "";
+		ret.set_string(country);
+	};  
+    
+	//Exps.prototype.LastAdministrativeAreaLevel2 = function (ret)
+	//{                
+    //    var administrative_area_level_2 = this.getAddressComponments(0, "administrative_area_level_2", "long_name") || "";
+	//	ret.set_string(administrative_area_level_2);
+	//};
+    //
+	//Exps.prototype.LastAdministrativeAreaLevel2Short = function (ret)
+	//{                
+    //    var administrative_area_level_2 = this.getAddressComponments(0, "administrative_area_level_2", "short_name") || "";
+	//	ret.set_string(administrative_area_level_2);
+	//}; 
+    
+	Exps.prototype.LastPolitical = function (ret)
+	{                
+        var political = this.getAddressComponments(0, "political", "long_name") || "";
+		ret.set_string(political);
+	};
+    
+	Exps.prototype.LastPoliticalShort = function (ret)
+	{                
+        var political = this.getAddressComponments(0, "political", "short_name") || "";
+		ret.set_string(political);
+	};     
+    
+	Exps.prototype.LastLocality = function (ret)
+	{                
+        var locality = this.getAddressComponments(0, "locality", "long_name") || "";
+		ret.set_string(locality);
+	};
+    
+	Exps.prototype.LastLocalityShort = function (ret)
+	{                
+        var locality = this.getAddressComponments(0, "locality", "short_name") || "";
+		ret.set_string(locality);
+	};
+    
+	Exps.prototype.LastRoute = function (ret)
+	{                
+        var route = this.getAddressComponments(0, "route", "long_name") || "";
+		ret.set_string(route);
+	};
+    
+	Exps.prototype.LastRouteShort = function (ret)
+	{                
+        var route = this.getAddressComponments(0, "route", "short_name") || "";
+		ret.set_string(route);
+	};
+    
+	Exps.prototype.LastStreetNumber = function (ret)
+	{                
+        var street_number = this.getAddressComponments(0, "street_number", "long_name") || "";
+		ret.set_string(street_number);
+	};    
 }());

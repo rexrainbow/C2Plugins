@@ -60,6 +60,9 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this._scenario.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] === 1);
         this._scenario.is_accT_mode = (this.properties[1] === 0);
         this._scenario.is_eval_mode = (this.properties[2] === 1);
+        this._scenario.is_mustache_mode = (this.properties[4] === 1);
+        this.delimiterCfg = null;        
+        this.setDelimiter(this.properties[5], this.properties[6]);        
       
         this.timeline = null;  
         this.timelineUid = -1;    // for loading     
@@ -82,6 +85,16 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.propsections = [];
         /**END-PREVIEWONLY**/	
     };
+    
+	instanceProto.setDelimiter = function (leftDelimiter, rightDelimiter)
+	{
+        if (leftDelimiter === "")  leftDelimiter = "{{";
+        if (rightDelimiter === "")  rightDelimiter = "}}";        
+		if ((leftDelimiter === "{{") && (rightDelimiter === "}}"))
+            this.delimiterCfg = null;
+        else
+            this.delimiterCfg = "{{=" + leftDelimiter + " " + rightDelimiter + "=}}";
+	};    
     
 	instanceProto.tick = function ()
 	{
@@ -288,6 +301,14 @@ cr.plugins_.Rex_Scenario = function(runtime)
         
         return v;
     };	
+    
+    instanceProto.render = function (template, view)
+	{
+        if (this.delimiterCfg !== null)
+            template = this.delimiterCfg + template;
+        
+        return window["Mustache"]["render"](template, view);
+	};    
 
     instanceProto.saveToJSON = function ()
     { 
@@ -501,6 +522,11 @@ cr.plugins_.Rex_Scenario = function(runtime)
             }                
         }
 	};	
+    
+    Acts.prototype.SetDelimiters = function (leftDelimiter, rightDelimiter)
+	{        
+        this.setDelimiter(leftDelimiter, rightDelimiter);
+	};        
     //////////////////////////////////////
     // Expressions
     function Exps() {};
@@ -531,6 +557,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this.plugin = plugin;     
         this.is_debug_mode = true;
+        this.is_mustache_mode = false;
         this.is_eval_mode = true;          
         this.is_accT_mode = false;
         this.cmd_table = new CmdQueueKlass(this);        
@@ -876,12 +903,17 @@ cr.plugins_.Rex_Scenario = function(runtime)
     var re = new RegExp("\n", "gm");
     ScenarioKlassProto.param_get = function(param)
     {
+        //debugger
+        
+        if (this.is_mustache_mode)            
+            param = this.plugin.render(param, this["Mem"]);
+        
         if (this.is_eval_mode)
         {
             param = param.replace(re, "\\n");    // replace "\n" to "\\n"
             var code_string = "function(scenario)\
             {\
-                var MEM = scenario['Mem'];\
+                var MEM = scenario.Mem;\
                 var Call = scenario['_getvalue_from_c2fn'];\
                 return "+param+"\
             }";

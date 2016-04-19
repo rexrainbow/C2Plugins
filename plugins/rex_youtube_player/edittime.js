@@ -94,9 +94,9 @@ AddComboParamOption("Exit");
 AddComboParamOption("Enter");
 AddComboParamOption("Toggle");
 AddComboParam("Command", "Enter or exit, or toggle fullscreen mode.", 1);
-AddAction(11, af_none, "Full windoe", "Size", 
-          "<i>{0}</i> full windoe", 
-          "Enter or exit full windoe.", "SetFullWindow");       
+AddAction(11, af_none, "Full window", "Size", 
+          "<i>{0}</i> full window", 
+          "Enter or exit full window.", "SetFullWindow");       
           
 AddComboParamOption("Invisible");
 AddComboParamOption("Visible");
@@ -110,7 +110,9 @@ AddComboParam("Command", "Enter or exit, or toggle fullscreen mode.", 1);
 AddAction(13, af_none, "Set full screen mode", "Full screen", 
           "<i>{0}</i> full screen", 
           'Enter or exit full screen mode. "Enter full screen" can only be called under a user input.', "SetFullScreen");   
-        
+                
+AddAction(21, af_none, "Set focused", "Player", "Set focused", "Set the input focus to the player.", "SetFocus");
+AddAction(22, af_none, "Set unfocused", "Player", "Set unfocused", "Remove the input focus from the player.", "SetBlur");        
 ////////////////////////////////////////
 // Expressions
 

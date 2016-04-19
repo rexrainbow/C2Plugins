@@ -61,6 +61,9 @@ cr.plugins_.Rex_SimulateInput = function(runtime)
     Acts.prototype.SimulateKeyboard = function (code, event_type)
 	{
         var e = jQuery["Event"]( KEYBOARD_EVENTTYPE[event_type], { "keyCode": code, "which": code } )
+        //var e = jQuery["Event"]( KEYBOARD_EVENTTYPE[event_type]);
+        //e["keyCode"] = code;
+        //e["which"] = code;
         jQuery(document)["trigger"]( e );               
 	}; 
 

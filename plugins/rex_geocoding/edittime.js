@@ -59,6 +59,37 @@ AddExpression(13, ef_return_string, "Get source address", "LatLng", "SrcAddress"
 AddExpression(14, ef_return_string, "Get last latlng result", "LatLng", "LastLatLngResults", 
     "Get latlng results returned by the last successful request as JSON.");
     
+AddExpression(21, ef_return_string, "Get postal code", "Address", "LastPostalCode", 
+    "Get postal code returned by the last successful request.");   
+    
+AddExpression(23, ef_return_string, "Get country", "Address", "LastCountry", 
+    "Get country returned by the last successful request.");    
+AddExpression(24, ef_return_string, "Get country in short name", "Address", "LastCountryShort", 
+    "Get country in short name returned by the last successful request.");    
+    
+//AddExpression(25, ef_return_string, "Get administrative area level 2", "Address", "LastAdministrativeAreaLevel2", 
+//    "Get  administrative area level 2 returned by the last successful request.");    
+//AddExpression(26, ef_return_string, "Get  administrative area level 2 in short name", "Address", "LastAdministrativeAreaLevel2Short", 
+//    "Get  administrative area level 2 in short name returned by the last successful request."); 
+    
+AddExpression(27, ef_return_string, "Get political", "Address", "LastPolitical", 
+    "Get  political returned by the last successful request.");    
+AddExpression(28, ef_return_string, "Get  political in short name", "Address", "LastPoliticalShort", 
+    "Get  political in short name returned by the last successful request."); 
+   
+AddExpression(29, ef_return_string, "Get locality", "Address", "LastLocality", 
+    "Get  locality returned by the last successful request.");    
+AddExpression(30, ef_return_string, "Get  locality in short name", "Address", "LastLocalityShort", 
+    "Get  locality in short name returned by the last successful request.");  
+    
+AddExpression(31, ef_return_string, "Get route", "Address", "LastRoute", 
+    "Get  route returned by the last successful request.");    
+AddExpression(32, ef_return_string, "Get  route in short name", "Address", "LastRouteShort", 
+    "Get  route in short name returned by the last successful request.");  
+    
+AddExpression(33, ef_return_string, "Get street number", "Address", "LastStreetNumber", 
+    "Get street number returned by the last successful request.");       
+    
 ACESDone();
 
 // Property grid properties for this plugin
