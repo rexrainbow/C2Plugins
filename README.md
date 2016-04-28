@@ -1,1 +1,1 @@
-[Wiki](http://goo.gl/vSxcb)
+[Document](http://c2rexplugins.weebly.com/)
