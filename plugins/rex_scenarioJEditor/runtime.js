@@ -664,7 +664,7 @@ cr.plugins_.Rex_ScenarioJEditor = function(runtime)
         
         taskName = this.getValueObj(taskName, this.defaultStringType);        
         fnName = this.getValueObj(fnName, this.defaultStringType);
-        curSeq.push(["_callFn_", fnName, taskName]);
+        curSeq.push(["_new_", fnName, taskName]);
 	};      
     
     Acts.prototype.SetDelimiters = function (leftDelimiter, rightDelimiter)

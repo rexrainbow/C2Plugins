@@ -72,6 +72,8 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         this.viewMatrix = null;
         this.dragMgr = new window["L2DTargetPoint"]();
         this.model["breathingEnable"] = (this.properties[3] === 1);
+        this.model["setLipSync"](this.properties[4] === 1);
+        
         
         // camera
         this.modelScale = 1;
@@ -508,6 +510,16 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
 	{
         this.model["breathingEnable"] = (e === 1);
 	};	 
+    
+	Acts.prototype.SetLipSync = function (e)
+	{
+        this.model["setLipSync"](e === 1);
+	};    
+    
+	Acts.prototype.SetLipSyncValue = function (v)
+	{
+        this.model["setLipSyncValue"](v);
+	};        
     
 	//////////////////////////////////////
 	// Expressions

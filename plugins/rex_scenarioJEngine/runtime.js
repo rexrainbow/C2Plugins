@@ -268,8 +268,9 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
     
     Acts.prototype.StartTask = function (taskName, fnName)
 	{        
-        this.taskMgr.startTask(taskName, fnName, this.fnParams);
-        this.fnParams = {};
+        var localVars = this.fnParams;
+        this.fnParams = {};    
+        this.taskMgr.startTask(taskName, fnName, localVars);
 	};     
     
     Acts.prototype.SetFunctionParameter = function (name_, value_)
@@ -476,14 +477,14 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
     var TaskKlass = function (taskMgr, name)
     {        
         this.taskMgr = taskMgr;
-        this.name = name;        
+        this.name = name;
+        this.isExecuting = false;  // prevent re-entry this.execute()
         this.stack = [];
         this.taskVars = {};
         this.fnParams = {};
         this.isPaused = false;
         this.timer = null;  
-        this.waitSignal = null; 
-        this.pendedNewTasks = [];
+        this.waitSignal = null;
         this.timer_save = null;           
     };
     var TaskKlassProto = TaskKlass.prototype;
@@ -491,6 +492,11 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
     var gFnParams = [];
     TaskKlassProto.execute = function ()
     {               
+        if (this.isExecuting)
+            return;
+        
+        this.isExecuting = true;
+        
         //debugger
         var instruction, instName, isPause=false;
         var i, pcnt;
@@ -514,6 +520,8 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
             if (isPause)
                 break;
         }
+        
+        this.isExecuting = false;
 
         if (this.isStackEmpty())
         {
@@ -524,30 +532,11 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
             // task pause
             this.isPaused = true;
         }
-        
-        this.runPendedNewTasks();
-    };  
-
-    TaskKlassProto.runPendedNewTasks = function ()
-    {
-        var i, cnt=this.pendedNewTasks.length;
-        for (i=0; i<cnt; i++)
-        {
-            this.pendedNewTasks[i].execute();
-        }        
-        
-        this.pendedNewTasks.length = 0;
     };        
             
     TaskKlassProto.pushStack = function (seq, localVars, pp, ignoreTrigger)
     {
-        var scope = {
-            "seq":seq, 
-            "vars":localVars, // only function scope has localVar
-            "pp": pp,  // parent point: string= fnName, number= index of seq in previous scope
-            "si":-1,    // current ssequence index      
-            "extra": {},    // extra data of current scope      
-            };
+        var scope = scopeCache.newScope(seq, localVars, pp);
         this.stack.push(scope);
         
         if (!ignoreTrigger)
@@ -566,6 +555,8 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
             if (isFunctionScopeStart(preScope["pp"]))
                 this.taskMgr.plugin.onFunctionScopeChanged(this.name, this.getCurFnName());
         }
+        
+        scopeCache.freeScope(preScope);
     }; 
     
     TaskKlassProto.getNextInstruction = function ()
@@ -639,18 +630,14 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
     {
         //debugger
         this.stop();
-        fnName = [ fnName, TYPE_RAW ];
-        for (var n in localVars)
-        {
-            this["_fnParam_"](n, localVars[n], "set");
-        }
-        
-        this["_callFn_"](fnName, localVars);
+        this.fnParams = localVars;
+        this["_callFn_"](fnName);
         this.execute();
     };    
     
     TaskKlassProto.stop = function ()
     {
+        scopeCache.freeScopes(this.stack);
         this.stack.length = 0;
         if (this.timer)
             this.timer.Remove();    
@@ -685,7 +672,10 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
     {    
         var scope_save=o["ss"], i, cnt=scope_save.length;
         var s, pp, si, dsi, localVars, extra, curSeq, preSeq, curScope;
+        
+        scopeCache.freeScopes(this.stack);
         this.stack.length = 0;   
+        
         var content = this.taskMgr.plugin.getContent();
         for(i=0; i<cnt; i++)
         {
@@ -733,30 +723,39 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
     };   
     
     // instruction handlers
-    // ["_callFn_", fnName, (taskName) ]
-    TaskKlassProto["_callFn_"] = function (fnName, taskName)
+    // ["_callFn_", fnName ]
+    TaskKlassProto["_callFn_"] = function (fnName)
     {
-        //debugger
+        //debugger        
+        var localVars = this.fnParams;
+        this.fnParams = {};
+
         fnName = this.parseValueObj( fnName );
         var content = this.taskMgr.plugin.getContent();
-        var seq = content[fnName], param;        
-        var task = this.getTask(taskName, true);       
-        task.pushStack(seq, this.fnParams, fnName);
-        this.fnParams = {};
+        var seq = content[fnName]; 
+
+        for (var n in localVars)
+            localVars[n] = this.parseValueObj( localVars[n] );
         
-        // new task had not been executed
-        if (task !== this)          
-        {
-            this.pendedNewTasks.push(task);
-        }
+        this.pushStack(seq, localVars, fnName);        
     };
-    
+
     // ["_fnParam_", varName, value ]
     TaskKlassProto["_fnParam_"] = function (name_, value_, op_)
     {
         name_ = this.parseValueObj( name_ );
         value_ = this.parseValueObj( value_ );        
         varCalc(this.fnParams, name_, value_, op_);
+    };  
+
+    // ["_new_", fnName, taskName ]
+    TaskKlassProto["_new_"] = function (fnName, taskName)
+    {
+        //debugger        
+        var localVars = this.fnParams;
+        this.fnParams = {};
+        var task = this.getTask(taskName, true); 
+        task.start(fnName, localVars);
     };    
     
     // ["_return_"]
@@ -1158,7 +1157,7 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
         var task = this.getTask(taskName, true);
         task.start(fnName, localVars);
     };
-    
+
     TasksMgrKlassProto.addWaitSignal = function (taskName, signalName)
     {
         if (!this.waitSignal2Task.hasOwnProperty(signalName))         
@@ -1256,5 +1255,76 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
             this.tasks[n].afterLoad();
         }
     };    
+    
+    
+// ---------
+// object pool class
+// ---------
+    var ObjCacheKlass = function ()
+    {        
+        this.lines = [];       
+    };
+    var ObjCacheKlassProto = ObjCacheKlass.prototype;   
+    
+	ObjCacheKlassProto.allocLine = function()
+	{
+		return (this.lines.length > 0)? this.lines.pop(): null;
+	};    
+	ObjCacheKlassProto.freeLine = function (l)
+	{
+		this.lines.push(l);
+	};	
+	ObjCacheKlassProto.freeAllLines= function (arr)
+	{
+		var i, len;
+		for (i = 0, len = arr.length; i < len; i++)
+			this.freeLine(arr[i]);
+		arr.length = 0;
+	};    
+    
+    var scopeCache = new ObjCacheKlass();    
+    scopeCache.newScope = function (seq, localVars, pp)
+    {
+        var scope = this.allocLine();
+        
+        if (scope === null)
+        {
+            scope = {
+                "seq":null, 
+                "vars":null, // only function scope has localVar
+                "pp": null,  // parent point: string= fnName, number= index of seq in previous scope
+                "si":-1,    // current ssequence index      
+                "extra": {},    // extra data of current scope      
+                };
+        }        
+        scope["seq"] = seq;
+        scope["vars"] = localVars;
+        scope["pp"] = pp;
+        
+        return scope;
+    };
+        
+    scopeCache.freeScope = function (scope)
+    {
+        scope["seq"] = null;
+        scope["vars"] = null;
+        scope["pp"] = null;
+        scope["si"] = -1;
+        
+        for(var n in scope["extra"])
+            delete scope["extra"][n];
+        
+        this.freeLine(scope);
+    };
+        
+    scopeCache.freeScopes = function (scopes)
+    {
+        var i, cnt=scopes.length;
+        for(i=0; i<cnt; i++)
+        {
+            this.freeScope(scopes[i]);
+        }        
+    };    
+    
     
 }());

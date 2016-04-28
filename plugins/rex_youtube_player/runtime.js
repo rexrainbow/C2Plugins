@@ -300,6 +300,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
         // element DIV had been replaced by IFRAME
         jQuery(this.elem).remove();
         this.elem = document.getElementById(this.myElemId);
+        
+        // bind mouse events
+        this.elem.onmouseover = function (e)
+        {
+            self.runtime.trigger(cr.plugins_.rex_youtube_player.prototype.cnds.OnMouseOver, self);
+        }
 	};	
 	
     instanceProto.run_pended_cmds = function ()
@@ -316,23 +322,21 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	{	    
 	    this.cur_videoId = videoId;
 	    this.cur_isAutoPlay = is_autoplay;
-	    if (!this.youtube_player || !this.youtube_player["loadVideoById"])
-	    {
-            var self=this;
-            var callback = function ()
-            {
-                self.youtube_player["loadVideoById"](videoId);
-                if (is_autoplay)
-                    self.youtube_player["playVideo"]();
-                else
-                    self.youtube_player["pauseVideo"]();
-            };
-            this.pendingCallbacks.push(callback);
-	        
-		    return;	        
-	    }
-	    
-	    this.youtube_player["loadVideoById"](videoId);
+        
+        var self=this;
+        var callback = function ()
+        {
+            self.youtube_player["loadVideoById"](videoId);
+            if (is_autoplay)
+                self.youtube_player["playVideo"]();
+            else
+                self.youtube_player["pauseVideo"]();
+        };
+        
+	    if (!this.youtube_player || !this.youtube_player["loadVideoById"])	    
+            this.pendingCallbacks.push(callback);  
+        else        
+            callback();        
 	};
 	
 	instanceProto.SetPlaybackTime = function (s)
@@ -593,7 +597,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	Cnds.prototype.IsFullWindow = function ()
 	{
 		return (this.beforefullwindow["x"] !== null);
-	};        
+	};       
+
+	Cnds.prototype.OnMouseOver = function ()
+	{
+		return true;
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

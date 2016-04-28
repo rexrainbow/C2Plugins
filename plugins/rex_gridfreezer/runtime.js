@@ -638,7 +638,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 	};	
 	Exps.prototype.LoadInstUID = function (ret)
 	{
-		ret.set_int(this.this.exp_LoadInstUID);
+		ret.set_int(this.exp_LoadInstUID);
 	}; 	
 	Exps.prototype.CurLX = function (ret)
 	{

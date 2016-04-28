@@ -53,8 +53,8 @@ cr.behaviors.Rex_text_resize = function(runtime)
         this.bgInsts_save = null;        
         
 	    this.text_type = this._text_type_get();
-	    this.get_TextHeight_handler = this.get_TextHeight_handler_get(this.text_type);
-	    this.get_TextWidth_handler = this.get_TextWidth_handler_get(this.text_type);
+	    this.get_TextHeight_handler = this.get_TextHeight_handler_get();
+	    this.get_TextWidth_handler = this.get_TextWidth_handler_get();
         
 		// Need to know if pinned object gets destroyed
 		if (!this.recycled)
@@ -86,7 +86,7 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	
 	behinstProto.tick = function ()
 	{
-        // resize
+        // 2. resize text inst
         if (this.is_resize_now && !this._text_changed_get(this.text_type))
         {
             this.resize();
@@ -99,8 +99,8 @@ cr.behaviors.Rex_text_resize = function(runtime)
         if (!this.is_auto_resize)
             return;
             
-        // this tick will render text
-        if (this._text_changed_get(this.text_type))
+        // 1. this tick will render text ( text had chnaged ) with max width 
+        if (this._text_changed_get())
         {
             this.prepare_draw();
         }    
@@ -177,14 +177,29 @@ cr.behaviors.Rex_text_resize = function(runtime)
         var inst=this.inst, is_resized=false;
         if ((new_width !== inst.width) || (new_height !== inst.height))
         {
-            inst.width = new_width;            
-            inst.height = new_height;
-            inst.set_bbox_changed();      
+            this.setInstSize(new_width, new_height);        
             is_resized = true;
         }
         
         return is_resized;
-	};     
+	};  
+
+    behinstProto.setInstSize = function (width, height)
+    {
+        var inst=this.inst;
+        inst.width = width;
+        inst.height = height;       
+        inst.set_bbox_changed();             
+        
+        // prevent wrap text again
+        switch (this.text_type)
+        {
+        case "Text":                  inst.lastwrapwidth = width;  break;
+        case "Spritefont2":        inst.lastwrapwidth = width;  break;
+        case "rex_TagText":      inst.lastwrapwidth = width;  break;
+        case "rex_bbcodeText": inst.lastwrapwidth = width;  break;  
+        }        
+    }
 		
 	behinstProto.resize_background = function ()
 	{  
@@ -243,37 +258,34 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
 		    text_type = "rex_TagText";
+	    else if (cr.plugins_.rex_bbcodeText &&
+		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
+		    text_type = "rex_bbcodeText";            
 		else
 		    text_type = "";	 
 		return text_type;
 	};	
  	           
-    behinstProto.get_TextHeight_handler_get = function (text_type)
+    behinstProto.get_TextHeight_handler_get = function ()
     {
-	    var get_TextHeight_handler;
-        if (text_type === "Text")		
-	        get_TextHeight_handler = cr.plugins_.Text.prototype.exps.TextHeight;	    
-	    else if (text_type === "Spritefont2")	
-			get_TextHeight_handler = cr.plugins_.Spritefont2.prototype.exps.TextHeight;		
-	    else if (text_type === "rex_TagText")	
-			get_TextHeight_handler = cr.plugins_.rex_TagText.prototype.exps.TextHeight;		
-	    else
-		    get_TextHeight_handler = null;
-	    return get_TextHeight_handler;
+        switch (this.text_type)
+        {
+        case "Text":                  return cr.plugins_.Text.prototype.exps.TextHeight;	
+        case "Spritefont2":        return cr.plugins_.Spritefont2.prototype.exps.TextHeight;	
+        case "rex_TagText":      return cr.plugins_.rex_TagText.prototype.exps.TextHeight;	
+        case "rex_bbcodeText": return cr.plugins_.rex_bbcodeText.prototype.exps.TextHeight;        
+        }
     };
     
-    behinstProto.get_TextWidth_handler_get = function (text_type)
+    behinstProto.get_TextWidth_handler_get = function ()
     {
-	    var get_TextWidth_handler;
-        if (text_type === "Text")		
-	        get_TextWidth_handler = cr.plugins_.Text.prototype.exps.TextWidth;	    
-	    else if (text_type === "Spritefont2")	
-			get_TextWidth_handler = cr.plugins_.Spritefont2.prototype.exps.TextWidth;		
-	    else if (text_type === "rex_TagText")	
-			get_TextWidth_handler = cr.plugins_.rex_TagText.prototype.exps.TextWidth;		
-	    else
-		    get_TextWidth_handler = null;
-	    return get_TextWidth_handler;
+        switch (this.text_type)
+        {
+        case "Text":                  return cr.plugins_.Text.prototype.exps.TextWidth;	
+        case "Spritefont2":        return cr.plugins_.Spritefont2.prototype.exps.TextWidth;	
+        case "rex_TagText":      return cr.plugins_.rex_TagText.prototype.exps.TextWidth;	
+        case "rex_bbcodeText": return cr.plugins_.rex_bbcodeText.prototype.exps.TextWidth;        
+        }
     };      
  	           
  	var fake_ret = {value:0,
@@ -295,18 +307,15 @@ cr.behaviors.Rex_text_resize = function(runtime)
         return fake_ret.value;
 	}; 	
     
-	behinstProto._text_changed_get = function (text_type)
+	behinstProto._text_changed_get = function ()
 	{
-	    var text_changed;
-        if (text_type === "Text")		
-	        text_changed = this.inst.text_changed;	    
-	    else if (text_type === "Spritefont2")	
-			text_changed = this.inst.text_changed;	 
-	    else if (text_type === "rex_TagText")	
-			text_changed = this.inst.text_changed;	 		
-	    else
-		    text_changed = null;
-	    return text_changed;
+        switch (this.text_type)
+        {
+        case "Text":                  return this.inst.text_changed;
+        case "Spritefont2":        return this.inst.text_changed;	 
+        case "rex_TagText":      return this.inst.text_changed;	 
+        case "rex_bbcodeText": return this.inst.text_changed;	   
+        }
 	};	    
 	
 	behinstProto.saveToJSON = function ()

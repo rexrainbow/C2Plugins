@@ -168,7 +168,7 @@ cr.plugins_.Rex_Token = function(runtime)
 	{        
         this.index = (-1);
 	};
-	Acts.prototype.InvertOrder = function ()
+	Acts.prototype.ReverseOrder = function ()
 	{        
         this.is_inc_order = !this.is_inc_order;
 	};		
@@ -191,6 +191,10 @@ cr.plugins_.Rex_Token = function(runtime)
 		
 	    this._set_next_index(next_index);
 	};		
+	Acts.prototype.PreviousIndex = function ()
+	{        
+	    this._set_pre_index();
+	};	
 	
 	Acts.prototype.SetIDList = function (id_list_string)
 	{        

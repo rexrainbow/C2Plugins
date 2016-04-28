@@ -28,6 +28,17 @@ AddNumberParam("Longitude", "Longitude.", 0);
 AddAction(1, 0, "Put on map", "Put", 
           "Put on <i>{0}</i> at latitude-longitude ( <i>{1}</i>, <i>{2}</i> )", 
           "Put this marker on map.", "PutOnMap");
+          
+AddComboParamOption("bounce");
+AddComboParamOption("drop");
+AddComboParam("Type", "Animation type.",0);  
+AddAction(11, 0, "Start", "Animation", 
+          "Start animation: <i>{0}</i>", 
+          "Start animation.", "SetAnim");              
+          
+AddAction(12, 0, "Stop", "Animation", 
+          "Stop animation", 
+          "Stop animation.", "SetAnim");            
 
 AddStringParam("Title", "Rollover text.", '""');  
 AddAction(21, 0, "Set title", "Title", 

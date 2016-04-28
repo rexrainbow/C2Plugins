@@ -133,7 +133,7 @@ cr.plugins_.rex_googlemap_infowindow = function(runtime)
         if (!this.infoWindowObj)
             this.infoWindowOptions["content"] = content;
         else
-            this.infoWindowObj["setContent"](title);       
+            this.infoWindowObj["setContent"](content);       
 	};         
 	//////////////////////////////////////
 	// Expressions

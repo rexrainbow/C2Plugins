@@ -61,7 +61,6 @@ cr.plugins_.Rex_XMLWriter = function(runtime)
 
     instanceProto.get_output = function(is_prettyPrint)
     {
-        debugger
         this.xw.formatting = (is_prettyPrint)? 'indented':'none';
         return this.xw.flush();
     };
@@ -85,6 +84,7 @@ cr.plugins_.Rex_XMLWriter = function(runtime)
 	{
         if (this.level === null)
         {
+            this.clean();
             this.xw.writeStartDocument();
             this.level = 0;
         }
@@ -106,7 +106,11 @@ cr.plugins_.Rex_XMLWriter = function(runtime)
             
         this.xw.writeEndElement();
         this.level -= 1;
-            
+                  
+        if (this.level === 0)
+        {
+            this.level = null;
+        }                 
 		return false;        
 	};
     

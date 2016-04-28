@@ -56,10 +56,13 @@ cr.plugins_.Rex_JSONBuider = function(runtime)
     
 	instanceProto.add_value = function (k_, v_)
 	{
-        if (this.current_object instanceof Array)
+        assert2(this.current_object, "JSON Builder: Please add a key-value into an object.");
+        
+        if (this.current_object instanceof Array)  // add to array
             this.current_object.push(v_);
-        else
+        else                                                               // add to dictionary
             this.current_object[k_] = v_; 
+        
 	};     
     
 	instanceProto.saveToJSON = function ()

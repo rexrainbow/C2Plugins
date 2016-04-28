@@ -357,6 +357,24 @@ cr.plugins_.rex_googlemap = function(runtime)
         else
             this.mapObj["setCenter"](latlng);
 	};  
+        
+	Acts.prototype.SetMapType = function (type_)
+	{
+        var mapTypeId = MAPTYPE_MAP[type_];
+        if (!this.mapObj)
+            this.mapOptions["mapTypeId"] = mapTypeId;
+        else
+            this.mapObj["setMapTypeId"](mapTypeId);       
+	};  
+    
+	Acts.prototype.SetZoomLevel = function (zoom_level)
+	{
+        if (!this.mapObj)
+            this.mapOptions["zoom"] = zoom_level;
+        else
+            this.mapObj["setZoom"](zoom_level);       
+	};  
+        
 
 	Acts.prototype.Refresh = function ()
 	{

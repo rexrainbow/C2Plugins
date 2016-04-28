@@ -65,7 +65,7 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
         
         if (this.properties[1] !== 0)
         {
-            markerOptions["animation"] = this.properties[1]-1;           
+            markerOptions["animation"] = this.properties[1];           
         }
         
         if (this.properties[2] !== "")
@@ -131,15 +131,21 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
         this.markerObj = markerObj;
     };  
     
+    var getAnimationName = function (animIndex)
+    {        
+        switch (animIndex)
+        {
+        case 0: return null;
+        case 1: return gmapi["Animation"]["BOUNCE"];
+        case 2: return gmapi["Animation"]["DROP"];
+        }
+    }
 	instanceProto.prepareMarkerOptions = function ()
 	{
         var markerOptions = this.markerOptions;
         if (markerOptions["animation"] != null)
         {
-            markerOptions["animation"] = [
-                gmapi["Animation"]["BOUNCE"],
-                gmapi["Animation"]["DROP"],                
-            ][markerOptions["animation"]]; 
+            markerOptions["animation"] = getAnimationName( markerOptions["animation"] ); 
         }
         
         if (markerOptions["icon"])
@@ -184,7 +190,7 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
         // not a google map object        
         if (!mapInst || !mapInst.getGoogleMapObj)
             return;
-        
+
         var mapObj = mapInst.getGoogleMapObj();
         var latlng = {"lat": lat, "lng": lng};
         if (!this.markerObj)        
@@ -194,7 +200,20 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
        
         this.markerObj["setMap"](mapObj);       
 	}; 
+    
+	Acts.prototype.SetAnim = function (type_)
+	{       
+        if (type_ != null)
+            type_ += 1;
 
+        if (!this.markerObj)
+            this.markerOptions["animation"] = type_;
+        else
+        {
+            this.markerObj["setAnimation"]( getAnimationName( type_ ) );       
+        }
+	};
+    
 	Acts.prototype.SeTtitle = function (title)
 	{
         if (!this.markerObj)

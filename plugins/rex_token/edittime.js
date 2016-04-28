@@ -30,9 +30,9 @@ AddCondition(7, 0, "Compare current ID", "ID",
                    
 //////////////////////////////////////////////////////////////
 // Actions          
-AddAction(2, 0, "Invert", "Order", 
-          "Invert token order", 
-          "Invert token order.", "InvertOrder");            
+AddAction(2, 0, "Reverse", "Order", 
+          "Reverse token order", 
+          "Reverse token order.", "ReverseOrder");            
 AddAction(3, 0, "Next", "Index", 
           "Turn to next player", 
           "Turn to next player.", "NextIndex");
@@ -46,6 +46,9 @@ AddAction(5, 0, "Turn off", "Order",
 AddAction(6, 0, "Next random", "Index", 
           "Turn to next random player", 
           "Turn to next random player.", "NextRandomIndex");
+AddAction(7, 0, "Previous", "Index", 
+          "Turn to previous player", 
+          "Turn to previous player.", "PreviousIndex");
 		  
 AddStringParam("ID", "Player ID string", "1,2");
 AddAction(10, 0, "Set list", "ID", 

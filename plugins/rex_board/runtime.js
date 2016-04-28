@@ -1058,7 +1058,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         for (i=0; i<cnt; i++)
         {
             uid = chess_insts[i].uid;
-            if (!this.items.hasOwnPeoperty(uid))
+            if (!this.items.hasOwnProperty(uid))
                 return false;
         }
         return true;

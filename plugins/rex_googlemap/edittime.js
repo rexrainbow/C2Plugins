@@ -33,6 +33,20 @@ AddAction(1, 0, "Set center", "Load",
           "Set center to latitude-longitude ( <i>{0}</i> , <i>{1}</i> )", 
           "Set center.", "SetCenter");
           
+AddComboParamOption("Roadmap");
+AddComboParamOption("Satellite");
+AddComboParamOption("Terrain");
+AddComboParamOption("Hybrid");
+AddComboParam("Map type", "Map type.",0);
+AddAction(2, 0, "Set map type", "Map type", 
+          "Set map type to <i>{0}</i>", 
+          "Set map type.", "SetMapType");
+          
+AddNumberParam("Zoom level", "Zoom level of the map. Set (-1) to clean this parameter.", 10);
+AddAction(3, 0, "Set zoom level", "Zoom level", 
+          "Set zoom level to <i>{0}</i>", 
+          "Set zoom level.", "SetZoomLevel");               
+          
 AddAction(101, 0, "Refresh", "Refresh", "Refresh the map", "Refresh the map displaying in case of graphical issues.", "Refresh" );
 
 AddAction(201, 0, "Snapshot", "Snapshot", 

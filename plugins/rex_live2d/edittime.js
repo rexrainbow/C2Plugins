@@ -97,13 +97,24 @@ AddAction(102, 0, "Look front", "Look",
           "Look front", 
           "Look front.", "LookFront"); 
 
+AddComboParamOption("Disable");          
 AddComboParamOption("Enable");
-AddComboParamOption("Disable");
 AddComboParam("Enable", "Enable the breathing behavior.",1);          
 AddAction(111, 0, "Breathing", "breathing", 
           "{0} breathing", 
           "Enable or disable Breathing.", "Breathing");                
           
+AddComboParamOption("Disable");          
+AddComboParamOption("Enable");
+AddComboParam("Enable", "Enable the lip sync.",1);          
+AddAction(121, 0, "Lip sync", "Lip sync", 
+          "{0} lip sync", 
+          "Enable or disable lip sync.", "SetLipSync");    
+
+AddNumberParam("Value", "Lip sync value. Range is 0~1", 0);     
+AddAction(122, 0, "Set lip sync value", "Lip sync", 
+          "Set lip sync value to <i>{0}</i>", 
+          "Set lip sync value.", "SetLipSyncValue");             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(12, ef_return_string, "Get path of loaded failed files", "Model - load", "LoadedFailedFilePaths", 'Get path of loaded failed files. Joins by ";".');
@@ -126,6 +137,7 @@ var property_list = [
                     "Top-left|Top|Top-right|Left|Center|Right|Bottom-left|Bottom|Bottom-right"), 
 	new cr.Property(ept_text,	"Idle motion",	"idle",	'Motion name of idle. Set "" if no idle motion.'),  
     new cr.Property(ept_combo, "Breathing", "Enable", "Enable breathing.", "Disable|Enable"),     
+    new cr.Property(ept_combo, "Lip sync", "Disable", "Enable lip sync.", "Disable|Enable"),        
 	];
 	
 // Called by IDE when a new object type is to be created

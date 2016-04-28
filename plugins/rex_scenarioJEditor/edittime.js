@@ -157,7 +157,7 @@ AddAction(63, 0, "Add to", "Global variable",
     "Add to the value of global variable.", "AddToGlobalVar");  
 
     
-AddStringParam("Task", "Task name", '""');
+AddStringParam("Task", 'Task name. Set to "" for current task.', '""');
 AddStringParam("Function", "Function name.", '""');
 AddAction(71, 0, "Start", "Task - Control", 
           "Task <b>{0}</b>: start from function <i>{1}</i>", 

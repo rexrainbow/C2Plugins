@@ -44,9 +44,9 @@ AddNumberParam("Playback time", "Current playback time, in seconds.");
 AddCondition(5, 0, "Compare playback time", "Video", 
              "Playback time {0} {1}", "Compare current playback time.", "ComparePlaybackTime");
 
-
 AddCondition(11, cf_trigger, "On player ready", "Initial", "On player ready", 
              "Triggered when player ready.", "OnPlayerReady");
+             
 AddCondition(12, cf_trigger, "On player error", "Video", "On player error",
              "Triggered when player has error.", "OnPlayerError");
              
@@ -54,7 +54,10 @@ AddCondition(13, cf_none, "Is full screen", "Full screen", "Is full screen",
              "True if video is in full screen mode.", "IsFullScreen");
 
 AddCondition(14, cf_none, "Is full window", "Full window", "Is full window", 
-             "True if video is in full window.", "IsFullWindow");             
+             "True if video is in full window.", "IsFullWindow");      
+
+AddCondition(22, cf_trigger, "On mouse over", "Mouse", "On mouse over",
+             "Triggered when mouse over.", "OnMouseOver");             
 ////////////////////////////////////////
 // Actions
 
@@ -111,8 +114,8 @@ AddAction(13, af_none, "Set full screen mode", "Full screen",
           "<i>{0}</i> full screen", 
           'Enter or exit full screen mode. "Enter full screen" can only be called under a user input.', "SetFullScreen");   
                 
-AddAction(21, af_none, "Set focused", "Player", "Set focused", "Set the input focus to the player.", "SetFocus");
-AddAction(22, af_none, "Set unfocused", "Player", "Set unfocused", "Remove the input focus from the player.", "SetBlur");        
+AddAction(21, af_deprecated, "Set focused", "Player", "Set focused", "Set the input focus to the player.", "SetFocus");
+AddAction(22, af_deprecated, "Set unfocused", "Player", "Set unfocused", "Remove the input focus from the player.", "SetBlur");        
 ////////////////////////////////////////
 // Expressions
 
