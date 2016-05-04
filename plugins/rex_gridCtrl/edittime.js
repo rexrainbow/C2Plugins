@@ -142,25 +142,24 @@ AddAction(21, 0, "Scroll to index", "List - offset Y",
           "Scroll offset (X, Y) to cell lindex.", "SetOXYToCellIndex"); 
 AddNumberParam("Percentage", "Scroll list, 0 is top, 1 is bottom.", 1);
 AddAction(22, 0, "Scroll by percentage", "List - Offset Y", 
-          "Scroll offset (X, Y) by percentage to <i>{0}</i>", 
-          "Scroll offset (X, Y) by percentage.", "SetOXYByPercentage"); 		  
+          "Scroll offset Y by percentage to <i>{0}</i>", 
+          "Scroll offsetY by percentage.", "SetOYByPercentage"); 		  
 		  
 AddNumberParam("Cell index", "Cell index.", 0);
 AddStringParam("Key", "The key of custom data.", '""');
 AddAnyTypeParam("Value", "The value to store in the cell.", 0);
 AddAction(31, 0, "Set value", "Custom data", 
-          "Set key <i>{1}</i> to <i>{2}</i> in cell <i>{0}</i>",
+          "Cell <i>{0}</i>: set key <i>{1}</i> to <i>{2}</i>",
           "Set custom data in a cell.", "SetValue"); 
 AddStringParam("Key", "The key of custom data.", '""');
 AddAction(32, 0, "Clean key in all cells", "Custom data", 
           "Clean key <i>{1}</i> in all cells",
           "Clean key in all cell.", "CleanKeyInAllCell");
-		  
-
+          
 AddNumberParam("Insert at", "Cell index for inserting.", 0);
 AddNumberParam("Cell number", "Cell number for inserting.", 1);
 AddAction(41, 0, "Insert new cells", "Insert", 
-          "Insert <i>{1}</i> new cells at <i>{0}</i>", 
+          "Cell <i>{0}</i>: insert <i>{1}</i> new cells", 
           "Insert new cells.", "InsertNewCells"); 
 
 AddNumberParam("Remove from", "Cell index for removing.", 0);
@@ -172,7 +171,7 @@ AddAction(42, 0, "Remove cells", "Remove",
 AddNumberParam("Insert at", "Cell index for inserting.", 0);
 AddStringParam("Content", "Content of cells in JSON string.", '""');
 AddAction(43, 0, "Insert cells", "Insert", 
-          "Insert cells at <i>{0}</i> with content <i>{1}</i>", 
+          "Cell <i>{0}</i>: insert cells with content <i>{1}</i>", 
           "Insert cells with content.", "InsertCells");
 
 AddComboParamOption("back");
@@ -192,19 +191,20 @@ AddAction(45, 0, "Push cells", "Insert",
           "Push cells with content.", "PushCells");  
 		  
 AddNumberParam("Cell height", "Cell height, in pixels.", 30);
-AddAction(51, 0, "Set cell height", "Cell size", 
-          "Set cell height to <i>{0}</i>", 
-          "Set cell height.", "SetCellHeight"); 		 
+AddAction(51, 0, "Set default cell height", "Cell size", 
+          "Set default cell height to <i>{0}</i>", 
+          "Set default cell height.", "SetDefaultCellHeight");
+          
 AddNumberParam("Cell width", "Cell width, in pixels.", 30);
-AddAction(52, 0, "Set cell width", "Cell size", 
-          "Set cell width to <i>{0}</i>", 
-          "Set cell width.", "SetCellWidth"); 
-		  
-//AddNumberParam("Cell index", "Cell index.", 0);         
-//AddNumberParam("OY", "Offset Y of a cell, in pixels.", 0);
-//AddAction(41, 0, "Set", "Cell - offset Y", 
-//          "Set additional offset Y of cell <i>{0}</i> to <i>{1}</i>", 
-//          "Set offset Y of cell.", "SetCellOffsetY");           
+AddAction(52, 0, "Set default cell width", "Cell size", 
+          "Set default cell width to <i>{0}</i>", 
+          "Set default cell width.", "SetDefaultCellWidth"); 
+          
+AddNumberParam("Cell index", "Line index.", 0);         
+AddNumberParam("Height", "Cell height, in pixels.", 30);
+AddAction(53, 0, "Set cell height", "Cell size", 
+          "Cell <i>{0}</i>: set height to <i>{1}</i>", 
+          "Set cell height.", "SetCellHeight");            
 		  
 AddAction(71, 0, "Refresh", "Visible", 
           "Refresh visible cells", 
@@ -243,12 +243,15 @@ AddExpression(13, ef_return_number, "Get position X by cell index", "Offset X", 
 			  
 AddExpression(21, ef_return_number, "Get total cells count", "List", "TotalCellsCount", 
               "Get total cells count.");
-AddExpression(22, ef_return_number, "Get cell height", "List", "DefaultCellHeight", 
+AddExpression(22, ef_return_number, "Get cell height", "Cell size", "DefaultCellHeight", 
               "Get default cell height.");
-AddExpression(23, ef_return_number, "Get cell width", "List", "DefaultCellWidth", 
+AddExpression(23, ef_return_number, "Get cell width", "Cell size", "DefaultCellWidth", 
               "Get default cell width.");		
 AddExpression(24, ef_return_number, "Get total columns count", "List", "TotalColumnsCount", 
-              "Get total columns count.");              	     			  
+              "Get total columns count."); 
+AddNumberParam("Index", "Index of cell.", 0);
+AddExpression(25, ef_return_number, "Get cell height", "Cell size", "CellHeight", 
+              "Get cell height.");                     
               
 AddNumberParam("Index", "Index of cell.", 0);
 AddStringParam("Key", "The name of the key.", '""');

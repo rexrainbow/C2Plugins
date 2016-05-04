@@ -121,6 +121,12 @@ AddExpression(2, ef_return_string | ef_variadic_parameters, "Get decimal mark", 
 AddStringParam('Input', "Input string.", '""');            
 AddExpression(3, ef_return_number, "Get byte count", "String", "String2ByteCount", "Get byte count of a string.");
 
+AddStringParam('Input', "Input string.", '""');         
+AddNumberParam("Start", "Start index.", 0);
+AddNumberParam("Stop", "Stop index.", 0);
+AddExpression(4, ef_return_string, "Get substring", "String", "SubString", 
+              "Get substring from (start index) to (end index-1).");
+              
 AddNumberParam('Mean', "Mean value", 0);  
 AddNumberParam('Standard deviation', "Standard deviation value", 1);       
 AddExpression(11, ef_return_number, "Get normal distribution", "Random", 

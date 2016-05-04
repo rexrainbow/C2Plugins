@@ -1,65 +1,34 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Token",
-		"id":			"Rex_Firebase_Token",
-		"version":		"0.1",        
-		"description":	"Token of master in a group.",
+		"name":			"Wilddog API",
+		"id":			"Rex_WilddogAPI",
+		"version":		"0.1",   		
+		"description":	"API of real time database-as-a-service. https://www.wilddog.com/ It is compatiable with firebase service.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_token.html",
-		"category":		"Rex - Web - firebase",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_wilddogapi.html",
+		"category":		"Rex - Web - Wild dog",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
+		"dependency":	"wilddog.js"
 	};
 };
 
 //////////////////////////////////////////////////////////////
-// Conditions
-AddCondition(1, cf_trigger, "On get token", "Token", 
-            "On get token", 
-            "Triggered when get the token.", "OnGetToken");
-            
-AddCondition(2, cf_trigger, "On owner changed", "Token", 
-            "On owner changed", 
-            "Triggered when token owner changed.", "OnTokenOwnerChanged");            
-            
-AddCondition(3, 0, "Is owner", "Token", 
-            "Is owner", 
-            "Return true if thie client owns the token.", "IsOwner");     
-            
-AddCondition(4, cf_trigger, "On release token", "Token", 
-            "On release token", 
-            "Triggered when release the token.", "OnReleaseToken");             
+// Conditions	
+
 //////////////////////////////////////////////////////////////
-// Actions
-AddStringParam("Domain", "The root location of the Firebase data.", '""');
-AddStringParam("Sub domain", "Sub domain for this function.", '""');
-AddAction(0, 0, "Set domain", "Domain", 
-          "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
-          "Set domain ref.", "SetDomainRef");
-          
-AddStringParam("User ID", "Key of User ID.", '""');
-AddAction(1, 0, "Join", "Group", 
-          "Join into group with user ID:<i>{0}</i>", 
-          "Join into group, try to get token.", "JoinGroup");
-          
-AddAction(2, 0, "Leave", "Group", 
-          "Leave group", 
-          "Leave group, release owned token.", "LeaveGroup");                          
+// Actions     
+      
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Get owner ID", "Token", "OwnerID", 
-              "Get owner ID."); 
-              
-ACESDone();
-              
+
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
-    new cr.Property(ept_text, "Sub domain", "Token", "Sub domain of this function."),  
+    new cr.Property(ept_combo, "Log", "No", "Enable log.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

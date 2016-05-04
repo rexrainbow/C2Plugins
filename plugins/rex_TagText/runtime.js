@@ -185,6 +185,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			"pxh": this.pxHeight,
 			"tw": this.textWidth,
 			"th": this.textHeight,
+            "ts": this.textShadow,
 			"lrt": this.last_render_tick,
             "bl": this.canvas_text.textBaseline,			
 			"txtObj": this.canvas_text.saveToJSON(),
@@ -207,6 +208,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.pxHeight = o["pxh"];
 		this.textWidth = o["tw"];
 		this.textHeight = o["th"];
+        this.textShadow = o["ts"];
 		this.last_render_tick = o["lrt"];
 		
 		this.text_changed = true;

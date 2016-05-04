@@ -454,6 +454,10 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	    ret.set_int( c );
 	};	
     
+    Exps.prototype.SubString = function (ret, s, start, end)
+	{
+	    ret.set_string( s.substring(start, end) );
+	};	    
     Exps.prototype.NormalRandom = function (ret, mean, stddev)
 	{
         var u, v, r

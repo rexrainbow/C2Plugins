@@ -11,7 +11,6 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"firebase.js"
 	};
 };
 

@@ -50,13 +50,14 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
 	instanceProto.onCreate = function()
 	{  
+	    this.lines_mgr = new cr.plugins_.Rex_ListCtrl.LinesMgrKlass(this);    
 	    this.is_vertical_scrolling = (this.properties[4] === 1); 	    
 	    this.is_clamp_OY = (this.properties[3] === 1);
-	    this.default_lineHeight = this.properties[1];
+	    this.lines_mgr.SetDefaultLineHeight(this.properties[1]);
 	    this.update_flag = true;
 	    this.OY = 0;
 	    
-	    this.lines_mgr = new cr.plugins_.Rex_ListCtrl.LinesMgrKlass(this);
+
 	    this.lines_mgr.SetLinesCount(this.properties[2]);
         this.visibleLineIndexes = {};
         this.pre_visibleLineIndexes = {};
@@ -99,7 +100,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         var is_YChanged = (this.pre_instY !== this.y);
         var is_areaChange = is_heightChanged || is_XChanged || is_YChanged;
         
-        this.update_flag = this.update_flag || is_areaChange;
+        if (is_areaChange)
+            this.update_flag = true;
         
         if (!this.update_flag)
             return;
@@ -154,10 +156,10 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     };    
 
     instanceProto.show_lines = function()
-    {            
+    {
         // index
-        var line_index = Math.floor( -this.OY / this.default_lineHeight );	            
-        var line_tlx = this.get_tlx();       
+        var line_index = this.lines_mgr.Height2LineIndex(-this.OY);          
+        var line_tlx = this.get_tlX();       
         var line_tly = this.get_tlY(line_index);
         // end condition
         var bottom_bound = this.get_bottom_bound();    
@@ -193,8 +195,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
                 }
             }
             
+            line_tly += this.lines_mgr.GetLineHeight(line_index);            
             line_index += 1;
-            line_tly += this.default_lineHeight;
         }
     }; 
     
@@ -238,7 +240,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.lines_mgr.DestroyPinedInsts(line_index);     
     };
 
-    instanceProto.get_tlx = function()
+    instanceProto.get_tlX = function()
     {                
         this.update_bbox(); 
         return (this.is_vertical_scrolling)? this.bquad.tlx : this.bquad.tly;
@@ -248,7 +250,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     {            
         this.update_bbox(); 
         var poy = (this.is_vertical_scrolling)? this.bquad.tly : this.bquad.tlx;       
-        var py = ( this.OY + (line_index * this.default_lineHeight) ) + poy;        
+        var py = this.OY +  this.lines_mgr.LineIndex2Height(0, line_index-1) + poy;       
+       
         return py;
     };
         
@@ -259,7 +262,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     };  
           
 	instanceProto.set_OY = function(oy)
-	{  
+	{    
 	    // check out-of-bound
 	    var is_out_top_bound = this.is_OY_out_bound(oy, 0);
 	    var is_out_bottom_bound = this.is_OY_out_bound(oy, 1);
@@ -267,9 +270,10 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    if (this.is_clamp_OY)
 	    {
 	        var total_lines=this.lines_mgr.GetLinesCount();
-	        var visible_lines=this.get_page2LineCnt();
+	        var visible_lines=this.lines_mgr.Height2LineIndex(this.get_inst_height(), true);
 	        
-	        if (total_lines < visible_lines)
+            // less then 1 page
+	        if (total_lines === visible_lines)
 	            oy = 0;
 	            
 	        else if (oy > 0)
@@ -283,10 +287,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	        }
 	    }
 	    
-	    this.update_flag = this.update_flag || (this.OY !== oy );
-	    this.OY = oy;	    
-	    
-	    	   
+        if (this.OY !== oy )
+        {
+	        this.update_flag = true;
+	        this.OY = oy;	  
+        }
+  
         // trigger out-of-bound	    	    
 	    if (is_out_top_bound && (!this.is_out_top_bound))
 	    {
@@ -315,14 +321,6 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    return (line_index >= this.visible_start) && (line_index <= this.visible_end);
 	};
 
-    instanceProto.get_page2LineCnt = function(ignore_round)
-    {                    
-	    var page2lines = this.get_inst_height()/this.default_lineHeight;
-		if (!ignore_round)
-		    page2lines = Math.ceil(page2lines);
-        return page2lines;            
-    };  
-    
 	var NEWLINES = [];	
 	var get_content = function (content)
 	{
@@ -438,31 +436,16 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    
 	};	 
 
-    instanceProto.get_page2Index = function (page)
-	{
-        var line_index;
-	    var full_lines_cnt = this.get_page2LineCnt();  
-        if (page == -1) // last full page      
-            line_index = this.lines_mgr.GetLinesCount() - full_lines_cnt;        
-        else        
-            line_index = full_lines_cnt * page;
-            
-        if (line_index < 0)
-            line_index = 0;            
-        return line_index;
-	};
-    
     instanceProto.get_list_height = function ()
 	{
-	    var h;
-	    var total_lines=this.lines_mgr.GetLinesCount();
-	    var visible_lines=this.get_page2LineCnt(true);
-	    
-	    if (total_lines > visible_lines)
-	        h = (total_lines - visible_lines) * this.default_lineHeight;
-	    else
-	        h = total_lines * this.default_lineHeight;
-	        
+        var h;
+        var totalLinesHeight = this.lines_mgr.GetTotalLinesHeight();
+        var inst_height = this.get_inst_height();
+        if (totalLinesHeight > inst_height)
+            h = totalLinesHeight - inst_height;
+        else
+            h = totalLinesHeight;
+        
         return h;
 	};    
 
@@ -573,8 +556,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.pre_instY = this.y;
         this.pre_instHeight = this.height;      
         
-		return { "line_height": this.default_lineHeight,
-		         "update_flag": this.update_flag,
+		return { 
+                 "update_flag": this.update_flag,
 		         "OY": this.OY,
 		         "lines_mgr": this.lines_mgr.saveToJSON(),
 		         "visible_lines": this.visibleLineIndexes,
@@ -592,7 +575,6 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-	    this.default_lineHeight = o["line_height"];	    
 	    this.update_flag = o["update_flag"];	   
 	    this.OY = o["OY"];	    
 	    this.lines_mgr_save = o["lines_mgr"]; 
@@ -747,14 +729,14 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     
     Acts.prototype.SetOYToLineIndex = function (line_index)
 	{
-	    this.set_OY( -line_index * this.default_lineHeight );
+        var p = this.lines_mgr.LineIndex2Height(0, line_index);
+	    this.set_OY( -p );
 	};	
     
     Acts.prototype.SetOYByPercentage = function (percentage)
 	{
-		var last_line_index = this.get_page2Index(-1);
-        var p1 = (last_line_index * this.default_lineHeight)*percentage;
-        this.set_OY( -p1 );
+        var p = this.get_list_height() *percentage;
+        this.set_OY( -p );
 	};			
     Acts.prototype.SetValue = function (line_index, key_, value_)
 	{
@@ -791,13 +773,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    this.insert_lines(line_index, content);
 	};	
 	
-    Acts.prototype.SetLineHeight = function (height)
+    Acts.prototype.SetDefaultLineHeight = function (height)
 	{
 	    if (height <= 0)
 		    return;
-        var is_changed = (this.default_lineHeight != height);        
-	    this.default_lineHeight = height;        
-        this.update_flag = this.update_flag || is_changed;
+        var is_changed = this.lines_mgr.SetDefaultLineHeight(height);      
+        if (is_changed)  this.update_flag = true;
 	};	
 	
     Acts.prototype.SetLineOffsetY = function (line_index, offsety)
@@ -807,9 +788,20 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
             return;
         var is_changed = (line.offsety != offsety);        
 	    line.offsety = offsety;        
-        this.update_flag = this.update_flag || is_changed;
+        if (is_changed)  this.update_flag = true;
 	};	
 	
+    Acts.prototype.SetLineHeight = function (line_index, height)
+	{
+        if (!this.lines_mgr.IsInRange(line_index))
+            return;
+        
+	    if (height < 0)
+		    return;
+                       
+        var is_changed = this.lines_mgr.SetLineHeight(line_index, height);   
+        if (is_changed)  this.update_flag = true;
+	};	
     Acts.prototype.RefreshVisibleLines = function ()
 	{
         this.update(true);
@@ -878,15 +870,19 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	
     Exps.prototype.DefaultLineHeight = function (ret)
 	{ 
-		ret.set_float(this.default_lineHeight);
+		ret.set_float(this.lines_mgr.defaultLineHeight);
 	};			
-    
+	
+    Exps.prototype.LineHeight = function (ret, index_)
+	{ 
+		ret.set_float(this.lines_mgr.GetLineHeight(index_));
+	};    
     Exps.prototype.At = function (ret, index_, key_, default_value)
 	{
 	    var v = this.lines_mgr.GetCustomData(index_, key_);   
         if (v == null)       
             v = default_value || 0;        
-            
+        
 		ret.set_any(v);
 	};
 	
@@ -966,15 +962,19 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
     cr.plugins_.Rex_ListCtrl.LinesMgrKlass = function(plugin)
     {
         this.plugin = plugin; 
-        this.lines = [];      
+        this.lines = [];     
+	    this.defaultLineHeight = 0;     
+        this.defaultLineHeightMode = true; 
+        this.totalLinesHeight = null;        
     };
     var LinesMgrKlassProto = cr.plugins_.Rex_ListCtrl.LinesMgrKlass.prototype;  
 
 	LinesMgrKlassProto.SetLinesCount = function(cnt)
 	{
-        if (this.lines.length > cnt)
+        var end=this.GetLinesCount();
+        if (end > cnt)
         {
-            var i,end=this.lines.length, line;
+            var i, line;
             for(i=cnt; i<end; i++)
             {
                 // release lines
@@ -987,15 +987,20 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
             }
             this.lines.length = cnt;            
         }
-        else if (this.lines.length < cnt)
+        else if (end < cnt)
         {
-            var i,start=this.lines.length;
+            var i,start=end;
             this.lines.length = cnt
             for(i=start; i<cnt; i++)
             {
                 this.lines[i] = null;
             }
         }
+        
+        if (this.GetLinesCount() === 0)
+            this.defaultLineHeightMode = true;
+        
+        this.totalLinesHeight = null;
 	};
     
     LinesMgrKlassProto.GetLinesCount = function()
@@ -1005,7 +1010,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
     LinesMgrKlassProto.IsInRange = function(line_index)
     {        
-        return ((line_index >= 0) && (line_index < this.lines.length));
+        return ((line_index >= 0) && (line_index < this.GetLinesCount()));
     };
          
     LinesMgrKlassProto.GetNewLine = function()
@@ -1022,12 +1027,11 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
                 
 	LinesMgrKlassProto.GetLine = function(line_index, dont_create_line_inst)
 	{	   
-        if ((line_index >= this.lines.length) || (line_index < 0))
+        if (!this.IsInRange(line_index))
             return;
             
         if ((this.lines[line_index] == null) && (!dont_create_line_inst))
         {
-            // TODO: allocate a line
             this.lines[line_index] = this.GetNewLine();
         }
         
@@ -1084,7 +1088,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    }
         else    // set custom data in all lines
 		{
-		    var i, cnt= this.lines.length, line;
+		    var i, cnt=this.GetLinesCount(), line;
 			var is_clean_key = (v == null);
 			for(i=0; i<cnt; i++)
 			{
@@ -1112,11 +1116,11 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    
 	    if (line_index < 0)
 	        line_index = 0;
-	    else if (line_index > this.lines.length)
-	        line_index = this.lines.length;
+	    else if (line_index > this.GetLinesCount())
+	        line_index = this.GetLinesCount();
 	        	    
 	    this.lines.length += cnt;
-	    var start = this.lines.length - 1;
+	    var start = this.GetLinesCount() - 1;
 	    var end = line_index + cnt;
 	    var i, insert_line, new_line;
 	    for (i=start; i>=line_index; i--)
@@ -1136,6 +1140,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	            }
 	        }
 	    }
+        
+        this.totalLinesHeight = null;
 	};	
 	
 	LinesMgrKlassProto.RemoveLines = function(line_index, cnt)
@@ -1160,13 +1166,17 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	        }
 	    }
 	    var start = line_index+cnt;
-	    var end = this.lines.length -1;
+	    var end = this.GetLinesCount() -1;
 	    for (i=start; i<=end; i++)
 	    {
 	        this.lines[i-cnt] = this.lines[i];
 	    }
 	    this.lines.length -= cnt;
 	    
+        if (this.GetLinesCount() === 0)
+            this.defaultLineHeightMode = true;
+        
+        this.totalLinesHeight = null;
 	    return removed_lines;
 	};
 	
@@ -1185,10 +1195,142 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 
 	    return dataInLines;
 	};	
-			
+    
+	LinesMgrKlassProto.SetDefaultLineHeight = function(height)
+	{
+        if (this.defaultLineHeight === height)
+            return false;
+        
+        this.defaultLineHeight = height;
+        this.totalLinesHeight = null;  
+        return true;
+	};	      
+    
+	LinesMgrKlassProto.GetLineHeight = function(line_index)
+	{
+        if (!this.IsInRange(line_index))
+            return 0;
+        
+        var line_height;
+        if (this.defaultLineHeightMode)
+            line_height = this.defaultLineHeight;
+        else
+        {
+            var line = this.GetLine(line_index, true);
+            var deltaHeight = (line)? line.deltaHeight : 0;
+            line_height = this.defaultLineHeight + deltaHeight;
+        }
+        
+        return line_height;
+	};	    
+    
+	LinesMgrKlassProto.SetLineHeight = function(line_index, height)
+	{
+        if (!this.IsInRange(line_index))
+            return;
+        
+        var curHeight = this.GetLineHeight(line_index);
+        if (curHeight === height)
+            return false;
+        
+        var deltaHeight = height - this.defaultLineHeight;
+        var line = this.GetLine(line_index);
+        var dd = deltaHeight - line.deltaHeight;
+        line.deltaHeight = deltaHeight;
+        
+        if (deltaHeight !== 0)
+            this.defaultLineHeightMode = false;          
+        
+        if (this.totalLinesHeight !== null)
+            this.totalLinesHeight += dd;  
+
+        return true;        
+	};	  
+      
+	LinesMgrKlassProto.Height2LineIndex = function(h, isCeil)
+	{
+        if (this.defaultLineHeightMode)
+        {
+            var line_index = h / this.defaultLineHeight;
+            if (isCeil)
+                line_index = Math.ceil(line_index);
+            else
+                line_index = Math.floor(line_index);
+
+            return line_index;
+        }
+        else
+        {
+            var total_ines_cnt = this.GetLinesCount();       
+            var remain=h, line_cnt=0, is_valid_index;
+            var line, line_height, line_index=0;
+            
+            while (1)
+            {
+                line_height = this.GetLineHeight(line_index);
+                remain -=  line_height;
+                
+                is_valid_index = (line_index >=0) && (line_index < total_ines_cnt);
+                if ((remain > 0) && is_valid_index)
+                {
+                    line_index += 1;                
+                }
+                else if (remain === 0)
+                    return line_index;  
+                else
+                {
+                    if (isCeil)
+                    {  
+                        var line_index_save = line_index;              
+                        line_index += 1;
+                        is_valid_index = (line_index >=0) && (line_index < total_ines_cnt);
+                        
+                        if (!is_valid_index)
+                            line_index = line_index_save;
+                    }
+                    
+                    return line_index;
+                }                    
+            }
+        }        
+	};	 
+
+	LinesMgrKlassProto.LineIndex2Height = function(start, end)
+	{
+        if (this.defaultLineHeightMode)
+            return (end - start + 1) * this.defaultLineHeight;
+        else
+        {            
+            var i, h, sum=0;
+            var all_default_height = true;
+            for(i=start; i<=end; i++)
+            {
+                h = this.GetLineHeight(i);
+                sum += h;                
+                
+                if (h !== this.defaultLineHeight)
+                    all_default_height = false;
+            }
+            
+            var all_lines = (start===0)  && (end >= (this.GetLinesCount()-1));
+            if (all_default_height && all_lines)
+                this.defaultLineHeightMode = true;
+            
+            return sum;
+        }        
+	}; 
+
+    LinesMgrKlassProto.GetTotalLinesHeight = function ()
+    {
+        if (this.totalLinesHeight === null)
+            this.totalLinesHeight = this.LineIndex2Height(0, (this.GetLinesCount()-1));
+        
+        return this.totalLinesHeight;
+    };
+    
 	LinesMgrKlassProto.saveToJSON = function ()
 	{
-	    var i,cnt=this.lines.length;
+	    var i,cnt=this.GetLinesCount();
 	    var save_lines = [], line, save_line;
 	    for(i=0; i<cnt; i++)
 	    {
@@ -1197,7 +1339,10 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	        save_lines.push( save_line );
 	    }
 
-		return { "lines": save_lines,		         
+		return { "lines": save_lines,	
+                      "dlh": this.defaultLineHeight,        
+                      "dlhm": this.defaultLineHeightMode,
+                      "tlh": this.totalLinesHeight,
 		       };
 	};
 	
@@ -1220,19 +1365,20 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	            this.lines.push( new_line );
 	        }
 	    }
+        
+        this.defaultLineHeight = o["dlh"];
+        this.defaultLineHeightMode = o["dlhm"];
+        this.totalLinesHeight = o["tlh"];
 	};	
 	// LinesMgr
 
     // Line
     var LineKlass = function(plugin)
     {     
-        this.plugin = plugin; 
         this.pined_insts = {};      
         this.custom_data = {};
         
-        this.tlx = 0;
-        this.tly = 0;
-        this.offsety = 0;           
+        this.Reset(plugin);
     };
     var LineKlassProto = LineKlass.prototype;  
 
@@ -1242,6 +1388,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         this.tlx = 0;
         this.tly = 0;
         this.offsety = 0; 
+        this.deltaHeight = 0;  
 	};	
     
 	LineKlassProto.SetTLXY = function(tlx, tly)
@@ -1385,7 +1532,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		         "data": this.custom_data,
 		         "tlx": this.tlx,
 		         "tly": this.tly,
-		         "offsety": this.offsety,		         
+		         "offsety": this.offsety,	
+                 "dh": this.deltaHeight,                 
 		       };
 	};
 	
@@ -1396,6 +1544,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		this.tlx = o["tlx"];
 		this.tly = o["tly"];	
 		this.offsety = o["offsety"];
+        this.deltaHeight = o["dh"]; 
 	};	
 	// Line
 }());

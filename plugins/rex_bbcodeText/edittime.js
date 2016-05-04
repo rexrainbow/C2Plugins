@@ -113,12 +113,6 @@ AddAction(58, 0, "Set wrapping (#)", "Properties",
           "{my} Set wrapping to <i>{0}</i>", 
           "Set wrapping.", "SetWrapping");   
 
-AddStringParam("Name", "Property name.", '""');
-AddAnyTypeParam("Value", "Property value.", 0);
-AddAction(60, 0, "Set custom property", "Properties", 
-          "Set custom property <i>{0}</i> to <i>{1}</i>", 
-		  "Set custom property.", "SetCustomProperty");	
-
 AddNumberParam("Offset X", "Offset X of shadow, in pixels.", 10);
 AddNumberParam("Offset Y", "Offset Y of shadow, in pixels.", 10);
 AddNumberParam("Blur", "Blur of shadow, in pixels.", 20);    
@@ -126,12 +120,13 @@ AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", '"rgb(
 AddAction(61, 0, "Set shadow", "Shadow", 
           "Set shadow with offset to (<i>{0}</i>, <i>{1}</i>), blur to <i>{2}</i>, color to <i>{3}</i>", 
           "Set shadow.", "SetShadow");
-
-AddStringParam("Tag", "Tag definitions.", '""');
-AddAction(62, 0, "Add by CSS", "Tag", 
-         "Add tags by CSS to <i>{0}</i>", 
-         "Add tags by CSS.", "AddCSSTags");
           
+AddNumberParam("Thickness", "Thickness in pixels.", 1);
+AddAction(71, 0, "Set thickness", "Underline", "Set thickness to <i>{0}</i>", "Set thickness of underline.", "SetThickness"); 
+         
+AddNumberParam("Offset", "Thickness in pixels.", 1);
+AddAction(72, 0, "Set offset Y", "Underline", "Set offset Y to <i>{0}</i>", "Set offset Y of underline.", "SetOffsetY"); 
+
 ////////////////////////
 AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");
 AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");
@@ -161,6 +156,16 @@ var property_list = [
 	new cr.Property(ept_combo, "Baseline", "Top", "Baseline of text alignment.", "Alphabetic|Top"),
 	new cr.Property(ept_float, "Shift down", 13, "Shift the text down for alphabetic baseline, in pixels."),	
     new cr.Property(ept_combo, "Force render", "No", "Force rendering immediately after any property setting.", "No|Yes"),	
+    
+    new cr.Property(ept_section, "Underline", "",	""),  
+    new cr.Property(ept_integer, "Underline thickness", 1, "Thickness of underline, in pixels."),
+    new cr.Property(ept_integer, "Underline offset Y", 0, "Offset Y of underline, in pixels."),    
+    
+    new cr.Property(ept_section, "Shadow", "",	""),    
+    new cr.Property(ept_integer, "Shadow offset X", 10, "Offset X of shadow, in pixels."),
+    new cr.Property(ept_integer, "Shadow offset Y", 10, "Offset Y of shadow, in pixels."),    
+    new cr.Property(ept_integer, "Shadow blur", 20, "Blur of shadow, in pixels."),       
+	new cr.Property(ept_color, "Shadow color", cr.RGB(0, 0, 0),	"Color of the shadow."),    
 	];
 	
 // Called by IDE when a new object type is to be created

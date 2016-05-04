@@ -103,7 +103,7 @@ AddNumberParam("Line index", "Line index.", 0);
 AddStringParam("Key", "The key of custom data.", '""');
 AddAnyTypeParam("Value", "The value to store in the line.", 0);
 AddAction(11, 0, "Set value", "Custom data", 
-          "Set key <i>{1}</i> to <i>{2}</i> in line <i>{0}</i>",
+          "Line <i>{0}</i>: set key <i>{1}</i> to <i>{2}</i>",
           "Set custom data in a line.", "SetValue"); 
 AddStringParam("Key", "The key of custom data.", '""');
 AddAction(12, 0, "Clean key in all lines", "Custom data", 
@@ -114,7 +114,7 @@ AddAction(12, 0, "Clean key in all lines", "Custom data",
 AddNumberParam("Insert at", "Line index for inserting.", 0);
 AddNumberParam("Line number", "Line number for inserting.", 1);
 AddAction(21, 0, "Insert new lines", "Insert", 
-          "Insert <i>{1}</i> new lines at <i>{0}</i>", 
+          "Line <i>{0}</i>: insert <i>{1}</i> new lines", 
           "Insert new lines.", "InsertNewLines"); 
 
 AddNumberParam("Remove from", "Line index for removing.", 0);
@@ -126,7 +126,7 @@ AddAction(22, 0, "Remove lines", "Remove",
 AddNumberParam("Insert at", "Line index for inserting.", 0);
 AddStringParam("Content", "Content of lines in JSON string.", '""');
 AddAction(23, 0, "Insert lines", "Insert", 
-          "Insert lines at <i>{0}</i> with content <i>{1}</i>", 
+          "Line <i>{0}</i>: insert lines with content <i>{1}</i>", 
           "Insert lines with content.", "InsertLines");
 
 AddComboParamOption("back");
@@ -146,28 +146,34 @@ AddAction(25, 0, "Push lines", "Insert",
           "Push lines with content.", "PushLines");  
 		  
 AddNumberParam("Line height", "Line height, in pixels.", 30);
-AddAction(31, 0, "Set line height", "Line height", 
-          "Set line height to <i>{0}</i>", 
-          "Set line height.", "SetLineHeight"); 
+AddAction(31, 0, "Set default line height", "Line height", 
+          "Set default line height to <i>{0}</i>", 
+          "Set default line height.", "SetDefaultLineHeight"); 
           
 AddNumberParam("Line index", "Line index.", 0);         
 AddNumberParam("OY", "Offset Y of a line, in pixels.", 0);
 AddAction(41, 0, "Set", "Line - offset Y", 
-          "Set additional offset Y of line <i>{0}</i> to <i>{1}</i>", 
-          "Set offset Y of line.", "SetLineOffsetY");           
-		  
+          "Line <i>{0}</i>: set additional offset Y to <i>{1}</i>", 
+          "Set offset Y of line.", "SetLineOffsetY");   
+
+AddNumberParam("Line index", "Line index.", 0);         
+AddNumberParam("Height", "Line height, in pixels.", 30);
+AddAction(42, 0, "Set line height", "Line height", 
+          "Line <i>{0}</i>: set height to <i>{1}</i>", 
+          "Set line height.", "SetLineHeight");               
+          		 
 AddAction(51, 0, "Refresh", "Visible", 
           "Refresh visible lines", 
-          "Refresh visible lines.", "RefreshVisibleLines");      
-          
+          "Refresh visible lines.", "RefreshVisibleLines");
+
 AddNumberParam("Line index", "Line index.", 0);
 AddObjectParam("Object", "Object for picking");
 AddAction(101, 0, "Pick instances", "SOL: instances", 
-          "Pick <i>{0}</i> on line <i>{1}</i>", "Pick instances on line.", "PickInstsOnLine"); 
+          "Line <i>{0}</i>: pick <i>{1}</i>", "Pick instances on line.", "PickInstsOnLine"); 
 
 AddNumberParam("Line index", "Line index.", 0);             
 AddAction(102, 0, "Pick all instances", "SOL: instances", 
-          "Pick all instances on line <i>{0}</i>", "Pick all instances on line.", "PickAllInstsOnLine");                   
+          "Line <i>{0}</i>: pick all instances", "Pick all instances on line.", "PickAllInstsOnLine");                   
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get selected line index", "Visibl - On visible", "LineIndex", 
@@ -184,8 +190,11 @@ AddExpression(6, ef_return_number, "Get position Y by line index", "Offset Y", "
               "Get top-left position Y by line index");              
 AddExpression(7, ef_return_number, "Get total lines count", "List", "TotalLinesCount", 
               "Get total lines count.");
-AddExpression(8, ef_return_number, "Get line height", "List", "DefaultLineHeight", 
-              "Get default line height.");  
+AddExpression(8, ef_return_number, "Get default line height", "Line height", "DefaultLineHeight", 
+              "Get default line height."); 
+AddNumberParam("Index", "Index of line.", 0);
+AddExpression(9, ef_return_number, "Get line height", "Line height", "LineHeight", 
+              "Get line height.");                
 
 AddNumberParam("Index", "Index of line.", 0);
 AddStringParam("Key", "The name of the key.", '""');

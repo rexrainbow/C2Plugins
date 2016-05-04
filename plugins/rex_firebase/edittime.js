@@ -11,7 +11,6 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
-		"dependency":	"firebase.js"
 	};
 };
 
@@ -287,7 +286,6 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
-    new cr.Property(ept_combo, "Log", "No", "Enable log.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

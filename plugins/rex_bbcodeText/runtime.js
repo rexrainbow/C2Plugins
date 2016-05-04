@@ -86,7 +86,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		this.valign = this.properties[5];				// 0=top, 1=center, 2=bottom
         
         this.textShadow = "";
-		
+
 		this.wrapbyword = (this.properties[7] === 0);	// 0=word, 1=character
 		this.lastwidth = this.width;
 		this.lastwrapwidth = this.width;
@@ -133,7 +133,10 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.canvas_text.Reset(this);
         this.canvas_text.textBaseline = (this.baseLine_mode === 0)? "alphabetic":"top";
 		//this.lines = this.canvas_text.getLines();
-		
+        this.canvas_text.underline.thickness = this.properties[12];
+        this.canvas_text.underline.offset = this.properties[13];
+		this.setShadow(this.properties[14], this.properties[15], this.properties[16], this.properties[17]);
+        
 		
 		// render text at object initialize
 		if (this.text)
@@ -185,6 +188,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			"pxh": this.pxHeight,
 			"tw": this.textWidth,
 			"th": this.textHeight,
+            "ts": this.textShadow,
 			"lrt": this.last_render_tick,
             "bl": this.canvas_text.textBaseline,			
 			"txtObj": this.canvas_text.saveToJSON(),
@@ -207,6 +211,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		this.pxHeight = o["pxh"];
 		this.textWidth = o["tw"];
 		this.textHeight = o["th"];
+        this.textShadow = o["ts"];
 		this.last_render_tick = o["lrt"];
 		
 		this.text_changed = true;
@@ -510,6 +515,16 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		}
     };  
     
+	instanceProto.setShadow = function(offsetX, offsetY, blur_, color_)
+	{
+        color_ = color_.replace(/ /g,'');
+        
+        // 2px 2px 2px #000        
+        var shadow = offsetX.toString() + "px " + offsetY.toString() + "px " + blur_.toString() + "px " + color_;
+        
+	    this.textShadow = shadow;          
+	};    
+    
     var copy_dict = function (in_obj, out_obj, is_merge)
     {
         if (out_obj == null)
@@ -793,16 +808,19 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 
 	Acts.prototype.SetShadow = function(offsetX, offsetY, blur_, color_)
 	{
-        color_ = color_.replace(/ /g,'');
-        
-        // 2px 2px 2px #000        
-        var shadow = offsetX.toString() + "px " + offsetY.toString() + "px " + blur_.toString() + "px " + color_;
-        
-	    this.textShadow = shadow;
+	    this.setShadow(offsetX, offsetY, blur_, color_);
         this.render_text(this.is_force_render);             
 	};	
   
-	
+	Acts.prototype.SetThickness = function(w)
+	{
+	    this.canvas_text.underline.thickness = w;              
+	};	
+	Acts.prototype.SetOffsetY = function(offset)
+	{
+	    this.canvas_text.underline.offset = offset;              
+	};	    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -923,6 +941,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             style:"normal",            
             shadow:"",
         };
+        this.underline = {thickness: 1, offset:0};
+        
         this.textAlign = "start";
         this.lineHeight = "16";        
         this.textBaseline = "alphabetic";        
@@ -957,10 +977,10 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         
         
         var weight = propScope["weight"] || this.default_propScope.weight;     
-        var ptSize = propScope["size"] || this.default_propScope.ptSize;        
+        var ptSize = this.getTextSize(propScope);    
         var family = propScope["family"] || this.default_propScope.family;        
-        var color = propScope["color"] || this.default_propScope.color;        
-        var shadow = propScope["shadow"] || this.default_propScope.shadow;
+        var color = this.getTextColor(propScope);
+        var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";
         
         this.context.font = style + " " + weight + " " + ptSize + " " + family;
         this.context.fillStyle = color;
@@ -971,16 +991,41 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             this.context.shadowOffsetY = parseFloat(shadow[1].replace("px", ""));
             this.context.shadowBlur = parseFloat(shadow[2].replace("px", ""));
             this.context.shadowColor = shadow[3];
-        }      
+        } 
         
     };
+    
+    CanvasTextProto.getTextSize = function(propScope)
+    {
+        return propScope["size"] || this.default_propScope.ptSize;      
+    };  
+    CanvasTextProto.getTextColor = function(propScope)
+    {
+        return propScope["color"] || this.default_propScope.color;          
+    };  
+    
     
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
     {
         this.context.save(); 
-        
+                          
         this.apply_propScope(pen.prop);        
-        this.context.fillText(pen.text, offset_x + pen.x, offset_y + pen.y);
+        
+        var startX = offset_x + pen.x;
+        var startY = offset_y + pen.y;
+        
+        // underline
+        var underline = pen.prop["u"];
+        if (underline)
+        {
+            var color = (underline === true)? this.getTextColor(pen.prop) : underline;
+            this.draw_underline(pen.text, startX, startY, 
+                                           this.getTextSize(pen.prop), 
+                                           color );
+        }
+        
+        // draw text
+        this.context.fillText(pen.text, startX, startY);
         
         this.context.restore();
     };
@@ -1033,14 +1078,35 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 this.draw_pen(pen, offset_x, offset_y);
             }
         }
-    };      
+    };   
+
+    CanvasTextProto.draw_underline = function (text, x, y, size, color)
+    {
+        var ctx = this.context;
+        var width = ctx.measureText(text).width;
+        //switch(ctx.textAlign)
+        //{
+        //case "center": x -= (width/2); break;
+        //case "right": x -= width; break;
+        //}
+        y += this.underline.offset;        
+        if (this.textBaseline === "top")
+            y += parseInt(size);
+        
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = this.underline.thickness;
+        ctx.moveTo(x,y);
+        ctx.lineTo(x+width,y);
+        ctx.stroke();
+    };    
     
     // split text into array
     var RAWTEXTONLY_MODE = 1;
     var __result=[];
     var split_text = function(txt, mode)
-    {
-        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]/ig;
+    {        
+        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]/ig;
         __result.length = 0;
         var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
         while(true)    
@@ -1085,7 +1151,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __re_size_open = /\[size=(\d+)\]/i;
     var __re_size_close = /\[\/size\]/i;    
     var __re_color_open = /\[color=([a-z]+|#[0-9abcdef]+)\]/i;
-    var __re_color_close = /\[\/color\]/i;      
+    var __re_color_close = /\[\/color\]/i;    
+    var __re_underline_open = /\[u\]/i;
+    var __re_underline_openC = /\[u=([a-z]+|#[0-9abcdef]+)\]/i;    
+    var __re_underline_close = /\[\/u\]/i;   
+    var __re_shadow_open = /\[shadow\]/i;
+    var __re_shadow_close = /\[\/shadow\]/i;    
     var __curr_propScope = {};
     CanvasTextProto.updatePens = function (pensMgr, textInfo, ignore_wrap) 
     {
@@ -1161,6 +1232,33 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 update_propScope(__curr_propScope, "-", "color");
                 continue;
             }
+            else if (__re_underline_open.test(m)) 
+            { 
+                innerMatch = m.match(__re_underline_open);
+                update_propScope(__curr_propScope, "+", "u", true);
+                continue;
+            }
+            else if (__re_underline_openC.test(m)) 
+            { 
+                innerMatch = m.match(__re_underline_openC);
+                update_propScope(__curr_propScope, "+", "u", innerMatch[1]);
+                continue;
+            }            
+            else if (__re_underline_close.test(m)) 
+            { 
+                update_propScope(__curr_propScope, "-", "u");
+                continue;
+            }     
+            else if (__re_shadow_open.test(m)) 
+            { 
+                update_propScope(__curr_propScope, "+", "shadow", true);
+                continue;
+            }  
+            else if (__re_shadow_close.test(m)) 
+            { 
+                update_propScope(__curr_propScope, "-", "shadow");
+                continue;
+            }             
             else 
             {
                 proText = m;
@@ -1364,12 +1462,15 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	{
 		return {
 			"cls": this.savedClasses,
+            "u": [this.underline.thickness, this.underline.offset]
 		};
 	};
 	
 	CanvasTextProto.loadFromJSON = function (o)
 	{
 		this.savedClasses = o["cls"];
+        this.underline.thickness = o["u"][0];
+        this.underline.offset = o["u"][1];        
 	};    
 
 
@@ -1767,8 +1868,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         return txt;
     };  
     
-    var __re_close_op = /-(\w+)/i;;
-    var __re_simple_prop = /\+([bi])/i;    
+    var __re_close_op = /-(\w+)/i;   
     var __prop_list=[];
     var prop2TagText = function (txt, prop, all_props_mode)
     {       
@@ -1785,7 +1885,14 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                     header +=  ("[size=" + prop["size"].replace("pt", "") + "]");
                 else if (k === "color")
                     header += ("[color=" + prop["color"] + "]");   
-                else
+                else if (k === "u")
+                {
+                    if (prop["u"] === true)
+                        header += "[u]";
+                    else
+                        header += ("[u=" + prop["u"] + "]");   
+                }
+                else                
                     header += ("[" + k + "]");
             }
             txt = header + txt;           
@@ -1804,19 +1911,29 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 var innerMatch = diff.match(__re_close_op);
                 txt = "[/" + innerMatch[1] + "]" + txt;
             }
-            // get +b, +i
-            else if (__re_simple_prop.test(diff))
-            {
-                var innerMatch = diff.match(__re_simple_prop);
-                txt = "["+innerMatch[1]+"]" + txt;
-            }    
+            // get +b
+            else if (diff === "+b")
+                txt = "[b]" + txt; 
+            // get +i
+            else if (diff === "+i")
+                txt = "[i]" + txt;             
             // get +size
             else if (diff === "+size")
                 txt = "[size=" + prop["size"].replace("pt", "") + "]" + txt;
             // get +color
             else if (diff === "+color")
-                txt = "[color=" + prop["color"] + "]" + txt;     
-
+                txt = "[color=" + prop["color"] + "]" + txt;    
+            // get +u
+            else if (diff === "+u")
+            {
+                if (prop["u"] === true)
+                    txt = "[u]" + txt;
+                else
+                    txt = "[u=" + prop["u"] + "]" + txt;
+            }
+            // get +shadow
+            else if (diff === "+shadow")
+                txt = "[shadow]" + txt;            
         }
         
         return txt;        
