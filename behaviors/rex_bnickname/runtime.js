@@ -55,8 +55,8 @@ cr.behaviors.Rex_bNickname = function(runtime)
 	{
 	    if (cr.plugins_.Rex_Nickname == null)
 		    return;
-            
-        var nickname = (_mode == 1)? this.inst.type.sid:
+        
+        var nickname = (_mode == 1)? this.inst.type.sid.toString():
                                      _nickname;
         if (nickname == "")
         {

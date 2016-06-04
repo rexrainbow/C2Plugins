@@ -42,7 +42,7 @@ cr.plugins_.Rex_FirebaseAPI = function(runtime)
 	instanceProto.onCreate = function()
 	{
         if (!this.recycled)
-            window["Firebase"]["enableLogging"](this.properties[0] == 1);
+            window["Firebase"]["enableLogging"](this.properties[0] == 1);        
 	};
 	
 	instanceProto.onDestroy = function ()

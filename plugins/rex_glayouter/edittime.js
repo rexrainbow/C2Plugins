@@ -41,7 +41,7 @@ AddAction(4, 0, "Create&Add instances", "Add/Remove", "Create and add <i>{0}</i>
 AddObjectParam("Instances", "Remove instances from layouter.");          
 AddAction(5, 0, "Remove instances", "Add/Remove", "Remove instances <i>{0}</i>", 
           "Remove instances.", "RemoveInsts"); 	
-AddAction(6, 0, "Force layout", "Layout", "Force layout instances", 
+AddAction(6, 0, "Force layout", "Update", "Force layout instances", 
           "Force layout instances.", "ForceLayout");          
 AddAction(7, 0, "Remove all", "Add/Remove", "Remove all instances", 
           "Remove all instances.", "RemoveAllInsts"); 	                   

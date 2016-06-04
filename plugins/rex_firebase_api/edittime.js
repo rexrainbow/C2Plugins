@@ -7,7 +7,7 @@
 		"description":	"API of real time database-as-a-service. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebaseapi.html",
-		"category":		"Rex - Web - Firebase - core",
+		"category":		"Rex - Web - Firebase - api",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

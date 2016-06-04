@@ -69,7 +69,14 @@ AddAction(16, 0, "Push", "Function queue",
           "Push function call into function queue.", "PushToFnQueue2");    
 AddAction(17, 0, "Reverse", "Function queue", 
           "Reverse function queue", 
-          "Reverse function queue.", "ReverseFnQueue");          
+          "Reverse function queue.", "ReverseFnQueue");
+
+AddComboParamOption("Official function");
+AddComboParamOption("Rex function2");
+AddComboParam("Callback", "Callback object.",0);          
+AddAction(21, 0, "Setup callback", "Setup", 
+          "Set callback to <i>{0}</i>", 
+          "Setup callback.", "SetupCallback");	          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Name", "The name of the function to call.");

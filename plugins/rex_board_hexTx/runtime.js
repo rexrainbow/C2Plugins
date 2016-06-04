@@ -658,4 +658,16 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         var py = this.LXYZ2PY(lx,ly,0);
 	    ret.set_float(py);
 	};		
+	
+	Exps.prototype.PXY2LX = function (ret,px,py)
+	{
+        var lx = this.PXY2LX(px,py);
+	    ret.set_float(lx);
+	};
+    
+	Exps.prototype.PXY2LY = function (ret,px,py)
+	{
+        var ly = this.PXY2LY(px,py);
+	    ret.set_float(ly);
+	};      
 }());

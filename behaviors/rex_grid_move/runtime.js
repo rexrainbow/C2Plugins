@@ -208,7 +208,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
     behinstProto.target2dir = function (target_x, target_y, target_z)
     {
         var my_xyz = this.chess_xyz_get();        
-        return this.GetBoard().lxy2NeighborDir(my_xyz.x, my_xyz.y, target_x, target_y);
+        return this.GetBoard().xy2NeighborDir(my_xyz.x, my_xyz.y, target_x, target_y);
     };
     
     behinstProto.set_move_target = function (target_x, target_y, target_z, dir)

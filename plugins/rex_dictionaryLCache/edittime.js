@@ -39,14 +39,19 @@ AddCondition(101, cf_trigger, "On load cache complete", "Load cache",
              "Triggered when load cache complete.", "OnLoadCacheComplete");
 
 AddCondition(102, cf_none, "Is loading", "Load cache", 
-             "Is loading", "True if in loading cache progress.", "IsLoading");             
+             "Is loading", "True if in loading cache progress.", "IsLoading");       
+
+AddCondition(103, cf_trigger, "On initial cache", "Initial cache", 
+             "On initial cache", 
+             "Triggered when initial cache.", "OnInitialCache");                  
              
 AddCondition(111, cf_trigger, "On writing actions complete", "Writing actions", 
              "On writing actions complete", 
              "Triggered when writing actions complete.", "OnWritingActionsComplete");
 
 AddCondition(112, cf_none, "Is writing", "Writing actions", 
-             "Is writing", "True if in writing cache progress.", "IsWriting");                             
+             "Is writing", "True if in writing cache progress.", "IsWriting");
+        
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key", "The name of the key.  If it already exists, its value will be overwritten.");

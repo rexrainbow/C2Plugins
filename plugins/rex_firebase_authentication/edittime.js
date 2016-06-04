@@ -18,42 +18,42 @@
 // Conditions	
 
 // email - password  
-AddCondition(1, cf_trigger, "On creating account successfully", "Email & Password - create account", 
-            "On creating account successfully", 
-            "Triggered when creating account successfully.", "EmailPassword_OnCreateAccountSuccessfully");
+AddCondition(1, cf_trigger, "On creating account success", "Email & Password - create account", 
+            "On creating account success", 
+            "Triggered when creating account success.", "EmailPassword_OnCreateAccountSuccessfully");
             
 AddCondition(2, cf_trigger, "On creating account error", "Email & Password - create account", 
             "On create account error", 
             "Triggered when creating account error.", "EmailPassword_OnCreateAccountError");   
             
-AddCondition(3, cf_trigger, "On changing password successfully", "Email & Password - changing password", 
-            "On changing password successfully", 
-            "Triggered when changing password successfully.", "EmailPassword_OnChangingPasswordSuccessfully");
+AddCondition(3, cf_trigger, "On changing password success", "Email & Password - changing password", 
+            "On changing password success", 
+            "Triggered when changing password success.", "EmailPassword_OnChangingPasswordSuccessfully");
             
 AddCondition(4, cf_trigger, "On changing password error", "Email & Password - changing password", 
             "On changing password error", 
             "Triggered when changing password error.", "EmailPassword_OnChangingPasswordError");    
             
-AddCondition(5, cf_trigger, "On sending password result email successfully", "Email & Password - sending password result email", 
-            "On sending password result email successfully", 
-            "Triggered when sending password result email successfully.", "EmailPassword_OnSendPasswordResultEmailSuccessfully");
+AddCondition(5, cf_trigger, "On sending password result email success", "Email & Password - sending password result email", 
+            "On sending password result email success", 
+            "Triggered when sending password result email success.", "EmailPassword_OnSendPasswordResultEmailSuccessfully");
             
 AddCondition(6, cf_trigger, "On sending password result email error", "Email & Password - sending password result email", 
             "On sending password result email error", 
             "Triggered when sending password result email error.", "EmailPassword_OnSendPasswordResultEmailError");                         
      
-AddCondition(7, cf_trigger, "On deleting user successfully", "Email & Password - deleting user", 
-            "On deleting user successfully", 
-            "Triggered when deleting user successfully.", "EmailPassword_OnDeleteUserSuccessfully");
+AddCondition(7, cf_trigger, "On deleting user success", "Email & Password - deleting user", 
+            "On deleting user success", 
+            "Triggered when deleting user success.", "EmailPassword_OnDeleteUserSuccessfully");
             
 AddCondition(8, cf_trigger, "On deleting user error", "Email & Password - deleting user", 
             "On sending password result email error", 
             "Triggered when deleting user error.", "EmailPassword_OnDeleteUserError"); 
                         
 // general            
-AddCondition(31, cf_trigger, "On login successfully", "General - login", 
-            "On login successfully", 
-            "Triggered when login successfully.", "OnLoginSuccessfully");
+AddCondition(31, cf_trigger, "On login success", "General - login", 
+            "On login success", 
+            "Triggered when login success.", "OnLoginSuccessfully");
             
 AddCondition(32, cf_trigger, "On login error", "General - login", 
             "On login error", 
@@ -101,7 +101,7 @@ AddAction(4, 0, "Sending password reset email", "Email & Password",
 AddStringParam("Email", "User email");
 AddStringParam("Password", "User password");
 AddAction(5, 0, "Delete user", "Email & Password", 
-          "Delete user with email to <i>{0}</i>, password to <i>{1}</i>", 
+          "Delete user with email <i>{0}</i>, password <i>{1}</i>", 
           "Delete user with email & password.", "EmailPassword_DeleteUser");  
           
 // anonymous   
@@ -113,7 +113,16 @@ AddAction(11, 0, "Login", "Anonymous",
           "Login with anonymous, persisting type to <i>{0}</i>", 
           "Login with anonymous.", "Anonymous_Login");   
           
-// facebook/google
+AddStringParam("Token", "Token");
+AddComboParamOption("default");
+AddComboParamOption("sessionOnly");
+AddComboParamOption("never");
+AddComboParam("Remember", "Persisting type");       
+AddAction(12, 0, "Login", "Authentication token", 
+          "Login with token <i>{0}</i>, persisting type to <i>{1}</i>", 
+          "Login with authentication token.", "AuthenticationToken_Login");          
+          
+// facebook/google/twitter/github
 AddComboParamOption("Facebook");
 AddComboParamOption("Twitter");
 AddComboParamOption("Github");
@@ -140,6 +149,19 @@ AddStringParam("scope", "A comma-delimited list of requested extended permission
 AddAction(22, 0, "Connect Facebook", "Authentication with token", 
           "Authentication with Facebook access token <i>{0}</i>, persisting type to <i>{1}</i>, scope to <i>{2}</i>", 
           "Authentication with Facebook access token, call it after facebook login.", "AuthWithOAuthToken_FB");
+          
+AddStringParam("Provider", "Code of authentication provider.", '""');
+AddComboParamOption("popup");
+AddComboParamOption("redirect");
+AddComboParam("Type ", "Type of login window");
+AddComboParamOption("default");
+AddComboParamOption("sessionOnly");
+AddComboParamOption("never");
+AddComboParam("Remember ", "Persisting type");
+AddStringParam("scope", "A comma-delimited list of requested extended permissions");
+AddAction(23, 0, "Login (provider name)", "Authentication provider", 
+          "Login by <i>{0}</i> with <i>{1}</i>, persisting type to <i>{2}</i>, scope to <i>{3}</i>", 
+          "Login by authentication provider.", "ProviderAuthentication_Login");          
 		  
 // general         
 AddAction(31, 0, "Logging out", "General", 
@@ -149,10 +171,10 @@ AddAction(31, 0, "Logging out", "General",
 // online       
 AddAction(41, 0, "Go offline", "Online", 
           "Go offline", 
-          "Manually disconnect the Firebase client from the server and disable automatic reconnection. .", "GoOffline");
+          "Manually disconnect the Firebase client from the server and disable automatic reconnection.", "GoOffline");
 AddAction(42, 0, "Go online", "Online", 
           "Go online", 
-          "Manually reestablish a connection to the Firebase server and enable automatic reconnection. . .", "GoOnline");  		  
+          "Manually reestablish a connection to the Firebase server and enable automatic reconnection.", "GoOnline");  		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 
@@ -182,7 +204,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data.")
+    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data. Deprecated in firebase3.x.")
 	];
 	
 // Called by IDE when a new object type is to be created

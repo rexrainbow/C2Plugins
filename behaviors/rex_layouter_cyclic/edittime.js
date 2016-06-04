@@ -22,7 +22,7 @@ AddComboParam("Mode", "Mode of layout.",0);
 AddAction(0, 0, "Set mode", "Mode", 
           "Set {my} mode to <i>{0}</i>", 
           "Set mode of layout.", "SetMode");         
-AddNumberParam("Start angle", "Start angle, in degree.");
+AddNumberParam("Start", "Start angle, in degree.");
 AddAction(2, 0, "Set start angle", "Angle", 
           "Set {my} start angle to <i>{0}</i>", 
           "Set the start angle.", 
@@ -37,14 +37,23 @@ AddAction(4, 0, "Set delta angle", "Fix mode",
           "Set {my} delta angle to <i>{0}</i>", 
           "Set amount of delta angle clockwise from start, in degrees. Negative is anti-clockwise.", 
           "SetDeltaAngle");
+AddNumberParam("Delta", "Delta angle, in degree.");
+AddAction(5, 0, "Add to start angle", "Angle", 
+          "Add  <i>{0}</i> to {my} start angle", 
+          "Add value to start angle.", 
+          "AddToStartAngle");          
           
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get start angle", "Angle", "StartAngle", 
+              "Get start angle, in degrees.");
 
+              
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [ 
+    new cr.Property(ept_combo, "Shape", "Circle", "Shape of this circle.", "Circle|Ellipse"),
     new cr.Property(ept_combo, "Mode", "Average", "Average mode: layout instances in range averagely, Fix mode: layout instances with fix angle.", "Average|Fix"),
     new cr.Property(ept_float, "Start angle", 0, "Start angle of first instance, in degree."),
     new cr.Property(ept_float, "Range angle", 360, "Range angle, in degree. Negative is anti-clockwise. Used in average mode."),

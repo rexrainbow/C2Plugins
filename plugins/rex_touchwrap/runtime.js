@@ -40,7 +40,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.touchDown = false;
         this.check_name = "TOUCHWRAP";
 		this._is_mouse_mode = false;
-        this._plugins_hook = [];
+        this._callbackObjs = [];
 	    this.fake_ret = {value:0,
 	                     set_any: function(value){this.value=value;},
 	                     set_int: function(value){this.value=value;},	 
@@ -472,6 +472,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		}
 		else
 		{
+			
 			window.addEventListener("deviceorientation", function (eventData) {
 			
 				self.orient_alpha = eventData["alpha"] || 0;
@@ -520,7 +521,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			);
 		}
 		
-		
 		// Use PhoneGap in case browser does not support accelerometer but device does
 		if (!this.runtime.isiOS && this.runtime.isCordova && navigator["accelerometer"] && navigator["accelerometer"]["watchAcceleration"])
 		{
@@ -549,7 +549,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		var i = this.findTouch(info["pointerId"]);
 		var nowtime = cr.performance_now();
-		
+		var cnt=this._callbackObjs.length, hooki;    		
 		if (i >= 0)
 		{
 			var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
@@ -561,6 +561,14 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				return;
 			
 			t.update(nowtime, info.pageX - offset.left, info.pageY - offset.top, info.width || 0, info.height || 0, info.pressure || 0);
+            
+			var touchx = info.pageX - offset.left;
+			var touchy = info.pageY - offset.top;            
+            for (hooki=0; hooki<cnt; hooki++)
+			{
+				if (this._callbackObjs[hooki].OnTouchMove)							    	  
+                    this._callbackObjs[hooki].OnTouchMove(t["identifier"], touchx, touchy);
+			}            
 		}
 	};
 
@@ -598,11 +606,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.curTouchY = touchy;
 		this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchObject, this);
         
-        var hooki, cnt=this._plugins_hook.length;
+        var hooki, cnt=this._callbackObjs.length;
         for (hooki=0; hooki<cnt; hooki++)
 		{
-			if (this._plugins_hook[hooki].OnTouchStart)
-                this._plugins_hook[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
+			if (this._callbackObjs[hooki].OnTouchStart)
+                this._callbackObjs[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
 	    }
 	    this.runtime.isInUserInputEvent = false;
 	};
@@ -637,11 +645,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		    this.runtime.trigger(cr.plugins_.rex_TouchWrap.prototype.cnds.OnTouchReleasedObject, this);		
 		}
         
-        var cnt=this._plugins_hook.length, hooki; 
+        var cnt=this._callbackObjs.length, hooki; 
         for (hooki=0; hooki<cnt; hooki++)
 		{
-		    if (this._plugins_hook[hooki].OnTouchEnd)
-                this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
+		    if (this._callbackObjs[hooki].OnTouchEnd)
+                this._callbackObjs[hooki].OnTouchEnd(this.trigger_id);
 		}
 		
 		// Remove touch
@@ -668,7 +676,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var nowtime = cr.performance_now();
 		
 		var i, len, t, u;
-		var cnt=this._plugins_hook.length, hooki;    
+		var cnt=this._callbackObjs.length, hooki;    
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -684,20 +692,18 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 				// very close which throws off speed measurements
 				if (nowtime - u.time < 2)
 					continue;
-					
+				
 				var touchWidth = (t.radiusX || t.webkitRadiusX || t.mozRadiusX || t.msRadiusX || 0) * 2;
 				var touchHeight = (t.radiusY || t.webkitRadiusY || t.mozRadiusY || t.msRadiusY || 0) * 2;
 				var touchForce = t.force || t.webkitForce || t.mozForce || t.msForce || 0;
 				u.update(nowtime, t.pageX - offset.left, t.pageY - offset.top, touchWidth, touchHeight, touchForce);
 				
+			    var touchx = t.pageX - offset.left;
+			    var touchy = t.pageY - offset.top;	                
                 for (hooki=0; hooki<cnt; hooki++)
 			    {
-			    	if (this._plugins_hook[hooki].OnTouchMove)
-			    	{
-			            var touchx = t.pageX - offset.left;
-			            var touchy = t.pageY - offset.top;			    	    
-                        this._plugins_hook[hooki].OnTouchMove(t["identifier"], touchx, touchy);
-                    }
+			    	if (this._callbackObjs[hooki].OnTouchMove)
+                        this._callbackObjs[hooki].OnTouchMove(t["identifier"], touchx, touchy);
 			    }
 							
 			}
@@ -718,7 +724,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.isInUserInputEvent = true;
 		
 		var i, len, t, j;
-        var cnt=this._plugins_hook.length, hooki;        
+        var cnt=this._callbackObjs.length, hooki;        
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -750,8 +756,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
             
             for (hooki=0; hooki<cnt; hooki++)
 			{
-				if (this._plugins_hook[hooki].OnTouchStart)
-                    this._plugins_hook[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
+				if (this._callbackObjs[hooki].OnTouchStart)
+                    this._callbackObjs[hooki].OnTouchStart(this.trigger_id, this.curTouchX, this.curTouchY);
 			}
 		}		
 		this.runtime.isInUserInputEvent = false;
@@ -768,7 +774,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.runtime.isInUserInputEvent = true;
 		
 		var i, len, t, j;
-        var cnt=this._plugins_hook.length, hooki;
+        var cnt=this._callbackObjs.length, hooki;
 		for (i = 0, len = info.changedTouches.length; i < len; i++)
 		{
 			t = info.changedTouches[i];
@@ -793,8 +799,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
                 for (hooki=0; hooki<cnt; hooki++)
 			    {
-			        if (this._plugins_hook[hooki].OnTouchEnd)
-                        this._plugins_hook[hooki].OnTouchEnd(this.trigger_id);
+			        if (this._callbackObjs[hooki].OnTouchEnd)
+                        this._callbackObjs[hooki].OnTouchEnd(this.trigger_id);
 			    }
 						
 
@@ -857,12 +863,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	    if (!this.enable)
 	        return;
 	        	    
-        this._is_mouse_mode = true;
-		//if (info.preventDefault && this.runtime.had_a_click)
-		//	info.preventDefault();
-			
-		//if (!this.mouseDown)
-		//	return;
+        this._is_mouse_mode = true;	
 			
 		// Send a fake touch move event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
@@ -1715,21 +1716,12 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
     instanceProto.HookMe = function (obj)
     {
-        this._plugins_hook.push(obj);
+        this._callbackObjs.push(obj);
     };
 
     instanceProto.UnHookMe = function (obj)
     {
-        var i, cnt=this._plugins_hook.length, hookobj;
-        for (i=0; i<cnt; i++)
-        {
-            hookobj = this._plugins_hook[i];
-            if (obj === hookobj)
-            {
-                cr.arrayRemove(this._plugins_hook, i);
-                break;
-            }
-        }
+        cr.arrayFindRemove(this._callbackObjs, obj);
     };    
     instanceProto.UseMouseInput = function()
     {

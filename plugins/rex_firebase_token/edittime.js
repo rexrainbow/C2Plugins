@@ -10,7 +10,7 @@
 		"category":		"Rex - Web - firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
+		"flags":		0
 	};
 };
 

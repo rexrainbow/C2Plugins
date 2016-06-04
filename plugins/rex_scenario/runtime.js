@@ -39,12 +39,6 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     var instanceProto = pluginProto.Instance.prototype;
 
-	var FNTYPE_UK = 0;          // unknow 
-	var FNTYPE_NA = 1;	        // not avaiable
-	var FNTYPE_REXFNEX = 2;     // rex_functionext
-    var FNTYPE_REXFN2 = 3;      // rex_function2
-	var FNTYPE_OFFICIALFN = 4;  // official function
-	var FNTYPE_REXFN = 5;       // rex_function    
     instanceProto.onCreate = function()
     {
         if (!this.recycled)
@@ -68,11 +62,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this.timelineUid = -1;    // for loading     
         
         // callback:      
-        // rex_functionext or function
-        this._fnobj = null;
-        this._fnobj_type = null;
-	    this._act_call_fn = null;
-		this._exp_call = null;
+        this.c2FnType = null;
 
         // sync timescale
         this.my_timescale = -1.0;     
@@ -147,149 +137,34 @@ cr.plugins_.Rex_Scenario = function(runtime)
     };
     
     // ---- callback ----    
-	instanceProto.setup_callback = function (raise_assert_when_not_fnobj_avaiable, fn_type)
+	instanceProto.getC2FnType = function (raise_assert_when_not_fnobj_avaiable)
 	{
-        if (fn_type == null)
-        {         
-            // do nothing
-        }
-        else
+        if (this.c2FnType === null)
         {
-		    this._fnobj_type = FNTYPE_UK;
-            // seek function object
-	        switch (fn_type)
-		    {
-		    case FNTYPE_REXFNEX:     // rex_functionext
-		        this.cache_RexFnExt();
-		    	break;
-            case FNTYPE_REXFN2:      // rex_function2   
-		        this.cache_RexFn2();
-		    	break;                     
-	        case FNTYPE_OFFICIALFN:  // official function
-		        this.cache_Fn()
-		    	break; 
-		    }
-
-        }
-	}; 
-	
-	instanceProto.cache_RexFnExt = function()
-	{
-	    if (!cr.plugins_.Rex_FnExt)
-	        return false;
-	        
-        var plugins = this.runtime.types;			
-        var name, inst;
-        
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
+            if (window["c2_callRexFunction2"])
+                this.c2FnType = "c2_callRexFunction2";
+            else if (window["c2_callFunction"])
+                this.c2FnType = "c2_callFunction";            
+            else
             {
-                this._fnobj = inst;
-                this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
-		        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
-			    this._fnobj_type = FNTYPE_REXFNEX;
-                return true;
-            }                                          
-        }  
-        return false;
-    };
+                if (raise_assert_when_not_fnobj_avaiable) 
+                    assert2(this.c2FnType , "Timeline: Official function, or rex_function2 was not found."); 
+                
+                this.c2FnType = "";
+            }
+        }
+        return this.c2FnType;
+	};   
     
-	instanceProto.cache_RexFn2 = function()
-	{
-	    if (!cr.plugins_.Rex_Function2)
-	        return fasle;
-	        
-        var plugins = this.runtime.types;			
-        var name, inst;
-        
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
-            {
-                this._fnobj = inst;
-                this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
-		        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
-			    this._fnobj_type = FNTYPE_REXFN2;
-                return true;
-            }                                          
-        }
-        return false;
-	};    
-	
-	instanceProto.cache_Fn = function()
-	{
-	    if (!cr.plugins_.Function)
-	        return fasle;
-	        
-        var plugins = this.runtime.types;			
-        var name, inst;
-        
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            if (inst instanceof cr.plugins_.Function.prototype.Instance)
-            {
-                this._fnobj = inst;
-                this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-                this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
-			    this._fnobj_type = FNTYPE_OFFICIALFN;
-                return true;
-            }                                          
-        }
-        return false;
-	};  
-
-    instanceProto.RunCallback = function(name, params)
+    instanceProto.RunCallback = function(c2FnName, c2FnParms, raise_assert_when_not_fnobj_avaiable)
     {
-	    // use callback in timeline
-	    if (this._fnobj_type == null)
-	    {
-            var has_fnobj = this._timeline_get().RunCallback(name, params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback object.");
-	    }
-	    else
-	    {	
-	        switch (this._fnobj_type)
-		    {
-		    case FNTYPE_REXFNEX:     // rex_functionext
-		        this._fnobj.CallFunction(name, params);
-		    	break;
-            case FNTYPE_REXFN2:      // rex_function2            
-	        case FNTYPE_OFFICIALFN:  // official function
-                this._act_call_fn.call(this._fnobj, name, params);
-		    	break;	
-		    }
-	    }      
-
-        return (this._fnobj_type != FNTYPE_NA);  
+        var c2FnGlobalName = this.getC2FnType(raise_assert_when_not_fnobj_avaiable);
+        if (c2FnGlobalName === "")
+            return null;
+        
+        var retValue = window[c2FnGlobalName](c2FnName, c2FnParms);
+        return retValue;
     };	
-	
-    instanceProto.Call = function(params)
-    {
-	    // params = [ ret, name, param0, param1, ... ]
-	    // use callback in timeline
-	    if (this._fnobj_type == null)
-	    {
-            var has_fnobj = this._timeline_get().Call(params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback object.");            
-	    }
-	    else
-	    {        
-	        switch (this._fnobj_type)
-		    {
-		    case FNTYPE_REXFNEX:     // rex_functionext
-            case FNTYPE_REXFN2:      // rex_function2
-		    case FNTYPE_OFFICIALFN:  // official function 
-		        this._exp_call.apply(this._fnobj, params);
-		    	break;
-		    }
-	    }      
-
-        return (this._fnobj_type != FNTYPE_NA);  
-    };	  
     // ---- callback ----      
         
     instanceProto.value_get = function(v)
@@ -314,7 +189,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     { 
         return { "s": this._scenario.saveToJSON(),
                  "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
-                 "fnType": this._fnobj_type,      
+                 "ft": this.c2FnType,      
                  };
     };
     
@@ -322,6 +197,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         this._scenario.loadFromJSON(o["s"]);
         this.timelineUid = o["tlUid"];
+        this.c2FnType = o["ft"];
     };     
 
     instanceProto.afterLoad = function ()
@@ -335,7 +211,6 @@ cr.plugins_.Rex_Scenario = function(runtime)
         }		
 
         this._scenario.afterLoad();
-        this.setup_callback(false, this._fnobj_type);
     }; 
     
     /**BEGIN-PREVIEWONLY**/
@@ -483,44 +358,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     Acts.prototype.SetupCallback = function (callback_type)
 	{	
-        var plugins = this.runtime.types;
-        var name, inst;
-        if (callback_type === 0)
-        {
-            if(!cr.plugins_.Function)
-                return;
-                
-            for (name in plugins)
-            {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Function.prototype.Instance)
-                {		
-				    this.callback_type = FNTYPE_OFFICIALFN;
-                    this.callback = inst;
-                    this.act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-                    this.exp_call = cr.plugins_.Function.prototype.exps.Call;                    
-                    return;
-                }                                          
-            }
-        }
-        else if (callback_type === 1)
-        {
-            if (!cr.plugins_.Rex_Function2)
-                return;   
-                
-            for (name in plugins)
-            {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
-                {
-				    this.callback_type = FNTYPE_REXFN2;
-                    this.callback = inst;
-                    this.act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
-                    this.exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;                     
-                    return;
-                }                                          
-            }                
-        }
+        this.c2FnType = (callback_type===0)? "c2_callFunction" : "c2_callRexFunction2";
 	};	
     
     Acts.prototype.SetDelimiters = function (leftDelimiter, rightDelimiter)
@@ -877,26 +715,21 @@ cr.plugins_.Rex_Scenario = function(runtime)
         return (deltaT == 0);  // is_continue
     }; 
        
-    // expression:Call in function object
-    var fake_ret = {value:0,
-                    set_any: function(value){this.value=value;},
-                    set_int: function(value){this.value=value;},	 
-                    set_float: function(value){this.value=value;},	                          
-                   };    
-    var _params = [];
+    // call c2fn then return value
+    var gC2FnParms = [];
     var _thisArg = null;
-    ScenarioKlassProto["_getvalue_from_c2fn"] = function()
+    ScenarioKlassProto["_call_c2fn"] = function()
     {
-        // prepare arguments
-        _params.length = 0;
-        _params.push(fake_ret);
+        var c2FnName = arguments[0];
         var i, cnt=arguments.length;
-        for (i=0; i<cnt; i++)
-            _params.push(arguments[i]);
-            
-        // call "exp:Call"
-        _thisArg.plugin.Call(_params);
-        return fake_ret.value;
+        for(i=1; i<cnt; i++)
+        {
+            gC2FnParms.push( arguments[i] );
+        }
+        var retValue = _thisArg._execute_c2fn(c2FnName, gC2FnParms);
+        gC2FnParms.length = 0;
+        
+        return retValue;
     };	
     
     // expression:Call in function object	
@@ -914,7 +747,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
             var code_string = "function(scenario)\
             {\
                 var MEM = scenario.Mem;\
-                var Call = scenario['_getvalue_from_c2fn'];\
+                var Call = scenario._call_c2fn;\
                 return "+param+"\
             }";
             _thisArg = this;
@@ -963,7 +796,8 @@ cr.plugins_.Rex_Scenario = function(runtime)
     
     ScenarioKlassProto._execute_c2fn = function(name, params)
     {
-        this.plugin.RunCallback(name, params);
+        var retValue = this.plugin.RunCallback(name, params);
+        return retValue;
     };	   
     
     // handler of timeout for timers in this plugin, this=timer   

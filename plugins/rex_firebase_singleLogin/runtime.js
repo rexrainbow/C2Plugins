@@ -50,6 +50,76 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
 	    this.exp_CurLoginItem = null;	    	    
 	    this.exp_CurLoginItemIdx = -1;	           
 	};
+    
+	instanceProto.onDestroy = function ()
+	{		
+	};
+    
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
+	instanceProto.get_ref = function(k)
+	{
+        if (k == null)
+	        k = "";
+	    var path;
+	    if (isFullPath(k))
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
+	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
+    
 	
 	instanceProto.create_loginList = function()
 	{
@@ -62,7 +132,7 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
         var snapshot2Item = function (snapshot)
         {
             var item = {};            
-	        item[loginList.keyItemID] = snapshot["key"]();
+	        item[loginList.keyItemID] = get_key(snapshot);
             item["timestamp"] = snapshot["val"]();
             return item;
         };
@@ -118,24 +188,6 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
         
         return loginList;
     };
-    
-	instanceProto.onDestroy = function ()
-	{		
-	};
-    
-	instanceProto.get_ref = function(k)
-	{
-	    if (k == null)
-	        k = "";
-	        
-	    var path;
-	    if (k.substring(0,8) == "https://")
-	        path = k;
-	    else
-	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
-	};
 
     instanceProto.login = function (userID)
 	{
@@ -156,7 +208,7 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
             {
                 self.tryLogin = true;
 	            self.myUserID = userID;
-                self.myLoginID = loginRef["key"]();                
+                self.myLoginID = get_key(loginRef);
                 if (self.loginList === null)
                     self.loginList = self.create_loginList();
                 var query = userRef["orderByKey"]();
@@ -165,7 +217,7 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
 	    };
 
         loginRef["onDisconnect"]()["remove"]();
-        var ts = window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        var ts = serverTimeStamp();
 	    loginRef["set"](ts, on_write);
 	};
     
@@ -267,7 +319,7 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
 	{
 	    var ts;	    
 	    if (this.exp_CurLoginItem != null)
-	        ts = this.exp_CurLoginItem["timestamp"];
+	        ts = get_timestamp(this.exp_CurLoginItem["timestamp"]);
 	    else
 	        ts = 0;
 	        	    
@@ -413,7 +465,15 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
     // --------------------------------------------------------------------------    
     
     // --------------------------------------------------------------------------
-    // internal    
+    // internal  
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };    
     ItemListKlassProto.add_item = function(snapshot, prevName, force_push)
 	{
 	    var item;
@@ -421,7 +481,7 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
 	        item = this.snapshot2Item(snapshot);
 	    else
 	    {
-	        var k = snapshot["key"]();
+	        var k = get_key(snapshot);
 	        item = snapshot["val"]();
 	        item[this.keyItemID] = k;
 	    }
@@ -450,7 +510,7 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
 	
 	ItemListKlassProto.remove_item = function(snapshot)
 	{
-	    var k = snapshot["key"]();
+	    var k = get_key(snapshot);
 	    var i = this.itemID2Index[k];	 
 	    var item = this.items[i];
 	    cr.arrayRemove(this.items, i);

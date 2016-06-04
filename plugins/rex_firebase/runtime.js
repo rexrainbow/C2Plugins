@@ -40,6 +40,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	var EVENTTYPEMAP = ["value", "child_added", "child_changed", "child_removed","child_moved"];
+        
 	instanceProto.onCreate = function()
 	{
         this.rootpath = this.properties[0] + "/"; 
@@ -66,6 +67,20 @@ cr.plugins_.Rex_Firebase = function(runtime)
         this.reading_cb = null;
         this.snapshot = null;
 		this.prevChildName = null;
+        this.exp_LastGeneratedKey = "";   
+        this.exp_ServerTimeOffset = 0;        
+        
+        
+        var self=this;
+        var setupFn = function ()
+        {
+            if (self.properties[1] === 1)
+                self.connectionDetectingStart();
+            
+            if (self.properties[2] === 1)
+                self.serverTimeOffsetDetectingStart();
+        }
+        setTimeout(setupFn, 0);
         
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];       
@@ -76,21 +91,72 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{		
 	     this.callbackMap.Remove();
 	};
+    
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
 	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
-	
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
+    
     instanceProto.add_callback = function (query, type_, cbName)
 	{
 	    var eventType = EVENTTYPEMAP[type_];	
@@ -143,7 +209,38 @@ cr.plugins_.Rex_Firebase = function(runtime)
         }	    
         return val;
 	};    
-
+    
+	instanceProto.connectionDetectingStart = function ()
+	{
+        var self = this;
+        var onValueChanged = function (snap)
+        {
+            var trig;                   
+            if ( snap["val"]() === true )            
+                trig = cr.plugins_.Rex_Firebase.prototype.cnds.OnConnected;        
+            else            
+                trig = cr.plugins_.Rex_Firebase.prototype.cnds.OnDisconnected;
+            
+            self.runtime.trigger(trig, self); 
+        };
+        
+        var p = get_root(this.get_ref()) + "/.info/connected"; 
+        var ref = this.get_ref(p);
+        ref.on("value", onValueChanged);
+	};    
+    
+	instanceProto.serverTimeOffsetDetectingStart = function ()
+	{
+        var self = this;
+        var onValueChanged = function (snap)
+        {
+            self.exp_ServerTimeOffset = snap["val"]() || 0;
+        };
+        
+        var p = get_root(this.get_ref()) + "/.info/serverTimeOffset"; 
+        var ref = this.get_ref(p);
+        ref.on("value", onValueChanged);
+	};    
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
@@ -213,6 +310,16 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    return cr.equals_nocase(cb, this.onTransaction_completed_cb);
 	};   
     
+	Cnds.prototype.OnConnected = function ()
+	{
+	    return true;
+	};    
+
+	Cnds.prototype.OnDisconnected = function ()
+	{
+	    return true;
+	};      
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -263,14 +370,14 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
 	    var ref = this.get_ref(k)["push"](v, handler);
-		this.last_push_ref = k + "/" +  ref["key"]();
+		this.last_push_ref = k + "/" +  get_key(ref);
 	}; 
 
     Acts.prototype.PushJSON = function (k, v, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);	    
 	    var ref = this.get_ref(k)["push"](JSON.parse(v), handler);
-		this.last_push_ref = k + "/" + ref["key"]();
+		this.last_push_ref = k + "/" + get_key(ref);
 	};
 	
     Acts.prototype.Transaction = function (k, onTransaction_cb, onComplete_cb)
@@ -326,27 +433,27 @@ cr.plugins_.Rex_Firebase = function(runtime)
     Acts.prototype.SetBooleanValue = function (k, b, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
-	    this.get_ref(k)["set"]((b==1), handler);
+	    this.get_ref(k)["set"]((b===1), handler);
 	};	
 	
     Acts.prototype.PushBooleanValue = function (k, b, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
-	    var ref = this.get_ref(k)["push"]((b==1), handler);
-		this.last_push_ref = k + "/" +  ref["key"]();
+	    var ref = this.get_ref(k)["push"]((b===1), handler);
+		this.last_push_ref = k + "/" +  get_key(ref);
 	}; 	
 
     Acts.prototype.SetServerTimestamp = function (k, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
-	    this.get_ref(k)["set"](window["Firebase"]["ServerValue"]["TIMESTAMP"], handler);
+	    this.get_ref(k)["set"](serverTimeStamp(), handler);
 	};	
 	
     Acts.prototype.PushServerTimestamp = function (k, onComplete_cb)
 	{
 	    var handler = onComplete_get(this, onComplete_cb);
-	    var ref = this.get_ref(k)["push"](window["Firebase"]["ServerValue"]["TIMESTAMP"], handler);
-		this.last_push_ref = k + "/" +  ref["key"]();
+	    var ref = this.get_ref(k)["push"](serverTimeStamp(), handler);
+		this.last_push_ref = k + "/" +  get_key(ref);
 	}; 		
     Acts.prototype.AddReadingCallback = function (k, type_, cbName)
 	{
@@ -390,10 +497,10 @@ cr.plugins_.Rex_Firebase = function(runtime)
     var get_query = function (queryObjs)
     {
 	    if (queryObjs == null)
-	        return;	        
-        var query = queryObjs.instances[0];
+	        return null;	        
+        var query = queryObjs.getFirstPicked();
         if (query == null)
-            return;
+            return null;
             
         return query.GetQuery();
     };
@@ -417,12 +524,33 @@ cr.plugins_.Rex_Firebase = function(runtime)
 
     Acts.prototype.GoOffline = function ()
 	{
-	    window["Firebase"]["goOffline"]();
+        // 2.x
+        if (!isFirebase3x())
+        {        
+	        window["Firebase"]["goOffline"]();
+        }
+        
+        // 3.x
+        else
+        {
+            window["Firebase"]["database"]()["goOffline"]();
+        }
 	};
 		
     Acts.prototype.GoOnline = function ()
 	{
-	    window["Firebase"]["goOnline"]();
+        // 2.x
+        if (!isFirebase3x())
+        {           
+	        window["Firebase"]["goOnline"]();
+            
+        }
+        
+        // 3.x
+        else
+        {
+            window["Firebase"]["database"]()["goOnline"]();
+        }
 	};	
 	//////////////////////////////////////
 	// Expressions
@@ -447,7 +575,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
 	Exps.prototype.LastKey = function (ret, default_value)
 	{	
-        var key =(this.snapshot === null)? null: this.snapshot["key"]();
+        var key =(this.snapshot === null)? null: get_key(this.snapshot);
 		ret.set_any(get_data(key, default_value));
 	};
 	
@@ -465,13 +593,60 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 		ret.set_string(this.last_push_ref);
 	};  
-	
+    
+  	Exps.prototype.GenerateKey = function (ret)
+	{
+	    var ref = this.get_ref()["push"]();
+        this.exp_LastGeneratedKey = get_key(ref);
+		ret.set_string(this.exp_LastGeneratedKey);
+	};	
+    
+	Exps.prototype.LastGeneratedKey = function (ret)
+	{
+	    ret.set_string(this.exp_LastGeneratedKey);
+	};
+    
+	Exps.prototype.ServerTimeOffset = function (ret)
+	{
+	    ret.set_int(this.exp_ServerTimeOffset);
+	};	
+    
+	Exps.prototype.EstimatedTime = function (ret)
+	{
+	    ret.set_int(new Date().getTime() + this.exp_ServerTimeOffset);
+	};    
+    
 }());
 
 (function ()
 {
     if (window.FirebaseCallbackMapKlass != null)
         return;    
+
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	var get_ref = function(path)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
+	};    
     
     var CallbackMapKlass = function ()
     {
@@ -550,7 +725,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             var cb = this.get_callback(absRef, eventType, cbName);
             if (cb == null)
                 return;                
-            this.get_ref(absRef)["off"](eventType, cb);  
+            get_ref(absRef)["off"](eventType, cb);  
             delete this.map[absRef][eventType][cbName];
         }
         else if (absRef && eventType && !cbName)
@@ -561,7 +736,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             var cbMap = eventMap[eventType];
             if (!cbMap)
                 return;
-            this.get_ref(absRef)["off"](eventType); 
+            get_ref(absRef)["off"](eventType); 
             delete this.map[absRef][eventType];
         }
         else if (absRef && !eventType && !cbName)
@@ -569,14 +744,14 @@ cr.plugins_.Rex_Firebase = function(runtime)
             var eventMap = this.map[absRef];
             if (!eventMap)
                 return;
-            this.get_ref(absRef)["off"](); 
+            get_ref(absRef)["off"](); 
             delete this.map[absRef];
         }  
         else if (!absRef && !eventType && !cbName)
         {
             for (var r in this.map)
             {
-                this.get_ref(r)["off"](); 
+                get_ref(r)["off"](); 
                 delete this.map[r];
             } 
         }  
@@ -592,7 +767,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
                 var cbMap = eventMap[e];
                 for (var cbName in cbMap)
                 {
-                    this.get_ref(absRef)["off"](e, cbMap[cbName]);  
+                    get_ref(absRef)["off"](e, cbMap[cbName]);  
                 }
             }
             
@@ -608,7 +783,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
                     var cbMap = eventMap[e];
                     for (var cbName in cbMap)
                     {
-                        this.get_ref(r)["off"](e, cbMap[cbName]);  
+                        get_ref(r)["off"](e, cbMap[cbName]);  
                     }
                 }
                 

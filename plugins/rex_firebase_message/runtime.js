@@ -41,8 +41,30 @@ cr.plugins_.Rex_Firebase_message = function(runtime)
 
 	typeProto.onCreate = function()
 	{
+	    jsfile_load("firebase.js");
 	};
 	
+	var jsfile_load = function(file_name)
+	{
+	    var scripts=document.getElementsByTagName("script");
+	    var exist=false;
+	    for(var i=0;i<scripts.length;i++)
+	    {
+	    	if(scripts[i].src.indexOf(file_name) != -1)
+	    	{
+	    		exist=true;
+	    		break;
+	    	}
+	    }
+	    if(!exist)
+	    {
+	    	var newScriptTag=document.createElement("script");
+	    	newScriptTag.setAttribute("type","text/javascript");
+	    	newScriptTag.setAttribute("src", file_name);
+	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
+	    }
+	};
+
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)

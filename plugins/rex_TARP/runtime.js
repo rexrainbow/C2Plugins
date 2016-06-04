@@ -387,8 +387,7 @@ cr.plugins_.Rex_TARP = function(runtime)
 	{
         var name = this.current_cmd[1];
         var params = this.current_cmd[2];
-        var has_fnobj = this.plugin._timeline_get().RunCallback(name, params, true);
-        assert2(has_fnobj, "TARP: Can not find callback oject.");
+        this.plugin._timeline_get().RunCallback(name, params, true);
         this._start_cmd();        
 	};	
 	PlayerKlassProto.saveToJSON = function ()

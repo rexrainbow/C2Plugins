@@ -823,32 +823,21 @@ cr.behaviors.rex_bScenario = function(runtime)
         return (deltaT == 0);  // is_continue
     }; 
     
-    // expression:Call in function object
-    var fake_ret = {value:0,
-                    set_any: function(value){this.value=value;},
-                    set_int: function(value){this.value=value;},	 
-                    set_float: function(value){this.value=value;},	                          
-                   };    
-    var _params = [];
+    // call c2fn then return value
+    var gC2FnParms = [];
     var _thisArg = null;
-    ScenarioKlassProto["_getvalue_from_c2fn"] = function()
+    ScenarioKlassProto["_call_c2fn"] = function()
     {
-        _params.length = 0;
-        _params.push(fake_ret);
+        var c2FnName = arguments[0];
         var i, cnt=arguments.length;
-        for (i=0; i<cnt; i++)
-            _params.push(arguments[i]);
-            
-        var plugin = _thisArg.plugin;
-        var has_rex_function = (plugin.callback != null);
-        if (has_rex_function)
-            cr.plugins_.Rex_Function.prototype.exps.Call.apply(plugin.callback, _params);
-        else    // run official function
+        for(i=1; i<cnt; i++)
         {
-            var has_fnobj = plugin.type._timeline_get().Call(_params, true);     
-            assert2(has_fnobj, "Scenario: Can not find callback object.");
+            gC2FnParms.push( arguments[i] );
         }
-        return fake_ret.value;
+        var retValue = _thisArg.plugin.type._timeline_get().RunCallback(c2FnName, gC2FnParms, true);
+        gC2FnParms.length = 0;
+        
+        return retValue;
     };	
     
     // expression:Call in function object	
@@ -864,8 +853,8 @@ cr.behaviors.rex_bScenario = function(runtime)
             param = param.replace(re, "\\n");    // replace "\n" to "\\n"
             var code_string = "function(scenario)\
             {\
-                var MEM = scenario['Mem'];\
-                var Call = scenario['_getvalue_from_c2fn'];\
+                var MEM = scenario.Mem;\
+                var Call = scenario._call_c2fn;\
                 return "+param+"\
             }";
             _thisArg = this;

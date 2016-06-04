@@ -44,7 +44,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-        //this.auto_push_out = this.properties[0];
+        this.sample_rate = this.properties[0];
         
 	    this.pre_x = this.inst.x;
 	    this.pre_y = this.inst.y;
@@ -93,7 +93,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
         var i,cnt=canvas_insts.length;
         for (i=0; i<cnt; i++)
         {
-            if (PixelTestOverlap.TestOverlap(sprite_inst, canvas_insts[i], 0.1))
+            if (PixelTestOverlap.TestOverlap(sprite_inst, canvas_insts[i], this.sample_rate))
                 return canvas_insts[i];
         }
         return null;
@@ -172,7 +172,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 			sprite_inst.set_bbox_changed();
 			
 			// Test if we've cleared the last instance we were overlapping
-            if (!PixelTestOverlap.TestOverlap(sprite_inst, overlap_inst, 0.1))
+            if (!PixelTestOverlap.TestOverlap(sprite_inst, overlap_inst, this.sample_rate))
 			{
 				// See if we're still overlapping a different solid
 				overlap_inst = this.get_first_overlap_inst(sprite_inst, canvas_insts);
@@ -220,7 +220,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 			sprite_inst.set_bbox_changed();
 			
 			// No longer overlapping current canvas
-            if (!PixelTestOverlap.TestOverlap(sprite_inst, cursolid, 0.1))
+            if (!PixelTestOverlap.TestOverlap(sprite_inst, cursolid, this.sample_rate))
 			{
 				// Search for any other solid
 				cursolid = this.get_first_overlap_inst(sprite_inst, canvas_insts);
@@ -249,7 +249,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 			sprite_inst.set_bbox_changed();
 			
 			// No longer overlapping current canvas
-             if (!PixelTestOverlap.TestOverlap(sprite_inst, cursolid, 0.1))
+             if (!PixelTestOverlap.TestOverlap(sprite_inst, cursolid, this.sample_rate))
 			{
 				// Search for any other solid
 				cursolid = this.get_first_overlap_inst(sprite_inst, canvas_insts);
@@ -542,7 +542,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 				
 
 				//if (runtime.testOverlap(linst, rinst) || runtime.checkRegisteredCollision(linst, rinst))    
-                if (PixelTestOverlap.TestOverlap(binst.inst, rinst, 0.1) || runtime.checkRegisteredCollision(linst, rinst))             
+                if (PixelTestOverlap.TestOverlap(binst.inst, rinst, this.sample_rate) || runtime.checkRegisteredCollision(linst, rinst))             
 				{
 					exists = collmemory_has(collmemory, linst, rinst);
 					run = (!exists || (last_coll_tickcount < lasttickcount));
@@ -653,7 +653,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 			rinst = rinstances[r];
 
             // if (this.runtime.testOverlap(this, rinst))
-            if (PixelTestOverlap.TestOverlap(this.inst, rinst, 0.1))
+            if (PixelTestOverlap.TestOverlap(this.inst, rinst, this.sample_rate))
 			{
 				ret = true;
 				
@@ -698,7 +698,7 @@ cr.behaviors.Rex_Canvas_PixelCollide = function(runtime)
 	    if (canvas_type == null)
 	        canvas_insts = this.get_canvas_insts();
 	    else
-	        canvas_insts = canvas_type.getCurrentSol();
+	        canvas_insts = canvas_type.getCurrentSol().getObjects();
 	        
         var dx=this.inst.x - this.pre_x;
         var dy=this.inst.y - this.pre_y;    

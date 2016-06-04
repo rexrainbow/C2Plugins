@@ -1,9 +1,9 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Bet Counter",
+		"name":			"Beat Counter",
 		"id":			"Rex_betCounter",
-		"description":	"Get bet count in latest duration.",
+		"description":	"Get beat count in latest duration.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_betCounter.html",
 		"category":		"Rex - Attributes",

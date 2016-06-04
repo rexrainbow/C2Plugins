@@ -27,7 +27,12 @@ AddAction(1, 0, "Put on map", "Put",
           
 AddAction(2, 0, "Close", "Close", 
           "Close", 
-          "Close.", "Close");           
+          "Close.", "Close");   
+                 
+AddObjectParam("Marker", "Marker.");
+AddAction(3, 0, "Put above marker", "Put", 
+          "Put above <i>{0}</i>", 
+          "Put this info window above marker.", "PutOnMarker");          
 
 AddStringParam("Content", "This can be an HTML element, a plain-text string, or a string containing HTML.", '""');  
 AddAction(21, 0, "Set content", "Content", 

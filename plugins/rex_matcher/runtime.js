@@ -471,8 +471,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    }
 	                    
 	                    // then check symbol on board
-	                    tlx = board.LX2WrapLX(x+j);
-	                    tly = board.LY2WrapLY(y+i);
+	                    tlx = board.WrapLX(x+j);
+	                    tly = board.WrapLY(y+i);
 	                    s = this._symbol_at(tlx, tly);
 	                    if (!this._is_valid_symbol(s))
 	                    {

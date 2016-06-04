@@ -27,30 +27,8 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("firebase.js");
 	};
 	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
-	};
-
 	/////////////////////////////////////
 	// Instance class
 	pluginProto.Instance = function(type)
@@ -68,19 +46,65 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
 	    this.current_query = null; 
 	};
 	
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
 	    
 	// export  
 	instanceProto.GetQuery = function()

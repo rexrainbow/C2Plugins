@@ -31,7 +31,6 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
         this.touchwrap = null;
         this.GetX = null;
         this.GetY = null;
-        this.behavior_index = null;
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -55,40 +54,68 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for drag scale behavior");
 	};  
-    
+
+	function GetThisBehavior(inst)
+	{
+		var i, len;
+		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
+		{
+			if (inst.behavior_insts[i] instanceof behaviorProto.Instance)
+				return inst.behavior_insts[i];
+		}
+		
+		return null;
+	};	
+        
+    var _touch_insts = [];    
+	var _behavior_insts = [];    
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
-        var sol = this.objtype.getCurrentSol(); 
-        var select_all_save = sol.select_all;
-        sol.select_all = true;
-        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, touchX, touchY, false);
-        if (overlap_cnt == 0)
+        _touch_insts.length = 0;
+        _behavior_insts.length = 0;        
+        var insts = this.objtype.instances, inst;
+        var lx, ly;
+        var i, cnt=insts.length;
+        for (i=0; i<cnt; i++)
         {
-            // recover to select_all_save
-            sol.select_all = select_all_save;        
+            inst = insts[i];
+            inst.update_bbox();
+			
+			// Transform point from canvas to instance's layer
+			lx = inst.layer.canvasToLayer(touchX, touchY, true);
+			ly = inst.layer.canvasToLayer(touchX, touchY, false);
+            
+            if (inst.contains_pt(lx, ly))
+                _touch_insts.push(inst);
+        }
+        
+        var touch_insts_cnt=_touch_insts.length
+        if (touch_insts_cnt === 0)
+        {
+            _touch_insts.length = 0;
+            _behavior_insts.length = 0;
             return false;
         }
         
-        // overlap_cnt > 0
+        // touch_insts_cnt > 0
         // 0. find out index of behavior instance
-        if (this.behavior_index == null )
-            this.behavior_index = this.objtype.getBehaviorIndexByName(this.name);
-            
             
         // 1. get all valid behavior instances            
-        var ovl_insts = sol.getObjects();
-        var i, cnt, inst, behavior_inst;          
-        cnt = ovl_insts.length;           
+        var behavior_inst;          
+        cnt = touch_insts_cnt;           
         for (i=0; i<cnt; i++ )
         {
-		    inst = ovl_insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
+		    inst = _touch_insts[i];
+            behavior_inst = GetThisBehavior(inst);
+            if (!behavior_inst)
+                continue;            
             if (behavior_inst.activated)
                 behavior_inst.on_touch_start(touch_src);
         }
-        
-        // recover to select_all_save
-        sol.select_all = select_all_save;
+
+        _touch_insts.length = 0;
+        _behavior_insts.length = 0;
+        return;        
     };
     
     behtypeProto.OnTouchEnd = function (touch_src)

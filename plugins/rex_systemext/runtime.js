@@ -482,4 +482,18 @@ cr.plugins_.Rex_SysExt = function(runtime)
 	    ret.set_float( mean + g*stddev );
 	};
     
+	Exps.prototype.ReflectionAngle = function (ret, inputA, normalA)
+	{    
+	    var normalangle = cr.to_radians(normalA);
+        var startangle = cr.to_radians(inputA);
+		var vx = Math.cos(startangle);
+		var vy = Math.sin(startangle);
+		var nx = Math.cos(normalangle);
+		var ny = Math.sin(normalangle);
+		var v_dot_n = vx * nx + vy * ny;
+		var rx = vx - 2 * v_dot_n * nx;
+		var ry = vy - 2 * v_dot_n * ny;
+        var ra = cr.angleTo(0, 0, rx, ry);
+	    ret.set_float(cr.to_degrees(ra));
+	};	    
 }());

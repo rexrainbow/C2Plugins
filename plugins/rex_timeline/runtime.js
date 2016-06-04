@@ -68,12 +68,6 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
-	var FNTYPE_UK = 0;          // unknow 
-	var FNTYPE_NA = 1;	        // not avaiable
-	var FNTYPE_REXFNEX = 2;     // rex_functionext
-    var FNTYPE_REXFN2 = 3;      // rex_function2
-	var FNTYPE_OFFICIALFN = 4;  // official function
-	var FNTYPE_REXFN = 5;       // rex_function
 	instanceProto.onCreate = function()
 	{     
         this.update_manually       = (this.properties[0] == 0);
@@ -108,11 +102,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.timers_save = null;
 		
         // callback:      
-        // rex_functionext or function
-        this._fnobj = null;
-        this._fnobj_type = FNTYPE_UK;
-	    this._act_call_fn = null;
-		this._exp_call = null;
+        this.c2FnType = null;
         
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];      
@@ -162,149 +152,34 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	}; 
        
     // ---- callback ----
-	instanceProto.setup_callback = function (raise_assert_when_not_fnobj_avaiable, fn_type)
+	instanceProto.getC2FnType = function (raise_assert_when_not_fnobj_avaiable)
 	{
-        if (fn_type == null)
+        if (this.c2FnType === null)
         {
-            // seek all possible function object
-            if (this.cache_RexFnExt())
-                return;
-            if (this.cache_RexFn2())
-                return;
-            if (this.cache_Fn())
-                return;
-            // cache nothing
-            this._fnobj_type = FNTYPE_NA;  // function object is not avaiable            
-            
-            if (raise_assert_when_not_fnobj_avaiable)            
-                assert2(has_func, "Function extension or official function, or rex_function2 was not found.");            
-
-        }
-        else
-        {
-		    this._fnobj_type = FNTYPE_UK;
-            // seek function object
-	        switch (fn_type)
-		    {
-		    case FNTYPE_REXFNEX:     // rex_functionext
-		        this.cache_RexFnExt();
-		    	break;
-            case FNTYPE_REXFN2:      // rex_function2   
-		        this.cache_RexFn2();
-		    	break;                     
-	        case FNTYPE_OFFICIALFN:  // official function
-		        this.cache_Fn()
-		    	break; 
-		    }
-
-        }
-	}; 
-	
-	instanceProto.cache_RexFnExt = function()
-	{
-	    if (!cr.plugins_.Rex_FnExt)
-	        return false;
-	        
-        var plugins = this.runtime.types;			
-        var name, inst;
-        
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            if (inst instanceof cr.plugins_.Rex_FnExt.prototype.Instance)
+            if (window["c2_callRexFunction2"])
+                this.c2FnType = "c2_callRexFunction2";
+            else if (window["c2_callFunction"])
+                this.c2FnType = "c2_callFunction";            
+            else
             {
-                this._fnobj = inst;
-                this._act_call_fn = cr.plugins_.Rex_FnExt.prototype.acts.CallFunction;
-		        this._exp_call = cr.plugins_.Rex_FnExt.prototype.exps.Call;
-			    this._fnobj_type = FNTYPE_REXFNEX;
-                return true;
-            }                                          
-        }  
-        return false;
-    };
+                if (raise_assert_when_not_fnobj_avaiable) 
+                    assert2(this.c2FnType , "Timeline: Official function, or rex_function2 was not found."); 
+                
+                this.c2FnType = "";
+            }
+        }
+        return this.c2FnType;
+	};   
     
-	instanceProto.cache_RexFn2 = function()
-	{
-	    if (!cr.plugins_.Rex_Function2)
-	        return false;
-	        
-        var plugins = this.runtime.types;			
-        var name, inst;
-        
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
-            {
-                this._fnobj = inst;
-                this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
-		        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
-			    this._fnobj_type = FNTYPE_REXFN2;
-                return true;
-            }                                          
-        }
-        return false;
-	};    
-	
-	instanceProto.cache_Fn = function()
-	{
-	    if (!cr.plugins_.Function)
-	        return false;
-	        
-        var plugins = this.runtime.types;			
-        var name, inst;
-        
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            if (inst instanceof cr.plugins_.Function.prototype.Instance)
-            {
-                this._fnobj = inst;
-                this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-                this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
-			    this._fnobj_type = FNTYPE_OFFICIALFN;
-                return true;
-            }                                          
-        }
-        return false;
-	};  
-
-    instanceProto.RunCallback = function(name, params, raise_assert_when_not_fnobj_avaiable)
+    instanceProto.RunCallback = function(c2FnName, c2FnParms, raise_assert_when_not_fnobj_avaiable)
     {
-	    if (this._fnobj_type == FNTYPE_UK)
-	        this.setup_callback(raise_assert_when_not_fnobj_avaiable);
+        var c2FnGlobalName = this.getC2FnType(raise_assert_when_not_fnobj_avaiable);
+        if (c2FnGlobalName === "")
+            return null;
         
-	    switch (this._fnobj_type)
-		{
-		case FNTYPE_REXFNEX:     // rex_functionext
-		    this._fnobj.CallFunction(name, params);
-			break;
-        case FNTYPE_REXFN2:      // rex_function2            
-	    case FNTYPE_OFFICIALFN:  // official function
-            this._act_call_fn.call(this._fnobj, name, params);
-			break;	
-		}      
-
-        return (this._fnobj_type != FNTYPE_NA);  
+        var retValue = window[c2FnGlobalName](c2FnName, c2FnParms);
+        return retValue;
     };	
-	
-    instanceProto.Call = function(params, raise_assert_when_not_fnobj_avaiable)
-    {
-	    // params = [ ret, name, param0, param1, ... ]
-	    if (this._fnobj_type == FNTYPE_UK)
-	        this.setup_callback(raise_assert_when_not_fnobj_avaiable);
-        
-	    switch (this._fnobj_type)
-		{
-		case FNTYPE_REXFNEX:     // rex_functionext
-        case FNTYPE_REXFN2:      // rex_function2
-		case FNTYPE_OFFICIALFN:  // official function 
-		    this._exp_call.apply(this._fnobj, params);
-			break;
-		}      
-
-        return (this._fnobj_type != FNTYPE_NA);  
-    };		
     // ---- callback ----
     	
     instanceProto.TimeGet = function()
@@ -354,8 +229,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         plugin.exp_triggered_timer_name = this._cb.name;  
         var name = this._cb.command;
         var params = this._cb.params;  
-        var has_fnobj = plugin.RunCallback(name, params, true);
-        assert2(has_fnobj, "Timeline: Can not find callback oject.");
+        plugin.RunCallback(name, params, true);
         
         if (this._repeat_count === 0)
             this.Start();
@@ -368,12 +242,11 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     instanceProto._get_timer_cb_params = function(timer_name)
     {
-        var params = {name:timer_name,
-                      command:""};
-        if (this._fnobj_type == FNTYPE_REXFN)
-		    params.params = {};
-		else
-		    params.params = [];
+        var params = {
+            name:timer_name,
+            command:"",
+            params:[]
+            };
         return params;
     };   // fix me
     // ---- local timer ----
@@ -395,7 +268,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
                  "tl": this.timeline.saveToJSON(),
                  "timers": timers_save,
                  "lrt": this.last_real_time,
-                 "fnType": this._fnobj_type,                 
+                 "ft": this.c2FnType,                 
                  };
 	};
     
@@ -405,7 +278,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.timeline.loadFromJSON(o["tl"]);
         this.timers_save = o["timers"];
         this.last_real_time = o["lrt"];
-        this._fnobj_type = o["fnType"];
+        this.c2FnType = o["ft"];
         
         this.onDestroy();
         this.timer_cache_clean();
@@ -425,9 +298,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             timer._cb.params = timer_info["pams"];
             timer._repeat_count = timer_info["rc"];
         }
-        this.timers_save = null;
-        
-        this.setup_callback(false, this._fnobj_type);
+        this.timers_save = null;        
 	};
 
 	/**BEGIN-PREVIEWONLY**/
@@ -600,44 +471,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	
     Acts.prototype.SetupCallback = function (callback_type)
 	{	
-        var plugins = this.runtime.types;
-        var name, inst;
-        if (callback_type === 0)
-        {
-            if(!cr.plugins_.Function)
-                return;
-                
-            for (name in plugins)
-            {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Function.prototype.Instance)
-                {
-                    this._fnobj = inst;
-                    this._act_call_fn = cr.plugins_.Function.prototype.acts.CallFunction;
-                    this._exp_call = cr.plugins_.Function.prototype.exps.Call;			
-				    this._fnobj_type = FNTYPE_OFFICIALFN;
-                    return;
-                }                                          
-            }
-        }
-        else if (callback_type === 1)
-        {
-            if (!cr.plugins_.Rex_Function2)
-                return;   
-                
-            for (name in plugins)
-            {
-                inst = plugins[name].instances[0];
-                if (inst instanceof cr.plugins_.Rex_Function2.prototype.Instance)
-                {
-                    this._fnobj = inst;
-                    this._act_call_fn = cr.plugins_.Rex_Function2.prototype.acts.CallFunction;
-			        this._exp_call = cr.plugins_.Rex_Function2.prototype.exps.Call;
-				    this._fnobj_type = FNTYPE_REXFN2;
-                    return;
-                }                                          
-            }                
-        }
+        this.c2FnType = (callback_type===0)? "c2_callFunction" : "c2_callRexFunction2";
 	};	
 	
 	//////////////////////////////////////

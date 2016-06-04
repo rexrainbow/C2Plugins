@@ -319,6 +319,11 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
         popFuncStack();
     };
+	
+	Acts.prototype.CallExpression = function (unused)
+	{
+		// no-op: the function will have been called during parameter evaluation.
+	};    
     
     Acts.prototype.SetReturnValue = function (value_)
     {

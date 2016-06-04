@@ -92,7 +92,7 @@ cr.plugins_.Rex_Parse_FileUpload = function(runtime)
 	{
         if (!sprite_objs)
             return;
-        var inst = sprite_objs.instances[0];
+        var inst = sprite_objs.getFirstPicked();
         if (inst.curFrame == null)
             return;
         var dataURI = inst.curFrame.getDataUri();

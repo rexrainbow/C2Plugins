@@ -124,7 +124,7 @@ AddAction(61, 0, "Set shadow", "Shadow",
 AddNumberParam("Thickness", "Thickness in pixels.", 1);
 AddAction(71, 0, "Set thickness", "Underline", "Set thickness to <i>{0}</i>", "Set thickness of underline.", "SetThickness"); 
          
-AddNumberParam("Offset", "Thickness in pixels.", 1);
+AddNumberParam("Offset", "Offset Y in pixels.", 1);
 AddAction(72, 0, "Set offset Y", "Underline", "Set offset Y to <i>{0}</i>", "Set offset Y of underline.", "SetOffsetY"); 
 
 ////////////////////////

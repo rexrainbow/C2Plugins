@@ -54,7 +54,7 @@ AddAction(1, 0, "Load table", "0: Load", "Load table from csv string <i>{0}</i>"
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
-AddAction(2, 0, "Set entry", "Set", "Set value at (<i>{0}</i>, <i>{1}</i>) to <i>{2}</i>", 
+AddAction(2, 0, "Set value", "Set", "Set (<i>{0}</i>, <i>{1}</i>) to <i>{2}</i>", 
           "Set the value in the table at current page.", "SetEntry");
 AddAction(3, 0, "Clear", "Set", "Clear", "Clear all entries.", "Clear");
 AddStringParam("Row", "The row index.", '""');
@@ -100,18 +100,31 @@ AddComboParamOption("Increasing");
 AddComboParamOption("Decreasing");
 AddComboParam("Order", "Sorting order of item.", 0); 
 AddAction(14, 0, "Sort items in row", "Sort", "Sort items in row <i>{0}</i> , by <i>{1}</i> order",
-         "Sort items in row.", "SortRow");  
+         "Sort items in row.", "SortRow"); 
+         
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddStringParam("Page", "The index of page.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
-AddAction(15, 0, "Set entry at page", "Set", "Set value at (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>) to <i>{3}</i>", 
+AddAction(15, 0, "Set value at page", "Set", "Set value at (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>) to <i>{3}</i>", 
           "Set the value in the table at a specific page.", "SetEntryAtPage");
           
-//////////////////////////////////////////////////////////////
-// Expressions
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
+AddAnyTypeParam("Value", "The value to store.", "0");
+AddAction(16, 0, "Add to", "Set", "Add <i>{2}</i> to (<i>{0}</i>, <i>{1}</i>)", 
+           "Add to the value in the table at current page.", "AddToEntry"); 
+
+AddStringParam("Col", "The column index.", '""');
+AddStringParam("Row", "The row index.", '""');
+AddStringParam("Page", "The index of page.", '""');
+AddAnyTypeParam("Value", "The value to store.", "0");
+AddAction(17, 0, "Add at page", "Set", "Add <i>{3}</i> to (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>)", 
+          "Add to the value in the table at a specific page.", "AddToEntryAtPage");           
+//////////////////////////////////////////////////////////////
+// Expressions
+AddAnyTypeParam("Col", "The column index.", '""');
+AddAnyTypeParam("Row", "The row index.", '""');
 AddExpression(0, ef_return_any | ef_variadic_parameters, "Get value at", "Table: At", "At", 
               "Get value from current table. Add page index at 3rd parameter to turn the page. Add default value at 4th parameter for invalid value.");
 AddExpression(1, ef_return_string, "Current Col", "For Each", "CurCol", "Get the current column index in a For Each loop.");
@@ -127,7 +140,19 @@ AddExpression(10, ef_return_number | ef_variadic_parameters, "Get row count", "T
 AddExpression(11, ef_return_string, "Get delimiter", "Delimiter", "Delimiter", "Get delimiter.");
 AddExpression(12, ef_return_string, "Transfer all tables to string", "JSON", "AllTalbesToString", "Transfer all tables to a JSON string.");
 AddExpression(13, ef_return_string, "Transfer page to csv string", "CSV", "TableToCSV", "Transfer current table to csv string.");
-
+//AddStringParam("Col", "The column index.", '""');
+AddExpression(14, ef_return_string | ef_variadic_parameters, "Get next col index", "Col", "NextCol", 
+              "Get next col index of a col index in current table. Add 2nd parameter to a specific col index, or uses AtCol if no col index assigned.");
+//AddStringParam("Col", "The column index.", '""');
+AddExpression(15, ef_return_string | ef_variadic_parameters, "Get previous col index", "Col", "PreviousCol", 
+              "Get previous col index of a col index in current table. Add 2nd parameter to a specific col index, or uses AtCol if no col index assigned.");  
+//AddStringParam("Row", "The row index.", '""');
+AddExpression(16, ef_return_string | ef_variadic_parameters, "Get next row index", "Row", "NextRow", 
+              "Get next row index of a col index in current table. Add 2nd parameter to a specific rpw index, or uses AtRow if no row index assigned.");
+//AddStringParam("Row", "The row index.", '""');
+AddExpression(17, ef_return_string | ef_variadic_parameters, "Get previous row index", "Row", "PreviousRow", 
+              "Get previous row index of a col index in current table. Add 2nd parameter to a specific rpw index, or uses AtRow if no row index assigned."); 
+              
 ACESDone();
 
 // Property grid properties for this plugin

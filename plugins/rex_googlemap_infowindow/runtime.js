@@ -80,6 +80,9 @@ cr.plugins_.rex_googlemap_infowindow = function(runtime)
         gmapi = window["google"]["maps"];
         var infoWindowOptions = this.prepareInfoWindowOptions();
         infoWindowOptions["position"] = latlng;
+        
+        //infoWindowOptions["pixelOffset"] = new gmapi["Size"](0, 0);
+        
         var infoWindowObj = new gmapi["InfoWindow"](infoWindowOptions);
         
         this.infoWindowObj = infoWindowObj;
@@ -89,7 +92,24 @@ cr.plugins_.rex_googlemap_infowindow = function(runtime)
 	{
         var infoWindowOptions = this.infoWindowOptions;
         return infoWindowOptions;
-	};     
+	}; 
+    
+    var getMapObject = function (mapType)
+    {
+        var mapInst = mapType.getFirstPicked();
+        // not a google map object        
+        if (!mapInst || !mapInst.getGoogleMapObj)
+            return;        
+        return mapInst.getGoogleMapObj();
+    };
+    var getMarkerObject = function (markerType)
+    {
+        var markerInst = markerType.getFirstPicked();
+        // not a google map object        
+        if (!markerInst || !markerInst.getMarkerObj)
+            return;        
+        return markerInst.getMarkerObj();
+    };     
 	//////////////////////////////////////
 	// Conditions
     function Cnds() {};
@@ -105,12 +125,10 @@ cr.plugins_.rex_googlemap_infowindow = function(runtime)
         if (!window.RexC2GoogleAPILoader.IsLoaded())
             return;
         
-        var mapInst = mapType.instances[0];
-        // not a google map object        
-        if (!mapInst || !mapInst.getGoogleMapObj)
+        var mapObj = getMapObject(mapType);
+        if (mapObj == null)
             return;
         
-        var mapObj = mapInst.getGoogleMapObj();
         var latlng = {"lat": lat, "lng": lng};
         if (!this.infoWindowObj)        
             this.initInfoWindowObj(latlng);
@@ -127,6 +145,30 @@ cr.plugins_.rex_googlemap_infowindow = function(runtime)
         
         this.infoWindowObj["close"]();       
 	};  
+
+	Acts.prototype.PutOnMarker = function (markerType)
+	{
+        if (!window.RexC2GoogleAPILoader.IsLoaded())
+            return;
+        
+        var markerObj = getMarkerObject(markerType)
+        if (markerObj == null)
+            return;        
+        var mapObj = markerObj["getMap"]();        
+        if (mapObj == null)
+            return;   
+        
+        var lat = markerObj["getPosition"]()["lat"]();
+        var lng = markerObj["getPosition"]()["lng"]();
+        var latlng = {"lat": lat, "lng": lng}; 
+        
+        if (!this.infoWindowObj)        
+            this.initInfoWindowObj(latlng);
+        else
+           this.infoWindowObj["setPosition"](latlng);
+       
+        this.infoWindowObj["open"](mapObj, markerObj);       
+	};     
     
 	Acts.prototype.SetContent = function (content)
 	{

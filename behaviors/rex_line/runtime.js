@@ -327,7 +327,7 @@ cr.behaviors.Rex_Line = function(runtime)
         var uid = this.start_inst ? this.start_inst.uid : -1;
         ret.set_int( uid );
 	};
-	Exps.prototype.EndY = function (ret)
+	Exps.prototype.EndUID = function (ret)
 	{
         var uid = this.end_inst ? this.end_inst.uid : -1;
         ret.set_int( uid );

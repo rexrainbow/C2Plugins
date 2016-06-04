@@ -116,8 +116,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 		    this.callback.CallFn(name, params);
         else    // run official function
         {
-            var has_fnobj = this._timeline_get().RunCallback(name, params, true);
-            assert2(has_fnobj, "Worksheet: Can not find callback oject.");
+            this._timeline_get().RunCallback(name, params, true);
         }    
 	}; 
 	   

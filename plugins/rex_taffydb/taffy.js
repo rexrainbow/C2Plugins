@@ -1339,9 +1339,14 @@
             }
 
             RC++;
-            v.___id = 'T' + String( idpad + TC ).slice( -6 ) + 'R' +
-              String( idpad + RC ).slice( -6 );
-            v.___s = true;
+            
+            // ---- Edit by rex.rainbow, skip creating ___id if ___id is existed ----
+            if (!v.___id)
+                v.___id = 'T' + String( idpad + TC ).slice( -6 ) + 'R' + String( idpad + RC ).slice( -6 );
+            // ---- Edit by rex.rainbow, skip creating ___id if ___id is existed ----       
+            
+            v.___s = true;          
+            
             records.push( v.___id );
             if ( settings.template ){
               v = T.mergeObj( settings.template, v );

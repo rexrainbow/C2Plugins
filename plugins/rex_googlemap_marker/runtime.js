@@ -158,6 +158,20 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
         }
         return markerOptions;
 	};      
+
+	instanceProto.getMarkerObj = function ()
+	{    
+		return this.markerObj;
+	};       
+    
+    var getMapObject = function (mapType)
+    {
+        var mapInst = mapType.getFirstPicked();
+        // not a google map object        
+        if (!mapInst || !mapInst.getGoogleMapObj)
+            return;        
+        return mapInst.getGoogleMapObj();
+    };    
 	//////////////////////////////////////
 	// Conditions
     function Cnds() {};
@@ -186,12 +200,10 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
         if (!window.RexC2GoogleAPILoader.IsLoaded())
             return;
         
-        var mapInst = mapType.instances[0];
-        // not a google map object        
-        if (!mapInst || !mapInst.getGoogleMapObj)
+        var mapObj = getMapObject(mapType);
+        if (mapObj == null)
             return;
-
-        var mapObj = mapInst.getGoogleMapObj();
+        
         var latlng = {"lat": lat, "lng": lng};
         if (!this.markerObj)        
             this.initMarkerObj(latlng);

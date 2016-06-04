@@ -272,12 +272,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var layout = this.GetLayout();
 	    var nlx = layout.GetNeighborLX(lx, ly, dir);
 	    if (is_wrap_mode)
-	        nlx = this.LX2WrapLX(nlx);
+	        nlx = this.WrapLX(nlx);
             
 		return nlx;
 	};
 	
-	instanceProto.LX2WrapLX = function(lx, is_wrap_mode)
+	instanceProto.WrapLX = function(lx, is_wrap_mode)
 	{
 	    if (is_wrap_mode == null)
 	        is_wrap_mode = this.is_wrap_mode;
@@ -301,12 +301,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var layout = this.GetLayout();
 	    var nly = layout.GetNeighborLY(lx, ly, dir);
 	    if (is_wrap_mode)
-	        nly = this.LY2WrapLY(nly);
+	        nly = this.WrapLY(nly);
 
 		return nly;
 	};		
 		
-	instanceProto.LY2WrapLY = function(ly, is_wrap_mode)
+	instanceProto.WrapLY = function(ly, is_wrap_mode)
 	{
 	    if (is_wrap_mode == null)
 	        is_wrap_mode = this.is_wrap_mode;
@@ -406,13 +406,13 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         delete this.board[_xyz.x][_xyz.y][_xyz.z];
 	};
     
-	instanceProto.AddChess = function(inst, _x, _y, _z)
+	instanceProto.AddChess = function(inst, lx, ly, lz)
 	{                
 	    if (inst == null)
 	        return;
 	        
         // check if lxy is inside board
-        if ( !this.IsInsideBoard(_x, _y) )
+        if ( !this.IsInsideBoard(lx, ly) )
             return;
                     
         // "inst" could be instance(object) or uid(number) or ?(string)
@@ -420,20 +420,20 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var uid = (inst_is_inst)? inst.uid:inst;
 
         this.RemoveChess(uid);  // keep unique uid (symbol)            
-        this.RemoveChess(this.xyz2uid(_x,_y,_z), true);
-        this.board[_x][_y][_z] = uid;
-	    this.items[uid] = window.RexC2BoardLXYZCache.allocLine(_x, _y, _z);
+        this.RemoveChess(this.xyz2uid(lx,ly,lz), true);
+        this.board[lx][ly][lz] = uid;
+	    this.items[uid] = window.RexC2BoardLXYZCache.allocLine(lx, ly, lz);
             
         // board changed, check logical overlapping
         if (inst_is_inst || (this.uid2inst(uid) != null))
             this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnCollided, this);                                           
 	};
 
-	instanceProto.MoveChess = function(inst, target_x, target_y, target_z)
+	instanceProto.MoveChess = function(inst, lx, ly, lz))
 	{
         var uid = (typeof(inst) === "object")? inst.uid:inst;      
 	    this.RemoveChess(uid);   
-        this.AddChess(uid, target_x, target_y, target_z); 
+        this.AddChess(uid, lx, ly, lz)); 
 	}; 
     
 	instanceProto.uid2NeighborDir = function (uidA, uidB, is_wrap_mode)
@@ -443,12 +443,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if ((xyzA == null) || (xyzB == null))
             return null;
         
-        return this.lxy2NeighborDir(xyzA.x, xyzA.y, xyzB.x, xyzB.y, is_wrap_mode);
+        return this.xy2NeighborDir(xyzA.x, xyzA.y, xyzB.x, xyzB.y, is_wrap_mode);
 	};    
 	
 	var GXYZA = {x:0, y:0, z:0};
 	var GXYZB = {x:0, y:0, z:0};
-	instanceProto.lxy2NeighborDir = function (lx0, ly0, lx1, ly1, is_wrap_mode)
+	instanceProto.xy2NeighborDir = function (lx0, ly0, lx1, ly1, is_wrap_mode)
 	{
         GXYZA.x=lx0, GXYZA.y=ly0;
         GXYZB.x=lx1, GXYZB.y=ly1;

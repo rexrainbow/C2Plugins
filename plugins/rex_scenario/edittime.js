@@ -90,6 +90,7 @@ AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(41, 0, "Setup timeline", "Setup", 
           "Get timer from <i>{0}</i>", 
           "Setup timeline.", "SetupTimeline");	
+          
 AddComboParamOption("Official function");
 AddComboParamOption("Rex function2");
 AddComboParam("Callback", "Callback object.",0);          

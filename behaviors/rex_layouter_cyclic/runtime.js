@@ -45,15 +45,16 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	behinstProto.onCreate = function()
 	{
 	    this.check_name = "LAYOUTER";
-        this.mode = this.properties[0];
-	    this.start_angle = cr.to_clamped_radians(this.properties[1]);  // in radians
-        var range_angle = this.properties[2];
+        this.shape =  this.properties[0];
+        this.mode = this.properties[1];
+	    this.start_angle = cr.to_clamped_radians(this.properties[2]);  // in radians
+        var range_angle = this.properties[3];
         this.is_360_mode = (Math.abs(range_angle) == 360);        
 	    this.range_angle = (this.is_360_mode)? 
                            (2*Math.PI): cr.to_clamped_radians(range_angle);  // in radians
 
-	    this.delta_angle = cr.to_clamped_radians(this.properties[3]);  // in radians
-        this.angle_offset = cr.to_clamped_radians(this.properties[4]); // in radians
+	    this.delta_angle = cr.to_clamped_radians(this.properties[4]);  // in radians
+        this.angle_offset = cr.to_clamped_radians(this.properties[5]); // in radians
         
         // implement handlers
         this.on_add_insts = this._on_update;
@@ -69,11 +70,9 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	    var layouter = this.inst;
 	    var OX = layouter.get_centerX(layouter); 
 	    var OY = layouter.get_centerY(layouter); 
-	    var OA = layouter.angle;
 	    var sprites = layouter.sprites;  
-	    var i, cnt = sprites.length, params;
-	    var a, r = Math.min(layouter.width, layouter.height)/2;        
-	    var start_angle = OA + this.start_angle;  // in radians
+	    var i, cnt = sprites.length;
+
         if (this.mode == 0)  // average mode
         {
             if (cnt==1)
@@ -89,16 +88,67 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
         else  // fix mode
             this.range_angle = this.delta_angle * (cnt-1);  // in radians
 
+	    var params, angle_, x_, y_;
+        var rW = this._get_radius_w();
+        var rH = this._get_radius_h();
+	    var start_angle = this.start_angle;  // in radians            
 	    for (i=0;i<cnt;i++)
 	    {
-	        a = start_angle + (this.delta_angle*i);  // in radians
-	        params = {x:OX + (r*Math.cos(a)),
-	                  y:OY + (r*Math.sin(a)),
-	                  angle:a + this.angle_offset};
+            angle_ = start_angle + (this.delta_angle*i);  // in radians
+            x_ = OX + (rW*Math.cos(angle_));
+            y_ = OY + (rH*Math.sin(angle_));
+            
+	        params = {
+                x:x_,
+	            y:y_,
+                angle:angle_,  // in radians
+                };
+            params = this._rotate_params(params);
 	        layouter.layout_inst(sprites[i], params);
 	    }
 	}; 	 	
+
+	behinstProto._rotate_params = function (params)
+	{      
+        var layouter = this.inst;
+        
+        if (layouter.angle === 0)
+            return params;
+
+        var new_angle = cr.angleTo(layouter.x, layouter.y, params.x, params.y) + layouter.angle;
+        var d = cr.distanceTo(layouter.x, layouter.y, params.x, params.y); 
+        
+        var new_x = layouter.x + (d * Math.cos(new_angle));
+        var new_y = layouter.y + (d * Math.sin(new_angle));
+        params.x = new_x;
+        params.y = new_y;
+        params.angle += layouter.angle;
+        return params;        
+	};      
     
+    
+	behinstProto._get_radius_w = function ()
+	{
+        var r;
+        if (this.shape === 0)
+            r = Math.min(this.inst.width, this.inst.height)/2;     
+        else
+            r = this.inst.width/2;
+        
+        return r;
+	};      
+
+	behinstProto._get_radius_h = function ()
+	{
+        var r;
+        if (this.shape === 0)
+            r = Math.min(this.inst.width, this.inst.height)/2;     
+        else
+            r = this.inst.height/2;
+        
+        return r;
+	};    
+
 	behinstProto.saveToJSON = function ()
 	{
 		return { "m": this.mode, 
@@ -149,10 +199,19 @@ cr.behaviors.Rex_layouter_cyclic = function(runtime)
 	{
         this.delta_angle = cr.to_clamped_radians(a);
 	}; 
-	      
+    
+	Acts.prototype.AddToStartAngle = function (a)
+	{
+        a += cr.to_clamped_degrees(this.start_angle);
+		this.start_angle = cr.to_clamped_radians(a);
+	};		      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 	
+	Exps.prototype.StartAngle = function (ret)
+	{
+		ret.set_float(cr.to_clamped_degrees(this.start_angle));
+	}; 	
 }());

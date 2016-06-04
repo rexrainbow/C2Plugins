@@ -206,7 +206,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	{
         if (!edge_objtype)
             return;
-        if (this.GetBoard().lxy2NeighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
+        if (this.GetBoard().xy2NeighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
         {
             this.pickuids(this.pinstgroup, edge_objtype);
             return;

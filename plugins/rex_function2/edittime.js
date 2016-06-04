@@ -39,6 +39,10 @@ AddAction(0, 0, "Call function", "Parameter list", "Call <b>{0}</b> (<i>{...}</i
 AddAnyTypeParam("Value", "A number or some text to return from the function call.");
 AddAction(1, 0, "Set return value", "Return", "Set return value to <b>{0}</b>", "In an 'On function' event, set the return value.", "SetReturnValue");
 
+AddAnyTypeParam("Expression", "An expression to run, generally of the form Function.Call(\"func\", ...)");
+AddAction(2, 0, "Call expression", "Function", "Call expression <b>{0}</b>", "Call a function using a typed expression (via Function.Call()).", "CallExpression");
+
+
 AddStringParam("Name", "Parameter's name", '""');
 AddAnyTypeParam("Value", "The default value.");
 AddAction(51, 0, "Declare parameter", "Interface", "Parameter <b>{0}</b>, default to <i>{1}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
