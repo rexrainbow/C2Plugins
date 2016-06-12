@@ -231,7 +231,7 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
         
         var map = get_hexagon_shape(board, radius);
         var maxXY = get_map_maxXY(map);
-        board.reset_board(maxXY.x, maxXY.y);
+        board.ResetBoard(maxXY.x, maxXY.y);
         create_chess(board, map, tile_objs, 0, layer);
 	};
 
@@ -245,7 +245,7 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
         
         var map = get_triangle_shape(board, type, height);
         var maxXY = get_map_maxXY(map);
-        board.reset_board(maxXY.x, maxXY.y);
+        board.ResetBoard(maxXY.x, maxXY.y);
         create_chess(board, map, tile_objs, 0, layer);
 	};
 
@@ -259,7 +259,7 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
         
         var map = get_parallelogram_shape(board, type, width, height);
         var maxXY = get_map_maxXY(map);
-        board.reset_board(maxXY.x, maxXY.y);
+        board.ResetBoard(maxXY.x, maxXY.y);
         create_chess(board, map, tile_objs, 0, layer);
 	};    
 	//////////////////////////////////////

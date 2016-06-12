@@ -67,7 +67,7 @@ AddCondition(11, cf_trigger, "On chess kicked", "Kick",
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the tile.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile.", 0);
-AddCondition(12, cf_not_invertible, "Pick chess at Logic X,Y", "SOL - logical position", 
+AddCondition(12, cf_not_invertible, "Pick chess at LX,LY", "SOL - logical position", 
              "Pick <i>{0}</i> at [<i>{1}</i>,<i>{2}</i>]", 
              "Pick chess at Logic X,Y.", "PickChessAtLXY");           
 AddObjectParam("Chess", "Chess object.");
@@ -90,7 +90,7 @@ AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the tile.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the tile.", 0);
 AddAnyTypeParam("Logic Z", "The Z index (0-based) of the tile.", 0);
-AddCondition(16, cf_not_invertible, "Pick chess at Logic X,Y,Z", "SOL - logical position", 
+AddCondition(16, cf_not_invertible, "Pick chess at LX,LY,LZ", "SOL - logical position", 
              "Pick <i>{0}</i> at [<i>{1}</i>,<i>{2}</i>,<i>{3}</i>]", 
              "Pick chess at Logic X,Y,Z.", "PickChessAtLXYZ");            
 AddObjectParam("Origin", "Origin chess.");
@@ -478,14 +478,25 @@ AddExpression(28, ef_return_any | ef_variadic_parameters,
 AddExpression(31, ef_return_number, "Current LX", "For Each cell", "CurLX", 
               "Get the current logic X index in a For Each loop.");
 AddExpression(32, ef_return_number, "Current LY", "For Each cell", "CurLY", 
-              "Get the current logic Y index in a For Each loop.");                            
+              "Get the current logic Y index in a For Each loop.");     
+
+AddExpression(61, ef_return_number, "Max LX", "Max-min", "MaxLX", 
+              "Get maximum of LX of all chess.");
+AddExpression(62, ef_return_number, "Max LY", "Max-min", "MaxLY", 
+              "Get maximum of LY of all chess.");               
+AddExpression(63, ef_return_number, "Min LX", "Max-min", "MinLX", 
+              "Get minimum of LX of all chess.");
+AddExpression(64, ef_return_number, "Min LY", "Max-min", "MinLY", 
+              "Get minimum of LY of all chess.");    
+              
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
 		new cr.Property(ept_integer, "Width", 64, "Initial number of elements on the X axis."),
 		new cr.Property(ept_integer, "Height", 64, "Initial number of elements on the Y axis."),
-		new cr.Property(ept_combo, "Wrap", "No", "Wrap the logical position.", "No|Yes"),                    
+		new cr.Property(ept_combo, "Wrap", "No", "Wrap the logical position.", "No|Yes"),     
+		new cr.Property(ept_combo, "Infinity", "No", "Infinity board.", "No|Yes"),         
 	];
 	
 // Called by IDE when a new object type is to be created
@@ -529,15 +540,7 @@ IDEInstance.prototype.OnCreate = function()
 
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
-{
-	if (this.properties["Width"] < 0)
-		this.properties["Width"] = 0;
-		
-	if (this.properties["Height"] < 0)
-		this.properties["Height"] = 0;
-		
-	if (this.properties["Depth"] < 0)
-		this.properties["Depth"] = 0;    
+{   
 }
 	
 // Called by the IDE to draw this instance in the editor

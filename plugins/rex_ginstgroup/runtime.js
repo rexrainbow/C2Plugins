@@ -767,16 +767,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
 	GroupKlassProto.AddUID = function(_uid)  // single number, number list
 	{
-	    if (typeof(_uid) == "number")    // single number
-	    {
-	        if (this._set[_uid] == null)    // not in group
-	        {
-	            this._set[_uid] = true;
-	            this._list.push(_uid);      // push back
-	        }
-            // else ingored 
-	    }
-	    else                            // uid list
+	    if (typeof(_uid) === "object")   // uid list      
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -790,26 +781,21 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                 // else ingored 
 	        }
 	    }
+        
+	    else    // single number
+	    {
+	        if (this._set[_uid] == null)    // not in group
+	        {
+	            this._set[_uid] = true;
+	            this._list.push(_uid);      // push back
+	        }
+            // else ingored 
+	    }        
 	};
     
    	GroupKlassProto.PushUID = function(_uid, is_front)  // single number, number list
 	{	    
-	    
-	    if (typeof(_uid) == "number")    // single number
-	    {
-	        if (this._set[_uid] == null)
-	            this._set[_uid] = true;
-	        else    // remove existed item in this._list
-	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
-	            
-	        
-	        // add uid
-	        if (is_front)	            
-	            this._list.unshift(_uid);      // push front
-	        else
-	            this._list.push(_uid);         // push back	        
-	    }
-	    else                           // uid list, no repeating
+	    if (typeof(_uid) === "object")   // uid list      
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -828,20 +814,26 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	            this._list.push.apply(this._list, _uid);    // push back	  
 	        
 	    }
-	};
-	
-   	GroupKlassProto.InsertUID = function(_uid, index)  // single number, number list
-	{	    	        
-	    if (typeof(_uid) == "number")    // single number
+        
+	    else    // single number
 	    {
 	        if (this._set[_uid] == null)
 	            this._set[_uid] = true;
 	        else    // remove existed item in this._list
 	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
 	            
-	        arrayInsert(this._list, _uid, index)      
-	    }
-	    else                           // uid list, no repeating
+	        
+	        // add uid
+	        if (is_front)	            
+	            this._list.unshift(_uid);      // push front
+	        else
+	            this._list.push(_uid);         // push back	        
+	    }        
+	};
+	
+   	GroupKlassProto.InsertUID = function(_uid, index)  // single number, number list
+	{	    	        
+	    if (typeof(_uid) === "object")   // uid list             
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -857,19 +849,21 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        arrayInsert(this._list, _uid, index)     
 	        
 	    }
+        
+	    else    // single number
+	    {
+	        if (this._set[_uid] == null)
+	            this._set[_uid] = true;
+	        else    // remove existed item in this._list
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
+	            
+	        arrayInsert(this._list, _uid, index)      
+	    }        
 	};
 		
 	GroupKlassProto.RemoveUID = function(_uid)  // single number, number list
 	{
-	    if (typeof(_uid) == "number")    // single number
-	    {
-	        if (this._set[_uid] != null)
-	        {
-	            delete this._set[_uid];
-	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
-	        }
-	    }
-	    else                            // uid list
+	    if (typeof(_uid) === "object")   // uid list                         
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -883,6 +877,15 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                 // else ingored 
 	        }
 	    }
+        
+	    else    // single number
+	    {
+	        if (this._set[_uid] != null)
+	        {
+	            delete this._set[_uid];
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
+	        }
+	    }        
 	};
 	
 	GroupKlassProto.UID2Index = function(uid)

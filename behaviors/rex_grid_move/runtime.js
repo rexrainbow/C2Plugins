@@ -263,15 +263,17 @@ cr.behaviors.Rex_GridMove = function(runtime)
                 return custom_can_move_to;
                 
             // find out if neighbors have solid property
-            var z_hash = this.board.xy2zHash(target_x, target_y);
+            var zHash = this.board.xy2zHash(target_x, target_y);
+            if (!zHash)
+                return null;            
             var z;
             if (target_z != 0)
             {
-                if (!(0 in z_hash))  // tile does not exist
+                if (zHash[0]==null)  // tile does not exist
                     return null;                
-                for (z in z_hash)
+                for (z in zHash)
                 {
-                    _target_uid = z_hash[z];
+                    _target_uid = zHash[z];
                     if (_solid_get(this.board.uid2inst(_target_uid)))  // solid
                     {
                         this.exp_BlockerUID = _target_uid;
@@ -282,7 +284,7 @@ cr.behaviors.Rex_GridMove = function(runtime)
             }
             else  // target_z == 0
             {
-                return (!(0 in z_hash))? 1: null;          
+                return (zHash[0]==null)? 1: null;          
             }
         }
         else    
@@ -432,22 +434,18 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this.runtime.trigger(cr.behaviors.Rex_GridMove.prototype.cnds.OnCollidedBegin, this.inst);    
     };    
 
-    behinstProto._zhash2uids = function (z_hash)
+    behinstProto._zhash2uids = function (zHash)
     {   
         var z, target_uids = this._colliding_zhash2uids;
         for (z in target_uids)
             delete target_uids[z];
-        for (z in z_hash)
-            target_uids[z_hash[z]] = true;
+        for (z in zHash)
+            target_uids[zHash[z]] = true;
         return target_uids;
     };
     
 	behinstProto._collide_test = function(colliding_xyz, objtype, group_name)
 	{
-        var is_collided = false;
-        var target_uids = this._zhash2uids(this.board.xy2zHash(colliding_xyz.x, 
-                                                               colliding_xyz.y));
-        
         // pick collided instances into group
         var result_group, sol;
         if (group_name != null)
@@ -463,6 +461,12 @@ cr.behaviors.Rex_GridMove = function(runtime)
             sol.instances.length = 0;   // clear contents
         }
         
+        var zHash = this.board.xy2zHash(colliding_xyz.x, colliding_xyz.y);
+        if (!zHash)
+            return false;
+        
+        var target_uids = this._zhash2uids(zHash);
+        var is_collided = false;     
         var uid, inst;
         for (uid in target_uids)
         {

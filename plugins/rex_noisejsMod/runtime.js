@@ -44,10 +44,9 @@ cr.plugins_.Rex_NoiseJsMod = function(runtime)
         this.scaleIn = this.properties[0];
         this.min = this.properties[1];
         this.max = this.properties[2];
-        this.mapSkip = (this.min === -1) && (this.max === 1);
         this.seed = this.properties[3];
         this.seed += Math.random() * this.properties[4];
-        
+        this.lastNoiseValue = 0;
         this.noise = new Noise(this.seed);
 	};
     
@@ -58,7 +57,7 @@ cr.plugins_.Rex_NoiseJsMod = function(runtime)
 	instanceProto.mapRange = function (val)
 	{
         // val: -1~1
-        if (this.mapSkip)
+        if ((this.min === -1) && (this.max === 1))
             return val;
         
         val = (val + 1)/ 2; // val: 0~1   
@@ -71,7 +70,8 @@ cr.plugins_.Rex_NoiseJsMod = function(runtime)
 		return {"sI": this.scaleIn, 
                     "m": this.min,
                      "M": this.max,
-                 "sed": this.seed };
+                 "sed": this.seed,
+                 "ln": this.lastNoiseValue};
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -80,6 +80,9 @@ cr.plugins_.Rex_NoiseJsMod = function(runtime)
         this.min = o["m"];
         this.max = o["M"];
         this.seed = o["sed"];
+        this.lastNoiseValue = o["ln"];
+        
+        this.noise.setSeed(this.seed);        
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -101,7 +104,6 @@ cr.plugins_.Rex_NoiseJsMod = function(runtime)
 	{
         this.min = min;
         this.max = max;
-        this.mapSkip = (this.min === -1) && (this.max === 1);
 	};    
 
 	Acts.prototype.SetScaleIn = function (scaleIn)
@@ -130,34 +132,44 @@ cr.plugins_.Rex_NoiseJsMod = function(runtime)
  
     Exps.prototype.Simplex = function (ret, x, y, z)
 	{
+        if (z == null)
+            z = 0;
+        
         x *= this.scaleIn;
         y *= this.scaleIn;
+        z *= this.scaleIn;
         var val;
         if (z == null)
             val = this.noise.simplex2(x, y);
         else
-        {
-            z *= this.scaleIn;
             val = this.noise.simplex3(x, y, z);
-        }
-	    ret.set_float( this.mapRange(val) );
+        
+        this.lastNoiseValue = this.mapRange(val);
+	    ret.set_float( this.lastNoiseValue );
 	};    
  
     Exps.prototype.Perlin = function (ret, x, y, z)
 	{
+        if (z == null)
+            z = 0;
+        
         x *= this.scaleIn;
-        y *= this.scaleIn;        
+        y *= this.scaleIn;
+        z *= this.scaleIn;      
         var val;
         if (z == null)
             val = this.noise.perlin2(x, y);
         else
-        {
-            z *= this.scaleIn;
             val = this.noise.perlin3(x, y, z);
-        }
-	    ret.set_float( this.mapRange(val) );
+        
+        this.lastNoiseValue = this.mapRange(val);
+	    ret.set_float( this.lastNoiseValue );
 	};        
-    
+ 
+    Exps.prototype.LastNoise = function (ret)
+	{
+	    ret.set_float( this.lastNoiseValue );
+	};     
     
     
     

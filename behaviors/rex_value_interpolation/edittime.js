@@ -7,14 +7,14 @@
 		"description":	"Changing value in a duration",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_ralue_interpolation.html",
-		"category":		"Timer",
+		"category":		"Rex - Variable",
 		"flags":		0
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, 0, "Is value changing", "Timer", "Is {my} value changing", "", "IsValueChanging");
+AddCondition(0, 0, "Is value changing", "Timer", "Is {my} value changing", "Return true if value changing in this tick.", "IsValueChanging");
 AddCondition(1, cf_trigger, "On value changing", "Timer", "On {my} value changing", 
              "Triggered when value changing.", "OnValueChanging");
 AddCondition(2, cf_trigger, "On hit target value", "Timer", "On {my} hit target value", 
@@ -23,9 +23,9 @@ AddCondition(2, cf_trigger, "On hit target value", "Timer", "On {my} hit target 
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Value", "Target value", 0);
-AddAction(0, 0, "Changing value", "Value", 
-          "Changing {my} value to <i>{0}</i>", 
-          "Changing value.", "ChangingValue");   
+AddAction(0, 0, "Change value", "Value", 
+          "Change {my} value to <i>{0}</i>", 
+          "Change value.", "ChangeValue");   
 AddNumberParam("Step", "Step", 1);
 AddAction(1, 0, "Set step", "Value", 
           "Set {my} step to <i>{0}</i>", 

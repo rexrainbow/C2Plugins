@@ -2,12 +2,12 @@
 
 room-metadata/
     <room-ID>        
-        createdByUserID - The id of the user that created the room.
+        ownerID - The id of the user that created the room.
         type-state - The type of room, public or private. And the status of room, close or open.
 
         # display
         name - The display name of the room.
-        createdByUserName - The name of the user that created the room.
+        ownerName - The name of the user that created the room.
         
         extra\
             
@@ -19,8 +19,8 @@ rooms/
             maxPeers - The maximum number of peers that can join this room.
             name - The display name of the room.
             type - The type of room, public or private.
-            createdByUserID - The id of the user that created the room.
-            createdByUserName - The name of the user that created the room.
+            ownerID - The id of the user that created the room.
+            ownerName - The name of the user that created the room.
             
             # join permission
             permission - "anyone", "black-list", "white-list".
@@ -106,26 +106,77 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    this.triggeredUserID = "";          
 	      
 	    // room
-        this.room = new cr.plugins_.Rex_Firebase_Rooms.RoomMgrKlass(this);	      
+        this.room = new RoomMgrKlass(this);	      
         // room list
-        this.room_list = new cr.plugins_.Rex_Firebase_Rooms.RoomsListKlass(this);
+        this.room_list = new RoomsListKlass(this);
         
         //window["Firebase"]["enableLogging"](true);
 	};
 	
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
 	
 	instanceProto.get_roommetadata_ref = function(roomID)
 	{
@@ -162,17 +213,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
 	    this.triggeredRoomName = roomName;
 	    this.triggeredRoomID = roomID;  
-		this.runtime.trigger(trig, this);
-	    this.triggeredRoomName = "";
-	    this.triggeredRoomID = "";     
+		this.runtime.trigger(trig, this);  
 	};
     instanceProto.run_userlist_trigger = function(trig, userName, userID)
 	{
 	    this.triggeredUserName = userName;
 	    this.triggeredUserID = userID;  
 		this.runtime.trigger(trig, this);
-	    this.triggeredUserName = "";
-	    this.triggeredUserID = "";     
 	};    
     
 	//////////////////////////////////////
@@ -445,7 +492,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	        return;
 	    }
 	    
-		ret.set_string(this.room_list.exp_CurRoom["createdByUserName"]);
+		ret.set_string(this.room_list.exp_CurRoom["ownerName"]);
 	}; 
     
 	Exps.prototype.CurCreaterID = function (ret)
@@ -456,7 +503,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	        return;
 	    }
 	    
-		ret.set_string(this.room_list.exp_CurRoom["createdByUserID"]);
+		ret.set_string(this.room_list.exp_CurRoom["ownerID"]);
 	};  
     
 	Exps.prototype.CurUserName = function (ret)
@@ -564,14 +611,12 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         var ref = this.get_ref("rooms")["child"](roomID)["child"](channel_name);
 	    ret.set_string(ref["toString"]());
 	};	  
-}());
 
-(function ()
-{
+    
+// --------
+
     var LIFE_TEMPORARY = 0;
     var LIFE_PERSISTED = 1;
-    var ROOMOPEN = "open";
-    var ROOMCLOSED = "closed";
     var JOINPERMINNSION = ["anyone", "black-list", "white-list"];
 
     var RoomMgrKlass = function (plugin)
@@ -602,7 +647,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.simple_message = this.create_simpleMessage();
         
         // user metadata
-        this.user_metadata = new cr.plugins_.Rex_Firebase_Rooms.UserMetadataKlass(this);
+        this.user_metadata = new UserMetadataKlass(this);
         this.white_list = {};
         this.black_list = {};
     };
@@ -616,7 +661,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         {
             self.on_users_count_changed(users);
         }
-        var users_list = new cr.plugins_.Rex_Firebase_Rooms.UsersListKlass(this);
+        var users_list = new UsersListKlass(this);
         users_list.onUsersCountChanged = on_users_count_changed;
         return users_list;    
     };
@@ -739,7 +784,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 }            
             };                            
             // try create room
-            var ref = this.plugin.get_roommetadata_ref(roomID)["child"]("createdByUserID");
+            var ref = this.plugin.get_roommetadata_ref(roomID)["child"]("ownerID");
             ref["transaction"](on_write_userID, on_write_userID_complete);            
         }
 	}; 	 
@@ -1073,10 +1118,10 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 
         // set room-metadata
         var metadata = {
-            "createdByUserID": this.userID,
+            "ownerID": this.userID,
             "type-state": this.plugin.get_room_typeState(ROOMCLOSED, roomType),
             "name": roomName,
-            "createdByUserName": this.userName,
+            "ownerName": this.userName,
             };
         wait_events += 1;
         metadata_ref["set"](metadata, isDone_handler);
@@ -1088,8 +1133,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 "maxPeers": maxPeers,
                 "name": roomName,
                 "type": roomType,
-                "createdByUserID": this.userID,
-                "createdByUserName": this.userName,
+                "ownerID": this.userID,
+                "ownerName": this.userName,
                 "permission": JOINPERMINNSION[joinPermission],                
                 },
             };    
@@ -1227,12 +1272,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	};	
 }());
 
-
-(function ()
-{
-    var ROOMOPEN = "open";
-    var ROOMCLOSED = "closed";
-        
+  
     var RoomsListKlass = function (plugin)
     {
         this.plugin = plugin;
@@ -1286,10 +1326,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	};    
 	
 	cr.plugins_.Rex_Firebase_Rooms.RoomsListKlass = RoomsListKlass;
-}());
 
-(function ()
-{
+    
     var UsersListKlass = function (room)
     {
         // overwrite these values
@@ -1370,10 +1408,9 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	};	
 	
 	cr.plugins_.Rex_Firebase_Rooms.UsersListKlass = UsersListKlass;
-}());
 
-(function ()
-{
+    
+    
     var UserMetadataKlass = function (room)
     {
         this.room = room;

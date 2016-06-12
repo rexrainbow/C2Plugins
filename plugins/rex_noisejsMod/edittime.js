@@ -7,7 +7,7 @@
 		"description":	"Provide 2d/3d perlin noise and simplex noise . Reference: https://github.com/josephg/noisejs/blob/master/perlin.js",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_noisejsmod.html",
-		"category":		"Rex - Math",
+		"category":		"Rex - Random",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -47,6 +47,9 @@ AddNumberParam("X","Enter the X coordinate");
 AddNumberParam("Y","Enter the Y coordinate");
 // AddNumberParam("Z","Enter the Z coordinate");
 AddExpression(12, ef_return_number | ef_variadic_parameters, "Get 2d/3d perlin noise", "Perlin noise", "Perlin", "Get 2d perlin noise, or add 3rd parameters to get 3d perlin noise");
+
+AddExpression (13, ef_return_number, "Get last generated noise", "Output", "LastNoise", "Get last generated noise.");
+
 
 ACESDone();
 

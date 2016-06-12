@@ -247,9 +247,10 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
         var offset_lx = layout.PXY2LX(this.inst.x, this.inst.y);
         var offset_ly = layout.PXY2LY(this.inst.x, this.inst.y);
 	    var uid, xyz, lx, ly, lz;
-	    for (uid in this.inst.items)
+        var items = this.inst.GetAllChess();
+	    for (uid in items)
 	    {
-	        xyz = this.inst.items[uid];     
+	        xyz = this.inst.uid2xyz(uid);    
             lx = xyz.x + offset_lx;
             ly = xyz.y + offset_ly;
 	        lz = xyz.z;
@@ -346,11 +347,10 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	behinstProto.IsInTouch = function(touchX, touchY)
 	{
         var miniboard_inst = this.inst;
-        var uids = miniboard_inst.items;
-        assert2(uids, "(Mini board) Touch Ctrl behavior only could be used with mini board instance.");
+        var items = miniboard_inst.GetAllChess();
 		var uid, inst;
 		var tx, ty;
-        for (uid in uids)
+        for (uid in items)
         {
             inst = miniboard_inst.uid2inst(uid);
             if (inst == null)

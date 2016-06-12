@@ -116,7 +116,7 @@ cr.plugins_.Rex_Hash = function(runtime)
         if (root == null)
             root = this.hashtable;
         
-        if ((keys === "") || (keys.length === 0))
+        if ((!keys) || (keys === "") || (keys.length === 0))
         {
             return root;
         }
@@ -599,9 +599,9 @@ cr.plugins_.Rex_Hash = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
-	Exps.prototype.Hash = function (ret, key_string, default_value)
+	Exps.prototype.Hash = function (ret, keys, default_value)
 	{   
-        var keys = key_string.split(".");
+        keys = keys.split(".");
         var val = din(this.getValue(keys), default_value);
 		ret.set_any(val);
 	};
@@ -643,9 +643,10 @@ cr.plugins_.Rex_Hash = function(runtime)
 		ret.set_string(this.exp_CurKey);
 	};  
     
-	Exps.prototype.CurValue = function (ret)
+	Exps.prototype.CurValue = function (ret, subKeys, default_value)
 	{
-        var val = din(this.exp_CurValue);              
+        var val = this.getValue(subKeys, this.exp_CurValue);        
+        val = din(val, default_value);              
 		ret.set_any(val);
 	};
     
@@ -678,5 +679,6 @@ cr.plugins_.Rex_Hash = function(runtime)
 	    }
 		ret.set_string(JSON.stringify(table));
 	};		
-	
+    
+	Exps.prototype.AsJSON = Exps.prototype.HashTableToString;
 }());

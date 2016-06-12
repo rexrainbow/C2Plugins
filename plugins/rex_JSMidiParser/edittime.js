@@ -57,13 +57,18 @@ AddAction(1, 0, "Load & Convert midi", "0. Load & Convert",
           "Load & Convert midi from URL to <i>{0}</i> to JSON object", 
           "Load & Convert midi to JSON object.", "ConvertMidi2JSON");
 
-AddAction(11, 0, "Start", "Play", 
+AddAction(11, 0, "Start", "Control", 
           "Start playing notes", 
           "Start playing notes with current loaded JSON object.", "Play"); 
-AddAction(12, 0, "Stop", "Play", 
-          "Stop playing notes", 
+AddAction(12, 0, "Stop", "Control", 
+          "Stop", 
           "Stop playing notes.", "Stop");
-          
+AddAction(13, 0, "Pause", "Control", 
+          "Pause", 
+          "Pause playing notes.", "Pause"); 
+AddAction(14, 0, "Resume", "Control", 
+          "Resume", 
+          "Resume playing notes.", "Resume");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Midi in JSON", "Midi", "Midi2JSON", 
