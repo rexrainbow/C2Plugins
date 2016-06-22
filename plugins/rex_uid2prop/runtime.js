@@ -524,5 +524,34 @@ cr.plugins_.Rex_UID2Prop = function(runtime)
 	{
         var inst = this.runtime.getObjectByUID(uid);    
         ret.set_any(this.get_pv(inst, alias));
-	};    
+	}; 
+
+    Exps.prototype.DistanceTo = function (ret, uidA, uidB)
+	{
+        var dist;
+        var instA = this.runtime.getObjectByUID(uidA);
+        var instB = this.runtime.getObjectByUID(uidB);   
+        if ( (instA == null) || (instB == null) ||
+              (instA.x == null) || (instA.y == null) ||
+              (instB.x == null) || (instB.y == null) )
+            dist = 0;
+        else
+            dist = cr.distanceTo(instA.x, instA.y, instB.x, instB.y);
+        ret.set_float(dist);
+	};
+
+    Exps.prototype.AngleTo = function (ret, uidA, uidB)
+	{
+        var a;
+        var instA = this.runtime.getObjectByUID(uidA);
+        var instB = this.runtime.getObjectByUID(uidB);   
+        if ( (instA == null) || (instB == null) ||
+              (instA.x == null) || (instA.y == null) ||
+              (instB.x == null) || (instB.y == null) )
+            a = 0;
+        else
+            a = cr.angleTo(instA.x, instA.y, instB.x, instB.y);
+        ret.set_float(cr.to_clamped_degrees(a));
+	};
+    
 }());

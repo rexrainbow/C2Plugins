@@ -430,6 +430,11 @@ cr.behaviors.Rex_Duration = function(runtime)
         else
             alert ("Duration behavior should connect to a timeline object");     		
 	};
+
+    Acts.prototype.SyncTimescale = function (e)
+	{ 		
+        this.sync_timescale = (e === 1);
+	};
 	
     Acts.prototype.AddDurationTime = function (duration_name, duration_time)
 	{

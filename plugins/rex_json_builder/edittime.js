@@ -7,7 +7,7 @@
 		"description":	"Build JSON structure.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_json_buider.html",
-		"category":		"Rex - Data structure",
+		"category":		"Rex - Data structure - JSON",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -23,7 +23,14 @@ AddComboParam("Type", "Array or Dictionary.",0);
 AddCondition(1, cf_not_invertible, "Add object", "Add object", 
              "{0}: {1}", 
              "Add an object.", "AddObject");
-            
+      
+AddComboParamOption("Array");
+AddComboParamOption("Dict");
+AddComboParam("Type", "Array or Dictionary.",0);
+AddCondition(2, cf_not_invertible, "Set root", "Add object", 
+             "Root - {0}", 
+             "Set root object.", "SetRoot"); 
+             
 //////////////////////////////////////////////////////////////
 // Actions 
 AddAction(1, 0, "Clean", "Clean", 

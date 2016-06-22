@@ -42,32 +42,41 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.events = {};
-		this._current_finished_event_name = "";
-        this._current_finished_tag = "";
+		this.exp_EventName = "";
+        this._check_tag = null;
 	};   
 	
-	var is_hash_empty = function(hash_obj)
+	var isEmpty = function(o)
 	{
-	    var k;
-		var is_empty = true;
-		for (k in hash_obj)
-		{
-		    is_empty = false;
-			break;
-		}
-		return is_empty;
+		for (var k in o)		
+		    return false;
+		
+		return true;
 	};
     instanceProto.saveToJSON = function ()
 	{    
 		return { "evts": this.events,
-                 "ename": this._current_finished_event_name,
+                 "ename": this.exp_EventName,
                 };
 	};
 	instanceProto.loadFromJSON = function (o)
 	{	    
 		this.events = o["evts"];	
-        this._current_finished_event_name = o["ename"];
+        this.exp_EventName = o["ename"];
 	};
+    
+	instanceProto.eventExist = function (event_name, tag)
+	{	    
+        return (this.events[tag] != null) && (this.events[tag][event_name] != null);
+	};    
+    
+	instanceProto.runTrigEvent = function (method, tag)
+	{	    
+        this._check_tag = tag;
+        this.runtime.trigger(method, this); 
+        this._check_tag = null;
+	};    
+    
 
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
@@ -96,12 +105,12 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 
 	Cnds.prototype.OnAllEventsFinished = function(tag)
 	{    
-		return (this._current_finished_tag == tag);
+		return (this._check_tag === tag);
 	};
 
 	Cnds.prototype.OnAnyEventFinished = function(tag)
 	{    
-		return (this._current_finished_tag == tag);
+		return (this._check_tag === tag);
 	};
 
 	Cnds.prototype.NoWaitEvent = function(tag)
@@ -130,17 +139,20 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	};  
 
 	Acts.prototype.EventFinished = function(event_name, tag)
-	{       
-	    if (!this.events.hasOwnProperty(tag) || !this.events[tag].hasOwnProperty(event_name))
+	{
+	    if (!this.eventExist(event_name, tag))
 		    return;
-	    delete this.events[tag][event_name];
-        this._current_finished_tag = tag;
-		this._current_finished_event_name = event_name;
-		this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAnyEventFinished, this); 
-		if (is_hash_empty(this.events[tag]))
+
+        var cnds = cr.plugins_.Rex_WaitEvent.prototype.cnds;
+		this.exp_EventName = event_name; 
+        
+	    delete this.events[tag][event_name];       
+        this.runTrigEvent(cnds.OnAnyEventFinished, tag);
+        
+		if (isEmpty(this.events[tag]))
 		{
-		    this.runtime.trigger(cr.plugins_.Rex_WaitEvent.prototype.cnds.OnAllEventsFinished, this); 
-			delete this.events[tag];
+			delete this.events[tag];            
+            this.runTrigEvent(cnds.OnAllEventsFinished, tag);
         }
 	};  
 	
@@ -159,6 +171,6 @@ cr.plugins_.Rex_WaitEvent = function(runtime)
 	
 	Exps.prototype.CurEventName = function(ret)
 	{   
-		ret.set_string(this._current_finished_event_name);         
+		ret.set_string(this.exp_EventName);         
 	}; 
 }());

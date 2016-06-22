@@ -88,7 +88,17 @@ AddNumberParam("Y", "The logic Y.", 0);
 AddExpression(52, ef_return_number,
               "Get Y co-ordinate by logic index", "Physical", "LXY2PY",
               "Get physical Y co-ordinate by logic X,Y index. Return (-1) if this position does not exist."); 
-
+              
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0);       
+AddExpression(53, ef_return_number,
+              "Get logic X by physical co-ordinate", "Logic", "PXY2LX",
+              "Get logic X by physical X,Y co-ordinate.");
+AddNumberParam("X", "The physical X.", 0);
+AddNumberParam("Y", "The physical Y.", 0);                             
+AddExpression(54, ef_return_number,
+              "Get logic Y by physical co-ordinate", "Logic", "PXY2LY",
+              "Get logic Y by physical X,Y co-ordinate."); 
 			  
 ACESDone();
 

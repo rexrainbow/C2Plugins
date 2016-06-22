@@ -300,6 +300,15 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.player.Stop();          
 	};     
     
+    Acts.prototype.Pause = function ()
+	{
+        this.player.Pause();          
+	};         
+     
+    Acts.prototype.Resume = function ()
+	{ 
+        this.player.Resume();          
+	};      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -465,6 +474,26 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 
         this.playingTrackCnt = 0;            
     }; 
+    
+    PlayerKlassProto.Pause = function ()
+    {   
+        if (!this.IsPlaying)
+            return;
+            
+        var i, cnt=this.tracks.length;
+        for (i=0; i<cnt; i++)        
+            this.tracks[i].Pause();         
+    };     
+    
+    PlayerKlassProto.Resume = function ()
+    {   
+        if (!this.IsPlaying)
+            return;
+            
+        var i, cnt=this.tracks.length;
+        for (i=0; i<cnt; i++)        
+            this.tracks[i].Resume();         
+    };   
     
     PlayerKlassProto.CleanAll = function ()
     {   
@@ -645,6 +674,18 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         if (this.timer)
             this.timer.Remove();  // stop timer
     };    
+
+    TrackKlassProto.Pause = function ()
+    {
+        if (this.timer)
+            this.timer.Suspend();  // pause timer
+    };      
+
+    TrackKlassProto.Resume = function ()
+    {
+        if (this.timer)
+            this.timer.Resume();  // resume timer
+    }; 
     
     TrackKlassProto.CleanAll = function ()
     {

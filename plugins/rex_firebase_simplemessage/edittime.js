@@ -46,7 +46,12 @@ AddStringParam("Send to ID", "Send to ID.", '""');
 AddStringParam("Message", "Message. String or JSON string for object.", '""');
 AddAction(21, 0, "Send", "Message", 
           "Send message: <i>{1}</i> to ID: <i>{0}</i>", 
-          "Send message.", "SendMessage");          
+          "Send message.", "SendMessage");   
+
+AddStringParam("Send to ID", "Send to ID.", '""');
+AddAction(22, 0, "Clean", "Message", 
+          "Clean message box of ID: <i>{0}</i>", 
+          "Clean message box.", "CleanMessageBox");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Lest sender ID", "Message", "LastSenderID", 

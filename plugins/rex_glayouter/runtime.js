@@ -194,19 +194,13 @@ cr.plugins_.Rex_Layouter = function(runtime)
 
 	instanceProto.pin_inst = function (inst)
 	{
-        if (this.pin_status[inst.uid] != null)
-        {
-            this.pin_status[inst.uid]["da"] = cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle;
-            this.pin_status[inst.uid]["dd"] = cr.distanceTo(this.x, this.y, inst.x, inst.y);
-            this.pin_status[inst.uid]["rda"] = inst.angle - this.angle;
-        }
-        else
-        {
-            this.pin_status[inst.uid] = {"da":cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle,
-                                         "dd":cr.distanceTo(this.x, this.y, inst.x, inst.y),
-                                         "rda": inst.angle - this.angle,	
-                                        };
-        }
+        if (this.pin_status[inst.uid] == null)
+            this.pin_status[inst.uid] = {};
+        
+        var pin_data = this.pin_status[inst.uid];
+        pin_data["da"] = cr.angleTo(this.x, this.y, inst.x, inst.y) - this.angle;
+        pin_data["dd"] = cr.distanceTo(this.x, this.y, inst.x, inst.y);
+        pin_data["rda"] = inst.angle - this.angle;
 	};	
 
 	instanceProto.create_inst = function (objtype, x, y, _layer, callback)
@@ -440,7 +434,7 @@ cr.plugins_.Rex_Layouter = function(runtime)
 	    var bbox = inst.bbox;
 	    return (bbox.top+bbox.bottom)/2;            
 	};
-    
+
 	var hash_clean = function (obj)
 	{
 	    var k;

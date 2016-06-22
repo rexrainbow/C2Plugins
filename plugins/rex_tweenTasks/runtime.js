@@ -512,7 +512,20 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	Acts.prototype.ContinueTasksBySignal = function (signalName)
 	{
         this.tasksMgr.ContinueTasks(null, signalName);    
-	};     
+	}; 
+    
+	Acts.prototype.SetRemainIntervalPercentage = function (taskName, remainIntervalPercentage)
+	{
+        var task = this.tasksMgr.GetActivatedTask(taskName);
+        if (task == null)
+            return;
+        
+        if ((task.interval == null) || (task.remainInterval == null))
+            return;
+        
+        task.remainInterval = task.interval * remainIntervalPercentage;
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -4,10 +4,10 @@
 		"name":			"Hash",
 		"id":			"Rex_Hash",
 		"version":		"0.5",            
-		"description":	"Store value in a hash table",
+		"description":	"Access JSON structure table.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_hash.html",
-		"category":		"Data & Storage",
+		"category":		"Rex - Data structure - JSON",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0
@@ -18,40 +18,49 @@
 // Conditions
 AddStringParam("Key string", "The key string of the hash table.", '""');
 AddCondition(1, cf_looping | cf_not_invertible, "For each item", "For Each", 
-             "For each item in <i>{0}</i>", "Repeat the event for each item in key.", "ForEachKey");
+             "For each item in <i>{0}</i>", "Repeat the event for each item in key.", "ForEachItem");
+             
 AddStringParam("Key string", "The key string of the hash table.", '""');
-AddCondition(2, 0,"Key exists","Key","Key {0} exists","Check if a key exists in hash table.","KeyExists");
+AddCondition(2, 0,"Key exists","Key","Key {0} exists","Return true if a key exists in hash table.","KeyExists");
 
-            
+AddStringParam("Key string", "The key string of the hash table.", '""');
+AddCondition(3, 0,"Is empty","Entry","Entry {0} is empty","Return true if an entry is empty i.e. has no key.","IsEmpty");
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
-AddAction(1, 0, "Set value by key string", "Value", 
+AddAction(1, 0, "Set value", "Value", 
           "Set key <i>{0}</i> to <i>{1}</i>",
-         "Set value by a key string.", "SetByKeyString");
+         "Set value by a key string.", "SetValueByKeyString");
+         
 AddStringParam("Key string", "The key string of the hash entry to get.", '""');
-AddAction(2, 0, "Set current entry", "Entry", "Get hash table entry from <i>{0}</i>",
+AddAction(2, af_deprecated, "Set current entry", "Entry", "Get hash table entry from <i>{0}</i>",
          "Set current entry by key string.", "SetCurHashEntey");
+         
 AddStringParam("Key name", "The key of the hash value to set.", '""');
 AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
-AddAction(3, 0, "Set value at current entry", "Entry", "Set value at <i>{0}</i> to <i>{1}</i> in current entry",
+AddAction(3, af_deprecated, "Set value at current entry", "Entry", "Set value at <i>{0}</i> to <i>{1}</i> in current entry",
          "Set value at current entry.", "SetValueInCurHashEntey");
+         
 AddAction(4, 0, "Clean all", "Hash table", "Clean table",
          "Clean table.", "CleanAll"); 
+         
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(5, 0, "Load hash table from JSON string", "JSON", 
-          "Load hash table from JSON string <i>{0}</i>",
-          "Load hash table from JSON string.", "StringToHashTable");
+AddAction(5, 0, "Load from JSON", "Load", 
+          "Load content from <i>{0}</i>",
+          "Load content from JSON string.", "StringToHashTable");
+          
 AddStringParam("Key string", "The key string of the hash table value to remove.", '""');          
-AddAction(6, 0, "Remove value by key string", "Remove", 
-          "Remove value at <i>{0}</i>",
-          "Remove value by a key string.", "RemoveByKeyString");
+AddAction(6, 0, "Remove key", "Remove", 
+          "Remove key <i>{0}</i>",
+          "Remove key.", "RemoveByKeyString");
+          
 AddStringParam("Key string", "The key string of the hash table.", '""');
-AddObjectParam("Arra", "Array instance to put result.");      
+AddObjectParam("Array", "Array instance to put result.");      
 AddAction(7, 0, "Pick keys", "Keys", 
           "Pick keys at <i>{0}</i> into <i>{1}</i>",
-          "Pick keys into an array.", "PickKeysToArray");          
+          "Pick keys into an array.", "PickKeysToArray");   
+          
 AddObjectParam("Hash table B", "Hash table instance to merge.");  
 AddComboParamOption("Overwrite from hash B");
 AddComboParamOption("Merge new keys from hash table B");
@@ -59,24 +68,58 @@ AddComboParamOption("Clean then copy from hash table B");
 AddComboParam("Mode", "Merge mode.",0);
 AddAction(8, 0, "Merge", "Merge", 
           "Merge hash table with <i>{0}</i>, <i>{1}</i>",
-          "Merge hash table with other hash table.", "MergeTwoHashTable");   
+          "Merge hash table with other hash table.", "MergeTwoHashTable");  
+          
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddStringParam("JSON", "JSON string.", '"{}"');
+AddAction(9, 0, "Set JSON", "Value", 
+          "Set key <i>{0}</i> to JSON <i>{1}</i>",
+         "Set JSON by a key string.", "SetJSONByKeyString");          
+         
+AddStringParam("Key string", "The key string of the hash table value to add.", '""');
+AddAnyTypeParam("Value", "The value to store in the hash table.", 0);
+AddAction(10, 0, "Add to", "Value", 
+         "Add <i>{1}</i> to <i>{0}</i>",
+         "Add to the value of key.", "AddToValueByKeyString");         
+          
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddAction(21, 0, "Shuffle", "Array", 
+          "Shuffle array at <i>{0}</i>",
+          "Shuffle items in array.", "Shuffle");    
+
+AddStringParam("Entry", "The entry key string of the hash table.", '""');
+AddStringParam("Key", "The key string for sorting.", '""');
+AddComboParamOption("descending");
+AddComboParamOption("ascending");
+AddComboParamOption("logical descending");
+AddComboParamOption("logical ascending");
+AddComboParam("Sort", "Sort method.", 1);    
+AddAction(22, 0, "Sort", "Array", 
+          "Sort array at <i>{0}</i> with key to <i>{1}</i> ( <i>{2}</i> )",
+          "Sort items in array.", "Sort");        
+
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddStringParam("JSON", "JSON string.", '"{}"');
+AddAction(23, 0, "Push JSON", "Array", 
+          "Push JSON <i>{1}</i> into array at <i>{0}</i> ",
+          "Push JSON into array.", "PushJSON");                 
           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get value at", 
-              "Value", "Hash", "Get value from the hash by key string. Add second parameter to return default value when got invalid value.");
+              "Value", "Hash", "Get value from the hash by key string. Add 2nd parameter to return default value when got invalid value.");
 AddStringParam("Key", "The key string of the hash value to get.", '""');
-AddExpression(1, ef_return_any | ef_variadic_parameters, 
+AddExpression(1, ef_deprecated| ef_return_any | ef_variadic_parameters, 
               "Get value from current entry", "Entry", "Entry", 
               "Get value from current entry.");              
-AddExpression(2, ef_return_string, "Transfer hash to string", 
+AddExpression(2, ef_deprecated | ef_return_string, "Transfer hash to string", 
               "JSON", "HashTableToString", "Transfer hash table to JSON string.");
 AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
-              "Value", "At", "Get value from the hash by key string, return JSON string if the item is an object. Add second parameter to return default value when got invalid value.");
+              "Value", "At", "Get value from the hash by key string, return JSON string if the item is an object. Add 2nd parameter to return default value when got invalid value.");
 AddExpression(4, ef_return_string, "Current key", "For Each", "CurKey", "Get the current key in a For Each loop.");
-AddExpression(5, ef_return_any, "Current value", "For Each", "CurValue", "Get the current value in a For Each loop.");
+AddExpression(5, ef_return_any, "Current value", "For Each", "CurValue", "Get the current value in a For Each loop. Add 2nd parameter to return sub-item by keys. Add 3rd parameter to return default value when got invalid value.");
 AddAnyTypeParam("Key", "The key of the hash to get.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "AtKeys", "Get value from the hash by keys, each parameter is a key.");
@@ -88,7 +131,8 @@ AddExpression(8, ef_return_number | ef_variadic_parameters, "Get items count by 
               "Get item count by keys, each parameter is a key. 0 means the item is number or string type, (-1) means the item does not exist.");
 AddExpression(9, ef_return_string | ef_variadic_parameters, "Transfer hash table to string", 
               "JSON", "ToString", "Create a hash table and transfer it to JSON string. If there has no parameter, transfer current hash table to JSON string.");			  
-
+AddExpression(10, ef_return_string, "Get content as JSON string", 
+              "JSON", "AsJSON", "Get content as JSON string.");
 
 ACESDone();
 

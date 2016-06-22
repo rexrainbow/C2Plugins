@@ -145,11 +145,14 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
     behinstProto._solid_prop_get = function (target_tile_uid)
     {
         var tile_xyz = this.board.uid2xyz(target_tile_uid);
-        var z_hash = this.board.xy2zHash(tile_xyz.x, tile_xyz.y);
+        var zHash = this.board.xy2zHash(tile_xyz.x, tile_xyz.y);
+        if (!zHash)
+            return false;
+        
         var z, target_chess_uid;
-        for (z in z_hash)
+        for (z in zHash)
         {
-            target_chess_uid = z_hash[z];
+            target_chess_uid = zHash[z];
             if (_solid_get(this.board.uid2inst(target_chess_uid)))  // solid
                 return true;
         } 
@@ -475,7 +478,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 			
 	    var tile_info = this.path_tiles.shift();
 	    var uids = (tile_info != null)? [tile_info["uid"]]: [];
-        return 	board.pickuids(uids, objtype);
+        return 	board.PickUIDs(uids, objtype);
 	};
     
 	Cnds.prototype.PopLastInstance = function (objtype)
@@ -488,7 +491,7 @@ cr.behaviors.Rex_MonopolyMovement._random_gen = null;  // random generator for S
 			
 	    var tile_info = this.path_tiles[this.path_tiles.length-1];
 	    var uids = (tile_info != null)? [tile_info["uid"]]: [];
-        return 	board.pickuids(uids, objtype);
+        return 	board.PickUIDs(uids, objtype);
 	};  
 
 	Cnds.prototype.IsForwardingPathEmpty = function ()

@@ -39,9 +39,16 @@ AddAction(0, 0, "Call function", "Parameter list", "Call <b>{0}</b> (<i>{...}</i
 AddAnyTypeParam("Value", "A number or some text to return from the function call.");
 AddAction(1, 0, "Set return value", "Return", "Set return value to <b>{0}</b>", "In an 'On function' event, set the return value.", "SetReturnValue");
 
+AddAnyTypeParam("Expression", "An expression to run, generally of the form Function.Call(\"func\", ...)");
+AddAction(2, 0, "Call expression", "Function", "Call expression <b>{0}</b>", "Call a function using a typed expression (via Function.Call()).", "CallExpression");
+
 AddStringParam("Name", "Parameter's name", '""');
 AddAnyTypeParam("Value", "The default value.");
-AddAction(51, 0, "Declare parameter", "Interface", "Parameter <b>{0}</b>, default to <i>{1}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
+AddComboParamOption("");
+AddComboParamOption("number only");
+AddComboParamOption("string only");
+AddComboParam("Type check", "Type check.", 0);
+AddAction(51, 0, "Declare parameter", "Interface", "Parameter <b>{0}</b>, default to <i>{1}</i> <i>{2}</i>", "Declare input parameter in name string and it's default value", "DefineParam");
 
 AddAction(52, 0, "Dump", "Log", "Dump function infomation", "Dump function infomation in console, it need turn on debug mode.","Dump");
 
@@ -53,9 +60,15 @@ AddAction(53, 0, "Set parameter", "Parameter table", "Set parameter <b>{0}</b> t
 AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddStringParam("Table", "Name of parameter table.", '"_"');
 AddAction(54, 0, "Call function", "Parameter table", "Call <b>{0}</b> with parameter table <i>{1}</i>", "Call a function, running its 'On function' event with parameter table.", "CallFunctionwPT");
+
+AddStringParam("Name", "Parameter's name", '""');
+AddAnyTypeParam("Value", "A number or some text to return from the function call.");
+AddAction(55, 0, "Set return value", "Return: dictionary", "Set return <b>{0}</b> to <b>{1}</b>", "In an 'On function' event, set the return value in a dictionary.", "SetReturnDict");
+
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_any, "", "Function", "ReturnValue", "Get the value set by 'Set return value'.");
+//AddStringParam("Name", "Parameter's name", '""');
+AddExpression(0, ef_return_any | ef_variadic_parameters, "", "Function", "ReturnValue", "Get the value set by 'Set return value'. Add 2nd parameter for key and/or 3rd parameter for default value if key doesn't exist.");
 
 AddExpression(1, ef_return_number, "", "Function", "ParamCount", "Get the number of parameters passed to this function.");
 

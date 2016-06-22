@@ -63,6 +63,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [           
+    new cr.Property(ept_float, "Sample rate", 0.01, "Sample rate of overlap testing, 0 to 1."),
     //new cr.Property(ept_combo, "Push out", "No", "Enable if you wish to push out this object automatically.", "No|Nearest"),
 	];
 	
@@ -108,4 +109,6 @@ IDEInstance.prototype.OnCreate = function()
 // Called by the IDE after a property has been changed
 IDEInstance.prototype.OnPropertyChanged = function(property_name)
 {
+    if (this.properties["Sample rate"] === 0)
+        this.properties["Sample rate"] = 0.001;  
 }

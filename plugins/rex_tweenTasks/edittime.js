@@ -114,7 +114,7 @@ AddComboParamOption("EaseOutBounce");
 AddComboParamOption("EaseInOutBounce");
 AddComboParam("Type", "Function type of easing.", 0); 
 AddAction(12, 0, "Set parameter", "Function", 
-          "Set task <b>{0}</b> 's function parameter <b>{1}</b>: <b>{4}</b> transform from <b>{2}</b> to <b>{3}</b>", 
+          "Task <b>{0}</b>: set function parameter <b>{1}</b>: <b>{4}</b> transform from <b>{2}</b> to <b>{3}</b>", 
           "Assign start and end value of a function parameter.", "SetFnParameter");
 
 AddStringParam("Task", "Name of task.", '"task"');
@@ -159,7 +159,7 @@ AddStringParam("Task", "Name of task.", '""');
 AddAnyTypeParam("Parameter", "Name of parameter", '""');
 AddAnyTypeParam("Value", "Value", 0);
 AddAction(21, 0, "Set parameter", "Task parameter", 
-          "Set task <b>{0}</b> 's parameter <b>{1}</b> to <b>{2}</b>", 
+          "task <b>{0}</b>: set parameter <b>{1}</b> to <b>{2}</b>", 
           "Set a parameter of task.", "SetTaskParameter");
 
 AddStringParam("Task", "Name of task.", '""');              
@@ -168,7 +168,7 @@ AddComboParamOption("Keep");
 AddComboParamOption("Destroy");
 AddComboParam("Destroy", "Destroy bound instance after task done.", 0); 
 AddAction(22, 0, "Bind instance", "Task parameter",
-          "Bind instance {1} to task <b>{0}</b>, <b>{2}</b> instance after task done", 
+          "Task <b>{0}</b>: bind instance {1}, <b>{2}</b> instance after task done", 
           "Bind instance to task.", "BindInst");  
           
 AddStringParam("Task", "Name of task.", '""');              
@@ -177,7 +177,7 @@ AddComboParamOption("Keep");
 AddComboParamOption("Destroy");
 AddComboParam("Destroy", "Destroy bound instance after task done.", 0); 
 AddAction(23, 0, "Bind instance by UID", "Task parameter",
-          "Bind instance UID: <b>{1}</b> to task <b>{0}</b>, <b>{2}</b> instance after task done", 
+          "Task <b>{0}</b>: bind instance UID: <b>{1}</b>, <b>{2}</b> instance after task done", 
           "Bind instance to task.", "BindInst");                   
           
 AddStringParam("Task", "Name of task.", '"task"');
@@ -185,34 +185,40 @@ AddComboParamOption("Keep");
 AddComboParamOption("Destroy");
 AddComboParam("Destroy", "Destroy task after task done.", 0);
 AddAction(31, 0, "Start", "Control", 
-          "Start task <b>{0}</b>, <b>{1}</b> after task done", 
+          "Task <b>{0}</b>: start, <b>{1}</b> after task done", 
           "Start task.", "StartTask");
            
 AddStringParam("Task", "Name of task.", '"task"');
 AddAction(32, 0, "Pause", "Control", 
-          "Pause task <b>{0}</b>", 
+          "Task <b>{0}</b>: pause ", 
           "Pause task.", "PauseTask");      
           
 AddStringParam("Task", "Name of task.", '"task"');
 AddAction(33, 0, "Resume", "Control", 
-          "Resume task <b>{0}</b>", 
+          "Task <b>{0}</b>: resume ", 
           "Resume task.", "ResumeTask");    
           
 AddStringParam("Task", "Name of task.", '"task"');
 AddAction(34, 0, "Destroy task", "Destroy", 
-          "Destroy task <b>{0}</b>", 
+          "Task <b>{0}</b>: destroy ", 
           "Destroy task.", "DestroyTask");
           
 AddStringParam("Task", "Name of task.", '"task"');
 AddStringParam("Signal", 'Name of waited signal.', '""');
 AddAction(41, 0, "Continue task", "Wait for signal", 
-          "Continue task <b>{0}</b> with signal <b>{1}</b>", 
+          "Task <b>{0}</b>: continue  with signal <b>{1}</b>", 
           "Continue task.", "ContinueTask");     
           
 AddStringParam("Signal", 'Name of waited signal.', '""');
 AddAction(42, 0, "Continue by signal", "Wait for signal", 
-          "Continue all tasks with signal <b>{0}</b>", 
-          "Continue task.", "ContinueTasksBySignal");           
+          "All tasks: continue  with signal <b>{0}</b>", 
+          "Continue task.", "ContinueTasksBySignal");   
+
+//AddStringParam("Task", "Name of task.", '"task"');
+//AddNumberParam("Remain", "Remain interval, in percentage.", 1);
+//AddAction(51, 0, "Set remain interval", "Remain interval", 
+//          "Task <b>{0}</b>: set percentage of remain interval to <b>{1}</b>", 
+//          "Set percentage of remain interval.", "SetRemainIntervalPercentage");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Parameter", "Name of parameter.", '"x"');

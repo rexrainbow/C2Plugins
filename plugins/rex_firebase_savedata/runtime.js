@@ -56,48 +56,89 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 
         this.owner_userID = "";
         
-        if (!this.recycled)
-        {
-		    this.save_header = {};
-		    this.save_body = {};
-			this.save_item = {};
-		}
-		else
-		{
-		    clean_table( this.save_header );
-		    clean_table( this.save_body );
-		}
+		this.save_header = {};
+		this.save_body = {};
+		this.save_item = {};
 		
 		this.load_headers = null;
 		this.load_body = null;
 		
 		this.exp_CurSlotName = "";
 		
-		if (!this.recycled)
-		    this.exp_CurHeader = {};
-		else
-		    clean_table( this.exp_CurHeader );
+		this.exp_CurHeader = {};
 	};
 	
 	instanceProto.onDestroy = function ()
 	{		
-	    clean_table( this.save_header );
-		clean_table( this.save_body );
+		this.save_header = {};
+		this.save_body = {};
+		this.save_item = {};
 	};
 		
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x 
 	
 	var get_data = function(in_data, default_value)
 	{
@@ -119,12 +160,6 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         }	    
         return val;
 	};  
-	
-	var clean_table = function (o)
-	{
-		for (var k in o)
-		    delete o[k];
-	};	
 	
 	var is_empty = function (o)
 	{
@@ -267,9 +302,9 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    var ref = this.get_ref(this.owner_userID);	
         ref["update"](this.save_item, on_complete);		
 		
-		clean_table(this.save_header);	
-		clean_table(this.save_body);
-		clean_table(this.save_item);
+        this.save_header = {};
+        this.save_body = {};
+        this.save_item = {};
 	};
     	
     Acts.prototype.SetBooleanValue = function (key_, b, is_body)
@@ -281,7 +316,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
     Acts.prototype.SetCurrentServerTimestamp = function (key_, is_body)
 	{
         var table = (is_body==1)? this.save_body:this.save_header;
-		table[key_] = window["Firebase"]["ServerValue"]["TIMESTAMP"];
+		table[key_] = serverTimeStamp();
 	};	
     	
     Acts.prototype.RemoveKey = function (key_, is_body)

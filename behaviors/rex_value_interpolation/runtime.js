@@ -184,7 +184,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-    Acts.prototype.ChangingValue = function (target_value)
+    Acts.prototype.ChangeValue = function (target_value)
 	{
 	    this.target_value = target_value;
         if (this.timer == null)        

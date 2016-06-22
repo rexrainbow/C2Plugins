@@ -55,17 +55,17 @@ AddAction(11, 0, "Load", "Load model",
           "Load model from <i>{0}</i>", 
           "Load model from model.json.", "Load");
           
-//AddStringParam("Parameter name", "Parameter name.", '""');
-//AddNumberParam("Value", "Value.", 0);
-//AddAction(12, 0, "Set value", "Parameter", 
-//          "Set parameter <i>{0}</i> to <i>{1}</i>", 
-//          "Set the value of model's parameter.", "SetParameterValue");             
-//          
-//AddStringParam("Parameter name", "Parameter name.", '""');
-//AddNumberParam("Value", "Value.", 0);
-//AddAction(13, 0, "Add to", "Parameter", 
-//          "Add <i>{1}</i> to parameter <i>{0}</i>", 
-//          "Add to the value of a model's parameter.", "AddToParameterValue");     
+AddStringParam("Parameter name", "Parameter name.", '""');
+AddNumberParam("Value", "Value.", 0);
+AddAction(12, 0, "Set value", "Parameter", 
+          "Set parameter <i>{0}</i> to <i>{1}</i>", 
+          "Set the value of model's parameter.", "SetParameterValue");             
+          
+AddStringParam("Parameter name", "Parameter name.", '""');
+AddNumberParam("Value", "Value.", 0);
+AddAction(13, 0, "Add to", "Parameter", 
+          "Add <i>{1}</i> to parameter <i>{0}</i>", 
+          "Add to the value of a model's parameter.", "AddToParameterValue");     
           
 AddStringParam("Motion name", "Motion name.", '""');
 AddAction(21, 0, "Start motion", "Motion", 

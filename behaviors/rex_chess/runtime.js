@@ -197,18 +197,21 @@ cr.behaviors.Rex_chess = function(runtime)
 	        return false;
 	    
         var _xyz = board.uid2xyz(this.inst.uid);
+        if (_xyz.z !== 0)  // not a tile
+            return false;
+        
 	    var cnt = board.xy2zCnt(_xyz.x, _xyz.y);
 		return (cnt == 1);		
 	};	
 
-	Cnds.prototype.NoChessAboveLZ = function (lz)
+	Cnds.prototype.NoChessAboveLZ = function (z)
 	{
 	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
 	        return false;
 	    
         var _xyz = board.uid2xyz(this.inst.uid);
-		return board.IsEmpty(_xyz.x, _xyz.y, lz);	
+		return board.IsEmpty(_xyz.x, _xyz.y, z);	
 	};	
 	//////////////////////////////////////
 	// Actions

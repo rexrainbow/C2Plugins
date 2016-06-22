@@ -98,6 +98,12 @@ AddAction(8, 0, "Move to distance-angle", "MoveTo",
           
 AddAction(9, 0, "Stop", "Stop", "{my} stop", 
           "Stop moving.", "Stop");               
+          
+AddNumberParam("UID", "UID of target object.");       
+AddAction(10, 0, "Move to UID", "MoveTo", 
+          "{my} move to UID: <i>{0}</i>", 
+          "Move to object by UID.", 
+          "SetTargetPosOnUID");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 

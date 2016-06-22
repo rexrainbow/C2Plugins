@@ -171,7 +171,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
         hashtable_clean(fs.name2index);        
     };
     
-    instanceProto.define_param = function (name, default_value)
+    instanceProto.define_param = function (name, default_value, type_check)
     {
         var fs = getCurrentFuncStack();
         
@@ -185,6 +185,12 @@ cr.plugins_.Rex_Function2 = function(runtime)
             var value = fs.name2value[name];
             if (value == null)
                 value = default_value;
+            
+            if ((type_check === 1) && (typeof(value) !== "number"))
+                log("[Construct 2] Rex_Function2 object: parameter "+ name + "= " + value + " is not a number", "warn");
+            else if ((type_check === 2) && (typeof(value) !== "string")) 
+                log("[Construct 2] Rex_Function2 object: parameter "+ name + "= " + value + " is not a string", "warn");
+            
             fs.params[this.param_index] = value;
         }
         this.param_index += 1;
@@ -246,13 +252,91 @@ cr.plugins_.Rex_Function2 = function(runtime)
     
 	ObjCacheKlassProto.allocLine = function()
 	{
-		return (this.lines.length > 0)? this.lines.pop(): {};
+		return (this.lines.length > 0)? this.lines.pop(): null;
 	};
 	ObjCacheKlassProto.freeLine = function (l)
 	{
 		this.lines.push(l);
 	};	   
-     
+	ObjCacheKlassProto.freeAllLines= function (arr)
+	{
+		var i, len;
+		for (i = 0, len = arr.length; i < len; i++)
+			this.freeLine(arr[i]);
+		arr.length = 0;
+	};    
+    
+	var setValue = function(o, keys, value)
+	{        
+        if (keys.indexOf(".") === -1)
+        {
+            o[keys] = value;
+        }
+        else
+        {            
+            keys = keys.split(".");
+            var lastKey = keys.pop(); 
+            var entry = o;
+            var i,  cnt=keys.length, key;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];
+                if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
+                    entry[key] = {};
+                
+                entry = entry[key];            
+            }
+            entry[lastKey] = value;
+        }
+	};     
+    
+    var getValue = function (o, keyPath)
+    {  
+        // invalid key    
+        if ((keyPath == null) || (keyPath === ""))
+            return o;
+        
+        // key but no object
+        else if (typeof(o) !== "object")
+            return null;
+        
+        else if (keyPath.indexOf(".") === -1)
+            return o[keyPath];
+        else
+        {
+            var val = o;              
+            var keys = keyPath.split(".");
+            var i, cnt=keys.length;
+            for(i=0; i<cnt; i++)
+            {
+                val = val[keys[i]];
+                if (val == null)
+                    return null;
+            }
+            return val;
+        }
+    };
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };    
     //////////////////////////////////////
     // Conditions
     function Cnds() {};
@@ -319,6 +403,11 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
         popFuncStack();
     };
+	
+	Acts.prototype.CallExpression = function (unused)
+	{
+		// no-op: the function will have been called during parameter evaluation.
+	};    
     
     Acts.prototype.SetReturnValue = function (value_)
     {
@@ -336,14 +425,14 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
         var pt = fs.parameter_tables;
         if (!pt.hasOwnProperty(table))
-            pt[table] = this.parameter_table_cache.allocLine();
+            pt[table] = this.parameter_table_cache.allocLine() || {};
         
         pt[table][name_] = value_;
     };
     
-    Acts.prototype.DefineParam = function (name, default_value)
+    Acts.prototype.DefineParam = function (name, default_value, type_check)
     {
-        this.define_param(name, default_value);
+        this.define_param(name, default_value, type_check);
     }; 
     
     Acts.prototype.Dump = function ()
@@ -396,19 +485,37 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
         popFuncStack();
     };
+    Acts.prototype.SetReturnDict = function (key_, value_)
+    {
+        var fs = getCurrentFuncStack();
+        
+        if (fs)
+        {
+            if (typeof(fs.retVal) !== "object")
+                fs.retVal = {};
+            
+            setValue(fs.retVal, key_, value_);
+        }
+        else
+            log("[Construct 2] Rex_Function2 object: used 'Set return value' when not in a function call", "warn");
+    };    
     pluginProto.acts = new Acts();
 
     //////////////////////////////////////
     // Expressions
     function Exps() {};
 
-    Exps.prototype.ReturnValue = function (ret)
+    Exps.prototype.ReturnValue = function (ret, key_, default_value)
     {
         // The previous function has already popped - so check one level up the function stack
         var fs = getOneAboveFuncStack();
         
         if (fs)
-            ret.set_any(fs.retVal);
+        {
+            var val = fs.retVal;
+            val = getValue(val, key_);
+            ret.set_any(din(val, default_value));
+        }
         else
             ret.set_int(0);
     };

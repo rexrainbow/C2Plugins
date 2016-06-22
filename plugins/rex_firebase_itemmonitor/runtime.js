@@ -49,16 +49,15 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 	    
         
+        this.query = null;
+        this.items = {};
+        this.tag2items = {};         
         if (!this.recycled)
-        {
-            this.items = {};
-            this.tag2items = {};            
+        {            
             this.callbackMap = new window.FirebaseCallbackMapKlass();
         }
         else
         {
-            clean_table( this.items );
-            clean_table( this.tag2items );
             this.callbackMap.Reset();
         }
 
@@ -79,30 +78,77 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	
 	instanceProto.onDestroy = function ()
 	{		
-	    this.RemoveAllMonitorQuery(); 
+	    this.StopMonitor(); 
 	};
 		
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
-    	
-    var get_tag = function (key_, value_)
-    {
-        return key_.toString() + "=" + value_.toString();
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
     };
     
-    instanceProto.AddMonitorQuery = function (query, tag, monitorKey)
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
+    
+    instanceProto.StartMonitor = function (query, tag, monitorKey)
 	{
+	    this.StopMonitor(); 
         if (this.tag2items.hasOwnProperty(tag)) 
             return;
             
@@ -112,7 +158,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         var self = this;
         var on_add = function (snapshot)
         {
-            var itemID = snapshot["key"]();            
+            var itemID = get_key(snapshot);            
             // add itemID into tag2items, indexed by tag
             tag2items[itemID] = true;  
             
@@ -127,7 +173,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         };
         var on_remove = function (snapshot)
         {
-            var itemID = snapshot["key"]();            
+            var itemID = get_key(snapshot);            
             // add itemID into tag2items, indexed by tag  
             delete tag2items[itemID];
             if (is_empty_table(self.tag2items[tag]))
@@ -135,13 +181,13 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
                 
             // remove item from monitor
             delete self.items[itemID];                
-            self.stop_monitor_item(snapshot["ref"](), monitorKey);                                 
+            self.stop_monitor_item(get_refPath(snapshot), monitorKey);                                 
             self.exp_LastItemID = itemID;  
             self.runtime.trigger(cr.plugins_.Rex_Firebase_ItemMonitor.prototype.cnds.OnItemRemoved, self);    
             self.runtime.trigger(cr.plugins_.Rex_Firebase_ItemMonitor.prototype.cnds.OnItemListChanged, self);             
         };
         this.callbackMap.Add(query, "child_added", "child_added#"+tag, on_add);
-        this.callbackMap.Add(query, "child_removed", "child_removed#"+tag, on_remove);
+        this.callbackMap.Add(query, "child_removed", "child_removed#"+tag, on_remove);     
 	};
 	
 	instanceProto.RemoveMonitorQuery = function (query, tag)
@@ -151,13 +197,17 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	    this.remove_tag2items(tag);    	    
 	};
 	
-	instanceProto.RemoveAllMonitorQuery = function ()
+	instanceProto.StopMonitor = function ()
 	{
-	    var query = this.get_ref();
+        if (this.query == null)
+            return;
+        
 	    for (var tag in this.tag2items)
 	    {
-	        this.RemoveMonitorQuery(query, tag);
-	    }  	    
+	        this.RemoveMonitorQuery(this.query, tag);
+	    }          
+
+        this.query = null;        
 	};	
 	
     
@@ -167,8 +217,8 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         if (tag == null)
             tag = "";
             
-        var ref = snapshot["ref"]();
-        var k = snapshot["key"]();
+        var ref = get_refPath(snapshot);
+        var k = get_key(snapshot);
         var v = snapshot["val"]();
         
         // add item into items
@@ -179,7 +229,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         var self = this;
         var on_prop_added = function (snapshot)
 	    {
-            var ck = snapshot["key"]();
+            var ck = get_key(snapshot);
             var cv = snapshot["val"]();
             if (monitor_item[ck] === cv)
                 return;
@@ -195,7 +245,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         
         var on_value_changed = function (snapshot)
 	    {
-            var ck = snapshot["key"]();
+            var ck = get_key(snapshot);
             var cv = snapshot["val"]();
             if (monitor_item[ck] === cv)
                 return;
@@ -218,7 +268,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 
         var on_prop_removed = function (snapshot)
 	    {
-            var ck = snapshot["key"]();
+            var ck = get_key(snapshot);
             if (!monitor_item.hasOwnProperty(ck))
                 return;
                 
@@ -288,12 +338,6 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 		}
      		
 		return false;
-	};	   
-
-	var clean_table = function (o)
-	{
-		for (var k in o)
-		    delete o[k];
 	};
 	
 	var is_empty_table = function (o)
@@ -325,43 +369,32 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	    return o;
     };
     
-    var dout = function (d)
-    {
-        var o;
-        if (typeof(d) == "string")	
-        {        
-            try
+    var getValueByKeyPath = function (o, keyPath)
+    {  
+        // invalid key    
+        if ((keyPath == null) || (keyPath === ""))
+            return o;
+        
+        // key but no object
+        else if (typeof(o) !== "object")
+            return null;
+        
+        else if (keyPath.indexOf(".") === -1)
+            return o[keyPath];
+        else
+        {
+            var val = o;              
+            var keys = keyPath.split(".");
+            var i, cnt=keys.length;
+            for(i=0; i<cnt; i++)
             {
-	            o = JSON.parse(d) 
+                val = val[keys[i]];
+                if (val == null)
+                    return null;
             }
-            catch(err)
-            {
-                o = d;
-            } 
+            return val;
         }
-        else
-        {
-            o = d;
-        }
-        return o;
-    }; 
-	
-	var get_data = function(in_data, default_value)
-	{
-	    var val;
-	    if (in_data === null)
-	    {
-	        if (default_value === null)
-	            val = 0;
-	        else
-	            val = default_value;
-	    }
-        else
-        {
-            val = din(in_data)
-        }	    
-        return val;
-	};
+    }  
 
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
@@ -477,34 +510,38 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
       
     Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
 	{
-		this.rootpath = domain_ref + "/" + sub_domain_ref + "/"; 
-		clean_table(this.load_items);
+		this.rootpath = domain_ref + "/" + sub_domain_ref + "/";
+        this.load_items = {};
 	};
     
-    Acts.prototype.StartMonitorAll = function ()
+    Acts.prototype.StartMonitor = function ()
 	{
-	    var query = this.get_ref();
-        this.AddMonitorQuery(query, "all");
-	};    
+        if (this.query == null)
+            this.query = this.get_ref();            
+        
+        this.StartMonitor(this.query, "all");
+	};
     
-    Acts.prototype.StopMonitorAll = function ()
+    Acts.prototype.StopMonitor = function ()
 	{
-	    this.RemoveAllMonitorQuery(); 
-	};     
-    
-    Acts.prototype.StartMonitorItemsWCond = function (key_, value_)
-	{
-	     var query = this.get_ref()["orderByChild"](key_)["equalTo"](value_);
-         var tag = get_tag(key_, value_);
-	     this.AddMonitorQuery(query, tag, key_);
-	};  
+	    this.StopMonitor(); 
+	};       
 
-    Acts.prototype.StopMonitorItemsWCond = function (key_, value_)
+    var get_query = function (queryObjs)
+    {
+	    if (queryObjs == null)
+	        return null;	        
+        var query = queryObjs.getFirstPicked();
+        if (query == null)
+            return null;
+            
+        return query.GetQuery();
+    };    
+    Acts.prototype.SetQueryObject = function (queryObjs, type_, cbName)
 	{
-	     var query = this.get_ref();
-         var tag = get_tag(key_, value_);
-	     this.RemoveMonitorQuery(query, tag);
-	}; 	     
+	    this.StopMonitor();                 
+        this.query = get_query(queryObjs);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -516,32 +553,21 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	};
     Exps.prototype.LastItemContent = function (ret, key_, default_value)
 	{
-        var v;
-        if (key_ == null)
-            v = din(this.exp_LastItemContent);
-        else
-            v = get_data(this.exp_LastItemContent[key_], default_value);
- 
-		ret.set_any(v);
+        var val = getValueByKeyPath(this.exp_LastItemContent, key_);
+        val = din(val, default_value);
+		ret.set_any(val);
 	};	
     Exps.prototype.At = function (ret, itemID, key_, default_value)
 	{
-	    var item_props = this.items[itemID];
-	    if (item_props)
-	    {
-	        v = item_props[key_];
-	        v = din(v);	        
-	    }
-	    
-	    if (v == null)
-	    {
-	        if (default_value != null)
-	            v = default_value;
-	        else
-	            v = 0;
-	    }
-		ret.set_any(v);
+	    var val, props = this.items[itemID];
+	    if (props)	    
+	        val = getValueByKeyPath(props, key_);
+        
+        val = din(val, default_value);
+		ret.set_any(val);
 	};    
+    
+    // ef_deprecated    
     Exps.prototype.LastItemContentPosX = function (ret)
 	{
 	    var v = this.exp_LastItemContent;
@@ -555,6 +581,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             v = 0;     
 		ret.set_float(v); 
 	};
+    // ef_deprecated     
     Exps.prototype.LastItemContentPosY = function (ret)
 	{
 	    var v = this.exp_LastItemContent;
@@ -573,14 +600,18 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	{
 		ret.set_string(this.exp_LastPropertyName);
 	};
-    Exps.prototype.LastValue = function (ret)
+    Exps.prototype.LastValue = function (ret, subKey)
 	{
-		ret.set_any(din(this.exp_LastValue));
+        var val = getValueByKeyPath(this.exp_LastValue, subKey);
+		ret.set_any(din(val));
 	};
-    Exps.prototype.PrevValue = function (ret)
+    Exps.prototype.PrevValue = function (ret, subKey)
 	{
-		ret.set_any(din(this.exp_PrevValue));
+        var val = getValueByKeyPath(this.exp_PrevValue, subKey);
+		ret.set_any(din(val));
 	};	
+    
+    // ef_deprecated     
     Exps.prototype.LastValuePosX = function (ret)
 	{
 	    var v = this.exp_LastValue;
@@ -590,6 +621,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             v = 0;     
 		ret.set_float(v);
 	};    
+    // ef_deprecated         
     Exps.prototype.LastValuePosY = function (ret)
 	{
 	    var v = this.exp_LastValue;
@@ -599,6 +631,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             v = 0;     
 		ret.set_float(v);
 	};
+    // ef_deprecated         
     Exps.prototype.PrevValuePosX = function (ret)
 	{
 	    var v = this.exp_PrevValue;
@@ -608,6 +641,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             v = 0;     
 		ret.set_float(v);
 	};    
+    // ef_deprecated         
     Exps.prototype.PrevValuePosY = function (ret)
 	{
 	    var v = this.exp_PrevValue;
@@ -627,21 +661,15 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 		ret.set_string(this.exp_CurKey);
 	};	
 	
-    Exps.prototype.CurValue = function (ret)
+    Exps.prototype.CurValue = function (ret, subKey)
 	{
-	    var v = this.exp_CurValue;
-	    v = din(v);
-		ret.set_any(v);
+        var val = getValueByKeyPath(this.exp_CurValue, subKey);
+		ret.set_any(din(val));
 	};	
     Exps.prototype.CurItemContent = function (ret, key_, default_value)
 	{
-        var v;
-        if (key_ == null)
-            v = din(this.exp_CurItemContent);
-        else
-            v = get_data(this.exp_CurItemContent[key_], default_value);
- 
-		ret.set_any(v);
+        var val = getValueByKeyPath(this.exp_CurItemContent, key_);
+		ret.set_any(din(val));
 	};	
 }());
 
@@ -649,6 +677,31 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 {
     if (window.FirebaseCallbackMapKlass != null)
         return;    
+
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	var get_ref = function(path)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
+	};    
     
     var CallbackMapKlass = function ()
     {
@@ -727,7 +780,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             var cb = this.get_callback(absRef, eventType, cbName);
             if (cb == null)
                 return;                
-            this.get_ref(absRef)["off"](eventType, cb);  
+            get_ref(absRef)["off"](eventType, cb);  
             delete this.map[absRef][eventType][cbName];
         }
         else if (absRef && eventType && !cbName)
@@ -738,7 +791,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             var cbMap = eventMap[eventType];
             if (!cbMap)
                 return;
-            this.get_ref(absRef)["off"](eventType); 
+            get_ref(absRef)["off"](eventType); 
             delete this.map[absRef][eventType];
         }
         else if (absRef && !eventType && !cbName)
@@ -746,14 +799,14 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
             var eventMap = this.map[absRef];
             if (!eventMap)
                 return;
-            this.get_ref(absRef)["off"](); 
+            get_ref(absRef)["off"](); 
             delete this.map[absRef];
         }  
         else if (!absRef && !eventType && !cbName)
         {
             for (var r in this.map)
             {
-                this.get_ref(r)["off"](); 
+                get_ref(r)["off"](); 
                 delete this.map[r];
             } 
         }  
@@ -769,7 +822,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
                 var cbMap = eventMap[e];
                 for (var cbName in cbMap)
                 {
-                    this.get_ref(absRef)["off"](e, cbMap[cbName]);  
+                    get_ref(absRef)["off"](e, cbMap[cbName]);  
                 }
             }
             
@@ -785,7 +838,7 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
                     var cbMap = eventMap[e];
                     for (var cbName in cbMap)
                     {
-                        this.get_ref(r)["off"](e, cbMap[cbName]);  
+                        get_ref(r)["off"](e, cbMap[cbName]);  
                     }
                 }
                 

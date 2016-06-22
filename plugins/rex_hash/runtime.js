@@ -46,86 +46,174 @@ cr.plugins_.Rex_Hash = function(runtime)
             this.hashtable = JSON.parse(init_data);
         else
             this.hashtable = {};
-		this._current_entry = this.hashtable;			
+		this.currentEntry = this.hashtable;			
 			
         this.exp_CurKey = "";
         this.exp_CurValue = 0; 			
 	};
     
-	instanceProto._clean_all = function()
+	instanceProto.cleanAll = function()
 	{
 	    var key;
 		for (key in this.hashtable)
 		    delete this.hashtable[key];
-        this._current_entry = this.hashtable;
+        this.currentEntry = this.hashtable;
 	};    
         
-	instanceProto._set_entry_byKeys = function(keys)
+	instanceProto.getEntry = function(keys, root)
 	{
-        var key_len = keys.length;
-        var i, key;
-        var _entry = this.hashtable;
-        for (i=0; i< key_len; i++)
+        var entry = root || this.hashtable;
+        if ((keys === "") || (keys.length === 0))
         {
-            key = keys[i];
-            if ( (_entry[key] == null) ||
-                 (typeof _entry[key] != "object") )
+            //entry = root;
+        }
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            for (i=0; i< cnt; i++)
             {
-                _entry[key] = {};
-            }
-            _entry = _entry[key];            
+                key = keys[i];
+                if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
+                    entry[key] = {};
+                
+                entry = entry[key];            
+            }           
         }
         
-        this._current_entry = _entry;
-	};
-    
-	instanceProto._set_current_entey = function (key)
-	{        
-        if (key != "")
-        {
-            var keys = key.split(".");      
-		    this._set_entry_byKeys(keys);
-        }
-        else  // is root
-            this._current_entry = this.hashtable;
-	};
-    
-	instanceProto._get_data = function(keys)
-	{           
-	    // is root
-	    if ((keys.length == 1) && keys[0] == "")
-	        return this.hashtable;
-	        
-        var key_len = keys.length;
-        var i;
-        var _entry = this.hashtable;
-        for (i=0; i< key_len; i++)
-        {
-             _entry = _entry[keys[i]];
-            if ( (_entry == null) ||
-                 ((typeof _entry != "object") && (i != (key_len-1))) )
-            {
-                return null;
-            }              
-        }
-        return _entry;        
-	}; 
-	
-	var get_item_counts = function (hash_obj)
+        return entry;
+	};        
+	instanceProto.setCurrentEntry = function(keys, root)
 	{
-	    if (hash_obj == null)  // nothing
+        this.currentEntry = this.getEntry(keys, root);
+	};
+    
+	instanceProto.setValue = function(keys, value, root)
+	{        
+        if (root == null)
+            root = this.hashtable;
+        
+        if ((keys === "") || (keys.length === 0))
+        {
+            if ((value !== null) && typeof(value) === "object")
+               root = value;
+        }
+        else
+        {            
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var lastKey = keys.pop(); 
+            var entry = this.getEntry(keys, root);
+            entry[lastKey] = value;
+        }
+	};     
+    
+	instanceProto.getValue = function(keys, root)
+	{           
+        if (root == null)
+            root = this.hashtable;
+        
+        if ((!keys) || (keys === "") || (keys.length === 0))
+        {
+            return root;
+        }
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            var entry = root;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];                
+                if (entry.hasOwnProperty(key))
+                    entry = entry[ key ];
+                else
+                    return;              
+            }
+            return entry;                    
+        }
+	}; 
+    
+    instanceProto.removeKey = function (keys)
+	{  
+        if ((keys === "") || (keys.length === 0))
+        {
+            this.cleanAll();
+        }
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var data = this.getValue(keys);		    
+            if (data === undefined)
+                return;
+            
+            var lastKey = keys.pop();
+            var entry = this.getEntry(keys);
+            
+            if (!isArray(entry))
+            {
+                delete entry[lastKey];
+            }        
+            else            
+            {
+                if (lastKey === (entry.length-1))
+                    entry.pop();
+                else if (lastKey === 0)
+                    entry.shift();
+                else
+                    entry.splice(lastKey, 1);
+            }
+        }
+	};     
+	
+	var getItemsCount = function (o)
+	{
+	    if (o == null)  // nothing
 	        return (-1);
-	    else if ((typeof hash_obj == "number") || (typeof hash_obj == "string"))  // number/string
+	    else if ((typeof o == "number") || (typeof o == "string"))  // number/string
 	        return 0;
-		else if (hash_obj.length != null)  // list
-		    return hash_obj.length;
+		else if (o.length != null)  // list
+		    return o.length;
 	        
 	    // hash table
 	    var key,cnt=0;
-	    for (key in hash_obj)
+	    for (key in o)
 	        cnt += 1;
 	    return cnt;
-	}
+	};
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };   
+
+    var isArray = function(o)
+    {
+        return (o instanceof Array);
+    }    
 	
 	instanceProto.saveToJSON = function ()
 	{
@@ -136,96 +224,151 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{
 		this.hashtable = o["d"];
 	};
+    
+    // The comments around these functions ensure they are removed when exporting, since the
+    // debugger code is no longer relevant after publishing.
+    /**BEGIN-PREVIEWONLY**/
+
+    // slightly modified neet simple function from Pumbaa80
+    // http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript#answer-7220510
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // basic html escaping
+        return json
+            .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'red';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'blue';
+                    } else {
+                        cls = 'green';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'Sienna';
+                } else if (/null/.test(match)) {
+                    cls = 'gray';
+                }
+                return '<span style="color:' + cls + ';">' + match + '</span>';
+            })
+            .replace(/\t/g,"&nbsp;&nbsp;") // to keep indentation in html
+            .replace(/\n/g,"<br/>");       // to keep line break in html
+    }
+
+    instanceProto.getDebuggerValues = function (propsections)
+    {
+        // Append to propsections any debugger sections you want to appear.
+        // Each section is an object with two members: "title" and "properties".
+        // "properties" is an array of individual debugger properties to display
+        // with their name and value, and some other optional settings.
+        var str = JSON.stringify(this.hashtable,null,"\t");
+
+        propsections.push({
+            "title": "JSON",
+            "properties": [
+                {
+                    "name":"content",
+                    "value": "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+syntaxHighlight(str)+"</style>",
+                    "html": true,
+                    "readonly":true
+                }
+
+                // Each property entry can use the following values:
+                // "name" (required): name of the property (must be unique within this section)
+                // "value" (required): a boolean, number or string for the value
+                // "html" (optional, default false): set to true to interpret the name and value
+                //                                   as HTML strings rather than simple plain text
+                // "readonly" (optional, default false): set to true to disable editing the property
+                
+                // Example:
+                // {"name": "My property", "value": this.myValue}
+            ]
+        });
+    };
+    
+    instanceProto.onDebugValueEdited = function (header, name, value)
+    {
+        // Called when a non-readonly property has been edited in the debugger. Usually you only
+        // will need 'name' (the property name) and 'value', but you can also use 'header' (the
+        // header title for the section) to distinguish properties with the same name.
+        // if (name === "My property")
+        //  this.myProperty = value;
+    };
+    /**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 
-	Cnds.prototype.ForEachKey = function (key)
+	Cnds.prototype.ForEachItem = function (key)
 	{
-        this._set_current_entey(key);        
+        var entry = this.getEntry(key);
         
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 
         var key, value;
-        if (solModifierAfterCnds)
-		{
-		    for (key in this._current_entry)
-	        {
-                value = this._current_entry[key];
-                if ((typeof value != "number") && (typeof value != "string"))
-                    continue;
-		        this.runtime.pushCopySol(current_event.solModifiers);
-		        
-                this.exp_CurKey = key;
-                this.exp_CurValue = value;		        
-		    	current_event.retrigger();
-		    	
-		    	this.runtime.popSol(current_event.solModifiers);
-		    }
-	    }
-	    else
+        
+		for (key in entry)
 	    {
-		    for (key in this._current_entry)
-	        {
-                value = this._current_entry[key];
-                if ((typeof value != "number") && (typeof value != "string"))
-                    continue;
-                    
-                this.exp_CurKey = key;
-                this.exp_CurValue = value;		        
-		    	current_event.retrigger();
-		    }	        
-	    }
-	
+            if (solModifierAfterCnds)
+		        this.runtime.pushCopySol(current_event.solModifiers);
+            
+            this.exp_CurKey = key;
+            this.exp_CurValue = entry[key];		        
+			current_event.retrigger();
+			
+            if (solModifierAfterCnds)            
+			    this.runtime.popSol(current_event.solModifiers);
+		}	
 
         this.exp_CurKey = "";
         this.exp_CurValue = 0;      
 		return false;
 	}; 
 
-	Cnds.prototype.KeyExists = function (key)
+	Cnds.prototype.KeyExists = function (keys)
 	{
-	    if (key == "")
+	    if (keys == "")
             return false;
-        var data = this._get_data(key.split("."));		    
-        return (data != null);
+        var data = this.getValue(keys);		    
+        return (data !== undefined);
 	}; 	
-	
+
+	Cnds.prototype.IsEmpty = function (keys)
+	{
+        var entry = this.getEntry(keys);
+        var cnt = getItemsCount(entry);		    
+        return (cnt <= 0);
+	}; 		
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
-	Acts.prototype.SetByKeyString = function (key, val)
-	{        
-        if (key != "")
-        {
-		    var keys = key.split(".");             
-            var last_key = keys.splice(keys.length-1, 1);      
-            this._set_entry_byKeys(keys);
-            this._current_entry[last_key] = val;
-        }
+	Acts.prototype.SetValueByKeyString = function (key, val)
+	{   
+        if (key === "")
+            return;
+        
+        this.setValue(key, val);
 	};
 
 	Acts.prototype.SetCurHashEntey = function (key)
 	{        
-        this._set_current_entey(key);
+        this.setCurrentEntry(key);
 	};
 
-	Acts.prototype.SetValueInCurHashEntey = function (key_name, val)
+	Acts.prototype.SetValueInCurHashEntey = function (key, val)
 	{        
-        if (key_name != "")
-        {
-            this._current_entry[key_name] = val;
-        }        
+        if (key === "")
+            return;
+        
+        this.setValue(key, val, this.currentEntry);
 	};    
 
 	Acts.prototype.CleanAll = function ()
 	{        
-        this._clean_all();      
+        this.cleanAll();      
 	};  
 
     Acts.prototype.StringToHashTable = function (JSON_string)
@@ -233,110 +376,111 @@ cr.plugins_.Rex_Hash = function(runtime)
 	    if (JSON_string != "")
 	        this.hashtable = JSON.parse(JSON_string);
 	    else
-	        this._clean_all(); 
+	        this.cleanAll(); 
 	};  
     
     Acts.prototype.RemoveByKeyString = function (key)
 	{  
-        if (key != "")
-        {
-		    var keys = key.split(".");             
-            var last_key = keys.splice(keys.length-1, 1);      
-            this._set_entry_byKeys(keys);
-            delete this._current_entry[last_key];
-        }
+        this.removeKey(key);
 	};  
     
-    Acts.prototype.PickKeysToArray = function (key, array_objs)
+    Acts.prototype.PickKeysToArray = function (key, arrayObjs)
 	{   
-	    if (!array_objs)
+	    if (!arrayObjs)
 	        return;
 	        
-        var array_obj = array_objs.getFirstPicked();
-        assert2(array_obj.arr, "[Hash] Action:Pick keys need an array type of parameter.");
-        cr.plugins_.Arr.prototype.acts.SetSize.apply(array_obj, [0,1,1]);
-        
-        this._set_current_entey(key);
-        var key;
-		for (key in this._current_entry)
-            cr.plugins_.Arr.prototype.acts.Push.apply(array_obj, [0,key,0]); 
+        var arrayObj = arrayObjs.getFirstPicked();
+        assert2(arrayObj.arr, "[Hash] Action:Pick keys need an array type of parameter.");
+        cr.plugins_.Arr.prototype.acts.SetSize.apply(arrayObj, [0,1,1]);
+        var entry = this.getEntry(key);
+		for (var key in entry)
+            cr.plugins_.Arr.prototype.acts.Push.call(arrayObj, 0, key, 0); 
 	};    
 	
-	var full_keys_get = function (cur_entry, key)
+	var getFullKey = function (currentKey, key)
 	{
-	    var full_keys = [];
-	    cr.shallowAssignArray(full_keys, cur_entry);
-	    full_keys.push(key);
-	    return full_keys;
+        if (currentKey !== "")
+            key = currentKey + "." + key;
+        
+	    return key;
 	};
     Acts.prototype.MergeTwoHashTable = function (hashtable_objs, conflict_handler_mode)
 	{  
 	    if (!hashtable_objs)
 	        return;
 	        	    
-        var hash_B = hashtable_objs.getFirstPicked();
-        assert2(hash_B.hashtable, "[Hash] Merge : need an hash type of parameter."); 
+        var hashB = hashtable_objs.getFirstPicked();
+        if (hashB == null)
+            return;
+        assert2(hashB.hashtable, "[Hash] Merge : need an hash type of parameter."); 
         
-		var untraversal_list = [], node;
-		var cur_hash, cur_entry, key_B, value_B, key_A, value_A;
+		var untraversalTables = [], node;
+		var curHash, currentKey, keyB, valueB, keyA, valueA, fullKey;
 		
 		// Clean all then deep copy from hash table B
-		if (conflict_handler_mode == 2)
+		if (conflict_handler_mode === 2)
 		{
-		    this._clean_all(); 
+		    this.cleanAll(); 
 		    conflict_handler_mode = 0;
 		}
 		
         switch (conflict_handler_mode)
         {
         case 0: // Overwrite from hash B
-            untraversal_list.push({table:hash_B.hashtable, 
-                                   entry:[]});
-			while (untraversal_list.length != 0)
+            untraversalTables.push({table:hashB.hashtable, key:""});
+			while (untraversalTables.length !== 0)
 			{
-			    node = untraversal_list.shift();
-			    cur_hash = node.table;
-			    cur_entry = node.entry;
-			    for (key_B in cur_hash)
+			    node = untraversalTables.shift();
+			    curHash = node.table;
+			    currentKey = node.key;
+			    for (keyB in curHash)
 				{
-				    value_B = cur_hash[key_B];
-				    if (typeof value_B != "object")
+				    valueB = curHash[keyB];
+                    fullKey = getFullKey(currentKey, keyB);
+                    valueA = this.getValue(fullKey);
+                    // number, string, boolean, null
+				    if ((valueB === null) || typeof(valueB) !== "object")
 					{
-                        this._set_entry_byKeys(cur_entry);
-                        this._current_entry[key_B] = value_B;
+                        this.setValue(fullKey, valueB);
 					}
 					else
 					{
-					    untraversal_list.push({table:value_B, 
-                                               entry:full_keys_get(cur_entry,key_B)});
+                        // valueB is an array but valueA is not an array
+                        if (isArray(valueB) && !isArray(valueA))
+                            this.setValue(fullKey, []);
+
+					    untraversalTables.push({table:valueB, key:fullKey});
 					}
 				}
 			}
             break;
+            
         case 1:  // Merge new keys from hash table B
-            untraversal_list.push({table:hash_B.hashtable, 
-                                   entry:[]}); 
-			while (untraversal_list.length != 0)
+            untraversalTables.push({table:hashB.hashtable, key:""}); 
+			while (untraversalTables.length !== 0)
 			{
-			    node = untraversal_list.shift();
-			    cur_hash = node.table;
-			    cur_entry = node.entry;
-			    for (key_B in cur_hash)
+			    node = untraversalTables.shift();
+			    curHash = node.table;
+			    currentKey = node.key;
+			    for (keyB in curHash)
 				{
-				    value_B = cur_hash[key_B];
-				    if (typeof value_B != "object")
+				    valueB = curHash[keyB];
+                    fullKey = getFullKey(currentKey, keyB);
+                    valueA = this.getValue(fullKey);
+                    if (valueA !== undefined)
+                        continue;
+                    
+				    if ((valueB == null) || typeof(valueB) !== "object")
 					{
-					    var value_A = this._get_data(full_keys_get(cur_entry,key_B));	
-					    if (value_A == null)
-					    {
-                            this._set_entry_byKeys(cur_entry);
-                            this._current_entry[key_B] = value_B;
-                        }
+					    this.setValue(fullKey, valueB);
 					}
-					else
-					{
-					    untraversal_list.push({table:value_B, 
-                                               entry:full_keys_get(cur_entry,key_B)});
+                    else
+					{             
+                        // valueB is an array
+                        if ( isArray(valueB) )
+                            this.setValue(fullKey, []);
+                        
+					    untraversalTables.push({table:valueB,  key:fullKey});
 					}
 				}
 			}
@@ -345,46 +489,147 @@ cr.plugins_.Rex_Hash = function(runtime)
         }
 	}; 	 
     
+	Acts.prototype.SetJSONByKeyString = function (key, val)
+	{        
+        val = JSON.parse(val);
+        this.setValue(key, val);
+	};    
+        
+	Acts.prototype.AddToValueByKeyString = function (keys, val)
+	{   
+        if (keys === "")
+            return;
+        
+        keys = keys.split(".");
+        var curValue = this.getValue(keys) || 0;
+        this.setValue(keys, curValue + val);
+	};    
+
+	var _shuffle = function (arr, random_gen)
+	{
+        var i = arr.length, j, temp, random_value;
+        if ( i == 0 ) return;
+        while ( --i ) 
+        {
+		    random_value = (random_gen == null)?
+			               Math.random(): random_gen.random();
+            j = Math.floor( random_value * (i+1) );
+            temp = arr[i]; 
+            arr[i] = arr[j]; 
+            arr[j] = temp;
+        }
+    }; 
+
+    
+
+    Acts.prototype.Shuffle = function (entryKey)
+	{   
+        var arr = this.getValue(entryKey);
+        if (!isArray(arr))
+            return;
+        
+        _shuffle(arr);
+        
+	}; 
+
+    Acts.prototype.Sort = function (entryKey, sortKey, sortMode_)
+	{   
+        var arr = this.getValue(entryKey);
+        if (!isArray(arr))
+            return;
+        
+        sortKey = sortKey.split(".");
+        var self = this;        
+        var sortFn = function (itemA, itemB)
+        {
+            var valA = self.getValue(sortKey, itemA);
+            var valB = self.getValue(sortKey, itemB);
+            var m = sortMode_;
+            
+            if (sortMode_ >= 2)  // logical descending, logical ascending
+            {
+                valA = parseFloat(valA);
+                valB = parseFloat(valB);
+                m -= 2;
+            }
+
+            switch (m)
+            {
+            case 0:  // descending
+                if (valA === valB) return 0;
+                else if (valA < valB) return 1;
+                else return -1;
+                break;
+                
+            case 1:  // ascending
+                if (valA === valB) return 0;
+                else if (valA > valB) return 1;
+                else return -1;
+                break;
+                
+            }
+        }
+        arr.sort(sortFn);
+	}; 
+    
+	Acts.prototype.PushJSON = function (keys, val)
+	{        
+        val = JSON.parse(val);
+        var arr;
+        if (keys === "")
+        {
+            arr = this.hashtable;
+        }
+        else
+        {
+            keys = keys.split(".");
+            var lastKeys = keys.pop();
+            var entry = this.getValue(keys);
+            if (entry === undefined)
+                this.setValue(keys, []);
+            
+            arr = entry[lastKeys];
+        }
+        if (!isArray(arr))
+            return;
+        arr.push(val);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
-	Exps.prototype.Hash = function (ret, key_string, default_value)
+	Exps.prototype.Hash = function (ret, keys, default_value)
 	{   
-        var keys = key_string.split(".");
-        var val = this._get_data(keys);
-        if (typeof val == "object")
-            val = JSON.stringify(val);
-        else if ((typeof val != "number") && (typeof val != "string"))
-            val = default_value;
+        keys = keys.split(".");
+        var val = din(this.getValue(keys), default_value);
 		ret.set_any(val);
 	};
+    Exps.prototype.At = Exps.prototype.Hash;
     
-	Exps.prototype.At = function (ret, key_string, default_value)
-	{     
-        var keys = key_string.split(".");
-        var val = this._get_data(keys);
-        if (typeof val == "object")
-            val = JSON.stringify(val);
-        else if ((typeof val != "number") && (typeof val != "string"))
-            val = default_value;        
-		ret.set_any(val);
-	};
+    var gKeys = [];
 	Exps.prototype.AtKeys = function (ret, key)
-	{     
-        var keys = (arguments.length > 2)?
-                   Array.prototype.slice.call(arguments,1):
-                   [key];
-        var val = this._get_data(keys);    
-        if (typeof val == "object")
-            val = JSON.stringify(val);        
+	{
+        gKeys.length = 0; 
+        var i, cnt=arguments.length, k;
+        for (i=1; i<cnt; i++)
+        {
+            k = arguments[i];
+            if ((typeof (k) === "string") && (k.indexOf(".") !== -1))           
+                gKeys.push.apply(gKeys, k.split("."));            
+            else            
+                gKeys.push(k);            
+        }
+                   
+        var val = din(this.getValue(gKeys)); 
+        gKeys.length = 0; 
 		ret.set_any(val);
 	};    
     
-	Exps.prototype.Entry = function (ret, key_name)
-	{       
-		ret.set_any(this._current_entry[key_name]);
+	Exps.prototype.Entry = function (ret, key)
+	{
+        var val = din(this.currentEntry[key]);      
+		ret.set_any(val);
 	};
 
 	Exps.prototype.HashTableToString = function (ret)
@@ -398,24 +643,25 @@ cr.plugins_.Rex_Hash = function(runtime)
 		ret.set_string(this.exp_CurKey);
 	};  
     
-	Exps.prototype.CurValue = function (ret)
+	Exps.prototype.CurValue = function (ret, subKeys, default_value)
 	{
-		ret.set_any(this.exp_CurValue);
+        var val = this.getValue(subKeys, this.exp_CurValue);        
+        val = din(val, default_value);              
+		ret.set_any(val);
 	};
     
-	Exps.prototype.ItemCnt = function (ret, key_string)
-	{
-        var keys = key_string.split(".");	 
-        var cnt = get_item_counts(this._get_data(keys));
+	Exps.prototype.ItemCnt = function (ret, keys)
+	{ 
+        var cnt = getItemsCount(this.getValue(keys));
 		ret.set_int(cnt);
 	};	
     
 	Exps.prototype.Keys2ItemCnt = function (ret, key)
 	{
         var keys = (arguments.length > 2)?
-                   Array.prototype.slice.call(arguments,1):
-                   [key];   
-        var cnt = get_item_counts(this._get_data(keys));
+                         Array.prototype.slice.call(arguments,1):
+                         [key];   
+        var cnt = getItemsCount(this.getValue(keys));
 		ret.set_int(cnt);
 	};		
     
@@ -433,5 +679,6 @@ cr.plugins_.Rex_Hash = function(runtime)
 	    }
 		ret.set_string(JSON.stringify(table));
 	};		
-	
+    
+	Exps.prototype.AsJSON = Exps.prototype.HashTableToString;
 }());

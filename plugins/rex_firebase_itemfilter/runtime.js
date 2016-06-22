@@ -59,16 +59,8 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
         
-        if (!this.recycled)
-        {
-            this.prepared_item = {};
-            this.request_itemIDs = {};
-        }
-        else
-        {
-            clean_table( this.prepared_item );
-            clean_table( this.request_itemIDs );
-        }
+        this.prepared_item = {};
+        this.request_itemIDs = {};
            
         this.trig_tag = null;            
         this.exp_CurItemID = "";
@@ -76,33 +68,79 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	
 	instanceProto.onDestroy = function ()
 	{		
-        clean_table( this.prepared_item );
-        clean_table( this.request_itemIDs );
+        this.prepared_item = {};
+        this.request_itemIDs = {};
 	};
-			
+
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
-	
-	instanceProto.get_key_ref = function(itemID, key_)
-	{
-        return this.get_ref("filters")["child"](key_)["child"](itemID);
-	};
-	
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
+    
 	var get_key_path = function(itemID, key_)
 	{
 	    return "filters/" + key_ + "/" + itemID;
-	};	
+	};	    
 	
 	instanceProto.get_itemID2Keys_ref = function(itemID, key_)
 	{
@@ -163,7 +201,6 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	
     instanceProto.save_item = function (itemID, item_, tag_)
 	{	
-        debugger
 	    var self = this;	    
 	    var onComplete_handler = function(error)
 	    {
@@ -184,8 +221,6 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	    var write_item = this.create_save_item(itemID, item_);    	     
 		this.get_ref()["update"](write_item, onComplete_handler);
 	    // multi-location update
-	    		
-	    clean_table(item_);			
 	};
 	
     instanceProto.remove_item = function (itemID, tag_)
@@ -287,13 +322,6 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         array_copy(ARGS_COPY, arguments);
         var code_string = 'filter.AddSETOP("SUB_VALUE",'+ARGS_COPY.join(",")+")";
 		return code_string;
-	};      
-
-	var clean_table = function (o)
-	{
-	    var k;
-		for (k in o)
-		    delete o[k];
 	};
 	
 	var retrieve_itemIDs = function (table_in, arr_out)
@@ -403,6 +431,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
     Acts.prototype.Save = function (itemID, tag_)
 	{	
 	    this.save_item(itemID, this.prepared_item, tag_);
+        this.prepared_item = {};
 	};
 	
     Acts.prototype.Remove = function (itemID, tag_)
@@ -417,7 +446,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	
     Acts.prototype.GetRandomItems = function (pick_count, tag_)
 	{	    
-	    clean_table(this.request_itemIDs);
+        this.request_itemIDs = {};
 	    
 	    var self = this;
 	    var on_read_itemIDs = function (snapshot)
@@ -495,11 +524,11 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 
     Acts.prototype.GetItemsByCondition = function (condition_expression, tag_)
 	{  
-        var filter = new cr.plugins_.Rex_Firebase_ItemFilter.FilterKlass(this);      
+        var filter = new FilterKlass(this);      
         var self=this;
         var on_complete = function(result)
         {
-            clean_table(self.request_itemIDs);
+            self.request_itemIDs = {};
             for (var k in result)
                 self.request_itemIDs[k] = true;
             self.trig_tag = tag_;		            
@@ -513,12 +542,12 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	var LIMITTYPE = ["limitToFirst", "limitToLast"];
     Acts.prototype.GetItemsBySingleConditionInRange = function (key_, start, end, limit_type, limit_count, tag_)
 	{  
-	    clean_table(this.request_itemIDs);
+	    this.request_itemIDs = {};
 	    
 	    var self = this;
         var read_item = function(childSnapshot)
         {
-            var k = childSnapshot["key"]();
+            var k = get_key(childSnapshot);
             var v = childSnapshot["val"]();
             self.request_itemIDs[k] = v;
         };     
@@ -544,12 +573,12 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
 	    var is_exclusive = (comparsion_type == 3) || (comparsion_type == 4);
 	    var current_item_count=0, last_key = "";
 	    
-	    clean_table(this.request_itemIDs);
+	    this.request_itemIDs = {};
 	    
 	    var self = this;
         var read_item = function(childSnapshot)
         {
-            var k = childSnapshot["key"]();               
+            var k = get_key(childSnapshot);               
             var v = childSnapshot["val"]();
             
             self.request_itemIDs[k] = v;
@@ -656,11 +685,9 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         var code_string = this.get_SUB_codeString.apply(this, ARGS_COPY);
 		ret.set_string(code_string);
 	};     
-}());
 
-
-(function ()
-{
+    
+    // ---------------------------------------------------------------------
     var FilterKlass = function(plugin)
     {
         this.plugin = plugin;
@@ -705,7 +732,7 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         var self = this;
         var read_item = function(childSnapshot)
         {
-            var k = childSnapshot["key"]();
+            var k = get_key(childSnapshot);
             var v = childSnapshot["val"]();
             read_result[k] = v;
         };     
@@ -846,5 +873,4 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
     };
     // code string to handler    
     
-    cr.plugins_.Rex_Firebase_ItemFilter.FilterKlass = FilterKlass;
 }());

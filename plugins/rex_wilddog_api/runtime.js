@@ -4,11 +4,14 @@
 assert2(cr, "cr namespace not created");
 assert2(cr.plugins_, "cr.plugins_ not created");
 
+// pretend to be firebase api
+window["Firebase"] = window["Wilddog"];  
+    
 /////////////////////////////////////
 // Plugin class
 cr.plugins_.Rex_WilddogAPI = function(runtime)
 {
-	this.runtime = runtime;
+	this.runtime = runtime;    
 };
 
 (function ()
@@ -40,10 +43,7 @@ cr.plugins_.Rex_WilddogAPI = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	instanceProto.onCreate = function()
-	{
-        
-        window["Firebase"] = window["Wilddog"];
-        
+	{        
         if (!this.recycled)
             window["Firebase"]["enableLogging"](this.properties[0] == 1);
 	};

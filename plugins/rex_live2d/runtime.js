@@ -457,7 +457,11 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
             return;
         
         var model = this.model["getLive2DModel"]();
-        model["setParamFloat"](name_, value_);
+        var fn = function()
+        {
+            model["setParamFloat"](name_, value_);
+        }        
+        this.model["customParamsCB"].push(fn);
         this.updateModel();
 	};	
     
@@ -467,7 +471,11 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
             return;
         
         var model = this.model["getLive2DModel"]();
-        model["addToParamFloat"](name_, value_);
+        var fn = function()
+        {
+            model["addToParamFloat"](name_, value_);
+        }        
+        this.model["customParamsCB"].push(fn);
         this.updateModel();
 	};    
     

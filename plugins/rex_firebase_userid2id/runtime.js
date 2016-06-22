@@ -51,19 +51,65 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         this.exp_UserID = "";
 	};
 	
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
 
 	instanceProto.get_ID_ref = function(ID)
 	{
@@ -140,6 +186,8 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	        
 	    for (var k in obj_)
 	        return k;
+
+        return null;        
 	};
 
 	var _get_value = function (obj_)
@@ -149,6 +197,8 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	        	    
 	    for (var k in obj_)
 	        return obj_[k];
+        
+        return null;
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -240,7 +290,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	};	
 	
     Acts.prototype.RequestTryGetID = function (UserID, ID)
-	{
+	{               
 	    if ((UserID === "") || (ID === ""))
 	        return;
 	        
@@ -259,7 +309,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             }
             else
             {
-                if (return_ID === null)  // try set new ID
+                if (return_ID == null)  // try set new ID
                     self.try_getID(UserID, ID, on_getID_failed);
                 else                     // ID is existed
                 {

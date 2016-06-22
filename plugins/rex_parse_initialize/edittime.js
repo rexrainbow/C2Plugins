@@ -7,7 +7,7 @@
 		"description":	"Set api key, javascript key and server URL of parse service.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_initialize.html",
-		"category":		"Rex - Web - parse",
+		"category":		"Rex - Web - parse - api",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,

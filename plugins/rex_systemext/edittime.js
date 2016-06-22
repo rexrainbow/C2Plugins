@@ -138,6 +138,11 @@ AddNumberParam('Standard deviation', "Standard deviation value", 1);
 AddExpression(12, ef_return_number, "Get normal distribution approximation", "Random", 
               "NormalRandomApproximation", 
               "Get normal distribution by central limit theorem with 6 random number.");
+  
+AddNumberParam("Input", "Angle of input, in degrees.", 0);  
+AddNumberParam("Normal", "Angle of normal, in degrees.", 90);
+AddExpression(21, ef_return_number, "Get reflection angle", "Angle", "ReflectionAngle", "Get reflection angle.");
+              
 
 ACESDone();
 

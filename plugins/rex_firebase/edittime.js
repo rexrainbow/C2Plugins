@@ -58,6 +58,17 @@ AddCondition(9, cf_trigger, "On error", "Transaction - completed",
             "On transaction error <b>{0}</b>", 
             "Triggered after any transaction  error.", "OnTransactionError");     
             
+AddCondition(11, cf_trigger, "On connected", "Connection", 
+             "On connected", 
+             "Triggered while connecting start.", "OnConnected"); 
+             
+AddCondition(12, cf_trigger, "On disconnected", "Connection", 
+             "On disconnected", 
+             "Triggered while disconnected.", "OnDisconnected");
+             
+AddCondition(13, 0, "Is connected", "Connection", 
+             "Is connected", 
+             "Return true if connected to firebase server.", "IsConnected");              
 //////////////////////////////////////////////////////////////
 // Actions     
 AddStringParam("Domain", "The Firebase data ref URL", '""');
@@ -281,11 +292,23 @@ AddExpression(5, ef_return_any | ef_variadic_parameters, "Transaction result", "
 AddExpression(11, ef_return_string, "Last push ref", "Push", "LastPushRef", 
               "Data reference at last push.");
 
+AddExpression(21, ef_return_string, "Generate new key from push", "ItemID", "GenerateKey", 
+              "Generate new key from push action.");               
+AddExpression(22, ef_return_string, "Get last generated key", "ItemID", "LastGeneratedKey", 
+              "Get last generate a key from push action.");     
+              
+AddExpression(31, ef_return_number, "Current server time offset", "Server time offset", "ServerTimeOffset", 
+              "Get current server time offset.");              
+AddExpression(32, ef_return_number, "Estimated time", "Server time offset", "EstimatedTime", 
+              "Get estimated time from curent time + current server time offset."); 
+              
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
+    new cr.Property(ept_combo, "Connection detection", "Yes", "Enable connection detection.", "No|Yes"),
+    new cr.Property(ept_combo, "Server time offset detection", "Yes", "Enable server time offset detection.", "No|Yes"),    
 	];
 	
 // Called by IDE when a new object type is to be created

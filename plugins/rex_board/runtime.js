@@ -45,14 +45,14 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	instanceProto.onCreate = function()
 	{
         this.check_name = "BOARD";
-	    
-	    this.reset_board(this.properties[0]-1,
-	                     this.properties[1]-1);
-	    this.is_wrap_mode = (this.properties[2] == 1);
+        this.board = new window.RexC2BoardKlass();
+        this.infinityMode = (this.properties[3] === 1);	    
+	    this.isWrapMode = (this.properties[2] === 1);	    
+	    this.ResetBoard(this.properties[0]-1, this.properties[1]-1);
 	    
         this.layout = null;
         this.layoutUid = -1;    // for loading
-        this._kicked_chess_uid = -1;
+        this.kickedChessUID = -1;
         this.exp_EmptyLX = -1;
         this.exp_EmptyLY = -1;
 	    this.exp_CurLX = 0;
@@ -72,7 +72,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	instanceProto.onDestroy = function ()
 	{
-        this.reset_board(-1,-1);
+        this.ResetBoard(-1,-1);
         this.runtime.removeDestroyCallback(this.myDestroyCallback);
 	};   
     
@@ -105,91 +105,78 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         assert2(this.layout, "Board: Can not find layout oject.");
         return null;
     };    
-    
-	instanceProto.reset_board = function(x_max, y_max)
+        
+	instanceProto.ResetBoard = function(x_max, y_max)
 	{
-	    if (x_max>=-1)
+        if (this.infinityMode)
+            this.x_max = -1;
+	    else if (x_max>=-1)
 	        this.x_max = x_max;
+        
+        if (this.infinityMode)
+	        this.y_max = -1;            
 	    if (y_max>=-1)    
 	        this.y_max = y_max;
 
-        if (this.board == null);
-            this.board = [];            
-		this.board.length = x_max+1;
-		var x, y;
-		for (x=0;x<=x_max;x++)
-		{
-		    this.board[x] = [];
-		    this.board[x].length = y_max+1;
-		    for(y=0;y<=y_max;y++)
-		        this.board[x][y] = {};
-		}
-		
-		if (this.items == null)
-		    this.items = {};
-		else
-            window.RexC2BoardLXYZCache.freeLinesInDict(this.items);
+        this.board.Reset();
 	};
-	
-	instanceProto.set_board_width = function(x_max)
+    
+    instanceProto.GetAllChess = function ()
+    {
+        return this.board.GetAllChess();
+    };    
+
+	instanceProto.SetBoardWidth = function(x_max)
 	{
-	    if (this.x_max == x_max)
+        if (this.infinityMode)
+            return;
+	    else if (this.x_max === x_max)
 		    return;
 	    else if (this.x_max < x_max)    // extend
 		{
-		    var x, y;
-			this.board.length = x_max;
-		    for (x=this.x_max+1; x<=x_max; x++)
-		    {
-		        this.board[x] = [];
-		        this.board[x].length = this.y_max+1;
-		        for(y=0; y<=this.y_max; y++)
-		            this.board[x][y] = {};
-		    }
+            // do nothing
 		}
 		else  // (this.x_max > x_max) : collapse
 		{		
-		    var x, y, z, z_hash;
+		    var x, y, z, zHash;
 		    for (x=this.x_max; x>x_max; x--)
 		    {
 		        for(y=0; y<=this.y_max; y++)
 				{
-				    z_hash = this.board[x][y];
-				    for (z in z_hash)
-					    this.RemoveChess(z_hash[z], true);
+				    zHash = this.xy2zHash(x,y);
+                    if ( !zHash )
+                        continue;
+				    for (z in zHash)
+					    this.RemoveChess(zHash[z], true);
 			    }
-		    }		
-			this.board.length = x_max+1;			
+		    }
 		}
 		this.x_max = x_max;
 	};
 	
-	instanceProto.set_board_height = function(y_max)
+	instanceProto.SetBoardHeight = function(y_max)
 	{
-	    if (this.y_max == y_max)
+        if (this.infinityMode)
+            return;        
+	    else if (this.y_max == y_max)
 		    return;
 	    else if (this.y_max < y_max)    // extend
 		{
-		    var x, y;
-		    for (x=0; x<=this.x_max; x++)
-		    {
-		        this.board[x].length = y_max+1;			
-		        for(y=this.y_max+1; y<=y_max; y++)
-		            this.board[x][y] = {};
-		    }
+            // do nothing
 		}
 		else  // (this.y_max > y_max) : collapse
 		{
-		    var x, y, z, z_hash;
+		    var x, y, z, zHash;
 		    for (x=0; x<=this.x_max; x++)
 		    {	
 		        for(y=this.y_max; y>y_max; y--)
 				{
-				    z_hash = this.board[x][y];
-				    for (z in z_hash)
-					    this.RemoveChess(z_hash[z], true);
-				}
-		        this.board[x].length = y_max+1;							
+				    zHash = this.xy2zHash(x,y);
+                    if ( !zHash )
+                        continue;                                        
+				    for (z in zHash)
+					    this.RemoveChess(zHash[z], true);
+				}						
 		    }		
 		}
 		this.y_max = y_max;	
@@ -197,24 +184,39 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
 	instanceProto.IsInsideBoard = function (x,y,z)
 	{
-	    var is_in_board = (x>=0) && (y>=0) && (x<=this.x_max) && (y<=this.y_max);
-	    if (is_in_board && (z != null))
-	        is_in_board = (z in this.board[x][y]);
+	    var is_in_board;
+        // check x,y boundary
+        if (this.infinityMode)
+            is_in_board = true;
+        else
+            is_in_board = (x>=0) &&  (y>=0) && (x<=this.x_max) && (y<=this.y_max);
+        
+        // check z 
+	    if (is_in_board && (z != null))                   
+	        is_in_board = (this.xyz2uid(x,y,z) != null);        
+        
 	    return is_in_board;
 	};	
 	
 	instanceProto.IsEmpty = function (x,y,z)
 	{
         var zHash = this.xy2zHash(x,y);
-        if (zHash === null)
-            return false;
-        else if (z==0)
+        if ( !zHash )
+        {
+            if (this.infinityMode)
+                return true;
+            else if (!this.IsInsideBoard(x,y))  // not infinityMode
+                return false;
+            else
+                return true;
+        }
+        else if (z===0)
             return (zHash[0] == null);
         else
             return (zHash[0] != null) && (zHash[z] == null);
 	};	
 	
-	var _get_uid = function(objs)
+	var getUID = function(objs)
 	{
         var uid;
 	    if (objs == null)
@@ -232,24 +234,23 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     
 	instanceProto.xyz2uid = function(x, y, z)
 	{
-        return (this.IsInsideBoard(x, y))? this.board[x][y][z]:null;
+        return this.board.GetCell(x,y,z);
 	};
 	
 	instanceProto.xy2zHash = function(x, y)
 	{
-	    return (this.IsInsideBoard(x, y))? this.board[x][y]:null;
+        return this.board.GetCell(x,y) || null;
 	};
 
 	instanceProto.xy2zCnt = function(x, y)
 	{
-	    var zcnt=0;
-	    var z_hash = this.xy2zHash(x, y);
-	    if (z_hash != null)
-	    {
-	        var z;
-	        for (z in z_hash)
-	            zcnt += 1;
-	    }
+	    var zHash = this.xy2zHash(x, y);
+        if ( !zHash )
+            return 0;
+      
+	    var zcnt=0;      
+	    for (var z in zHash)
+	        zcnt += 1;
 	    return zcnt;
 	};
 		
@@ -263,73 +264,81 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    
 		return this.xyz2uid(o_xyz.x, o_xyz.y, lz);
 	};
-	
-	instanceProto.GetNeighborLX = function(lx, ly, dir, is_wrap_mode)
+
+	instanceProto.GetNeighborLX = function(lx, ly, dir, isWrapMode)
 	{
-	    if (is_wrap_mode == null)
-	        is_wrap_mode = this.is_wrap_mode;
+        if (this.infinityMode)
+            isWrapMode = false;
+	    else if (isWrapMode == null)
+	        isWrapMode = this.isWrapMode;
 	        
 	    var layout = this.GetLayout();
 	    var nlx = layout.GetNeighborLX(lx, ly, dir);
-	    if (is_wrap_mode)
-	        nlx = this.LX2WrapLX(nlx);
+	    if (isWrapMode)
+	        nlx = this.WrapLX(nlx);
             
 		return nlx;
 	};
 	
-	instanceProto.LX2WrapLX = function(lx, is_wrap_mode)
-	{
-	    if (is_wrap_mode == null)
-	        is_wrap_mode = this.is_wrap_mode;
+	instanceProto.WrapLX = function(lx, isWrapMode)
+	{     
+        if (this.infinityMode)
+            isWrapMode = false;
+	    else if (isWrapMode == null)
+	        isWrapMode = this.isWrapMode;
 	    
-	    if (!is_wrap_mode)
+	    if (!isWrapMode)
 	        return lx;
-	        
+	    
+        var cnt = this.x_max + 1;
+        lx = lx % cnt;
         if (lx < 0)
-            lx = lx + (this.x_max + 1);
-        else if (lx > this.x_max)
-            lx = lx - (this.x_max + 1);
+            lx = lx + (cnt);
             
         return lx;
 	};
 		
-	instanceProto.GetNeighborLY = function(lx, ly, dir, is_wrap_mode)
+	instanceProto.GetNeighborLY = function(lx, ly, dir, isWrapMode)
 	{
-	    if (is_wrap_mode == null)
-	        is_wrap_mode = this.is_wrap_mode;
+        if (this.infinityMode)
+            isWrapMode = false;
+	    else if (isWrapMode == null)
+	        isWrapMode = this.isWrapMode;
 	        	    
 	    var layout = this.GetLayout();
 	    var nly = layout.GetNeighborLY(lx, ly, dir);
-	    if (is_wrap_mode)
-	        nly = this.LY2WrapLY(nly);
+	    if (isWrapMode)
+	        nly = this.WrapLY(nly);
 
 		return nly;
 	};		
 		
-	instanceProto.LY2WrapLY = function(ly, is_wrap_mode)
+	instanceProto.WrapLY = function(ly, isWrapMode)
 	{
-	    if (is_wrap_mode == null)
-	        is_wrap_mode = this.is_wrap_mode;
+        if (this.infinityMode)
+            isWrapMode = false;
+	    else if (isWrapMode == null)
+	        isWrapMode = this.isWrapMode;
 	    
-	    if (!is_wrap_mode)
+	    if (!isWrapMode)
 	        return ly;
 	        	    
+        var cnt = this.y_max + 1;
+        ly = ly % cnt;
         if (ly < 0)
-            ly = ly + (this.y_max + 1);
-        else if (ly > this.y_max)
-            ly = ly - (this.y_max + 1);
-    
+            ly = ly + (cnt);
+        
         return ly;
 	};
 		
-	instanceProto.dir2uid = function(uid, dir, tz, is_wrap_mode)
+	instanceProto.dir2uid = function(uid, dir, tz, isWrapMode)
 	{
 	    var o_xyz = this.uid2xyz(uid);
 		if (o_xyz == null)
 		    return null;
 
-	    var tx = this.GetNeighborLX(o_xyz.x, o_xyz.y, dir, is_wrap_mode);
-		var ty = this.GetNeighborLY(o_xyz.x, o_xyz.y, dir, is_wrap_mode);
+	    var tx = this.GetNeighborLX(o_xyz.x, o_xyz.y, dir, isWrapMode);
+		var ty = this.GetNeighborLY(o_xyz.x, o_xyz.y, dir, isWrapMode);
 	    if (tz == null)
 		    tz = o_xyz.z;
 		return this.xyz2uid(tx, ty, tz);
@@ -337,7 +346,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	instanceProto.uid2xyz = function(uid)
 	{
-	    return this.items[uid];
+	    return this.GetAllChess()[uid] || null;
 	};
 
 	instanceProto.uid2inst = function(uid, ignored_chess_check)
@@ -347,7 +356,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return null;
         else if (uid_digital < 0)
             return null;
-	    else if (!ignored_chess_check && (this.uid2xyz(uid) == null))  // not on the board
+	    else if (!ignored_chess_check && (!this.uid2xyz(uid)))  // not on the board
 	        return null;
 	    else
 	        return this.runtime.getObjectByUID(uid);
@@ -367,106 +376,106 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return true;
 	};
 	
-	instanceProto.CanPut = function (lx, ly, lz, test_mode)
+	instanceProto.CanPut = function (x, y, z, test_mode)
 	{
-	    var can_put;
+	    var result;
 	    switch (test_mode)
 	    {
-	    case 0:    // lxy is inside board
-	        can_put = this.IsInsideBoard(lx, ly);
+	    case 0:    // x,y is inside board
+	        result = this.IsInsideBoard(x, y);
 	    break;
-	    case 1:    // lxy is inside board, and stand on a tile if lz!=0
-	        var check_lz = (lz == 0)? null : 0;
-	        can_put = this.IsInsideBoard(lx, ly, check_lz);
+	    case 1:    // x,y is inside board, and stand on a tile if z!=0
+	        var check_z = (z == 0)? null : 0;
+	        result = this.IsInsideBoard(x, y, check_z);
 	    break;
-	    case 2:    // lxy is stand on a tile and is empty
-	        can_put = this.IsEmpty(lx, ly, lz);
+	    case 2:    // x,y is stand on a tile and is empty
+	        result = this.IsEmpty(x, y, z);
 	    break;	    
 	    }
-	    return can_put;
+	    return result;
 	};
         
-	instanceProto.RemoveChess = function(uid, kicking_notify)
+	instanceProto.RemoveChess = function(uid, kickingNotify)
 	{        
         if (uid == null)
             return;
 	    
-        var _xyz = this.uid2xyz(uid);
-        if (_xyz == null)
+        var xyz = this.uid2xyz(uid);
+        if (xyz == null)
             return;
                     
-        if (kicking_notify && this.uid2inst(uid))
+        if (kickingNotify && this.uid2inst(uid))
         {
-            this._kicked_chess_uid = uid;
+            this.kickedChessUID = uid;
             this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnChessKicked, this); 
         }
         
-        window.RexC2BoardLXYZCache.freeLine(this.items[uid]);
-        delete this.items[uid];
-        delete this.board[_xyz.x][_xyz.y][_xyz.z];
+        this.board.RemoveCell(uid);
 	};
     
-	instanceProto.AddChess = function(inst, _x, _y, _z)
+	instanceProto.AddChess = function(inst, x, y, z)
 	{                
-	    if (inst == null)
+	    if ( !inst )
 	        return;
 	        
         // check if lxy is inside board
-        if ( !this.IsInsideBoard(_x, _y) )
+        if ( !this.IsInsideBoard(x, y) )
             return;
                     
         // "inst" could be instance(object) or uid(number) or ?(string)
-        var inst_is_inst = (typeof(inst) === "object");
-        var uid = (inst_is_inst)? inst.uid:inst;
+        var instIsInstType = (typeof(inst) === "object");
+        var uid = (instIsInstType)? inst.uid:inst;
 
         this.RemoveChess(uid);  // keep unique uid (symbol)            
-        this.RemoveChess(this.xyz2uid(_x,_y,_z), true);
-        this.board[_x][_y][_z] = uid;
-	    this.items[uid] = window.RexC2BoardLXYZCache.allocLine(_x, _y, _z);
+        this.RemoveChess(this.xyz2uid(x, y, z), true);
+        this.board.AddCell(uid, x, y, z);
             
         // board changed, check logical overlapping
-        if (inst_is_inst || (this.uid2inst(uid) != null))
+        if (instIsInstType || (this.uid2inst(uid) != null))
             this.runtime.trigger(cr.plugins_.Rex_SLGBoard.prototype.cnds.OnCollided, this);                                           
 	};
 
-	instanceProto.MoveChess = function(inst, target_x, target_y, target_z)
+	instanceProto.MoveChess = function(inst, x, y, z)
 	{
         var uid = (typeof(inst) === "object")? inst.uid:inst;      
 	    this.RemoveChess(uid);   
-        this.AddChess(uid, target_x, target_y, target_z); 
+        this.AddChess(uid, x, y, z); 
 	}; 
     
-	instanceProto.uid2NeighborDir = function (uidA, uidB, is_wrap_mode)
+	instanceProto.uid2NeighborDir = function (uidA, uidB, isWrapMode)
 	{
         var xyzA=this.uid2xyz(uidA);
         var xyzB=this.uid2xyz(uidB);
-        if ((xyzA == null) || (xyzB == null))
+        if ( !xyzA || !xyzB )
             return null;
         
-        return this.lxy2NeighborDir(xyzA.x, xyzA.y, xyzB.x, xyzB.y, is_wrap_mode);
+        return this.xy2NeighborDir(xyzA.x, xyzA.y, xyzB.x, xyzB.y, isWrapMode);
 	};    
 	
 	var GXYZA = {x:0, y:0, z:0};
 	var GXYZB = {x:0, y:0, z:0};
-	instanceProto.lxy2NeighborDir = function (lx0, ly0, lx1, ly1, is_wrap_mode)
+	instanceProto.xy2NeighborDir = function (x0, y0, x1, y1, isWrapMode)
 	{
-        GXYZA.x=lx0, GXYZA.y=ly0;
-        GXYZB.x=lx1, GXYZB.y=ly1;
-        var dir = this.GetLayout().NeighborXYZ2Dir(GXYZA, GXYZB);
+        GXYZA.x=x0, GXYZA.y=y0;
+        GXYZB.x=x1, GXYZB.y=y1;
+        var layout = this.GetLayout();
+        var dir = layout.NeighborXYZ2Dir(GXYZA, GXYZB);
         
         if (dir == null)
         {
-            if (is_wrap_mode == null)
-                is_wrap_mode = this.is_wrap_mode;
+            if (this.infinityMode)
+                isWrapMode = false;
+            if (isWrapMode == null)
+                isWrapMode = this.isWrapMode;
                 
-            if (is_wrap_mode)
+            if (isWrapMode)
             {                
-                var i, dir_count=this.GetLayout().GetDirCount();
+                var i, dirCount=layout.GetDirCount();
                 var tx, ty;
-                for (i=0; i<dir_count; i++)
+                for (i=0; i<dirCount; i++)
                 {
-                    tx = this.GetNeighborLX(GXYZA.x, GXYZA.y, i, is_wrap_mode);
-                    ty = this.GetNeighborLY(GXYZA.x, GXYZA.y, i, is_wrap_mode);
+                    tx = this.GetNeighborLX(GXYZA.x, GXYZA.y, i, isWrapMode);
+                    ty = this.GetNeighborLY(GXYZA.x, GXYZA.y, i, isWrapMode);
                     if ((tx == GXYZB.x) && (ty == GXYZB.y))
                     {
                         dir = i;
@@ -478,30 +487,30 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return dir;
 	};  	
 	
-	instanceProto.CreateChess = function(objtype, lx, ly, lz, layer)
+	instanceProto.CreateChess = function(objtype, x, y, z, layer)
 	{
-        if ((objtype == null) || (layer == null))
+        if (!objtype || !layer)
             return;   
         
-        if (!this.IsInsideBoard(lx, ly))
+        if (!this.IsInsideBoard(x, y))
             return;
             	    
         // callback
         var self = this;  
         var callback = function (inst)
         {
-            self.AddChess(inst, lx,ly,lz);  
+            self.AddChess(inst, x,y,z);  
         }
         // callback
         
         var layout = this.GetLayout();         
-        var px = layout.LXYZ2PX(lx, ly, lz);
-        var py = layout.LXYZ2PY(lx, ly, lz);
+        var px = layout.LXYZ2PX(x, y, z);
+        var py = layout.LXYZ2PY(x, y, z);
         var inst = window.RexC2CreateObject.call(this, objtype, layer, px, py, callback);           
 	    return inst;
 	};	
 
-	instanceProto._overlap_test = function(_objA, _objB)
+	instanceProto.overlapTest = function(_objA, _objB)
 	{
 	    var _insts_A = _objA.getCurrentSol().getObjects();
 	    var _insts_B = _objB.getCurrentSol().getObjects();
@@ -525,7 +534,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var current_event = runtime.getCurrentEventStack().current_event;     
         var is_the_same_type = (objA === objB);          
         var cnt_instA = insts_A.length;     
-        var i, z, inst_A, uid_A, xyz_A, z_hash, tmp_inst, tmp_uid;
+        var i, z, inst_A, uid_A, xyz_A, zHash, tmp_inst, tmp_uid;
         var cursol_A, cursol_B;
         for (i=0; i<cnt_instA; i++)
         {
@@ -535,10 +544,13 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             if (xyz_A == null)
                 continue;
                 
-            var z_hash = this.xy2zHash(xyz_A.x, xyz_A.y);
-            for (z in z_hash)
+            var zHash = this.xy2zHash(xyz_A.x, xyz_A.y);
+            if ( !zHash )
+                continue;
+            
+            for (z in zHash)
             {
-                tmp_uid = z_hash[z];
+                tmp_uid = zHash[z];
                 if (tmp_uid == uid_A)
                     continue;
                 tmp_inst = this.uid2inst(tmp_uid);                
@@ -555,15 +567,15 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                     {
                         // just use lsol, is same reference as rsol
                         cursol_A.instances.length = 2;
-				        cursol_A.instances[0] = inst_A;
+			            cursol_A.instances[0] = inst_A;
                         cursol_A.instances[1] = tmp_inst;
                     }
                     else   // Pick each instance in its respective SOL
                     {
                         cursol_A.instances.length = 1;
-				        cursol_A.instances[0] = inst_A;     
+			            cursol_A.instances[0] = inst_A;     
                         cursol_B.instances.length = 1;
-				        cursol_B.instances[0] = tmp_inst; 				                           
+			            cursol_B.instances[0] = tmp_inst; 				                           
                     }
                     current_event.retrigger();
                     runtime.popSol(current_event.solModifiers);   
@@ -572,7 +584,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         }
 	};	
 
-	instanceProto.pickuids = function (uids, chess_type, ignored_chess_check)
+	instanceProto.PickUIDs = function (uids, chess_type, ignored_chess_check)
 	{
         if (!chess_type)
             return false;
@@ -590,15 +602,16 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};
     
     var name2type = {};  // private global object
-	instanceProto._pick_all_insts = function ()
+	instanceProto.PickAllInsts = function ()
 	{	    
 	    var uid, inst, objtype, sol;
-	    hash_clean(name2type);
+	    cleanTable(name2type);
 	    var has_inst = false;    
-	    for (uid in this.items)
+        var items = this.GetAllChess();
+	    for (uid in items)
 	    {
 	        inst = this.uid2inst(uid);	  
-            if (inst == null)
+            if ( !inst )
                 continue;			
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
@@ -614,192 +627,262 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    var name;
 	    for (name in name2type)
 	        name2type[name].applySolToContainer();
-	    hash_clean(name2type);
+	    cleanTable(name2type);
 	    return has_inst;
 	};
 	
-	instanceProto._pick_chess = function (chess_type)
+	instanceProto.PickChess = function (chess_type)
 	{
         if (!chess_type)
             return false;
             
         _uids.length = 0;
         var u;
-        for (u in this.items)
+        var items = this.GetAllChess();
+        for (u in items)
         {
             _uids.push(parseInt(u));
         }       
-        var has_inst = this.pickuids(_uids, chess_type);
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;  
 	};
     
-	instanceProto._pick_chess_on_LXY = function (chess_type, lx, ly)
+	instanceProto.PickChessAtLXY = function (chess_type, x, y)
 	{	    
         if (!chess_type)
             return false;
             
-        var z_hash = this.xy2zHash(lx, ly);
-        if (z_hash == null)
+        var zHash = this.xy2zHash(x, y);
+        if ( !zHash )
             return false;
         
         _uids.length = 0;
-		var z_index;
-        for (z_index in z_hash)
+		var z;
+        for (z in zHash)
         {
-            _uids.push(z_hash[z_index]);
+            _uids.push(zHash[z]);
         }
-        var has_inst = this.pickuids(_uids, chess_type);
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;
 	};
-	instanceProto._pick_chess_on_tiles = function (chess_type, tiles)
+	instanceProto.PickChessAtTiles = function (chess_type, tiles)
 	{	
         if (!chess_type)
             return false;
             
 	    _uids.length = 0;
 	    var tiles_cnt=tiles.length;
-	    var t, tile, uid, _xyz, z_hash, z_index;
+	    var t, tile, uid, xyz, zHash, z;
         for (t=0; t<tiles_cnt; t++)
         {
             tile = tiles[t];
             uid = (typeof(tile) === "object")? tile.uid: tile;
             // Do you want to scan all tiles to pick matched symbol tiles?
-            _xyz = this.uid2xyz(uid);
-            if (_xyz == null)
+            xyz = this.uid2xyz(uid);
+            if ( !xyz )
                 continue; 
-            z_hash = this.xy2zHash(_xyz.x, _xyz.y);
-            if (z_hash == null)
+            zHash = this.xy2zHash(xyz.x, xyz.y);
+            if ( !zHash )
                 continue;   
-            for (z_index in z_hash)
+            for (z in zHash)
             {
-                _uids.push(z_hash[z_index]);
+                _uids.push(zHash[z]);
             }                             
         }
-        var has_inst = this.pickuids(_uids, chess_type);
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;
 	};
 
-	instanceProto.point_is_in_board = function (px, py)
+	instanceProto.PointIsInBoard = function (px, py)
 	{
+        if (this.infinityMode)
+            return true;
+        
         var layout = this.GetLayout();
 	    var lx = layout.PXY2LX(px, py);
 		var ly = layout.PXY2LY(px, py);
 		return this.IsInsideBoard(lx, ly);
 	};
-		
-	instanceProto._pick_chess_on_LXYZ = function (chess_type, lx, ly, lz)
+
+	instanceProto.PickChessAtLXYZ = function (chess_type, x, y, z)
 	{
         if (!chess_type)
             return false;
             
-        var uid = this.xyz2uid(lx, ly, lz);
-        if (uid == null)
-            return false;
-        _uids.length = 0;
-        _uids.push(uid);
-        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.length = 0;            
+        var uid = this.xyz2uid(x, y, z);
+        if (uid != null)
+            _uids.push(uid);
+
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;          
 	};
 	
-	instanceProto._pick_chess_on_LX = function (chess_type, lx)
+	instanceProto.PickChessAtLX = function (chess_type, x)
 	{
         if (!chess_type)
             return false;
             
-	    var ly, lz, zHash, uid;
-        _uids.length = 0;	    
-	    for (ly=0; ly<=this.y_max; ly++)
-	    {
-	        zHash = this.xy2zHash(lx, ly);
-	        for (lz in zHash)
-	        {
-	            _uids.push(zHash[lz]);
-	        }
-	    }
-        var has_inst = this.pickuids(_uids, chess_type);
-        _uids.length = 0;
-        return has_inst;          
-	};
-    
-	instanceProto._pick_chess_inside_square = function (chess_type, lx0_, lx1_, ly0_, ly1_)
-	{
-        if (!chess_type)
-            return false;
-            
-        var lx0 = Math.min(lx0_, lx1_);
-        var lx1 = Math.max(lx0_, lx1_);       
-        var ly0 = Math.min(ly0_, ly1_);
-        var ly1 = Math.max(ly0_, ly1_);               
+
+        _uids.length = 0;	
         
-	    var lx, ly, lz, zHash, uid;
-        _uids.length = 0;	    
-	    for (ly=ly0; ly<=ly1; ly++)
-	    {
-	        for (lx=lx0; lx<=lx1; lx++)
-	        {            
-	            zHash = this.xy2zHash(lx, ly);
-                if (zHash == null)
-                    continue;
-                
-	            for (lz in zHash)
-	            {
-	                _uids.push(zHash[lz]);
-	            }
+        if (this.infinityMode)        
+        {
+            // scan all chess
+            var uid, xyz;
+            var items = this.GetAllChess();
+            for (uid in items)
+            { 
+                uid = parseInt(uid);
+                xyz = this.uid2xyz(uid);
+                if (xyz.x === x)
+                {
+                    _uids.push(uid);
+                }                
             }
-	    }
-        var has_inst = this.pickuids(_uids, chess_type);
+        }
+        else
+        {
+            // scan a line
+	        var y, z, zHash, uid;            
+	        for (y=0; y<=this.y_max; y++)
+	        {
+	            zHash = this.xy2zHash(x, y);
+                if ( !zHash )
+                    continue;
+	            for (z in zHash)
+	            {
+	                _uids.push(zHash[z]);
+	            }                        
+	        }
+        }
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;          
-	};    
+	};
+
 	
-	instanceProto._pick_chess_on_LY = function (chess_type, ly)
+	instanceProto.PickChessAtLY = function (chess_type, y)
 	{
         if (!chess_type)
             return false;
             
-	    var lx, lz, zHash, uid;
         _uids.length = 0;	    
-	    for (lx=0; lx<=this.x_max; lx++)
-	    {
-	        zHash = this.xy2zHash(lx, ly);
-	        for (lz in zHash)
+        
+        if (this.infinityMode)        
+        {
+            // scan all chess
+            var uid, xyz;
+            var items = this.GetAllChess();
+            for (uid in items)
+            { 
+                uid = parseInt(uid);
+                xyz = this.uid2xyz(uid);
+                if (xyz.y === y)
+                {
+                    _uids.push(uid);
+                }                
+            }            
+        }
+        else        
+        {
+            // scan a line            
+	        var x, z, zHash, uid;            
+	        for (x=0; x<=this.x_max; x++)
 	        {
-	            _uids.push(zHash[lz]);
+	            zHash = this.xy2zHash(x, y);
+                if ( !zHash )
+                    continue;
+	            for (z in zHash)
+	            {
+	                _uids.push(zHash[z]);
+	            }
 	        }
-	    }
-        var has_inst = this.pickuids(_uids, chess_type);
+        }
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;          
 	};
 	
-	instanceProto._pick_chess_on_LZ = function (chess_type, lz)
+	instanceProto.PickChessAtLZ = function (chess_type, z)
 	{
         if (!chess_type)
             return false;
             
-	    var lx, ly, uid;
-        _uids.length = 0;        
-	    for (ly=0; ly<=this.y_max; ly++)
-	    {
-	        for (lx=0; lx<=this.x_max; lx++)
+        _uids.length = 0;    
+        
+        if (this.infinityMode)        
+        {
+            // scan all chess
+            var uid, xyz;
+            var items = this.GetAllChess();
+            for (uid in items)
+            { 
+                uid = parseInt(uid);
+                xyz = this.uid2xyz(uid);
+                if (xyz.z === z)
+                {
+                    _uids.push(uid);
+                }                
+            }            
+        }
+        else        
+        {           
+            // scan a face
+	        var x, y, uid;    
+	        for (y=0; y<=this.y_max; y++)
 	        {
-	            uid = this.xyz2uid(lx, ly, lz);
-	            if (uid == null)
-	                continue;
-	                
-	            _uids.push(uid);
+	            for (x=0; x<=this.x_max; x++)
+	            {
+	                uid = this.xyz2uid(x, y, z);
+	                if (uid == null)
+	                    continue;
+	                    
+	                _uids.push(uid);
+	            }
 	        }
-	    }
-        var has_inst = this.pickuids(_uids, chess_type);
+        }
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;          
 	};			
+    
+	instanceProto.PickChessInsideSquare = function (chess_type, x0_, x1_, y0_, y1_)
+	{
+        if (!chess_type)
+            return false;
+            
+        var x0 = Math.min(x0_, x1_);
+        var x1 = Math.max(x0_, x1_);       
+        var y0 = Math.min(y0_, y1_);
+        var y1 = Math.max(y0_, y1_);               
+        
+	    var x, y, z, zHash, uid;
+        _uids.length = 0;	    
+	    for (y=y0; y<=y1; y++)
+	    {
+	        for (x=x0; x<=x1; x++)
+	        {            
+	            zHash = this.xy2zHash(x, y);
+                if ( !zHash )
+                    continue;
+                
+	            for (z in zHash)
+	            {
+	                _uids.push(zHash[z]);
+	            }
+            }
+	    }
+        var has_inst = this.PickUIDs(_uids, chess_type);
+        _uids.length = 0;
+        return has_inst;          
+	};        
 	
-	instanceProto.pick_neighbor_chess = function (origin_inst, dir, chess_type, is_wrap_mode)
+	instanceProto.PickNeighborChess = function (origin_inst, dir, chess_type, isWrapMode)
 	{
         if (!chess_type)
             return false;
@@ -816,27 +899,27 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             var i;         
             for (i=0; i<dir_cnt; i++)
             {
-                neighbor_uid = this.dir2uid(origin_uid, i, 0, is_wrap_mode);
+                neighbor_uid = this.dir2uid(origin_uid, i, 0, isWrapMode);
                 if (neighbor_uid != null)
                     tiles_uid.push(neighbor_uid);
             }
         }    
         else if ((dir >= 0) && (dir <dir_cnt))
         {
-            neighbor_uid = this.dir2uid(origin_uid, dir, 0, is_wrap_mode);
+            neighbor_uid = this.dir2uid(origin_uid, dir, 0, isWrapMode);
             if (neighbor_uid != null)
-                tiles_uid.push(this.dir2uid(origin_uid, dir, 0, is_wrap_mode));
+                tiles_uid.push(this.dir2uid(origin_uid, dir, 0, isWrapMode));
         }
 
-        return this._pick_chess_on_tiles(chess_type, tiles_uid);;            
+        return this.PickChessAtTiles(chess_type, tiles_uid);;            
 	};
     
 	instanceProto.PickChessAboveTile = function (chess_type, tile_type)
 	{
-        if ((!chess_type) || (!tile_type))
+        if (!chess_type || !tile_type)
             return false;       
         var tiles = tile_type.getCurrentSol().getObjects();
-        return this._pick_chess_on_tiles(chess_type, tiles);
+        return this.PickChessAtTiles(chess_type, tiles);
 	};
     
 	instanceProto.PickChessAboveTileUID = function (chess_type, tile_uid)
@@ -845,9 +928,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             return;
         
         // Do you want to scan all tiles to pick matched symbol tiles?
-        var _xyz = this.uid2xyz(tile_uid);
-        if (_xyz)    // single tile
-            return this._pick_chess_on_LXY(chess_type, _xyz.x , _xyz.y);
+        var xyz = this.uid2xyz(tile_uid);
+        if (xyz)    // single tile
+            return this.PickChessAtLXY(chess_type, xyz.x , xyz.y);
         else  // otherwise, might be tiles list
         {
             var uid_list;
@@ -861,7 +944,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }
             
             if (uid_list)
-                return this._pick_chess_on_tiles(chess_type, uid_list);
+                return this.PickChessAtTiles(chess_type, uid_list);
             else
                 return false;
         }
@@ -869,23 +952,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     
 	instanceProto.saveToJSON = function ()
 	{    
-	    // wrap: copy from this.items
-	    var uid, uid2xyz = {}, item;
-	    for (uid in this.items)
-	    {
-	        uid2xyz[uid] = {};
-	        item = this.items[uid];
-	        uid2xyz[uid]["x"] = item.x;
-	        uid2xyz[uid]["y"] = item.y;
-	        uid2xyz[uid]["z"] = item.z;	        
-	    }
         var layout = this.GetLayout();
 		return { "luid": (layout != null)? layout.uid:(-1),
 		         "mx": this.x_max,
                  "my": this.y_max,
-                 "xyz2uid": this.board,
-                 "uid2xyz": uid2xyz,
-                 "iswrap": this.is_wrap_mode };
+                 "b": this.board.saveToJSON(),
+                 "iswrap": this.isWrapMode };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -893,16 +965,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.layoutUid = o["luid"];
 		this.x_max = o["mx"];
         this.y_max = o["my"]; 
-        this.board = o["xyz2uid"];
-        this.is_wrap_mode = o["iswrap"];
-        
-        window.RexC2BoardLXYZCache.freeLinesInDict(this.items);
-	    var uid, uid2xyz = o["uid2xyz"], item;
-	    for (uid in uid2xyz)
-	    {
-	        item = uid2xyz[uid];
-            this.items[uid] = window.RexC2BoardLXYZCache.allocLine(item["x"], item["y"], item["z"]);	        
-	    }     
+        this.board.loadFromJSON(o["b"]);
+        this.isWrapMode = o["iswrap"];
 	};
 	
 	instanceProto.afterLoad = function ()
@@ -918,70 +982,81 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 		this.layoutUid = -1;
 	};
 		
-	var hash_clean = function (obj)
+	var cleanTable = function (o)
 	{
-	    var k;
-	    for (k in obj)
-	        delete obj[k];
+	    for (var k in o)
+	        delete o[k];
 	};
-	//////////////////////////////////////
+
+	//////////////////////////////////////	
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();        
     
 	Cnds.prototype.ForEachCell = function (direction)
-	{
+	{        
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-
-        // Top to bottom, or Bottom to top -> y axis
-        if ((direction === 0) || (direction === 1))        
+        
+        var self=this;
+        var callback = function (x,y)
         {
-		    for (var y=0; y<=this.y_max; y++ )
-	        {
-	            this.exp_CurLY = (direction === 0)? y : (this.y_max - y);
-	            for (var x=0; x<=this.x_max; x++ )
-	            {
-                    if (solModifierAfterCnds)
-                    {
-                        this.runtime.pushCopySol(current_event.solModifiers);
-                    }
-                    
-                    this.exp_CurLX = x;	 
-		    	    current_event.retrigger();
-		    	    
-                    if (solModifierAfterCnds)
-                    {
-		    	        this.runtime.popSol(current_event.solModifiers);
-                    }
-		        }
-		    }
+            if (solModifierAfterCnds)                    
+                self.runtime.pushCopySol(current_event.solModifiers);
+          
+            self.exp_CurLX = x;
+            self.exp_CurLY = y;          
+		    current_event.retrigger();
+		    
+            if (solModifierAfterCnds)                    
+		        self.runtime.popSol(current_event.solModifiers);              
+        }
+
+        var maxX, maxY, minX, minY;
+        if (this.infinityMode)
+        {
+            maxX = this.board.GetMaxX();
+            maxY = this.board.GetMaxY();
+            minX = this.board.GetMinX();
+            minY = this.board.GetMinY();            
+        }
+        else
+        {
+            maxX = this.x_max;
+            maxY = this.y_max;
+            minX = 0;
+            minY = 0;        
         }
         
-        // Left to right, or Right to left -> x axis
-        else if ((direction === 2) || (direction === 3))        
-        {
-		    for (var x=0; x<=this.x_max; x++ )
-	        {
-	            this.exp_CurLX = (direction === 2)? x : (this.x_max - x);        
-	            for (var y=0; y<=this.y_max; y++ )
-	            {
-                    if (solModifierAfterCnds)
-                    {
-                        this.runtime.pushCopySol(current_event.solModifiers);
-                    }
-                    
-                    this.exp_CurLY = y;	 
-		    	    current_event.retrigger();
-		    	    
-                    if (solModifierAfterCnds)
-                    {
-		    	        this.runtime.popSol(current_event.solModifiers);
-                    }
+        var curLX, curLY;       
+       // Top to bottom, or Bottom to top -> y axis
+       if ((direction === 0) || (direction === 1))        
+       {
+		    for (var y=minY; y<=maxY; y++ )
+	       {
+	           curLY = (direction === 0)? y : (maxY - y);
+	           for (var x=minX; x<=maxX; x++ )
+	           {
+                   curLX = x;
+                   callback(curLX, curLY);               
 		        }
 		    }
-        }        
+       }
+       
+       // Left to right, or Right to left -> x axis
+       else if ((direction === 2) || (direction === 3))        
+       {
+		    for (var x=minX; x<=maxX; x++ )
+	       {
+	           curLX = (direction === 2)? x : (maxX - x);        
+	           for (var y=minY; y<=maxY; y++ )
+	           {
+                   curLY = y;
+                   callback(curLX, curLY);                    
+		        }
+		    }
+       }   
         return false;
     };
     
@@ -990,7 +1065,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    if (!this.IsInsideBoard(x,y))
 	        return false;	    
 	        
-		return (this.board[x][y][z] != null);
+        return (this.xyz2uid(x,y,z) != null);
 	};	
 	  
 	Cnds.prototype.IsEmpty = function (x,y,z)
@@ -1000,21 +1075,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Cnds.prototype.OnCollided = function (objA, objB)
 	{
-	    this._overlap_test(objA, objB);
+	    this.overlapTest(objA, objB);
 		// We've aleady run the event by now.
 		return false;
 	};
 	
 	Cnds.prototype.IsOverlapping = function (objA, objB)
 	{
-	    this._overlap_test(objA, objB);
+	    this.overlapTest(objA, objB);
 		// We've aleady run the event by now.
 		return false;
 	};	
 	  
 	Cnds.prototype.PointIsInBoard = function (px,py)
 	{
-		return this.point_is_in_board(px,py);
+		return this.PointIsInBoard(px,py);
 	}; 
 	
 	Cnds.prototype.AreNeighbors = function (uidA, uidB)
@@ -1024,21 +1099,21 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
 	Cnds.prototype.PickAllChess = function ()
 	{
-	    return this._pick_all_insts();
+	    return this.PickAllInsts();
 	};
 
 	Cnds.prototype.OnChessKicked = function (chess_type)
 	{
         _uids.length = 0;
-        _uids.push(this._kicked_chess_uid);
-        var has_inst = this.pickuids(_uids, chess_type);
+        _uids.push(this.kickedChessUID);
+        var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;  
 	};	
 	
-	Cnds.prototype.PickChessAtLXY = function (chess_type, lx, ly)
+	Cnds.prototype.PickChessAtLXY = function (chess_type, x, y)
 	{      
-        return this._pick_chess_on_LXY(chess_type, lx, ly);            
+        return this.PickChessAtLXY(chess_type, x, y);            
 	};
 	Cnds.prototype.PickChessAboveTile = function (chess_type, tile_type)
 	{
@@ -1055,17 +1130,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var sol = chess_type.getCurrentSol();
         var chess_insts = sol.getObjects();
         var i, cnt=chess_insts.length, uid;
+        var items = this.GetAllChess();
         for (i=0; i<cnt; i++)
         {
             uid = chess_insts[i].uid;
-            if (!this.items.hasOwnProperty(uid))
+            if (!items.hasOwnProperty(uid))
                 return false;
         }
         return true;
 	};  	
-	Cnds.prototype.PickChessAtLXYZ = function (chess_type, lx, ly, lz)
+	Cnds.prototype.PickChessAtLXYZ = function (chess_type, x, y, z)
 	{
-        return this._pick_chess_on_LXYZ(chess_type, lx, ly, lz);            
+        return this.PickChessAtLXYZ(chess_type, x, y, z);            
 	};
 	
 	Cnds.prototype.PickNeighborChess = function (origin, dir, chess_type)
@@ -1073,12 +1149,16 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (!origin)
             return false;
                
-        return this.pick_neighbor_chess(origin.getFirstPicked(), dir, chess_type);            
+        return this.PickNeighborChess(origin.getFirstPicked(), dir, chess_type);            
 	};
 	
 	var __empty_cells=[];
 	Cnds.prototype.PickEmptyCell = function (z)
 	{
+        // not support in infinityMode
+        if (this.infinityMode)
+            return false;
+        
         var x, y;
         for(x=0; x<=this.x_max; x++)
         {
@@ -1108,6 +1188,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Cnds.prototype.HasEmptyCell = function (z)
 	{
+        // not support in infinityMode        
+        if (this.infinityMode)
+            return true;
+        
         var x, y;
         for(x=0; x<=this.x_max; x++)
         {
@@ -1129,29 +1213,29 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         var dir1 = this.uid2NeighborDir(uidA, uidB, 1);
 	    if (dir1 == null)
 		    return false;
-			
+        
 	    var dir0 = this.uid2NeighborDir(uidA, uidB, 0);
 		return (dir1 != dir0);
 	};
 	
 	Cnds.prototype.PickChess = function (chess_type)
 	{   
-        return this._pick_chess(chess_type);            
+        return this.PickChess(chess_type);            
 	};	
 	
 	Cnds.prototype.PickChessAtLX = function (chess_type, lx)
 	{
-        return this._pick_chess_on_LX(chess_type, lx);            
+        return this.PickChessAtLX(chess_type, lx);            
 	};	
 	
 	Cnds.prototype.PickChessAtLY = function (chess_type, ly)
 	{	    
-        return this._pick_chess_on_LY(chess_type, ly);            
+        return this.PickChessAtLY(chess_type, ly);            
 	};	
 	
 	Cnds.prototype.PickChessAtLZ = function (chess_type, lz)
 	{
-        return this._pick_chess_on_LZ(chess_type, lz);            
+        return this.PickChessAtLZ(chess_type, lz);            
 	};		
 
 	Cnds.prototype.PickEmptyCellOnTiles = function (tile_type, z)
@@ -1224,9 +1308,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return !!this.uid2xyz(chess.uid);
 	};
 	  
-	Cnds.prototype.PickChessInsideSquare = function (chess_type, lx0, lx1, ly0, ly1)
+	Cnds.prototype.PickChessInsideSquare = function (chess_type, x0, x1, y0, y1)
 	{
-        return this._pick_chess_inside_square(chess_type, lx0, lx1, ly0, ly1);            
+        return this.PickChessInsideSquare(chess_type, x0, x1, y0, y1);            
 	};	 
 	//////////////////////////////////////
 	// Actions
@@ -1235,19 +1319,23 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Acts.prototype.ResetBoard = function (width,height)
 	{
-		this.reset_board(width-1, height-1);
+		this.ResetBoard(width-1, height-1);
 	};
 		
-	Acts.prototype.AddTile = function (objs,x,y)
+	Acts.prototype.AddTile = function (objs, x, y)
 	{
+        if (!objs)
+            return;
+        
         var inst = objs.getFirstPicked();
-	    this.AddChess(inst,x,y,0);
+	    this.AddChess(inst, x, y, 0);
 	};
 		
 	Acts.prototype.DestroyChess = function (chess_type)
 	{
         if (!chess_type)
             return;  
+        
         var chess = chess_type.getCurrentSol().getObjects();
         var i, chess_cnt=chess.length;
         for (i=0; i<chess_cnt; i++)  
@@ -1284,7 +1372,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             alert ("Board should connect to a layout object");
 	};  
 		
-	Acts.prototype.CreateTile = function (objtype,x,y,layer)
+	Acts.prototype.CreateTile = function (objtype, x, y, layer)
 	{
 	    this.CreateChess(objtype, x, y, 0, layer);
 	};
@@ -1294,20 +1382,29 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    this.CreateChess(objtype, x, y, z, layer);        
 	};	
 	
-	Acts.prototype.RemoveChess = function (chess_type)
+	Acts.prototype.RemoveChess = function (obj_type)
 	{
-        if (!chess_type)
+        if (!obj_type)
             return;  
-        var chess = chess_type.getCurrentSol().getObjects();
-        var i, chess_cnt=chess.length;
-        for (i=0; i<chess_cnt; i++)        
-	        this.RemoveChess(chess[i].uid);
+        
+	    if (typeof(obj_type) === "object")
+        {
+            var insts = obj_type.getCurrentSol().getObjects();
+            var i, cnt=insts.length;
+            for (i=0; i<cnt; i++)        
+	            this.RemoveChess(insts[i].uid);
+        }
+        else    // uid
+        {
+            var uid = obj_type;
+            this.RemoveChess(uid);
+        }
 	}; 
 	
 	Acts.prototype.MoveChess = function (chess_type, tile_objs)
 	{	
-        var chess_uid = _get_uid(chess_type);
-        var tile_uid = _get_uid(tile_objs);
+        var chess_uid = getUID(chess_type);
+        var tile_uid = getUID(tile_objs);
 	    if ((chess_uid == null) || (tile_uid == null))
 	        return;  
         
@@ -1320,7 +1417,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Acts.prototype.MoveChess2LXYZ = function (chess_type, x, y, z)
 	{		    
-        var chess_uid = _get_uid(chess_type);
+        var chess_uid = getUID(chess_type);
 	    if (chess_uid == null)
 	        return;  
 
@@ -1335,12 +1432,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Acts.prototype.PickAllChess = function ()
 	{	
-        this._pick_all_insts();
+        this.PickAllInsts();
 	};	
     	
-	Acts.prototype.PickChessAtLXY = function (chess_type, lx, ly)
+	Acts.prototype.PickChessAtLXY = function (chess_type, x, y)
 	{
-        this._pick_chess_on_LXY(chess_type, lx, ly);            
+        this.PickChessAtLXY(chess_type, x, y);            
 	};
 	Acts.prototype.PickChessAboveTile = function (chess_type, tile_type)
 	{
@@ -1351,18 +1448,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.PickChessAboveTileUID(chess_type, tile_uid);
 	}; 
 	
-	Acts.prototype.PickChessAtLXYZ = function (chess_type, lx, ly, lz)
+	Acts.prototype.PickChessAtLXYZ = function (chess_type, x, y, z)
 	{
-        this._pick_chess_on_LXYZ(chess_type, lx, ly, lz);            
+        this.PickChessAtLXYZ(chess_type, x, y, z);
 	};
 	Acts.prototype.SetBoardWidth = function (width)
 	{
-	    this.set_board_width(width-1);
+	    this.SetBoardWidth(width-1);
 	};
 		
 	Acts.prototype.SetBoardHeight = function (height)
 	{
-	    this.set_board_height(height-1);
+	    this.SetBoardHeight(height-1);
 	};
 
 	Acts.prototype.PickNeighborChess = function (origin, dir, chess_type)
@@ -1370,10 +1467,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (!origin)
             return false;
                
-        this.pick_neighbor_chess(origin.getFirstPicked(), dir, chess_type);      
+        this.PickNeighborChess(origin.getFirstPicked(), dir, chess_type);      
 	};
 	
-	Acts.prototype.CreateChessAboveTile = function (chess_type, tile_type, lz, layer)
+	Acts.prototype.CreateChessAboveTile = function (chess_type, tile_type, z, layer)
 	{        
         if ( (!chess_type) || (tile_type==null) )
             return false; 
@@ -1388,7 +1485,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                 var xyz = this.uid2xyz(tiles[i].uid);
                 if (xyz == null)
                     continue;
-	            this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer);  
+	            this.CreateChess(chess_type, xyz.x, xyz.y, z, layer);  
 	        }            
         }
         
@@ -1400,7 +1497,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             // single tile
             if (xyz)
             {
-                this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer); 
+                this.CreateChess(chess_type, xyz.x, xyz.y, z, layer); 
             }
             else   // might be list in JSON string
             {
@@ -1423,87 +1520,89 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
                     xyz = this.uid2xyz(uid_list[i]);
                     if (xyz == null)
                         continue;
-                    this.CreateChess(chess_type, xyz.x, xyz.y, lz, layer);  
+                    this.CreateChess(chess_type, xyz.x, xyz.y, z, layer);  
                 }
             }
             
         }
 	};		
     
-	Acts.prototype.FillChess = function (tile_type, layer, lz)
+	Acts.prototype.FillChess = function (tile_type, layer, z)
 	{
+        // not support in infinityMode
+        if (this.infinityMode)
+            return;
+        
         if (!tile_type)
             return false;  
-	    if (lz == null)
-		    lz = 0;
-        var lx,ly;
-        for(ly=0; ly<=this.y_max; ly++)
+	    if (z == null)
+		    z = 0;
+        var x, y;
+        for(y=0; y<=this.y_max; y++)
         {
-            for(lx=0; lx<=this.x_max; lx++)
+            for(x=0; x<=this.x_max; x++)
             {
-	            this.CreateChess(tile_type,lx,ly,lz,layer);
+	            this.CreateChess(tile_type, x, y, z,layer);
             }
         }
 	};	  
 
 	Acts.prototype.SetWrapMode = function (enable)
 	{
-        this.is_wrap_mode = (enable == 1);
+        this.isWrapMode = (enable == 1);
 	};
 			
 	Acts.prototype.PickChess = function (chess_type)
 	{      
-        this._pick_chess(chess_type);            
+        this.PickChess(chess_type);            
 	};	
 	
-	Acts.prototype.PickChessAtLX = function (chess_type, lx)
+	Acts.prototype.PickChessAtLX = function (chess_type, x)
 	{
-        this._pick_chess_on_LX(chess_type, lx);            
+        this.PickChessAtLX(chess_type, x);
 	};	
 	
-	Acts.prototype.PickChessAtLY = function (chess_type, ly)
+	Acts.prototype.PickChessAtLY = function (chess_type, y)
 	{
-        this._pick_chess_on_LY(chess_type, ly);            
+        this.PickChessAtLY(chess_type, y);            
 	};	
 	
-	Acts.prototype.PickChessAtLZ = function (chess_type, lz)
+	Acts.prototype.PickChessAtLZ = function (chess_type, z)
 	{
-        this._pick_chess_on_LZ(chess_type, lz);            
+        this.PickChessAtLZ(chess_type, z);
 	};	
     
 	Acts.prototype.MoveChessLZ = function (chess_type, z)
 	{
-        var chess_uid = _get_uid(chess_type);
+        var chess_uid = getUID(chess_type);
 	    if (chess_uid == null)
 	        return;  
 
-        var _xyz = this.uid2xyz(chess_uid);
-        if (_xyz == null)
+        var xyz = this.uid2xyz(chess_uid);
+        if (xyz == null)
             return;
             
-        var lx=_xyz.x, ly=_xyz.y;
 	    this.RemoveChess(chess_uid);   
-        this.AddChess(chess_uid, lx, ly, z);        
+        this.AddChess(chess_uid, xyz.x, xyz.y, z);        
 	};  
     
 	Acts.prototype.MoveChessLXY = function (chess_type, x, y)
 	{
-        var chess_uid = _get_uid(chess_type);
+        var chess_uid = getUID(chess_type);
 	    if (chess_uid == null)
 	        return;  
 
-        var _xyz = this.uid2xyz(chess_uid);
-        if (_xyz == null)
+        var xyz = this.uid2xyz(chess_uid);
+        if (xyz == null)
             return;
             
-        var lz=_xyz.z;
 	    this.RemoveChess(chess_uid);   
-        this.AddChess(chess_uid, x, y, lz);       
+        this.AddChess(chess_uid, x, y, xyz.z);       
 	}; 
     
-	Acts.prototype.PickChessInsideSquare = function (chess_type, lx0, lx1, ly0, ly1)
+	Acts.prototype.PickChessInsideSquare = function (chess_type, x0, x1, y0, y1)
 	{
-        this._pick_chess_inside_square(chess_type, lx0, lx1, ly0, ly1);            
+        this.PickChessInsideSquare(chess_type, x0, x1, y0, y1);            
 	};	    
 	//////////////////////////////////////
 	// Expressions
@@ -1512,64 +1611,64 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	
 	Exps.prototype.UID2LX = function (ret, uid)
 	{
-	    var _xyz = this.uid2xyz(uid);
-	    var x = (_xyz==null)? (-1):_xyz.x;
+	    var xyz = this.uid2xyz(uid);
+	    var x = (xyz==null)? (-1):xyz.x;
 		ret.set_int(x);
 	};	
 	
 	Exps.prototype.UID2LY = function (ret, uid)
 	{
-	    var _xyz = this.uid2xyz(uid);
-	    var y = (_xyz==null)? (-1):_xyz.y;
+	    var xyz = this.uid2xyz(uid);
+	    var y = (xyz==null)? (-1):xyz.y;
 		ret.set_int(y);
 	};
 	
 	Exps.prototype.UID2LZ = function (ret, uid)
 	{
-	    var _xyz = this.uid2xyz(uid);
-	    var z = (_xyz==null)? (-1):_xyz.z;
+	    var xyz = this.uid2xyz(uid);
+	    var z = (xyz==null)? (-1):xyz.z;
 		ret.set_any(z);
 	};
 	
-	Exps.prototype.LXYZ2UID = function (ret,_x,_y,_z)
+	Exps.prototype.LXYZ2UID = function (ret, x, y, z)
 	{
-        var uid = this.xyz2uid(_x,_y,_z);
+        var uid = this.xyz2uid(x, y, z);
         if (uid == null)
             uid = -1;
 	    ret.set_any(uid);
 	}; 	
     
-	Exps.prototype.LZ2UID = function (ret,uid,_z)
+	Exps.prototype.LZ2UID = function (ret,uid,z)
 	{
-	    var ret_uid = this.lz2uid(uid,_z);
+	    var ret_uid = this.lz2uid(uid,z);
 		if (ret_uid == null)
 		    ret_uid = (-1);
 	    ret.set_any(ret_uid);
 	}; 	
     
-	Exps.prototype.LXY2PX = function (ret,lx,ly)
+	Exps.prototype.LXY2PX = function (ret, x, y)
 	{
-        var px = this.GetLayout().LXYZ2PX(lx,ly,0);
+        var px = this.GetLayout().LXYZ2PX(x, y,0);
 	    ret.set_float(px);
 	};
     
-	Exps.prototype.LXY2PY = function (ret,lx,ly)
+	Exps.prototype.LXY2PY = function (ret,x, y)
 	{
-        var py = this.GetLayout().LXYZ2PY(lx,ly,0);
+        var py = this.GetLayout().LXYZ2PY(x, y,0);
 	    ret.set_float(py);
 	};
     
-	Exps.prototype.UID2PX = function (ret,uid)
+	Exps.prototype.UID2PX = function (ret, uid)
 	{
-        var _xyz = this.uid2xyz(uid);
-        var px = (_xyz)? this.GetLayout().LXYZ2PX(_xyz.x,_xyz.y): -1;
+        var xyz = this.uid2xyz(uid);
+        var px = (xyz)? this.GetLayout().LXYZ2PX(xyz.x, xyz.y): -1;
 	    ret.set_float(px);
 	};
     
-	Exps.prototype.UID2PY = function (ret,uid)
+	Exps.prototype.UID2PY = function (ret, uid)
 	{  
-        var _xyz = this.uid2xyz(uid);
-        var py = (_xyz)? this.GetLayout().LXYZ2PY(_xyz.x,_xyz.y): -1;
+        var xyz = this.uid2xyz(uid);
+        var py = (xyz)? this.GetLayout().LXYZ2PY(xyz.x, xyz.y): -1;
 	    ret.set_float(py);
 	};  
     
@@ -1602,17 +1701,17 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	Exps.prototype.UID2ZCnt = function (ret,uid)
 	{      
         var cnt;
-        var _xyz = this.uid2xyz(uid);
-        if (_xyz != null)        
-            cnt = this.xy2zCnt(_xyz.x, _xyz.y);
+        var xyz = this.uid2xyz(uid);
+        if (xyz != null)        
+            cnt = this.xy2zCnt(xyz.x, xyz.y);
         else
             cnt = 0;
 	    ret.set_int(cnt);
 	}; 
 	    
-	Exps.prototype.LXY2ZCnt = function (ret,lx,ly)
+	Exps.prototype.LXY2ZCnt = function (ret, x, y)
 	{  
-        var cnt = this.xy2zCnt(lx,ly);
+        var cnt = this.xy2zCnt(x, y);
 	    ret.set_int(cnt);
 	};
 	    
@@ -1626,9 +1725,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         ret.set_int( this.GetLayout().PXY2LY(px,py) );
 	};
     
-	Exps.prototype.DIR2UID = function (ret,uid,dir,lz)
+	Exps.prototype.DIR2UID = function (ret,uid, dir, z)
 	{
-	    var ret_uid = this.dir2uid(uid,dir,lz);
+	    var ret_uid = this.dir2uid(uid, dir, z);
 		if (ret_uid == null)
 		    ret_uid = (-1);
 	    ret.set_any(ret_uid);
@@ -1706,13 +1805,13 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};
     
    	Exps.prototype.PXY2UID = function (ret,px,py,lz)
-	{
+	{        
         if (lz == null)
             lz = 0;
         var layout = this.GetLayout();
         var lx = layout.PXY2LX(px,py);
         var ly = layout.PXY2LY(px,py);
-        var uid = this.xyz2uid(lx. ly, lz);
+        var uid = this.xyz2uid(lx, ly, lz);
         if (uid == null)
             uid = -1;
         ret.set_any( uid );
@@ -1727,6 +1826,269 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 		ret.set_int(this.exp_CurLY);
 	}; 	
+    
+	Exps.prototype.MaxLX = function (ret)
+	{
+		ret.set_int(this.board.GetMaxX() || 0);
+	};    
+    
+	Exps.prototype.MaxLY = function (ret)
+	{
+		ret.set_int(this.board.GetMaxY() || 0);
+	};     
+    
+	Exps.prototype.MinLX = function (ret)
+	{
+		ret.set_int(this.board.GetMinX() || 0);
+	};    
+    
+	Exps.prototype.MinLY = function (ret)
+	{
+		ret.set_int(this.board.GetMinY() || 0);
+	};      
+}());
+
+(function ()
+{
+    // class of board
+    if (window.RexC2BoardKlass != null)
+        return;
+    
+    var BoardKlass = function ()
+    {
+        this.xyz2uid = {};
+        this.uid2xyz = {};
+        this.x_max = null;
+        this.y_max = null;   
+        this.x_min = null;
+        this.y_min = null;          
+    };
+    var BoardKlassProto = BoardKlass.prototype;
+    
+    BoardKlassProto.Reset = function (ignore_recycle)
+    {
+        this.xyz2uid = {};
+        window.RexC2BoardLXYZCache.freeLinesInDict(this.uid2xyz);
+        
+        this.x_max = null;
+        this.y_max = null;   
+        this.x_min = null;
+        this.y_min = null;         
+    };
+
+    BoardKlassProto.GetAllChess = function ()
+    {
+        return this.uid2xyz;
+    };
+        
+	BoardKlassProto.AddCell = function(uid, x, y, z)
+	{
+        if (arguments.length == 2)
+        {
+            var xyz = x;
+            x=xyz.x;  y=xyz.y;  z=xyz.z;
+        }
+        
+        // xyz
+	    if (!this.xyz2uid.hasOwnProperty(x))
+		    this.xyz2uid[x] = {};
+        var tmpx = this.xyz2uid[x];
+		if (!tmpx.hasOwnProperty(y))
+		    tmpx[y] = {};
+	    var tmpy = tmpx[y];
+		tmpy[z] = uid;
+
+        // uid
+        this.uid2xyz[uid] = window.RexC2BoardLXYZCache.allocLine(x, y, z);
+                
+        this.x_max = null;
+        this.y_max = null;   
+        this.x_min = null;
+        this.y_min = null;                 
+	}; 
+    
+	BoardKlassProto.GetCell = function(x, y, z)
+	{
+        // (x,y,z) -> uid
+        // (x,y) -> zHash = {z:uid}
+	    var tmp = this.xyz2uid[x];
+		if (tmp != null)
+		{
+		    tmp = tmp[y];
+            if (z == null)
+                return tmp;
+			else if (tmp != null)
+			    return tmp[z];
+		}
+		return null;
+	};    
+	
+	BoardKlassProto.RemoveCell = function(x, y, z)
+	{
+        var uid, xyz;
+        // board.RemoveCell(uid)        
+        if (arguments.length === 1)
+        {
+            uid = x;
+            xyz = this.uid2xyz[uid];
+            if (!xyz)
+                return;
+            x=xyz.x, y=xyz.y, z=xyz.z;
+        }
+        // board.RemoveCell(x,y,z)               
+        else if (arguments.length === 3)
+        {
+            uid = this.GetCell(x,y,z);     
+            if (uid == null)
+                return;
+            
+            xyz = this.uid2xyz[uid];
+        }
+        else
+            return;
+        
+        // xyz
+		if (!this.xyz2uid.hasOwnProperty(x))
+		    return;		    
+        var tmpx = this.xyz2uid[x];
+		if (!tmpx.hasOwnProperty(y))
+		    return;
+	    var tmpy = tmpx[y];	    
+		if (!tmpy.hasOwnProperty(z))
+		    return;	
+		    	    
+		delete tmpy[z];		
+		if (isEmptyTable(tmpy))
+		    delete tmpx[y];
+		if (isEmptyTable(tmpx))
+		    delete this.xyz2uid[x];
+        
+        // uid
+        delete this.uid2xyz[uid];        
+        window.RexC2BoardLXYZCache.freeLine(xyz);
+        
+        this.x_max = null;
+        this.y_max = null;   
+        this.x_min = null;
+        this.y_min = null;         
+	};  	    
+      	
+	var isEmptyTable = function (o)
+	{
+	    for (var k in o)	    
+	        return false;
+	    
+	    return true;
+	};	
+    
+   	BoardKlassProto.ResetCells = function (uid2xyz)
+	{
+        this.Reset();  
+        var uid, xyz;
+        for (uid in uid2xyz)
+        {
+            xyz = uid2xyz[uid];
+            this.AddCell(parseInt(uid), xyz.x, xyz.y, xyz.z);
+        }
+	};    
+
+   	BoardKlassProto.GetMaxX = function ()
+	{
+        if (this.x_max === null)
+        {
+            var uid, xyz;
+            for (uid in uid2xyz)
+            {
+                xyz = uid2xyz[uid];
+                if ((this.x_max === null) ||  (this.x_max < xyz.x))
+                    this.x_max = xyz.x;
+            }
+        }
+        
+        return this.x_max;        
+	};
+    
+   	BoardKlassProto.GetMaxY = function ()
+	{
+        if (this.y_max === null)
+        {
+            var uid, xyz;
+            for (uid in uid2xyz)
+            {
+                xyz = uid2xyz[uid];
+                if ((this.y_max === null) ||  (this.y_max < xyz.y))
+                    this.y_max = xyz.y;
+            }
+        }
+        
+        return this.y_max;        
+	};
+    
+   	BoardKlassProto.GetMinX = function ()
+	{
+        if (this.x_min === null)
+        {
+            var uid, xyz;
+            for (uid in uid2xyz)
+            {
+                xyz = uid2xyz[uid];
+                if ((this.x_min === null) ||  (this.x_min > xyz.x))
+                    this.x_min = xyz.x;
+            }
+        }
+        
+        return this.x_min;        
+	};
+    
+   	BoardKlassProto.GetMinY = function ()
+	{
+        if (this.y_min === null)
+        {
+            var uid, xyz;
+            for (uid in uid2xyz)
+            {
+                xyz = uid2xyz[uid];
+                if ((this.y_min === null) ||  (this.y_min > xyz.y))
+                    this.y_min = xyz.y;
+            }
+        }
+        
+        return this.y_min;        
+	};  
+    
+    
+	BoardKlassProto.saveToJSON = function ()
+	{    
+	    // wrap: copy from this.items
+	    var uid, uid2xyz = {}, xyz;
+	    for (uid in this.uid2xyz)
+	    {
+	        uid2xyz[uid] = {};
+	        xyz = this.uid2xyz[uid];
+	        uid2xyz[uid]["x"] = xyz.x;
+	        uid2xyz[uid]["y"] = xyz.y;
+	        uid2xyz[uid]["z"] = xyz.z;	        
+	    }
+		return { 
+                "xyz2uid": this.xyz2uid,
+                "uid2xyz": uid2xyz
+                };
+	};
+	
+	BoardKlassProto.loadFromJSON = function (o)
+	{
+        this.xyz2uid = o["xyz2uid"];
+        
+        window.RexC2BoardLXYZCache.freeLinesInDict(this.uid2xyz);
+	    var uid, uid2xyz = o["uid2xyz"], xyz;
+	    for (uid in uid2xyz)
+	    {
+	        xyz = uid2xyz[uid];
+            this.uid2xyz[uid] = window.RexC2BoardLXYZCache.allocLine(xyz["x"], xyz["y"], xyz["z"]);	        
+	    }     
+	};  
+
+    window.RexC2BoardKlass = BoardKlass;
     
 }());
 
@@ -1823,6 +2185,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         for (i=0; i<uid_cnt; i++)
         {
             var uid = uids[i];
+            if (uid == null)
+                continue;
             var inst = this.runtime.getObjectByUID(uid);
             if (inst == null)
                 continue;

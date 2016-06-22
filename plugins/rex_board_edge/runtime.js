@@ -195,9 +195,9 @@ cr.plugins_.Rex_board_edge = function(runtime)
 		this.edgeuid2lxykey[edge_uid] = k;    
 	};	
 
-	instanceProto.pickuids = function (group, objtype)
+	instanceProto.PickUIDs = function (group, objtype)
 	{
-	    var has_picked = this.GetBoard().pickuids(group.GetList(), objtype, true);
+	    var has_picked = this.GetBoard().PickUIDs(group.GetList(), objtype, true);
 	    group.Clean();
         return has_picked;
     };	
@@ -206,9 +206,9 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	{
         if (!edge_objtype)
             return;
-        if (this.GetBoard().lxy2NeighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
+        if (this.GetBoard().xy2NeighborDir(lx0, ly0, lx1, ly1) == null)  // not neighbor
         {
-            this.pickuids(this.pinstgroup, edge_objtype);
+            this.PickUIDs(this.pinstgroup, edge_objtype);
             return;
         }
         
@@ -236,7 +236,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             this.pinstgroup.AddUID(parseInt(uid));
         }
         
-        return this.pickuids(this.pinstgroup, edge_objtype);
+        return this.PickUIDs(this.pinstgroup, edge_objtype);
 	};
 	
 	instanceProto.PickEdgeBetweenLP = function (edge_objtype, lx0, ly0, lx1, ly1)
@@ -248,7 +248,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         {
             this.pinstgroup.AddUID(edgeuid);
         }
-        return this.pickuids(this.pinstgroup, edge_objtype);
+        return this.PickUIDs(this.pinstgroup, edge_objtype);
 	};
 	
 	instanceProto.PickEdgeBetweenChess = function (edge_objtype, chess_uid0, chess_uid1)
@@ -267,7 +267,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         {
             this.pinstgroup.AddUID(edgeuid);
         }
-        return this.pickuids(this.pinstgroup, edge_objtype);         
+        return this.PickUIDs(this.pinstgroup, edge_objtype);         
 	};
 			
 	instanceProto.PickEdgesAroundChessAtDirection = function (edge_objtype, chess_objtype, dir)
@@ -310,7 +310,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
                 }
             }
         }
-        return this.pickuids(this.pinstgroup, edge_objtype);   
+        return this.PickUIDs(this.pinstgroup, edge_objtype);   
 	};		
 	
 	instanceProto.PickEdgesClampedByChess = function (edge_objtype, chess_objtype)
@@ -355,7 +355,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
             }
         }
         
-        return this.pickuids(this.pinstgroup, edge_objtype);   
+        return this.PickUIDs(this.pinstgroup, edge_objtype);   
 	};		 	
 		
 	instanceProto.PickChessAroundEdge = function (chess_objtype, edge_objtype, lz)
@@ -385,20 +385,28 @@ cr.plugins_.Rex_board_edge = function(runtime)
             }
             else
             {
-                var zhash0 = board.xy2zHash(lxy[0], lxy[1]);
-                var zhash1 = board.xy2zHash(lxy[2], lxy[3]);           
                 var z;
-                for (z in zhash0)
+                
+                var zhash0 = board.xy2zHash(lxy[0], lxy[1]);      
+                if (zhash0)
                 {
-                    this.pinstgroup.AddUID(zhash0[z]);
+                    for (z in zhash0)
+                    {
+                        this.pinstgroup.AddUID(zhash0[z]);
+                    }
                 }
-                for (z in zhash1)
-                {
-                    this.pinstgroup.AddUID(zhash1[z]);
-                }            
+                
+                var zhash1 = board.xy2zHash(lxy[2], lxy[3]);                    
+                if (zhash1)
+                {                
+                    for (z in zhash1)
+                    {
+                        this.pinstgroup.AddUID(zhash1[z]);
+                    }
+                }                
             }
         }
-        return this.pickuids(this.pinstgroup, chess_objtype);   
+        return this.PickUIDs(this.pinstgroup, chess_objtype);   
 	};		
     
 	instanceProto.saveToJSON = function ()
@@ -516,7 +524,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	Cnds.prototype.OnEdgeKicked = function (edge_objtype)
 	{        
         this.pinstgroup.AddUID(this._kicked_edge_uid);
-	    return this.pickuids(this.pinstgroup, edge_objtype); 
+	    return this.PickUIDs(this.pinstgroup, edge_objtype); 
 	};	    
     //////////////////////////////////////
 	// Actions
@@ -815,7 +823,6 @@ cr.plugins_.Rex_board_edge = function(runtime)
 		  	    
 }());
 
-
 (function ()
 {   
     // general group class
@@ -835,6 +842,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         for (key in this._set)
             delete this._set[key];
         this._list.length = 0;
+        return this;
 	};
     
 	GroupKlassProto.Copy = function(group)
@@ -847,6 +855,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
         for (key in hash_obj)
             this._set[key] = hash_obj[key];
 		cr.shallowAssignArray(this._list, group._list);
+        return this;        
 	};   
 	
 	GroupKlassProto.SetByUIDList = function(uid_list, can_repeat)
@@ -867,12 +876,13 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        this.Clean();
 	        this.AddUID(uid_list);
 	    }
+        return this;               
 	};
 	
 	GroupKlassProto.AddUID = function(_uid)  // single number, number list
 	{
-        if (typeof(_uid) === "object")
-        {
+	    if (typeof(_uid) === "object")   // uid list      
+	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
 	        {
@@ -883,10 +893,10 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	                this._list.push(uid);      // push back
 	            }
                 // else ingored 
-	        }        
-        }
+	        }
+	    }
         
-	    else    // single number or symbol
+	    else    // single number
 	    {
 	        if (this._set[_uid] == null)    // not in group
 	        {
@@ -894,12 +904,13 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	            this._list.push(_uid);      // push back
 	        }
             // else ingored 
-	    }
+	    }  
+        return this;       
 	};
     
    	GroupKlassProto.PushUID = function(_uid, is_front)  // single number, number list
 	{	    
-	    if (typeof(_uid) === "object")
+	    if (typeof(_uid) === "object")   // uid list      
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -918,8 +929,8 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	            this._list.push.apply(this._list, _uid);    // push back	  
 	        
 	    }
-	    
-	    else    // single number or symbol
+        
+	    else    // single number
 	    {
 	        if (this._set[_uid] == null)
 	            this._set[_uid] = true;
@@ -932,13 +943,13 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	            this._list.unshift(_uid);      // push front
 	        else
 	            this._list.push(_uid);         // push back	        
-	    }
-
+	    }  
+        return this;               
 	};
 	
    	GroupKlassProto.InsertUID = function(_uid, index)  // single number, number list
-	{	   
-	    if (typeof(_uid) === "object")
+	{	    	        
+	    if (typeof(_uid) === "object")   // uid list             
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -955,7 +966,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        
 	    }
         
-	    else    // single number or symbol
+	    else    // single number
 	    {
 	        if (this._set[_uid] == null)
 	            this._set[_uid] = true;
@@ -963,13 +974,13 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
 	            
 	        arrayInsert(this._list, _uid, index)      
-	    }
-
+	    } 
+        return this;               
 	};
 		
 	GroupKlassProto.RemoveUID = function(_uid)  // single number, number list
 	{
-	    if (typeof(_uid) === "object")
+	    if (typeof(_uid) === "object")   // uid list                         
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -984,7 +995,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        }
 	    }
         
-	    else    // single number or symbol
+	    else    // single number
 	    {
 	        if (this._set[_uid] != null)
 	        {
@@ -992,7 +1003,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
 	        }
 	    }
-
+        return this;               
 	};
 	
 	GroupKlassProto.UID2Index = function(uid)
@@ -1003,21 +1014,39 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	GroupKlassProto.Index2UID = function(index)
 	{
         var _list = this._list;
-        var uid = _list[index] || (-1);
+        var uid = _list[index];
+        if (uid == null)
+            uid = -1;
         return uid;
 	};		
-		
+	
+	GroupKlassProto.Pop = function(index)
+	{
+        var _list = this._list;
+        if (index < 0)
+            index = _list.length + index;
+        
+        var uid = _list[index];
+        if (uid == null)
+            uid = -1;
+        else
+            this.RemoveUID(uid);	
+        
+        return uid;
+	};				
 	GroupKlassProto.Union = function(group)
 	{
 	    var uids = group._set;
         var uid;        
         for (uid in uids)        
-            this.AddUID(parseInt(uid));    
+            this.AddUID(parseInt(uid));  
+        return this;               
 	};	
 		
 	GroupKlassProto.Complement = function(group)
 	{	  
-	    this.RemoveUID(group._list);            
+	    this.RemoveUID(group._list);  
+        return this;               
 	};
 		
 	GroupKlassProto.Intersection = function(group)
@@ -1038,6 +1067,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	        if (set_copy[uid] != null)
 	            this.AddUID(parseInt(uid));
 	    }
+        return this;               
 	};	
     
 	GroupKlassProto.IsSubset = function(subset_group)
@@ -1144,3 +1174,4 @@ cr.plugins_.Rex_board_edge = function(runtime)
     
     window.RexC2GroupKlass = GroupKlass;    
 }());    
+    

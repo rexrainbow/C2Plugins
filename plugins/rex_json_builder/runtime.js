@@ -54,9 +54,42 @@ cr.plugins_.Rex_JSONBuider = function(runtime)
         this.current_object = null;
 	};
     
+	instanceProto.add_object = function (k_, type_)
+	{
+        var new_object = (type_===0)? []:{};
+         // root
+        if (this.data === null)
+            this.data = new_object;
+        else
+            this.add_value(k_, new_object);
+
+            
+        var previous_object = this.current_object;    
+        this.current_object = new_object;
+        
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		
+        if (solModifierAfterCnds)
+            this.runtime.pushCopySol(current_event.solModifiers);
+        
+        current_event.retrigger();
+        
+        if (solModifierAfterCnds)
+            this.runtime.popSol(current_event.solModifiers);
+            
+        this.current_object = previous_object;
+		return false;        
+	};
+    
 	instanceProto.add_value = function (k_, v_)
 	{
-        assert2(this.current_object, "JSON Builder: Please add a key-value into an object.");
+        if (this.current_object == null)
+        {
+            alert("JSON Builder: Please add a key-value into an object.");
+            return;
+        }
         
         if (this.current_object instanceof Array)  // add to array
             this.current_object.push(v_);
@@ -132,31 +165,13 @@ cr.plugins_.Rex_JSONBuider = function(runtime)
 
 	Cnds.prototype.AddObject = function (k_, type_)
 	{
-        var new_object = (type_===0)? []:{};
-         // root
-        if (this.data === null)
-            this.data = new_object;
-        else
-            this.add_value(k_, new_object);
+        return this.add_object(k_, type_);
+	};
 
-            
-        var previous_object = this.current_object;    
-        this.current_object = new_object;
-        
-        var current_frame = this.runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-		
-        if (solModifierAfterCnds)
-            this.runtime.pushCopySol(current_event.solModifiers);
-        
-        current_event.retrigger();
-        
-        if (solModifierAfterCnds)
-            this.runtime.popSol(current_event.solModifiers);
-            
-        this.current_object = previous_object;
-		return false;        
+	Cnds.prototype.SetRoot = function (type_)
+	{
+        this.clean();
+        return this.add_object("", type_);
 	};
     
 	//////////////////////////////////////

@@ -47,9 +47,9 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
 	    
+        this.save_item = {};
 	    if (!this.recycled)
 	    {
-            this.save_item = {};
             this.disconnectRemove_absRefs = {};        
             this.load_request_itemIDs = {};
             this.load_items = {};   
@@ -57,7 +57,6 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         }
         else
         {
-            clean_table( this.save_item );
             clean_table( this.disconnectRemove_absRefs );
             clean_table( this.load_request_itemIDs );
             this.clean_load_items();
@@ -76,7 +75,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	instanceProto.onDestroy = function ()
 	{		
 	    this.CancelOnDisconnected();
-        clean_table( this.save_item );
+        this.save_item = {};
         clean_table( this.disconnectRemove_absRefs );
         clean_table( this.load_request_itemIDs );
         this.clean_load_items(); 	    
@@ -87,20 +86,71 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         clean_table( this.load_items );   	    
         this.load_items_cnt = null;
 	};    
-		
+    
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
 	
 	instanceProto.ForEachItemID = function (itemIDList, items)
 	{
@@ -134,7 +184,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    if (itemID === "")
 	    {
 	        var ref = this.get_ref()["push"]();
-	   	    itemID = ref["key"]();
+	   	    itemID = get_key(ref);
 	    }
 	    else
 	    {
@@ -155,13 +205,10 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 
 	    this.exp_LastItemID = itemID;	    
 	    var is_empty = is_empty_table(save_item);
-	    var save_data = is_empty? true: save_item;
+	    var save_data = (is_empty)? true: save_item;
 	    
 	    var op = (set_mode == 1)? "set":"update";	    
 	    ref[op](save_data, on_save);
-	    
-	    if (!is_empty)
-	        save_item = {};
 	};	
 	
     instanceProto.Remove = function (itemID, tag_)
@@ -365,11 +412,13 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
     Acts.prototype.Save = function (itemID, set_mode, tag_)
 	{	 
 	    this.Save(itemID, this.save_item, set_mode, tag_);
+        this.save_item = {};
 	};	
 	
     Acts.prototype.Push = function (tag_)
 	{	 
 	    this.Save("", this.save_item, 1, tag_);
+        this.save_item = {};        
 	};	
 	
     Acts.prototype.Remove = function (itemID, tag_)
@@ -380,7 +429,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
     Acts.prototype.GenerateKey = function ()
 	{
 	    var ref = this.get_ref()["push"]();
-        this.exp_LastGeneratedKey = ref["key"]();
+        this.exp_LastGeneratedKey = get_key(ref);
 	};	
 	
     Acts.prototype.SetPosValue = function (x, y)
@@ -390,7 +439,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	
     Acts.prototype.SetServerTimestampValue = function (key_)
 	{
-		this.save_item[key_] = window["Firebase"]["ServerValue"]["TIMESTAMP"];
+		this.save_item[key_] = serverTimeStamp();
 	};
 	
     Acts.prototype.AddLoadRequestItemID = function (itemID)
@@ -425,7 +474,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         // read handler	    
 	    var on_read = function (snapshot)
 	    {
-	        var itemID = snapshot["key"]();
+	        var itemID = get_key(snapshot);
 	        var content = snapshot["val"]();
 	        self.load_items[itemID] = content;
 	        isDone_handler();
@@ -465,7 +514,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
         // read handler	
         var read_item = function(childSnapshot)
         {
-            var key = childSnapshot["key"]();
+            var key = get_key(childSnapshot);
             var childData = childSnapshot["val"]();
             self.load_items[key] = childData;
         };   
@@ -564,7 +613,7 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	Exps.prototype.GenerateKey = function (ret)
 	{
 	    var ref = this.get_ref()["push"]();
-        this.exp_LastGeneratedKey = ref["key"]();
+        this.exp_LastGeneratedKey = get_key(ref);
 		ret.set_string(this.exp_LastGeneratedKey);
 	};	
     

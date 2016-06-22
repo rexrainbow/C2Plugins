@@ -18,10 +18,11 @@
         this.modelSetting = null;
         this.tmpMatrix = [];
         
+        this.customParamsCB = [];
         this.breathingEnable = false;
         this.currentMotion = {name:"", no:-1, data:null};
         this.currentMotionName = "";
-        this.currentMotionData = null;
+        this.currentMotionData = null;        
     }
     
     LAppModel.prototype = new L2DBaseModel();
@@ -332,8 +333,7 @@
             this.currentMotion.data = null;
         }
         
-        //-----------------------------------------------------------------		
-        
+        //-----------------------------------------------------------------		       
         // 前回セーブされた状態をロード
         this.live2DModel.loadParam();
         
@@ -346,10 +346,9 @@
                 this.eyeBlink.updateParam(this.live2DModel);
             }
         }
-    
+        
         // 状態を保存
         this.live2DModel.saveParam();
-        
         //-----------------------------------------------------------------		
         
         // 表情でパラメータ更新（相対変化）
@@ -361,20 +360,23 @@
         }
         
         // look at
-        // ドラッグによる顔の向きの調整
-        // -30から30の値を加える
-        this.live2DModel.addToParamFloat("PARAM_ANGLE_X", this.dragX * 30, 1);   // -30 ~ 30
-        this.live2DModel.addToParamFloat("PARAM_ANGLE_Y", this.dragY * 30, 1);   // -30 ~ 30
-        this.live2DModel.addToParamFloat("PARAM_ANGLE_Z", (this.dragX * this.dragY) * -30, 1);   // -30 ~ 30
-        
-        // ドラッグによる体の向きの調整
-        // -10から10の値を加える
-        this.live2DModel.addToParamFloat("PARAM_BODY_ANGLE_X", this.dragX*10, 1);    // -10 ~ 10
-        
-        // ドラッグによる目の向きの調整
-        // -1から1の値を加える
-        this.live2DModel.addToParamFloat("PARAM_EYE_BALL_X", this.dragX, 1);   // -1 ~ 1
-        this.live2DModel.addToParamFloat("PARAM_EYE_BALL_Y", this.dragY, 1);   // -1 ~ 1
+        if ((this.dragX !== 0) || (this.dragY !== 0))
+        {
+            // ドラッグによる顔の向きの調整
+            // -30から30の値を加える
+            this.live2DModel.addToParamFloat("PARAM_ANGLE_X", this.dragX * 30, 1);   // -30 ~ 30
+            this.live2DModel.addToParamFloat("PARAM_ANGLE_Y", this.dragY * 30, 1);   // -30 ~ 30
+            this.live2DModel.addToParamFloat("PARAM_ANGLE_Z", (this.dragX * this.dragY) * -30, 1);   // -30 ~ 30
+            
+            // ドラッグによる体の向きの調整
+            // -10から10の値を加える
+            this.live2DModel.addToParamFloat("PARAM_BODY_ANGLE_X", this.dragX*10, 1);    // -10 ~ 10
+            
+            // ドラッグによる目の向きの調整
+            // -1から1の値を加える
+            this.live2DModel.addToParamFloat("PARAM_EYE_BALL_X", this.dragX, 1);   // -1 ~ 1
+            this.live2DModel.addToParamFloat("PARAM_EYE_BALL_Y", this.dragY, 1);   // -1 ~ 1
+        }
         // look at 
 
 
@@ -418,7 +420,15 @@
         if( this.pose != null ) {
             this.pose.updateParam(this.live2DModel);
         }
-            
+        
+        // custom params configure
+        var i, cnt=this.customParamsCB.length;
+        for(i=0; i<cnt; i++)
+        {
+            this.customParamsCB[i]();
+        }  
+        this.customParamsCB.length = 0;
+        
         this.live2DModel.update();
     };
     

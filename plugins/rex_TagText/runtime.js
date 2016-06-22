@@ -953,6 +953,24 @@ cr.plugins_.rex_TagText = function(runtime)
 	  	if (render_me)
 	  	    this.render_text(this.is_force_render);  
 	};    
+    
+	Acts.prototype.SetUnderline = function(color_, thinkness, offset)
+	{
+        color_ = color_.replace(/ /g,'');
+        
+        // #000 1px 0px
+        var underline = color_ + " " + thinkness.toString() + "px " + offset.toString() + "px";
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+            
+            this._tag["underline"] = underline;	        
+            this.render_text(false);                       
+	    }
+	    //else    // global
+	    //{
+        //    this.render_text(this.is_force_render);
+	    //}              
+	};	    
 	
 	//////////////////////////////////////
 	// Expressions
@@ -1074,6 +1092,7 @@ cr.plugins_.rex_TagText = function(runtime)
             style:"normal",            
             shadow:"",
         };
+        this.underline = {thickness: 1, offset:0};        
         this.textAlign = "start";
         this.lineHeight = "16";        
         this.textBaseline = "alphabetic";        
@@ -1130,7 +1149,11 @@ cr.plugins_.rex_TagText = function(runtime)
 
                 case "text-shadow":
                     propScope["shadow"] = prop_in[atribute];
-                    break;                
+                    break;     
+
+                case "underline":
+                    propScope["underline"] = prop_in[atribute];
+                    break;                            
                 
                 
                 // custom property
@@ -1148,9 +1171,9 @@ cr.plugins_.rex_TagText = function(runtime)
     {
         var style = propScope["style"] || this.default_propScope.style;
         var weight = propScope["weight"] || this.default_propScope.weight;
-        var ptSize = propScope["ptSize"] || this.default_propScope.ptSize;
+        var ptSize = this.getTextSize(propScope);  
         var family = propScope["family"] || this.default_propScope.family;
-        var color = propScope["color"] || this.default_propScope.color;
+        var color = this.getTextColor(propScope);
         var shadow = propScope["shadow"] || this.default_propScope.shadow;
         
         this.context.font = style + " " + weight + " " + ptSize + " " + family;
@@ -1166,12 +1189,47 @@ cr.plugins_.rex_TagText = function(runtime)
         
     };
     
+    CanvasTextProto.getTextSize = function(propScope)
+    {
+        return propScope["ptSize"] || this.default_propScope.ptSize;      
+    };  
+    CanvasTextProto.getTextColor = function(propScope)
+    {
+        return propScope["color"] || this.default_propScope.color;          
+    };      
+    
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
     {
         this.context.save(); 
         
-        this.apply_propScope(pen.prop);        
-        this.context.fillText(pen.text, offset_x + pen.x, offset_y + pen.y);
+        this.apply_propScope(pen.prop);   
+        
+        var startX = offset_x + pen.x;
+        var startY = offset_y + pen.y;
+        
+        // underline
+        var underline = pen.prop["underline"];
+        if (underline)
+        {
+            underline = underline.split(" ");
+            var color = underline[0];
+            
+            var thickness_save = this.underline.thickness;
+            if (underline[1] != null) this.underline.thickness = parseFloat(underline[1].replace("px", ""));
+            
+            var offset_save= this.underline.offset;
+            if (underline[2] != null) this.underline.offset = parseFloat(underline[2].replace("px", ""));
+            
+            this.draw_underline(pen.text, startX, startY, 
+                                           this.getTextSize(pen.prop), 
+                                           color );
+                                           
+            this.underline.thickness = thickness_save;
+            this.underline.offset = offset_save;            
+        }
+        
+        // draw text
+        this.context.fillText(pen.text, startX, startY);
         
         this.context.restore();
     };
@@ -1224,7 +1282,28 @@ cr.plugins_.rex_TagText = function(runtime)
                 this.draw_pen(pen, offset_x, offset_y);
             }
         }
-    };      
+    };    
+
+    CanvasTextProto.draw_underline = function (text, x, y, size, color)
+    {
+        var ctx = this.context;
+        var width = ctx.measureText(text).width;
+        //switch(ctx.textAlign)
+        //{
+        //case "center": x -= (width/2); break;
+        //case "right": x -= width; break;
+        //}
+        y += this.underline.offset;        
+        if (this.textBaseline === "top")
+            y += parseInt(size);
+        
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = this.underline.thickness;
+        ctx.moveTo(x,y);
+        ctx.lineTo(x+width,y);
+        ctx.stroke();
+    };       
     
     // split text into array
     var __re_class_header = /<\s*class=/i;

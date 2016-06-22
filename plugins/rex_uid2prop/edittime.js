@@ -172,6 +172,12 @@ AddExpression(9, ef_return_number, "Get image point Y", "Image point", "ImgptY",
 AddNumberParam("UID", "The UID of instance.", 0);
 AddStringParam("Alias", "An alias to identify this private variable.");
 AddExpression(10, ef_return_any, "Get value of private variable", "Private variable", "PV", "Get value of private variable by alias.");
+AddNumberParam("A", "The UID of instance A.", 0);
+AddNumberParam("B", "The UID of instance B.", 0);
+AddExpression(11, ef_return_number, "Get distance betwen 2 instances", "Distance", "DistanceTo", "Get distance of 2 instances.");
+AddNumberParam("A", "The UID of instance A.", 0);
+AddNumberParam("B", "The UID of instance B.", 0);
+AddExpression(12, ef_return_number, "Get angle betwen 2 instances", "Angle", "AngleTo", "Get angle of 2 instances.");
 
 ACESDone();
 

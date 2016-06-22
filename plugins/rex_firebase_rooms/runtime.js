@@ -1,55 +1,53 @@
 ﻿/*
-
-room-metadata/
-    <room-ID>        
-        createdByUserID - The id of the user that created the room.
-        type-state - The type of room, public or private. And the status of room, close or open.
-
-        # display
-        name - The display name of the room.
-        createdByUserName - The name of the user that created the room.
-        
-        extra\
-            
-            
+# body of room data. Each room has unique roomID.
 rooms/
-    <room-ID>        
-        metadata/
-            state- close or open, or null if room is removed.
-            maxPeers - The maximum number of peers that can join this room.
-            name - The display name of the room.
-            type - The type of room, public or private.
-            createdByUserID - The id of the user that created the room.
-            createdByUserName - The name of the user that created the room.
-            
-            # join permission
-            permission - "anyone", "black-list", "white-list".
-            black-list/
-                <ID> - true
-            white-list/
-                <ID> - true
+    <roomID>
+        alive - true or null
                 
+        # users in this room.           
         users/
             <joinAt>
                 ID - The id of the user.    
                 # monitor ID == null for "user kicked-out"              
                 name - The name of the user.           
         
-        simple-message/
-            message - current message
-            senderID - sender ID of current mesage
-            senderName - sender name of current message
-            stamp - true or false, toggle after each message sent
-            
         <"channel-"+channel_name> - custom channel        
 
-
-user-metadata\
-    <user-ID>
-        name - The display name of the user.
-        roomName - The display name of current joined room.
-        roomID - The id of current joined room.
         
+# header of room, write by owner of room. Each room has unique roomID.
+# read it while joining the room
+room-metadata/
+    <roomID>        
+        name - The display name of the room.
+        state-type -  Close or open, Public or private.           
+
+        # moderators of this room
+        moderators/
+            <userID> - userName 
+        
+        # join permission
+        permission - "anyone", "black-list", "white-list".
+        black-list/
+            <ID> - true
+        white-list/
+            <ID> - true
+        # ignore room if user can not join
+
+        maxPeers - The maximum number of peers that can join this room.
+        # limit the amount of users
+            
+        extra/       
+
+        
+# write by each user, user could join to many rooms.   
+user-metadata\
+    <joinAt>
+        user/
+            ID - The id of the user.
+            name - The display name of the user.
+        room/
+            ID - The id of the room
+            name - The display name of the room.
         
 */
 // ECMAScript 5 strict mode
@@ -95,6 +93,10 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 
     var ROOMOPEN = "open";
     var ROOMCLOSED = "closed";
+    var LIFE_TEMPORARY = 0;
+    var LIFE_PERSISTED = 1;
+    var JOINPERMINNSION = ["anyone", "black-list", "white-list"];    
+    var DOORSTATES = [ROOMCLOSED, ROOMOPEN];    
     
 	instanceProto.onCreate = function()
 	{ 
@@ -106,27 +108,103 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    this.triggeredUserID = "";          
 	      
 	    // room
-        this.room = new cr.plugins_.Rex_Firebase_Rooms.RoomMgrKlass(this);	      
+        this.room = new RoomMgrKlass(this);	      
         // room list
-        this.room_list = new cr.plugins_.Rex_Firebase_Rooms.RoomsListKlass(this);
-        
+        this.roomsList = new RoomsListKlass(this);
+        // user list
+        this.usersList = this.room.users_list;
+
         //window["Firebase"]["enableLogging"](true);
 	};
 	
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
+	 	
+	instanceProto.get_room_ref = function(roomID)
+	{
+        var ref = this.get_ref("rooms");
+        if (roomID)
+            ref = ref["child"](roomID);
+	    return ref;
+	};	  
 	
+	instanceProto.get_roomUsers_ref = function(roomID)
+	{
+	    return this.get_room_ref(roomID)["child"]("users");
+	};
+    
+	instanceProto.get_message_ref = function(roomID)
+	{
+	    return this.get_room_ref(roomID)["child"]("simple-message");
+	};   
+    
+	instanceProto.get_roomAliveFlag_ref = function(roomID)
+	{
+	    return this.get_room_ref(roomID)["child"]("alive");
+	};
+    
 	instanceProto.get_roommetadata_ref = function(roomID)
 	{
 	    var ref = this.get_ref("room-metadata");
@@ -134,27 +212,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	        ref = ref["child"](roomID);
 	    return ref;
 	};
-	 	
-	instanceProto.get_room_ref = function(roomID)
-	{
-	    return this.get_ref("rooms")["child"](roomID);
-	};	  
-	
-	instanceProto.get_usersList_ref = function(roomID)
-	{
-	    return this.get_room_ref(roomID)["child"]("users");
-	};
-
-	instanceProto.get_message_ref = function(roomID)
-	{
-	    return this.get_room_ref(roomID)["child"]("simple-message");
-	};    
+ 
 	
 	instanceProto.get_usermetadata_ref = function(userID)
 	{
 	    return this.get_ref("user-metadata")["child"](userID);
 	};   
-	instanceProto.get_room_typeState = function(state, type_)
+	instanceProto.get_room_stateType = function(state, type_)
 	{
 	    return state+"-"+type_;
 	};  
@@ -190,7 +254,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    return true;
 	};
 	
-	Cnds.prototype.OnJoinRoomSuccessfully = function ()
+	Cnds.prototype.OnJoinRoom = function ()
 	{
 	    return true;
 	}; 	
@@ -214,6 +278,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
 	    return this.room.IsInRoom();
 	};	
+    
 	Cnds.prototype.OnUpdateRoomsList = function ()
 	{
 	    return true;
@@ -221,7 +286,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	Cnds.prototype.ForEachRoom = function (start, end)
 	{	     
-		return this.room_list.ForEachRoom(start, end);
+		return this.roomsList.ForEachRoom(start, end);
 	};  
 	
 	Cnds.prototype.OnUpdateUsersList = function ()
@@ -231,7 +296,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	Cnds.prototype.ForEachUser = function (start, end)
 	{	     
-		return this.room.users_list.ForEachUser(start, end);
+		return this.usersList.ForEachUser(start, end);
 	};  	
 	
 	Cnds.prototype.OnUserJoin = function ()
@@ -244,10 +309,18 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    return true;
 	};		
 	
-	Cnds.prototype.OnReceivedMessage = function ()
+	Cnds.prototype.IsFirstUser = function ()
 	{
-	    return true;
-	};
+	    return this.usersList.isFirstUser();
+	};		
+	
+	Cnds.prototype.IsFull = function ()
+	{
+	    return this.usersList.isFull();
+	};	    
+    
+    // cf_deprecated
+	Cnds.prototype.OnReceivedMessage = function () { };
 	
 	Cnds.prototype.OnReceivedPermissionLists = function ()
 	{
@@ -256,7 +329,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	Cnds.prototype.IsLocked = function ()
 	{
-	    return this.room.is_locked;
+	    return (this.room.LockedByAction != null);
 	};	
 	
 		    
@@ -275,28 +348,78 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.room.SetUser(userID, name);
 	};
 
-    Acts.prototype.CreateRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID)
+    Acts.prototype.CreateRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin)
 	{
 	    // push a new room if roomID == ""
-        this.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID);
+        doorState = DOORSTATES[doorState];
+        createThenJoin = (createThenJoin === 1);
+        if (createThenJoin)
+        {
+            var self = this;
+            var on_create = function (error)
+            {           
+                if ((roomID !== "") && error)
+                {
+                    self.room.TryJoinRoom(roomID);
+                }
+            };
+            
+            var on_left = function (error)
+            {
+                if (error)
+                    return;               
+                
+                self.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin, on_create);
+            }
+            
+            if (this.room.IsInRoom())
+            {
+                this.room.LeaveRoom(on_left);
+            }
+            else
+                this.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin, on_create);
+            
+        }
+        else  // create room only
+        {
+            this.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin);
+        }        
 	}; 
 	
-    var DOORSTATES = [ROOMCLOSED, ROOMOPEN];
-    Acts.prototype.SetDoorState = function (doorState_, permission)
+    Acts.prototype.SwitchDoor = function (doorState)
 	{
-        this.room.SwitchDoor(DOORSTATES[doorState_], permission);
+        doorState = DOORSTATES[doorState];        
+        this.room.SwitchDoor(doorState);
 	};      
 	
-    Acts.prototype.JoinRoom = function (roomID, roomName)
-	{
-        if (roomID == "")
+    Acts.prototype.JoinRoom = function (roomID, leftThenJoin)
+	{      
+        leftThenJoin = (leftThenJoin===1);
+        if (!leftThenJoin || !this.room.IsInRoom())
         {
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError;
-            self.plugin.run_userlist_trigger(trig, roomName, roomID);    
-            return;
+            if (roomID === "")
+            {         
+                this.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError, "", "");     
+                return;
+            }
+            
+            this.room.TryJoinRoom(roomID);
         }
-        
-        this.room.TryJoinRoom(roomID, roomName);
+        else
+        {
+            var self=this;
+            var on_left = function (error)
+            {
+                if (error && (roomID === ""))
+                {
+                    self.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError, "", "");     
+                    return;
+                }
+                
+                self.room.TryJoinRoom(roomID);
+            }
+            this.room.LeaveRoom(on_left);
+        }
 	};   
      
     Acts.prototype.LeaveRoom = function ()
@@ -311,39 +434,22 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             
         this.room.RemoveRoom(roomID, permission);
 	};  	
-	     
-    Acts.prototype.CreateOrJoinRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID)
-	{
-	    var self = this;
-        // create room failed, try join it
-        var on_complete = function (error)
-        {
-            if (!error)                       
-                return;
-            
-            if (roomID == "")
-                return;
-                
-            self.room.TryJoinRoom(roomID, roomName);
-        };
-        this.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID,
-                                on_complete);
-	};
+	
+    // af_deprecated
+    Acts.prototype.CreateOrJoinRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID) { };
 		
-    Acts.prototype.UpdateOpenRoomsList = function (room_type)
+    Acts.prototype.UpdateOpenRoomsList = function (roomType)
 	{
-        this.room_list.UpdateOpenRoomsList(room_type);
+        this.roomsList.UpdateOpenRoomsList(roomType);
 	};
 	
     Acts.prototype.StopUpdatingOpenRoomsList = function ()
 	{
-        this.room_list.StopUpdatingOpenRoomsList();
+        this.roomsList.StopUpdatingOpenRoomsList();
 	};	
     
-    Acts.prototype.BroadcastMessage = function (message)
-	{
-        this.room.BroadcastMessage(message);
-	};   
+    // af_deprecated
+    Acts.prototype.BroadcastMessage = function (message) { };   
 	
     Acts.prototype.AddUserToWhiteList = function (userID, name)
 	{
@@ -417,70 +523,101 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     
 	Exps.prototype.CurRoomName = function (ret)
 	{
-	    if (this.room_list.exp_CurRoom == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room_list.exp_CurRoom["name"]);
+        var room = this.roomsList.exp_CurRoom;
+        var name = (room)? room["name"]:"";	    
+		ret.set_string(name);
 	}; 
     
 	Exps.prototype.CurRoomID = function (ret)
 	{
-	    if (this.room_list.exp_CurRoom == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room_list.exp_CurRoom["roomID"]);
+        var room = this.roomsList.exp_CurRoom;
+        var ID = (room)? room["roomID"]:"";
+		ret.set_string(ID);
 	}; 
     
 	Exps.prototype.CurCreaterName = function (ret)
 	{
-	    if (this.room_list.exp_CurRoom == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room_list.exp_CurRoom["createdByUserName"]);
+        var room = this.roomsList.exp_CurRoom;
+        var name;
+        if (room)
+        {
+            var user = room["moderators"];
+            for(var ID in user)
+            {
+                name = user[ID];
+                break;
+            }                
+        }
+        if (name == null)
+            name = "";        
+		ret.set_string(name);
 	}; 
     
 	Exps.prototype.CurCreaterID = function (ret)
 	{
-	    if (this.room_list.exp_CurRoom == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room_list.exp_CurRoom["createdByUserID"]);
+        var room = this.roomsList.exp_CurRoom;
+        var ID;
+        if (room)
+        {
+            var user = room["moderators"];
+            for(ID in user)
+            {
+                break;
+            }                
+        }
+        if (ID == null)
+            ID = "";
+		ret.set_string(ID);
 	};  
+
+	Exps.prototype.RoomIndex2Name = function (ret, index)
+	{
+        var room = this.roomsList.GetRooms()[index];
+        var name = (room)? room["name"]:"";	    
+		ret.set_string(name);
+	}; 
+
+	Exps.prototype.RoomIndex2ID = function (ret, index)
+	{
+        var room = this.roomsList.GetRooms()[index];
+        var ID = (room)? room["roomID"]:"";	    
+		ret.set_string(ID);
+	};    
+    
+	Exps.prototype.CurRoomID = function (ret)
+	{
+        var room = this.roomsList.exp_CurRoom;
+        var ID = (room)? room["roomID"]:"";
+		ret.set_string(ID);
+	};     
     
 	Exps.prototype.CurUserName = function (ret)
 	{
-	    if (this.room.users_list.exp_CurUser == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.users_list.exp_CurUser["name"]);
+        var user = this.usersList.exp_CurUser;
+        var name = (user)? user["name"]:"";		    
+		ret.set_string(name);
 	};
-		
+
+    Exps.prototype.UserIndex2Name = function (ret, index)
+	{
+        var user = this.usersList.GetItems()[index];
+        var name = (user)? user["name"]:"";		    
+		ret.set_string(name);
+	};		
+    
+	Exps.prototype.UserIndex2ID = function (ret, index)
+	{
+        var user = this.usersList.GetItems()[index];
+        var ID = (user)? user["ID"]:"";		
+		ret.set_string(ID);
+	};
+
 	Exps.prototype.CurUserID = function (ret)
 	{
-	    if (this.room.users_list.exp_CurUser == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.users_list.exp_CurUser["ID"]);
+        var user = this.usersList.exp_CurUser;
+        var ID = (user)? user["ID"]:"";		
+		ret.set_string(ID);
 	};
-	
 	Exps.prototype.TriggeredUserName = function (ret)
 	{
 		ret.set_string(this.triggeredUserName);
@@ -493,59 +630,24 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 
 	Exps.prototype.LastLeftUserName = function (ret)
 	{
-	    if (this.room.users_list.exp_LastLeftUser == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.users_list.exp_LastLeftUser["name"]);
+        var user = this.usersList.exp_LastLeftUser;
+        var name = (user)? user["name"]:"";		    
+		ret.set_string(name);
 	};
 		
 	Exps.prototype.LastLeftUserID = function (ret)
 	{
-	    if (this.room.users_list.exp_LastLeftUser == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.users_list.exp_LastLeftUser["ID"]);
+        var user = this.usersList.exp_LastLeftUser;
+        var ID = (user)? user["ID"]:"";		
+		ret.set_string(ID);
 	}; 
 
-	Exps.prototype.LastSenderID = function (ret)
-	{
-	    if (this.room.simple_message.exp_LastMessage == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.simple_message.exp_LastMessage["senderID"]);
-	};  
-
-	Exps.prototype.LastSenderName = function (ret)
-	{
-	    if (this.room.simple_message.exp_LastMessage == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.simple_message.exp_LastMessage["senderName"]);
-	}; 
-
-	Exps.prototype.LastMessage = function (ret)
-	{
-	    if (this.room.simple_message.exp_LastMessage == null)
-	    {
-	        ret.set_string("");
-	        return;
-	    }
-	    
-		ret.set_string(this.room.simple_message.exp_LastMessage["message"]);
-	}; 
-
+    // ef_deprecated
+	Exps.prototype.LastSenderID = function (ret) { ret.set_string(""); };  
+	Exps.prototype.LastSenderName = function (ret) { ret.set_string(""); };  
+	Exps.prototype.LastMessage = function (ret) { ret.set_string(""); };  
+    // ef_deprecated
+    
 	Exps.prototype.WhiteListToJSON = function (ret)
 	{	    
 		ret.set_string(JSON.stringify(this.room.white_list));
@@ -560,25 +662,20 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
         if (roomID == null)
             roomID = this.room.roomID;
-        var channel_name = "channel-"+name;
-        var ref = this.get_ref("rooms")["child"](roomID)["child"](channel_name);
-	    ret.set_string(ref["toString"]());
+        
+        var path = this.rootpath + "/rooms/" + roomID +"/";
+        if (name != null)
+            path += "channel-"+name + "/";
+	    ret.set_string(path);
 	};	  
-}());
 
-(function ()
-{
-    var LIFE_TEMPORARY = 0;
-    var LIFE_PERSISTED = 1;
-    var ROOMOPEN = "open";
-    var ROOMCLOSED = "closed";
-    var JOINPERMINNSION = ["anyone", "black-list", "white-list"];
+    // --------
 
     var RoomMgrKlass = function (plugin)
     {
         this.plugin = plugin;        
-	    this.remove_onLeft = false;	    
-        this.is_locked = false;        
+	    this.isRemoveRoomWhenLeft = false;	    
+        this.LockedByAction = null;        
         
         this.userID = "";
         this.userName = "";        
@@ -595,56 +692,29 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.monitor_ref = []; 
              
         // users list             
-        this.users_list = this.create_usersList();
-        this.users_list_is_full = false;
+        this.users_list = this.createUsersList();
 
-        // simple message
-        this.simple_message = this.create_simpleMessage();
-        
         // user metadata
-        this.user_metadata = new cr.plugins_.Rex_Firebase_Rooms.UserMetadataKlass(this);
-        this.white_list = {};
-        this.black_list = {};
+        //this.user_metadata = new UserMetadataKlass(this);
+        //this.white_list = {};
+        //this.black_list = {};
     };
     
     var RoomMgrKlassProto = RoomMgrKlass.prototype;
 	
-    RoomMgrKlassProto.create_usersList = function ()
+    RoomMgrKlassProto.createUsersList = function ()
 	{
-        var self = this;
-        var on_users_count_changed = function (users)
-        {
-            self.on_users_count_changed(users);
-        }
-        var users_list = new cr.plugins_.Rex_Firebase_Rooms.UsersListKlass(this);
-        users_list.onUsersCountChanged = on_users_count_changed;
+        var users_list = new UsersListKlass(this);
         return users_list;    
     };
     
-    RoomMgrKlassProto.create_simpleMessage = function ()
-	{
-	    var simple_message = new window.FirebaseSimpleMessageKlass(this.plugin.messageType);
-	    simple_message.exp_LastMessage = null;
-	    	    
-	    var self = this;
-	    var on_received = function(d)
-	    {
-	        simple_message.exp_LastMessage = d;
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnReceivedMessage;
-            self.plugin.runtime.trigger(trig, self.plugin); 
-	    };	    
-	    
-	    simple_message.onReceived = on_received;
-        return simple_message;   
-    };
-        
     // export
     RoomMgrKlassProto.SetUser = function (userID, name)
     {
         this.userID = userID;
         this.userName = name; 
         
-        this.user_metadata.Init();          
+        //this.user_metadata.Init();          
     };
     
 	RoomMgrKlassProto.IsInRoom = function()
@@ -652,76 +722,82 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    return (this.roomID != "");
 	};  
 	  
-    RoomMgrKlassProto.TryCreateRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID,
-                                                on_complete)
+    RoomMgrKlassProto.TryCreateRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin,
+                                                onComplete)
 	{
+        // does not support 
+        //if ((roomID !== "") && (lifePeriod === LIFE_TEMPORARY))
+        //{
+        //    return;
+        //}
+        
+        // start of create room, lock
+        if (this.LockedByAction != null)
+            return;
+        
         if (this.IsInRoom())
             return;    
-            
-        // start of create room, lock
-        if (this.is_locked)
-            return;
-        this.is_locked = true;            
-        
+
         var self = this;
-        var on_create_room_complete = function()
+        
+        // on complete
+        var on_create_room_complete = function(error)
         {     
-            self.is_locked = false;
+            if (error)
+            {
+                on_create_room_error();
+                return;
+            }
+        
+            self.LockedByAction = null;            
             // end of create room
             
-            self.roomID = roomID;
-            self.roomName = roomName;
-            self.roomType = roomType;  
-            self.maxPeers = maxPeers; 
-            
-            
-            if (maxPeers == 1)
+            if (createThenJoin)
             {
-                self.users_list_is_full = true;
+                self.roomID = roomID;
+                self.roomName = roomName;
+                self.roomType = roomType;  
+                self.maxPeers = maxPeers; 
             }
-            
-            // set room to open if configured
-            if (doorState == 1)
-            {
-                self.SwitchDoor(ROOMOPEN, 0);          
-            }
-            
+                        
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoom;     
             self.plugin.run_room_trigger(trig, roomName, roomID); 
 	        // create successful
-			self.on_join_room(roomID, roomName, roomType, maxPeers);	
+			self.onJoinRoom(roomID, roomName, roomType, maxPeers);	
 			
-			if (on_complete)
-			    on_complete();        	        
+			if (onComplete)
+			    onComplete();        	        
         };
         
+        
+        // on error
         var on_create_room_error = function()
         {            
             // create failed            
-            self.is_locked = false;
+            self.LockedByAction = null;
             // end of create room, unlock   
 
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoomError;     
             self.plugin.run_room_trigger(trig, roomName, roomID); 
             
-			if (on_complete)
-			    on_complete(true);                         
+			if (onComplete)
+			    onComplete(true);                         
         };        
         
-                                    
+        // try allocate a room        
         if (roomID == "")
         {
-            roomID = this.plugin.get_roommetadata_ref()["push"]()["key"]();
-            this.create_room(roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission,
+            roomID = get_key( this.plugin.get_room_ref()["push"]() );
+            this.createRoom(roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission, createThenJoin,
                              on_create_room_complete);
         }
-        else
+        else  // roomID !== ""
         {
             var self=this;
             var on_write_userID = function(current_value)
             {
-                if (current_value === null)  //this userID has not been occupied
-                    return self.userID;
+                if (current_value === null)
+                    return true;
                 else
                     return;    // Abort the transaction
             };
@@ -734,192 +810,206 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 }
                 else 
                 {
-                    self.create_room(roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission,
+                    self.createRoom(roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission, createThenJoin,
                                      on_create_room_complete);         
                 }            
             };                            
             // try create room
-            var ref = this.plugin.get_roommetadata_ref(roomID)["child"]("createdByUserID");
-            ref["transaction"](on_write_userID, on_write_userID_complete);            
+            var ref = this.plugin.get_roomAliveFlag_ref(roomID);
+            ref["transaction"](on_write_userID, on_write_userID_complete);             
         }
+        
+        this.LockedByAction = "CREATE";           
 	}; 	 
 	 
-    RoomMgrKlassProto.SwitchDoor = function (doorState, permission)
+    RoomMgrKlassProto.SwitchDoor = function (doorState)
 	{
         if (!this.IsInRoom())
             return; 
-            	    
-	    if (permission == 1)     // creater
-	    {
-            if (!this.is_creater)
-                return;
-        }
 
-        if (doorState == ROOMOPEN)
+        if (doorState === ROOMOPEN)
         {
             // can not open full room
-            if (this.users_list_is_full)
+            if (this.users_list.isFull())
                 return;
         }
-        this.door_switch(ROOMOPEN);
+        this.door_switch(doorState);
 	};	
+    
+    RoomMgrKlassProto.isRoomOpened = function (metadata)
+    {
+        if (metadata == null)
+            return false;
+        
+        var state = metadata["state-type"].split("-")[0];
+        if (state === ROOMCLOSED)
+            return false;
+        
+        var IamModerators = metadata["moderators"].hasOwnProperty(this.userID);
+        if (IamModerators)
+            return true;
+        
+        var permission = metadata["permission"];
+        if (permission === "black-list")
+        {
+            var blackList = metadata["black-list"];
+            if (blackList && blackList.hasOwnProperty(this.userID))
+                return false;            
+            else
+                return true;
+        }
+        else if (permission === "white-list")
+        {
+            var whiteList = metadata["white-list"];
+            if (whiteList && whiteList.hasOwnProperty(this.userID))
+                return true;            
+            else
+                return true;        
+        }
+        else    // permission === "anyone"
+            return true;
+    }
 	  
-    RoomMgrKlassProto.TryJoinRoom = function (roomID, roomName, on_complete)
+    RoomMgrKlassProto.TryJoinRoom = function (roomID, onComplete)
 	{
+        // start of join room, lock
+        if (this.LockedByAction != null)
+            return;
+        
         if (this.IsInRoom())
             return;  
 
-        // start of join room, lock
-        if (this.is_locked)
-            return;
-        this.is_locked = true;
-            
         var self = this;
-        var room_ref = this.plugin.get_room_ref(roomID);
-        var metadata;  // metadata of this room
-        
-        
-        var on_join_complete = function()
+        var on_join_complete = function(metadata)
         {     
-            self.is_locked = false;            
+            self.LockedByAction = null; 
+            var type = metadata["state-type"].split("-")[1]            
+		    self.onJoinRoom(roomID, metadata["name"], type, metadata["maxPeers"]);  
             
-            // end of join room, unlock
-		    self.on_join_room(roomID, metadata["name"], metadata["type"], metadata["maxPeers"]);  
-            
-			if (on_complete)
-			    on_complete();  		    		              
+			if (onComplete)
+			    onComplete();  		    		              
         };
         var on_join_errror = function()
         {
-            self.is_locked = false;            
+            self.LockedByAction = null;            
             // end of join room, unlock            
             
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError;     
-            self.plugin.run_room_trigger(trig, roomName, roomID);   
+            self.plugin.run_room_trigger(trig, "", roomID);   
             
-			if (on_complete)
-			    on_complete(true);                        
+			if (onComplete)
+			    onComplete(true);                        
         };
         
-        // step 2: join, then check user count
-        var try_join = function (maxPeers)
-        {
-            var is_in_list = false;
-            var read_user = function(childSnapshot)
+        // step 3: check user count  
+        var check_user_count = function (metadata)
+        {            
+            var on_read_usersList = function (snapshot)
             {
-	            var userID = childSnapshot["val"]()["ID"];
-	            is_in_list = (userID == self.userID);
-	            if (is_in_list)
-	                return true;
-            };             
-            var on_read_users = function (snapshot)
-            {
-                snapshot["forEach"](read_user); 
-                if (is_in_list)
+                var isInList = false;
+                snapshot["forEach"](function (childSnapshot)
                 {
-                    on_join_complete();
+                    var userID = childSnapshot["val"]()["ID"];
+                    isInList = (userID === self.userID);
+	                if (isInList)
+	                    return true;                    
+                }); 
+                if (isInList)
+                {
+                    on_join_complete(metadata);
                 }   
                 else
                 {
-                    self.remove_user_info(roomID);
+                    self.removeFromUserList(roomID, on_join_errror);
+                }
+            }
+            var usersList_ref = this.plugin.get_roomUsers_ref(roomID);  
+            usersList_ref["limitToFirst"](metadata["maxPeers"])["once"]("value", on_read_usersList);
+        };
+        // step 3: check user count            
+        
+        // step 2: add to user list
+        var try_join = function (metadata)
+        {
+            var on_write_user = function (error)
+            {
+                if (error)
+                {
                     on_join_errror();
                     return;
                 }
+
+                if (metadata["maxPeers"])
+                    check_user_count(metadata);
+                else
+                    on_join_complete(metadata);                
             }
-            var check_list = function()
-            {
-                // read user list to check if current user is existed
-                var users_ref = room_ref["child"]("users")["limitToFirst"](maxPeers)["once"]("value", on_read_users);
-            };
-            self.push_user_info(room_ref, check_list);
+            
+            var usersList_ref = self.plugin.get_roomUsers_ref(roomID);  
+            var userData = self.addToUsersListBegin(usersList_ref);
+            usersList_ref["update"](userData, on_write_user);
         };
-        // step 2: join, then check user count
+        // step 2: add to user list
           
-        // step 1: check metadata
-        var check_metadata = function ()
+        // step 1: check room-metadata (room header)
+        var check_door = function ()
         {
-	        var on_read_metadata = function (snapshot)
+	        var on_read_roommetadata = function (snapshot)
 	        {     
-	            metadata = snapshot["val"]();
-	            // no room or room is not open, i.e. closed
-	            if ((metadata == null) || (metadata["state"] != ROOMOPEN))            
+	            var metadata = snapshot["val"]();
+                if (!self.isRoomOpened(metadata))                   
                 {
                     on_join_errror();  
-                    return;
+                    return;                    
                 }
-                else
-                {
-                    if (metadata["permission"] == "black-list")
-                    {
-                        var black_list = metadata["black-list"];
-                        if (black_list && (black_list.hasOwnProperty(self.userID)))
-                        {
-                            on_join_errror();      
-                            return;
-                        }
-                            
-                    }
-                    else if (metadata["permission"] == "white-list")
-                    {
-                        var white_list = metadata["white-list"];
-                        if (!white_list)
-                        {
-                            on_join_errror();      
-                            return;
-                        }                       
-                        else if (!white_list.hasOwnProperty(self.userID))
-                        {
-                            on_join_errror();      
-                            return;
-                        }      
-                    }
-                    // else if (metadata["permission"] == "anyone")
-                    
-                    var maxPeers = metadata["maxPeers"];
-                    if (maxPeers == 0)
-                    {
-                        // join room
-                        self.push_user_info(room_ref, on_join_complete);
-                    }
-                    else
-                    {
-                        try_join(maxPeers);
-                    }
-                }
-	        };	                
-            room_ref["child"]("metadata")["once"]("value", on_read_metadata);
+                try_join(metadata);                
+	        };	     
+            var roommetadata_ref = self.plugin.get_roommetadata_ref(roomID);            
+            roommetadata_ref["once"]("value", on_read_roommetadata);
         };
         // step 1: check metadata
         
-        check_metadata();
+        check_door();
+        this.LockedByAction = "JOIN";        
 	}; 
 	
-    RoomMgrKlassProto.LeaveRoom = function ()
+    RoomMgrKlassProto.LeaveRoom = function (onComplete)
 	{
+        // start of join room, lock
+        if (this.LockedByAction != null)
+            return;
+        
         if (!this.IsInRoom())
             return; 	            
-               
-        this.monitor_off();
-        this.remove_user_info(this.roomID);
-        if (this.remove_onLeft)
-        {
-            // remove room
-            this.remove_room();
-            this.remove_onLeft = false;
-        }
+         
+         var self=this;
+         var on_left = function(error)
+         {
+             self.LockedByAction = null;              
+             if (!error)
+             {
+                 self.isRemoveRoomWhenLeft = false;
+                 self.is_creater = false;
+                 self.onLeftRoom();                 
+             }
 
-        this.is_creater = false;
+             if (onComplete)
+                 onComplete(error);                 
+        };
+
+        if (this.isRemoveRoomWhenLeft)
+        {
+            // remove room, include user list
+            this.removeRoom(this.roomID, on_left);
+        }
+        else
+        {
+            // remove from user list only
+            this.removeFromUserList(this.roomID, on_left);
+        }
         
-        this.on_leave_room();
+        this.LockedByAction = "LEAVE";          
 	};	
-    
-    RoomMgrKlassProto.BroadcastMessage = function (message)
-    {
-        if (!this.IsInRoom())
-            return; 	
-                    
-        this.simple_message.Send(message, this.userID, this.userName);
-    };	
     
     RoomMgrKlassProto.SetPermissionList = function (listName, userID, value_)
     {
@@ -981,7 +1071,20 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     };    
     // export
   
-	RoomMgrKlassProto.push_user_info = function(room_ref, on_complete)
+	RoomMgrKlassProto.addToUsersListBegin = function(usersList_ref)
+	{
+        var user_ref = usersList_ref["push"]();
+        user_ref["onDisconnect"]()["remove"]();        
+        this.joinAt = get_key( user_ref );
+        var data = {};
+        data[this.joinAt] = {
+            "ID": this.userID,
+            "name": this.userName,
+        };
+        return data;
+    }
+    
+	RoomMgrKlassProto.push_user_info = function(room_ref, onComplete)
 	{
         var user_ref = room_ref["child"]("users")["push"]();
         this.joinAt = user_ref["key"]();        
@@ -990,47 +1093,48 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             "ID":this.userID,
             "name":this.userName
         };
-        user_ref["set"](user_info, on_complete);
+        user_ref["set"](user_info, onComplete);
 	};		
 	
 	// normal case
-    RoomMgrKlassProto.remove_user_info = function (roomID, on_complete)
+    RoomMgrKlassProto.removeFromUserList = function (roomID, onComplete)
 	{
 	    if (roomID == null)
 	        roomID = this.roomID;
-	        
-        var user_ref = this.plugin.get_room_ref(roomID)["child"]("users")["child"](this.joinAt);          
-        user_ref["remove"](on_complete);
-        user_ref["onDisconnect"]()["cancel"]();         
+        
+        var user_ref = this.plugin.get_roomUsers_ref(roomID)["child"](this.joinAt);          
+        var on_remove = function (error)
+        {
+            if (!error)
+            {
+                user_ref["onDisconnect"]()["cancel"]();                
+            }
+            if (onComplete)
+                onComplete(error);                
+        }
+        user_ref["remove"](on_remove);    
 	};	
-		 
-    // left by kicked
-	RoomMgrKlassProto.monitor_user_kicked = function ()
+
+	RoomMgrKlassProto.monitorMyStateOn = function ()
 	{
-	    var user_ref = this.plugin.get_room_ref(this.roomID)["child"]("users")["child"](this.joinAt); 
-	    var id_ref = user_ref["child"]("ID");
+        // monitor_user_kicked
+	    var id_ref = this.plugin.get_roomUsers_ref(this.roomID)["child"](this.joinAt)["child"]("ID");
 	    var self = this;
 	    var on_value_changed = function (snapshot)
 	    {     
 	        var ID = snapshot["val"]();
 	        if (ID != null)
 	            return;
-           
-            // user was not in the room, close all monitors
-            self.monitor_off();	            
-            // roomID had been cleaned (on_leave_room), does not need to run triggers again
-            if (!self.IsInRoom())
-                return; 
-        
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnKicked;     
-		    self.plugin.runtime.trigger(trig, self.plugin);	
-            self.on_leave_room();	     		            
+          
+            // user kicked or room removed
+            if (self.roomID !== "")
+                self.onLeftRoom(true);
 	    };
 	    this.monitor_ref.push(id_ref["toString"]());
 	    id_ref["on"]("value", on_value_changed);
 	};
 	
-	RoomMgrKlassProto.monitor_off = function ()
+	RoomMgrKlassProto.monitorMyStateOff = function ()
 	{
 	    var i, cnt=this.monitor_ref.length;
 	    for (i=0; i<cnt; i++)
@@ -1039,200 +1143,146 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    }
 	};	
 
-    RoomMgrKlassProto.create_room = function (roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission,
-                                              on_complete)
+    RoomMgrKlassProto.createRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission, createThenJoin,
+                                              onComplete)
 	{  
-	                            
-        // step 2. fire join completed signal
-        var self=this;        
-	    // wait done
-        var wait_events = 0;    
-	    var isDone_handler = function()
-	    {
-	        wait_events -= 1;
-	        if (wait_events == 0)
-	        {	            
-	            // all jobs done  
-                if (on_complete)
-                    on_complete();
-	        }
-	    };
-	    // wait done            
-        
-        // generate a roomID     
-        var metadata_ref = this.plugin.get_roommetadata_ref(roomID);        
+        var metadata_ref = this.plugin.get_roommetadata_ref(roomID);          
         var room_ref = this.plugin.get_room_ref(roomID);
         // LIFE_TEMPORARY, remove room when creater is out
-        if (lifePeriod == LIFE_TEMPORARY)
+        this.isRemoveRoomWhenLeft = (lifePeriod === LIFE_TEMPORARY);        
+        if (this.isRemoveRoomWhenLeft)
         {
-            this.remove_onLeft = true;
-            metadata_ref["onDisconnect"]()["remove"]();
             room_ref["onDisconnect"]()["remove"]();
-        }
-        
+            metadata_ref["onDisconnect"]()["remove"]();            
+        }        
                 
         // set room-metadata
         var metadata = {
-            "createdByUserID": this.userID,
-            "type-state": this.plugin.get_room_typeState(ROOMCLOSED, roomType),
-            "name": roomName,
-            "createdByUserName": this.userName,
-            };
-        wait_events += 1;
-        metadata_ref["set"](metadata, isDone_handler);
-                        
+            "name": roomName,  
+            "state-type": this.plugin.get_room_stateType(doorState, roomType),
+            "moderators":{},
+            "permission": JOINPERMINNSION[joinPermission],
+        };
+        metadata["moderators"][this.userID] = this.userName;
+        if (maxPeers > 0)
+            metadata["maxPeers"] = maxPeers;
+        
         // set room data      
-        var roomdata = {            
-            "metadata": {
-                "state":ROOMCLOSED,
-                "maxPeers": maxPeers,
-                "name": roomName,
-                "type": roomType,
-                "createdByUserID": this.userID,
-                "createdByUserName": this.userName,
-                "permission": JOINPERMINNSION[joinPermission],                
-                },
-            };    
-        if (joinPermission == 2) // "white-list"
+        var roomdata = {
+            "alive": true,
+        };
+
+        if (createThenJoin)
         {
-            // add creater to white-list
-            roomdata["white-list"] = {};
-            roomdata["white-list"][this.userID] = this.userName;
+            roomdata["users"] = {};
+            var usersList_ref = this.plugin.get_roomUsers_ref(roomID);
+            var userData = this.addToUsersListBegin(usersList_ref);
+            for (var k in userData)
+                roomdata["users"][k] = userData[k];
         }
-        wait_events += 1;     
-        room_ref["set"](roomdata, isDone_handler);
-        wait_events += 1; 
-        this.push_user_info(room_ref, isDone_handler);
+        var data = {};
+        data["room-metadata/"+roomID] = metadata;
+        data["rooms/"+roomID] = roomdata;
+        var root_ref = this.plugin.get_ref();
+        root_ref["update"](data, onComplete);
         this.is_creater = true;
-        // step 1. set info, then wait done
 	}; 
 	
-    RoomMgrKlassProto.remove_room = function (roomID)
+    RoomMgrKlassProto.removeRoom = function (roomID, onComplete)
 	{
-	    if (roomID == null)
-	        roomID = this.roomID;
-	        
-        var metadata_ref = this.plugin.get_roommetadata_ref(roomID);
-        metadata_ref["remove"]();
-        metadata_ref["onDisconnect"]()["cancel"]();
-        var room_ref = this.plugin.get_room_ref(roomID);
-        room_ref["remove"]();
-        room_ref["onDisconnect"]()["cancel"]();
+        var self=this;
+        var on_remove = function(error)
+        {
+            if (!error)
+            {
+                // cancel disconnect handler after remove room writting
+                var metadata_ref = self.plugin.get_roommetadata_ref(roomID);
+                metadata_ref["onDisconnect"]()["cancel"]();
+                var room_ref = self.plugin.get_room_ref(roomID);
+                room_ref["onDisconnect"]()["cancel"]();
+                
+                if (roomID === self.roomID)
+                {
+                    var user_ref = self.plugin.get_roomUsers_ref(roomID)["child"](self.joinAt); 
+                    user_ref["onDisconnect"]()["cancel"]();
+                    self.joinAt = "";
+                }
+            }
+            if (onComplete)
+                onComplete(error);
+        };
+        
+        var data = {};
+        data["room-metadata/"+ roomID] = null;        
+        data["rooms/"+ roomID] = null;        
+        var root_ref = this.plugin.get_ref();       
+        root_ref["update"](data, on_remove);
 	};	    
 	
-	RoomMgrKlassProto.on_join_room = function (roomID, roomName, roomType, maxPeers)
+	RoomMgrKlassProto.onJoinRoom = function (roomID, roomName, roomType, maxPeers)
 	{  
         this.roomID = roomID;
         this.roomName = roomName;
         this.roomType = roomType;  
         this.maxPeers = maxPeers;
         	    	    
-	    this.monitor_user_kicked();
-	    
+	    this.monitorMyStateOn();
+	    //
 	    this.users_list.StartUpdate(roomID, maxPeers);
-        this.users_list_is_full = false;
-        this.simple_message.SetRef(this.plugin.get_message_ref(roomID));
-        this.simple_message.StartUpdate();
+        //this.user_metadata.Update();  
         
-        this.user_metadata.Update();  
-        
-        var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomSuccessfully;     
+        var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoom;     
         this.plugin.run_room_trigger(trig, roomName, roomID);  
 	};
 	
-    RoomMgrKlassProto.on_leave_room = function ()
+    RoomMgrKlassProto.onLeftRoom = function (isKicked)
 	{
+        debugger
         var roomID = this.roomID;
         var roomName = this.roomName;
         this.roomID = "";
         this.roomName = "";	
         
-        this.close_users_list();	
-        this.simple_message.StopUpdate();
-        this.simple_message.SetRef(null);
+        this.monitorMyStateOff();
+	    this.users_list.StopUpdate();    
+	    this.users_list.Clean();	
         // roomID had been cleaned
         
         // clean permission lists
-        clean_table(this.white_list);
-        clean_table(this.black_list);
+        //clean_table(this.white_list);
+        //clean_table(this.black_list);
         
         // clean user metadata
-        this.user_metadata.Update();        
+        //this.user_metadata.Update();        
         
         var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnLeftRoom;     
-        this.plugin.run_room_trigger(trig, roomName, roomID);          
+        this.plugin.run_room_trigger(trig, roomName, roomID);     
+
+        if (isKicked)
+        {
+            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnKicked;     
+            this.plugin.run_room_trigger(trig, roomName, roomID);         
+        }
 	};
 	
-    RoomMgrKlassProto.door_switch = function (door_state, on_complete)
+    RoomMgrKlassProto.door_switch = function (door_state, onComplete)
 	{
-        var self=this;        
-	    // wait done
-        var wait_events = 0;    
-	    var isDone_handler = function()
-	    {
-	        wait_events -= 1;
-	        if (wait_events == 0)
-	        {	            
-	            // all jobs done         
-	            if (on_complete)
-	                on_complete();
-	        }
-	    };
-	    // wait done  
-        
-        var metadata_ref = this.plugin.get_roommetadata_ref(this.roomID); 
-        wait_events += 1;       
-        var type_state = this.plugin.get_room_typeState(door_state, this.roomType);
-        metadata_ref["child"]("type-state")["set"](type_state, isDone_handler);
-        var room_ref = this.plugin.get_room_ref(this.roomID);
-        wait_events += 1;
-        room_ref["child"]("metadata")["child"]("state")["set"](door_state, isDone_handler);
-	};	
-	
-	
-	RoomMgrKlassProto.close_users_list = function (users)
-	{
-	    this.users_list.StopUpdate();    
-	    this.users_list.Clean();	
+        var data = {};
+        var state_type = this.plugin.get_room_stateType(door_state, this.roomType);        
+        data["room-metadata/"+this.roomID+"/state-type"] = state_type
+        var root_ref = this.plugin.get_ref();
+        root_ref["update"](data, onComplete);
 	};
     
-	RoomMgrKlassProto.on_users_count_changed = function (users)
-	{
-	    var users_count = users.length;
-	    if (users_count == 0)
-	        return;
-	        
-	    if (users[0]["ID"] != this.userID)
-	        return;
-	        
-	    if ((users_count < this.maxPeers) && this.users_list_is_full)
-	    {
-            this.door_switch(ROOMOPEN);
-	    }
-	    else if ((users_count == this.maxPeers) && !this.users_list_is_full)
-	    {
-	        this.door_switch(ROOMCLOSED);       
-	    }
-	    this.users_list_is_full = (users_count == this.maxPeers);
-	};    
-	
-	cr.plugins_.Rex_Firebase_Rooms.RoomMgrKlass = RoomMgrKlass;
-	
-		  
 	var clean_table = function (o)
 	{
 	    var k;
 	    for (k in o)
 	        delete o[k];
 	};	
-}());
 
-
-(function ()
-{
-    var ROOMOPEN = "open";
-    var ROOMCLOSED = "closed";
-        
+    
+    // --------
     var RoomsListKlass = function (plugin)
     {
         this.plugin = plugin;
@@ -1244,7 +1294,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     
     var RoomsListKlassProto = RoomsListKlass.prototype;
 
-    RoomsListKlassProto.UpdateOpenRoomsList = function (room_type)
+    RoomsListKlassProto.UpdateOpenRoomsList = function (roomType)
 	{
 	    var self = this;
         var on_roomList_update = function ()
@@ -1254,9 +1304,9 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         };
 	    
 	    var metadata_ref = this.plugin.get_roommetadata_ref();
-	    var query = metadata_ref["orderByChild"]("type-state");
-	    if (room_type != "")
-	        query = query["equalTo"](this.plugin.get_room_typeState(ROOMOPEN, room_type));
+	    var query = metadata_ref["orderByChild"]("state-type");
+	    if (roomType != "")
+	        query = query["equalTo"](this.plugin.get_room_stateType(ROOMOPEN, roomType));
 	    else
 	        query = query["startAt"](ROOMOPEN)["endAt"](ROOMOPEN+"~");
 
@@ -1284,14 +1334,14 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.exp_CurRoom = null;       		
 		return false;
 	};    
+    
+	RoomsListKlassProto.GetRooms = function()
+	{
+	    return this.rooms_list.GetItems();
+	};    
 	
-	cr.plugins_.Rex_Firebase_Rooms.RoomsListKlass = RoomsListKlass;
-}());
-
-(function ()
-{
     var UsersListKlass = function (room)
-    {
+    {       
         // overwrite these values
         this.onUsersCountChanged = null;
         // overwrite these values 
@@ -1299,7 +1349,9 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.plugin = room.plugin;
         this.users_list = new window.FirebaseItemListKlass();        
         this.exp_CurUser = null;
+        this.room = room;
         this.roomID = "";
+        this.limit = 0;        
         
         this.users_list.keyItemID = "joinAt";
     };
@@ -1308,9 +1360,14 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 
     UsersListKlassProto.StartUpdate = function (roomID, limit)
 	{
+        if (limit == null)
+            limit = 0;
+        
         this.StopUpdate();
         
-        this.roomID = roomID;
+        this.roomID = roomID;        
+        this.limit = limit;
+
 	    var self = this;	    
         var on_usersList_update = function ()
         {
@@ -1334,8 +1391,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 self.onUsersCountChanged(self.users_list.GetItems());
 	    };     
 	    	    
-	    var query = this.plugin.get_usersList_ref(this.roomID);
-	    if (limit != 0)
+	    var query = this.plugin.get_roomUsers_ref(this.roomID);
+	    if (limit > 0)
 	        query = query["limitToFirst"](limit);
 
         this.snapshot2Item = null;
@@ -1348,7 +1405,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	UsersListKlassProto.StopUpdate = function()
 	{
 	    this.users_list.StopUpdate();
-        this.roomID = "";        
+        this.roomID = "";  
+        this.limit = 0;        
 	};
 
 	UsersListKlassProto.ForEachUser = function (start, end)
@@ -1368,12 +1426,27 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{	     
 	    this.users_list.Clean();
 	};	
-	
-	cr.plugins_.Rex_Firebase_Rooms.UsersListKlass = UsersListKlass;
-}());
+    
+    UsersListKlassProto.isFull = function ()
+    {
+        if (this.limit === 0)
+            return false;
+        
+        return (this.users_list.GetItems().length >= this.limit);            
+    };
+    UsersListKlassProto.isFirstUser = function (userID)
+    {
+        if (userID == null)
+            userID = this.room.userID;
+        
+         var user = this.users_list.GetItems()[0];
+         if (!user)
+             return false;
+         
+         return (user["ID"] === userID);
+    };    
+    
 
-(function ()
-{
     var UserMetadataKlass = function (room)
     {
         this.room = room;
@@ -1403,7 +1476,6 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    this.ref["set"](metadata);               
     };   
     
-	cr.plugins_.Rex_Firebase_Rooms.UserMetadataKlass = UserMetadataKlass;
 }());
 
 
@@ -1542,7 +1614,15 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     // --------------------------------------------------------------------------    
     
     // --------------------------------------------------------------------------
-    // internal    
+    // internal  
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };    
     ItemListKlassProto.add_item = function(snapshot, prevName, force_push)
 	{
 	    var item;
@@ -1550,7 +1630,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	        item = this.snapshot2Item(snapshot);
 	    else
 	    {
-	        var k = snapshot["key"]();
+	        var k = get_key(snapshot);
 	        item = snapshot["val"]();
 	        item[this.keyItemID] = k;
 	    }
@@ -1579,7 +1659,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	ItemListKlassProto.remove_item = function(snapshot)
 	{
-	    var k = snapshot["key"]();
+	    var k = get_key(snapshot);
 	    var i = this.itemID2Index[k];	 
 	    var item = this.items[i];
 	    cr.arrayRemove(this.items, i);
@@ -1710,112 +1790,3 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	window.FirebaseItemListKlass = ItemListKlass;
 }()); 
-
-
-(function ()
-{
-    if (window.FirebaseSimpleMessageKlass != null)
-        return;    
-    
-    var MESSAGE_STRING = 0;
-    var MESSAGE_JSON = 1;
-    var SimpleMessageKlass = function (messageType)
-    {
-        // export
-        this.onReceived = null
-        // export
-                
-        this.messageType = messageType;
-        
-        // internal
-        this.skip_first = true;
-        this.stamp = false;
-        this.ref = null;
-        this.on_read = null;        
-    };
-    
-    var SimpleMessageKlassProto = SimpleMessageKlass.prototype;    
-
-    SimpleMessageKlassProto.SetRef = function (ref)
-    {
-        var is_reading = (this.on_read != null);
-        this.StopUpdate();
-        this.ref = ref;
-        if (is_reading)
-            this.StartUpdate();
-    }; 
-    
-    SimpleMessageKlassProto.Send = function (message, senderID, senderName)
-    {
-        if (this.ref == null)
-            return;
-            
-        
-        // clean message
-        if ((message == null) && (senderID == null) && (senderName == null))
-        {
-            this.ref["remove"]();       
-            return;
-        }
-        
-        if (this.messageType == MESSAGE_JSON)
-            message = JSON.parse(s); 
-        
-        var d = {
-            "message": message,
-            "senderID": senderID,
-            "senderName": senderName,
-            "stamp" : this.stamp,
-        };
-        this.skip_first = false;        
-        this.ref["set"](d);        
-        this.stamp = !this.stamp;
-    };    
-    
-    SimpleMessageKlassProto.StartUpdate = function (ref)
-	{
-        this.StopUpdate();
-        if (ref != null)
-            this.ref = ref; 
-        
-        this.skip_first = true;      // skip previous message
-        
-        var self = this;
-	    var on_update = function (snapshot)
-	    {     
-	        var d = snapshot["val"]();
-            if (self.skip_first)
-            {
-                self.skip_first = false;
-                return;
-            }
-            if (d == null)
-                return;
-
-
-            if (self.messageType == MESSAGE_JSON)
-                d["message"] = JSON.stringify(d["message"]);
-            
-            if (self.onReceived)
-                self.onReceived(d);
-        };
-
-        this.ref["on"]("value", on_update);        
-        this.on_read = on_update;
-        this.ref["onDisconnect"]()["remove"]();
-    };
-
-    SimpleMessageKlassProto.StopUpdate = function ()
-	{
-        if (this.on_read == null)
-            return;
-
-        this.ref["off"]("value", this.on_read);
-        this.on_read = null;             
-        
-        this.ref["remove"]();
-        this.ref["onDisconnect"]()["cancel"]();
-    };  
-        	
-	window.FirebaseSimpleMessageKlass = SimpleMessageKlass;
-}());

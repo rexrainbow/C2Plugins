@@ -72,7 +72,7 @@ cr.plugins_.Rex_layout2board = function(runtime)
         // offset logic position
 		var w = board_layout.OffsetLX(lxmax, lymax, 0, -lxmin, -lymin, 0);
 		var h = board_layout.OffsetLY(lxmax, lymax, 0, -lxmin, -lymin, 0);
-        board.reset_board(w, h);
+        board.ResetBoard(w, h);
                 
         var px0 = board_layout.LXYZ2PX(lxmin, lymin);
         var py0 = board_layout.LXYZ2PY(lxmin, lymin);      

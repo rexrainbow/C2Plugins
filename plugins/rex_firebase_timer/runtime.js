@@ -61,27 +61,82 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{		
 	};
 
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
     
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };    
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };
+    // 2.x , 3.x  
+    
+    var newTimerDate = function (interval)
+    {
+        var t = {"start": serverTimeStamp(),
+		             "current": serverTimeStamp(),
+                    "time-out": interval};
+        return t;
+    }
     instanceProto.start_timer = function(ref, interval, handler)
     {
-		var t = {"start": window["Firebase"]["ServerValue"]["TIMESTAMP"],
-		         "current": window["Firebase"]["ServerValue"]["TIMESTAMP"],
-                 "time-out": interval};
-		ref["set"](t, handler);
-    };    
+		ref["set"](newTimerDate(interval), handler);
+    };   
+
+    var get_deltaTime = function (timer)    
+    {
+        return get_timestamp(timer["current"]) - get_timestamp(timer["start"]);
+    }
  		     
 	//////////////////////////////////////
 	// Conditions
@@ -118,7 +173,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         if (!this.exp_LastTimer)
             return false;
             
-        var t = this.exp_LastTimer["current"]-this.exp_LastTimer["start"];        
+        var t = get_deltaTime(this.exp_LastTimer);
 	    return (t/1000) > this.exp_LastTimer["time-out"];
 	};		    
 	//////////////////////////////////////
@@ -200,7 +255,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         };        
         var update_timer = function()
         {
-		    var t = {"current": window["Firebase"]["ServerValue"]["TIMESTAMP"]};
+		    var t = {"current": serverTimeStamp()};
 		    ref["update"](t, on_update);
         };        
         var start_timer = function()
@@ -240,57 +295,14 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	
     Acts.prototype.StartTimerWhenDisconnect = function (ownerID, timer_name, interval)
 	{
-	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
-	    
-	    var self = this;
-
-        //2. set OnDisconnect	  
-		var set_on_disconnect = function ()
-		{
-		    var t = {"start": window["Firebase"]["ServerValue"]["TIMESTAMP"],
-		             "current": window["Firebase"]["ServerValue"]["TIMESTAMP"],
-                     "time-out": interval};
-		    ref["onDisconnect"]()["set"](t);
-		};
-		//2. set OnDisconnect
-				
-	    //1. read timer	    
-	    var on_read = function (snapshot)
-	    {
-	        set_on_disconnect();
-	    };	   
-	    var read_timer = function()
-	    {
-	        ref["once"]("value", on_read);
-	    };
-	    read_timer();
-        //1. read timer        
+	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);	    
+        ref["onDisconnect"]()["set"](newTimerDate(interval));
 	};	
 
     Acts.prototype.DeleteTimerWhenDisconnect = function (ownerID, timer_name, interval)
 	{
 	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
-	    
-	    var self = this;
-
-        //2. set OnDisconnect	  
-		var set_on_disconnect = function ()
-		{
-		    ref["onDisconnect"]()["remove"]();
-		};
-		//2. set OnDisconnect
-				
-	    //1. read timer	    
-	    var on_read = function (snapshot)
-	    {
-	        set_on_disconnect();
-	    };	   
-	    var read_timer = function()
-	    {
-	        ref["once"]("value", on_read);
-	    };
-	    read_timer();
-        //1. read timer        
+        ref["onDisconnect"]()["remove"]();
 	};    
 	//////////////////////////////////////
 	// Expressions
@@ -309,7 +321,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["start"];
+            t = get_timestamp(this.exp_LastTimer["start"]);
         else
             t = 0;     
 		ret.set_float(t);
@@ -318,7 +330,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["current"];
+            t = get_timestamp(this.exp_LastTimer["current"]);
         else
             t = 0;       
 		ret.set_float(t);
@@ -327,7 +339,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["current"]-this.exp_LastTimer["start"];
+            t = get_deltaTime(this.exp_LastTimer);
         else
             t = 0;     
 		ret.set_float(t/1000);
@@ -336,7 +348,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["time-out"];
+            t = get_timestamp(this.exp_LastTimer["time-out"]);
         else
             t = 0;    
 		ret.set_float(t/1000);
@@ -345,7 +357,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = this.exp_LastTimer["current"]-this.exp_LastTimer["start"] - this.exp_LastTimer["time-out"];
+            t = get_deltaTime(this.exp_LastTimer) - this.exp_LastTimer["time-out"];
         else
             t = 0;
 		ret.set_float(t/1000);

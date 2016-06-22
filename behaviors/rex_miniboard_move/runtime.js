@@ -184,7 +184,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
         var board = mainboard_ref.inst;
         var tlx = mainboard_ref.LOX + dx;
         var tly = mainboard_ref.LOY + dy;
-        var dir = mainboard_ref.inst.lxy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, tlx, tly);
+        var dir = mainboard_ref.inst.xy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, tlx, tly);
         return this.moveTo_miniboard(tlx, tly, dir, test_mode, this.is_set_position, is_test);    
     };    
     
@@ -195,7 +195,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	        return false;
         
         var board = mainboard_ref.inst;
-        var dir = mainboard_ref.inst.lxy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, lx, ly);
+        var dir = mainboard_ref.inst.xy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, lx, ly);
         return this.moveTo_miniboard(lx, ly, dir, test_mode, this.is_set_position, is_test);     
     };     
       
@@ -328,7 +328,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
             
         var tlx = target_xyz.x;
         var tly = target_xyz.y;
-        var dir = mainboard_ref.inst.lxy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, tlx, tly);
+        var dir = mainboard_ref.inst.xy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, tlx, tly);
         var is_test = false;
         this.moveTo_miniboard(tlx, tly, dir, test_mode, this.is_set_position, is_test);     
     };

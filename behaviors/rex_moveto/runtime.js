@@ -410,7 +410,14 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 	{
         this.is_moving = false;
 	};   	
-	
+    
+ 	Acts.prototype.SetTargetPosOnUID = function (uid)
+	{
+		var inst = this.runtime.getObjectByUID(uid);
+        if (inst != null)
+            this.SetTargetPos(inst.x, inst.y);
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

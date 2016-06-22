@@ -83,6 +83,11 @@ AddAction(10, 0, "Setup", "Setup",
           "{my} get timer from <i>{0}</i>", 
           "Setup.", "Setup2");
           
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Type", "Type.", 0);
+AddAction(11, 0, "Sync timescale", "Sync", "{my} Set timescale synchronization to <i>{0}</i>", "Synchronize to object's timescale.", "SyncTimescale");          
+          
 AddAnyTypeParam("Duration", "Duration name. Could be a string or a number.", '""');           
 AddNumberParam("Duration", "Duration time", 1);
 AddAction(15, 0, "Add duration time", "Time", 

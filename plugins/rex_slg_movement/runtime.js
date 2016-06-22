@@ -648,19 +648,20 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         while (curr.parent.length > 0)
         {
             path.push(curr.uid);
+            cnt = curr.parent.length;      
             
             // get parent
             if (is_astar_mode)            
                 curr =  GLOBOL_NODES[ curr.parent[0].toString() ];
+            
             else if (is_shortest_random_mode)
             {
-                parent_index = this.plugin.RandomInt(0, curr.parent.length);
+                parent_index = (cnt===1)? 0: this.plugin.RandomInt(0, cnt);
                 curr =  GLOBOL_NODES[ curr.parent[parent_index].toString() ];
             }
 
             else if (is_shortest_diagonal_mode)
-            {
-                cnt = curr.parent.length;                
+            {             
                 for (i=0; i<cnt; i++)
                 {
                     parent_dir = this.plugin.UID2DIR(curr.uid, curr.parent[i]);
@@ -677,7 +678,6 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             
             else if (is_shortest_straight_mode)
             {
-                cnt = curr.parent.length;
                 for (i=0; i<cnt; i++)
                 {
                     parent_dir = this.plugin.UID2DIR(curr.uid, curr.parent[i]);
@@ -694,7 +694,6 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             
             else if (is_shortest_line_mode)
             {
-                cnt = curr.parent.length;
                 if (cnt == 1)
                 {
                     curr =  GLOBOL_NODES[ curr.parent[0].toString() ];

@@ -39,15 +39,19 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+    var _uids = [];  // private global object    
 	instanceProto.onCreate = function()
 	{
 	    this.check_name = "INSTGROUP";
 	    this.groups = {};
         this.randomGen = null;
         this.randomGenUid = -1;    // for loading
+        this._map_uid = 0;
 	    this._cmp_uidA = 0;
 	    this._cmp_uidB = 0;
-	    this._sort_fn_name = "";	    
+        this._map_fn_name = "";
+	    this._sort_fn_name = "";	   
+        this._mapping_result = 0;        
 	    this._compared_result = 0;
 	    this._foreach_item = {};
 	    this._foreach_index = {};
@@ -198,59 +202,91 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         return null;
     };
     
-    instanceProto._pick_insts = function (name, objtype, is_pop)
+	instanceProto.PickUIDs = function (uids, objType)
+	{
+        if (!objType)
+            return false;
+            
+	    return window.RexC2PickUIDs.call(this, uids, objType);  
+	};
+    
+    instanceProto.callMapFunction = function (fnName, uid)
+	{
+        this._map_fn_name = fnName;
+        this._mapping_result = 0;
+        this._map_uid = uid;
+        this.runtime.trigger(cr.plugins_.Rex_gInstGroup.prototype.cnds.OnMappingFn, this, fnName);
+        return this._mapping_result;        
+	};	
+    
+    instanceProto._group_to_inst = function (name, objtype, is_pop)
 	{
         var group = this.GetGroup(name);
         var uid_list = group.GetList();
-        var sol = objtype.getCurrentSol();  
-        sol.select_all = false;
-        sol.instances.length = 0;   // clear contents
-        var cnt=uid_list.length, i, inst;
+        var i, cnt=uid_list.length;
         for(i=0; i<cnt; i++)
-        {
-            inst = this._uid2inst(uid_list[i], objtype);
-            if (inst != null)
-                sol.instances.push(inst);
+        {            
+            _uids.push(uid_list[i]);
         }
+        var has_inst = this.PickUIDs(_uids, objtype);
         if (is_pop==1)
         {
-            cnt=sol.instances.length;
             for(i=0; i<cnt; i++)
-                group.RemoveUID(sol.instances[i].uid);        
+                group.RemoveUID(_uids[i]);  
         }
-        objtype.applySolToContainer(); 
-        return  (sol.instances.length >0);       
+        _uids.length = 0;
+        return has_inst;    
 	};  
     
-    instanceProto._pop_one_instance = function (name, index, objtype, is_pop)
-	{
+    instanceProto._pop_instance = function (name, index, objtype, is_pop)
+	{        
         var group = this.GetGroup(name);
         var uid_list = group.GetList();
-        var is_valid_index = (uid_list.length > index);   
-        var sol = objtype.getCurrentSol();
-        sol.select_all = false;            
-        sol.instances.length = 0;   // clear contents
-        var inst=null;
-        if (is_valid_index)
-        {
-            inst = this._uid2inst(uid_list[index], objtype);
-            if (inst != null)
-                 sol.instances.push(inst);
-        }
-        if ((is_pop==1) && (inst != null))
-            group.RemoveUID(inst.uid);
-        return  (sol.instances.length >0);              
-	};	    
+        var uid = uid_list[index];
+        _uids.push( uid );
 
-    var _thisArg  = null;
-	var _sort_fn = function(uid_a, uid_b)
-	{   
-	    _thisArg._cmp_uidA = parseInt(uid_a);
-	    _thisArg._cmp_uidB = parseInt(uid_b);
-	    _thisArg.runtime.trigger(cr.plugins_.Rex_gInstGroup.prototype.cnds.OnSortingFn, _thisArg);
-	    return _thisArg._compared_result;	    
-	};		
-	
+        // output        
+        var has_inst = this.PickUIDs(_uids, objtype);
+        if (is_pop==1)
+        {
+            group.RemoveUID(uid);  
+        }
+        _uids.length = 0;
+        return has_inst;             
+	};	    
+    instanceProto._pop_instance_by_mapfn = function (name, objtype, is_pop, map_fn, result_type)
+	{        
+        var group = this.GetGroup(name);
+        var uid_list = group.GetList();
+        var i, cnt=uid_list.length;
+        var result=null, val;       
+        var isMax = (result_type === 1);
+        var uid=-1, isUpdated;
+        for (i=0; i<cnt; i++)
+        {            
+            val = this.callMapFunction(map_fn, uid_list[i]);
+            isUpdated = (result === null)  ||
+                              (!isMax && (result > val)) ||
+                              (isMax && (result < val))  ;
+                              
+            if (isUpdated)
+            {
+                result = val;      
+                uid = uid_list[i];
+            }
+        }               
+        _uids.push( uid );
+        
+        // output        
+        var has_inst = this.PickUIDs(_uids, objtype);
+        if (is_pop==1)
+        {
+            group.RemoveUID(uid);  
+        }
+        _uids.length = 0;
+        return has_inst;             
+	};	 
+    	
 	instanceProto.saveToJSON = function ()
 	{
 		var info = {};
@@ -328,11 +364,15 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
-	pluginProto.cnds = new Cnds(); 
-	  
+	pluginProto.cnds = new Cnds();
+    
+	Cnds.prototype.OnMappingFn = function (name)
+	{
+		return (this._map_fn_name === name);
+	};	 	  
 	Cnds.prototype.OnSortingFn = function (name)
 	{
-		return (this._sort_fn_name == name);
+		return (this._sort_fn_name === name);
 	};	 
 	
 	Cnds.prototype.ForEachUID = function (var_name, name)
@@ -353,11 +393,11 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         return false;
 	};
 	  
-	Cnds.prototype.PickInsts = function (name, objtype, is_pop)
+	Cnds.prototype.Group2Insts = function (name, objtype, is_pop)
 	{
         if (!objtype)
             return;	    
-		return this._pick_insts(name, objtype, is_pop);   
+		return this._group_to_inst(name, objtype, is_pop);   
 	};  
 	  
 	Cnds.prototype.IsInGroup = function (uid, name)
@@ -370,11 +410,11 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 		return (this.GetGroup(name).GetList().length == 0);        
 	}; 	
 	  
-	Cnds.prototype.PopOneInstance = function (name, index, objtype, is_pop)
+	Cnds.prototype.PopInst = function (name, index, objtype, is_pop)
 	{
         if (!objtype)
             return;	    
-		return this._pop_one_instance(name, index, objtype, is_pop);     
+		return this._pop_instance(name, index, objtype, is_pop);     
 	};	 
 	  
 	Cnds.prototype.IsSubset = function (subset_name, main_name)
@@ -382,7 +422,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         var main_group = this.GetGroup(main_name);
         var subset_group = this.GetGroup(subset_name);
 		return main_group.IsSubset(subset_group);     
-	};			
+	};		
+	  
+	Cnds.prototype.RandomPopInstance = function (name, objtype, is_pop)
+	{
+        if (!objtype)
+            return;	    
+        var index = Math.floor(Math.random() * this.GetGroup(name).GetList().length);
+		return this._pop_instance(name, index, objtype, is_pop);     
+	};	 
+	  
+	Cnds.prototype.PopInstByMappingFunction = function (name, objtype, is_pop, map_fn, result_type)
+	{
+        if (!objtype)
+            return;	    
+		return this._pop_instance_by_mapfn(name, objtype, is_pop, map_fn, result_type);   
+	};  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -500,9 +555,16 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
     Acts.prototype.SortByFn = function (name, fn_name)
 	{
-        _thisArg  = this;
-	    this._sort_fn_name = fn_name;
-	    this.GetGroup(name).GetList().sort(_sort_fn);
+        var uid_list = this.GetGroup(name).GetList();
+        var self=this;
+        uid_list.sort(function(uidA, uidB)
+        {
+            self._cmp_uidA = uidA;
+            self._cmp_uidB = uidB;
+            self._compared_result = 0;
+            self.runtime.trigger(cr.plugins_.Rex_gInstGroup.prototype.cnds.OnSortingFn, self, fn_name);
+            return self._compared_result;
+        });       
 	};		
 	
     Acts.prototype.SetCmpResultDirectly = function (result)
@@ -515,19 +577,23 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    this._compared_result = result -1;
 	};
 	
-    Acts.prototype.PickInsts = function (name, objtype, is_pop)
+    Acts.prototype.Group2Insts = function (name, objtype, is_pop)
 	{
         if (!objtype)
             return;
             	    
-	    this._pick_insts(name, objtype, is_pop);
+	    this._group_to_inst(name, objtype, is_pop);
 	};
 	
-    Acts.prototype.SortByUIDInc = function (name)
+    Acts.prototype.SortByUID = function (name, method)
 	{
-	    this.GetGroup(name).GetList().sort();
+        var uid_list = this.GetGroup(name).GetList();
+        uid_list.sort();
+        if (method === 0)
+            uid_list.reverse();
 	};	
 	
+    // deprecated
     Acts.prototype.SortByUIDDec = function (name)
 	{
 	    this.GetGroup(name).GetList().sort().reverse();
@@ -548,11 +614,11 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
             source_group.Complement(target_group);
 	};	
 	
-    Acts.prototype.PopInstance = function (name, index, objtype, is_pop)
+    Acts.prototype.PopInst = function (name, index, objtype, is_pop)
 	{	    
         if (!objtype)
             return;
-        this._pop_one_instance(name, index, objtype, is_pop);  
+        this._pop_instance(name, index, objtype, is_pop);  
 	};		
 	
     Acts.prototype.SetRandomGenerator = function (randomGen_objs)
@@ -624,12 +690,78 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
         cr.plugins_.Rex_gInstGroup.prototype.acts.Clean.call(this, name);  
         cr.plugins_.Rex_gInstGroup.prototype.acts.AddInstByUID.call(this, uid, name);        
-	};    
+	};  
+
+	Acts.prototype.RandomPopInstance = function (name, objtype, is_pop)
+	{
+        if (!objtype)
+            return;	    
+        var index = Math.floor(Math.random() * this.GetGroup(name).GetList().length);
+		return this._pop_instance(name, index, objtype, is_pop);     
+	};	
+	
+    Acts.prototype.SetMappingResult = function (val)
+	{
+        this._mapping_result = val;
+	};
+    
+	Acts.prototype.PopInstByMappingFunction = function (name, objtype, is_pop, map_fn, result_type)
+	{
+        if (!objtype)
+            return;	    
+		return this._pop_instance_by_mapfn(name, objtype, is_pop, map_fn, result_type);   
+	};  
+    
+    Acts.prototype.SortByMappingFunction = function (name, fn_name, method_)
+	{
+        var uid_list = this.GetGroup(name).GetList();
+        var self=this;
+        var uid2result = {};
+        uid_list.sort(function(uidA, uidB)
+        {
+            if (!uid2result.hasOwnProperty(uidA))
+                uid2result[uidA] = self.callMapFunction(fn_name, uidA);
+            if (!uid2result.hasOwnProperty(uidB))
+                uid2result[uidB] = self.callMapFunction(fn_name, uidB);            
+
+            var method = method_;            
+            var valA = uid2result[uidA];
+            var valB = uid2result[uidB];
+            
+            if (method >= 2)
+            {
+                valA = parseFloat(valA);
+                valB = parseFloat(valB);
+                method -= 2;
+            }
+            
+            if (valA === valB)
+                return 0;
+            else if (valA > valB)
+            {
+                if (method === 1)
+                    return 1;
+                else
+                    return -1;
+            }
+            else
+            {
+                if (method === 1)
+                    return -1;
+                else
+                    return 1;
+            }
+        });       
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
-	
+    
+	Exps.prototype.MapUID = function (ret)
+	{   
+	    ret.set_any(this._map_uid);
+	};  	
 	Exps.prototype.CmpUIDA = function (ret)
 	{   
 	    ret.set_any(this._cmp_uidA);
@@ -688,14 +820,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
     
 	Exps.prototype.Pop = function (ret, name, index)
 	{
-	    var group = this.GetGroup(name);
-	    var uid_list = group.GetList();
-	    if (index == -1)
-	        index = uid_list.length -1;
-	    var uid = uid_list[index] || (-1);
-	    if (uid !== -1)
-	        group.RemoveUID(uid);	
-	    ret.set_any(uid);
+	    ret.set_any(this.GetGroup(name).Pop(index));
 	};
 	
 	Exps.prototype.FirstUID = function (ret, name)
@@ -707,10 +832,91 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	{
 	    var uid_list = this.GetGroup(name).GetList();
 	    var index = uid_list.length -1;
-	    var uid = uid_list[index] || (-1);
+        var uid = uid_list[index];
+        if (uid == null)
+        {
+            uid = -1;
+        }
 	    ret.set_any(uid);
-	};     	  
+	};    
+    
+	Exps.prototype.RandomIndex = function (ret, name)
+	{
+        var index= Math.floor(Math.random() * this.GetGroup(name).GetList().length);
+	    ret.set_int(index);
+	};
+	
+	Exps.prototype.RandomIndex2UID = function (ret, name)
+	{
+        var index= Math.floor(Math.random() * this.GetGroup(name).GetList().length);        
+	    ret.set_any(this.GetGroup(name).Index2UID(index));
+	}; 
+    
+	Exps.prototype.RandomPop = function (ret, name)
+	{
+        var index= Math.floor(Math.random() * this.GetGroup(name).GetList().length);
+	    ret.set_any(this.GetGroup(name).Pop(index));
+	}; 
 }());
+
+
+(function ()
+{
+    // general pick instances function
+    if (window.RexC2PickUIDs != null)
+        return;
+
+	var PickUIDs = function (uids, objtype, check_callback)
+	{
+        var sol = objtype.getCurrentSol();
+        sol.instances.length = 0;
+        sol.select_all = false;
+        var is_family = objtype.is_family;
+        var members,member_cnt,i;
+        if (is_family)
+        {
+            members = objtype.members;
+            member_cnt = members.length;
+        }
+        var i,j,uid_cnt=uids.length;
+        for (i=0; i<uid_cnt; i++)
+        {
+            var uid = uids[i];
+            if (uid == null)
+                continue;
+            var inst = this.runtime.getObjectByUID(uid);
+            if (inst == null)
+                continue;
+            if ((check_callback != null) && (!check_callback(uid)))
+                continue;
+            
+            var type_name = inst.type.name;
+            if (is_family)
+            {
+                for (j=0; j<member_cnt; j++)
+                {
+                    if (type_name == members[j].name)
+                    {
+                        sol.instances.push(inst); 
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                if (type_name == objtype.name)
+                {
+                    sol.instances.push(inst);
+                }
+            }            
+        }
+        objtype.applySolToContainer();
+	    return (sol.instances.length > 0);	    
+	};    
+
+    window.RexC2PickUIDs = PickUIDs;
+}());
+
 
 (function ()
 {   
@@ -731,6 +937,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         for (key in this._set)
             delete this._set[key];
         this._list.length = 0;
+        return this;
 	};
     
 	GroupKlassProto.Copy = function(group)
@@ -743,6 +950,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
         for (key in hash_obj)
             this._set[key] = hash_obj[key];
 		cr.shallowAssignArray(this._list, group._list);
+        return this;        
 	};   
 	
 	GroupKlassProto.SetByUIDList = function(uid_list, can_repeat)
@@ -763,20 +971,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        this.Clean();
 	        this.AddUID(uid_list);
 	    }
+        return this;               
 	};
 	
 	GroupKlassProto.AddUID = function(_uid)  // single number, number list
 	{
-	    if (typeof(_uid) == "number")    // single number
-	    {
-	        if (this._set[_uid] == null)    // not in group
-	        {
-	            this._set[_uid] = true;
-	            this._list.push(_uid);      // push back
-	        }
-            // else ingored 
-	    }
-	    else                            // uid list
+	    if (typeof(_uid) === "object")   // uid list      
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -790,26 +990,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                 // else ingored 
 	        }
 	    }
+        
+	    else    // single number
+	    {
+	        if (this._set[_uid] == null)    // not in group
+	        {
+	            this._set[_uid] = true;
+	            this._list.push(_uid);      // push back
+	        }
+            // else ingored 
+	    }  
+        return this;       
 	};
     
    	GroupKlassProto.PushUID = function(_uid, is_front)  // single number, number list
 	{	    
-	    
-	    if (typeof(_uid) == "number")    // single number
-	    {
-	        if (this._set[_uid] == null)
-	            this._set[_uid] = true;
-	        else    // remove existed item in this._list
-	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
-	            
-	        
-	        // add uid
-	        if (is_front)	            
-	            this._list.unshift(_uid);      // push front
-	        else
-	            this._list.push(_uid);         // push back	        
-	    }
-	    else                           // uid list, no repeating
+	    if (typeof(_uid) === "object")   // uid list      
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -828,20 +1024,27 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	            this._list.push.apply(this._list, _uid);    // push back	  
 	        
 	    }
-	};
-	
-   	GroupKlassProto.InsertUID = function(_uid, index)  // single number, number list
-	{	    	        
-	    if (typeof(_uid) == "number")    // single number
+        
+	    else    // single number
 	    {
 	        if (this._set[_uid] == null)
 	            this._set[_uid] = true;
 	        else    // remove existed item in this._list
 	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
 	            
-	        arrayInsert(this._list, _uid, index)      
-	    }
-	    else                           // uid list, no repeating
+	        
+	        // add uid
+	        if (is_front)	            
+	            this._list.unshift(_uid);      // push front
+	        else
+	            this._list.push(_uid);         // push back	        
+	    }  
+        return this;               
+	};
+	
+   	GroupKlassProto.InsertUID = function(_uid, index)  // single number, number list
+	{	    	        
+	    if (typeof(_uid) === "object")   // uid list             
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -857,19 +1060,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        arrayInsert(this._list, _uid, index)     
 	        
 	    }
+        
+	    else    // single number
+	    {
+	        if (this._set[_uid] == null)
+	            this._set[_uid] = true;
+	        else    // remove existed item in this._list
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));
+	            
+	        arrayInsert(this._list, _uid, index)      
+	    } 
+        return this;               
 	};
 		
 	GroupKlassProto.RemoveUID = function(_uid)  // single number, number list
 	{
-	    if (typeof(_uid) == "number")    // single number
-	    {
-	        if (this._set[_uid] != null)
-	        {
-	            delete this._set[_uid];
-	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
-	        }
-	    }
-	    else                            // uid list
+	    if (typeof(_uid) === "object")   // uid list                         
 	    {
 	        var i, uid, cnt=_uid.length;
 	        for (i=0; i<cnt; i++)
@@ -883,6 +1089,16 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                 // else ingored 
 	        }
 	    }
+        
+	    else    // single number
+	    {
+	        if (this._set[_uid] != null)
+	        {
+	            delete this._set[_uid];
+	            cr.arrayRemove(this._list, this._list.indexOf(_uid));     
+	        }
+	    }
+        return this;               
 	};
 	
 	GroupKlassProto.UID2Index = function(uid)
@@ -893,21 +1109,39 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	GroupKlassProto.Index2UID = function(index)
 	{
         var _list = this._list;
-        var uid = _list[index] || (-1);
+        var uid = _list[index];
+        if (uid == null)
+            uid = -1;
         return uid;
 	};		
-		
+	
+	GroupKlassProto.Pop = function(index)
+	{
+        var _list = this._list;
+        if (index < 0)
+            index = _list.length + index;
+        
+        var uid = _list[index];
+        if (uid == null)
+            uid = -1;
+        else
+            this.RemoveUID(uid);	
+        
+        return uid;
+	};				
 	GroupKlassProto.Union = function(group)
 	{
 	    var uids = group._set;
         var uid;        
         for (uid in uids)        
-            this.AddUID(parseInt(uid));    
+            this.AddUID(parseInt(uid));  
+        return this;               
 	};	
 		
 	GroupKlassProto.Complement = function(group)
 	{	  
-	    this.RemoveUID(group._list);            
+	    this.RemoveUID(group._list);  
+        return this;               
 	};
 		
 	GroupKlassProto.Intersection = function(group)
@@ -928,6 +1162,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        if (set_copy[uid] != null)
 	            this.AddUID(parseInt(uid));
 	    }
+        return this;               
 	};	
     
 	GroupKlassProto.IsSubset = function(subset_group)

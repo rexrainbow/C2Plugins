@@ -133,6 +133,14 @@ AddStringParam("Tag", "Tag definitions.", '""');
 AddAction(62, 0, "Add by CSS", "Tag", 
          "Add tags by CSS to <i>{0}</i>", 
          "Add tags by CSS.", "AddCSSTags");
+         
+AddAnyTypeParam("Color", "Color of underline, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
+AddNumberParam("Thickness", "Thickness in pixels.", 1);
+AddNumberParam("Offset", "Offset Y in pixels.", 0);
+AddAction(63, 0, "Set underline", "Underline", 
+          "Set underline with color to <i>{0}</i>, thinkness to <i>{1}</i>, offset Y to <i>{2}</i>", 
+          "Set underline.", "SetUnderline");
+         
           
 ////////////////////////
 AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");

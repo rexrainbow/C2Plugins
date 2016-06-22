@@ -218,7 +218,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
     var parse_voldBIn = function (vol)
     {
         var voldB;
-        if (typeof(vol) == "number")
+        if (typeof(vol) === "number")
             voldB = LinearScaleToDb(vol)
         else // string
             voldB = parseFloat(vol);
@@ -228,7 +228,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
     Acts.prototype.Play = function (file, looping, stop_vol, tag, fadeIn_time, start_vol)
 	{          
        var start_voldB = parse_voldBIn(start_vol);
-       var stop_voldb = LinearScaleToDb(stop_vol);
+       var stop_voldb = parse_voldBIn(stop_vol);
        
        this.AudioStart(file, looping, stop_voldb, tag);
        this.tasksMgr.TaskCancel(tag);
@@ -281,7 +281,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
     Acts.prototype.PlayByName = function (folder, filename, looping, vol, tag, fadeIn_time)
 	{     
        var audio = this._audio_get();       
-       var voldb = LinearScaleToDb(vol);
+       var voldb = parse_voldBIn(vol);
        
        cr.plugins_.Audio.prototype.acts.PlayByName.call(audio, folder, filename, looping, voldb, tag);       
        this.tasksMgr.TaskCancel(tag);  

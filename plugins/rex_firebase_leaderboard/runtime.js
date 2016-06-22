@@ -64,19 +64,65 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    this.ranks.StopUpdate(); 	    
 	};
 	
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    
+    var isFullPath = function (p)
+    {
+        return (p.substring(0,8) === "https://");
+    };
+	
 	instanceProto.get_ref = function(k)
 	{
-	    if (k == null)
+        if (k == null)
 	        k = "";
-	        
 	    var path;
-	    if (k.substring(0,8) == "https://")
+	    if (isFullPath(k))
 	        path = k;
 	    else
 	        path = this.rootpath + k + "/";
-	        
-        return new window["Firebase"](path);
+            
+        // 2.x
+        if (!isFirebase3x())
+        {
+            return new window["Firebase"](path);
+        }  
+        
+        // 3.x
+        else
+        {
+            var fnName = (isFullPath(path))? "refFromURL":"ref";
+            return window["Firebase"]["database"]()[fnName](path);
+        }
+        
 	};
+    
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };
+    
+    var get_root = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["root"]() : obj["root"];
+    };
+    
+    var serverTimeStamp = function ()
+    {       
+        if (!isFirebase3x())
+            return window["Firebase"]["ServerValue"]["TIMESTAMP"];
+        else
+            return window["Firebase"]["database"]["ServerValue"];
+    };       
+
+    var get_timestamp = function (obj)    
+    {       
+        return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
+    };    
+    // 2.x , 3.x  
 	
 	instanceProto.create_ranks = function(isAutoUpdate)
 	{
@@ -184,7 +230,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
         var save_data = {"name":name, 
                          "score":score, 
                          "extra": save_extra_data,
-                         "updateAt": window["Firebase"]["ServerValue"]["TIMESTAMP"]
+                         "updateAt": serverTimeStamp()
                         };
         var priority = (this.ranking_order == 0)? score:-score;
 	    ref["child"](userID)["setWithPriority"](save_data, priority, onComplete);
@@ -447,7 +493,15 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
     // --------------------------------------------------------------------------    
     
     // --------------------------------------------------------------------------
-    // internal    
+    // internal  
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    var get_key = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["key"]() : obj["key"];
+    };    
     ItemListKlassProto.add_item = function(snapshot, prevName, force_push)
 	{
 	    var item;
@@ -455,7 +509,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	        item = this.snapshot2Item(snapshot);
 	    else
 	    {
-	        var k = snapshot["key"]();
+	        var k = get_key(snapshot);
 	        item = snapshot["val"]();
 	        item[this.keyItemID] = k;
 	    }
@@ -484,7 +538,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	
 	ItemListKlassProto.remove_item = function(snapshot)
 	{
-	    var k = snapshot["key"]();
+	    var k = get_key(snapshot);
 	    var i = this.itemID2Index[k];	 
 	    var item = this.items[i];
 	    cr.arrayRemove(this.items, i);

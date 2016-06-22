@@ -67,38 +67,62 @@ cr.behaviors.Rex_DragArrowkey2 = function(runtime)
 		return null;
 	};	
     
+    var _touch_insts = [];    
+	var _behavior_insts = [];    
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
-        var sol = this.objtype.getCurrentSol(); 
-        var select_all_save = sol.select_all;
-        sol.select_all = true;
-        var overlap_cnt = this.runtime.testAndSelectCanvasPointOverlap(this.objtype, touchX, touchY, false);
-        if (overlap_cnt == 0)
+        _touch_insts.length = 0;
+        _behavior_insts.length = 0;        
+        var insts = this.objtype.instances, inst;
+        var lx, ly;
+        var i, cnt=insts.length;
+        for (i=0; i<cnt; i++)
         {
-            // recover to select_all_save
-            sol.select_all = select_all_save;        
+            inst = insts[i];
+            inst.update_bbox();
+			
+			// Transform point from canvas to instance's layer
+			lx = inst.layer.canvasToLayer(touchX, touchY, true);
+			ly = inst.layer.canvasToLayer(touchX, touchY, false);
+            
+            if (inst.contains_pt(lx, ly))
+                _touch_insts.push(inst);
+        }
+        
+        var touch_insts_cnt=_touch_insts.length
+        if (touch_insts_cnt === 0)
+        {
+            _touch_insts.length = 0;
             return false;
         }
         
-        // overlap_cnt > 0
+        // touch_insts_cnt > 0
         // 0. find out index of behavior instance
 
-        // 1. get all valid behavior instances            
-        var insts = sol.getObjects();
+        // 1. get all valid behavior instances
         var i, cnt, binst;          
         cnt = insts.length;           
         for (i=0; i<cnt; i++ )
         {
-            binst = GetThisBehavior(insts[i]);
+		    inst = _touch_insts[i];
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }	
+            binst = GetThisBehavior(inst);
+            if (!binst)
+                continue;
             if (binst.activated && (!binst.is_on_dragging))
             {
+                _touch_insts.length = 0;
+                _behavior_insts.length = 0;                
                 binst.on_control_start(touch_src);  
-                break;
+                return true;  // get drag inst  
             }
         }
-        
-        // recover to select_all_save
-        sol.select_all = select_all_save;
+
+        //return true;  // get drag inst         
     };
     
     behtypeProto.OnTouchEnd = function (touch_src)

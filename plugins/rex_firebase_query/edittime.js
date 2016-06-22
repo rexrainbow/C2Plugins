@@ -16,14 +16,14 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Callback function", "Callback function.", '"_"');
-AddCondition(1, cf_trigger, "On received", "Receive", 
-            "On received <b>{0}</b>", 
-            "Triggered when registered received event received.", "OnReading");   
-
-AddCondition(2, 0, "LastData is null", "Receive", 
-             "LastData is null", 
-             "Return true if LastData is null.", "LastDataIsNull");                         
+//AddStringParam("Callback function", "Callback function.", '"_"');
+//AddCondition(1, cf_trigger, "On received", "Receive", 
+//            "On received <b>{0}</b>", 
+//            "Triggered when registered received event received.", "OnReading");   
+//
+//AddCondition(2, 0, "LastData is null", "Receive", 
+//             "LastData is null", 
+//             "Return true if LastData is null.", "LastDataIsNull");                         
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Domain", "The Firebase data ref URL", '""');
