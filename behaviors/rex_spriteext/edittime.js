@@ -26,6 +26,11 @@ AddCondition(2, cf_deprecated | cf_trigger, "On destroying", "Constructor & dest
 AddCondition(11, 0, "Is solid", "Soild", 
              "Is {my} solid", "Return true if the object has solid enable.", "IsSolid");
              
+AddNumberParam("X", "The X co-ordinate of point.", 0);
+AddNumberParam("Y", "The Y co-ordinate of point.", 0);
+AddCondition(21, 0, "Is overlapping point", "Overlap", 
+             "Is {my} overlapping at point (<i>{0}</i> , <i>{1}</i>)", "Return true if the object is overlapping at a point.", "ContainsPt");             
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Visible", "1 = visible, 0 = invisible, 2 = toggle", 0);

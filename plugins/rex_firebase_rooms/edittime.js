@@ -84,6 +84,9 @@ AddCondition(37, 0, "I am first user", "Users list",
 AddCondition(38, 0, "Is full", "Users list", 
             "Room is full",
             "Return true if room is full of users.", "IsFull");                   
+AddCondition(39, cf_trigger, "On become first user", "Users list", 
+            "On become first user",
+            "Triggered when became first user of current room.", "OnBecomeFirstUser");   
             
 // deprecated            
 AddCondition(41, cf_deprecated| cf_trigger, "On receive", "Message", 
@@ -319,7 +322,7 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
     new cr.Property(ept_text, "Sub domain", "Rooms", "Sub domain for this function."),
-    new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),    
+    //new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),    
 	];
 	
 // Called by IDE when a new object type is to be created

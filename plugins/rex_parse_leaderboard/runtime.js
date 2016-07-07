@@ -258,7 +258,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.PostScore = function (userID, name, score, extra_data)
+    Acts.prototype.PostScore = function (userID, name, score, extra_data, post_cond)
 	{	
 	    var self = this;
 	    // step 3    
@@ -305,10 +305,22 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    // step 2
 	    var on_success = function(rank_obj)
 	    {	 
+            var doPosting = true;
 	        if (!rank_obj)
 	            rank_obj = new self.rank_klass();
-	            
-	        save_rank(rank_obj);
+	        else 
+            {
+                var preScore = rank_obj["get"]("score"); 
+                if (post_cond === 1)  // post if greater                
+                    doPosting = (score > preScore);
+                else if (post_cond === 2)  // post if less
+                    doPosting = (score < preScore);
+            }
+            
+            if (doPosting)
+	            save_rank(rank_obj);
+            else
+                OnPostComplete(rank_obj);
 	    };	    
 	    var on_error = function(error)
 	    {
@@ -349,7 +361,67 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	    var query = this.get_request_query(this.leaderBoardID);
 	    this.leaderboard.RequestTurnToPreviousPage(query);
 	};  
-    
+    Acts.prototype.AddScore = function (userID, name, scoreAddTo, extra_data)
+	{	
+	    var self = this;
+	    // step 3    
+	    var OnPostComplete = function(rank_obj)
+	    { 	        
+            self.exp_PostRankObj = rank_obj;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnPostComplete, self);
+	    };	
+	    
+	    var OnPostError = function(rank_obj, error)
+	    {
+            self.exp_PostRankObj = null;
+            self.last_error = error;
+	        self.runtime.trigger(cr.plugins_.Rex_parse_Leaderboard.prototype.cnds.OnPostError, self);
+	    };
+	    	    
+	    var save_rank = function(rank_obj)
+	    {
+	        rank_obj["set"]("boardID", self.leaderBoardID);
+	        rank_obj["set"]("userID", userID);
+	        rank_obj["set"]("name", name);
+	        rank_obj["increment"]("score", scoreAddTo);
+	        rank_obj["set"]("extraData", extra_data);	
+	        
+	        
+            var acl = get_ACL(self.acl_write_mode, self.acl_read_mode);
+            if (acl)
+            {
+                rank_obj["setACL"](acl);
+            }
+	        
+	        if (self.user_class !== "")
+	        {
+	            var t = window["Parse"].Object["extend"](self.user_class);
+	            var o = new t();
+	            o["id"] = userID;
+	            rank_obj["set"]("userObject", o);
+	        }
+	        
+	        var handler = {"success":OnPostComplete, "error": OnPostError};
+	        rank_obj["save"](null, handler);	        
+	    };
+	    
+	    // step 2
+	    var on_success = function(rank_obj)
+	    {	 
+	        if (!rank_obj)
+	            rank_obj = new self.rank_klass();
+            
+            save_rank(rank_obj);
+	    };	    
+	    var on_error = function(error)
+	    {
+	        OnPostError(null, error);
+	    };
+        
+	    // step 1
+		var handler = {"success":on_success, "error": on_error};		
+	    this.get_base_query(this.leaderBoardID, userID)["first"](handler); 
+	};     
     Acts.prototype.SetLeaderboardID = function (leaderboardID)
 	{
         this.set_leaderBoardID(leaderboardID);
@@ -543,7 +615,7 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 		ret.set_string( get_itemValue(this.exp_PostRankObj, "name", "") );    
 	}; 	
 				
-	Exps.prototype.PostlayerScore = function (ret)
+	Exps.prototype.PostPlayerScore = function (ret)
 	{
 		ret.set_any( get_itemValue(this.exp_PostRankObj, "score", 0) );    
 	}; 		

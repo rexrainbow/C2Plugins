@@ -848,8 +848,9 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
 	Exps.prototype.RandomIndex2UID = function (ret, name)
 	{
-        var index= Math.floor(Math.random() * this.GetGroup(name).GetList().length);        
-	    ret.set_any(this.GetGroup(name).Index2UID(index));
+        var group = this.GetGroup(name);
+        var index= Math.floor(Math.random() * group.GetList().length);        
+	    ret.set_any(group.Index2UID(index));
 	}; 
     
 	Exps.prototype.RandomPop = function (ret, name)

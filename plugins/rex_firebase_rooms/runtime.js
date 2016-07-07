@@ -101,7 +101,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	instanceProto.onCreate = function()
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/"; 
-	    this.messageType = this.properties[2];
+	    //this.messageType = this.properties[2];
+        this.LockedByAction = false;
 	    this.triggeredRoomName = "";
 	    this.triggeredRoomID = "";  
 	    this.triggeredUserName = "";
@@ -318,7 +319,12 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
 	    return this.usersList.isFull();
 	};	    
-    
+	
+	Cnds.prototype.OnBecomeFirstUser = function ()
+	{
+	    return true;
+	};	    
+        
     // cf_deprecated
 	Cnds.prototype.OnReceivedMessage = function () { };
 	
@@ -329,7 +335,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
 	Cnds.prototype.IsLocked = function ()
 	{
-	    return (this.room.LockedByAction != null);
+	    return this.LockedByAction;
 	};	
 	
 		    
@@ -350,17 +356,24 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 
     Acts.prototype.CreateRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin)
 	{
+        this.LockedByAction = true;
+        var self = this;
+        var on_end = function ()
+        {
+            self.LockedByAction = false;
+        }
+        
 	    // push a new room if roomID == ""
         doorState = DOORSTATES[doorState];
         createThenJoin = (createThenJoin === 1);
         if (createThenJoin)
         {
-            var self = this;
+
             var on_create = function (error)
             {           
                 if ((roomID !== "") && error)
                 {
-                    self.room.TryJoinRoom(roomID);
+                    self.room.TryJoinRoom(roomID, on_end);
                 }
             };
             
@@ -382,7 +395,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         }
         else  // create room only
         {
-            this.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin);
+            this.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin, on_end);
         }        
 	}; 
 	
@@ -394,6 +407,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	
     Acts.prototype.JoinRoom = function (roomID, leftThenJoin)
 	{      
+        this.LockedByAction = true;
+        var self = this;
+        var on_end = function ()
+        {
+            self.LockedByAction = false;
+        };
+        
         leftThenJoin = (leftThenJoin===1);
         if (!leftThenJoin || !this.room.IsInRoom())
         {
@@ -403,11 +423,10 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 return;
             }
             
-            this.room.TryJoinRoom(roomID);
+            this.room.TryJoinRoom(roomID, on_end);
         }
         else
         {
-            var self=this;
             var on_left = function (error)
             {
                 if (error && (roomID === ""))
@@ -416,7 +435,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                     return;
                 }
                 
-                self.room.TryJoinRoom(roomID);
+                self.room.TryJoinRoom(roomID, on_end);
             }
             this.room.LeaveRoom(on_left);
         }
@@ -424,16 +443,23 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
      
     Acts.prototype.LeaveRoom = function ()
 	{
-        this.room.LeaveRoom();
+        this.LockedByAction = true;
+        var self = this;
+        var on_end = function ()
+        {
+            self.LockedByAction = false;
+        };
+        
+        this.room.LeaveRoom(on_end);
 	};   
      
-    Acts.prototype.RemoveRoom = function (roomID, permission)
-	{    
-        if (roomID == "")
-            return;
-            
-        this.room.RemoveRoom(roomID, permission);
-	};  	
+    //Acts.prototype.RemoveRoom = function (roomID, permission)
+	//{    
+    //    if (roomID == "")
+    //        return;
+    //        
+    //    this.room.RemoveRoom(roomID, permission);
+	//};  	
 	
     // af_deprecated
     Acts.prototype.CreateOrJoinRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID) { };
@@ -674,8 +700,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     var RoomMgrKlass = function (plugin)
     {
         this.plugin = plugin;        
-	    this.isRemoveRoomWhenLeft = false;	    
-        this.LockedByAction = null;        
+	    this.isRemoveRoomWhenLeft = false;        
+        this.manualLeave = false;
         
         this.userID = "";
         this.userName = "";        
@@ -731,12 +757,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         //    return;
         //}
         
-        // start of create room, lock
-        if (this.LockedByAction != null)
-            return;
-        
         if (this.IsInRoom())
-            return;    
+        {
+            if (onComplete)
+                onComplete(true);
+            
+            return;
+        }  
 
         var self = this;
         
@@ -748,8 +775,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 on_create_room_error();
                 return;
             }
-        
-            self.LockedByAction = null;            
+            
             // end of create room
             
             if (createThenJoin)
@@ -763,7 +789,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoom;     
             self.plugin.run_room_trigger(trig, roomName, roomID); 
 	        // create successful
-			self.onJoinRoom(roomID, roomName, roomType, maxPeers);	
+			self.onJoinRoom(roomID, roomName, roomType, maxPeers, onComplete);	
 			
 			if (onComplete)
 			    onComplete();        	        
@@ -773,10 +799,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         // on error
         var on_create_room_error = function()
         {            
-            // create failed            
-            self.LockedByAction = null;
-            // end of create room, unlock   
-
+            // create failed
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoomError;     
             self.plugin.run_room_trigger(trig, roomName, roomID); 
             
@@ -817,9 +840,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             // try create room
             var ref = this.plugin.get_roomAliveFlag_ref(roomID);
             ref["transaction"](on_write_userID, on_write_userID_complete);             
-        }
-        
-        this.LockedByAction = "CREATE";           
+        }       
 	}; 	 
 	 
     RoomMgrKlassProto.SwitchDoor = function (doorState)
@@ -872,28 +893,22 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	  
     RoomMgrKlassProto.TryJoinRoom = function (roomID, onComplete)
 	{
-        // start of join room, lock
-        if (this.LockedByAction != null)
-            return;
-        
         if (this.IsInRoom())
-            return;  
+        {
+            if (onComplete)
+                onComplete(true);
+            
+            return;
+        }
 
         var self = this;
         var on_join_complete = function(metadata)
-        {     
-            self.LockedByAction = null; 
+        {
             var type = metadata["state-type"].split("-")[1]            
-		    self.onJoinRoom(roomID, metadata["name"], type, metadata["maxPeers"]);  
-            
-			if (onComplete)
-			    onComplete();  		    		              
+		    self.onJoinRoom(roomID, metadata["name"], type, metadata["maxPeers"], onComplete);      		              
         };
         var on_join_errror = function()
         {
-            self.LockedByAction = null;            
-            // end of join room, unlock            
-            
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError;     
             self.plugin.run_room_trigger(trig, "", roomID);   
             
@@ -970,27 +985,28 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         // step 1: check metadata
         
         check_door();
-        this.LockedByAction = "JOIN";        
+        this.pendCommand = "JOIN";        
 	}; 
 	
     RoomMgrKlassProto.LeaveRoom = function (onComplete)
 	{
-        // start of join room, lock
-        if (this.LockedByAction != null)
-            return;
-        
         if (!this.IsInRoom())
-            return; 	            
-         
+        {
+            if (onComplete)
+                onComplete(true);
+            
+            return;
+        }
+
+        this.manualLeave = true;        
          var self=this;
          var on_left = function(error)
          {
-             self.LockedByAction = null;              
+             self.pendCommand = null;              
              if (!error)
              {
                  self.isRemoveRoomWhenLeft = false;
-                 self.is_creater = false;
-                 self.onLeftRoom();                 
+                 self.is_creater = false;       
              }
 
              if (onComplete)
@@ -1006,9 +1022,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         {
             // remove from user list only
             this.removeFromUserList(this.roomID, on_left);
-        }
-        
-        this.LockedByAction = "LEAVE";          
+        }        
 	};	
     
     RoomMgrKlassProto.SetPermissionList = function (listName, userID, value_)
@@ -1126,9 +1140,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	        if (ID != null)
 	            return;
           
-            // user kicked or room removed
-            if (self.roomID !== "")
-                self.onLeftRoom(true);
+            self.onLeftRoom();
 	    };
 	    this.monitor_ref.push(id_ref["toString"]());
 	    id_ref["on"]("value", on_value_changed);
@@ -1219,7 +1231,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         root_ref["update"](data, on_remove);
 	};	    
 	
-	RoomMgrKlassProto.onJoinRoom = function (roomID, roomName, roomType, maxPeers)
+	RoomMgrKlassProto.onJoinRoom = function (roomID, roomName, roomType, maxPeers, onComplete)
 	{  
         this.roomID = roomID;
         this.roomName = roomName;
@@ -1227,17 +1239,26 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.maxPeers = maxPeers;
         	    	    
 	    this.monitorMyStateOn();
-	    //
+
+	    // users list
+        var self=this;        
+        this.users_list.onInitialize = function ()
+        {
+            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoom;     
+            self.plugin.run_room_trigger(trig, roomName, roomID); 
+            // call onComplete while users list has initialized
+            if (onComplete)
+                onComplete();
+            self.users_list.onInitialize = null;
+        }
 	    this.users_list.StartUpdate(roomID, maxPeers);
         //this.user_metadata.Update();  
         
-        var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoom;     
-        this.plugin.run_room_trigger(trig, roomName, roomID);  
+ 
 	};
 	
-    RoomMgrKlassProto.onLeftRoom = function (isKicked)
+    RoomMgrKlassProto.onLeftRoom = function ()
 	{
-        debugger
         var roomID = this.roomID;
         var roomName = this.roomName;
         this.roomID = "";
@@ -1258,11 +1279,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnLeftRoom;     
         this.plugin.run_room_trigger(trig, roomName, roomID);     
 
-        if (isKicked)
+        if (!this.manualLeave)
         {
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnKicked;     
             this.plugin.run_room_trigger(trig, roomName, roomID);         
         }
+        
+        this.manualLeave = false;
 	};
 	
     RoomMgrKlassProto.door_switch = function (door_state, onComplete)
@@ -1343,7 +1366,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     var UsersListKlass = function (room)
     {       
         // overwrite these values
-        this.onUsersCountChanged = null;
+        this.onInitialize = null;            
+        //this.onUsersCountChanged = null;    
         // overwrite these values 
           
         this.plugin = room.plugin;
@@ -1351,7 +1375,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.exp_CurUser = null;
         this.room = room;
         this.roomID = "";
-        this.limit = 0;        
+        this.limit = 0;  
+        this.isFirstUserSave = false;        
         
         this.users_list.keyItemID = "joinAt";
     };
@@ -1372,23 +1397,36 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         var on_usersList_update = function ()
         {
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnUpdateUsersList;
-            self.plugin.runtime.trigger(trig, self.plugin);             
+            self.plugin.runtime.trigger(trig, self.plugin);  
+
+            var isFirstUser = self.isFirstUser();
+            if (isFirstUser && !self.isFirstUserSave)
+            {
+                var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnBecomeFirstUser;
+                self.plugin.runtime.trigger(trig, self.plugin);   
+            }
+            self.isFirstUserSave = isFirstUser;
         };
 	    var on_user_join = function (item)
 	    {
+            if (item["ID"] === self.room.userID)
+            {
+                if (self.onInitialize)
+                    self.onInitialize(self.users_list.GetItems());
+            }            
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnUserJoin;
             self.plugin.run_userlist_trigger(trig, item["name"], item["ID"]);	        
             on_usersList_update();
-            if (self.onUsersCountChanged)
-                self.onUsersCountChanged(self.users_list.GetItems());
+            //if (self.onUsersCountChanged)
+            //    self.onUsersCountChanged(self.users_list.GetItems());
 	    };        
 	    var on_user_left = function (item)
 	    {
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnUserLeft;
             self.plugin.run_userlist_trigger(trig, item["name"], item["ID"]);
             on_usersList_update();
-            if (self.onUsersCountChanged)
-                self.onUsersCountChanged(self.users_list.GetItems());
+            //if (self.onUsersCountChanged)
+            //    self.onUsersCountChanged(self.users_list.GetItems());
 	    };     
 	    	    
 	    var query = this.plugin.get_roomUsers_ref(this.roomID);

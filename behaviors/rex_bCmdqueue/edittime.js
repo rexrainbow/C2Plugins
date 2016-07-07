@@ -45,21 +45,21 @@ AddCondition(6, cf_none, "First", "Queue",
 AddAnyTypeParam("Index", "The index of the parameter to get.", 0);
 AddAnyTypeParam("Value", "The value of this parameter", 0);
 AddAction(1, 0, "Set parameter", "Add", 
-          "{my} Set parameter <i>{0}</i> to <i>{1}</i>", 
+          "{my} set parameter <i>{0}</i> to <i>{1}</i>", 
           "Set parameter.", 
           "SetParameter");
 AddStringParam("Name", "Command name.", '""');
 AddAction(2, 0, "Push", "Add", 
-          "{my} Push command <i>{0}</i>", 
+          "{my} push command <i>{0}</i>", 
           "Push a command with current parameters into back of queue.", "PushCmd");
 AddAction(3, 0, "Pop", "Run - Pop", 
-          "{my} Pop command", 
+          "{my} pop and run command", 
           'Pop and run a command from front of queue, it will trigger "Condition:On command".', "PopCmd");  
 AddAction(4, 0, "Clean", "Clean", 
           "{my} Clean all pendding commands", 
           "Clean all pendding commands", "CleanCmds");  
 AddAction(5, 0, "Next", "Run - Next", 
-          "{my} next command", 
+          "{my} run next command", 
           'Run next command, it will trigger "Condition:On command".', "NextCmd");  
 AddComboParamOption("Ring");
 AddComboParamOption("Ping-pong");
@@ -82,7 +82,10 @@ AddStringParam("Name", "Command name.", '""');
 AddNumberParam("Index", "Next index, zero-based index.", 0);
 AddAction(10, 0, "Insert at", "Add", 
           "{my} Insert command <i>{0}</i> at index to <i>{1}</i>", 
-          "Insert command at specific index.", "InsertCmdAt");        
+          "Insert command at specific index.", "InsertCmdAt");   
+AddAction(11, 0, "Current", "Run - Next", 
+          "{my} run current command", 
+          'Run current command, it will trigger "Condition:On command".', "RunCurCmd");            
 //////////////////////////////////////////////////////////////
 // Expressions
 // function behavior

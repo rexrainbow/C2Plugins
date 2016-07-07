@@ -114,9 +114,9 @@ AddAction(11, 0, "Swap objects", "Position",
 AddStringParam('Code string', "Code string.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Eval js code", "Javascript", "Eval", "Eval js code string.");
 AddNumberParam("Number", "Decimal number", 0);
-AddExpression(1, ef_return_string, "Get hex string", "Math", "ToHexString", "Transfer decimal value to hex string.");
+AddExpression(1, ef_return_string, "Get hex string", "Number to string", "ToHexString", "Transfer decimal value to hex string.");
 AddNumberParam("Number", "Decimal number", 0);
-AddExpression(2, ef_return_string | ef_variadic_parameters, "Get decimal mark", "Math", "ToDecimalMark", 
+AddExpression(2, ef_return_string | ef_variadic_parameters, "Get decimal mark", "Number to string", "ToDecimalMark", 
               "Transfer decimal value with decimal mark.");
 AddStringParam('Input', "Input string.", '""');            
 AddExpression(3, ef_return_number, "Get byte count", "String", "String2ByteCount", "Get byte count of a string.");
@@ -126,6 +126,16 @@ AddNumberParam("Start", "Start index.", 0);
 AddNumberParam("Stop", "Stop index.", 0);
 AddExpression(4, ef_return_string, "Get substring", "String", "SubString", 
               "Get substring from (start index) to (end index-1).");
+                   
+AddNumberParam("Source", "Source number.", 0);
+AddNumberParam("Digital", "Digital.", 1);
+AddExpression(5, ef_return_string, "Number to string with N decimals", "Number to string", "ToFixed", 
+              "Convert a number into a string, keeping only N decimals.");  
+
+AddNumberParam("Source", "Source number.", 0);
+AddNumberParam("Digital", "Digital.", 1);
+AddExpression(6, ef_return_string, "Number to string with a specified length", "Number to string", "ToPrecision", 
+              "Format a number into a specified length.");                
               
 AddNumberParam('Mean', "Mean value", 0);  
 AddNumberParam('Standard deviation', "Standard deviation value", 1);       
@@ -143,7 +153,11 @@ AddNumberParam("Input", "Angle of input, in degrees.", 0);
 AddNumberParam("Normal", "Angle of normal, in degrees.", 90);
 AddExpression(21, ef_return_number, "Get reflection angle", "Angle", "ReflectionAngle", "Get reflection angle.");
               
-
+        
+AddNumberParam("Digital", "Digital.", 1);
+AddExpression(31, ef_return_string, "Get a random base32 string", "String", "RandomBase32", 
+              "Get a random base32 string.");
+              
 ACESDone();
 
 // Property grid properties for this plugin

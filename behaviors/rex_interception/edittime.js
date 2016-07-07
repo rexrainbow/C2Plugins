@@ -3,7 +3,7 @@
 	return {
 		"name":			"Interception",
 		"id":			"Rex_Interception",
-		"description":	"Predict the point of intersection.",
+		"description":	"Predict the point of intersection. It assumes that objects move with constant speed.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_interception.html",
 		"category":		"Rex - AI",
@@ -27,7 +27,12 @@ AddAction(1, 0, "Lock", "Target",
           
 AddAction(2, 0, "Unlock", "Target", 
           "Unlock", 
-          "Unlock target.", "Unlock");          
+          "Unlock target.", "Unlock");    
+
+AddNumberParam("Target", "UID of target", 0);
+AddAction(3, 0, "Lock by UID", "Target", 
+          "Lock to UID: <i>{0}</i>", 
+          "Lock to target instance by UID.", "LockToInstanceUID");          
           
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -39,6 +44,7 @@ AddExpression(12, ef_return_number, "Get magnitude of force", "Output", "ForceMa
 AddExpression(13, ef_return_number, "Get dx of force", "Output", "ForceDx", "Get dx of total attracting force.");
 AddExpression(14, ef_return_number, "Get dy of force", "Output", "ForceDy", "Get dy of total attracting force.");
 
+AddExpression(21, ef_return_number, "Get target instance UID", "Target", "TargetUID", "Get target instance UID. Return -1 if no target assigned.");
 
 ACESDone();
 

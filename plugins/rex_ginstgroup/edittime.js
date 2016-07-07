@@ -58,7 +58,8 @@ AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Get");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
-AddCondition(8, cf_not_invertible, "Pop random instance", "SOL: List", "<i>{3}</i> random instance <i>{2}</i> from group <i>{0}</i>", 
+AddCondition(8, cf_not_invertible, "Pop random instance", "SOL: List", 
+             "<i>{2}</i> random instance <i>{1}</i> from group <i>{0}</i>", 
              "Get or pop one random instance from group.", "RandomPopInstance");          
 AddStringParam("Group", "Group name.", '""');          
 AddObjectParam("Object", "Object for picking");
@@ -217,7 +218,7 @@ AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Get");
 AddComboParamOption("Pop");
 AddComboParam("Operation", "Get or pop", 1);
-AddAction(30, 0, "Pop random instance", "SOL: List", "<i>{3}</i> random instance <i>{2}</i> from group <i>{0}</i>", 
+AddAction(30, 0, "Pop random instance", "SOL: List", "<i>{2}</i> random instance <i>{1}</i> from group <i>{0}</i>", 
              "Get or pop one random instance from group.", "RandomPopInstance");
 
 AddAnyTypeParam("Result", "Mapping result.", 0);

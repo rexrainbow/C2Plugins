@@ -59,7 +59,7 @@
                 if (errorPaths === "")
                 {
                     thisRef.live2DModel.saveParam();
-                    thisRef.live2DModel.setGL(gl);                
+                    //thisRef.live2DModel.setGL(gl);                
                     thisRef.mainMotionManager.stopAllMotions();                     
             
                     thisRef.setUpdating(false);

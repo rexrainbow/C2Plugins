@@ -1122,9 +1122,9 @@ cr.plugins_.rex_TagText = function(runtime)
             {
                 switch (atribute) 
                 {
-                //case "font":
-                //    proFont = prop_in[atribute];
-                //    break;
+                case "font":
+                    propScope["font"] = prop_in[atribute];
+                    break;
                 
                 case "font-family":
                     propScope["family"] = prop_in[atribute];
@@ -1169,15 +1169,24 @@ cr.plugins_.rex_TagText = function(runtime)
     
     CanvasTextProto.apply_propScope = function (propScope)
     {
-        var style = propScope["style"] || this.default_propScope.style;
-        var weight = propScope["weight"] || this.default_propScope.weight;
-        var ptSize = this.getTextSize(propScope);  
-        var family = propScope["family"] || this.default_propScope.family;
-        var color = this.getTextColor(propScope);
-        var shadow = propScope["shadow"] || this.default_propScope.shadow;
+        var font = propScope["font"];
+        if (font)
+        {
+            this.context.font = font;
+        }
+        else
+        {
+            var style = propScope["style"] || this.default_propScope.style;
+            var weight = propScope["weight"] || this.default_propScope.weight;
+            var ptSize = this.getTextSize(propScope);  
+            var family = propScope["family"] || this.default_propScope.family;        
+            this.context.font = style + " " + weight + " " + ptSize + " " + family;            
+        }
         
-        this.context.font = style + " " + weight + " " + ptSize + " " + family;
+        var color = this.getTextColor(propScope);
         this.context.fillStyle = color;
+        
+        var shadow = propScope["shadow"] || this.default_propScope.shadow;
         if (shadow !== "") 
         {
             shadow = shadow.split(" ");

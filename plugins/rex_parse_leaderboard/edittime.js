@@ -75,8 +75,12 @@ AddStringParam("UserID", "UserID from authentication.", '""');
 AddStringParam("Name", "(Optional) Player name.", '""');
 AddAnyTypeParam("Score", "Player Score", 0);
 AddAnyTypeParam("Extra", "(Optional) Extra data, could be number or (JSON) string.", '""');
+AddComboParamOption("");
+AddComboParamOption("if greater");
+AddComboParamOption("if less");
+AddComboParam("Post condition", "Post if score is greater or less then saved score.", 0);
 AddAction(1, 0, "Post score", "Score", 
-          "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i>", 
+          "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i> <i>{4}</i>", 
           "Post score by user ID.", "PostScore");
  
 AddNumberParam("Start", "Start index, 0-based.", 0);          
@@ -100,7 +104,15 @@ AddAction(5, 0, "Turn to next page", "Request - page",
 
 AddAction(6, 0, "Turn to previous page", "Request - page", 
           "Request - turn to previous page", 
-          "Update turn to previous page.", "RequestTurnToPreviousPage");     
+          "Update turn to previous page.", "RequestTurnToPreviousPage"); 
+
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddStringParam("Name", "(Optional) Player name.", '""');
+AddAnyTypeParam("Add", "Add score", 0);
+AddAnyTypeParam("Extra", "(Optional) Extra data, could be number or (JSON) string.", '""');
+AddAction(7, 0, "Add to  score", "Score", 
+          "Add <i>{2}</i> to (User ID: <i>{0}</i>) <i>{1}</i> 's score, extra data to <i>{3}</i>", 
+          "Add score by user ID.", "AddScore");          
 
 AddStringParam("Leaderboard ID", "ID of leader board.", '"0"');
 AddAction(11, 0, "Set leaderboard ID", "Leaderboard", 

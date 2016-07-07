@@ -178,7 +178,7 @@
         if( this.debugMode ) pm.log("Load model : " + path);
     
         var thisRef = this;
-        pm.loadLive2DModel(path, function(l2dModel) {
+        pm.loadLive2DModel(path, this.gl, function(l2dModel) {
             if (l2dModel)
             {
                 thisRef.live2DModel = l2dModel;

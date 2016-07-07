@@ -85,7 +85,7 @@ cr.behaviors.Rex_Interception = function(runtime)
 	        info["y"] = inst.y;	
 	        info["prex"] = inst.x;
 	        info["prey"] = inst.y;		        
-        }                
+        }             
 	}; 
 		    
 	behinstProto.onDestroy = function()
@@ -251,6 +251,46 @@ cr.behaviors.Rex_Interception = function(runtime)
 		return x < 0 ? -x : x;
 	}; 
 
+	behinstProto.saveToJSON = function ()
+	{
+		return { "en": this.enabled,
+		         "mi": this.my_info,
+                 "ti": this.target_info,
+                 "dpredflg": this.do_pretiction_flag,
+                 "predX": this.predictX,
+                 "predY": this.predictY,         
+                 "of": this.output_force,
+                 "updflg": this.update_force_flag,
+               };
+	};
+	
+	behinstProto.loadFromJSON = function (o)
+	{  
+		this.enabled = o["en"];            
+        this.my_info = o["mi"];    
+        this.target_info =  o["ti"];      
+        this.do_pretiction_flag = o["dpredflg"];      
+        this.predictX = o["predX"];      
+        this.predictY = o["predY"];              
+        this.output_force = o["of"];
+        this.update_force_flag = o["updflg"];
+	};	     
+
+    /**BEGIN-PREVIEWONLY**/
+    behinstProto.getDebuggerValues = function (propsections)
+    {
+        propsections.push({
+            "title": this.type.name,
+            "properties": [{"name": "Target UID", "value": this.target_info["uid"]},
+                                {"name": "Predict X", "value": this.predictX},
+                                {"name": "Predict Y", "value": this.predictY},]
+        });
+    };
+    
+    behinstProto.onDebugValueEdited = function (header, name, value)
+    {
+    };
+    /**END-PREVIEWONLY**/		    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -273,11 +313,11 @@ cr.behaviors.Rex_Interception = function(runtime)
 	behaviorProto.acts = new Acts();
     
 	Acts.prototype.LockToInstance = function (objtype)
-	{
+	{  
         if (!objtype)
             return;
         
-        var inst = objtype.getFirstPicked();        
+        var inst = objtype.getFirstPicked();
         this.set_info(this.target_info, inst);
 	};
 	
@@ -285,6 +325,12 @@ cr.behaviors.Rex_Interception = function(runtime)
 	{
         this.set_info(this.target_info);
 	};	
+    
+	Acts.prototype.LockToInstanceUID = function (uid)
+	{
+        var inst = this.runtime.getObjectByUID(uid);
+        this.set_info(this.target_info, inst);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -332,4 +378,10 @@ cr.behaviors.Rex_Interception = function(runtime)
         this.update_force();
 		ret.set_float(this.output_force["y"]);
 	};	
+	
+	Exps.prototype.TargetUID = function (ret)
+	{
+		ret.set_int(this.target_info["uid"]);
+	};	    
+    
 }());

@@ -25,12 +25,16 @@ AddCondition(2, cf_trigger, "On value changed from ...to ...", "Value",
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Count", "Bet count.", 1);
-AddAction(0, 0, "Bet", "Bet", 
-          "{my} bet <i>{0}</i>", "Bet.", "Bet");  
+AddAction(0, 0, "Beat", "Beat", 
+          "{my} beat <i>{0}</i>", "Increase beat counter.", "Beat");  
+          
+AddAction(1, 0, "Clean", "Beat", 
+          "{my} clean", "Clean beat counter.", "Clean");            
 
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(0, ef_return_number, "Get bet count", "Bet count", "BetCount", "Get bet count.");
+AddExpression(0, ef_deprecated | ef_return_number, "Get bet count", "Bet count", "BetCount", "Get bet count.");
+AddExpression(1, ef_return_number, "Get beat count", "Beat count", "BeatCount", "Get beat count.");
 
 
 ACESDone();

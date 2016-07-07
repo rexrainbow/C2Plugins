@@ -14,9 +14,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On hit target position", "Reach", 
-             "On {my} hit target", 
-			 "Triggered when hit target position.", 
+AddCondition(0, cf_trigger, "On reach target position", "Reach", 
+             "On {my} reach target", 
+			 "Triggered when reach target position.", 
 			 "OnHitTarget");   
              
 AddCmpParam("Comparison", "Choose the way to compare the current speed.");
@@ -29,9 +29,9 @@ AddCondition(1, 0, "Compare speed", "Speed",
 AddCondition(2,	cf_deprecated | cf_trigger, "On moving", "", "On {my} moving", "Triggered when object moving.", "OnMoving");                          
 
 AddCondition(3,	0, "Is moving", "", "Is {my} moving", "Is object moving.", "IsMoving");                
+
 AddCmpParam("Comparison", "Choose the way to compare the current moving angle.");
 AddNumberParam("Angle", "The moving angle, in pixel per second, to compare the current moving angle to.");
-
 AddCondition(4, 0, "Compare moving angle", "Moving angle", 
              "{my} moving angle {0} {1}", 
              "Compare the current moving angle of the object.", 

@@ -178,7 +178,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    return true;
 	};     
 
-	Cnds.prototype.FileDoesn = function ()
+	Cnds.prototype.FileDoesntExist = function ()
 	{
         return (this.error && (this.error === 'storage/object_not_found'));
 	};     

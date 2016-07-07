@@ -7,7 +7,7 @@
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_simplex.html",
 		"category":		"Rex - Movement",
-		"flags":		bf_onlyone
+		"flags":		0
 	};
 };
 

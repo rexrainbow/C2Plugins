@@ -163,7 +163,9 @@ cr.plugins_.Rex_Hash = function(runtime)
             }        
             else            
             {
-                if (lastKey === (entry.length-1))
+                if ((lastKey < 0) || (lastKey >= entry.length))
+                    return;
+                else if (lastKey === (entry.length-1))
                     entry.pop();
                 else if (lastKey === 0)
                     entry.shift();
@@ -681,4 +683,28 @@ cr.plugins_.Rex_Hash = function(runtime)
 	};		
     
 	Exps.prototype.AsJSON = Exps.prototype.HashTableToString;
+    
+	Exps.prototype.RandomKeyAt = function (ret, keys, default_value)
+	{
+        var val;
+        var o = this.getValue(keys);
+        if (typeof(o) === "object")
+        {
+            var isArr = isArray(o);
+            if (!isArr)            
+                o = Object.keys(o);
+
+            var cnt = o.length;
+            if (cnt > 0)     
+            {    
+                val = Math.floor(Math.random()*cnt);       
+                if (!isArr)
+                    val = o[val];
+            }
+        }
+        
+        val = din(val, default_value);
+		ret.set_any(val);
+	};	    
+
 }());

@@ -102,7 +102,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 2.x
         if (!isFirebase3x())
         {
-
+            this.lastAuthData  = this.get_ref()["getAuth"]();
             this.get_ref()["onAuth"](onAuthStateChanged);
         }
         
@@ -177,8 +177,10 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 
 	Cnds.prototype.IsLogin = function ()
 	{
-        var user = (!isFirebase3x())? this.lastAuthData:getAuthObj()["currentUser"];      
-	    return (user !== null);
+        if (!isFirebase3x())
+            return (this.lastAuthData != null);
+        else
+            return (getAuthObj()["currentUser"] != null);
 	};	
 	//////////////////////////////////////
 	// Actions

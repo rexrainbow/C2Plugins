@@ -81,7 +81,13 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	Cnds.prototype.IsSolid = function ()
 	{
 		return !!this.inst.extra["solidEnabled"];  
-	};    
+	};
+
+	Cnds.prototype.ContainsPt = function (x, y)
+	{
+		return this.inst.contains_pt(x, y);
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

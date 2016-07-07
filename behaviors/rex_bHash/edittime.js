@@ -133,6 +133,9 @@ AddExpression(9, ef_return_string | ef_variadic_parameters, "Transfer hash table
               "JSON", "ToString", "Create a hash table and transfer it to JSON string. If there has no parameter, transfer current hash table to JSON string.");			  
 AddExpression(10, ef_return_string, "Get content as JSON string", 
               "JSON", "AsJSON", "Get content as JSON string.");
+AddStringParam("Key", "The key of the hash to get.", '""');
+AddExpression(11, ef_return_any | ef_variadic_parameters, "Get random key", "Key", "RandomKeyAt", 
+              "Get random key in a table. Add 2nd parameter to return default value when got invalid value.");                 
 
 
 ACESDone();

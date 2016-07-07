@@ -99,12 +99,14 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		this.lastWinWidth = null;
 		this.lastWinHeight = null;
 
-		if (this.properties[6] === 0)
+		if (this.properties[7] === 0)
 		{
 			jQuery(this.elem).hide();
 			this.visible = false;
 			this.element_hidden = true;
 		}
+        else
+            this.visible = true;
 					
 		this.updatePosition(true);  // init position and size
 		
@@ -115,13 +117,14 @@ cr.plugins_.rex_youtube_player = function(runtime)
                 
         this.is_player_init = false;		
         this.youtube_player = null;
-        this.youtube_state = -1;        
+        this.youtube_state = null;        
         this.cur_videoId = this.properties[0];
         this.cur_isAutoPlay = (this.properties[1] === 1);
         this.cur_isLooping = (this.properties[2] === 1);     
         this.show_controls = (this.properties[3] === 1);
 		this.show_info = (this.properties[4] === 1);
-		this.disablekb = (this.properties[5] === 0);
+		this.modestbranding = (this.properties[5] === 1);        
+		this.disablekb = (this.properties[6] === 0);
 		this.exp_errorCode = 0;
         		
         this.isInFullScreen = false;
@@ -247,8 +250,8 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    var self = this;
 	    var onPlayerStateChange = function (event)
 	    {
-	        if (event["data"] === self.youtube_state)
-	            return;
+	        //if (event["data"] === self.youtube_state)
+	        //    return;
 	            
 	        self.youtube_state = event["data"];	        
 	        	        
@@ -284,7 +287,11 @@ cr.plugins_.rex_youtube_player = function(runtime)
 			playerVars["showinfo"] = 0;
 
 		if (!this.disablekb)
-			playerVars["disablekb"] = 1;	        
+			playerVars["disablekb"] = 1;	
+
+
+        if (this.modestbranding)
+            playerVars["modestbranding"] = 1;
 	     
         this.youtube_player = new window["YT"]["Player"](
             this.myElemId, 
@@ -561,12 +568,12 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	    var s;
 	    switch (this.youtube_state)
 	    {
-	    case -1:  s=0; break;  //Unstarted
-	    case  0:  s=1; break;  //Ended
-	    case  1:  s=2; break;  //Playing
-	    case  2:  s=3; break;  //Paused	
-	    case  3:  s=4; break;  //Buffering
-	    case  5:  s=5; break;  //Video cued	    	        
+	    case -1:                                                           s=0; break;  //Unstarted
+	    case  window["YT"]["PlayerState"]["ENDED"]:       s=1; break;  //Ended
+	    case  window["YT"]["PlayerState"]["PLAYING"]:     s=2; break;  //Playing
+	    case  window["YT"]["PlayerState"]["PAUSED"]:      s=3; break;  //Paused	
+	    case  window["YT"]["PlayerState"]["BUFFERING"]: s=4; break;  //Buffering
+	    case  window["YT"]["PlayerState"]["CUED"]:         s=5; break;  //Video cued	    	        
 	    }
 		return (s === state);
 	};
@@ -819,15 +826,22 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		}
         
         var state = "";
-	    switch (this.youtube_state)
-	    {
-	    case -1:  state="Unstarted"; break;
-	    case  0:  state="Ended";     break;
-	    case  1:  state="Playing";   break;
-	    case  2:  state="Paused";    break;
-	    case  3:  state="Buffering"; break;
-	    case  5:  state="Video cued"; break;  	        
-	    }
+        if (this.youtube_state == null)
+        {
+            state="Unstarted";
+        }
+        else
+        {
+	        switch (this.youtube_state)
+	        {    
+	        case -1:                                                           state="Unstarted"; break;
+	        case  window["YT"]["PlayerState"]["ENDED"]:       state="Ended";     break;
+	        case  window["YT"]["PlayerState"]["PLAYING"]:     state="Playing";   break;
+	        case  window["YT"]["PlayerState"]["PAUSED"]:      state="Paused";    break;
+	        case  window["YT"]["PlayerState"]["BUFFERING"]: state="Buffering"; break;
+	        case  window["YT"]["PlayerState"]["CUED"]:         state="Video cued"; break;    
+	        }
+        }
 		ret.set_string(state);
 	};
 

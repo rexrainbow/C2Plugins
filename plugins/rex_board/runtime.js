@@ -1985,9 +1985,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         this.Reset();  
         var uid, xyz;
-        for (uid in uid2xyz)
+        for (uid in this.uid2xyz)
         {
-            xyz = uid2xyz[uid];
+            xyz = this.uid2xyz[uid];
             this.AddCell(parseInt(uid), xyz.x, xyz.y, xyz.z);
         }
 	};    
@@ -1997,9 +1997,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (this.x_max === null)
         {
             var uid, xyz;
-            for (uid in uid2xyz)
+            for (uid in this.uid2xyz)
             {
-                xyz = uid2xyz[uid];
+                xyz = this.uid2xyz[uid];
                 if ((this.x_max === null) ||  (this.x_max < xyz.x))
                     this.x_max = xyz.x;
             }
@@ -2013,9 +2013,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (this.y_max === null)
         {
             var uid, xyz;
-            for (uid in uid2xyz)
+            for (uid in this.uid2xyz)
             {
-                xyz = uid2xyz[uid];
+                xyz = this.uid2xyz[uid];
                 if ((this.y_max === null) ||  (this.y_max < xyz.y))
                     this.y_max = xyz.y;
             }
@@ -2029,9 +2029,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (this.x_min === null)
         {
             var uid, xyz;
-            for (uid in uid2xyz)
+            for (uid in this.uid2xyz)
             {
-                xyz = uid2xyz[uid];
+                xyz = this.uid2xyz[uid];
                 if ((this.x_min === null) ||  (this.x_min > xyz.x))
                     this.x_min = xyz.x;
             }
@@ -2045,9 +2045,9 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (this.y_min === null)
         {
             var uid, xyz;
-            for (uid in uid2xyz)
+            for (uid in this.uid2xyz)
             {
-                xyz = uid2xyz[uid];
+                xyz = this.uid2xyz[uid];
                 if ((this.y_min === null) ||  (this.y_min > xyz.y))
                     this.y_min = xyz.y;
             }

@@ -46,14 +46,14 @@ cr.behaviors.Rex_betCounter = function(runtime)
 	behinstProto.onCreate = function()
 	{
 	    this.max_interval = this.properties[0];
-        this.bet_recorder = [];
+        this.beat_recorder = [];
 		this.cur_time = 0;
         this.pre_value = 0;
 	};
 
 	behinstProto.tick = function ()
 	{ 
-        var cnt = this.bet_recorder.length;	
+        var cnt = this.beat_recorder.length;	
 	    if (cnt == 0)
 		{
 		    this.cur_time = 0;
@@ -61,34 +61,34 @@ cr.behaviors.Rex_betCounter = function(runtime)
 		}
 
 		this.cur_time += this.runtime.getDt(this.inst);
-		this._bet_recorder_update();
+		this._beat_recorder_update();
 	}; 
     
-	behinstProto._bet_recorder_update = function ()
+	behinstProto._beat_recorder_update = function ()
 	{ 
-        var i, cnt = this.bet_recorder.length;	
+        var i, cnt = this.beat_recorder.length;	
         this.pre_value = cnt;
 		for (i=0; i<cnt; i++)
 		{
-		    if ((this.cur_time - this.bet_recorder[i]) <= this.max_interval)
+		    if ((this.cur_time - this.beat_recorder[i]) <= this.max_interval)
 			    break;
 		}
 		
 		if (i > 0)
 		{
             if (i == 1)
-                this.bet_recorder.shift();
+                this.beat_recorder.shift();
             else
-                this.bet_recorder.splice(0,i);		
+                this.beat_recorder.splice(0,i);		
         }
         
-        if (this.bet_recorder.length != this.pre_value)
+        if (this.beat_recorder.length != this.pre_value)
             this.runtime.trigger(cr.behaviors.Rex_betCounter.prototype.cnds.OnValueChanged, this.inst);  
 	}; 
-	behinstProto.bet = function (count)
+	behinstProto.beat = function (count)
 	{   
         for(var i=0; i<count; i++)
-	        this.bet_recorder.push(this.cur_time);
+	        this.beat_recorder.push(this.cur_time);
             
         this.runtime.trigger(cr.behaviors.Rex_betCounter.prototype.cnds.OnValueChanged, this.inst);   
 	}; 
@@ -96,14 +96,14 @@ cr.behaviors.Rex_betCounter = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{
 		return { "ct": this.cur_time,
-                 "br": this.bet_recorder,
+                 "br": this.beat_recorder,
                  "pv": this.pre_value    };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
 		this.cur_time = o["ct"];
-        this.bet_recorder = o["br"];
+        this.beat_recorder = o["br"];
         this.pre_value = o["pv"];
 	};	
 	//////////////////////////////////////
@@ -113,26 +113,30 @@ cr.behaviors.Rex_betCounter = function(runtime)
     
 	Cnds.prototype.CompareBetCount = function (cmp, c)
 	{
-		return cr.do_cmp(this.bet_recorder.length, cmp, c);
+		return cr.do_cmp(this.beat_recorder.length, cmp, c);
 	};
     
-	Cnds.prototype.OnValueChanged = function (from, to)
+	Cnds.prototype.OnValueChanged = function (from_, to_)
 	{
-        if (from == null)
+        if (from_ == null)
             return true;
         else 
-            return (from == this.pre_value) && (to == this.bet_recorder.length);
+            return (from_ == this.pre_value) && (to_ == this.beat_recorder.length);
 	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.Bet = function (count)
+	Acts.prototype.Beat = function (count)
 	{
-		this.bet(count);
+		this.beat(count);
 	};  
-    
+
+	Acts.prototype.Clean = function ()
+	{
+		this.beat_recorder.length = 0;
+	};      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -140,6 +144,12 @@ cr.behaviors.Rex_betCounter = function(runtime)
     
 	Exps.prototype.BetCount = function (ret)
 	{    
-		ret.set_float(this.bet_recorder.length);
+		ret.set_int(this.beat_recorder.length);
 	};  
+    
+	Exps.prototype.BeatCount = function (ret)
+	{    
+		ret.set_int(this.beat_recorder.length);
+	};      
+    
 }());

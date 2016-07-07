@@ -48,18 +48,23 @@
     	request.send(null);
     	//return request;
     }
-       
+    
     //============================================================
     //    PlatformManager # loadLive2DModel()
     //============================================================
-    PlatformManager.prototype.loadLive2DModel = function(path/*String*/, callback)
+    var G_GLNO = 1;
+    PlatformManager.prototype.loadLive2DModel = function(path/*String*/, gl, callback)
     {
         var model = null;
         
         // load moc
     	this.loadBytes(path, function(buf){
             if (buf)
-    		    model = Live2DModelWebGL.loadModel(buf);
+            {
+                Live2D.setGL(gl, G_GLNO);
+    		    model = Live2DModelWebGL.loadModel(buf, G_GLNO);
+                G_GLNO ++;
+            }
 
             callback(model);  // null while error
     	});

@@ -48,8 +48,12 @@ AddStringParam("UserID", "UserID from authentication.", '""');
 AddStringParam("Name", "Player name.", '""');
 AddAnyTypeParam("Score", "Player Score", 0);
 AddAnyTypeParam("Extra", "Extra data, could be number or (JSON) string.", '""');
+AddComboParamOption("");
+AddComboParamOption("if greater");
+AddComboParamOption("if less");
+AddComboParam("Post condition", "Post if score is greater or less then saved score.", 0);
 AddAction(1, 0, "Post score", "Send", 
-          "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i>", 
+          "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i> <i>{4}</i>", 
           "Post score by user ID.", "PostScore");
                   
 AddAction(2, 0, "Update all", "Update", 
@@ -68,7 +72,15 @@ AddAction(4, 0, "Remove post", "Remove",
           
 AddAction(5, 0, "Stop updating", "Update", 
           "Stop updating", 
-          "Stop updating ranks.", "StopUpdating");                    
+          "Stop updating ranks.", "StopUpdating");   
+
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddStringParam("Name", "(Optional) Player name.", '""');
+AddAnyTypeParam("Add", "Add score", 0);
+AddAnyTypeParam("Extra", "(Optional) Extra data, could be number or (JSON) string.", '""');
+AddAction(6, 0, "Add to score", "Send", 
+          "Add <i>{2}</i> to (User ID: <i>{0}</i>) <i>{1}</i> 's score, extra data to <i>{3}</i>", 
+          "Add score by user ID.", "AddScore");                
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current player name", "Update - for each", "CurPlayerName", 
@@ -84,6 +96,12 @@ AddExpression(5, ef_return_any, "Current extra data", "Update - for each", "CurE
                             
 AddExpression(11, ef_return_string, "Post player name", "Post", "PostPlayerName", 
               'The post player name. Uses under "condition:On post complete".');
+AddExpression(12, ef_return_any, "Current player score", "Post", "PostPlayerScore", 
+              'Get posted current player score under "condition:On post complete".'); 
+AddExpression(14, ef_return_string, "Current user ID", "Post", "PostPlayerUserID", 
+              'Get posted current user id under "condition:On post complete".');               
+AddExpression(15, ef_return_any, "Current extra data", "Post", "PostExtraData", 
+              'Get posted current extra data under "condition:On post complete".');              
 
 AddExpression(21, ef_return_number, "Get rank count", "Rank", "RankCount", 
               "Get total rank count."); 

@@ -1108,13 +1108,13 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	
     Exps.prototype.CellIndex2CellTLY = function (ret, cell_index)
 	{ 
-	    var row_index = this.lines_mgr.LineIndex2RowIndex(line_index);
+	    var row_index = this.lines_mgr.LineIndex2RowIndex(cell_index);
 		ret.set_float(this.get_tlY(row_index));
 	};	
 	
     Exps.prototype.CellIndex2CellTLX = function (ret, cell_index)
 	{ 
-	    var col_index = this.lines_mgr.LineIndex2ColIndex(line_index);   
+	    var col_index = this.lines_mgr.LineIndex2ColIndex(cell_index);   
 		ret.set_float(this.get_tlX(col_index));
 	};		
 	

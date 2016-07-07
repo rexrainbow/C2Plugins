@@ -106,7 +106,7 @@ AddAction(4, 0, "Add to OY", "List - offset Y",
           "Add to Offset Y.", "AddOY"); 
 AddNumberParam("Value", "Add value to Offset X, in pixels", 0);
 AddAction(5, 0, "Add to OX", "List - offset X", 
-          "Add <i>{0}</i> to offset Y", 
+          "Add <i>{0}</i> to offset X", 
           "Add to Offset X.", "AddOX"); 
 AddNumberParam("Value", "Add value to Offset X, in pixels", 0);          
 AddNumberParam("Value", "Add value to Offset Y, in pixels", 0);

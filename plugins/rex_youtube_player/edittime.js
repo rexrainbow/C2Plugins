@@ -34,7 +34,7 @@ AddComboParamOption("Ended");	            // 1
 AddComboParamOption("Playing");				// 2
 AddComboParamOption("Paused");				// 3
 AddComboParamOption("Buffering");		    // 4
-AddComboParamOption("Video cued");		    // 6
+AddComboParamOption("Video cued");		    // 5
 AddComboParam("Event", "The playback event to check for.");
 AddCondition(4, cf_trigger, "On playback event", "Video", "On {0}", 
              "Triggered when a playback event occurs.", "OnPlaybackEvent");
@@ -133,13 +133,14 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Video ID", "r45t8CgSBeA", "Video ID to play."),
-    new cr.Property(ept_combo, "Autoplay", "Yes", "Start playing upon buffered.", "No|Yes"),
-    new cr.Property(ept_combo, "Looping", "No", "Restart video after ended.", "No|Yes"),
-    new cr.Property(ept_combo,	"Control bar", "Yes", "Enable control bar or not.", "No|Yes"),
-	new cr.Property(ept_combo,"Show info", "Yes", "Enable to show video information", "No|Yes"),
-	new cr.Property(ept_combo,"Keyboard control", "Yes", "Enable to control video by keyboard.", "Yes|No"),
-    new cr.Property(ept_combo, "Initial visibility", "Visible", "Choose whether the text box is visible on startup.", "Invisible|Visible"),
+    new cr.Property(ept_text, "Video ID", "r45t8CgSBeA", "Video ID to play."),  // 0
+    new cr.Property(ept_combo, "Autoplay", "Yes", "Start playing upon buffered.", "No|Yes"), // 1
+    new cr.Property(ept_combo, "Looping", "No", "Restart video after ended.", "No|Yes"),  // 2
+    new cr.Property(ept_combo,	"Control bar", "Yes", "Enable control bar or not.", "No|Yes"),  // 3
+	new cr.Property(ept_combo,"Show info", "Yes", "Enable to show video information", "No|Yes"),  // 4
+	new cr.Property(ept_combo,"Modest branding", "No", "Enable to remove youtube logos", "No|Yes"),   // 5   
+	new cr.Property(ept_combo,"Keyboard control", "Yes", "Enable to control video by keyboard.", "Yes|No"),  // 6
+    new cr.Property(ept_combo, "Initial visibility", "Visible", "Choose whether the text box is visible on startup.", "Invisible|Visible"),  // 7
 	];
 
 // Called by IDE when a new object type is to be created

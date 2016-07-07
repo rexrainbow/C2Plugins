@@ -54,7 +54,7 @@ AddCondition(12, cf_trigger, "On get download URL error", "Download",
 
 AddCondition(13, 0, "File doesn't exist", "Download", 
             "File doesn't exist", 
-            "Return true if file doesn't exist.", "FileDoesn'tExist");  
+            "Return true if file doesn't exist.", "FileDoesntExist");  
 
 AddCondition(21, cf_trigger, "On deleted", "Delete", 
             "On delete complete", 

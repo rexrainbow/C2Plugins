@@ -155,7 +155,6 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
                                                                      0);
 	    this.pendding_params = {};
 	    this.current_cmd = null;
-	    this.current_cmd_save = null;
         
         this.init_start = (this.properties[1] == 1);
         this.init_cmds = this.properties[2];
@@ -190,9 +189,8 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
             return;
                    
         this.current_cmd = cmd;
-        this.current_cmd_save = cmd;
         this.runtime.trigger(cr.behaviors.Rex_bCmdqueue.prototype.cnds.OnCommand, this.inst);
-        this.current_cmd = null;              
+        //this.current_cmd = null;              
         
         this.type.call_function(this.inst.uid, cmd);
     }; 	
@@ -218,10 +216,10 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
         this.propsections.push({"name": "Command count", "value": this.CmdQueue.GetCmdCount()});
         this.propsections.push({"name": "Current index", "value": this.CmdQueue.GetCurCmdIndex()});
         
-        if (this.current_cmd_save != null)
+        if (this.current_cmd != null)
         {
-            this.propsections.push({"name": "Command name", "value": this.current_cmd_save[0]});
-            var k, param = this.current_cmd_save[1];           
+            this.propsections.push({"name": "Command name", "value": this.current_cmd[0]});
+            var k, param = this.current_cmd[1];           
             for (k in param)
             {
                 this.propsections.push({"name": "Parameter "+k.toString(), "value": param[k]});
@@ -294,7 +292,7 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     }; 
 
     Acts.prototype.PushCmd = function (fn_name)
-    {        
+    {  
         this.CmdQueue.Push([fn_name, this.pendding_params]);
         this.pendding_params = {};
     }; 
@@ -310,11 +308,11 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     Acts.prototype.CleanCmds = function ()
     {
         this.CmdQueue.Clean();
-        this.current_cmd_save = null;
+        this.current_cmd = null;
     }; 
 
     Acts.prototype.NextCmd = function ()
-    {
+    {    
         if (this.CmdQueue.IsEmpty())
             return;
 
@@ -329,13 +327,13 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
     Acts.prototype.LoadJSONCmds = function (json_string)
     {  
         this.CmdQueue.JSON2Queue(json_string); 
-        this.current_cmd_save = null; 
+        this.current_cmd = null; 
     };
     
     Acts.prototype.LoadCSVCmds = function (csv_string)
     {  
         this.CmdQueue.CSV2Queue(csv_string);  
-        this.current_cmd_save = null;
+        this.current_cmd = null;
     };
     
     Acts.prototype.SetNextIndex = function (index)
@@ -348,7 +346,14 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
         this.CmdQueue.InsertAt([fn_name, this.pendding_params], Math.floor(index));
         this.pendding_params = {};
     }; 
-    
+
+    Acts.prototype.RunCurCmd = function ()
+    {    
+        if (this.CmdQueue.IsEmpty())
+            return;
+
+        this.run_command(this.CmdQueue.Current());
+    }; 
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -411,7 +416,7 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
         return this.execute_index;
     };  
     
-	CmdQueueKlassProto.index_get = function ()
+	CmdQueueKlassProto.getNextIndex = function ()
 	{        
         var q_len = this.cmd_queue.length;
         if (q_len == 1)
@@ -476,9 +481,15 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
 
     CmdQueueKlassProto.Next = function ()
     {
-        var queue_index = this.index_get();
+        var queue_index = this.getNextIndex();
         return this.cmd_queue[queue_index];
     };  
+
+    CmdQueueKlassProto.Current = function ()
+    {
+        var queue_index = this.GetCurCmdIndex();
+        return this.cmd_queue[queue_index];        
+    };    
     
     CmdQueueKlassProto.SetRepeatMode = function (rm)
     {

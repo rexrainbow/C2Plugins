@@ -65,7 +65,7 @@ AddStringParam("Parameter name", "Parameter name.", '""');
 AddNumberParam("Value", "Value.", 0);
 AddAction(13, 0, "Add to", "Parameter", 
           "Add <i>{1}</i> to parameter <i>{0}</i>", 
-          "Add to the value of a model's parameter.", "AddToParameterValue");     
+          "Add to the value of a model's parameter.", "AddToParameterValue");                       
           
 AddStringParam("Motion name", "Motion name.", '""');
 AddAction(21, 0, "Start motion", "Motion", 
@@ -85,7 +85,13 @@ AddAction(31, 0, "Set expression", "Expression",
 AddNumberParam("Scale", "Set 1 to original size.", 1);     
 AddAction(41, 0, "Set model scale", "Camera", 
           "Set model scale to <i>{0}</i>", 
-          "Set model scale without changing object size.", "SetModelScale");    
+          "Set model scale without changing object size.", "SetModelScale"); 
+
+AddStringParam("Part index", "Part index.", '""');
+AddNumberParam("Opacity", "Opacity, range from 0 to 1.", 1);
+AddAction(51, 0, "Set part opacity", "Part", 
+          "Set part <i>{0}</i> opacity to <i>{1}</i>", 
+          "Set part opacity.", "SetPartOpacity");            
 
 AddNumberParam("X", "Position X.", 0);
 AddNumberParam("Y", "Position Y.", 0);          

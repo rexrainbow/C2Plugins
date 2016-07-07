@@ -457,7 +457,18 @@ cr.plugins_.Rex_SysExt = function(runtime)
     Exps.prototype.SubString = function (ret, s, start, end)
 	{
 	    ret.set_string( s.substring(start, end) );
+	};	
+    
+    Exps.prototype.ToFixed = function (ret, n, dig)
+	{
+	    ret.set_string( n.toFixed(dig) );
+	};	
+    
+    Exps.prototype.ToPrecision = function (ret, n, dig)
+	{
+	    ret.set_string( n.toPrecision(dig) );
 	};	    
+    
     Exps.prototype.NormalRandom = function (ret, mean, stddev)
 	{
         var u, v, r
@@ -495,5 +506,18 @@ cr.plugins_.Rex_SysExt = function(runtime)
 		var ry = vy - 2 * v_dot_n * ny;
         var ra = cr.angleTo(0, 0, rx, ry);
 	    ret.set_float(cr.to_degrees(ra));
-	};	    
+	};	   
+
+    var num2base32 = ["0","1","2","3","4","5","6","7","8","9",
+                                 "b","c","d","e","f","g","h","j","k","m",
+                                 "n","p","q","r","s","t","u","v","w","x",
+                                 "y","z"];
+    Exps.prototype.RandomBase32 = function (ret, dig)
+	{
+        var o = "";
+        for (var i=0;i<dig;i++)
+            o += num2base32[ Math.floor( Math.random()*32 ) ];
+        
+	    ret.set_string( o );
+	};	
 }());

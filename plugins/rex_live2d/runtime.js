@@ -502,6 +502,12 @@ cr.plugins_.Rex_Live2DObj = function(runtime)
         this.setModelScale(scale);
 	};    
     
+	Acts.prototype.SetPartOpacity = function (partIndex, opacity)
+	{   
+        var model = this.model["getLive2DModel"]();    
+        model["setPartsOpacity"](partIndex, opacity);
+	};
+    
 	Acts.prototype.LookAt = function (deviceX, deviceY)
 	{   
         var viewX = this.pixelX2ModelX(deviceX);

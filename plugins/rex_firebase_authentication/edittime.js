@@ -63,7 +63,7 @@ AddCondition(33, cf_trigger, "On logged out", "General - login",
             "On logged out", 
             "Triggered when logged out.", "OnLoggedOut");	
 
-AddCondition(34, cf_trigger, "Is login", "General - login", 
+AddCondition(34, 0, "Is login", "General - login", 
             "Is login", 
             "Return true if logging now.", "IsLogin");            
 //////////////////////////////////////////////////////////////
