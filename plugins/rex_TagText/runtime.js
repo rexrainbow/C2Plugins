@@ -537,7 +537,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	instanceProto.getDebuggerValues = function (propsections)
 	{
 		propsections.push({
-			"title": "Text",
+			"title": this.type.name,
 			"properties": [
 				{"name": "Text", "value": this.text},
 				{"name": "Font", "value": this.font},
@@ -707,7 +707,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	{
 		if (this.runtime.isDomFree)
 		{
-			cr.logexport("[Construct 2] Text plugin: 'Set web font' not supported on this platform - the action has been ignored");
+			cr.logexport("[Construct 2] TagText plugin: 'Set web font' not supported on this platform - the action has been ignored");
 			return;		// DC todo
 		}
 		

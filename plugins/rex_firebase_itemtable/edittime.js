@@ -60,13 +60,13 @@ AddAction(0, 0, "Set domain", "Domain",
           "Set domain to <i>{0}</i>, sub domain to <i>{1}</i>", 
           "Set domain ref.", "SetDomainRef");
           
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or (JSON) string.", 0);
 AddAction(1, 0, "Set value", "Prepare", 
           "Prepare- Set key <i>{0}</i> to  <i>{1}</i> in current item", 
           "Set value into current item.", "SetValue");
           
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
@@ -74,7 +74,7 @@ AddAction(2, 0, "Set boolean value", "Prepare",
           "Prepare- Set key <i>{0}</i> to <i>{1}</i> in current item", 
           "Set boolean value into current item.", "SetBooleanValue"); 
           
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddAction(3, 0, "Remove key", "Prepare",
           "Prepare- Remove key <i>{0}</i> in server", 
           "Remove key in firebase server.", "RemoveKey");            
@@ -109,7 +109,7 @@ AddAction(8, 0, "Set to position", "Prepare - position",
           'Prepare- Set key "pos" to (<i>{0}</i>, <i>{1}</i>)', 
           'Set position value into current item.', "SetPosValue");
           
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddAction(9, 0, "Set to timestamp", "Prepare", 
           "Prepare- Set key <i>{0}</i> to  server timestamp in current item", 
           "Set server timestamp value into current item.", "SetServerTimestampValue");          
@@ -136,7 +136,11 @@ AddAction(21, 0, "Cancel disconnected handler", "On disconnected",
 AddStringParam("ID", "ID of item.", '""');
 AddAction(22, 0, "Auto remove", "On disconnected", 
           "Auto remove itemID: <i>{0}</i> when disconnected", 
-          "Auto remov item when disconnected.", "RemoveOnDisconnected");              
+          "Auto remov item when disconnected.", "RemoveOnDisconnected");    
+
+AddAction(31, 0, "Remove all", "Remove",  
+          "Remove all",
+          "Remove all items.", "CleanAll");              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get itemID", "For Each", "CurItemID", 
@@ -152,7 +156,7 @@ AddExpression(4, ef_return_any, "Get value", "For Each", "CurValue",
               "Get current value in a For Each loop, in last load result."); 
       
 AddStringParam("ID", "ID of item.", '""');
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddExpression(5, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", 
               "Get value by itemId and key in last load result. Add 3rd parameter for default value if this key is not existed.");
               
@@ -172,7 +176,11 @@ AddExpression(21, ef_return_string, "Generate new key from push", "ItemID", "Gen
 AddExpression(22, ef_return_string, "Get last generated key", "ItemID", "LastGeneratedKey", 
               "Get last generate a key from push action.");               
 
-
+//AddAnyTypeParam("Item", "Item ID.", '""');      
+//AddAnyTypeParam("Key", "The name of the key.", '""');              
+AddExpression(101, ef_return_string | ef_variadic_parameters, "Get reference", "Reference", "Ref", 
+              "Get renerence in table, optional parameters are (itemID, key).");
+              
 ACESDone();
 
 // Property grid properties for this plugin

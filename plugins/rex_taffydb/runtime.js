@@ -67,6 +67,9 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             this.index_keys = index_keys_input.split(",");
         }
         
+        // csv
+        this.keyType = {};  // 0=string, 1=number, 2=eval
+        
         // save
         this.rowID = "";
         this.prepared_item = {};
@@ -302,20 +305,31 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    return this.current_rows;
 	};
 
-	instanceProto.QueriedRowIndex2RowId = function (index_, default_value)
+	instanceProto.Index2QueriedRowID = function (index_, default_value)
 	{    
 	    var current_rows = this.GetCurrentQueriedRows();
 	    var row = current_rows["get"]()[index_];
 	    return din(row, "___id", default_value);        
 	};
 		
-	var value_get = function(v, is_eval_mode)
+	var getEvalValue = function(v, prefix)
 	{
 	    if (v == null)
 	        v = 0;
-	    else if (is_eval_mode)
-	        v = eval("("+v+")");
-        
+        else
+        {
+            try
+            {
+	            v = eval("("+v+")");
+            }
+            catch (e)
+            {
+                if (prefix == null)
+                    prefix = "";
+                console.error("TaffyDB: Eval " + prefix + " : " + v + " failed");
+                v = 0;
+            }
+        }
         return v;
 	};		
 		    
@@ -376,6 +390,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 		         "db": db_save,
 		         "fltcur": cur_fflt,
                  "flthis": (this.current_rows)? this.filter_history:null,
+                 "kt": this.keyType,
 		       };
 	};
 	
@@ -397,6 +412,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 		this.filters = o["fltcur"]["flt"];
 		this.order_cond = o["fltcur"]["ord"];
         this.__flthis_save = o["flthis"];
+        this.keyType = o["kt"];
 	};
 	
 	instanceProto.afterLoad = function ()
@@ -566,21 +582,48 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
        
 	Acts.prototype.InsertCSV = function (csv_string, is_eval, delimiter)
 	{         
+        is_eval = (is_eval === 1);
         var csv_data = CSVToArray(csv_string, delimiter);
-        var col_keys = csv_data.shift();
-        var csv_row, row;
+        var col_keys = csv_data.shift(), col_key;
+        var csv_row, row, cell_value;
         var r, row_cnt=csv_data.length;
         var c, col_cnt=col_keys.length;
+        var prefix;   // for debug
         for (r=0; r<row_cnt; r++)
         {
             csv_row = csv_data[r];
             row = {};
             for (c=0; c<col_cnt; c++)
             {
-                row[col_keys[c]] = value_get(csv_row[c], is_eval);
+                col_key = col_keys[c];
+                cell_value = csv_row[c]; // string
+                prefix = " (" + r + "," + c + ") ";
+                if (is_eval)
+                    row[col_key] = getEvalValue(cell_value, prefix);
+                else
+                {
+                    if (this.keyType.hasOwnProperty(col_key))
+                    {
+                        var type = this.keyType[col_key];
+                        switch (type)  
+                        {
+                        // case 0: // string
+                        case 1:   // number
+                            cell_value = parseFloat(cell_value); 
+                            break;
+                        case 2:   // eval
+                            cell_value = getEvalValue(cell_value, prefix);
+                            break;
+                        }
+                    }                  
+                    
+                    row[col_key] = cell_value;
+                }
             }
             this.SaveRow(row, this.index_keys);            
         }
+        
+        clean_table(this.keyType);
 	};
     
 	Acts.prototype.InsertJSON = function (json_string)
@@ -604,7 +647,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     
 	Acts.prototype.RemoveByRowIndex = function (index_)
 	{
-        var rowID = this.QueriedRowIndex2RowId(index_, null);
+        var rowID = this.Index2QueriedRowID(index_, null);
         if (rowID === null)
             return;
             
@@ -658,7 +701,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    
     Acts.prototype.SetRowIndex = function (index_)
 	{
-	    this.rowID = this.QueriedRowIndex2RowId(index_, null);
+	    this.rowID = this.Index2QueriedRowID(index_, null);
 	};
     
     Acts.prototype.NewFilters = function ()
@@ -709,11 +752,16 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    this.current_rows = null;	    
 	    this.CleanFilters();	    
 	}; 		
-		
+	
+    Acts.prototype.InsertCSV_DefineType = function (key_, type_)
+	{
+        this.keyType[key_] = type_;
+	}; 			
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
+
     
 	Exps.prototype.At = function (ret)
 	{  
@@ -786,12 +834,24 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	};
  	Exps.prototype.QueriedRowsIndex2RowID = function (ret, index_)
 	{
-		ret.set_string( this.QueriedRowIndex2RowId(index_, "") );
+		ret.set_string( this.Index2QueriedRowID(index_, "") );
 	}; 
  	Exps.prototype.CurRowIndex = function (ret)
 	{
 		ret.set_int( this.exp_CurRowIndex);
-	};     
+	};    
+    
+ 	Exps.prototype.CurRowID = function (ret)
+	{
+		ret.set_any( din(this.exp_CurRow, "___id", "") );
+	};
+    
+ 	Exps.prototype.Index2QueriedRowID = function (ret, index_)
+	{
+		ret.set_string( this.Index2QueriedRowID(index_, "") );
+	}; 
+        
+    
  	Exps.prototype.AllRowsAsJSON = function (ret)
 	{
 		ret.set_string( this.db()["stringify"]() );

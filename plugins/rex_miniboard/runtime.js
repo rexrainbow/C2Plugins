@@ -741,6 +741,24 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         this.mainboard_last.afterLoad();
 	};
 			
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+        var items = this.GetAllChess();
+        var chessUID = [];
+        for (var uid in items)
+            chessUID.push(parseInt(uid));
+        
+        var mainboard = this.mainboard.inst;
+        
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Chess", "value": JSON.stringify(chessUID) },
+			                    {"name": "Mainboard", "value": (mainboard)? mainboard.uid:-1}]
+		});
+	};
+	/**END-PREVIEWONLY**/
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -862,12 +880,11 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	
 	Acts.prototype.CreateChess = function (obj_type, lx, ly, lz, layer)
 	{
-	    this.CreateChess(obj_type, lx, ly, lz, layer);        
+	    this.CreateChess(obj_type, lx, ly, lz, layer);  
 	};	
 	
 	Acts.prototype.PutChess = function (board_objs, offset_lx, offset_ly, is_pos_set, test_mode)
 	{	 
-        debugger
 		if (!board_objs)
 			return;
 			
@@ -1225,7 +1242,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	};    
 	
 	BoardKlassProto.RemoveCell = function(x, y, z)
-	{
+	{   
         var uid, xyz;
         // board.RemoveCell(uid)        
         if (arguments.length === 1)
@@ -1283,12 +1300,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	};	
     
    	BoardKlassProto.ResetCells = function (uid2xyz)
-	{
+	{ 
         this.Reset();  
         var uid, xyz;
-        for (uid in this.uid2xyz)
+        for (uid in uid2xyz)
         {
-            xyz = this.uid2xyz[uid];
+            xyz = uid2xyz[uid];
             this.AddCell(parseInt(uid), xyz.x, xyz.y, xyz.z);
         }
 	};    

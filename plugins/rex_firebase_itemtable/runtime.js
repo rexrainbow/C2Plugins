@@ -248,6 +248,20 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    }
 	};			
     
+    var getFullKey = function (prefix, itemID, key)
+    {
+        var k = prefix;
+        if (itemID != null)
+            k +=  "/" + itemID;
+        if (key != null)
+        {
+            key = key.replace(/\./g, "/");
+            k += "/" + key;
+        }
+        
+        return k;
+    }    
+    
 	var clean_table = function (o)
 	{
 		for (var k in o)
@@ -621,5 +635,10 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	{
 	    ret.set_string(this.exp_LastGeneratedKey);
 	};
-
+    
+    Exps.prototype.Ref = function (ret, itemID_, key_)
+	{
+        var path = this.rootpath + getFullKey("", itemID_, key_);  
+		ret.set_string(path);
+	};	     
 }());

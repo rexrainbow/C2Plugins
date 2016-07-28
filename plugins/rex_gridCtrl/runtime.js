@@ -1016,7 +1016,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         var is_changed =this.lines_mgr.SetDefaultLineHeight(height);  
         if (is_changed)  this.update_flag = true;
 	};	
-    Acts.prototype.SetDefaultellWidth = function (width)
+    Acts.prototype.SetDefaultCellWidth = function (width)
 	{
 	    if (width <= 0)
 		    return;

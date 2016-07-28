@@ -277,11 +277,47 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	{
         this.fn_queue.reverse();
 	};
+           
+    Acts.prototype.InsertParam = function (index_, param_)
+	{
+	    var pkg = this.exp_pkg || this.fn_queue[0];
+	    if (pkg == null)
+	    {
+	        return;
+	    }
+	    
+        pkg.splice(index_+1, 0, param_);
+	};  
+
+    Acts.prototype.AddToParam = function (index_, value_)
+	{
+	    var pkg = this.exp_pkg || this.fn_queue[0];
+	    if (pkg == null)
+	    {
+	        return;
+	    }
+	    
+	    var param_cnt = pkg.length -1;
+	    var param_index = index_+1;
         
+	    if (index_ >= param_cnt)
+	    {
+	        // extend param array
+	        pkg.length = param_index+1;
+	        var i;
+	        for (i=param_cnt+1; i<param_index; i++)
+	        {
+	            pkg[i] = 0;
+	        }
+	    }
+
+	    pkg[param_index] += value_;
+	};
+
     Acts.prototype.SetupCallback = function (callback_type)
 	{	
         this.c2FnType = (callback_type===0)? "c2_callFunction" : "c2_callRexFunction2";
-	};	       
+	};	     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

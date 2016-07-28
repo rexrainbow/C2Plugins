@@ -356,6 +356,24 @@ cr.behaviors.Rex_Timer = function(runtime)
 		this.params[index] = value;
 	};  
 	// ---- deprecated ----  
+  
+    Acts.prototype.PauseAll = function ()
+	{
+        for (var n in this.timers)
+            this.timers[n].Suspend();
+	};  
+    
+    Acts.prototype.ResumeAll = function ()
+	{
+        for (var n in this.timers)
+            this.timers[n].Resume();
+	};      
+    
+    Acts.prototype.StopAll = function ()
+	{
+        for (var n in this.timers)
+            this.timers[n].Remove();
+	};      
 
     Acts.prototype.Setup2 = function (timeline_objs)
 	{

@@ -49,7 +49,8 @@ cr.plugins_.Rex_Hash = function(runtime)
 		this.currentEntry = this.hashtable;			
 			
         this.exp_CurKey = "";
-        this.exp_CurValue = 0; 			
+        this.exp_CurValue = 0; 	
+        this.exp_Loopindex = 0;
 	};
     
 	instanceProto.cleanAll = function()
@@ -309,15 +310,16 @@ cr.plugins_.Rex_Hash = function(runtime)
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 
         var key, value;
-        
+        this.exp_Loopindex = 0;
 		for (key in entry)
 	    {
             if (solModifierAfterCnds)
 		        this.runtime.pushCopySol(current_event.solModifiers);
             
             this.exp_CurKey = key;
-            this.exp_CurValue = entry[key];		        
+            this.exp_CurValue = entry[key];	
 			current_event.retrigger();
+            this.exp_Loopindex ++;            
 			
             if (solModifierAfterCnds)            
 			    this.runtime.popSol(current_event.solModifiers);
@@ -706,5 +708,9 @@ cr.plugins_.Rex_Hash = function(runtime)
         val = din(val, default_value);
 		ret.set_any(val);
 	};	    
-
+    
+	Exps.prototype.Loopindex = function (ret)
+	{
+		ret.set_int(this.exp_Loopindex);
+	};
 }());

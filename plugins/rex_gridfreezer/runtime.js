@@ -419,7 +419,9 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 	
 	instanceProto.saveToJSON = function ()
 	{	    	    
-		return { "origin": this.origin,
+		return { 
+                 "e": this.activated,
+                 "origin": this.origin,
 		         "mask2board" : this.mask2board,
 		         "board2mask" : this.board2mask,
 		         "target_types" : types2sid(this.target_types),
@@ -430,6 +432,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
+        this.activated = o["e"];                          
 	    this.origin = o["origin"];
 	    this.mask2board = o["mask2board"];
 	    this.board2mask = o["board2mask"];

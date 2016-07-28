@@ -91,8 +91,9 @@ AddAction(3, 0, "Load group", "Group: JSON", "Load group <i>{1}</i> to JSON stri
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(4, 0, "Load all", "Group: JSON", "Load all groups from JSON string <i>{1}</i>", 
           "Load all groups from JSON string.", "String2All");  
-AddStringParam("Group", "Group name.", '""');
-AddAction(5, 0, "Destroy group", "Group", "Destroy group <i>{0}</i>", 
+AddStringParam("Group", "Group name.", '""'); 
+AddAction(5, 0, "Destroy group", "Group", 
+          "Destroy <i>{0}</i>", 
           "Destroy group.", "DestroyGroup");                              
 AddObjectParam("Instances", "Instances to be added into group.");
 AddStringParam("Group", "Group name.", '""');
@@ -245,7 +246,12 @@ AddComboParamOption("logical descending");
 AddComboParamOption("logical ascending");
 AddComboParam("Order", "Order of mapping result.", 1);
 AddAction(33, 0, "Sort by mapping", "List: Sort - Mapping function", "Sort group <i>{0}</i> by <i>{2}</i> result of mapping function <i>{1}</i>", 
-          "Sort group by the result of mapping function.", "SortByMappingFunction");              
+          "Sort group by the result of mapping function.", "SortByMappingFunction");     
+
+AddStringParam("Group", "Group name.", '""');  
+AddAction(41, 0, "Destroy instances", "Instance", 
+          "Destroy instances in <i>{0}</i>", 
+          "Destroy instances in group.", "DestroyInstanceInGroup");             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_any, 

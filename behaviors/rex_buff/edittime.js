@@ -23,7 +23,11 @@ AddNumberParam("Value", "The value to compare the sum to.");
 AddCondition(1, 0, "Compare sum", "Value", 
              "{my} {0} {1}", 
              "Compare sum.", 
-             "CompareSum");			 
+             "CompareSum");	
+
+AddCondition(3, cf_looping | cf_not_invertible, "For each buff", "Queue", 
+             "For each buff", 
+             "Repeat the event for each buff in queue.", "ForEachBuff");              
 //////////////////////////////////////////////////////////////
 // Actions
 AddNumberParam("Base", "Base value.", 10);
@@ -72,12 +76,29 @@ AddExpression(3, ef_return_number, "Get maximum bound", "Bound", "Max",
               "Get maximum bound.");              
 AddExpression(4, ef_return_number, "Get minimum bound", "Bound", "Min", 
               "Get minimum bound.");
-// AddStringParam("Name", "Buff name", "");  			  
+// AddAnyTypeParam("Name", "Buff name", "");  			  
 AddExpression(5, ef_return_number | ef_variadic_parameters, "Get buff value", "Buff", "Buff", 
-              "Get total buff value, or add 2nd parameter to get specific buff value.");
+              "Get total buff value, or add 2nd parameter to get specific buff value by name (string) or queue index (number).");
 AddExpression(6, ef_return_number, "Get next priority", "Buff", "NextPriority", 
               "Get next lower priority.");
-			  
+AddExpression(7, ef_return_number, "Get total buff count", "Queue", "BuffCount", 
+              "Get total buff count in queue.");                        
+			
+AddExpression(11, ef_return_string, "Get current index", "Queue - for each - index", "CurIndex", 
+              "Get current index in a for each loop.");            
+AddExpression(12, ef_return_string, "Get current buff name", "Queue - for each", "CurBuffName", 
+              "Get current buff name in a for each loop.");
+AddExpression(13, ef_return_number, "Get current buff value", "Queue - for each", "CurBuffValue", 
+              "Get current buff value in a for each loop.");
+              
+              
+AddNumberParam("Index", "Queue index", 0);                
+AddExpression(21, ef_return_string, "Get buff name by queue index", "Queue - index", "Index2BuffName", 
+              "Get buff name by queue index.");                
+AddNumberParam("Index", "Queue index", 0);                   
+AddExpression(22, ef_return_string, "Get buff value by queue index", "Queue - index", "Index2BuffValue", 
+              "Get buff value by queue index."); 
+              
 ACESDone();
 
 var property_list = [

@@ -97,7 +97,7 @@ cr.behaviors.Rex_Spline = function(runtime)
         while (remainDist > 0)
         {
             seg = this.getSeg();
-            if (seg === null)            
+            if (seg == null)            
                 break;            
             if (seg.dist === 0)
                 continue;
@@ -140,7 +140,7 @@ cr.behaviors.Rex_Spline = function(runtime)
         
         this.inst.set_bbox_changed();
         
-        if (seg === null)
+        if (seg == null)
         {
             this.onReachLastPoint();
         }

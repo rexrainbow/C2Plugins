@@ -19,7 +19,7 @@ rooms/
 room-metadata/
     <roomID>        
         name - The display name of the room.
-        state-type -  Close or open, Public or private.           
+        filter -  close/open + "|" + public/private/...
 
         # moderators of this room
         moderators/
@@ -219,10 +219,26 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
 	    return this.get_ref("user-metadata")["child"](userID);
 	};   
-	instanceProto.get_room_stateType = function(state, type_)
+	
+    var getFilter = function(state, type_)
 	{
-	    return state+"-"+type_;
+        var val = state+"|"+type_;
+	    return val;
 	};  
+    
+    var parseFilter = function(filter)
+    {        
+        var arr = filter.split("|");
+        var state = arr[0];
+        var type = arr[1];
+        return [state, type];
+    }
+    
+    var get_roomState = function (filter)
+    {
+        return filter.split("|")[0];
+    };
+
     instanceProto.run_room_trigger = function(trig, roomName, roomID)
 	{
 	    this.triggeredRoomName = roomName;
@@ -239,7 +255,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    this.triggeredUserName = "";
 	    this.triggeredUserID = "";     
 	};    
-    
+                                       
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -380,7 +396,10 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             var on_left = function (error)
             {
                 if (error)
+                {
+                    on_end();
                     return;               
+                }
                 
                 self.room.TryCreateRoom(roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin, on_create);
             }
@@ -414,31 +433,22 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             self.LockedByAction = false;
         };
         
-        leftThenJoin = (leftThenJoin===1);
-        if (!leftThenJoin || !this.room.IsInRoom())
+        var try_join = function (error)
         {
-            if (roomID === "")
-            {         
-                this.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError, "", "");     
+            if (error || (roomID === ""))
+            {
+                on_end();
+                self.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError, "", "");     
                 return;
             }
             
-            this.room.TryJoinRoom(roomID, on_end);
+            self.room.TryJoinRoom(roomID, on_end);
         }
+         
+        if (leftThenJoin===0)
+            try_join();
         else
-        {
-            var on_left = function (error)
-            {
-                if (error && (roomID === ""))
-                {
-                    self.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError, "", "");     
-                    return;
-                }
-                
-                self.room.TryJoinRoom(roomID, on_end);
-            }
-            this.room.LeaveRoom(on_left);
-        }
+            this.room.LeaveRoom(try_join);
 	};   
      
     Acts.prototype.LeaveRoom = function ()
@@ -512,6 +522,82 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
         
 	};   	    
+    
+    Acts.prototype.JoinRandomRoom = function (leftThenJoin, retry)
+	{
+        var roomID = "";
+        
+        this.LockedByAction = true;
+        var self = this;
+        var on_end = function (failed)
+        {
+            self.LockedByAction = false;
+            
+            if (failed)
+            {
+                self.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError, "", "");     
+            }
+            else
+            {
+                var roomName = self.room.roomName;
+                var roomID = self.room.roomID;
+                self.run_room_trigger(cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoom, roomName, roomID);                     
+            }
+        };          
+        
+        // step 3. join room success, or retry
+        var on_join = function (error)
+        {
+            if (error)
+                main();
+            else
+                on_end();
+        };          
+        // step 3. join room success, or retry        
+        
+        // step 2. try join room, left then join   
+        var try_join = function (error)
+        {
+            if (error || (roomID === ""))
+            {
+                on_end(true);
+                return;
+            }
+            
+            self.room.TryJoinRoom(roomID, on_join, true);  // ignore trigger
+        }
+        // step 2. try join room, left then join            
+        
+        // step 1. try join a random room
+        var main = function ()
+        {
+            if (retry < 0)
+            {
+                on_end(true);
+                return;
+            }
+            
+            retry -= 1;
+            var rooms = self.roomsList.GetRooms();
+            var idx = Math.floor( Math.random() * rooms.length );
+            var room = rooms[idx];
+            if (!room)
+            {
+                on_end(true);
+                return;
+            }             
+            
+            roomID = room["roomID"];
+            
+            if (leftThenJoin===0)
+                try_join();
+            else
+                self.room.LeaveRoom(try_join);      
+        }
+        // step 1. try join a random room
+        
+        main();
+	};       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -708,6 +794,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         // key of room ref
         this.roomID = "";        
         this.roomName = "";
+        this.doorState = "closed";        
         this.roomType = "";
         this.maxPeers = 0;       
         this.is_creater = false;
@@ -749,7 +836,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	};  
 	  
     RoomMgrKlassProto.TryCreateRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, joinPermission, roomID, createThenJoin,
-                                                onComplete)
+                                                onComplete, ignoreTrigger)
 	{
         // does not support 
         //if ((roomID !== "") && (lifePeriod === LIFE_TEMPORARY))
@@ -768,7 +855,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         var self = this;
         
         // on complete
-        var on_create_room_complete = function(error)
+        var on_create_room_complete = function(error, metadata)
         {     
             if (error)
             {
@@ -785,11 +872,14 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
                 self.roomType = roomType;  
                 self.maxPeers = maxPeers; 
             }
-                        
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoom;     
-            self.plugin.run_room_trigger(trig, roomName, roomID); 
+            
+            if (!ignoreTrigger)
+            {
+                var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoom;     
+                self.plugin.run_room_trigger(trig, roomName, roomID); 
+            }
 	        // create successful
-			self.onJoinRoom(roomID, roomName, roomType, maxPeers, onComplete);	
+			self.onJoinRoom(roomID, metadata, onComplete, ignoreTrigger);	
 			
 			if (onComplete)
 			    onComplete();        	        
@@ -798,10 +888,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         
         // on error
         var on_create_room_error = function()
-        {            
-            // create failed
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoomError;     
-            self.plugin.run_room_trigger(trig, roomName, roomID); 
+        {      
+            if (!ignoreTrigger)
+            {        
+                // create failed
+                var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnCreateRoomError;     
+                self.plugin.run_room_trigger(trig, roomName, roomID); 
+            }
             
 			if (onComplete)
 			    onComplete(true);                         
@@ -854,7 +947,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             if (this.users_list.isFull())
                 return;
         }
-        this.door_switch(doorState);
+        this.SetDoorState(doorState);
 	};	
     
     RoomMgrKlassProto.isRoomOpened = function (metadata)
@@ -862,7 +955,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         if (metadata == null)
             return false;
         
-        var state = metadata["state-type"].split("-")[0];
+        var state = get_roomState(metadata["filter"]);
         if (state === ROOMCLOSED)
             return false;
         
@@ -891,7 +984,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
             return true;
     }
 	  
-    RoomMgrKlassProto.TryJoinRoom = function (roomID, onComplete)
+    RoomMgrKlassProto.TryJoinRoom = function (roomID, onComplete, ignoreTrigger)
 	{
         if (this.IsInRoom())
         {
@@ -903,14 +996,16 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 
         var self = this;
         var on_join_complete = function(metadata)
-        {
-            var type = metadata["state-type"].split("-")[1]            
-		    self.onJoinRoom(roomID, metadata["name"], type, metadata["maxPeers"], onComplete);      		              
+        {      		              
+            self.onJoinRoom(roomID, metadata, onComplete, ignoreTrigger);   
         };
         var on_join_errror = function()
         {
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError;     
-            self.plugin.run_room_trigger(trig, "", roomID);   
+            if (!ignoreTrigger)
+            {
+                var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoomError;     
+                self.plugin.run_room_trigger(trig, "", roomID);   
+            }
             
 			if (onComplete)
 			    onComplete(true);                        
@@ -988,7 +1083,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.pendCommand = "JOIN";        
 	}; 
 	
-    RoomMgrKlassProto.LeaveRoom = function (onComplete)
+    RoomMgrKlassProto.LeaveRoom = function (onComplete, ignoreTrigger)
 	{
         if (!this.IsInRoom())
         {
@@ -1156,7 +1251,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	};	
 
     RoomMgrKlassProto.createRoom = function (roomName, roomType, maxPeers, lifePeriod, doorState, roomID, joinPermission, createThenJoin,
-                                              onComplete)
+                                              onComplete_)
 	{  
         var metadata_ref = this.plugin.get_roommetadata_ref(roomID);          
         var room_ref = this.plugin.get_room_ref(roomID);
@@ -1171,7 +1266,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         // set room-metadata
         var metadata = {
             "name": roomName,  
-            "state-type": this.plugin.get_room_stateType(doorState, roomType),
+            "filter": getFilter(doorState, roomType),
             "moderators":{},
             "permission": JOINPERMINNSION[joinPermission],
         };
@@ -1196,8 +1291,15 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         data["room-metadata/"+roomID] = metadata;
         data["rooms/"+roomID] = roomdata;
         var root_ref = this.plugin.get_ref();
+        
+        var onComplete = function(error)
+        {
+            if (onComplete_)
+                onComplete_(error, metadata);
+        }        
         root_ref["update"](data, onComplete);
-        this.is_creater = true;
+        this.is_creater = true;        
+
 	}; 
 	
     RoomMgrKlassProto.removeRoom = function (roomID, onComplete)
@@ -1231,12 +1333,13 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         root_ref["update"](data, on_remove);
 	};	    
 	
-	RoomMgrKlassProto.onJoinRoom = function (roomID, roomName, roomType, maxPeers, onComplete)
+	RoomMgrKlassProto.onJoinRoom = function (roomID, metadata, onComplete, ignoreTrigger)
 	{  
+        var filterProps = parseFilter(metadata["filter"]);  // state,type        
         this.roomID = roomID;
-        this.roomName = roomName;
-        this.roomType = roomType;  
-        this.maxPeers = maxPeers;
+        this.roomName = metadata["name"];
+        this.roomType = filterProps[1];
+        this.maxPeers = metadata["maxPeers"] || 0;
         	    	    
 	    this.monitorMyStateOn();
 
@@ -1244,17 +1347,20 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         var self=this;        
         this.users_list.onInitialize = function ()
         {
-            var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoom;     
-            self.plugin.run_room_trigger(trig, roomName, roomID); 
+            if (!ignoreTrigger)
+            {
+                var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnJoinRoom;     
+                self.plugin.run_room_trigger(trig, self.roomName, roomID); 
+            }
+            
             // call onComplete while users list has initialized
             if (onComplete)
                 onComplete();
             self.users_list.onInitialize = null;
         }
-	    this.users_list.StartUpdate(roomID, maxPeers);
+	    this.users_list.StartUpdate(roomID, this.maxPeers);
         //this.user_metadata.Update();  
         
- 
 	};
 	
     RoomMgrKlassProto.onLeftRoom = function ()
@@ -1288,15 +1394,23 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         this.manualLeave = false;
 	};
 	
-    RoomMgrKlassProto.door_switch = function (door_state, onComplete)
+    RoomMgrKlassProto.SetDoorState = function (doorState, onComplete)
 	{
         var data = {};
-        var state_type = this.plugin.get_room_stateType(door_state, this.roomType);        
-        data["room-metadata/"+this.roomID+"/state-type"] = state_type
+        var filter = getFilter(doorState, this.roomType);        
+        data["room-metadata/"+this.roomID+"/filter"] = filter
         var root_ref = this.plugin.get_ref();
         root_ref["update"](data, onComplete);
 	};
     
+    RoomMgrKlassProto.onStateUpdated = function (state)
+	{
+        if (state["roomID"] !== this.roomID)
+            return;
+        
+        log(state);
+	};    
+
 	var clean_table = function (o)
 	{
 	    var k;
@@ -1320,23 +1434,19 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     RoomsListKlassProto.UpdateOpenRoomsList = function (roomType)
 	{
 	    var self = this;
-        var on_roomList_update = function ()
+        var on_roomList_update = function (room)
         {
             var trig = cr.plugins_.Rex_Firebase_Rooms.prototype.cnds.OnUpdateRoomsList;
             self.plugin.runtime.trigger(trig, self.plugin); 
+            
+            //self.plugin.room.onStateUpdated(room);
         };
 	    
-	    var metadata_ref = this.plugin.get_roommetadata_ref();
-	    var query = metadata_ref["orderByChild"]("state-type");
-	    if (roomType != "")
-	        query = query["equalTo"](this.plugin.get_room_stateType(ROOMOPEN, roomType));
-	    else
-	        query = query["startAt"](ROOMOPEN)["endAt"](ROOMOPEN+"~");
-
-        this.snapshot2Item = null;
         this.rooms_list.onItemAdd = on_roomList_update;
         this.rooms_list.onItemRemove = on_roomList_update;
-        this.rooms_list.onItemChange = on_roomList_update;	        
+        this.rooms_list.onItemChange = on_roomList_update;
+        
+	    var query = this.GetQueryObj(roomType);        
 	    this.rooms_list.StartUpdate(query);
 	};
 	
@@ -1344,6 +1454,17 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
 	    this.rooms_list.StopUpdate();
 	};
+    
+    RoomsListKlassProto.GetQueryObj = function (roomType)
+	{
+	    var metadata_ref = this.plugin.get_roommetadata_ref();
+	    var query = metadata_ref["orderByChild"]("filter");        
+        if (roomType != "")
+	        query = query["equalTo"](getFilter(ROOMOPEN, roomType));
+	    else
+            query = query["startAt"](ROOMOPEN)["endAt"](ROOMOPEN+"~"); 
+        return query;
+	};    
 
 	RoomsListKlassProto.ForEachRoom = function (start, end)
 	{	     
@@ -1361,8 +1482,8 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	RoomsListKlassProto.GetRooms = function()
 	{
 	    return this.rooms_list.GetItems();
-	};    
-	
+	};  
+
     var UsersListKlass = function (room)
     {       
         // overwrite these values
@@ -1433,7 +1554,6 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	    if (limit > 0)
 	        query = query["limitToFirst"](limit);
 
-        this.snapshot2Item = null;
         this.users_list.onItemAdd = on_user_join;
         this.users_list.onItemRemove = on_user_left;
         this.users_list.onItemChange = on_usersList_update;	        
@@ -1515,316 +1635,3 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
     };   
     
 }());
-
-
-(function ()
-{
-    if (window.FirebaseItemListKlass != null)
-        return;    
-    
-    var ItemListKlass = function ()
-    {
-        // -----------------------------------------------------------------------
-        // export: overwrite these values
-        this.updateMode = 1;                  // AUTOCHILDUPDATE
-        this.keyItemID = "__itemID__";
-        
-        // custom snapshot2Item function
-        this.snapshot2Item = null;
-        
-        // auto child update, to get one item
-        this.onItemAdd = null;
-        this.onItemRemove = null;
-        this.onItemChange = null;
-        
-        // manual update or
-        // auto all update, to get all items
-        this.onItemsFetch = null;
-        
-        // used in ForEachItem
-        this.onGetIterItem = null;  
-        
-        this.extra = {};
-        // export: overwrite these values
-        // -----------------------------------------------------------------------        
-        
-        // -----------------------------------------------------------------------        
-        // internal
-        this.query = null;
-        this.items = [];
-        this.itemID2Index = {}; 
-                
-        // saved callbacks
-        this.add_child_handler = null;
-        this.remove_child_handler = null;
-        this.change_child_handler = null;
-        this.items_fetch_handler = null;        
-        // internal       
-        // -----------------------------------------------------------------------        
-    };
-    
-    var ItemListKlassProto = ItemListKlass.prototype;
-    
-    ItemListKlassProto.MANUALUPDATE = 0;
-    ItemListKlassProto.AUTOCHILDUPDATE = 1;
-    ItemListKlassProto.AUTOALLUPDATE = 2;    
-    
-    // --------------------------------------------------------------------------
-    // export
-    ItemListKlassProto.GetItems = function ()
-    {
-        return this.items;
-    };
-    
-    ItemListKlassProto.GetItemIndexByID = function (itemID)
-    {
-        return this.itemID2Index[itemID];
-    };     
-    
-    ItemListKlassProto.GetItemByID = function (itemID)
-    {
-        var i = this.GetItemIndexByID(itemID);
-        if (i == null)
-            return null;
-            
-        return this.items[i];
-    };  
-    
-    ItemListKlassProto.Clean = function ()
-    {
-        this.items.length = 0;
-        clean_table(this.itemID2Index); 
-    };        
-    
-    ItemListKlassProto.StartUpdate = function (query)
-    {
-        this.StopUpdate();            
-        this.Clean();        
-  
-        if (this.updateMode === this.MANUALUPDATE)
-            this.manual_update(query);
-        else if (this.updateMode === this.AUTOCHILDUPDATE)        
-            this.auto_child_update_start(query);        
-        else if (this.updateMode === this.AUTOALLUPDATE)   
-            this.auto_all_update_start(query);    
-    };
-    
-    ItemListKlassProto.StopUpdate = function ()
-	{
-        if (this.updateMode === this.AUTOCHILDUPDATE)        
-            this.auto_child_update_stop();        
-        else if (this.updateMode === this.AUTOALLUPDATE)   
-            this.auto_all_update_stop();
-	};	
-	
-	ItemListKlassProto.ForEachItem = function (runtime, start, end)
-	{	     
-	    if ((start == null) || (start < 0))
-	        start = 0; 
-	    if ((end == null) || (end > this.items.length - 1))
-	        end = this.items.length - 1;
-	    
-        var current_frame = runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-		         
-		var i;
-		for(i=start; i<=end; i++)
-		{
-            if (solModifierAfterCnds)
-            {
-                runtime.pushCopySol(current_event.solModifiers);
-            }
-            
-            if (this.onGetIterItem)
-                this.onGetIterItem(this.items[i], i);
-            current_event.retrigger();
-            
-		    if (solModifierAfterCnds)
-		    {
-		        runtime.popSol(current_event.solModifiers);
-		    }            
-		}
-     		
-		return false;
-	};    	    
-	// export
-    // --------------------------------------------------------------------------    
-    
-    // --------------------------------------------------------------------------
-    // internal  
-	var isFirebase3x = function()
-	{ 
-        return (window["FirebaseV3x"] === true);
-    };
-    var get_key = function (obj)
-    {       
-        return (!isFirebase3x())?  obj["key"]() : obj["key"];
-    };    
-    ItemListKlassProto.add_item = function(snapshot, prevName, force_push)
-	{
-	    var item;
-	    if (this.snapshot2Item)
-	        item = this.snapshot2Item(snapshot);
-	    else
-	    {
-	        var k = get_key(snapshot);
-	        item = snapshot["val"]();
-	        item[this.keyItemID] = k;
-	    }
-        
-        if (force_push === true)
-        {
-            this.items.push(item);
-            return;
-        }        
-	        
-	    if (prevName == null)
-	    {
-            this.items.unshift(item);
-        }
-        else
-        {
-            var i = this.itemID2Index[prevName];
-            if (i == this.items.length-1)
-                this.items.push(item);
-            else
-                this.items.splice(i+1, 0, item);
-        }
-        
-        return item;
-	};
-	
-	ItemListKlassProto.remove_item = function(snapshot)
-	{
-	    var k = get_key(snapshot);
-	    var i = this.itemID2Index[k];	 
-	    var item = this.items[i];
-	    cr.arrayRemove(this.items, i);
-	    return item;
-	};	  
-
-	ItemListKlassProto.update_itemID2Index = function()
-	{
-	    clean_table(this.itemID2Index);
-	    var i,cnt = this.items.length;
-	    for (i=0; i<cnt; i++)
-	    {
-	        this.itemID2Index[this.items[i][this.keyItemID]] = i;
-	    }	
-	};
-    
-    ItemListKlassProto.manual_update = function(query)
-    {
-        var self=this;
-        var read_item = function(childSnapshot)
-        {
-            self.add_item(childSnapshot, null, true);
-        };            
-        var handler = function (snapshot)
-        {           
-            snapshot["forEach"](read_item);                
-            self.update_itemID2Index();   
-            if (self.onItemsFetch)
-                self.onItemsFetch(self.items)
-        };
-      
-        query["once"]("value", handler);    
-    };
-    
-    ItemListKlassProto.auto_child_update_start = function(query)
-    {
-        var self = this;         
-	    var add_child_handler = function (newSnapshot, prevName)
-	    {
-	        var item = self.add_item(newSnapshot, prevName);
-	        self.update_itemID2Index();
-	        if (self.onItemAdd)
-	            self.onItemAdd(item);
-	    };
-	    var remove_child_handler = function (snapshot)
-	    {
-	        var item = self.remove_item(snapshot);
-	        self.update_itemID2Index();
-	        if (self.onItemRemove)
-	            self.onItemRemove(item);
-	    };      	        
-	    var change_child_handler = function (snapshot, prevName)
-	    {
-	        var item = self.remove_item(snapshot);
-	        self.update_itemID2Index();
-	        self.add_item(snapshot, prevName);
-	        self.update_itemID2Index();
-	        if (self.onItemChange)
-	            self.onItemChange(item); 
-	    };
-	    
-	    this.query = query;
-        this.add_child_handler = add_child_handler;
-        this.remove_child_handler = remove_child_handler;
-        this.change_child_handler = change_child_handler;
-        
-	    query["on"]("child_added", add_child_handler);
-	    query["on"]("child_removed", remove_child_handler);
-	    query["on"]("child_moved", change_child_handler);
-	    query["on"]("child_changed", change_child_handler);  	        
-    };
-    
-    ItemListKlassProto.auto_child_update_stop = function ()
-	{
-        if (!this.query)
-            return;
-        
-        this.query["off"]("child_added", this.add_child_handler);
-	    this.query["off"]("child_removed", this.remove_child_handler);
-	    this.query["off"]("child_moved", this.change_child_handler);
-	    this.query["off"]("child_changed", this.change_child_handler);
-        this.add_child_handler = null;
-        this.remove_child_handler = null;
-        this.change_child_handler = null;	
-        this.query = null;
-	};	    
-
-    ItemListKlassProto.auto_all_update_start = function(query)
-    {
-        var self=this;
-        var read_item = function(childSnapshot)
-        {
-            self.add_item(childSnapshot, null, true);
-        };            
-        var items_fetch_handler = function (snapshot)
-        {           
-            self.Clean();
-            snapshot["forEach"](read_item);                
-            self.update_itemID2Index();   
-            if (self.onItemsFetch)
-                self.onItemsFetch(self.items)
-        };
-        
-        this.query = query;
-        this.items_fetch_handler = items_fetch_handler;
-        
-        query["on"]("value", items_fetch_handler);    
-    };
-    
-    ItemListKlassProto.auto_all_update_stop = function ()
-	{
-        if (!this.query)
-            return;
-        
-        this.query["off"]("value", this.items_fetch_handler);
-        this.items_fetch_handler = null;
-        this.query = null;
-	};	      
-    
-	var clean_table = function (o)
-	{
-	    var k;
-	    for (k in o)
-	        delete o[k];
-	};
-    // internal 
-    // --------------------------------------------------------------------------
-	
-	window.FirebaseItemListKlass = ItemListKlass;
-}()); 

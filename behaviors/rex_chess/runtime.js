@@ -102,6 +102,31 @@ cr.behaviors.Rex_chess = function(runtime)
 		this.board = null;
 	};
 	
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+        var board = this.GetBoard();
+        var xyz, boardUID;
+        if (board)
+        {
+            xyz = this.GetBoard().uid2xyz(this.inst.uid);
+            boardUID = board.uid;
+        }
+        else
+        {
+            xyz = "";
+            boardUID = -1;
+        }
+            
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "LXYZ", "value": JSON.stringify(xyz)},
+				{"name": "Board UID", "value": boardUID},
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -318,7 +343,17 @@ cr.behaviors.Rex_chess = function(runtime)
 	        lz = board.uid2xyz(this.inst.uid).z;
 		ret.set_int(lz);
 	};		
-    
+	
+	Exps.prototype.BoardUID = function (ret)
+	{
+	    var uid;
+	    var board = this.GetBoard();
+	    if (board == null)  // not at any board
+	        uid = (-1);
+	    else
+	        uid = board.uid;
+		ret.set_int(uid);
+	};		    
 	Exps.prototype.LZ2UID = function (ret,lz)
 	{
 	    var ret_uid;

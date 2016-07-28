@@ -1364,8 +1364,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{   
 	    if (layout_objs == null)
 	        return;
-	        
-        var layout = layout_objs.instances[0];
+	                
+        var layout = layout_objs.getFirstPicked();
         if (layout.check_name == "LAYOUT")
             this.layout = layout;        
         else
@@ -1924,7 +1924,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};    
 	
 	BoardKlassProto.RemoveCell = function(x, y, z)
-	{
+	{   
         var uid, xyz;
         // board.RemoveCell(uid)        
         if (arguments.length === 1)
@@ -1982,12 +1982,12 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	};	
     
    	BoardKlassProto.ResetCells = function (uid2xyz)
-	{
+	{ 
         this.Reset();  
         var uid, xyz;
-        for (uid in this.uid2xyz)
+        for (uid in uid2xyz)
         {
-            xyz = this.uid2xyz[uid];
+            xyz = uid2xyz[uid];
             this.AddCell(parseInt(uid), xyz.x, xyz.y, xyz.z);
         }
 	};    

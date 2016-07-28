@@ -76,17 +76,18 @@ AddCondition(31, 0, "3. order", "Filter - 3. order",
 //             "Get queried rows in a range.", "Page");                   
 //////////////////////////////////////////////////////////////
 // Actions
+
 AddStringParam("CSV string", "The CSV string for inserting.", '""');
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Eval", "Eval the string.", 1);
 AddStringParam("Delimiter", "Delimiter for splitting items.", '","');
-AddAction(1, 0, "Insert CSV data", "Insert", 
+AddAction(1, 0, "Insert CSV data", "Insert - CSV", 
          "Insert data to <i>{0}</i> (CSV format with eval mode to <i>{1}</i>, delimiter to <i>{2}</i>)",
          "Insert data from CSV string.", "InsertCSV");
          
 AddStringParam("JSON string", "The JSON string for inserting.", '""');
-AddAction(2, 0, "Insert JSON data", "Insert", 
+AddAction(2, 0, "Insert JSON data", "Insert - JSON", 
          "Insert data to <i>{0}</i> (JSON format)",
          "Insert data from JSON string.", "InsertJSON");
 
@@ -207,9 +208,19 @@ AddAction(31, 0, "3. order", "Filter - 3. order",
           
 AddAction(101, 0, "Remove queried rows", "Remove - queried rows",
           "Remove- remove queried rows", 
-          "Remove queried rows.", "RemoveQueriedRows");                         
+          "Remove queried rows.", "RemoveQueriedRows");  
+
+AddStringParam("Key", "The name of the key.", '""');  
+AddComboParamOption("string");
+AddComboParamOption("number");
+AddComboParamOption("any (eval)");
+AddComboParam("Type", "Type.", 1);
+AddAction(200, 0, "Define type", "Insert - CSV", 
+         "Define key <i>{0}</i> to <i>{1}</i> type",
+         "Define value type of a key.", "InsertCSV_DefineType");          
 //////////////////////////////////////////////////////////////
 // Expressions
+
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Get value at", "Table", "At", 
               "Get value from current database. Add index keys then add 1 data key. Add an optional default value at the last.");
 
@@ -217,7 +228,7 @@ AddExpression(2, ef_return_any | ef_variadic_parameters, "Current row content", 
               "Get current row content in JSON string in a For Each loop. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
 
 AddNumberParam("Index", "Index of queried rows.", 0);
-AddExpression(3, ef_return_any | ef_variadic_parameters, "Index to queried row content", "Queried rows", "Index2QueriedRowContent", 
+AddExpression(3, ef_return_any | ef_variadic_parameters, "Index to queried row content", "Queried rows - Index", "Index2QueriedRowContent", 
               "Get queried rows content by index in JSON format. Add 2nd parameter to get value at the specific key. Add 3rd parameter for default value if this key is not existed.");
                                            
 AddExpression(4, ef_return_number, "Current queried rows count", "Queried rows", "QueriedRowsCount", 
@@ -249,12 +260,21 @@ AddExpression(11, ef_return_any | ef_variadic_parameters, "Row ID to row content
               "Get rows content by row ID in JSON format. Add 2nd parameter to get value at the specific key. Add 3rd parameter for default value if this key is not existed.");
 
 AddNumberParam("Index", "Index of queried rows.", 0);
-AddExpression(12, ef_return_string, "Get rowID by Index of queried rows", "Row ID", "QueriedRowsIndex2RowID", 
+AddExpression(12, ef_return_string | ef_deprecated, "Get rowID by Index of queried rows", "Queried rows - Index", "QueriedRowsIndex2RowID", 
               'Get rowID by Index of queried rows. Return "" if the specific row had not existed.');
                                     
 AddExpression(13, ef_return_number, "index of current row", "Queried rows - For each row", "CurRowIndex", 
               "Get index oif current row in a For Each loop.");
+           
+AddExpression(14, ef_return_string, "Current row ID", "Queried rows - For each row", "CurRowID", 
+              "Get current rowID in a For Each loop.");
+              
+AddNumberParam("Index", "Index of queried rows.", 0);
+AddExpression(15, ef_return_string, "Get rowID by Index of queried rows", "Queried rows - Index", "Index2QueriedRowID", 
+              'Get rowID by Index of queried rows. Return "" if the specific row had not existed.');              
+              
 
+              
               
 AddExpression(101, ef_return_string, "All rows to string", "All data", "AllRowsAsJSON", 
               "Get JSON string of all rows.");              

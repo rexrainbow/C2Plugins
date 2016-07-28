@@ -1158,6 +1158,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __re_shadow_open = /\[shadow\]/i;
     var __re_shadow_close = /\[\/shadow\]/i;    
     var __curr_propScope = {};
+    var PROP_REMOVE = false;
+    var PROP_ADD = true;
     CanvasTextProto.updatePens = function (pensMgr, textInfo, ignore_wrap) 
     {
         if (textInfo == null)
@@ -1192,71 +1194,71 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             // Check if current fragment is a class tag.
             if (__re_bold_open.test(m)) 
             {                
-                update_propScope(__curr_propScope, "+", "b", true);
+                update_propScope(__curr_propScope, PROP_ADD, "b", true);
                 continue;
             }
             else if (__re_bold_close.test(m)) 
             { 
-                update_propScope(__curr_propScope, "-", "b");
+                update_propScope(__curr_propScope, PROP_REMOVE, "b");
                 continue;
             }      
             else if (__re_italics_open.test(m)) 
             { 
-                update_propScope(__curr_propScope, "+", "i", true);
+                update_propScope(__curr_propScope, PROP_ADD, "i", true);
                 continue;
             }
             else if (__re_italics_close.test(m)) 
             { 
-                update_propScope(__curr_propScope, "-", "i");
+                update_propScope(__curr_propScope, PROP_REMOVE, "i");
                 continue;
             } 
             else if (__re_size_open.test(m)) 
             { 
                 innerMatch = m.match(__re_size_open);
-                update_propScope(__curr_propScope, "+", "size", innerMatch[1]+"pt");
+                update_propScope(__curr_propScope, PROP_ADD, "size", innerMatch[1]+"pt");
                 continue;
             }
             else if (__re_size_close.test(m)) 
             { 
-                update_propScope(__curr_propScope, "-", "size");
+                update_propScope(__curr_propScope, PROP_REMOVE, "size");
                 continue;
             }    
             else if (__re_color_open.test(m)) 
             { 
                 innerMatch = m.match(__re_color_open);
-                update_propScope(__curr_propScope, "+", "color", innerMatch[1]);
+                update_propScope(__curr_propScope, PROP_ADD, "color", innerMatch[1]);
                 continue;
             }
             else if (__re_color_close.test(m)) 
             { 
-                update_propScope(__curr_propScope, "-", "color");
+                update_propScope(__curr_propScope, PROP_REMOVE, "color");
                 continue;
             }
             else if (__re_underline_open.test(m)) 
             { 
                 innerMatch = m.match(__re_underline_open);
-                update_propScope(__curr_propScope, "+", "u", true);
+                update_propScope(__curr_propScope, PROP_ADD, "u", true);
                 continue;
             }
             else if (__re_underline_openC.test(m)) 
             { 
                 innerMatch = m.match(__re_underline_openC);
-                update_propScope(__curr_propScope, "+", "u", innerMatch[1]);
+                update_propScope(__curr_propScope, PROP_ADD, "u", innerMatch[1]);
                 continue;
             }            
             else if (__re_underline_close.test(m)) 
             { 
-                update_propScope(__curr_propScope, "-", "u");
+                update_propScope(__curr_propScope, PROP_REMOVE, "u");
                 continue;
             }     
             else if (__re_shadow_open.test(m)) 
             { 
-                update_propScope(__curr_propScope, "+", "shadow", true);
+                update_propScope(__curr_propScope, PROP_ADD, "shadow", true);
                 continue;
             }  
             else if (__re_shadow_close.test(m)) 
             { 
-                update_propScope(__curr_propScope, "-", "shadow");
+                update_propScope(__curr_propScope, PROP_REMOVE, "shadow");
                 continue;
             }             
             else 
@@ -1295,9 +1297,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                     {
 			    	    cursor_x += wrap_line.width;                    
                     }
-                
-                    if (n===0)
-                        remove_prop(__curr_propScope, "diff");
+               
                 }
                 
                 this.context.restore();                         
@@ -1323,12 +1323,11 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     
     var update_propScope = function(propScope, op, prop, value)
     {
-        if (op === "+")
+        if (op === PROP_ADD)
             propScope[prop] = value;
         else
             remove_prop(propScope, prop);
 
-        propScope["diff"] = op + prop;
         return propScope;
     };
     
@@ -1841,6 +1840,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         }
 
         var txt="", i, cnt=this.pens.length, pen, pen_txt, pen_si, pen_ei, in_range;
+        var pre_prop;
         var isFirstProp=true;
         for(i=0; i<cnt; i++)
         {
@@ -1858,8 +1858,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 pen_txt = pen_txt.substring(start-pen_si, end-pen_si);
             }
             
-            txt += prop2TagText(pen_txt, pen.prop, isFirstProp);
-            isFirstProp = false;
+            txt += prop2TagText(pen_txt, pen.prop, pre_prop);
+            pre_prop = pen.prop;
             
             if (pen_ei >= end)
                 break;           
@@ -1868,77 +1868,52 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         return txt;
     };  
     
-    var __re_close_op = /-(\w+)/i;   
-    var __prop_list=[];
-    var prop2TagText = function (txt, prop, all_props_mode)
+    var __empty_prop = {};
+    var prop2TagText = function (txt, prop, pre_prop)
     {       
-        // put all properties
-        if (all_props_mode)
+        if (pre_prop == null)
+            pre_prop = __empty_prop;
+        
+        for (var k in pre_prop)
         {
-            var header = ""
-            for(var k in prop)
-            {
-                if (k === "diff")
-                    continue;
-                
-                if (k === "size")
-                    header +=  ("[size=" + prop["size"].replace("pt", "") + "]");
-                else if (k === "color")
-                    header += ("[color=" + prop["color"] + "]");   
-                else if (k === "u")
-                {
-                    if (prop["u"] === true)
-                        header += "[u]";
-                    else
-                        header += ("[u=" + prop["u"] + "]");   
-                }
-                else                
-                    header += ("[" + k + "]");
-            }
-            txt = header + txt;           
+            if (prop.hasOwnProperty(k))
+                continue;
+            
+            txt = "[/" + k + "]" + txt;
         }
         
-        // only put diff
-        else
+        var header = "";
+        for (var k in prop)
         {
-            var diff = prop["diff"] ;
-            if (diff == null)
-                return txt;
+            if (pre_prop.hasOwnProperty(k))
+                continue;
             
-            // get all -prop
-            if (__re_close_op.test(diff))
-            {
-                var innerMatch = diff.match(__re_close_op);
-                txt = "[/" + innerMatch[1] + "]" + txt;
-            }
-            // get +b
-            else if (diff === "+b")
-                txt = "[b]" + txt; 
-            // get +i
-            else if (diff === "+i")
-                txt = "[i]" + txt;             
-            // get +size
-            else if (diff === "+size")
-                txt = "[size=" + prop["size"].replace("pt", "") + "]" + txt;
-            // get +color
-            else if (diff === "+color")
-                txt = "[color=" + prop["color"] + "]" + txt;    
-            // get +u
-            else if (diff === "+u")
+            if (k === "size")
+                header +=  ("[size=" + prop["size"].replace("pt", "") + "]");
+            else if (k === "color")
+                header += ("[color=" + prop["color"] + "]");   
+            else if (k === "u")
             {
                 if (prop["u"] === true)
-                    txt = "[u]" + txt;
+                    header += "[u]";
                 else
-                    txt = "[u=" + prop["u"] + "]" + txt;
+                    header += ("[u=" + prop["u"] + "]");   
             }
-            // get +shadow
-            else if (diff === "+shadow")
-                txt = "[shadow]" + txt;            
+            else                
+                header += ("[" + k + "]");                      
         }
+        txt = header + txt; 
         
         return txt;        
     };
     
+	var has_key = function (o)
+	{
+	    for (var k in o)
+	        return true;
+	    
+	    return false;
+	}    
     
     var PenKlass = function ()
     {

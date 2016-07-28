@@ -39,6 +39,10 @@ cr.plugins_.Rex_FrameMessage = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+    var CMD_FNCALL = "Rex_FrameMessage.Call";
+    var CMD_FNRTN = "Rex_FrameMessage.Return";
+    var CMD_LOG = "Rex_FrameMessage.Log";
+    
 	instanceProto.onCreate = function()
 	{
 	    this.my_frame_name = this.properties[0];
@@ -53,18 +57,20 @@ cr.plugins_.Rex_FrameMessage = function(runtime)
 	    {	
 	        var data = e["data"];
 	        var type = data["type"];
-	        if (type === "Rex_FrameMessage.Call")
+	        if (type === CMD_FNCALL)
 	        {
 			    self.message_source = e["source"];
 	            self.receive_call(data["sender"], data["receiver"], data["fnName"], data["params"]);
 				self.message_source = null;
 	        }
-			else if (type === "Rex_FrameMessage.Return")
+			else if (type === CMD_FNRTN)
 			{
-
 	            self.receive_return(data["sender"], data["fnName"], data["value"]);			    
 			}
-	            
+            else if (type === CMD_LOG)
+            {
+	            self.receive_log(data["sender"], data["value"]);			                    
+            }    	           
 	    };
 	    window["addEventListener"]("message", onMessage, false);
 	};
@@ -76,7 +82,7 @@ cr.plugins_.Rex_FrameMessage = function(runtime)
 	// Function call
 	instanceProto.send_call = function (receiver_name, fn_name_, params_)
 	{
-	    var data = {"type":"Rex_FrameMessage.Call",	               
+	    var data = {"type":CMD_FNCALL,	               
 	                "sender": this.my_frame_name,
 	                "receiver": receiver_name,
 	                "fnName": fn_name_,
@@ -121,7 +127,7 @@ cr.plugins_.Rex_FrameMessage = function(runtime)
     // Return value	
 	instanceProto.send_return = function (receiver_win, value_)
 	{
-	    var data = {"type":"Rex_FrameMessage.Return",	               
+	    var data = {"type":CMD_FNRTN,	               
 	                "sender": this.my_frame_name,	                
 	                "fnName": this.fn_name,
 	                "value": value_ 
@@ -143,6 +149,33 @@ cr.plugins_.Rex_FrameMessage = function(runtime)
         this.exp_ReturnValue = 0;            
     };	
     // Return value	
+    
+    // console log of main frame
+	instanceProto.send_log = function (receiver_win, type_, msg_)
+	{
+	    var data = {"type":CMD_LOG,	               
+	                "sender": this.my_frame_name,
+                    "value": [type_, msg_]
+	                };
+	    
+		receiver_win["postMessage"](data, "*");
+	};
+	
+    instanceProto.receive_log = function(sender, value)
+    {
+		if (typeof console === "undefined")
+			return;
+	    
+        var type_ =  value[0], msg_ = value[1];
+		if (type_ === 0 && console.log)
+			console.log(msg_.toString());
+		if (type_ === 1 && console.warn)
+			console.warn(msg_.toString());
+		if (type_ === 2 && console.error)
+			console.error(msg_.toString());
+        
+    };	    
+    // console log
 	
 	instanceProto.saveToJSON = function ()
 	{
@@ -195,7 +228,13 @@ cr.plugins_.Rex_FrameMessage = function(runtime)
 		    return;
 			
 	    this.send_return(this.message_source, value_);
-	};         
+	};   
+
+    Acts.prototype.ConsoleLog = function (type_, msg_)
+	{       
+	    this.send_log(window["top"], type_, msg_);
+	};  
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -4,7 +4,7 @@
 		"name":			"Rooms",
 		"id":			"Rex_Firebase_Rooms",
 		"version":		"0.1",        
-		"description":	"Rooms on firebase.",
+		"description":	"Rooms management.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_rooms.html",
 		"category":		"Rex - Web - firebase",
@@ -192,6 +192,8 @@ AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""
 AddAction(18, af_deprecated, "Create or join (#)", "Room", 
           "Create <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
           "Create room.", "CreateOrJoinRoom"); 
+          
+          
                     
 //AddStringParam("Room ID", "Room ID.", '""');
 //AddComboParamOption("Anyone");
@@ -242,12 +244,20 @@ AddAction(56, af_deprecated, "Remove black list", "Room - permission list",
 AddAction(59, af_deprecated, "Request permission lists", "Room - permission list", 
           "Request permission lists", 
           "Request permission list (white list, black list).", "RequestPermissionLists");                         
-    
                    
 //AddStringParam("UserID", "UserID from authentication.", '""');          
 //AddAction(90, 0, "Request", "User metadata", 
 //          "Request metadata of user ID: <i>{0}</i>", 
 //          "Request metadata of the user.", "RequestUserMetadata");           
+
+
+AddComboParamOption("Join");
+AddComboParamOption("Leave current room then join");
+AddComboParam("Join action", "Join action.", 1);
+AddNumberParam("Retry", "Retry count to get default value.", 10);
+AddAction(101, 0, "Join random", "Room", 
+          "<i>{0}</i> random room with retry <i>{1}</i> times", 
+          "Join random room from current rooms list.", "JoinRandomRoom");           
           
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -321,7 +331,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
-    new cr.Property(ept_text, "Sub domain", "Rooms", "Sub domain for this function."),
+    new cr.Property(ept_text, "Sub domain", "Rooms", "Sub domain for this function."), 
     //new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),    
 	];
 	

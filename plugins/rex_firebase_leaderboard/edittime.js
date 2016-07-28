@@ -48,9 +48,10 @@ AddStringParam("UserID", "UserID from authentication.", '""');
 AddStringParam("Name", "Player name.", '""');
 AddAnyTypeParam("Score", "Player Score", 0);
 AddAnyTypeParam("Extra", "Extra data, could be number or (JSON) string.", '""');
-AddComboParamOption("");
-AddComboParamOption("if greater");
-AddComboParamOption("if less");
+AddComboParamOption("");                // 0
+AddComboParamOption("if greater");  // 1
+AddComboParamOption("if less");       // 2
+AddComboParamOption("if not existed");  // 3
 AddComboParam("Post condition", "Post if score is greater or less then saved score.", 0);
 AddAction(1, 0, "Post score", "Send", 
           "Post (User ID: <i>{0}</i>) <i>{1}</i>: <i>{2}</i>, extra data to <i>{3}</i> <i>{4}</i>", 

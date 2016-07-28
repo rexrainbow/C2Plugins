@@ -14,7 +14,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddStringParam("Key string", "The key string of the hash table.", '""');
-AddCondition(1, cf_looping | cf_not_invertible, "For each item", "For Each", 
+AddCondition(1, cf_looping | cf_not_invertible, "For each key", "For Each", 
              "{my} for each item in <i>{0}</i>", "Repeat the event for each item in key.", "ForEachItem");
              
 AddStringParam("Key string", "The key string of the hash table.", '""');
@@ -118,8 +118,8 @@ AddExpression(2, ef_deprecated | ef_return_string, "Transfer hash to string",
 AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "At", "Get value from the hash by key string, return JSON string if the item is an object. Add 2nd parameter to return default value when got invalid value.");
-AddExpression(4, ef_return_string, "Current key", "For Each", "CurKey", "Get the current key in a For Each loop.");
-AddExpression(5, ef_return_any, "Current value", "For Each", "CurValue", "Get the current value in a For Each loop. Add 2nd parameter to return sub-item by keys. Add 3rd parameter to return default value when got invalid value.");
+AddExpression(4, ef_return_string, "Current key", "For each", "CurKey", "Get the current key in a For Each loop.");
+AddExpression(5, ef_return_any, "Current value", "For each", "CurValue", "Get the current value in a For Each loop. Add 2nd parameter to return sub-item by keys. Add 3rd parameter to return default value when got invalid value.");
 AddAnyTypeParam("Key", "The key of the hash to get.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "AtKeys", "Get value from the hash by keys, each parameter is a key.");
@@ -136,7 +136,8 @@ AddExpression(10, ef_return_string, "Get content as JSON string",
 AddStringParam("Key", "The key of the hash to get.", '""');
 AddExpression(11, ef_return_any | ef_variadic_parameters, "Get random key", "Key", "RandomKeyAt", 
               "Get random key in a table. Add 2nd parameter to return default value when got invalid value.");                 
-
+AddExpression(12, ef_return_number, "Get loop index", "For each", "Loopindex", 
+              "Get loop index in a for each loop.");
 
 ACESDone();
 

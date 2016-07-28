@@ -42,6 +42,13 @@ AddAction(2, 0, "Call function", "Send",
 AddAnyTypeParam("Value", "A number or some text to return from the function call.");
 AddAction(3, 0, "Set return value", "Function", "Set return value to <b>{0}</b>", "In an 'On function' event, set the return value.", "SetReturnValue");
 
+AddComboParamOption("Log");
+AddComboParamOption("Warn");
+AddComboParamOption("Error");
+AddComboParam("Type", "Choose the type of message to log to the browser console.");
+AddAnyTypeParam("Message", "Enter the message text to log to the browser console.");
+AddAction(11, 0, "Log", "Console", "{0} in top frame console: <i>{1}</i>", "Log a message to the top frame console, which can be useful for debugging.", "ConsoleLog");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "My frame name", "Frame name", "MyFrameName", "Get my frame name.");

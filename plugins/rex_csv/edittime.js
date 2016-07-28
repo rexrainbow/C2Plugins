@@ -67,8 +67,8 @@ AddStringParam("Row", "The row index.", '""');
 AddComboParamOption("Integer");
 AddComboParamOption("Float");
 AddComboParam("Type", "Conver type to numver.",0);
-AddAction(4, 0, "Convert type", "Convert", "Convert entries type to <i>{1}</i> on row <i>{0}</i>",
-         "Convert entries type in a row.", "ConvertType");
+AddAction(4, 0, "Convert row", "Convert", "Convert entries type to <i>{1}</i> on row <i>{0}</i>",
+         "Convert entries type in a row.", "ConvertRow");
 AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
@@ -96,14 +96,18 @@ AddStringParam("JSON string", "JSON string.", '""');
 AddAction(12, 0, "Load all tables", "0: Load", "Load all tables from JSON string <i>{0}</i>",
          "Load all tables from JSON string.", "StringToAllTables"); 
 AddStringParam("Col index", "Col index.", '""');
-AddComboParamOption("Increasing");
-AddComboParamOption("Decreasing");
+AddComboParamOption("ascending");
+AddComboParamOption("descending");
+AddComboParamOption("logical ascending");
+AddComboParamOption("logical descending");
 AddComboParam("Order", "Sorting order of item.", 0); 
 AddAction(13, 0, "Sort items in col", "Sort", "Sort items in col <i>{0}</i> , by <i>{1}</i> order",
          "Sort items in col.", "SortCol");
 AddStringParam("Row index", "Row index.", '""');
-AddComboParamOption("Increasing");
-AddComboParamOption("Decreasing");
+AddComboParamOption("ascending");
+AddComboParamOption("descending");
+AddComboParamOption("logical ascending");
+AddComboParamOption("logical descending");
 AddComboParam("Order", "Sorting order of item.", 0); 
 AddAction(14, 0, "Sort items in row", "Sort", "Sort items in row <i>{0}</i> , by <i>{1}</i> order",
          "Sort items in row.", "SortRow"); 
@@ -126,7 +130,14 @@ AddStringParam("Row", "The row index.", '""');
 AddStringParam("Page", "The index of page.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
 AddAction(17, 0, "Add at page", "Set", "Add <i>{3}</i> to (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>)", 
-          "Add to the value in the table at a specific page.", "AddToEntryAtPage");           
+          "Add to the value in the table at a specific page.", "AddToEntryAtPage");      
+
+AddStringParam("Col", "The column index.", '""');
+AddComboParamOption("Integer");
+AddComboParamOption("Float");
+AddComboParam("Type", "Conver type to numver.",0);
+AddAction(18, 0, "Convert col", "Convert", "Convert entries type to <i>{1}</i> on cl <i>{0}</i>",
+         "Convert entries type in a col.", "ConvertCol");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddAnyTypeParam("Col", "The column index.", '""');

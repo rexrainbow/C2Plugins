@@ -1468,9 +1468,11 @@
             }
           }
           // Run a new query if there are no results or the run date has been cleared
-          // ---- Edit by rex.rainbow, add "=" in equation ----
-          if ( !context.results || !context.run ||
-            (context.run && DBI.dm() >= context.run) )
+          // ---- Edit by rex.rainbow, add "contextChanged" ----
+          // default: contextChanged = !context.run          
+          var contextChanged = !context.run || (context.run && DBI.dm() >= context.run);
+          // ---- Edit by rex.rainbow, add "contextChanged" ----
+          if ( !context.results || contextChanged )
           {
             results = [];
 
@@ -1513,7 +1515,8 @@
             returnq = context.results;
           }
           // If a custom order array exists and the run has been clear or the sort has been cleared
-          if ( context.order.length > 0 && (!context.run || !context.sort) ){
+          // ---- Edit by rex.rainbow, add "(context.run && DBI.dm() >= context.run)" in equation ----          
+          if ( context.order.length > 0 && (!context.sort || contextChanged) ){
             // order the results
             returnq = orderByCol( returnq, context.order );
           }

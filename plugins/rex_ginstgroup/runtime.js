@@ -148,9 +148,14 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	    return group;
 	};
 	
+    instanceProto.HasGroup = function (name)
+	{
+        return this.groups.hasOwnProperty(name);
+	}; 
+    
     instanceProto.DestroyGroup = function (name)
 	{
-	    if (this.groups[name] != null)
+	    if (this.HasGroup(name))
 	        delete this.groups[name];
 	}; 	
 	
@@ -752,7 +757,22 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                     return 1;
             }
         });       
-	};	    
+	};	 
+
+    Acts.prototype.DestroyInstanceInGroup = function (name)
+	{
+        if (!this.HasGroup(name))
+            return;
+        
+        var uids = this.GetGroup(name).GetList();
+        var i, cnt=uids.length, inst;
+        for(i=0; i<cnt; i++)
+        {
+            inst = this._uid2inst(uids[i]);
+            if (inst)
+                this.runtime.DestroyInstance(inst);
+        }
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

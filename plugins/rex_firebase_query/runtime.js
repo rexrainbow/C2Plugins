@@ -196,7 +196,7 @@ cr.plugins_.Rex_Firebase_Query = function(runtime)
             
 	    this.current_query = this.current_query["equalTo"](v);
 	};		
-
+    
     Acts.prototype.LimitToFirst = function (l)
 	{
         if (this.current_query === null)

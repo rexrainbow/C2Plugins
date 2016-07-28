@@ -47,7 +47,16 @@ AddCondition(15, 0, "Empty", "Load - slot",
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddCondition(16, 0, "Is occupied", "Load - slot", 
              "Slot <i>{0}</i> is occupied", 
-             "Slot is occupied. Call it after load headers from server.", "IsOccupied");        
+             "Slot is occupied. Call it after load headers from server.", "IsOccupied");      
+
+AddAnyTypeParam("Name", "The slot name.", '""');
+AddCondition(17, cf_looping | cf_not_invertible, "For each key", "Load - header", 
+             "For each key in header <i>{0}</i>", 
+             "Repeat the event for each key in a header.", "ForEachKeyInHeader"); 
+
+AddCondition(18, cf_looping | cf_not_invertible, "For each key", "Load - body", 
+             "For each key in body", 
+             "Repeat the event for each key in body.", "ForEachKeyInBody");              
 
 AddCondition(21, cf_trigger, "On clean complete", "Clean", 
             "On clean complete", 
@@ -63,7 +72,7 @@ AddAction(1, 0, "Set owner", "0. Setup",
           "Set user ID of slot owner to <i>{0}</i>", 
           "Set user ID of slot owner.", "SetOwner");
 
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set", 0);
 AddComboParamOption("Header");
 AddComboParamOption("Body");
@@ -77,7 +86,7 @@ AddAction(3, 0, "Save", "Save",
           "Save- Save slot with name <i>{0}</i> into server", 
           "Save slot into server.", "Save");	
 
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddComboParamOption("False");
 AddComboParamOption("True");
 AddComboParam("Boolean", "Boolean value.", 1);
@@ -88,7 +97,7 @@ AddAction(4, 0, "Set boolean value", "Prepare",
           "Prepare- Set key <i>{0}</i> to <i>{1}</i> in slot <i>{2}</i>", 
           "Sets boolean value into slot.", "SetBooleanValue");   
 
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddComboParamOption("Header");
 AddComboParamOption("Body");
 AddComboParam("Slot", "Header or body.", 0);
@@ -96,7 +105,7 @@ AddAction(5, 0, "Set to current server timestamp", "Prepare",
           "Prepare- Set key <i>{0}</i> to current server timestamp in slot <i>{2}</i>", 
           "Sets current server timestamp into slot.", "SetCurrentServerTimestamp");        
 
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddComboParamOption("Header");
 AddComboParamOption("Body");
 AddComboParam("Slot", "Header or body.", 0);
@@ -126,11 +135,11 @@ AddAction(22, 0, "Clean slot", "Clean",
 AddExpression(1, ef_return_any, "Get current slot name", "For each header", "CurSlotName", 
               "Get current slot name in a For Each loop.");
 			  
-AddStringParam("Key", "The name of the key, could be string or number.", '""');
+AddAnyTypeParam("Key", "The name of the key, could be string or number.", '""');
 AddExpression(2, ef_return_any | ef_variadic_parameters, "Get current header value", "For each header", "CurHeaderValue", 
               "Get current header value by key in a For Each loop. Add default value at 2nd parameter if read data is null.");
 	
-AddStringParam("Key", "The name of the key, could be string or number.", '""');
+AddAnyTypeParam("Key", "The name of the key, could be string or number.", '""');
 AddExpression(3, ef_return_any, "Get body value", "Body", "BodyValue", 
               "Get body value by key. Add default value at 2nd parameter if read data is null");
 			  
@@ -140,11 +149,16 @@ AddExpression(4, ef_return_string, "Get all headers", "JSON", "HeadersToJSON",
 AddExpression(5, ef_return_string, "Get all body values", "JSON", "BodyToJSON", 
               "Get all body values in JSON string.");
 
-AddStringParam("Slot name", "The name of the slot.", '""');              
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Slot name", "The name of the slot.", '""');              
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get header value", "Headers", "HeaderValue", 
               "Get header value by slot name and key. Add default value at 3rd parameter if read data is null.");
-                            
+              
+AddExpression(7, ef_return_any, "Get current key", "For each key", "CurKey", 
+              "Get current key in a For Each loop.");              
+AddExpression(8, ef_return_any, "Get current value", "For each key", "CurValue", 
+              "Get current value in a For Each loop.");       
+              
 ACESDone();
 
 // Property grid properties for this plugin

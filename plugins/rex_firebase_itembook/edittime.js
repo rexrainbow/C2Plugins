@@ -16,12 +16,12 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddStringParam("Table", "Table ID.", '""');
+AddAnyTypeParam("Table", "Table ID.", '""');
 AddCondition(1, cf_not_invertible, "Table node", "Prepare - Tree structure", 
              "Table {0}", 
              "Add a table node.", "AddTableNode");
              
-AddStringParam("ItemID", "ItemID", '""');
+AddAnyTypeParam("ItemID", "ItemID", '""');
 AddCondition(2, cf_not_invertible, "Item node", "Prepare - Tree structure", 
              "Item {0}", 
              "Add a item node.", "AddItemNode");
@@ -43,12 +43,12 @@ AddCondition(12, cf_trigger, "On update error", "Save",
             "On update error",
             "Triggered when update book error.", "OnUpdateError");    
 
-AddStringParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
+AddAnyTypeParam("Tag", "A tag, to distinguish between different save requests.", '"_"');
 AddCondition(51, cf_trigger, "On request complete", "Request", 
             "On request <i>{0}</i> complete",
             "Triggered when request current item complete.", "OnRequestComplete");
 
-AddStringParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Table", "Table ID.", '""');      
 AddComboParamOption("descending");
 AddComboParamOption("ascending");
 AddComboParamOption("logical descending");
@@ -58,11 +58,16 @@ AddCondition(52, cf_looping | cf_not_invertible, "For each itemID", "Load",
              "Table {0}: for each itemID <i>{1}</i>", 
              "Repeat the event for each itemID of load result in a table.", "ForEachItemID");
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "ID of item.", '""');
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "ID of item.", '""');
 AddCondition(53, cf_looping | cf_not_invertible, "For each key", "Load", 
              "Table {0}: for each key in item: <i>{1}</i>", 
              "Repeat the event for each key of a item of load result in a table.", "ForEachKey");     
+             
+AddAnyTypeParam("Table", "Table ID.", '""');               
+AddCondition(54,  0, "Table is empty", "Load", 
+             "Table {0}: is empty", 
+             "Return true if no item in a table.", "TableIsEmpty");             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Sub domain", "Sub domain for this function.", '""');
@@ -70,13 +75,13 @@ AddAction(0, 0, "Set sub domain", "Domain",
           "Set sub domain to <i>{0}</i>", 
           "Set sub domain ref.", "SetSubDomainRef");
           
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(1, 0, "Set value", "Prepare - Tree", 
           "{0}: {1}",
           "Set number or string value.", "TreeSetValue");
 
-AddStringParam("Key", "The name of the key.", '""');        
+AddAnyTypeParam("Key", "The name of the key.", '""');        
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.",1);
@@ -84,7 +89,7 @@ AddAction(2, 0, "Set boolean value", "Prepare - Tree",
           "{0}: {1}",
           "Set boolean value.", "TreeSetBooleanValue");   
           
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(3, 0, "Remove key", "Prepare - Tree", 
           "{0}: remove",
           "Remove key.", "TreeSetNullValue");            
@@ -93,12 +98,12 @@ AddAction(4, 0, "Remove all", "Prepare - Tree",
           "Remove all",
           "Remove all keys or items.", "CleanAll");     
           
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(5, 0, "Set server timesetamp", "Prepare - Tree", 
           "{0}: server timestamp",
           "Set to server timestamp.", "TreeSetServerTimestamp");        
           
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddStringParam("JSON", "The JSON value to set.", '""');
 AddAction(6, 0, "Set JSON", "Prepare - Tree", 
           "{0}: {1}",
@@ -108,17 +113,17 @@ AddAction(11, 0, "Update", "Save",
           "Update",
           "Update book.", "UpdateBook");   
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');            
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');            
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(21, 0, "Set value", "Prepare - Enumeration", 
           "Table {0}, item {1}: set key {2} to {3}",
           "Set number or string value.", "EnumSetValue");
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');            
-AddStringParam("Key", "The name of the key.", '""');      
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');            
+AddAnyTypeParam("Key", "The name of the key.", '""');      
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.",1);
@@ -126,45 +131,45 @@ AddAction(22, 0, "Set boolean value", "Prepare - Enumeration",
            "Table {0}, item {1}: set key {2} to {3}",
           "Set boolean value.", "EnumSetBooleanValue");          
 
-AddStringParam("Table", 'Table ID. Set to "" to remove all tables.', '""');      
-AddStringParam("Item", 'Item ID. Set to "" to remove all items in the table.' , '""');            
-AddStringParam("Key", 'The name of the key. Set to "" to remove all keys in the item.', '""');      
+AddAnyTypeParam("Table", 'Table ID. Set to "" to remove all tables.', '""');      
+AddAnyTypeParam("Item", 'Item ID. Set to "" to remove all items in the table.' , '""');            
+AddAnyTypeParam("Key", 'The name of the key. Set to "" to remove all keys in the item.', '""');      
 AddAction(23, 0, "Remove", "Prepare - Enumeration", 
            "Table {0}, item {1}: remove key {2}",
           "Remove key or item or table.", "EnumSetNullValue"); 
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');           
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');           
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(24, 0, "Set server timesetamp", "Prepare - Enumeration", 
          "Table {0}, item {1} set key {2} to server timestamp",
           "Set to server timestamp.", "EnumSetServerTimestamp");
           
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');                
-AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');                
+AddAnyTypeParam("Key", "The name of the key.", '""');
 AddStringParam("JSON", "The JSON value to set.", '""');
 AddAction(25, 0, "Set JSON", "Prepare - Enumeration", 
           "Table {0}, item {1} set key {2} to {3}",
           "Set JSON value.", "EnumSetJSON");            
           
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(31, 0, "Remove key", "On disconnected - Tree", 
           "{0}: remove (on disconnected)",
           "Remove key on disconnected.", "TreeOnDisconnectedRemove");       
 
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(32, 0, "Set server timesetamp", "On disconnected - Tree", 
           "On disconnected- {0}: server timestamp",
           "Set to server timestamp on disconnected.", "TreeOnDisconnectedSetServerTimestamp");       
 
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(33, 0, "Set value", "On disconnected - Tree", 
           "On disconnected- {0}: {1}",
           "Set value on disconnected.", "TreeOnDisconnectedSetValue");  
 
-AddStringParam("Key", "The name of the key.", '""');        
+AddAnyTypeParam("Key", "The name of the key.", '""');        
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.",1);
@@ -172,42 +177,42 @@ AddAction(34, 0, "Set boolean value", "On disconnected - Tree",
           "On disconnected- {0}: {1}",
           "Set boolean value on disconnected.", "TreeOnDisconnectedSetBooleanValue");     
 
-AddStringParam("Key", "The name of the key.", '""');        
+AddAnyTypeParam("Key", "The name of the key.", '""');        
 AddStringParam("JSON", "The JSON value to set.", '""');
 AddAction(35, 0, "Set JSON", "On disconnected - Tree",
           "On disconnected- {0}: {1}",
           "Set JSON value on disconnected.", "TreeOnDisconnectedSetJSON")    
           
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(36, 0, "Cancel all handlers", "On disconnected - Tree", 
           "{0}: cancel all handlers (on disconnected)",
           "Cancel all handlers of disconnected.", "TreeOnDisconnectedCancel");                 
 
-AddStringParam("Table", 'Table ID. Set to "" to remove all tables.', '""');      
-AddStringParam("Item", 'Item ID. Set to "" to remove all items in the table.' , '""');            
-AddStringParam("Key", 'The name of the key. Set to "" to remove all keys in the item.', '""');      
+AddAnyTypeParam("Table", 'Table ID. Set to "" to remove all tables.', '""');      
+AddAnyTypeParam("Item", 'Item ID. Set to "" to remove all items in the table.' , '""');            
+AddAnyTypeParam("Key", 'The name of the key. Set to "" to remove all keys in the item.', '""');      
 AddAction(41, 0, "Remove key", "On disconnected - Enumeration", 
           "On disconnected- table {0}, item {1}: remove key {2}",
           "Remove key on disconnected.", "EnumOnDisconnectedRemove");       
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');             
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');             
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAction(42, 0, "Set server timesetamp", "On disconnected - Enumeration", 
           "On disconnected- table {0}, item {1}: set key {2} to server timestamp",
           "Set to server timestamp on disconnected.", "EnumOnDisconnectedSetServerTimestamp");       
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');             
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');             
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(43, 0, "Set server timesetamp", "On disconnected - Enumeration", 
           "On disconnected- table {0}, item {1}: set key {2} to {3}",
           "Set value on disconnected.", "EnumOnDisconnectedSetValue");       
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');             
-AddStringParam("Key", "The name of the key.", '""');          
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');             
+AddAnyTypeParam("Key", "The name of the key.", '""');          
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.",1);
@@ -215,24 +220,24 @@ AddAction(44, 0, "Set boolean value", "On disconnected - Enumeration",
           "On disconnected- table {0}, item {1}: set key {2} to {3}",
           "Set boolean value on disconnected.", "EnumOnDisconnectedSetBooleanValue");          
 
-AddStringParam("Table", "Table ID.", '""');      
-AddStringParam("Item", "Item ID.", '""');             
-AddStringParam("Key", "The name of the key.", '""');   
+AddAnyTypeParam("Table", "Table ID.", '""');      
+AddAnyTypeParam("Item", "Item ID.", '""');             
+AddAnyTypeParam("Key", "The name of the key.", '""');   
 AddStringParam("JSON", "The JSON value to set.", '""');
 AddAction(45, 0, "Set server timesetamp", "On disconnected - Enumeration", 
           "On disconnected- table {0}, item {1}: set key {2} to {3}",
           "Set JSON value on disconnected.", "EnumOnDisconnectedSetJSON");     
 
-AddStringParam("Table", 'Table ID. Set to "" to remove all tables.', '""');      
-AddStringParam("Item", 'Item ID. Set to "" to remove all items in the table.' , '""');            
-AddStringParam("Key", 'The name of the key. Set to "" to remove all keys in the item.', '""');      
+AddAnyTypeParam("Table", 'Table ID. Set to "" to remove all tables.', '""');      
+AddAnyTypeParam("Item", 'Item ID. Set to "" to remove all items in the table.' , '""');            
+AddAnyTypeParam("Key", 'The name of the key. Set to "" to remove all keys in the item.', '""');      
 AddAction(46, 0, "Cancel", "On disconnected - Enumeration", 
           "On disconnected- table {0}, item {1}: cancel all handlers",
           "Cancel all handlers of disconnected.", "EnumOnDisconnectedCancel");       
 
 
-AddStringParam("Table", "Table ID.", '""');          
-AddStringParam("Key", "The name of the key.", '""');          
+AddAnyTypeParam("Table", "Table ID.", '""');          
+AddAnyTypeParam("Key", "The name of the key.", '""');          
 AddAnyTypeParam("Start", "Start value.", 0);             
 AddAnyTypeParam("End", "End value.", 0);
 AddComboParamOption("Limit to first");       
@@ -244,8 +249,8 @@ AddAction(51, 0, 'Get items by "In Range"', "Load - Signle query",
           "Load - table {0}: get <i>{5}</i> items by condition: <i>{1}</i> in range <i>{2}</i> - <i>{3}</i>, <i>{4}</i> (tag <i>{6}</i>)", 
           "Get items by single condition-In Range with count limit in a table.", "GetItemsBySingleConditionInRange");  
           
-AddStringParam("Table", "Table ID.", '""');          
-AddStringParam("Key", "The name of the key.", '""');          
+AddAnyTypeParam("Table", "Table ID.", '""');          
+AddAnyTypeParam("Key", "The name of the key.", '""');          
 AddComboParamOption("Equal to");       
 AddComboParamOption("Greater than or Equal to");
 AddComboParamOption("Less than or Equal to");
@@ -260,8 +265,8 @@ AddAction(52, 0, 'Get items by comparison', "Load - Signle query",
           "Load - table {0}: get <i>{5}</i> items by condition: <i>{1}</i> <i>{2}</i> <i>{3}</i>, <i>{4}</i> (tag <i>{6}</i>)", 
           "Get items by single condition with count limit in a table.", "GetItemsBySingleCondition");          
 
-AddStringParam("Table", 'Table ID. Set to "" to load all tables.', '""');      
-AddStringParam("Item", 'Item ID. Set to "" to load all items in the table.' , '""');            
+AddAnyTypeParam("Table", 'Table ID. Set to "" to load all tables.', '""');      
+AddAnyTypeParam("Item", 'Item ID. Set to "" to load all items in the table.' , '""');            
 AddStringParam("Tag", "A tag, to distinguish between different requests.", '"_"');          
 AddAction(53, 0, "Load item", "Load - table/item", 
           "Load- table {0}, item {1} (tag <i>{2}</i>)", 
@@ -276,13 +281,13 @@ AddAction(82, 0, "Process request queue", "Load - queue",
           "Process request queue", 
           "Process all requests in queue.", "ProcessQueue");          
 
-AddStringParam("Table", 'Table ID. Set to "" to clean all tables.', '""');     
+AddAnyTypeParam("Table", 'Table ID. Set to "" to clean all tables.', '""');     
 AddAction(83, 0, "Clean result table", "Load",
           "Clean result table {0}",
           "Clean result table.", "CleanResultTable");                
           
-AddStringParam("Table", "Key of table ID.", '"TableID"');      
-AddStringParam("Item", "Key of item ID.", '"TItemID"');
+AddAnyTypeParam("Table", "Key of table ID.", '"TableID"');      
+AddAnyTypeParam("Item", "Key of item ID.", '"TItemID"');
 AddAction(91, 0, "Set key name", "Convert - Item list", 
           "Convert tableID to key <i>{0}</i>, itemID to key <i>{1}</i>",
           "Set key name of item list.", "SetConvertKeyName");          
@@ -293,9 +298,9 @@ AddExpression(1, ef_return_string, "Generate new key from push", "ItemID", "Gene
 AddExpression(2, ef_return_string, "Get last generated key", "ItemID", "LastGeneratedKey", 
               "Get last generate a key from push action.");   
                     
-//AddStringParam("Table", "Table ID.", '""');      
-//AddStringParam("Item", "Item ID.", '""');      
-//AddStringParam("Key", "The name of the key.", '""');
+//AddAnyTypeParam("Table", "Table ID.", '""');      
+//AddAnyTypeParam("Item", "Item ID.", '""');      
+//AddAnyTypeParam("Key", "The name of the key.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", "Value", "At", 
               "Get value in book, optional parameters are (tableID, itemID, key, defaultValue).");
               
@@ -319,16 +324,22 @@ AddExpression(55, ef_return_any | ef_variadic_parameters, "Get current item cont
               'Get current content in JSON stringin in a For Each loop. Add 2nd parameter for specific key, 3rd parameter for default value if this key is not existed.');              
                                
                                           
-//AddStringParam("Table", "Table ID.", '""');      
-//AddStringParam("Item", "Item ID.", '""');
+//AddAnyTypeParam("Table", "Table ID.", '""');      
+//AddAnyTypeParam("Item", "Item ID.", '""');
 AddExpression(91, ef_return_string | ef_variadic_parameters, "Convert table to item list", "Convert", "AsItemList", 
               "Convert table to item list (JSON string), optional parameters are (tableID, itemID).");              
               
-//AddStringParam("Table", "Table ID.", '""');      
-//AddStringParam("Item", "Item ID.", '""');      
-//AddStringParam("Key", "The name of the key.", '""');
+//AddAnyTypeParam("Table", "Table ID.", '""');      
+//AddAnyTypeParam("Item", "Item ID.", '""');      
+//AddAnyTypeParam("Key", "The name of the key.", '""');
 AddExpression(101, ef_return_string | ef_variadic_parameters, "Get reference", "Reference", "Ref", 
               "Get renerence in book, optional parameters are (tableID, itemID, key).");
+              
+AddNumberParam("Length", "Length of string.", 1);
+AddExpression(201, ef_return_string, "Get a random base32 string", "Random", "RandomBase32", 
+              "Get a random base32 string.");
+AddExpression(202, ef_return_string, "Get last random base32 string", "Random", "LastRandomBase32", 
+              "Get last random base32 string.");
               
 ACESDone();
 

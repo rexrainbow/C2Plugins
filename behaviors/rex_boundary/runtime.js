@@ -425,7 +425,7 @@ cr.behaviors.Rex_boundary = function(runtime)
 		return is_hit;
 	}; 
 	    
-	behinstProto._horizontal_percent_get = function ()
+	behinstProto.posX2percentage = function ()
 	{
 	    var offset_inst, offset_bound;
         this.horizontal_boundary_update();
@@ -444,7 +444,7 @@ cr.behaviors.Rex_boundary = function(runtime)
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1) ;
         return pec;
 	};    
-	behinstProto._vertical_percent_get = function ()
+	behinstProto.posY2percentage = function ()
 	{
 	    var offset_inst, offset_bound;	
         this.vertical_boundary_update();
@@ -463,6 +463,50 @@ cr.behaviors.Rex_boundary = function(runtime)
         var pec = cr.clamp((offset_inst/offset_bound), 0, 1);
         return pec;
 	};        
+    
+
+	behinstProto.percentage2posX = function (p)
+	{  
+        p = cr.clamp(p, 0, 1);
+        this.horizontal_boundary_update();   
+        var rb, lb;
+		if (this.align_mode == 0)    // origin
+		{
+            lb = this.horizontal_boundary[0];               
+            rb = this.horizontal_boundary[1];         
+        }
+		else    // boundaries
+		{
+		    this.inst.update_bbox();
+            lb = this.horizontal_boundary[0] + (this.inst.x - this.inst.bbox.left);
+			rb = this.horizontal_boundary[1] - (this.inst.bbox.right - this.inst.x);
+        }
+        
+        var x = lb + (rb - lb)*p;    
+        return x;        
+	};
+    
+	behinstProto.percentage2posY = function (p)
+	{  
+        p = cr.clamp(p, 0, 1);
+        this.vertical_boundary_update();   
+        var bb, tb;
+		if (this.align_mode == 0)    // origin
+		{
+            tb = this.vertical_boundary[0];                   
+            bb = this.vertical_boundary[1];     
+        }
+		else    // boundaries
+		{
+		    this.inst.update_bbox();
+            tb = this.vertical_boundary[0] + (this.inst.y - this.inst.bbox.top);
+			bb = this.vertical_boundary[1] - (this.inst.bbox.bottom - this.inst.y);
+        }
+        
+        var y = tb + (bb - tb)*p;
+        return y;
+	};
+        
 	
 	behinstProto.saveToJSON = function ()
 	{
@@ -586,7 +630,58 @@ cr.behaviors.Rex_boundary = function(runtime)
         pin["p0"] = top_imgpt;	
         pin["p1"] = bottom_imgpt;	        
 	};
- 
+    
+	Acts.prototype.SetXByPercentage = function (p)
+	{  
+	    if (!this.horizontal_enable)
+		    return;
+        
+        var newX = this.percentage2posX(p);    
+        if (newX !== this.inst.x)
+        {
+            this.inst.x = newX;
+            this.inst.set_bbox_changed();  
+        }
+	};
+    
+	Acts.prototype.SetYByPercentage = function (p)
+	{  
+	    if (!this.vertical_enable)
+		    return;
+        
+        var newY = this.percentage2posY(p);    
+        if (newY !== this.inst.y)
+        {
+            this.inst.y = newY;
+            this.inst.set_bbox_changed();         
+        }
+	};
+    
+	Acts.prototype.SetYXByPercentage = function (px, py)
+	{  
+        var isXChanged = false;
+	    if (this.horizontal_enable)
+        {
+            this.inst.x = this.percentage2posX(px);    
+            isXChanged = (newX !== this.inst.x);
+            if (isXChanged)
+                this.inst.x = newX;
+        }
+        
+        var isYChanged = false;
+	    if (this.vertical_enable)
+        {
+		    newY = this.percentage2posY(py); 
+            isYChanged = (newY !== this.inst.y);
+            if (isYChanged)
+                this.inst.y = newY;
+        }
+
+        if (isXChanged || isYChanged)
+        {
+            this.inst.set_bbox_changed();  
+        }
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -628,17 +723,17 @@ cr.behaviors.Rex_boundary = function(runtime)
     
 	Exps.prototype.HorPercent = function (ret)
 	{
-        ret.set_float( this._horizontal_percent_get() );
+        ret.set_float( this.posX2percentage() );
 	};
 
 	Exps.prototype.VerPercent = function (ret)
 	{
-        ret.set_float( this._vertical_percent_get() );
+        ret.set_float( this.posY2percentage() );
 	};   
     
 	Exps.prototype.HorScale = function (ret, min_value, max_value)
 	{
-        var pec = this._horizontal_percent_get();
+        var pec = this.posX2percentage();
         if (max_value < min_value)
         {
             var tmp = max_value; max_value = min_value; min_value = tmp;
@@ -650,7 +745,7 @@ cr.behaviors.Rex_boundary = function(runtime)
     
 	Exps.prototype.VerScale = function (ret, min_value, max_value)
 	{
-        var pec = this._vertical_percent_get();
+        var pec = this.posY2percentage();
         if (max_value < min_value)
         {
             var tmp = max_value; max_value = min_value; min_value = tmp;
@@ -658,5 +753,16 @@ cr.behaviors.Rex_boundary = function(runtime)
         }
         var scaled = min_value + pec*(max_value-min_value);
         ret.set_float( scaled );
-	};    
+	};
+
+	Exps.prototype.HorPercent2PosX = function (ret, p)
+	{
+        ret.set_float( this.percentage2posX(p) );
+	};
+
+	Exps.prototype.VerPercent2PosY = function (ret, p)
+	{
+        ret.set_float( this.percentage2posY(p) );
+	};   
+        
 }());

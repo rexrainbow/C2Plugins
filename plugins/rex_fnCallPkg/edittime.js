@@ -17,7 +17,7 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(1, cf_looping | cf_not_invertible, "For each package", "Function queue : For each", 
-             "For each package in function queue", 
+             "For each package in queue", 
              "Repeat the event for each package in function queue.", "ForEachPkg");
 AddStringParam("Name", "Function name", '""');
 AddCondition(2, 0, "Compare function name", "Function queue : For each", 
@@ -36,7 +36,7 @@ AddAction(1, 0, "Call function", "Function",
        
 // function queue
 AddAction(11, 0, "Clean", "Function queue", 
-          "Clean queue","Clean function queue.", "CleanFnQueue");
+          "Clean queue","Clean queue.", "CleanFnQueue");
 AddStringParam("Name", "The name of the function to call.", "\"\"");
 AddVariadicParams("Parameter {n}", 
                   "A parameter to pass for the function call, which can be accessed with Function.Param({n}).");
@@ -45,11 +45,11 @@ AddAction(12, 0, "Push back", "Function queue",
           "Push function call into function queue.", "PushToFnQueue");
 AddStringParam("Package", "Function call package in json string.", "\"\"");
 AddAction(13, 0, "Load", "Function queue", 
-          "Load function queue by <i>{0}</i>",
+          "Load queue by <i>{0}</i>",
           "Load function queue.", "LoadFnQueue"); 
 AddNumberParam("Index", "Index of parameter.", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0); 
-AddAction(14, 0, "Overwrite parameter", "Function queue", 
+AddAction(14, 0, "Overwrite parameter", "Function queue : For each", 
           "Overwrite parameter[<i>{0}</i>] to <i>{1}</i>",
           'Overwrite parameter of current package in function queue.', "OverwriteParam");
 AddComboParamOption("From top to bottom");
@@ -68,8 +68,18 @@ AddAction(16, 0, "Push", "Function queue",
           "Push <b>{0}</b> function call <b>{1}</b> (<i>{...}</i>)", 
           "Push function call into function queue.", "PushToFnQueue2");    
 AddAction(17, 0, "Reverse", "Function queue", 
-          "Reverse function queue", 
+          "Reverse queue", 
           "Reverse function queue.", "ReverseFnQueue");
+AddNumberParam("Index", "Index to insert.", 0);
+AddAnyTypeParam("Value", "Value of paramete", 0); 
+AddAction(18, 0, "Insert parameter", "Function queue : For each", 
+          "Insert <i>{1}</i> to index <i>{0}</i>",
+          'Insert a parameter into current package in function queue.', "InsertParam");    
+AddNumberParam("Index", "Index of parameter.", 0);
+AddAnyTypeParam("Value", "Value to add", 0); 
+AddAction(19, 0, "Add to parameter", "Function queue : For each", 
+          "Add <i>{1}</i> to parameter[<i>{0}</i>]",
+          'Add value to parameter of current package in function queue.', "AddToParam");          
 
 AddComboParamOption("Official function");
 AddComboParamOption("Rex function2");

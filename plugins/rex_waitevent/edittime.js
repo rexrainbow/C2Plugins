@@ -20,14 +20,27 @@ AddStringParam("Tag","Event tag.","");
 AddCondition(1,cf_trigger,"On all events finished","Finsihed",
              "On all events with tag <b>{0}</b> has finished",
              "Triggered when all events with tag has finished.","OnAllEventsFinished");
+             
 AddStringParam("Tag","Event tag.","");
 AddCondition(2,cf_trigger,"On any event finished","Finsihed",
              "On any event with tag <b>{0}</b> has finished",
-             "Triggered when any event with tag has finished.","OnAnyEventFinished");
+             "Triggered when any event with tag has finished.","OnAnyEventFinished");            
+             
 AddStringParam("Tag","Event tag.","");
-AddCondition(3,0,"No wait event","Wait",
+AddCondition(3, 0,"No wait event","Wait",
              "No wait event in tag <b>{0}</b>",
              "Return true if no wait event in tag.","NoWaitEvent");		 
+
+AddCondition(4,cf_trigger,"On waiting start","Start",
+             "On waiting any event started",
+             "Triggered when start to wait any event.","OnAnyEventStart");
+             
+AddStringParam("Event name","Event name.","");     
+AddStringParam("Tag","Event tag.","");
+AddCondition(5, 0,"Is waiting","Wait",
+             "Is waiting event <b>{0}</b> with tag <b>{1}</b>",
+             "Return true if an event is waited.","IsWaiting");		              
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Event name","Event name.","");     
@@ -47,7 +60,8 @@ AddAction(11,0,"Cancel events","Cancel",
           "Cancel events.","CancelEvents");		  
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1,ef_return_string,"Get current finished event name","Event name","CurEventName","Get current finished event name.");
+AddExpression(1,ef_return_string,"Get current finished event name","Event name","CurEventName","Get triggered event name.");
+AddExpression(2,ef_return_string,"Get current finished tag","Tag","CurTag","Get triggered tag.");
 
 ACESDone();
 

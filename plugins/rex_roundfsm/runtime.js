@@ -169,6 +169,17 @@ cr.plugins_.Rex_RoundFSM = function(runtime)
 		this._pre_state = o["ps"];
         this._cur_state = o["cs"];     
 	};    
+    
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Current", "value": this._cur_state},
+			                    {"name": "Previous", "value": this._pre_state}]
+		});
+	};
+	/**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

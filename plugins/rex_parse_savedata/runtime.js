@@ -72,6 +72,9 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 		    this.exp_CurHeader = {};
 		else
 		    clean_table( this.exp_CurHeader );
+        
+        this.exp_CurKey = "";
+        this.exp_CurValue = 0;        
 		    
         this.last_error = null;
 	};
@@ -251,6 +254,66 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	{
 	    return true;
 	};
+    
+
+	Cnds.prototype.ForEachKeyInHeader = function (slot_name)
+	{
+	    if (!this.load_headers || !this.load_headers[slot_name])
+		    return false;
+			
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		
+		var k, header = this.load_headers[slot_name];
+		for(k in header)
+		{
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            this.exp_CurKey = k;
+            this.exp_CurValue = header[this.exp_CurKey];
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }            
+		}
+ 		
+		return false;
+	};
+    
+	Cnds.prototype.ForEachKeyInBody = function ()
+	{
+	    if (!this.load_body)
+		    return false;
+			
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+		
+		for(var k in  this.load_body)
+		{
+            if (solModifierAfterCnds)
+            {
+                this.runtime.pushCopySol(current_event.solModifiers);
+            }
+            
+            this.exp_CurKey = k;
+            this.exp_CurValue = this.load_body[this.exp_CurKey];
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)
+		    {
+		        this.runtime.popSol(current_event.solModifiers);
+		    }            
+		}
+		         		
+		return false;
+	};        
     
 	Cnds.prototype.OnCleanComplete = function ()
 	{
@@ -561,7 +624,17 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	    var val = (!this.last_error)? "": this.last_error["message"];    
 		ret.set_string(val);
 	};		
-		 	
+
+	Exps.prototype.CurKey = function (ret)
+	{
+		ret.set_any(this.exp_CurKey);
+	};		  
+    
+	Exps.prototype.CurValue = function (ret)
+	{
+		ret.set_any(this.exp_CurValue);
+	};	
+    
 }());
 
 (function ()

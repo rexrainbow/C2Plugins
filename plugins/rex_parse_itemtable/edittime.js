@@ -355,16 +355,16 @@ AddExpression(8, ef_return_number, "Current loop index", "Load - for each - inde
               "Get loop index in current received page.");              
 
 AddNumberParam("Index", "Global index, 0-based.", 0);                    
-AddExpression(11, ef_return_string, "Get itemID by global index", "Received", "Index2ItemID", 
+AddExpression(11, ef_return_string, "Get itemID by global index", "Load - index", "Index2ItemID", 
               "Get itemID by global index.");                                               
 AddNumberParam("Index", "Global index, 0-based.", 0); 			  
-AddExpression(12, ef_return_any | ef_variadic_parameters, "Get item content by global index", "Received", "Index2ItemContent", 
+AddExpression(12, ef_return_any | ef_variadic_parameters, "Get item content by global index", "Load - index", "Index2ItemContent", 
               "Get item content in JSON string by global index. Add 2nd parameter to get value at the specific key. Add 3rd parameter for default value if this key is not existed.");
 AddNumberParam("Index", "Global index, 0-based.", 0); 	
-AddExpression(13, ef_return_number, "Get sent unix timestamp by global index", "Received", "Index2SentAt", 
+AddExpression(13, ef_return_number, "Get sent unix timestamp by global index", "Load - index", "Index2SentAt", 
               "Get sent unix timestamp (number of milliseconds since the epoch) by global index.");              
               
-AddExpression(21, ef_return_string, "All read items", "Received", "ItemsToJSON", 
+AddExpression(21, ef_return_string, "All read items", "Load", "ItemsToJSON", 
               "Get all read items in JSON string.");              
               
 AddExpression(31, ef_return_string, "Last saved itemID", "Save", "LastSavedItemID", 

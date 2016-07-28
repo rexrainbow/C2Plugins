@@ -117,6 +117,9 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 
     var get_timestamp = function (obj)    
     {       
+        if (!obj)
+            return null;
+        
         return (!isFirebase3x())?  obj : obj["TIMESTAMP"];
     };
     // 2.x , 3.x  
@@ -135,7 +138,13 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 
     var get_deltaTime = function (timer)    
     {
-        return get_timestamp(timer["current"]) - get_timestamp(timer["start"]);
+        var t;
+        if (timer)
+            t = get_timestamp(timer["current"]) - get_timestamp(timer["start"]);
+        else
+            t = 0;
+        
+        return t;
     }
  		     
 	//////////////////////////////////////
@@ -175,7 +184,12 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
             
         var t = get_deltaTime(this.exp_LastTimer);
 	    return (t/1000) > this.exp_LastTimer["time-out"];
-	};		    
+	};	
+	
+	Cnds.prototype.IsValid = function ()
+	{
+        return (this.exp_LastTimer != null);
+	};	    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -221,8 +235,8 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	
     Acts.prototype.GetTimer = function (ownerID, timer_name, interval)
 	{
+        var startIfNotExists = (interval != null);        
 	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
-
 	    var self = this;
 	    
 	    //3. read timer back	    
@@ -232,6 +246,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	        self.exp_LastTimerName = timer_name;
 	        
             self.exp_LastTimer = snapshot["val"]();
+	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnStartTimerComplete, self);             
 	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnGetTimerComplete, self); 
 	    };	   
 	    var read_timer = function()
@@ -269,8 +284,10 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	    {
 	        if (snapshot["val"]())
 	            update_timer();	   
-	        else
+	        else if (startIfNotExists)
 	            start_timer();     
+            else
+                on_read(snapshot);
 	    };
         ref["once"]("value", on_exist_check);
         //1. check if timer is existed
@@ -322,45 +339,40 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         var t;
         if (this.exp_LastTimer)        
             t = get_timestamp(this.exp_LastTimer["start"]);
-        else
-            t = 0;     
-		ret.set_float(t);
+ 
+		ret.set_float(t || 0);
 	}; 	
 	Exps.prototype.LastCurrentTimestamp = function (ret)
 	{
         var t;
         if (this.exp_LastTimer)        
             t = get_timestamp(this.exp_LastTimer["current"]);
-        else
-            t = 0;       
-		ret.set_float(t);
+
+		ret.set_float(t || 0);
 	}; 	    
 	Exps.prototype.LastElapsedTime = function (ret)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = get_deltaTime(this.exp_LastTimer);
-        else
-            t = 0;     
-		ret.set_float(t/1000);
+            t = get_deltaTime(this.exp_LastTimer)/1000;
+    
+		ret.set_float(t || 0);
 	};
 	Exps.prototype.LastTimeoutInterval = function (ret)
 	{
         var t;
         if (this.exp_LastTimer)        
-            t = get_timestamp(this.exp_LastTimer["time-out"]);
-        else
-            t = 0;    
-		ret.set_float(t/1000);
+            t = this.exp_LastTimer["time-out"];
+  
+		ret.set_float(t || 0);
 	};
 	Exps.prototype.LastRemainInterval = function (ret)
-	{
+	{ 
         var t;
         if (this.exp_LastTimer)        
-            t = get_deltaTime(this.exp_LastTimer) - this.exp_LastTimer["time-out"];
-        else
-            t = 0;
-		ret.set_float(t/1000);
+            t = this.exp_LastTimer["time-out"] - get_deltaTime(this.exp_LastTimer)/1000;
+
+		ret.set_float(t || 0);
 	};	
 	
 	Exps.prototype.LastOwnerID = function (ret)

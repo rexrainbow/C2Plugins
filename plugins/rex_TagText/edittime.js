@@ -5,8 +5,8 @@
 		"id":			"rex_TagText",
 		"version":		"0.1",
 		"description":	"Displays text with multi-color, font face, or font size with tags. http://www.canvastext.com/",
-		"author":		"Rex.Rainbow",
-		"help url":		"",
+        "author":		"Rex.Rainbow",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tagtext.html",
 		"category":		"Rex - Text",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,				// can be rotated in layout

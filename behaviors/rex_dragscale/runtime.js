@@ -54,7 +54,7 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
         }
         assert2(this.touchwrap, "You need put a Touchwrap object for drag scale behavior");
 	};  
-
+	
 	function GetThisBehavior(inst)
 	{
 		var i, len;
@@ -65,10 +65,10 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 		}
 		
 		return null;
-	};	
-        
-    var _touch_insts = [];    
-	var _behavior_insts = [];    
+	};
+    	
+    var _touch_insts = [];            
+	var _behavior_insts = [];
     behtypeProto.OnTouchStart = function (touch_src, touchX, touchY)
     {
         _touch_insts.length = 0;
@@ -98,40 +98,77 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
         }
         
         // touch_insts_cnt > 0
-        // 0. find out index of behavior instance
+        // 0. find out index of behavior instance          
             
         // 1. get all valid behavior instances            
-        var behavior_inst;          
-        cnt = touch_insts_cnt;           
+        var behavior_inst;                 
+        cnt = touch_insts_cnt;
+        _behavior_insts.length = 0; 		
         for (i=0; i<cnt; i++ )
         {
 		    inst = _touch_insts[i];
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }		    
             behavior_inst = GetThisBehavior(inst);
-            if (!behavior_inst)
-                continue;            
-            if (behavior_inst.activated)
-                behavior_inst.on_touch_start(touch_src);
+            if (behavior_inst == null)
+                continue;
+            if (behavior_inst.is_enable())
+			    _behavior_insts.push(behavior_inst);
+        }            
+
+		// 2. get the max z-order inst
+        cnt = _behavior_insts.length;
+		if (cnt === 0)  // no inst match
+        {
+            _touch_insts.length = 0;
+            _behavior_insts.length = 0;
+            return false;
         }
 
+        var target_inst_behavior = _behavior_insts[0];
+        var instB=target_inst_behavior.inst, instA;
+        for (i=1; i<cnt; i++ )
+        {
+            behavior_inst = _behavior_insts[i];
+            instA = behavior_inst.inst;
+            if ( ( instA.layer.index > instB.layer.index) ||
+                 ( (instA.layer.index == instB.layer.index) && (instA.get_zindex() > instB.get_zindex()) ) )                 
+            {
+                target_inst_behavior = behavior_inst;
+                instB = instA;
+            } 
+        }		
         _touch_insts.length = 0;
         _behavior_insts.length = 0;
-        return;        
+        
+		target_inst_behavior.on_touch_start(touch_src);
+        
+        return true;  // get touch inst
     };
     
     behtypeProto.OnTouchEnd = function (touch_src)
     {
-        if (this.behavior_index == null )
-            return;
-			
 		var insts = this.objtype.instances;
         var i, cnt=insts.length, inst, behavior_inst;
         for (i=0; i<cnt; i++ )
         {
 		    inst = insts[i];
-            behavior_inst = inst.behavior_insts[this.behavior_index];
-            if (behavior_inst.activated)
-                behavior_inst.on_touch_end(touch_src);         
-        }	    
+		    if (!inst)
+		    {
+		        continue;
+		        // insts might be removed
+		    }			    
+            behavior_inst = GetThisBehavior(inst);
+            if (behavior_inst == null)
+                continue;
+			if (behavior_inst.activated)
+            {
+                behavior_inst.on_touch_end(touch_src);       
+			}
+        }  	    
     };  
         
 	/////////////////////////////////////
@@ -149,16 +186,16 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 	var behinstProto = behaviorProto.Instance.prototype;
 
     // state
-    var INVALID = -1;    
     var TOUCH0 = 0;
     var TOUCH1 = 1;
     var TOUCH2 = 2;
+    var state2name = ["TOUCH0","TOUCH1","TOUCH2"];    
 	behinstProto.onCreate = function()
 	{   
 	    this.activated = (this.properties[0]==1);   
 	    this.autoscale_mode = (this.properties[1]==1);            
 	    this.drag_points = new cr.behaviors.Rex_DragScale2.DragPointsKlass(this);
-	    this.state = (this.GetTouchCnt() >0)? INVALID:TOUCH0;
+	    this.state = TOUCH0;
 	    this.touchids = [];
 		this.init_width = 0;
 		this.init_height = 0;
@@ -166,12 +203,12 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 	
 	behinstProto.on_touch_start = function (touchid)
 	{  
-	    if (this.state == TOUCH2)
+	    if (this.state === TOUCH2)
 	        return;
 	         
         this.touchids.push(touchid);
-        this.state = (this.touchids.length == 1)? TOUCH1:TOUCH2;
-        if (this.state == TOUCH2)
+        this.state = (this.touchids.length === 1)? TOUCH1:TOUCH2;
+        if (this.state === TOUCH2)
 		{		
 		    this.init_width = this.inst.width;
 		    this.init_height = this.inst.height;
@@ -184,11 +221,11 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 	    switch (this.state)
 		{
 		case TOUCH2:
-		    if (touchid == this.touchids[0])
+		    if (touchid === this.touchids[0])
 			    this.touchids.shift();
-		    else if (touchid == this.touchids[1])
+		    else if (touchid === this.touchids[1])
 			    this.touchids.pop();
-			if (this.touchids.length == 1)
+			if (this.touchids.length === 1)
 			{
 			    this.drag_points.cancel();
 			    this.state = TOUCH1;				
@@ -196,14 +233,14 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 		    break;
 		case TOUCH1:
 		    this.touchids.length = 0;
-			this.state = (this.GetTouchCnt() >0)? INVALID:TOUCH0;
+			this.state = TOUCH0;
 		    break;			
 		}
 	}; 
 	
 	behinstProto.auto_scale = function (has_updated)
 	{  
-	    if ((!this.autoscale_mode) || (!has_updated))
+	    if (!this.autoscale_mode || !has_updated)
 	        return;
 			
 	    var scale = this.drag_points.get_scale();	    
@@ -215,16 +252,16 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 	
 	behinstProto.tick = function ()
 	{  
-        if (this.state != TOUCH2)
+        if (this.state !== TOUCH2)
             return;
             
         var pos_changed = this.drag_points.tick();
         this.auto_scale(pos_changed);        
 	}; 
-	
-	behinstProto.GetTouchCnt = function()
+    
+	behinstProto.is_enable = function()
 	{
-        return this.type.touchwrap.touches.length;         
+        return this.activated;
 	};
     
 	behinstProto.GetX = function(touchid)
@@ -254,6 +291,19 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 		this.activated = o["en"];
 		this.autoscale_mode = o["as"]; 
 	};	
+    
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+				{"name": "State", "value": state2name[this.state]},
+			]
+		});
+	};
+	/**END-PREVIEWONLY**/	
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -295,11 +345,11 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 		{
 		    if (this.state == TOUCH2)
 		        this.drag_points.cancel();
-		    this.state = (this.GetTouchCnt() >0)? INVALID:TOUCH0;			
+		    this.state = TOUCH0;			
 		}
 		else if ((!this.activated) && activated)
 		{
-		    this.state = (this.GetTouchCnt() >0)? INVALID:TOUCH0;
+		    this.state = TOUCH0;
 		}
 		this.activated = activated;
 	};  
@@ -336,7 +386,12 @@ cr.behaviors.Rex_DragScale2 = function(runtime)
 	Exps.prototype.P1Y = function (ret)
 	{
 	    ret.set_float(this.drag_points.get_P1Y());
-	};			
+	};		
+
+	Exps.prototype.CurState = function (ret)
+	{
+	    ret.set_string(state2name[this.state]);
+	};	
 }());
 
 (function ()

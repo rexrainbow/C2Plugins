@@ -361,9 +361,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 		 this.current_table.Clear();
 	};    
     
-	Acts.prototype.ConvertType = function (row, to_type)
+	Acts.prototype.ConvertRow = function (row, to_type)
 	{
-         this.current_table.ConvertType(row, to_type);
+         this.current_table.ConvertRow(row, to_type);
 	};   
     
 	Acts.prototype.TurnPage = function (page)
@@ -444,7 +444,12 @@ cr.plugins_.Rex_CSV = function(runtime)
         var value = this.Get(col, row, page) || 0;  
         this.TurnPage(page);
         this.current_table.SetEntry(col, row, value + val);       
-	};    	
+	};
+
+	Acts.prototype.ConvertCol = function (col, to_type)
+	{
+         this.current_table.ConvertCol(col, to_type);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -723,7 +728,22 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.table[col][row] = val;        
 	};
     
-	CSVKlassProto.ConvertType = function (row, to_type)
+	CSVKlassProto.ConvertCol = function (col, to_type)
+	{
+        var handler = (to_type==0)? parseInt:
+                                    parseFloat;
+        var items = this.items;
+        var item_cnt = items.length;
+        var table = this.table;
+        var i, val;
+        for (i=0; i<item_cnt; i++)
+        {
+            val = table[col][items[i]];
+            table[col][items[i]] = handler(val);        
+        }                    
+	};      
+    
+	CSVKlassProto.ConvertRow = function (row, to_type)
 	{
         var handler = (to_type==0)? parseInt:
                                     parseFloat;
@@ -736,7 +756,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             val = table[keys[i]][row];
             table[keys[i]][row] = handler(val);        
         }                    
-	};      
+	};     
     
 	CSVKlassProto.AppendCol = function (col, init_value)
 	{
@@ -943,19 +963,7 @@ cr.plugins_.Rex_CSV = function(runtime)
     {
         return this.items.length;
     };
-    
-    var _sort_table = null;
-    var _sort_col_name = "";
-    var _sort_row_name = "";
-    var _sort_is_increasing = true;
-    var _col_sort = function(row0, row1)
-    {        
-        var item0 = _sort_table[_sort_col_name][row0];
-        var item1 = _sort_table[_sort_col_name][row1];
-        return (item0 > item1) ? (_sort_is_increasing? 1:-1):
-               (item0 < item1) ? (_sort_is_increasing? -1:1):
-                                 0;
-    };  
+ 
     var _row_sort = function(col0, col1)
     {        
         var item0 = _sort_table[col0][_sort_row_name];
@@ -964,7 +972,7 @@ cr.plugins_.Rex_CSV = function(runtime)
                (item0 < item1) ? (_sort_is_increasing? -1:1):
                                  0;
     };
-    CSVKlassProto.SortCol = function (col, is_increasing)
+    CSVKlassProto.SortCol = function (col, sortMode_)  // 0=a, 1=d, 2=la, 3=ld
     {
         var has_col_index = (this.keys.indexOf(col)!=(-1));
         if (!has_col_index)
@@ -972,13 +980,28 @@ cr.plugins_.Rex_CSV = function(runtime)
             log("[CSV] Action:Sort Col - Can not find col index " + col+" in table.");
             return;
         }
-        _sort_table = this.table;
-        _sort_col_name = col;
-        _sort_is_increasing = (is_increasing == 0);
-        this.items.sort(_col_sort);
+        
+        var self=this;
+        var sortFn = function (row0, row1)
+        {
+            var sortMode = sortMode_;
+            var v0 =  self.table[col][row0];
+            var v1 =  self.table[col][row1];
+            if (sortMode > 1)  // 2=la, 3=ld
+            {
+                v0 = parseFloat(v0);
+                v1 = parseFloat(v1);
+                sortMode -= 2;
+            }
+
+            return (v0 > v1) ? (sortMode? -1:1):
+                       (v0 < v1) ? (sortMode? 1:-1):
+                                         0;
+        }
+        this.items.sort(sortFn);
     };
 	    
-    CSVKlassProto.SortRow = function (row, is_increasing)
+    CSVKlassProto.SortRow = function (row, sortMode_)
     {
         var has_row_index = (this.items.indexOf(row)!=(-1));
         if (!has_row_index)
@@ -986,10 +1009,24 @@ cr.plugins_.Rex_CSV = function(runtime)
             log("[CSV] Action:Sort Row - Can not find row index "+row+" in table.");
             return;        
         }
-        _sort_table = this.table;
-        _sort_row_name = row;
-        _sort_is_increasing = (is_increasing == 0);      
-        this.keys.sort(_row_sort); 
+        var self=this;
+        var sortFn = function (col0, col1)
+        {
+            var sortMode = sortMode_;
+            var item0 = _sort_table[col0][row];
+            var item1 = _sort_table[col1][row]; 
+            if (sortMode > 1)  // 2=la, 3=ld
+            {
+                v0 = parseFloat(v0);
+                v1 = parseFloat(v1);
+                sortMode -= 2;
+            }
+
+            return (v0 > v1) ? (sortMode? -1:1):
+                       (v0 < v1) ? (sortMode? 1:-1):
+                                         0;
+        }
+        this.keys.sort(sortFn); 
     };  
     
     var dump_lines = [];

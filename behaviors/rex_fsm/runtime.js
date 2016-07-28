@@ -56,6 +56,7 @@ cr.behaviors.Rex_FSM = function(runtime)
         
         this.check_state = null; 
         this.check_state2 = null;
+        this.is_my_call = null;        
         this.is_echo = false;
         this.next_state = null;                                                   
 	};  
@@ -74,9 +75,12 @@ cr.behaviors.Rex_FSM = function(runtime)
     behinstProto.get_next_state = function()
     {
         this.next_state = null;
+        this.is_my_call = true;
 		var is_echo = this.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnLogic);
 		if (!is_echo)
 		    this.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultLogic);
+        
+        this.is_my_call = null;
         return this.next_state;
     }; 
 
@@ -118,7 +122,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 
 	Cnds.prototype.OnDefaultEnter = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	}; 	
 	
 	Cnds.prototype.OnExit = function (name)
@@ -130,7 +134,7 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	Cnds.prototype.OnDefaultExit = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	}; 	    
 
 	Cnds.prototype.OnTransfer = function (name_from, name_to)
@@ -141,7 +145,7 @@ cr.behaviors.Rex_FSM = function(runtime)
 	};	
 	Cnds.prototype.OnStateChanged = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};     
 	Cnds.prototype.OnLogic = function (name)
 	{
@@ -161,7 +165,7 @@ cr.behaviors.Rex_FSM = function(runtime)
     
 	Cnds.prototype.OnDefaultLogic = function ()
 	{
-		return true;
+		return (this.is_my_call);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -241,10 +245,13 @@ cr.behaviors.Rex_FSM = function(runtime)
         var cur_state = this.CurState;
         
         // trigger OnStateChanged first
+        this.plugin.is_my_call = true;        
 		this.plugin.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnStateChanged);
+        
                         
         // try to run transfer_action
-        var is_echo = this._run_transfer_action(pre_state, cur_state);     
+        var is_echo = this._run_transfer_action(pre_state, cur_state);   
+        this.plugin.is_my_call = null;        
         if (is_echo)
             return;
          
@@ -273,7 +280,9 @@ cr.behaviors.Rex_FSM = function(runtime)
 		{
 		    return;
 		}
+        this.plugin.is_my_call = true;
 	    this.plugin.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultExit);  
+        this.plugin.is_my_call = null;
     };
     
     FSMKlassProto._run_enter_action = function(cur_state)
@@ -286,7 +295,9 @@ cr.behaviors.Rex_FSM = function(runtime)
 		{
 		    return;
 		}
+        this.plugin.is_my_call = true;
 	    this.plugin.run_trigger(cr.behaviors.Rex_FSM.prototype.cnds.OnDefaultEnter);    
+        this.plugin.is_my_call = false;        
     };  
 	
 	FSMKlassProto.saveToJSON = function ()

@@ -53,6 +53,15 @@ AddCondition(17, cf_trigger, "On get headers error", "Load - header",
             "On get all headers error", 
             "Triggered when get all slot headers error.", "OnGetAllHeadersError");
             
+AddAnyTypeParam("Name", "The slot name.", '""');
+AddCondition(18, cf_looping | cf_not_invertible, "For each key", "Load - header", 
+             "For each key in header <i>{0}</i>", 
+             "Repeat the event for each key in a header.", "ForEachKeyInHeader"); 
+
+AddCondition(19, cf_looping | cf_not_invertible, "For each key", "Load - body", 
+             "For each key in body", 
+             "Repeat the event for each key in body.", "ForEachKeyInBody");                  
+            
 AddCondition(21, cf_trigger, "On clean complete", "Clean", 
             "On clean complete", 
             "Triggered when clean slots complete on server complete.", "OnCleanComplete");
@@ -136,6 +145,11 @@ AddStringParam("Slot name", "The name of the slot.", '""');
 AddStringParam("Key", "The name of the key.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get header value", "Headers", "HeaderValue", 
               "Get header value by slot name and key. Add default value at 3rd parameter if read data is null.");
+              
+AddExpression(7, ef_return_any, "Get current key", "For each key", "CurKey", 
+              "Get current key in a For Each loop.");              
+AddExpression(8, ef_return_any, "Get current value", "For each key", "CurValue", 
+              "Get current value in a For Each loop.");                 
 
 AddExpression(31, ef_return_string, "Key of Last saved time", "Key", "KeyLastSaveTime", 
               'Key of Last saved time ("updatedAt")'); 

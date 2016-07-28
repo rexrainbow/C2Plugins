@@ -328,32 +328,42 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	
 	Exps.prototype.ErrorCode = function (ret)
 	{
-	    var val = (!this.last_error)? "": this.last_error["code"];    
-		ret.set_int(val);
+        var val;
+        if (this.last_error)
+            val = this.last_error["code"];    
+		ret.set_int(val || 0);
 	}; 
 	
 	Exps.prototype.ErrorMessage = function (ret)
 	{
-	    var val = (!this.last_error)? "": this.last_error["message"];    
-		ret.set_string(val);
+        var val;
+        if (this.last_error)
+            val = this.last_error["message"];
+		ret.set_string(val || "");
 	}; 
 	
 	Exps.prototype.UserID = function (ret)
 	{
-	    var val = (!this.current_user)? "": this.current_user["id"];    
-		ret.set_string(val);
+        var val;
+        if (this.current_user)
+            val = this.current_user["id"];   
+		ret.set_string(val || "");
 	}; 	
 	
 	Exps.prototype.UserName = function (ret)
 	{
-	    var val = (!this.current_user)? "": this.current_user["get"]("username");    
-		ret.set_string(val);
+        var val;
+        if (this.current_user)
+            val = this.current_user["get"]("username");    
+		ret.set_string(val || "");
 	}; 	
 	
 	Exps.prototype.Email = function (ret)
 	{
-	    var val = (!this.current_user)? "": this.current_user["get"]("email");    
-		ret.set_string(val);
+        var val;
+        if (this.current_user)
+            val = this.current_user["get"]("email");    
+		ret.set_string(val || "");
 	}; 	
 	
 	Exps.prototype.LoginCount = function (ret)
@@ -365,6 +375,6 @@ cr.plugins_.Rex_Parse_Authentication = function(runtime)
 	        count = 0;
 	    else 
 	        count = this.exp_LoginCount;
-		ret.set_int(count);
+		ret.set_int(count || 0);
 	}; 		
 }());

@@ -89,6 +89,9 @@ cr.behaviors.Rex_buff = function(runtime)
         }
 		this.buff_cache = cr.behaviors.Rex_buff.buff_cache;
 
+        this.exp_CurIndex = 0;            
+        this.exp_CurBuff = null;     
+        
         /**BEGIN-PREVIEWONLY**/
         this.propsections = [];
         /**END-PREVIEWONLY**/		
@@ -263,6 +266,28 @@ cr.behaviors.Rex_buff = function(runtime)
 		return cr.do_cmp(this.sum, cmp, s);
 	};
 	
+	Cnds.prototype.ForEachBuff = function ()
+	{
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
+		var i, cnt=this.queue.length;
+		for(i=0; i<cnt; i++)
+		{
+            if (solModifierAfterCnds)            
+                this.runtime.pushCopySol(current_event.solModifiers);            
+            
+            this.exp_CurIndex = i;            
+            this.exp_CurBuff = this.queue[this.exp_CurIndex];   
+            current_event.retrigger();
+            
+		    if (solModifierAfterCnds)		    
+		        this.runtime.popSol(current_event.solModifiers);		   
+		}
+     		
+		return false;
+	};      
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -341,27 +366,74 @@ cr.behaviors.Rex_buff = function(runtime)
 		ret.set_float(this.min);
 	};
 	
- 	Exps.prototype.Buff = function (ret, name)
+ 	Exps.prototype.Buff = function (ret, i)
 	{
 	    var value;	
 	    if (name == null)
-		{
 		    value = this.sum - this.base;
-		}
 		else
 		{
-	        if (this.buff.hasOwnProperty(name))
-		        value = this.buff[name].buff;
+            if (typeof(i) === "string")
+            {
+	            if (this.buff.hasOwnProperty(i))
+		            value = this.buff[i].buff;
+            }
             else
-		         value = 0;
+            {
+                if (this.queue.hasOwnProperty(i))
+                    value = this.queue[i].buff;
+            }
 	    }
-		ret.set_float(value);
+		ret.set_float(value || 0);
 	};
 	
  	Exps.prototype.NextPriority = function (ret)
 	{
 		ret.set_int(this.next_lower_priority);
 	};
+    
+ 	Exps.prototype.BuffCount = function (ret)
+	{
+		ret.set_int(this.queue.length);
+	};    
+	
+ 	Exps.prototype.CurIndex = function (ret)
+	{
+		ret.set_int(this.exp_CurIndex);
+	};    
+    
+ 	Exps.prototype.CurBuffName = function (ret)
+	{
+        var val;
+        if (this.exp_CurBuff)
+            val = this.exp_CurBuff.name;
+		ret.set_string(val || "");
+	};    
+    
+ 	Exps.prototype.CurBuffValue = function (ret)
+	{
+        var val;
+        if (this.exp_CurBuff)
+            val = this.exp_CurBuff.buff;
+		ret.set_float(val || 0);
+	};    
+    
+ 	Exps.prototype.Index2BuffName = function (ret, index)
+	{
+        var val, buff = this.queue[index];
+        if (buff)
+            val = buff.name;
+		ret.set_string(val || "");
+	};    
+    
+ 	Exps.prototype.Index2BuffValue = function (ret, index)
+	{
+        var val, buff = this.queue[index];
+        if (buff)
+            val = buff.buff;
+		ret.set_float(val || 0);
+	};    
+    
 }());
 
 (function ()

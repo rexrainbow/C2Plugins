@@ -183,6 +183,11 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
         var t = this.exp_LastTimer["updatedAt"]-this.exp_LastTimer["createdAt"];        
 	    return (t/1000) > this.exp_LastTimer["get"]("time-out");
 	};	
+	
+	Cnds.prototype.IsValid = function ()
+	{
+        return (this.exp_LastTimer != null);
+	};	        
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -229,6 +234,7 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
 	
     Acts.prototype.GetTimer = function (ownerID, timerName, interval)
 	{
+        var startIfNotExists = (interval != null);           
 	    var self = this;
 	    var on_error = function(error)
 	    {
@@ -255,8 +261,10 @@ cr.plugins_.Rex_parse_Timer = function(runtime)
             var handler = {"success":on_get_timer, "error": on_error};
             if (timer_obj)
 	            timer_obj["save"](null, handler);
-            else
+            else if (startIfNotExists)
                 self.start_timer(ownerID, timerName, interval, handler);	    
+            else
+                on_get_timer(timer_obj);
         };
         //2. update timer 
         

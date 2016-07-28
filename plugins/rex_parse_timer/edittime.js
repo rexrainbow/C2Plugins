@@ -43,6 +43,10 @@ AddCondition(6, cf_trigger, "On remove timer error", "Remove timer",
 AddCondition(21, 0, "Is time-out", "Time out", 
             "Is time-out",
             'Return true if current triggered timer is time-out under "Condition: On get timer".', "IsTimeOut");
+            
+AddCondition(22, 0, "Is valid", "Valid", 
+            "Is valid",
+            "Return true if get valid timer.", "IsValid");              
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -56,15 +60,21 @@ AddAction(1, 0, "Start", "Timer",
 AddStringParam("User ID", "User ID.", '""');
 AddStringParam("Timer", "Name of timer.", '""');
 AddNumberParam("Interval", "Time-out interval, in seconds, for starting timer.", 0); 
-AddAction(2, 0, "Get", "Timer", 
-          "Get userID: <i>{0}</i> 's timer <i>{1}</i> (time-out interval to <i>{2}</i> for starting)", 
+AddAction(2, 0, "Get or start", "Timer", 
+          "Get timer <i>{1}</i> of user ID: <i>{0}</i>, or start timer with time-out interval to <i>{2}</i>", 
           "Get timer.", "GetTimer");
           
 AddStringParam("User ID", "User ID.", '""');
 AddStringParam("Timer", "Name of timer.", '""');
 AddAction(3, 0, "Remove", "Timer", 
           "Remove userID: <i>{0}</i> 's timer <i>{1}</i>", 
-          "Remove timer.", "RemoveTimer");        
+          "Remove timer.", "RemoveTimer");       
+
+AddStringParam("User ID", "User ID.", '""');
+AddStringParam("Timer", "Name of timer.", '""');
+AddAction(4, 0, "Get", "Timer", 
+          "Get timer <i>{1}</i> of user ID: <i>{0}</i>", 
+          "Get timer.", "GetTimer");            
           
 AddAction(2000, 0, "Initial table", "Initial", 
           "Initial table", 

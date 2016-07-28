@@ -49,6 +49,7 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 	    this.rootpath = this.properties[0] + "/"; 
         
         this.exp_LastGeneratedKey = "";
+        this.exp_LastRandomBase32 = "";             
         this.writeItems = {};
         this.writeTableID = null;
         this.writeItemID = null;
@@ -59,7 +60,8 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
         this.onRequestComplete = null;  
         this.addToRequestQueue = null;        
         this.exp_LastTableID = "";         
-        this.exp_LastItemID = "";         
+        this.exp_LastItemID = "";
+   
         this.trigTag = null;
         
         
@@ -177,6 +179,20 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 	{
         delete item[this.convertKeyTableID];
         delete item[this.convertKeyItemID];        
+	};    
+    
+	instanceProto.saveToJSON = function ()
+	{
+		return { 
+            "lk": this.exp_LastGeneratedKey,
+            "lr": this.exp_LastRandomBase32,
+            };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+	    this.exp_LastGeneratedKey = o["lk"];
+        this.exp_LastRandomBase32 = o["lr"];        
 	};    
     
     var din = function (d, default_value)
@@ -378,7 +394,21 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 		}
 
 		return false;
-	};	 	
+	};	
+
+	Cnds.prototype.TableIsEmpty = function (tableID_)
+	{
+        var table = this.readTables[tableID_];
+        if (table == null)
+           return true;
+       
+         for (var k in table)
+         {
+             return false;
+         }
+         
+         return true;
+	}; 	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -720,7 +750,7 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 	{
         if (tableID_ === "")
             this.readTables = {};
-        else if (self.readTables.hasOwnProperty(tableID_))
+        else if (this.readTables.hasOwnProperty(tableID_))
             delete this.readTables[tableID_];
             
 	};    
@@ -866,5 +896,25 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 	{
         var path = this.rootpath + getFullKey("", tableID_, itemID_, key_);  
 		ret.set_string(path);
-	};	     
+	};
+
+    var num2base32 = ["0","1","2","3","4","5","6","7","8","9",
+                                 "b","c","d","e","f","g","h","j","k","m",
+                                 "n","p","q","r","s","t","u","v","w","x",
+                                 "y","z"];
+    Exps.prototype.RandomBase32 = function (ret, dig)
+	{
+        var o = "";
+        for (var i=0;i<dig;i++)
+            o += num2base32[ Math.floor( Math.random()*32 ) ];
+        
+        this.exp_LastRandomBase32 = o;
+	    ret.set_string( o );
+	};	   
+    Exps.prototype.LastRandomBase32 = function (ret)
+	{
+	    ret.set_string( this.exp_LastRandomBase32 );
+	};	  
+
+    
 }());

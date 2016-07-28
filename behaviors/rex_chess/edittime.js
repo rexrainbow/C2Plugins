@@ -80,6 +80,10 @@ AddExpression(2, ef_return_number,
 AddExpression(3, ef_return_any, 
               "Get Z index of selected chess", "Chess", "LZ", 
               "Get Z index of selected chess.");
+AddExpression(4, ef_return_number, 
+              "Get board UID", "Chess", "BoardUID", 
+              "Get board UID, return -1 if not in a board.");    
+              
 AddAnyTypeParam("Z", "The logic Z.", 0);            
 AddExpression(5, ef_return_any | ef_variadic_parameters,
               "Get UID by Z", "Chess", "LZ2UID",

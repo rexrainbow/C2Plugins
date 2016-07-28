@@ -7,7 +7,7 @@
 		"description":	'Get scaling from two dragging points',
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_dragscale.html",
-		"category":		"Rex - Touch",
+		"category":		"Input",
 		"flags":		bf_onlyone
 	};
 };
@@ -39,6 +39,7 @@ AddExpression(3, ef_return_number, "Y co-ordinate of dragging point 0", "Draggin
 AddExpression(4, ef_return_number, "X co-ordinate of dragging point 1", "Dragging point", "P1X", "Get the X co-ordinate of dragging point 1.");
 AddExpression(5, ef_return_number, "Y co-ordinate of dragging point 1", "Dragging point", "P1Y", "Get the Y co-ordinate of dragging point 1.");
 
+AddExpression(11, ef_return_string, "Current state", "State", "CurState", "Get current state.");
 ACESDone();
 
 // Property grid properties for this plugin

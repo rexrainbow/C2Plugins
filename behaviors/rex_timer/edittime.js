@@ -49,7 +49,7 @@ AddAnyTypeParam("Timer", "Timer name", '"_"');
 AddAction(4, 0, "Resume", "Control", 
           "Resume {my} <i>{0}</i>", 
           "Resume timer.", "Resume");
-AddAnyTypeParam("Timer", "Timer name", '"_"');                             
+AddAnyTypeParam("Timer", "Timer name", '"_"');
 AddAction(5, 0, "Stop", "Control", 
           "Stop {my} <i>{0}</i>", 
           "Stop timer.", "Stop"); 
@@ -61,6 +61,18 @@ AddAction(6, af_deprecated, "Set a parameter", "Z: Deprecated",
           "Set {my}'s parameter[<i>{0}</i>] to <i>{1}</i>",
           "Set a parameter passed into callback.", "SetParameter");          
 // ---- deprecated ----
+
+AddAction(7, 0, "Pause all", "Control", 
+          "Pause {my} all", 
+          "Pause all timers.", "PauseAll"); 
+          
+AddAction(8, 0, "Resume all", "Control", 
+          "Resume {my} all", 
+          "Resume all timers.", "ResumeAll"); 
+          
+AddAction(9, 0, "Stop all", "Control", 
+          "Stop {my} all", 
+          "Stop all timers.", "StopAll");           
 
 AddObjectParam("Timeline", "Timeline object to get timer");
 AddAction(10, 0, "Setup timer", "Setup", 

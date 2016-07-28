@@ -49,6 +49,14 @@ AddCondition(7, cf_trigger, "On deleting user success", "Email & Password - dele
 AddCondition(8, cf_trigger, "On deleting user error", "Email & Password - deleting user", 
             "On sending password result email error", 
             "Triggered when deleting user error.", "EmailPassword_OnDeleteUserError"); 
+            
+AddCondition(9, cf_trigger, "On updating profile success", "Email & Password - update profile", 
+            "On update profile success", 
+            "Triggered when updating profile success.", "EmailPassword_OnUpdatingProfileSuccessfully");
+            
+AddCondition(10, cf_trigger, "On updating profile error", "Email & Password - update profile", 
+            "On update profile error", 
+            "Triggered when updating profile error.", "EmailPassword_OnUpdatingProfileError");               
                         
 // general            
 AddCondition(31, cf_trigger, "On login success", "General - login", 
@@ -59,25 +67,34 @@ AddCondition(32, cf_trigger, "On login error", "General - login",
             "On login error", 
             "Triggered when login error.", "OnLoginError");
 
-AddCondition(33, cf_trigger, "On logged out", "General - login", 
+AddCondition(33, cf_trigger, "On logged out", "General - logged out", 
             "On logged out", 
             "Triggered when logged out.", "OnLoggedOut");	
 
 AddCondition(34, 0, "Is login", "General - login", 
             "Is login", 
-            "Return true if logging now.", "IsLogin");            
+            "Return true if logging now.", "IsLogin");     
+
+            
+AddCondition(41, cf_trigger, "On login by other app", "General - login", 
+            "On login by other app", 
+            "Triggered when login by other app.", "OnLoginByOther");                        
+            
+AddCondition(42, cf_trigger, "On logged out by other app", "General - logged out", 
+            "On logged out by other app", 
+            "Triggered when logged out by other app.", "OnLoggedOutByOther");	            
 //////////////////////////////////////////////////////////////
 // Actions 
   
 // email - password  
-AddStringParam("Email", "User email");
-AddStringParam("Password", "User password");
+AddStringParam("Email", "User email", '""');
+AddStringParam("Password", "User password", '""');
 AddAction(1, 0, "Create account", "Email & Password", 
           "Create account with email to <i>{0}</i>, password to <i>{1}</i>", 
           "Create account with email & password.", "EmailPassword_CreateAccount");
 
-AddStringParam("Email", "User email");
-AddStringParam("Password", "User password");
+AddStringParam("Email", "User email", '""');
+AddStringParam("Password", "User password", '""');
 AddComboParamOption("default");
 AddComboParamOption("sessionOnly");
 AddComboParamOption("never");
@@ -86,23 +103,30 @@ AddAction(2, 0, "Login", "Email & Password",
           "Login with email to <i>{0}</i>, password to <i>{1}</i>, persisting type to <i>{2}</i>", 
           "Login with email & password.", "EmailPassword_Login");
           
-AddStringParam("Email", "User email");
-AddStringParam("Old password", "User password");
-AddStringParam("New password", "User password");
+AddStringParam("Email", "User email", '""');
+AddStringParam("Old password", "User password", '""');
+AddStringParam("New password", "User password", '""');
 AddAction(3, 0, "Change password", "Email & Password", 
           "Change password with email to <i>{0}</i>, password from old <i>{1}</i> to new <i>{1}</i>", 
           "Change password.", "EmailPassword_ChangePassword");          
 
-AddStringParam("Email", "User email");
+AddStringParam("Email", "User email", '""');
 AddAction(4, 0, "Sending password reset email", "Email & Password", 
           "Sending password reset email to <i>{0}</i>", 
           "Sending password reset email", "EmailPassword_SendPasswordResultEmail"); 
              
-AddStringParam("Email", "User email");
-AddStringParam("Password", "User password");
+AddStringParam("Email", "User email", '""');
+AddStringParam("Password", "User password", '""');
 AddAction(5, 0, "Delete user", "Email & Password", 
           "Delete user with email <i>{0}</i>, password <i>{1}</i>", 
           "Delete user with email & password.", "EmailPassword_DeleteUser");  
+          
+// 3.x only
+AddStringParam("Display name", "Display name of current user.", '""');
+AddStringParam("Photo URL", "Photo URL of current user", '""');
+AddAction(51, 0, "Update profile", "Email & Password", 
+          "Update display name to <i>{0}</i>, photo URL to <i>{1}</i>", 
+          "Update profile. 3.x only.", "UpdateProfile");	          
           
 // anonymous   
 AddComboParamOption("default");
@@ -113,7 +137,7 @@ AddAction(11, 0, "Login", "Anonymous",
           "Login with anonymous, persisting type to <i>{0}</i>", 
           "Login with anonymous.", "Anonymous_Login");   
           
-AddStringParam("Token", "Token");
+AddStringParam("Token", "Token", '""');
 AddComboParamOption("default");
 AddComboParamOption("sessionOnly");
 AddComboParamOption("never");
@@ -174,7 +198,9 @@ AddAction(41, 0, "Go offline", "Online",
           "Manually disconnect the Firebase client from the server and disable automatic reconnection.", "GoOffline");
 AddAction(42, 0, "Go online", "Online", 
           "Go online", 
-          "Manually reestablish a connection to the Firebase server and enable automatic reconnection.", "GoOnline");  		  
+          "Manually reestablish a connection to the Firebase server and enable automatic reconnection.", "GoOnline");  
+
+	  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 
@@ -199,6 +225,8 @@ AddExpression(10, ef_return_string, "User name", "General auth data", "UserName"
               "The user's screen name, handle, or alias. Twitter screen names are unique, but subject to change. .");
 AddExpression(11, ef_return_string, "Error detail", "Error", "ErrorDetail", 
               "Error detail.");
+AddExpression(12, ef_return_string, "Photo URL", "General auth data", "PhotoURL", 
+              "Photo URL.");              
               
 ACESDone();
 

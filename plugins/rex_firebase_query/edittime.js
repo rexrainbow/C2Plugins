@@ -16,14 +16,7 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-//AddStringParam("Callback function", "Callback function.", '"_"');
-//AddCondition(1, cf_trigger, "On received", "Receive", 
-//            "On received <b>{0}</b>", 
-//            "Triggered when registered received event received.", "OnReading");   
-//
-//AddCondition(2, 0, "LastData is null", "Receive", 
-//             "LastData is null", 
-//             "Return true if LastData is null.", "LastDataIsNull");                         
+                    
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Domain", "The Firebase data ref URL", '""');
@@ -39,40 +32,40 @@ AddAction(1, 0, "Create", "0. Create",
 
 // 1.order
 AddAction(11, 0, "Order by key", "1. Create - Order", 
-          "1. Order current query by Key", 
+          "1. Order query by Key", 
           "Order query by Key.", "OrderByKey");
           
 AddStringParam("Child", "Key name of child", '""');          
 AddAction(12, 0, "Order by child", "1. Create - Order", 
-          "1. Order current query by child <i>{0}</i>", 
+          "1. Order query by child <i>{0}</i>", 
           "Order query by child.", "OrderByChild"); 
           
 AddAction(13, 0, "Order by priority", "1. Create - Order", 
-          "1. Order current query by priority", 
+          "1. Order query by priority", 
           "Order query by priority.", "OrderByPriority");  
           
 AddAction(14, 0, "Order by value", "1. Create - Order", 
-          "1. Order current query by value", 
+          "1. Order query by value", 
           "Order query by value.", "OrderByValue");          
           
 // 2. range condition
 AddAnyTypeParam("Value", "Start value.", 0);          
 AddAction(22, 0, "Start at", "2. Create - Range", 
-          "2. Start current query at <i>{0}</i>", 
+          "2. Start query at <i>{0}</i>", 
           "Start query at specific value.", "StartAt");  
 AddAnyTypeParam("Value", "End value.", 0);          
 AddAction(23, 0, "End at", "2. Create - Range", 
-          "2. End current query at <i>{0}</i>", 
+          "2. End query at <i>{0}</i>", 
           "End query at specific value.", "EndAt");
 AddAnyTypeParam("Value", "Start value.", 0);             
 AddAnyTypeParam("Value", "End value.", 0);          
 AddAction(24, 0, "In range", "2. Create - Range", 
-          "2. Set current query in range, from <i>{0}</i> to <i>{1}</i>", 
+          "2. Set query in range, from <i>{0}</i> to <i>{1}</i>", 
           "Set query in range.", "StartEndAt");     
 AddAnyTypeParam("Value", "Equal value.", 0);          
 AddAction(25, 0, "Equal to", "2. Create - Range", 
-          "2. Set current query equal to <i>{0}</i>", 
-          "Set query equal to specific value.", "EqualTo"); 
+          "2. Set query equal to <i>{0}</i>", 
+          "Set query equal to specific value.", "EqualTo");   
 
 // 3. limit
 AddNumberParam("Limit", "Limit count.", 1);          

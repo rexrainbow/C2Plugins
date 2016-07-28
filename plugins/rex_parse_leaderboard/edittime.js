@@ -151,7 +151,7 @@ AddExpression(5, ef_return_any, "Current extra data", "Load - for each", "CurExt
 //AddStringParam("Key", "Key of object.", '""');       
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Value of current user object", "Load - for each", "CurUserObject", 
               "Get value of current user object in a For Each loop.");
-AddExpression(7, ef_return_number, "Current item count", "Received - for each", "CurRankingCount", 
+AddExpression(7, ef_return_number, "Current ranking count", "Received - for each", "CurRankingCount", 
               "Get ranking count in current received page.");   
 AddExpression(8, ef_return_number, "Current start index", "Load - for each - index", "CurStartIndex", 
               "Get start index in current received page.");           

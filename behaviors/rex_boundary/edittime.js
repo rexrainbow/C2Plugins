@@ -64,6 +64,17 @@ AddAnyTypeParam("Bottom", "Name or number of image point for bottom boundary.");
 AddAction(8, 0, "Set vertical boundary to", "Set boundary to object", 
           "Set {my} vertical boundary to <i>{0}</i> at image point [<i>{1}</i>, <i>{2}</i>]", "Set the object's vertical boundary.", "SetVerticalBoundaryToObject"); 
           
+AddNumberParam("Percentage", "Percentage between 0 to 1.");
+AddAction(11, af_deprecated, "Set X", "Position", 
+          "Set X to <i>{0}</i> of {my} horizontal boundaries", "Set the object's X position by horizontal boundaries.", "SetXByPercentage");              
+AddNumberParam("Percentage", "Percentage between 0 to 1.");
+AddAction(12, af_deprecated, "Set Y", "Position", 
+          "Set Y to <i>{0}</i> of {my} vertical boundaries", "Set the object's Y position by percentage of vertical boundaries.", "SetYByPercentage");          
+AddNumberParam("Horizontal", "Percentage of horizontal between 0 to 1.");
+AddNumberParam("Vertical", "Percentage of vertical between 0 to 1.");
+AddAction(13, af_deprecated, "Set psoition", "Position", 
+          "Set position to (<i>{0}</i>, <i>{1}</i>) of {my} horizontal and vertical boundaries", "Set the object's position by horizontal and boundaries.", "SetYXByPercentage");              
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get horizontal boundary enable", "Enable", "HorizontalEnable", "Horizontal boundary enable setting.");
@@ -85,6 +96,13 @@ AddNumberParam("Bottom", "Maximum value.", 1);
 AddExpression(10, ef_return_number | ef_variadic_parameters, "Get vertical scaled value", "Scaled value", "VerScale", 
               "Get vertical scaled value between top and bottom value");              
 
+AddNumberParam("Percentage", "Percentage between 0 to 1.");
+AddExpression(11, ef_return_number, "Get position X by percentage of horizontal boundaries", "Position", "HorPercent2PosX", 
+              "Get position X by percentage of horizontal boundaries");   
+AddNumberParam("Percentage", "Percentage between 0 to 1.");
+AddExpression(12, ef_return_number, "Get position Y by percentage of vertical boundaries", "Position", "VerPercent2PosY", 
+              "Get position X by percentage of vertical boundaries"); 
+              
 ACESDone();
 
 // Property grid properties for this plugin

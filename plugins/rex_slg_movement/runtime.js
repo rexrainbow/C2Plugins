@@ -993,13 +993,13 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     
     Acts.prototype.Setup = function (board_objs, group_objs)
 	{
-        var board = board_objs.instances[0];
+        var board = board_objs.getFirstPicked();
         if (board.check_name == "BOARD")
             this.board = board;        
         else
             alert ("SLG movement should connect to a board object");		
             
-        var group = group_objs.instances[0];
+        var group = group_objs.getFirstPicked();
         if (group.check_name == "INSTGROUP")
             this.group = group;        
         else
