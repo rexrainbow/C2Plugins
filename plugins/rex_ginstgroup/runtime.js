@@ -67,12 +67,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 										})(this);
         }
 										
-		this.runtime.addDestroyCallback(this.myDestroyCallback); 
-		
-		
-		/**BEGIN-PREVIEWONLY**/
-		this.propsections = [];
-		/**END-PREVIEWONLY**/	    	    
+		this.runtime.addDestroyCallback(this.myDestroyCallback); 		   
 	};
     
 	instanceProto.onDestroy = function ()
@@ -330,7 +325,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;	
+	    var prop = [];
 		var groups = this.groups, group_name;
 		var uid, uids, inst;
 		var types = {}, type_name, s;
@@ -356,12 +351,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	        s = "";	   
 	        for (type_name in types) 	        
 	            s += type_name.toString() + ":" + types[type_name].toString() + "  ";
-	        this.propsections.push({"name": group_name, "value": s});
+	        prop.push({"name": group_name, "value": s});
 	    }
 		        	
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	/**END-PREVIEWONLY**/	
@@ -628,7 +623,7 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
 	
     Acts.prototype.SetRandomGenerator = function (randomGen_objs)
 	{
-        var randomGen = randomGen_objs.instances[0];
+        var randomGen = randomGen_objs.getFirstPicked();
         if (randomGen.check_name == "RANDOM")
             this.randomGen = randomGen;        
         else

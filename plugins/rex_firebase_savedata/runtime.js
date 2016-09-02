@@ -54,7 +54,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";        
 
-        this.owner_userID = "";
+        this.ownerID = "";
         
 		this.save_header = {};
 		this.save_body = {};
@@ -62,18 +62,22 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		
 		this.load_headers = null;
 		this.load_body = null;
+        this.exp_LastSlotName = null;
 		
 		this.exp_CurSlotName = "";		
 		this.exp_CurHeader = {};
         this.exp_CurKey = "";
-        this.exp_CurValue = 0;
+        this.exp_CurValue = 0;      
 	};
 	
 	instanceProto.onDestroy = function ()
-	{		
+	{		    
 		this.save_header = {};
 		this.save_body = {};
 		this.save_item = {};
+        
+		this.load_headers = null;
+		this.load_body = null;        
 	};
 		
     // 2.x , 3.x    
@@ -141,27 +145,6 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
     };    
     // 2.x , 3.x 
 	
-	var get_data = function(in_data, default_value)
-	{
-	    var val;
-	    if (in_data === null)
-	    {
-	        if (default_value === null)
-	            val = 0;
-	        else
-	            val = default_value;
-	    }
-        else if (typeof(in_data) == "object")
-        {
-            val = JSON.stringify(in_data);
-        }
-        else
-        {
-            val = in_data;
-        }	    
-        return val;
-	};  
-	
 	var is_empty = function (o)
 	{
 		for (var k in o)
@@ -172,12 +155,148 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    return true;
 	};
 
+
     var get_path = function (slot_name, is_body, key)
     {
+        key = key.replace(re_ALLDOT, "/");
         var p = (is_body)? "bodies":"headers";
         p += "/" + slot_name + "/" + key;
         return p;
     };	
+    
+	instanceProto.updateCacheData = function (slot_name, save_header, save_body)
+	{		    
+        if (this.load_headers == null)
+            this.load_headers = {};
+        if (!this.load_headers.hasOwnProperty(slot_name))
+            this.load_headers[slot_name] = {};
+        
+        var load_header = this.load_headers[slot_name];
+        for(var n in save_header)
+        {
+            n = 
+            setItemValue(n, save_header[n], load_header);
+        }
+        
+        if (slot_name === this.exp_LastSlotName)
+        {
+            if (this.load_body == null)
+                this.load_body = {};
+            for (var n in save_body)
+            {
+                setItemValue(n, save_body[n], this.load_body);
+            }
+        }
+	};    
+    
+	var setItemValue = function(keys, value, root)
+	{        
+        if (typeof (keys) === "string")
+            keys = keys.split(".");
+        
+        var lastKey = keys.pop(); 
+        var entry = getEntry(keys, root);
+        entry[lastKey] = value;
+	};    
+
+	var getEntry = function(keys, root)
+	{
+        var entry = root;
+        if ((keys === "") || (keys.length === 0))
+        {
+            //entry = root;
+        }
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];
+                if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
+                    entry[key] = {};
+                
+                entry = entry[key];            
+            }           
+        }
+        
+        return entry;
+	};      
+    
+	/**BEGIN-PREVIEWONLY**/
+    // slightly modified neet simple function from Pumbaa80
+    // http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript#answer-7220510
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // basic html escaping
+        return json
+            .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'red';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'blue';
+                    } else {
+                        cls = 'green';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'Sienna';
+                } else if (/null/.test(match)) {
+                    cls = 'gray';
+                }
+                return '<span style="color:' + cls + ';">' + match + '</span>';
+            })
+            .replace(/\t/g,"&nbsp;&nbsp;") // to keep indentation in html
+            .replace(/\n/g,"<br/>");       // to keep line break in html
+    };
+    var color_JSON = function (o)
+    {
+        var val = syntaxHighlight(JSON.stringify(o));
+        return "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+val+"</style>";
+    };
+    
+	instanceProto.getDebuggerValues = function (propsections)
+	{
+        var prop = [
+            {"name": "OwnerID",  "value": this.ownerID, "readonly":true},
+            {"name": "Slot name",  "value": this.exp_LastSlotName || "", "readonly":true}
+        ];
+        
+        
+        if (this.exp_LastSlotName && this.load_headers && 
+            this.load_headers.hasOwnProperty(this.exp_LastSlotName))
+        {
+            var header = this.load_headers[this.exp_LastSlotName];
+            for (var n in header)
+            {
+                prop.push({"name": "Header-" + n,  
+                    "value": color_JSON(header[n]), 
+                    "html": true,
+                    "readonly":true});
+            }
+        }
+        
+        if (this.load_body)
+        {
+            for (var n in this.load_body)
+            {
+                prop.push({"name": "Body-" + n,  
+                    "value": color_JSON(this.load_body[n]), 
+                    "html": true,
+                    "readonly":true});
+            }
+        }
+        
+		propsections.push({
+			"title": this.type.name,
+			"properties": prop
+		});	
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/	    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -233,7 +352,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    return true;
 	};
 
-	Cnds.prototype.OnGetBodyError = function ()
+	Cnds.prototype.OnGetUnusedBody = function ()
 	{
 	    return true;
 	};	
@@ -313,7 +432,11 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		return false;
 	};    
     
-
+	Cnds.prototype.SlotIsUnused = function ()
+	{
+	    return (this.load_body == null);
+	};	
+    
 	Cnds.prototype.OnCleanComplete = function ()
 	{
 	    return true;
@@ -330,13 +453,18 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
     Acts.prototype.SetOwner = function (id)
 	{
-        this.owner_userID = id;
+        this.ownerID = id;
+        this.exp_LastSlotName = null;
+        this.load_body = null;
+        this.load_headers = null;
 	};
 	
-    Acts.prototype.SetValue = function (key_, value_, is_body)
+    var re_ALLDOT = new RegExp(/\./, 'g');    
+    Acts.prototype.SetValue = function (k, v, is_body)
 	{
         var table = (is_body==1)? this.save_body:this.save_header;
-		table[key_] = value_;
+        k = k.replace(re_ALLDOT, "/");
+		table[k] = v;
 	};
 	
     Acts.prototype.Save = function (slot_name)
@@ -360,36 +488,37 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         for (k in this.save_body)
             this.save_item[ get_path(slot_name, true, k) ] = this.save_body[k];            
 	    
-	    var ref = this.get_ref(this.owner_userID);	
+	    var ref = this.get_ref(this.ownerID);	
         ref["update"](this.save_item, on_complete);		
 		
+        this.updateCacheData(slot_name, this.save_header, this.save_body);
         this.save_header = {};
         this.save_body = {};
         this.save_item = {};
 	};
     	
-    Acts.prototype.SetBooleanValue = function (key_, b, is_body)
+    Acts.prototype.SetBooleanValue = function (k, b, is_body)
 	{
         var table = (is_body==1)? this.save_body:this.save_header;
-		table[key_] = (b==1);
+		table[k] = (b==1);
 	};
     	
-    Acts.prototype.SetCurrentServerTimestamp = function (key_, is_body)
+    Acts.prototype.SetCurrentServerTimestamp = function (k, is_body)
 	{
         var table = (is_body==1)? this.save_body:this.save_header;
-		table[key_] = serverTimeStamp();
+		table[k] = serverTimeStamp();
 	};	
     	
-    Acts.prototype.RemoveKey = function (key_, is_body)
+    Acts.prototype.RemoveKey = function (k, is_body)
 	{
         var table = (is_body==1)? this.save_body:this.save_header;
-		table[key_] = null;
+		table[k] = null;
 	};	    
     
 	
     Acts.prototype.GetAllHeaders = function ()
 	{
-	    var ref = this.get_ref(this.owner_userID)["child"]("headers");
+	    var ref = this.get_ref(this.ownerID)["child"]("headers");
 		
 		var self = this;
         var handler = function (snapshot)
@@ -403,14 +532,15 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
     Acts.prototype.GetSlotBody = function (slot_name)
 	{
-	    var ref = this.get_ref(this.owner_userID)["child"]("bodies")["child"](slot_name);
+	    var ref = this.get_ref(this.ownerID)["child"]("bodies")["child"](slot_name);
 		
 		var self = this;
         var handler = function (snapshot)
         {   
+            self.exp_LastSlotName = slot_name;
             self.load_body = snapshot.val();
 			var trig = (self.load_body!=null)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetBodyComplete:
-				                               cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetBodyError;
+				                               cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetUnusedBody;
             self.runtime.trigger(trig, self); 
         };
 			
@@ -419,7 +549,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
     Acts.prototype.CleanAll = function ()
 	{
-	    var ref = this.get_ref(this.owner_userID)["child"];
+	    var ref = this.get_ref(this.ownerID)["child"];
 		
 		var self = this;
         var on_complete = function (error)
@@ -434,7 +564,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	
     Acts.prototype.CleanSlot = function (slot_name)
 	{
-	    var ref = this.get_ref(this.owner_userID);
+	    var ref = this.get_ref(this.ownerID);
         var header_ref = ref["child"]("headers")["child"](slot_name);
 		var body_ref = ref["child"]("bodies")["child"](slot_name);
 		
@@ -468,44 +598,38 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		ret.set_string(this.exp_CurSlotName);
 	};
 	
-	Exps.prototype.CurHeaderValue = function (ret, key_, default_value)
-	{
-		ret.set_any(get_data(this.exp_CurHeader[key_], default_value));
+	Exps.prototype.CurHeaderValue = function (ret, key, default_value)
+	{        
+		ret.set_any( window.FirebaseGetValueByKeyPath(this.exp_CurHeader, key, default_value) );
 	};	
 	
-	Exps.prototype.BodyValue = function (ret, key_, default_value)
-	{	    
-	    var value_ = (this.load_body==null)? null:this.load_body[key_];
-		ret.set_any(get_data(value_, default_value));
+	Exps.prototype.BodyValue = function (ret, key, default_value)
+	{ 
+		ret.set_any( window.FirebaseGetValueByKeyPath(this.load_body, key, default_value) );        
 	};
 
 	Exps.prototype.HeadersToJSON = function (ret)
 	{
-		ret.set_string(JSON.stringify(this.load_headers));
+		ret.set_string(JSON.stringify(this.load_headers || {}));
 	};	
 	
 	Exps.prototype.BodyToJSON = function (ret)
 	{
-		ret.set_string(JSON.stringify(this.load_body));
+		ret.set_string(JSON.stringify(this.load_body || {}));
 	};	
 	
-	Exps.prototype.HeaderValue = function (ret, slot_name, key_, default_value)
+	Exps.prototype.HeaderValue = function (ret, slot_name, key, default_value)
 	{	
-	    var value_ = this.load_body;
-	    if (value_ != null)
-	    {
-	        value_ = value_[slot_name];
-	        if (value_ != null)
-	        {
-	            value_ = value_[key_];
-	        }
-	    }
-		ret.set_any(get_data(value_, default_value));
+        var val = this.load_headers;
+        if (slot_name)
+            val = val[slot_name];
+        
+		ret.set_any( window.FirebaseGetValueByKeyPath(val, key, default_value) );  
 	};		
     
-	Exps.prototype.CurHeaderValue = function (ret, key_, default_value)
+	Exps.prototype.CurHeaderValue = function (ret, key, default_value)
 	{
-		ret.set_any(get_data(this.exp_CurHeader[key_], default_value));
+		ret.set_any( window.FirebaseGetValueByKeyPath(this.exp_CurHeader, key, default_value) );
 	};	
     
 	Exps.prototype.CurKey = function (ret)
@@ -513,9 +637,13 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		ret.set_any(this.exp_CurKey);
 	};		  
     
-	Exps.prototype.CurValue = function (ret)
+	Exps.prototype.CurValue = function (ret, subKey, default_value)
 	{
-		ret.set_any(this.exp_CurValue);
+		ret.set_any( window.FirebaseGetValueByKeyPath(this.exp_CurValue, subKey, default_value) );        
 	};		
     
+	Exps.prototype.LastSlotName = function (ret)
+	{
+		ret.set_any( this.exp_LastSlotName || "" );        
+	};	    
 }());

@@ -310,7 +310,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 
         var key, value;
-        this.exp_Loopindex = 0;
+        this.exp_Loopindex = -1;
 		for (key in entry)
 	    {
             if (solModifierAfterCnds)
@@ -318,8 +318,9 @@ cr.plugins_.Rex_Hash = function(runtime)
             
             this.exp_CurKey = key;
             this.exp_CurValue = entry[key];	
+            this.exp_Loopindex ++;              
 			current_event.retrigger();
-            this.exp_Loopindex ++;            
+          
 			
             if (solModifierAfterCnds)            
 			    this.runtime.popSol(current_event.solModifiers);

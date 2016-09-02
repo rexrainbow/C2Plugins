@@ -56,7 +56,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         this.exp_EmptyLX = -1;
         this.exp_EmptyLY = -1;
 	    this.exp_CurLX = 0;
-	    this.exp_CurLY = 0;        
+	    this.exp_CurLY = 0;   
+        this.exp_CurLZ = 0;        
         
 		// Need to know if pinned object gets destroyed
 		if (!this.recycled)
@@ -1223,19 +1224,19 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return this.PickChess(chess_type);            
 	};	
 	
-	Cnds.prototype.PickChessAtLX = function (chess_type, lx)
+	Cnds.prototype.PickChessAtLX = function (chess_type, x)
 	{
-        return this.PickChessAtLX(chess_type, lx);            
+        return this.PickChessAtLX(chess_type, x);            
 	};	
 	
-	Cnds.prototype.PickChessAtLY = function (chess_type, ly)
+	Cnds.prototype.PickChessAtLY = function (chess_type, y)
 	{	    
-        return this.PickChessAtLY(chess_type, ly);            
+        return this.PickChessAtLY(chess_type, y);            
 	};	
 	
-	Cnds.prototype.PickChessAtLZ = function (chess_type, lz)
+	Cnds.prototype.PickChessAtLZ = function (chess_type, z)
 	{
-        return this.PickChessAtLZ(chess_type, lz);            
+        return this.PickChessAtLZ(chess_type, z);            
 	};		
 
 	Cnds.prototype.PickEmptyCellOnTiles = function (tile_type, z)
@@ -1312,6 +1313,35 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
         return this.PickChessInsideSquare(chess_type, x0, x1, y0, y1);            
 	};	 
+    
+
+	Cnds.prototype.ForEachLZ = function (x, y)
+	{        
+        var zHash = this.xy2zHash(x,y);
+        if (!zHash)
+            return false;
+        
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+        
+        for (var z in zHash)
+        {
+            if (solModifierAfterCnds)                    
+                this.runtime.pushCopySol(current_event.solModifiers);
+          
+            if (!isNaN(z))
+                z = parseFloat(z);
+            this.exp_CurLZ = z;          
+		    current_event.retrigger();
+		    
+            if (solModifierAfterCnds)                    
+		        this.runtime.popSol(current_event.solModifiers);                
+        }
+        
+        return false;
+    };
+        
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -1826,6 +1856,11 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	{
 		ret.set_int(this.exp_CurLY);
 	}; 	
+    
+	Exps.prototype.CurLZ = function (ret)
+	{
+		ret.set_any(this.exp_CurLZ);
+	};     
     
 	Exps.prototype.MaxLX = function (ret)
 	{

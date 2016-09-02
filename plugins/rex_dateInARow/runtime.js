@@ -42,10 +42,6 @@ cr.plugins_.Rex_dateInARow = function(runtime)
 	instanceProto.onCreate = function()
 	{        
         this.dateVars = {};  // [lastTimestamp, count, previousCount]
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];      
-        /**END-PREVIEWONLY**/         
 	};
     
     var year_diff = function(t1, t0)
@@ -124,17 +120,17 @@ cr.plugins_.Rex_dateInARow = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
+	    var prop = [];
         var dateVar, val;
         for (var n in this.dateVars)
         {
             dateVar = this.dateVars[n];
             val = new Date(dateVar[0]).toLocaleString() + " >> " + dateVar[1];
-	        this.propsections.push({"name": n, "value": val});
+	        prop.push({"name": n, "value": val});
         }
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

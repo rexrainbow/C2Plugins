@@ -10,13 +10,13 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		pf_deprecated
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On save complete", "Save", 
+AddCondition(1, cf_trigger, "On save", "Save", 
             "On save complete",
             "Triggered when save complete.", "OnSaveComplete");
 
@@ -32,7 +32,7 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each header", "Load - head
              "For each header", 
              "Repeat the event for each slot header.", "ForEachHeader"); 
 			 
-AddCondition(13, cf_trigger, "On get body complete", "Load - body", 
+AddCondition(13, cf_trigger, "On get body", "Load - body", 
             "On get body complete", 
             "Triggered when get slot body complete from server complete.", "OnGetBodyComplete");
 
@@ -62,7 +62,7 @@ AddCondition(19, cf_looping | cf_not_invertible, "For each key", "Load - body",
              "For each key in body", 
              "Repeat the event for each key in body.", "ForEachKeyInBody");                  
             
-AddCondition(21, cf_trigger, "On clean complete", "Clean", 
+AddCondition(21, cf_trigger, "On clean", "Clean", 
             "On clean complete", 
             "Triggered when clean slots complete on server complete.", "OnCleanComplete");
 

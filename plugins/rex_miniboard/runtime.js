@@ -871,7 +871,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
     
     Acts.prototype.SetupLayout = function (layout_objs)
 	{
-        var layout = layout_objs.instances[0];
+        var layout = layout_objs.getFirstPicked();
         if (layout.check_name == "LAYOUT")
             this.type.layout = layout;        
         else

@@ -344,7 +344,15 @@ cr.behaviors.rex_bScenario = function(runtime)
         var t = (type_cmp == 0)? "number":"string";        
         return (typeof(param_value) == t);
     };    
-            
+    
+    Cnds.prototype.IsWaiting = function (key)
+    {
+        return this._scenario.isPaused(key);
+    };     
+    Cnds.prototype.OnWaitingStart = function (key)
+    {
+        return this._scenario.isPaused(key);
+    }; 	  
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -459,6 +467,13 @@ cr.behaviors.rex_bScenario = function(runtime)
     {
         ret.set_any(this.param_get(param_index_));
     };
+
+    Exps.prototype.PreviousTag = function(ret)
+    {
+        ret.set_string(this._scenario.GetPrevTag());
+    };
+    
+    Exps.prototype.CurrentTag = Exps.prototype.LastTag;    
         
 }());
 
@@ -495,6 +510,9 @@ cr.behaviors.rex_bScenario = function(runtime)
                                     "else": new CmdELSEKlass(this),
                                     "end if":new CmdENDIFKlass(this),
                                     };
+        // alias
+        this._extra_cmd_handlers["label"] = this._extra_cmd_handlers["tag"];
+        
         // variablies pool
         this["Mem"] = {};		
         this.timer_save = null;
@@ -516,7 +534,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.is_pause = false;
         // --------
         //this.timer = null;       
-            
+        this.sn = 0;
         this.pre_abs_time = 0;
         this.Offset = 0;  
 
@@ -641,6 +659,12 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     ScenarioKlassProto.Start = function (offset, tag, repeat_count)
     {        
+        // increase sn
+        this.sn ++;
+        if (this.sn === 65535)
+            this.sn = 0;
+        // increase sn   
+        
         this.is_running = true;
         this.is_pause = false;        
         this._reset_abs_time();
@@ -689,6 +713,11 @@ cr.behaviors.rex_bScenario = function(runtime)
     {      
         return this.cmd_handler_get("tag").last_tag;
     };  
+
+    ScenarioKlassProto.GetPrevTag = function ()
+    {      
+        return this.cmd_handler_get("tag").prev_tag;
+    };    
     
     ScenarioKlassProto.HasTag = function (tag)
     {
@@ -703,6 +732,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     ScenarioKlassProto._run_next_cmd = function (index)
     {     
+        var mysn = this.sn;            
         if (index != null)
             this.table_index_set(index);
             
@@ -724,6 +754,8 @@ cr.behaviors.rex_bScenario = function(runtime)
                 is_continue = this._on_delay_execution_command(cmd, cmd_pack);
             else  // might be other command
                 is_continue = this.cmd_handler_get(cmd.toLowerCase()).on_executing(cmd_pack);
+                
+            is_continue = is_continue && (mysn === this.sn);                
         }
     }; 
     ScenarioKlassProto.table_index_set = function (index)
@@ -766,18 +798,26 @@ cr.behaviors.rex_bScenario = function(runtime)
     ScenarioKlassProto.pause = function ()
     {
         this.is_pause = true;
+        var inst = this.plugin;    
+        inst.runtime.trigger(cr.behaviors.rex_bScenario.prototype.cnds.OnWaitingStart, inst.inst);        
     };
     ScenarioKlassProto.resume = function(key)
     {
         if (!(this.is_pause && this.is_running))
             return;
-        var is_unlock = this.cmd_handler_get("wait").unlock(key);
+        var is_unlock = this.cmd_handler_get("wait").keyMatched(key);
         if (!is_unlock)
             return;
         this.is_pause = false;
         this._reset_abs_time();
         this._run_next_cmd();
     };
+    ScenarioKlassProto.isPaused = function (key)
+    {        
+        var key_matched = this.cmd_handler_get("wait").keyMatched(key);
+        return this.is_pause && key_matched;
+    };
+        
     ScenarioKlassProto.on_tag_changed = function()
     {
         var inst = this.plugin;
@@ -1018,30 +1058,24 @@ cr.behaviors.rex_bScenario = function(runtime)
     CmdWAITKlassProto.on_executing = function(cmd_pack)
     {
         var locked = cmd_pack[1];
-        if (locked != null)
-        {
-            locked = this.scenario.param_get(locked);
-            this.locked = locked;
-        }    
+        if ((locked != null) && (locked !== ""))
+            this.locked = this.scenario.param_get(locked);   
         else
-        {    
-            locked = "";
-            this.locked = null;
-        }   
+            this.locked = "";
         
         /**BEGIN-PREVIEWONLY**/
         var debugger_info=this.scenario.debugger_info;
         debugger_info.length = 0;
-        debugger_info.push({"name": "WAIT", "value": locked});	
+        debugger_info.push({"name": "WAIT", "value": this.locked});	
         /**END-PREVIEWONLY**/	
         
         if (this.scenario.is_debug_mode)                    
-            log ("Scenario: WAIT "+ locked);        
+            log ("Scenario: WAIT "+ this.locked);        
             
-        this.scenario.pause();
+        this.scenario.pause();          
         return false;  // is_continue
     }; 
-    CmdWAITKlassProto.unlock = function(key) 
+    CmdWAITKlassProto.keyMatched = function(key) 
     {
         if (key == null)   // null could unlock all
             return true;
@@ -1085,11 +1119,12 @@ cr.behaviors.rex_bScenario = function(runtime)
         return this.scenario.exit();
     };
 
-    // extra command : TAG    
+    // extra command : TAG (alias: LABEL)    
     var CmdTAGKlass = function(scenario)
     {
         this.scenario = scenario;
         this._tag2index = {};
+        this.prev_tag = "";        
         this.last_tag = "";
     };
     var CmdTAGKlassProto = CmdTAGKlass.prototype;    
@@ -1099,6 +1134,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         for(t in this._tag2index)
             delete this._tag2index[t];
             
+        this.prev_tag = "";            
         this.last_tag = "";
     }; 
     CmdTAGKlassProto.on_parsing = function(index, cmd_pack) 
@@ -1112,6 +1148,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         if (this.scenario.is_debug_mode)
             log ("Scenario: TAG "+cmd_pack[1]); 
             
+        this.prev_tag = this.last_tag;            
         this.last_tag = cmd_pack[1];
         this.scenario._reset_abs_time();
         this.scenario.on_tag_changed();

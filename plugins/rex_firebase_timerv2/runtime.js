@@ -1,11 +1,9 @@
 ﻿/*
 <ownerID>
-    timers\    (monitor children of this node)
+    timers\
         <timerName>
             start - timestamp of start
             time-out - interval of time-out
-            
-    current - timestamp of current (write then read)        
 */
 
 
@@ -54,7 +52,7 @@ cr.plugins_.Rex_Firebase_TimerV2 = function(runtime)
 	{ 
 	    this.rootpath = this.properties[0] + "/"; 
 
-        this.currentTimestamp = (new Date()).getTime();
+        this.curTimeObj = null;
         this.endTimes = {};    // [ endTimestamp, isTimeout]
         
 	    this.exp_LastOwnerID = "";
@@ -72,6 +70,28 @@ cr.plugins_.Rex_Firebase_TimerV2 = function(runtime)
         this.runtime.tickMe(this);
 	};
 	
+    instanceProto.GetCurTimeObj = function()
+	{
+        if (this.curTimeObj != null)
+            return this.curTimeObj;
+            
+        var plugins = this.runtime.types;
+        var name, inst;
+        for (name in plugins)
+        {
+            inst = plugins[name].instances[0];
+            
+            if (cr.plugins_.Rex_Firebase_CurTime && (inst instanceof cr.plugins_.Rex_Firebase_CurTime.prototype.Instance))
+            {
+                this.curTimeObj = inst;
+                return this.curTimeObj;
+            }            
+        }
+        assert2(this.curTimeObj, "Firebase TimerV2 plugin: Can not find CurTime oject.");
+        return null;
+	};
+	
+    
 	instanceProto.onDestroy = function ()
 	{		
 	    this.timers.StopUpdate();    

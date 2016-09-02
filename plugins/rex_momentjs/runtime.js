@@ -43,13 +43,18 @@ cr.plugins_.Rex_MomenJS = function(runtime)
 	{
         this.moment = null;
 	};
-	instanceProto.getMoment = function()
+	instanceProto.getMoment = function(clone)
 	{
+        var m;
         if (this.moment === null)
-            this.moment = window["moment"]();
-        
-        return this.moment;
-	};    
+            m = this.moment = window["moment"]();
+        else if (clone)
+            m = this.moment["clone"]();
+        else
+            m = this.moment;
+
+        return m;
+	};        
     instanceProto.saveToJSON = function ()
 	{    
 		return { "m": (this.moment === null)? null: this.moment["toString"](),
@@ -61,6 +66,19 @@ cr.plugins_.Rex_MomenJS = function(runtime)
         if ( o["m"] !== null)
             this.moment = window["moment"]( o["m"] );
 	};
+    
+    var momentOutput = function(m, f)
+    {
+        var val;
+        if (f == null)
+            val = m["valueOf"](); 
+        else if (f.toLowerCase() === "iso")
+            val = m["toISOString"]();
+        else
+            val = m["format"](f);    
+
+        return val;        
+    }
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -178,14 +196,16 @@ cr.plugins_.Rex_MomenJS = function(runtime)
  
     Exps.prototype.Format = function (ret, f)
 	{
-        var s = this.getMoment()["format"](f)
-		ret.set_string(s);
+        if (f == null)
+            f = "";
+        var m = this.getMoment();
+        ret.set_string(momentOutput(m, f));
 	};
  
     Exps.prototype.ISO = function (ret)
 	{
-        var s = this.getMoment()["toISOString"]()
-		ret.set_string(s);
+        var m = this.getMoment();
+        ret.set_string(momentOutput(m, "iso"));
 	};    
     
     Exps.prototype.DaysInMonth = function (ret)
@@ -207,7 +227,7 @@ cr.plugins_.Rex_MomenJS = function(runtime)
         isFloat = (isFloat === 1);        
         var d = -prev.diff(this.getMoment(), "months", isFloat);             
 		ret.set_float(d);
-	};    
+	};
     Exps.prototype.ElapsedDays = function (ret, prev, isFloat)
 	{
         prev = window["moment"](prev);
@@ -242,6 +262,101 @@ cr.plugins_.Rex_MomenJS = function(runtime)
         var d = -prev.diff(this.getMoment(), "milliseconds");           
 		ret.set_float(d);
 	};     
+    
+    Exps.prototype.StartOfYear = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("year");
+		ret.set_any(momentOutput(m, f));
+	}; 
+    Exps.prototype.StartOfMonth = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("month");
+		ret.set_any(momentOutput(m, f));
+	};     
+    Exps.prototype.StartOfQuarter = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("quarter");
+		ret.set_any(momentOutput(m, f));
+	};         
+    Exps.prototype.StartOfWeek = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("week");
+		ret.set_any(momentOutput(m, f));
+	};      
+    Exps.prototype.StartOfDate = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("date");
+		ret.set_any(momentOutput(m, f));
+	};  
+    Exps.prototype.StartOfHour = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("hour");
+		ret.set_any(momentOutput(m, f));
+	};  
+    Exps.prototype.StartOfMinute = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("minute");
+		ret.set_any(momentOutput(m, f));
+	};  
+    Exps.prototype.StartOfSecond = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("second");
+		ret.set_any(momentOutput(m, f));
+	};  
+    Exps.prototype.StartOfISOWeek = function (ret, f)
+	{
+        var m = this.getMoment(true)["startOf"]("isoWeek");
+		ret.set_any(momentOutput(m, f));
+	};  
+    
+    
+    Exps.prototype.EndOfYear = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("year");
+		ret.set_any(momentOutput(m, f));
+	}; 
+    Exps.prototype.EndOfMonth = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("month");
+		ret.set_any(momentOutput(m, f));
+	};      
+    Exps.prototype.EndOfQuarter = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("quarter");
+		ret.set_any(momentOutput(m, f));
+	}; 
+    Exps.prototype.EndOfWeek = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("week");
+		ret.set_any(momentOutput(m, f));
+	}; 
+    Exps.prototype.EndOfDate = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("date");
+		ret.set_any(momentOutput(m, f));
+	}; 
+    Exps.prototype.EndOfHour = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("hour");
+		ret.set_any(momentOutput(m, f));
+	};
+    Exps.prototype.EndOfMinute = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("minute");
+		ret.set_any(momentOutput(m, f));
+	};    
+    Exps.prototype.EndOfSecond = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("second");
+		ret.set_any(momentOutput(m, f));
+	};     
+    Exps.prototype.EndOfISOWeek = function (ret, f)
+	{
+        var m = this.getMoment(true)["endOf"]("isoWeek");
+		ret.set_any(momentOutput(m, f));
+	}; 
+    
+    
     Exps.prototype.Locale = function (ret)
 	{
         var l = this.getMoment()["locale"]()

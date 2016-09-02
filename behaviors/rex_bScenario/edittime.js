@@ -42,6 +42,17 @@ AddComboParam("Type", "The type of value.", 0);
 AddCondition(12, cf_none, "Type of parameter", "Command", 
              "Parameter {0} is a {1}", 
              "Test the type of parameter.", "TypeOfParam");
+             
+AddCondition(21, 0, "Is waiting any", "Wait", "Is waiting", 
+             "Is scenario waiting for any signal.", "IsWaiting");    
+AddAnyTypeParam("Key", "Key of locked-wait command", '""');                
+AddCondition(22, 0, "Is waiting", "Wait", "Is waiting", 
+             "Is scenario waiting for signal.", "IsWaiting");                 
+AddCondition(23, cf_trigger, "On waiting any start", "Wait", "On waiting start", 
+             "Triggered when On waiting (for signal) start.", "OnWaitingStart");       
+AddAnyTypeParam("Key", "Key of locked-wait command", '""');                   
+AddCondition(24, cf_trigger, "On waiting start", "Wait", "On waiting <i>{0}</i> start", 
+             "Triggered when On waiting (for signal) start.", "OnWaitingStart");              
                    
 //////////////////////////////////////////////////////////////
 // Actions
@@ -116,6 +127,12 @@ AddExpression(3, ef_return_any,
 AddExpression(4, ef_return_string, "Transfer memory to string", 
               "Memory", "MEMToString", 
               "Transfer memory to JSON string."); 
+AddExpression(5, ef_return_string, "Get previous tag", 
+              "Tag", "PreviousTag", 
+              "Get previous tag.");
+AddExpression(6, ef_return_string, "Get current tag", 
+              "Tag", "CurrentTag", 
+              "Get current(last) tag.");                    
 
 // function behavior
 AddAnyTypeParam("Index", "The zero-based index of the parameter to get.");

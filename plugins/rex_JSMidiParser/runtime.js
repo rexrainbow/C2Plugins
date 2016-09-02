@@ -27,28 +27,6 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 
 	typeProto.onCreate = function()
 	{
-	    jsfile_load("JSMIDIparser.js");
-	};
-	
-	var jsfile_load = function(file_name)
-	{
-	    var scripts=document.getElementsByTagName("script");
-	    var exist=false;
-	    for(var i=0;i<scripts.length;i++)
-	    {
-	    	if(scripts[i].src.indexOf(file_name) != -1)
-	    	{
-	    		exist=true;
-	    		break;
-	    	}
-	    }
-	    if(!exist)
-	    {
-	    	var newScriptTag=document.createElement("script");
-	    	newScriptTag.setAttribute("type","text/javascript");
-	    	newScriptTag.setAttribute("src", file_name);
-	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
-	    }
 	};
 
 	/////////////////////////////////////
@@ -74,7 +52,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	    	    
 	    this.exp_note = null;
 	    this.exp_Tick = 0;
-        this.exp_TrackID = 0;
+        this.exp_LoopIndex = 0;
 	};
     
 	instanceProto.onDestroy = function ()
@@ -152,11 +130,10 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	};	
 
     
-    instanceProto.PlayNote = function (note, is_on, ID)
+    instanceProto.PlayNote = function (note, is_on)
     {
         this.exp_note = note;
         this.exp_Tick = (is_on)? note["start"] : note["end"];
-        this.exp_TrackID = ID;
         var trig = (is_on)? cr.plugins_.Rex_JSMIDIparser.prototype.cnds.OnNoteOn:
                             cr.plugins_.Rex_JSMIDIparser.prototype.cnds.OnNoteOff;
                             
@@ -201,7 +178,6 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
                  "player": this.player.saveToJSON(),
                  "exp_n": this.exp_note,
                  "exp_t": this.exp_Tick,
-                 "exp_TID": this.exp_TrackID,
 		        };
 	};
 	
@@ -213,8 +189,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.player.loadFromJSON(o["player"]);
         
 	    this.exp_note = o["exp_n"];
-	    this.exp_Tick = o["exp_t"];
-        this.exp_TrackID = o["exp_TID"];      
+	    this.exp_Tick = o["exp_t"];    
 	};
     
 	instanceProto.afterLoad = function ()
@@ -272,14 +247,67 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         if (!this.exp_note)
             return false;
             
-		return cr.do_cmp(this.exp_TrackID, cmp, s);
+		return cr.do_cmp(this.exp_note["track"], cmp, s);
 	};
 
 	Cnds.prototype.OnEnded = function ()
 	{
 	    return true;
 	}; 	
-    
+
+	Cnds.prototype.ForEachNote = function ()
+	{
+        var notes = [];
+        var tracks = this.player.tracks;
+        var i, cnt=tracks.length;
+        for(i=0; i<cnt; i++)
+            notes.push.apply(notes, tracks[i].notes);
+        
+        var sortByStart = function(noteA, noteB)
+        {
+            var startA = noteA["start"];
+            var startB = noteB["start"];
+            
+            if (startA < startB)
+                return -1;
+            else if (startA > startB)
+                return 1;
+            else
+            {
+                var trackA = noteA["track"];
+                var trackB = noteB["track"];
+                if (trackA < trackB)
+                    return -1;
+                else if (trackA > trackB)
+                    return 1; 
+                else
+                    return 0;
+            }
+        }
+        notes.sort(sortByStart);        
+        
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
+        var i, cnt=notes.length;        
+		for(i=0; i<cnt; i++)
+	    {
+		    if (solModifierAfterCnds)
+                this.runtime.pushCopySol(current_event.solModifiers);
+                
+            this.exp_note = notes[i];
+            this.exp_Tick = notes[i]["start"];
+            this.exp_LoopIndex = i;
+		    current_event.retrigger();
+		    	
+            if (solModifierAfterCnds)
+		        this.runtime.popSol(current_event.solModifiers);
+		}        
+
+		this.forPage = "";
+		return false;   
+	}; 	    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -399,9 +427,15 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 
     Exps.prototype.CurTrackID = function(ret)
     {
-        ret.set_int(this.exp_TrackID);
+        var track = (this.exp_note)? this.exp_note["track"]: 0;
+        ret.set_int(track);
     };    
-        	
+
+    Exps.prototype.LoopIndex = function(ret)
+    {
+        ret.set_int(this.exp_LoopIndex);
+    };        
+  	
 }());
 
 (function ()
@@ -578,7 +612,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.plugin = player.plugin;
         this.ID = id;   
         this.track = []; // [ absTime, noteIdx, isOn ]
-        this.notes = []; // { start, end, channel, pitch, velocity }               
+        this.notes = []; // { start, end, channel, pitch, velocity, track(ID) }               
         // --------
         this.timer = null;      
         this.abs_time = 0;
@@ -619,6 +653,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
                 note["start"] = t;
                 note["pitch"] = pitch;
                 note["velocity"] = e["data"][1];
+                note["track"] = this.ID;
                 
                 // add to notes
                 this.notes.push(note);  
@@ -752,7 +787,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         else if (this.onNotes.hasOwnProperty(pitch))        
             delete this.onNotes[pitch];
             
-        this.plugin.PlayNote(note, is_on, this.ID);
+        this.plugin.PlayNote(note, is_on);
     };
     // handler of timeout for timers in this track, this=timer   
     var on_timeout = function ()
@@ -789,8 +824,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.notes = o["n"];
         this.abs_time = o["at"];
         this.track_index = o["tidx"];
-        this.onNotes = o["on"];
-        
+        this.onNotes = o["on"];        
         this.timer_save = o["tim"];
 	};    
 	

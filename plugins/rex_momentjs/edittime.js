@@ -28,7 +28,7 @@ AddCondition(2, 0, "Is leap year", "Leap Year", "Is Leap Year", "Return true if 
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddAction(1, 0, "Current date", "Set", "Set date w current date", "Set date to current date.", "SetToCurrentDate");
+AddAction(1, 0, "Current date", "Set", "Set date to current date", "Set date to current date.", "SetToCurrentDate");
 
 AddNumberParam("Unix timestamp", "Unix timestamp.", 0);
 AddAction(2, 0, "Unix timestamp", "Set", "Set date to <i>{0}</i>", "Set date from unix timestamp.", "SetFromUnixTimestamp");
@@ -84,33 +84,53 @@ AddExpression(9, ef_return_number,  "Get unix timestamp", "UnixTimestamp", "Unix
 
 AddExpression(10, ef_return_number, "Get quarter", "Date", "Quarter", "Get quarter (1,2,3,4).");
               
-AddExpression(11, ef_return_string | ef_variadic_parameters, "Get format date string", "Format", "Format", "Get format date string. Add 2nd parameter to assign format.");    
+AddExpression(11, ef_return_string | ef_variadic_parameters, "Get format date string", "Format", "Format", "Get format date string. Add 1st parameter to assign format.");    
 AddExpression(12, ef_return_string, "Get ISO date string", "Format", "ISO", "Get ISO date string.");  
 
 AddExpression(21, ef_return_number, "Get the number of days in month", "Month", "DaysInMonth", "Get the number of days in the current month.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(31, ef_return_string | ef_variadic_parameters, "Get the elapsed in years", "Elapsed", "ElapsedYears", "Get the elapsed in years. Add 1 at 2nd parameter to get float result.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(31, ef_return_number | ef_variadic_parameters, "Get the elapsed in years", "Elapsed", "ElapsedYears", "Get the elapsed in years. Add 1 at 2nd parameter to get float result.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(32, ef_return_string | ef_variadic_parameters, "Get the elapsed in months", "Elapsed", "ElapsedMonths", "Get the elapsed in months. Add 1 at 2nd parameter to get float result.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(32, ef_return_number | ef_variadic_parameters, "Get the elapsed in months", "Elapsed", "ElapsedMonths", "Get the elapsed in months. Add 1 at 2nd parameter to get float result.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(33, ef_return_string | ef_variadic_parameters, "Get the elapsed in days", "Elapsed", "ElapsedDays", "Get the elapsed in days. Add 1 at 2nd parameter to get float result.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(33, ef_return_number | ef_variadic_parameters, "Get the elapsed in days", "Elapsed", "ElapsedDays", "Get the elapsed in days. Add 1 at 2nd parameter to get float result.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(34, ef_return_string | ef_variadic_parameters, "Get the elapsed in hours", "Elapsed", "ElapsedHours", "Get the elapsed in hours. Add 1 at 2nd parameter to get float result.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(34, ef_return_number | ef_variadic_parameters, "Get the elapsed in hours", "Elapsed", "ElapsedHours", "Get the elapsed in hours. Add 1 at 2nd parameter to get float result.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(35, ef_return_string | ef_variadic_parameters, "Get the elapsed in minutes", "Elapsed", "ElapsedMinutes", "Get the elapsed in minutes. Add 1 at 2nd parameter to get float result.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(35, ef_return_number | ef_variadic_parameters, "Get the elapsed in minutes", "Elapsed", "ElapsedMinutes", "Get the elapsed in minutes. Add 1 at 2nd parameter to get float result.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(36, ef_return_string | ef_variadic_parameters, "Get the elapsed in seconds", "Elapsed", "ElapsedSeconds", "Get the elapsed in seconds. Add 1 at 2nd parameter to get float result.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(36, ef_return_number | ef_variadic_parameters, "Get the elapsed in seconds", "Elapsed", "ElapsedSeconds", "Get the elapsed in seconds. Add 1 at 2nd parameter to get float result.");
 
-AddNumberParam("Previous", "Unix timestamp of previoud date.", 0);
-AddExpression(37, ef_return_string | ef_variadic_parameters, "Get the elapsed in milliseconds", "Elapsed", "ElapsedMilliseconds", "Get the elapsed in milliseconds.");
+AddAnyTypeParam("Previous", "Unix timestamp or date string of previoud date.", 0);
+AddExpression(37, ef_return_number | ef_variadic_parameters, "Get the elapsed in milliseconds", "Elapsed", "ElapsedMilliseconds", "Get the elapsed in milliseconds.");
           
-          
+AddExpression(41, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start year", "Start of", "StartOfYear", "Get the unix timestamp of start year.");
+AddExpression(42, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start month", "Start of", "StartOfMonth", "Get the unix timestamp of start month.");
+AddExpression(43, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start quarter", "Start of", "StartOfQuarter", "Get the unix timestamp of start quarter.");
+AddExpression(44, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start week", "Start of", "StartOfWeek", "Get the unix timestamp of start week.");
+AddExpression(45, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start date", "Start of", "StartOfDate", "Get the unix timestamp of start date.");
+AddExpression(46, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start hour", "Start of", "StartOfHour", "Get the unix timestamp of start hour.");
+AddExpression(47, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start minute", "Start of", "StartOfMinute", "Get the unix timestamp of start minute.");         
+AddExpression(48, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start second", "Start of", "StartOfSecond", "Get the unix timestamp of start second.");         
+AddExpression(49, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of start iso week", "Start of", "StartOfISOWeek", "Get the unix timestamp of start iso week.");         
+
+AddExpression(51, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end year", "End of", "EndOfYear", "Get the unix timestamp of end year.");
+AddExpression(52, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end month", "End of", "EndOfMonth", "Get the unix timestamp of end month.");
+AddExpression(53, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end quarter", "End of", "EndOfQuarter", "Get the unix timestamp of end quarter.");
+AddExpression(54, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end week", "End of", "EndOfWeek", "Get the unix timestamp of end week.");
+AddExpression(55, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end date", "End of", "EndOfDate", "Get the unix timestamp of end date.");          
+AddExpression(56, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end hour", "End of", "EndOfHour", "Get the unix timestamp of end hour.");  
+AddExpression(57, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end minute", "End of", "EndOfMinute", "Get the unix timestamp of end minute.");  
+AddExpression(58, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end second", "End of", "EndOfSecond", "Get the unix timestamp of end second.");          
+AddExpression(59, ef_return_any | ef_variadic_parameters, "Get the unix timestamp or date string of end iso week", "End of", "EndOfISOWeek", "Get the unix timestamp of end isoWeek.");   
+
+
 AddExpression(101, ef_return_string, "Get locale", "Locale", "Locale", "Get locale.");  
     
 ACESDone();

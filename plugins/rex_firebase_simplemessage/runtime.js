@@ -55,7 +55,9 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
         
         this.userID = "";
         this.userName = "";
-        this.lastReceiverID = "";
+        
+        // check outPort changing
+        this.lastReceiverID = null;
         
         var message_type = this.properties[2];
         this.offline_mode = this.properties[3];
@@ -141,6 +143,10 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
     
     instanceProto.send_message = function (receiverID, message)
 	{  
+        if ((receiverID == null) || (receiverID == ""))
+            return;
+        
+        // re-build outPort
 	    if (this.lastReceiverID != receiverID)
 	    {
             var ref = this.get_ref(receiverID);
@@ -176,7 +182,15 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 
     Acts.prototype.SetDomainRef = function (domain_ref, sub_domain_ref)
 	{
-	    this.inBox.StopUpdate();
+	    this.inBox.StopUpdate();        
+        
+        // clean previous outPort
+	    if (this.offline_mode == OFFLMSG_DISCARD)
+	    {
+	        this.send_message(this.lastReceiverID, null);	        
+	    }
+        this.lastReceiverID = null;  // re-build outPort in next send_message
+        
 		this.rootpath = domain_ref + "/" + sub_domain_ref + "/";
 	};
 	    
@@ -184,7 +198,7 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	{	    
         this.userID = userID;
         this.userName = userName; 
-	};    
+	};
     Acts.prototype.StartUpdate = function (receiverID)
 	{	   
 	    if (receiverID == "")
@@ -204,13 +218,6 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 	    if (receiverID == "")
 	        return;
 	        
-	    if (this.offline_mode == OFFLMSG_DISCARD)
-	    {
-	        // clean message if receiver had changed
-	        if ((this.lastReceiverID != "") && (this.lastReceiverID != receiverID))           
-	            this.send_message(this.lastReceiverID, null);	        
-	    }
-	    	    
         this.send_message(receiverID, message);
         this.lastReceiverID = receiverID;        
 	};   

@@ -58,13 +58,13 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    if (index_keys_input === "")
 	    {
 	        if (!this.recycled)
-                this.index_keys = [];
+                this.indexKeys = [];
             else
-                this.index_keys.length = 0;
+                this.indexKeys.length = 0;
         }
         else        
         {
-            this.index_keys = index_keys_input.split(",");
+            this.indexKeys = index_keys_input.split(",");
         }
         
         // csv
@@ -72,7 +72,15 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         
         // save
         this.rowID = "";
-        this.prepared_item = {};
+        this.preparedItem = {};
+        if (!this.recycled)
+            this.preprocessCmd = {};
+        
+        this.preprocessCmd["inc"] = {};
+        this.preprocessCmd["max"] = {};
+        this.preprocessCmd["min"] = {}; 
+        this.hasPreprocessCmd = false;        
+        
         // query
         this.CleanFilters();
         this.query_base = null;
@@ -82,18 +90,14 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             "flt":{}, 
             "ord":""
             };        
+        this.queriedRows = null;            
         // retrieve
         this.exp_CurRowIndex = -1;
         this.exp_CurRow = null;
         this.exp_LastSavedRowID = "";
         
         // save/load
-        this.__flthis_save = null;
-        
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];     
-        /**END-PREVIEWONLY**/            
+        this.__flthis_save = null;         
 	};
 	
 	var create_global_database = function (ownerUID, db_name, db_content)
@@ -113,9 +117,9 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     
 	instanceProto.onDestroy = function ()
     {
-        this.index_keys.length = 0;
+        this.indexKeys.length = 0;
         
-        clean_table(this.prepared_item);
+        clean_table(this.preparedItem);
         
         clean_table(this.filters);
         this.order_cond.length = 0;
@@ -128,61 +132,65 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             if (database_ref.ownerUID === this.uid)
                 database_ref.ownerUID = null;
         }
+        
+        this.preprocessCmd["inc"] = {};
+        this.preprocessCmd["max"] = {};
+        this.preprocessCmd["min"] = {};         
 	};  
 
-	instanceProto.SaveRow = function (row, index_keys, rowID)
+	instanceProto.SaveRow = function (row, indexKeys, rowID, preprocessCmd)
 	{   
 	    var invalid_rowID = (rowID == null) || (rowID === "");
 	    
 	    // valid row ID
 	    if (!invalid_rowID)
 	    {
-	        this.db(rowID)["update"](row);
+            var items = this.db(rowID);
+            var itemOld = items["first"]();
+            if (itemOld)
+            {
+                row = this.buildUpdateItem(itemOld, row, preprocessCmd);
+                items["update"](row);
+            }
 	    }
 	    
 	    // insert a row
-	    else if ((index_keys == null) || (index_keys.length === 0))	    
+	    else if ((indexKeys == null) || (indexKeys.length === 0))	    
         {
+            row = this.buildUpdateItem(null, row, preprocessCmd);
             this.db["insert"](row);            
         }
         
         // has index keys definition
         else
         {
-            var index_keys = {}, key_name; 
-            var i, cnt=this.index_keys.length;
-            var has_index_keys = false;
+            // build query item
+            var queryKeys = {}, keyName; 
+            var i, cnt=this.indexKeys.length;
             for (i=0; i<cnt; i++)
             {
-                key_name = this.index_keys[i];
-                if (row.hasOwnProperty(key_name))
+                keyName = this.indexKeys[i];
+                if (row.hasOwnProperty(keyName))
                 {                  
-                    index_keys[key_name] = row[key_name];
-                    has_index_keys = true;
+                    queryKeys[keyName] = row[keyName];
                 }
             }
             
-            
-            if (has_index_keys)
+            if (!is_empty(queryKeys))
             {
-                var items = this.db(index_keys);
-                var cnt = items["count"]();
-                if (cnt === 0)
-                    this.db["insert"](row);   
-                else if (cnt > 1)
-                {
-                    items["remove"]();
-                    this.db["insert"](row);  
-                }
-                else
-                {
+                var items = this.db(queryKeys);
+                var itemOld = items["first"]() || null;
+                row = this.buildUpdateItem(itemOld, row, preprocessCmd);
+                if (itemOld)
                     items["update"](row);
-                }                                         
+                else
+                    this.db["insert"](row); 
             }
             
             // no index keys setting
             else
             {
+                row = this.buildUpdateItem(null, row, preprocessCmd);
                 this.db["insert"](row);   
             }
         }
@@ -191,6 +199,36 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         if (row["___id"])
             this.exp_LastSavedRowID = row["___id"];
 	};
+    
+	instanceProto.buildUpdateItem = function (itemOld, preparedItem, preprocessCmd)
+    {
+        if (!this.hasPreprocessCmd || (preprocessCmd == null))
+            return preparedItem;
+        
+        var keys = preprocessCmd["inc"];
+        for (var k in keys)
+        {
+            preparedItem[k] = din(itemOld, k, 0) + keys[k];
+            delete keys[k];
+        }
+        
+        var keys = preprocessCmd["max"];
+        for (var k in keys)
+        {
+            preparedItem[k] = Math.max( din(itemOld, k, 0) , keys[k] );
+            delete keys[k];            
+        }
+        
+        var keys = preprocessCmd["min"];
+        for (var k in keys)
+        {
+            preparedItem[k] = Math.min( din(itemOld, k, 0) , keys[k] );
+            delete keys[k];            
+        }        
+        
+        this.hasPreprocessCmd = false;
+        return preparedItem;
+	};     
     
     instanceProto.CleanFilters = function ()
 	{    
@@ -297,18 +335,18 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	
     instanceProto.GetCurrentQueriedRows = function ()
 	{
-	    if (!this.current_rows || this.query_flag)
+	    if (!this.queriedRows || this.query_flag)
 	    {
-            this.current_rows = this.GetQueryResult();
+            this.queriedRows = this.GetQueryResult();
             this.query_flag = false;
 	    }
-	    return this.current_rows;
+	    return this.queriedRows;
 	};
 
 	instanceProto.Index2QueriedRowID = function (index_, default_value)
 	{    
-	    var current_rows = this.GetCurrentQueriedRows();
-	    var row = current_rows["get"]()[index_];
+	    var queriedRows = this.GetCurrentQueriedRows();
+	    var row = queriedRows["get"]()[index_];
 	    return din(row, "___id", default_value);        
 	};
 		
@@ -338,6 +376,14 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         for (var k in o)        
             delete o[k];        
 	};
+    
+    var is_empty = function (o)
+    {
+        for (var k in o)        
+            return false;
+
+        return true;        
+    };    
 	
  	var din = function (row, k, default_value)
 	{
@@ -378,25 +424,34 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
                                 "ord": this.order_cond };
         
         var qIds = null;
-        if (this.current_rows)
+        if (this.queriedRows)
         {
-            var rows = this.current_rows["get"]();
+            var rows = this.queriedRows["get"]();
             var i, cnt=rows.length;
             qIds = [];
             for (i=0; i<cnt; i++)
                 qIds.push(rows[i]["___id"]);
         }
-		return { "name": this.db_name,
+		return { 
+                 "rID": this.rowID,
+                 "name": this.db_name,
+                 "idxKeys": this.indexKeys,
 		         "db": db_save,
 		         "fltcur": cur_fflt,
-                 "flthis": (this.current_rows)? this.filter_history:null,
+                 "preCmd": this.preprocessCmd,
+                 "prepItm": this.preparedItem,    
+                 "flthis": (this.queriedRows)? this.filter_history:null,
                  "kt": this.keyType,
+
+                 
 		       };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
+        this.rowID = o["rID"];
 	    this.db_name = o["name"];
+        this.indexKeys = o["idxKeys"];
 	    if (this.db_name === "")
 		    this.db = window["TAFFY"](o["db"]);
 		else
@@ -411,6 +466,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 		}
 		this.filters = o["fltcur"]["flt"];
 		this.order_cond = o["fltcur"]["ord"];
+        this.preprocessCmd = o["preCmd"];
+        this.preparedItem = o["prepItm"];
         this.__flthis_save = o["flthis"];
         this.keyType = o["kt"];
 	};
@@ -418,9 +475,12 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	instanceProto.afterLoad = function ()
 	{
         if (this.db_name !== "")
-            this.db = get_global_database_reference(this.db_name).db;  
+        {
+	        create_global_database(this.uid, this.db_name);	            
+	        this.db = get_global_database_reference(this.db_name).db;            
+        }
         
-        this.current_rows = null;               
+        this.queriedRows = null;               
         var flthis = this.__flthis_save;
         if (flthis)
         {
@@ -433,7 +493,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             if (ord !== "")
                 q = q["order"](ord);
             
-            this.current_rows = q;
+            this.queriedRows = q;
             this.__flthis_save = null;
         }
 
@@ -471,20 +531,20 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-        this.propsections.length = 0;       
+        var prop = [];     
         var self=this, rows=this.db(), n;
 		var for_each_row = function(r, i)
 		{
-            self.propsections.push({"name": i, 
-                                    "value": color_JSON(r),
-                                    "html": true,
-                                    "readonly":true});
+            prop.push({"name": i, 
+                              "value": color_JSON(r),
+                              "html": true,
+                              "readonly":true});
 		};
 		rows["each"](for_each_row);
 
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});	
 	};
 	
@@ -499,7 +559,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 
 	Cnds.prototype.ForEachRow = function ()
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
+	    var queriedRows = this.GetCurrentQueriedRows();
 	        
 	    var runtime = this.runtime;
         var current_frame = runtime.getCurrentEventStack();
@@ -524,7 +584,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 		        runtime.popSol(current_event.solModifiers);
 		    } 
 		};
-		current_rows["each"](for_each_row);
+		queriedRows["each"](for_each_row);
         
         this.exp_CurRow = null;
         this.exp_CurRowIndex = -1;         
@@ -571,8 +631,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     //Cnds.prototype.Page = function (start_, limit_)
 	//{
 	//    debugger
-	//    var current_rows = this.GetCurrentQueriedRows();
-	//    current_rows["start"](start_)["limit"](limit_);
+	//    var queriedRows = this.GetCurrentQueriedRows();
+	//    queriedRows["start"](start_)["limit"](limit_);
 	//    return true;  
 	//}; 		
 	//////////////////////////////////////
@@ -620,7 +680,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
                     row[col_key] = cell_value;
                 }
             }
-            this.SaveRow(row, this.index_keys);            
+            this.SaveRow(row, this.indexKeys);            
         }
         
         clean_table(this.keyType);
@@ -637,7 +697,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         
         var i,cnt=rows.length;
         for(i=0; i<cnt; i++)
-            this.SaveRow(rows[i], this.index_keys);    
+            this.SaveRow(rows[i], this.indexKeys);    
 	};	
     
 	Acts.prototype.RemoveByRowID = function (rowID)
@@ -656,7 +716,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     
 	Acts.prototype.SetIndexKeys = function (params_)
 	{
-        cr.shallowAssignArray(this.index_keys, params_.split(","));
+        cr.shallowAssignArray(this.indexKeys, params_.split(","));
 	};	
     
 	Acts.prototype.RemoveAll = function ()
@@ -664,34 +724,41 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         this.db()["remove"]();
 	};    
     
-    Acts.prototype.SetValue = function (key_, value_)
+    Acts.prototype.SetValue = function (key_, value_, cond)
 	{
-        this.prepared_item[key_] = value_;
-	};
-	
+        if (cond === 0)
+            this.preparedItem[key_] = value_;
+        else
+        {
+            var cmdName = (cond === 1)? "max":"min";
+            this.preprocessCmd[cmdName][key_] = value_;
+            this.hasPreprocessCmd = true;               
+        }            
+	};    
+
     Acts.prototype.SetBooleanValue = function (key_, is_true)
 	{ 
-        this.prepared_item[key_] = (is_true === 1);
+        this.preparedItem[key_] = (is_true === 1);
 	};
     
 	Acts.prototype.Save = function ()
 	{
-        this.SaveRow(this.prepared_item, this.index_keys, this.rowID); 
+        this.SaveRow(this.preparedItem, this.indexKeys, this.rowID, this.preprocessCmd); 
                           	    
 	    this.rowID = "";
-	    this.prepared_item = {};   
+	    this.preparedItem = {};   
 	};	
 	    
     Acts.prototype.UpdateQueriedRows = function (key_, value_)
 	{    
-	    var current_rows = this.GetCurrentQueriedRows();
-	    current_rows["update"](key_, value_);
+	    var queriedRows = this.GetCurrentQueriedRows();
+	    queriedRows["update"](key_, value_);
 	};	
 	    
     Acts.prototype.UpdateQueriedRows_BooleanValue = function (key_, is_true)
 	{    
-	    var current_rows = this.GetCurrentQueriedRows();
-	    current_rows["update"](key_, (is_true === 1));
+	    var queriedRows = this.GetCurrentQueriedRows();
+	    queriedRows["update"](key_, (is_true === 1));
 	};	
 	    
     Acts.prototype.SetRowID = function (rowID)
@@ -703,6 +770,12 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{
 	    this.rowID = this.Index2QueriedRowID(index_, null);
 	};
+    
+    Acts.prototype.IncValue = function (key_, value_)
+	{
+        this.preprocessCmd["inc"][key_] = value_;
+        this.hasPreprocessCmd = true;         
+	};    
     
     Acts.prototype.NewFilters = function ()
 	{    
@@ -737,19 +810,19 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     //Acts.prototype.Page = function (start_, limit_)
 	//{
 	//    debugger
-	//    var current_rows = this.GetCurrentQueriedRows();
-	//    current_rows["start"](start_)["limit"](limit_);
+	//    var queriedRows = this.GetCurrentQueriedRows();
+	//    queriedRows["start"](start_)["limit"](limit_);
 	//}; 
 	
     Acts.prototype.RemoveQueriedRows = function ()
 	{
-        var current_rows = this.current_rows;
-	    if (current_rows == null)
-	        current_rows = this.db(this.filters);
+        var queriedRows = this.queriedRows;
+	    if (queriedRows == null)
+	        queriedRows = this.db(this.filters);
 	        
-	    current_rows["remove"]();
+	    queriedRows["remove"]();
 	    
-	    this.current_rows = null;	    
+	    this.queriedRows = null;	    
 	    this.CleanFilters();	    
 	}; 		
 	
@@ -765,12 +838,12 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     
 	Exps.prototype.At = function (ret)
 	{  
-        var primary_keys = {}, key_name; 
-        var i, cnt=this.index_keys.length;
+        var primary_keys = {}, keyName; 
+        var i, cnt=this.indexKeys.length;
         for (i=0; i<cnt; i++)
         {
-            key_name = this.index_keys[i];
-            primary_keys[key_name] = arguments[i+1];
+            keyName = this.indexKeys[i];
+            primary_keys[keyName] = arguments[i+1];
         }
         var item = this.db(primary_keys)["first"]();
         var data_key = arguments[cnt+1];
@@ -786,38 +859,38 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 
  	Exps.prototype.Index2QueriedRowContent = function (ret, i, k, default_value)
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
-	    var row = current_rows["get"]()[i];
+	    var queriedRows = this.GetCurrentQueriedRows();
+	    var row = queriedRows["get"]()[i];
 	    ret.set_any( din(row, k, default_value) );
 	};
 	
  	Exps.prototype.QueriedRowsCount = function (ret)
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
-		ret.set_int( current_rows["count"]() );
+	    var queriedRows = this.GetCurrentQueriedRows();
+		ret.set_int( queriedRows["count"]() );
 	};
 	
  	Exps.prototype.QueriedSum = function (ret, k)
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
-		ret.set_int( current_rows["sum"](k) );
+	    var queriedRows = this.GetCurrentQueriedRows();
+		ret.set_int( queriedRows["sum"](k) );
 	};	
 	
  	Exps.prototype.QueriedMin = function (ret, k)
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
-		ret.set_int( current_rows["min"](k) );
+	    var queriedRows = this.GetCurrentQueriedRows();
+		ret.set_int( queriedRows["min"](k) );
 	};		
 	
  	Exps.prototype.QueriedMax = function (ret, k)
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
-		ret.set_int( current_rows["max"](k) );
+	    var queriedRows = this.GetCurrentQueriedRows();
+		ret.set_int( queriedRows["max"](k) );
 	};		
  	Exps.prototype.QueriedRowsAsJSON = function (ret)
 	{
-	    var current_rows = this.GetCurrentQueriedRows();
-		ret.set_string( current_rows["stringify"]() );
+	    var queriedRows = this.GetCurrentQueriedRows();
+		ret.set_string( queriedRows["stringify"]() );
 	};
  	Exps.prototype.KeyRowID = function (ret)
 	{

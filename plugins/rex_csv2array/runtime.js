@@ -60,6 +60,17 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         return v;
 	};
 	
+	instanceProto.saveToJSON = function ()
+	{
+		return { "delimiter": this.strDelimiter 
+                     };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+        this.strDelimiter = o["delimiter"];
+	};
+    
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm
     
@@ -270,6 +281,10 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
         }		
 	};
     
+	Acts.prototype.SetDelimiter = function (s)
+	{
+        this.strDelimiter = s;
+	};     
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -102,11 +102,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.timers_save = null;
 		
         // callback:      
-        this.c2FnType = null;
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];      
-        /**END-PREVIEWONLY**/          
+        this.c2FnType = null;       
 	};
     
 	instanceProto.onDestroy = function()
@@ -304,20 +300,20 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-	    this.propsections.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
+	    var prop = [];
+	    prop.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
         
         var name, timer;
         for (name in this.timers)
         {
             timer = this.timers[name];
-            this.propsections.push({"name": name, "value": timer._cb.command});
+            prop.push({"name": name, "value": timer._cb.command});
         }
         
 
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": props
 		});
 	};
 	

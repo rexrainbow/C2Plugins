@@ -605,7 +605,8 @@ cr.plugins_.rex_TagText = function(runtime)
         if (solModifierAfterCnds)
             this.runtime.popSol(current_event.solModifiers);
             
-		this.canvas_text.defineClass(name, this._tag);           
+		this.canvas_text.defineClass(name, this._tag);        
+		this._tag = null;        
 		return false;
 	};	
 	

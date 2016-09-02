@@ -49,11 +49,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
         this.props = {};   
         
         // for each
-        this.exp_CurAchievementName = "";
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];
-	    /**END-PREVIEWONLY**/	
+        this.exp_CurAchievementName = "";      
 	};
     
 	instanceProto.run_test = function()

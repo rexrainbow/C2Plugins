@@ -464,7 +464,7 @@ end\n\
     
     Acts.prototype.Setup2 = function (timeline_objs)
 	{  
-        var timeline = timeline_objs.instances[0];
+        var timeline = timeline_objs.getFirstPicked();
         if (timeline.check_name == "TIMELINE")
             this.timeline = timeline;        
         else

@@ -121,28 +121,63 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 		read_header();			
 	};
-	
-	var get_data = function(in_data, default_value)
+    
+    var get_itemValue = function (item, k, default_value)
 	{
-	    var val;
-	    if (in_data === null)
-	    {
-	        if (default_value === null)
-	            val = 0;
-	        else
-	            val = default_value;
-	    }
-        else if (typeof(in_data) == "object")
-        {
-            val = JSON.stringify(in_data);
-        }
+        var v;
+	    if (item == null)
+            v = null;
         else
         {
-            val = in_data;
-        }	    
-        return val;
-	};  
-	
+            if (k == null)
+                v = item;
+            else if (k === "id")
+                v = item["id"];    
+            else if ((k === "createdAt") || (k === "updatedAt"))
+                v = item[k].getTime();
+            else if (k.indexOf(".") == -1)
+                v = item["get"](k);
+            else
+            {
+                var kList = k.split(".");
+                v = item;
+                var i,cnt=kList.length;
+                for(i=0; i<cnt; i++)
+                {
+                    if (typeof(v) !== "object")
+                    {
+                        v = null;
+                        break;
+                    }
+                        
+                    v = v["get"](kList[i]);
+                }
+            }
+        }
+        return din(v, default_value);
+	};	
+
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };    
+    
 	var get_ACL = function (wm, rm)
 	{
 	    if ((wm === 0) && (rm === 0))
@@ -356,8 +391,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	    };
         
 	    // wait done
-        var wait_events = 0; 
-        var onJobDone_handler = null;		
+        var wait_events = 0; 	
 	    var isDone_handler = function()
 	    {
 	        wait_events -= 1;
@@ -460,7 +494,6 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
         
 	    // wait done
         var wait_events = 0; 
-        var onJobDone_handler = null;		
 	    var isDone_handler = function()
 	    {
 	        wait_events -= 1;
@@ -501,8 +534,7 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	    };
         
 	    // wait done
-        var wait_events = 0; 
-        var onJobDone_handler = null;		
+        var wait_events = 0; 		
 	    var isDone_handler = function()
 	    {
 	        wait_events -= 1;
@@ -552,29 +584,12 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	
 	Exps.prototype.CurHeaderValue = function (ret, key_, default_value)
 	{
-        var value_;
-        if (key_ === "id")
-	        value_ = this.exp_CurHeader["id"];
-	    else if ((key_ === "updatedAt") || (key_ === "createdAt"))
-	        value_ = this.exp_CurHeader[key_]["getTime"]();
-	    else
-	        value_ = this.exp_CurHeader["get"](key_);    
-		ret.set_any(get_data(value_, default_value));
+		ret.set_any(get_itemValue(this.exp_CurHeader, key_, default_value));        
 	};	
 	
 	Exps.prototype.BodyValue = function (ret, key_, default_value)
 	{	
-	    var value_;
-	    if (this.load_body !=null)
-	    {
-	        if (key_ === "id")
-	            value_ = this.load_body["id"];
-	        else if ((key_ === "updatedAt") || (key_ === "createdAt"))
-	            value_ = this.load_body[key_]["getTime"]();
-	        else
-	            value_ = this.load_body["get"](key_);
-	    }
-		ret.set_any(get_data(value_, default_value));
+		ret.set_any(get_itemValue(this.load_body, key_, default_value));           
 	};
 
 	Exps.prototype.HeadersToJSON = function (ret)
@@ -591,21 +606,13 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 	
 	Exps.prototype.HeaderValue = function (ret, slot_name, key_, default_value)
 	{	
-	    var value_ = this.load_headers;
-	    if (value_ != null)
-	    {
-	        value_ = value_[slot_name];
-	        if (value_ != null)
-	        {
-	            if (key_ === "id")
-	                value_ = value_["id"];
-	            else if ((key_ === "updatedAt") || (key_ === "createdAt"))
-	                value_ = value_[key_]["getTime"]();
-	            else
-	                value_ = value_["get"](key_);               
-	        }
-	    }
-		ret.set_any(get_data(value_, default_value));
+        var value;
+        if (this.load_headers)
+            value = get_itemValue(this.load_headers[slot_name], key_, default_value);
+        else
+            value = default_value || 0;
+        
+		ret.set_any(value);    
 	};	
 	
 	Exps.prototype.KeyLastSaveTime = function (ret)
@@ -635,27 +642,4 @@ cr.plugins_.Rex_parse_saveslot = function(runtime)
 		ret.set_any(this.exp_CurValue);
 	};	
     
-}());
-
-(function ()
-{
-    if (window.ParseInitTable != null)
-        return;  
-        
-    var init_table = function (item_obj)
-    { 
-	    var on_write_success = function(item_obj)
-	    {
-	        item_obj["destroy"]();
-	    };	
-	    
-	    var on_write_error = function(item_obj, error)
-	    {
-	    };
-        var write_handler = {"success":on_write_success, "error":on_write_error};
-        
-	    item_obj["save"](null, write_handler);
-    };
-
-    window.ParseInitTable = init_table;
 }());

@@ -65,15 +65,18 @@ cr.behaviors.Rex_mode7perspective = function(runtime)
 	        return;
 
         var mode7Ground_behavior = this.get_mode7Ground_behavior_inst(ground_inst);
-        var result = mode7Ground_behavior.transfer_position(this.LX, this.LY);
-                     
-        if ((this.inst.x !== result.x) || (this.inst.y !== result.y))
+        var result = mode7Ground_behavior.LXY2PXY(this.LX, this.LY);
+          
+        var needUpdatingPosition = (typeof(result.x) === "number") && (typeof(result.y) === "number") &&
+                                                    ((this.inst.x !== result.x) || (this.inst.y !== result.y)); 
+
+        if (needUpdatingPosition)
         {
             this.inst.x = result.x;
             this.inst.y = result.y;
             this.inst.set_bbox_changed();
             this.runtime.redraw = true;	
-        }
+        }        
 
         var new_width = this.default_width * result.scale;
         var new_height = this.default_height * result.scale;
@@ -141,6 +144,17 @@ cr.behaviors.Rex_mode7perspective = function(runtime)
 		
 		this.ground_instUid = -1;
 	};         
+    
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "LX", "value": this.LX},
+			               {"name": "LY", "value": this.LY}]
+		});
+	};
+	/**END-PREVIEWONLY**/    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

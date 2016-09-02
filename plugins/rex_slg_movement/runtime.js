@@ -66,9 +66,14 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         
 	    this.exp_ChessUID = -1;
 	    this.exp_StartTileUID = -1;
+        this.exp_StartX = -1;
+        this.exp_StartY = -1;
 	    this.exp_NearestTileUID = -1;
 	    this.exp_CurTile = null;
-	    this.exp_PreTile = null;         
+	    this.exp_PreTile = null;      
+	    this.exp_EndTileUID = -1;
+        this.exp_EndX = -1;
+        this.exp_EndY = -1;        
 	};
 
 	instanceProto.GetBoard = function()
@@ -270,14 +275,34 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	{
         clean_table ( this.uid2cost );
         this.exp_NearestTileUID = -1;
-	}; 	   
+	}; 
+
+    instanceProto.getStartUID = function(chess_uid)
+	{
+        var start_tile_uid = this.tile_uid_get(chess_uid);
+        if (start_tile_uid != null)
+        {
+            this.exp_StartTileUID = start_tile_uid;
+            var xyz = this.uid2xyz(start_tile_uid);
+            this.exp_StartX = xyz.x;
+            this.exp_StartY = xyz.y;
+        }
+        else
+        {
+            this.exp_StartTileUID = -1;
+            this.exp_StartX = -1;
+            this.exp_StartY = -1;            
+        }
+        
+        return start_tile_uid;
+	}; 
     
 	instanceProto.get_moveable_area = function(chess_uid, moving_points, cost)
 	{
-        var start_tile_uid = this.tile_uid_get(chess_uid);
+        var start_tile_uid = this.getStartUID(chess_uid);
         if (start_tile_uid == null)
             return [];
-        this.exp_StartTileUID = start_tile_uid;
+
         var nodes = this.ASTAR_search(start_tile_uid, null, moving_points, cost, CMD_AREA);
         if (nodes == null)
             return [];
@@ -290,10 +315,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
 	instanceProto.get_moving_path = function (chess_uid, end_tile_uid, moving_points, cost, is_nearest)
 	{   
-        var start_tile_uid = this.tile_uid_get(chess_uid);
+        var start_tile_uid = this.getStartUID(chess_uid);
         if (start_tile_uid == null)
             return [];        
-        this.exp_StartTileUID = start_tile_uid;
+
         var search_cmd = (is_nearest===1)? CMD_PATH_NEAREST : CMD_PATH;
         var nodes = this.ASTAR_search(start_tile_uid, end_tile_uid, moving_points, cost, search_cmd);
         if (nodes == null)
@@ -922,10 +947,12 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		         "boarduid": (this.board != null)? this.board.uid:(-1),
 		         "groupuid": (this.group != null)? this.group.uid:(-1),
 		         "randomuid": (this.randomGen != null)? this.randomGen.uid:(-1),
-		         "chessuid": this.exp_ChessUID,
-		         "starttileuid": this.exp_StartTileUID,
+		         "chessuid": this.exp_ChessUID,            
 		         "nearesttileuid": this.exp_NearestTileUID,
-                 "uid2cost": this.uid2cost};
+                 "uid2cost": this.uid2cost,
+		         "start": [this.exp_StartTileUID, this.exp_StartX, this.exp_StartY],
+		         "end": [this.exp_EndTileUID, this.exp_EndX, this.exp_EndY],                      
+                 };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -935,9 +962,15 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 		this.groupUid = o["groupuid"];
 		this.randomGenUid = o["randomuid"];	
 		this.exp_ChessUID = o["chessuid"];	
-		this.exp_StartTileUID = o["starttileuid"];
 		this.exp_NearestTileUID = o["nearesttileuid"];		
-        this.uid2cost = o["uid2cost"];
+        this.uid2cost = o["uid2cost"];        
+        this.exp_StartTileUID = o["start"][0];
+        this.exp_StartX = o["start"][1];    
+        this.exp_StartY = o["start"][2];   
+        this.exp_EndTileUID = o["end"][0];
+        this.exp_EndX = o["end"][1];    
+        this.exp_EndY = o["end"][2];   
+        
 	};
 	
 	instanceProto.afterLoad = function ()
@@ -971,6 +1004,19 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 			
 	};
 		
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+	    var board = this.GetBoard();    
+	    var group = this.GetInstGroup(); 
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Board UID", "value": (board)? board.uid:-1},
+			               {"name": "Instance UID", "value": (group)? group.uid:-1}]
+		});
+	};
+	/**END-PREVIEWONLY**/
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -1085,7 +1131,20 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         this.exp_ChessUID = chess_uid;
 	    var path_tiles_uids = this.get_moving_path(chess_uid, tile_uid, moving_points, cost, is_nearest);
         if (path_tiles_uids.length > 0)
+        {
 	        group.GetGroup(group_name).SetByUIDList(path_tiles_uids);
+            
+	        this.exp_EndTileUID = path_tiles_uids[ path_tiles_uids.length -1 ];
+            var xyz = this.uid2xyz(this.exp_EndTileUID);
+            this.exp_EndX = xyz.x;
+            this.exp_EndY = xyz.y;            
+        }
+        else
+        {
+	        this.exp_EndTileUID = -1;
+            this.exp_EndX = -1;
+            this.exp_EndY = -1;             
+        }
 	};	 
 
     Acts.prototype.SetPathMode = function (m)
@@ -1095,7 +1154,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	
     Acts.prototype.SetRandomGenerator = function (randomGen_objs)
 	{
-        var randomGen = randomGen_objs.instances[0];
+        var randomGen = randomGen_objs.getFirstPicked();
         if (randomGen.check_name == "RANDOM")
             this.randomGen = randomGen;        
         else
@@ -1175,5 +1234,29 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     {
         ret.set_float(node2pathcost(this.exp_PreTile));
     };    
-         	    
+    
+    Exps.prototype.StartX = function (ret)
+    {
+        ret.set_int(this.exp_StartX);
+    };	
+	
+    Exps.prototype.StartY = function (ret)
+    {
+        ret.set_int(this.exp_StartY);
+    };  
+    
+    Exps.prototype.EndTileUID = function (ret)
+    {
+        ret.set_any(this.exp_EndTileUID);
+    };    
+    
+    Exps.prototype.EndX = function (ret)
+    {
+        ret.set_int(this.exp_EndX);
+    };	
+	
+    Exps.prototype.EndY = function (ret)
+    {
+        ret.set_int(this.exp_EndY);
+    };
 }());

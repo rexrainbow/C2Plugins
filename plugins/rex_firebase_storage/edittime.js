@@ -96,9 +96,15 @@ AddAction(5, 0, "Upload from sprite", "Upload",
 
 AddStringParam("Data URI", "Data URI of file", '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
-AddAction(6, 0, "Upload from data URL", "Upload", 
-          "Upload from data URI <i>{0}</i> to <i>{1}</i>", 
-          "Upload from data URI to firebase storage.", "UploadFromDataURI");              
+AddAction(6, 0, "Upload data URL", "Upload", 
+          "Upload data URI <i>{0}</i> to <i>{1}</i>", 
+          "Upload from data URI to firebase storage.", "UploadDataURI");  
+
+AddStringParam("Content", "String content", '""');
+AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddAction(7, 0, "Upload string", "Upload", 
+          "Upload string <i>{0}</i> to <i>{1}</i>", 
+          "Upload string to firebase storage.", "UploadString");           
 
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
 AddAction(11, 0, "Get download url", "Download", 

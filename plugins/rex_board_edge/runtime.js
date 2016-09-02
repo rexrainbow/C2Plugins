@@ -533,7 +533,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	
     Acts.prototype.Setup = function (board_objs)
 	{
-        var board = board_objs.instances[0];
+        var board = board_objs.getFirstPicked();
         if (board.check_name == "BOARD")
             this.board = board;        
         else
@@ -603,7 +603,7 @@ cr.plugins_.Rex_board_edge = function(runtime)
 	    }
 	};   
 
-	Acts.prototype.RemoveChess = function (edge_objtype)
+	Acts.prototype.RemoveEdges = function (edge_objtype)
 	{       
         if (!edge_objtype)
             return;	

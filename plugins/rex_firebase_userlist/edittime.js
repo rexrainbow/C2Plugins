@@ -11,12 +11,27 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
+		"dependency":	"firebase.js"
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
+AddCondition(1, cf_trigger, "On receiving all", "User list", 
+            "On receiving all owner's lists", 
+            "Triggered when received all owner's lists.", "OnReceivingAllLists");      
 
+AddStringParam("List", "List name.", '""');
+AddCondition(2, cf_looping | cf_not_invertible, "For each User ID", "User list - For each", 
+             "For each User ID in owner's list <i>{0}</i>", 
+             "Repeat the event for each user ID in list.", "ForEachUserIDInList"); 
+
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddStringParam("List", "List name.", '"friends"');             
+AddCondition(3, 0, "User ID in list", "User list", 
+             "User ID <i>{0}</i> in owner's list <i>{1}</i>", 
+             "Return true if User ID in list.", "UserIDInList");             
+              
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("User ID", "User ID from authentication.", '""');
@@ -24,7 +39,7 @@ AddAction(1, 0, "Set owner", "Owner",
           "Set user ID of owner to <i>{0}</i>", 
           "Set user ID of owner.", "SetOwner");
           
-AddAction(2, 0, "Request lists", "User list", 
+AddAction(2, 0, "Request lists", "User list - Request", 
           "Request all lists of owner", 
           "Request all lists of owner.", "RequestAllLists");
           
@@ -32,14 +47,14 @@ AddStringParam("Target user ID", "User ID of target user.", '""');
 AddStringParam("Owner list", "List's name of owner.", '"following"');
 AddStringParam("Target user list", "List's name of target user.", '"follower"');
 AddAction(11, 0, "Add user in both sides", "User list - bi-direction", 
-          "Add target user ID: <i>{0}</i> into owner's list <i>{1}</i>, and add owner user ID into target user's list <i>{2}</i>", 
+          "Add target user ID: <i>{0}</i> into owner's list <i>{1}</i>, and add owner user ID into target user list <i>{2}</i>", 
           "Add user in both sides.", "AddUserIn2Sides"); 
           
 AddStringParam("Target user ID", "User ID of target user.", '""');
 AddStringParam("Owner list", "List's name of owner.", '"following"');
 AddStringParam("Target user list", "List's name of target user.", '"follower"');
 AddAction(12, 0, "Remove user in both sides", "User list - bi-direction", 
-          "Remove target user ID: <i>{0}</i> from owner's list <i>{1}</i>, and remove owner user ID from target user's list <i>{2}</i>", 
+          "Remove target user ID: <i>{0}</i> from owner's list <i>{1}</i>, and remove owner user ID from target user list <i>{2}</i>", 
           "Remove user from both sides.", "RemoveUserFrom2Sides");                                
 
 AddStringParam("User ID", "User ID of target user.", '""');
@@ -58,26 +73,33 @@ AddStringParam("Target user ID", "User ID of target user.", '""');
 AddStringParam("Owner list", "List's name of owner.", '"friend"');
 AddStringParam("Target user list", "List's name of target user.", '"friend"');
 AddStringParam("Message", "Message of invitation.", '""');
-AddAction(21, 0, "Invite user", "Request", 
-          "Send request to add target user ID: <i>{0}</i> into owner's list <i>{1}</i>, and add owner user ID into target user's list <i>{2}</i> with message to <i>{3}</i>", 
-          "Send request to add user into both lists.", "Request"); 
-
-AddStringParam("Request ID", "Request ID.", '""');
+AddAction(21, 0, "Invite user", "User list - invitation", 
+          "Invite target user ID: <i>{0}</i> into owner's list <i>{1}</i>, and add owner user ID into target user list <i>{2}</i> with message to <i>{3}</i>", 
+          "Invite user.", "InviteUser"); 
+          
+AddStringParam("Inviter user ID", "User ID of inviter user.", '""');
 AddComboParamOption("Reject");
 AddComboParamOption("Accept");
 AddComboParam("Response", "Result of response", 1);
-AddAction(22, 0, "Respond", "Request", 
-          "<i>{1}</i> request ID: <i>{0}</i>", 
-          "Respond request.", "RespondRequest");  
+AddAction(22, 0, "Response invitation", "User list - invitation", 
+          "<i>{1}</i> invitation from user ID: <i>{0}</i>", 
+          "Response invitation.", "ResponseInvitation");  
 
-AddStringParam("Request ID", "Request ID.", '""');
-AddAction(23, 0, "Cancel", "Request", 
-          "Cancel request ID: <i>{0}</i>", 
-          "Cancel request.", "CancelRequest"); 
-
+AddStringParam("Target user ID", "User ID of target user.", '""');
+AddAction(23, 0, "Cancel invitation", "User list - invitation", 
+          "Cancel invitation to user ID: <i>{0}</i>", 
+          "Cancel invitation.", "CancelInvitation"); 
+          
+AddStringParam("Target user ID", "User ID of target user.", '""');
+AddStringParam("Owner list", "List's name of owner.", '"friend"');
+AddStringParam("Target user list", "List's name of target user.", '"friend"');
+AddAction(24, 0, "Remove membership", "User list - invitation", 
+          "Remove target user ID: <i>{0}</i> from owner's list <i>{1}</i>, and remove owner user ID from target user list <i>{2}</i>", 
+          "Remove membership.", "RemoveMembership");        
+          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "User ID of owner", "Owner", "OwnerID", 
+AddExpression(1, ef_return_string, "User ID of owner", "Owner", "OwnerUserID", 
               "Get user ID of owner."); 
 AddExpression(11, ef_return_string, "Current user ID", "User list - For each", "CurUserID", 
               "Get the current user ID in a For Each loop."); 
@@ -86,7 +108,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Sub domain", "Users-list", "Sub domain for this function."),
+    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
 	];
 	
 // Called by IDE when a new object type is to be created

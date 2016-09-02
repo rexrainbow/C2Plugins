@@ -238,7 +238,7 @@ cr.plugins_.Rex_Token = function(runtime)
 	
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
-        var random_gen = random_gen_objs.instances[0];
+        var random_gen = random_gen_objs.getFirstPicked();
         if (random_gen.check_name == "RANDOM")
             this.random_gen = random_gen;        
         else

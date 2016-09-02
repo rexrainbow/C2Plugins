@@ -28,6 +28,10 @@ AddObjectParam("Dictionary", "Dictionary object");
 AddAction(1, 0, "Put csv data into dictionary", "CSV to Dictionary", 
           "Put csv data <i>{0}</i> into dictionary <i>{1}</i>", 
           "Put csv data into dictionary.", "CSV2Dictionary");
+          
+AddStringParam("Delimiter", "Set delimiter for splitting items.", '","');
+AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
+         "Set delimiter for splitting items.", "SetDelimiter");           
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current key", "For Each cell", "CurKey", 

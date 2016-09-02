@@ -111,7 +111,7 @@ cr.behaviors.Rex_mode7ground = function(runtime)
 	};  	
     
     var RESULT = {};
-	behinstProto.transfer_position = function (lx, ly)
+	behinstProto.LXY2PXY = function (lx, ly)
 	{
         this.inst.update_bbox();
         var bbox = this.inst.bbox;	

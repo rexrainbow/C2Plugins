@@ -57,10 +57,6 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         this.exp_LoopIndex = -1;
         
         this.randomGenUid = -1;    // for loading
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];      
-        /**END-PREVIEWONLY**/           
 	};
 	
 	instanceProto.reset_pat_rank = function(patterns)
@@ -239,17 +235,17 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
+	    var prop = [];
         var remain;
         var pat_list = (this.restart_gen_flg)? this.patterns : this._shadow_patterns
         for (var pat in this.patterns)
         {
             remain = pat_list[pat] || 0;
-	        this.propsections.push({"name": pat, "value": remain +" ("+this.patterns[pat]+")"});
+	        prop.push({"name": pat, "value": remain +" ("+this.patterns[pat]+")"});
         }
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	
@@ -439,7 +435,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
-        var random_gen = random_gen_objs.instances[0];
+        var random_gen = random_gen_objs.getFirstPicked();
         if (random_gen.check_name == "RANDOM")
             this.random_gen = random_gen;        
         else

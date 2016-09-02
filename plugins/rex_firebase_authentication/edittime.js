@@ -56,7 +56,11 @@ AddCondition(9, cf_trigger, "On updating profile success", "Email & Password - u
             
 AddCondition(10, cf_trigger, "On updating profile error", "Email & Password - update profile", 
             "On update profile error", 
-            "Triggered when updating profile error.", "EmailPassword_OnUpdatingProfileError");               
+            "Triggered when updating profile error.", "EmailPassword_OnUpdatingProfileError");         
+
+AddCondition(21, cf_trigger, "Is anonymous", "Anonymous", 
+            "Is anonymous login", 
+            "Return true if current user is anonymous.", "IsAnonymous");                  
                         
 // general            
 AddCondition(31, cf_trigger, "On login success", "General - login", 
@@ -82,7 +86,16 @@ AddCondition(41, cf_trigger, "On login by other app", "General - login",
             
 AddCondition(42, cf_trigger, "On logged out by other app", "General - logged out", 
             "On logged out by other app", 
-            "Triggered when logged out by other app.", "OnLoggedOutByOther");	            
+            "Triggered when logged out by other app.", "OnLoggedOutByOther");	
+
+
+AddCondition(51, cf_trigger, "On link success", "Link multiple auth providers", 
+            "On link success", 
+            "Triggered when link success.", "OnLinkSuccessfully");
+            
+AddCondition(52, cf_trigger, "On link error", "Link multiple auth providers", 
+            "On link error", 
+            "Triggered when link error.", "OnLinkError");            
 //////////////////////////////////////////////////////////////
 // Actions 
   
@@ -90,7 +103,7 @@ AddCondition(42, cf_trigger, "On logged out by other app", "General - logged out
 AddStringParam("Email", "User email", '""');
 AddStringParam("Password", "User password", '""');
 AddAction(1, 0, "Create account", "Email & Password", 
-          "Create account with email to <i>{0}</i>, password to <i>{1}</i>", 
+          "Create account with email: <i>{0}</i>, password: <i>{1}</i>", 
           "Create account with email & password.", "EmailPassword_CreateAccount");
 
 AddStringParam("Email", "User email", '""');
@@ -100,33 +113,26 @@ AddComboParamOption("sessionOnly");
 AddComboParamOption("never");
 AddComboParam("Remember", "Persisting type");
 AddAction(2, 0, "Login", "Email & Password", 
-          "Login with email to <i>{0}</i>, password to <i>{1}</i>, persisting type to <i>{2}</i>", 
+          "Login with email: <i>{0}</i>, password: <i>{1}</i>, persisting type to <i>{2}</i>", 
           "Login with email & password.", "EmailPassword_Login");
           
-AddStringParam("Email", "User email", '""');
-AddStringParam("Old password", "User password", '""');
-AddStringParam("New password", "User password", '""');
+AddStringParam("Email", "(2.x) User email", '""');
+AddStringParam("Old password", "(2.x) Old password", '""');
+AddStringParam("New password", "New password", '""');
 AddAction(3, 0, "Change password", "Email & Password", 
-          "Change password with email to <i>{0}</i>, password from old <i>{1}</i> to new <i>{1}</i>", 
-          "Change password.", "EmailPassword_ChangePassword");          
+          "Change password to <i>{1}</i>", 
+          "Change password of current user.", "EmailPassword_ChangePassword");          
 
 AddStringParam("Email", "User email", '""');
 AddAction(4, 0, "Sending password reset email", "Email & Password", 
-          "Sending password reset email to <i>{0}</i>", 
+          "Sending password reset email: <i>{0}</i>", 
           "Sending password reset email", "EmailPassword_SendPasswordResultEmail"); 
              
-AddStringParam("Email", "User email", '""');
-AddStringParam("Password", "User password", '""');
+AddStringParam("Email", "(2.x) User email", '""');
+AddStringParam("Password", "(2.x) User password", '""');
 AddAction(5, 0, "Delete user", "Email & Password", 
-          "Delete user with email <i>{0}</i>, password <i>{1}</i>", 
-          "Delete user with email & password.", "EmailPassword_DeleteUser");  
-          
-// 3.x only
-AddStringParam("Display name", "Display name of current user.", '""');
-AddStringParam("Photo URL", "Photo URL of current user", '""');
-AddAction(51, 0, "Update profile", "Email & Password", 
-          "Update display name to <i>{0}</i>, photo URL to <i>{1}</i>", 
-          "Update profile. 3.x only.", "UpdateProfile");	          
+          "Delete current user", 
+          "Delete current user.", "EmailPassword_DeleteUser");                  
           
 // anonymous   
 AddComboParamOption("default");
@@ -199,8 +205,31 @@ AddAction(41, 0, "Go offline", "Online",
 AddAction(42, 0, "Go online", "Online", 
           "Go online", 
           "Manually reestablish a connection to the Firebase server and enable automatic reconnection.", "GoOnline");  
-
+          
+// link , 3.x only        
+AddStringParam("Access token", 'Access token from other plugin. Set "" if using official facebook to login.', '""');
+AddAction(51, 0, "Link to facebook", "Link multiple auth providers", 
+          "Link to facebook account by access token: <i>{0}</i>", 
+          "Link to facebook account by access token.", "LinkToFB");
+          
+AddStringParam("ID token", 'ID token from other plugin.', '""');
+AddAction(52, 0, "Link to google", "Link multiple auth providers", 
+          "Link to google account by ID token: <i>{0}</i>", 
+          "Link to google account by ID token.", "LinkToGoogle");
+          
+AddStringParam("Email", "User email", '""');
+AddStringParam("Password", "User password", '""');
+AddAction(53, 0, "Link to email-password", "Link multiple auth providers", 
+          "Link to email: <i>{0}</i>, password: <i>{1}</i>", 
+          "Link to email-password.", "LinkToEmailPassword");          
 	  
+// 3.x only
+AddStringParam("Display name", "Display name of current user.", '""');
+AddStringParam("Photo URL", "Photo URL of current user", '""');
+AddAction(61, 0, "Update profile", "Email & Password", 
+          "Update display name to <i>{0}</i>, photo URL to <i>{1}</i>", 
+          "Update profile. 3.x only.", "UpdateProfile");	  
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 

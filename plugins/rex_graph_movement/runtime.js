@@ -865,13 +865,13 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
     
     Acts.prototype.Setup = function (graph_objs, group_objs)
 	{
-        var graph = graph_objs.instances[0];
+        var graph = graph_objs.getFirstPicked();
         if (graph.check_name == "BOARD")
             this.graph = graph;        
         else
             alert ("Graph movement should connect to a graph object");		
             
-        var group = group_objs.instances[0];
+        var group = group_objs.getFirstPicked();
         if (group.check_name == "INSTGROUP")
             this.group = group;        
         else
@@ -948,7 +948,7 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
 	
     Acts.prototype.SetRandomGenerator = function (randomGen_objs)
 	{
-        var randomGen = randomGen_objs.instances[0];
+        var randomGen = randomGen_objs.getFirstPicked();
         if (randomGen.check_name == "RANDOM")
             this.randomGen = randomGen;        
         else

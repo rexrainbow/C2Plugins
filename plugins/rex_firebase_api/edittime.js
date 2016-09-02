@@ -10,7 +10,7 @@
 		"category":		"Rex - Web - Firebase - api",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
+		"flags":		pf_deprecated,
 		"dependency":	"firebase.js"
 	};
 };

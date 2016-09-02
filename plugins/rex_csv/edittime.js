@@ -89,7 +89,7 @@ AddAction(9, 0, "Remove a column", "Resize", "Remove column <i>{0}</i>",
 AddStringParam("Row index", "Row index.", '""');
 AddAction(10, 0, "Remove a row", "Resize", "Remove row <i>{0}</i>",
          "Remove a row.", "RemoveRow");           
-AddStringParam("Delimiter", "Set delimiter for splitting items.", ",");
+AddStringParam("Delimiter", "Set delimiter for splitting items.", '","');
 AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
          "Set delimiter for splitting items.", "SetDelimiter");
 AddStringParam("JSON string", "JSON string.", '""');

@@ -3,7 +3,7 @@
 	return {
 		"name":			"Firebase API v3",
 		"id":			"Rex_FirebaseAPIV3",
-		"version":		"3.0.0",   		
+		"version":		"3.3.0",   		
 		"description":	"3.x API of real time database-as-a-service. https://firebase.google.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebaseapiv3.html",

@@ -608,6 +608,18 @@ cr.plugins_.Rex_Matcher = function(runtime)
 		}		
 		this.groupUid = -1;						
 	};	
+    
+	/**BEGIN-PREVIEWONLY**/
+	instanceProto.getDebuggerValues = function (propsections)
+	{	  
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "Board UID", "value": this.GetBoard().uid},	
+			               {"name": "InstGroup UID", "value": this.GetInstGroup().uid},		               			               
+			               ]
+		});
+	};
+	/**END-PREVIEWONLY**/	    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -766,13 +778,13 @@ cr.plugins_.Rex_Matcher = function(runtime)
     
     Acts.prototype.Setup = function (board_objs, group_objs)
 	{
-        var board = board_objs.instances[0];
+        var board = board_objs.getFirstPicked();
         if (board.check_name == "BOARD")
             this.board = board;
         else
             alert ("Matcher should connect to a board object");
             
-        var group = group_objs.instances[0];
+        var group = group_objs.getFirstPicked();
         if (group.check_name == "INSTGROUP")
             this.group = group;        
         else

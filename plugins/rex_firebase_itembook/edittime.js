@@ -329,6 +329,10 @@ AddExpression(55, ef_return_any | ef_variadic_parameters, "Get current item cont
 AddExpression(91, ef_return_string | ef_variadic_parameters, "Convert table to item list", "Convert", "AsItemList", 
               "Convert table to item list (JSON string), optional parameters are (tableID, itemID).");              
               
+//AddAnyTypeParam("Table", "Table ID.", '""');
+AddExpression(92, ef_return_number | ef_variadic_parameters, "Get items count ", "Item count", "ItemCount", 
+              "Get items count of all tables or add table ID in 1st parameter to get items count in that table.");                 
+              
 //AddAnyTypeParam("Table", "Table ID.", '""');      
 //AddAnyTypeParam("Item", "Item ID.", '""');      
 //AddAnyTypeParam("Key", "The name of the key.", '""');

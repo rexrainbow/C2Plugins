@@ -60,6 +60,9 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
     
 	instanceProto.onDestroy = function ()
 	{
+        this.lastResult = null;
+        this.lastBoards = null;
+        this.lastScores = null;  
 	};   
     
     instanceProto.GetNGIO = function ()

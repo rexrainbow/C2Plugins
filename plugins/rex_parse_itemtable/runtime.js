@@ -137,7 +137,19 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
         filters.fields.length = 0;
         filters.linkedObjs.length = 0;
 	};    
-
+	
+    var get_filter = function (filters, k, type_)
+	{
+	    if (!filters.hasOwnProperty(k))
+	        filters[k] = [type_, []];
+	    else if (filters[k][0] != type_)
+	    {
+	        filters[k][0] = type_;
+	        filters[k][1].length = 0;
+	    }	    
+	    return filters[k][1];
+	};
+    
 	instanceProto.primaryKeys_to_query = function(primary_keys)
 	{
         var query = new window["Parse"]["Query"](this.itemTable_klass);
@@ -162,27 +174,27 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	        self.runtime.trigger(cr.plugins_.Rex_parse_ItemTable.prototype.cnds.OnSaveError, self);
 	    };
  
-        // step 2. write item    
-        var on_write_handler = {"success":OnSaveComplete, "error": OnSaveError};        
+        // step 2. write item          
         var write_item = function (item_, itemID_)
         {
             if (itemID_ !== "")
                 item_["set"]("id", itemID_);
 
+            var on_write_handler = {"success":OnSaveComplete, "error": OnSaveError};              
             item_["save"](null, on_write_handler);        
         }
         // step 2. write item                             
         
 
         // step 1. read items
-	    var on_read_success = function(item_)
-	    {	
-	        var itemID = (item_ == null)? "":item_["id"];
-	        write_item(prepared_item, itemID);
-	    };	    
-	    var on_read_handler = {"success":on_read_success, "error": OnSaveError};
 	    var read_item = function (primary_keys_)
 	    {	        
+	        var on_read_success = function(item_)
+	        {	
+	            var itemID = (item_ == null)? "":item_["id"];
+	            write_item(prepared_item, itemID);
+	        };	    
+	        var on_read_handler = {"success":on_read_success, "error": OnSaveError};        
             var query = self.primaryKeys_to_query(primary_keys_);   
 	        query["first"](on_read_handler);
 	    };
@@ -288,7 +300,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
             this.primary_keys[key_] = value_;
 	};
 
- 	instanceProto.get_itemValue = function (item, k, default_value)
+ 	var get_itemValue = function (item, k, default_value)
 	{
         var v;
 	    if (item == null)
@@ -593,18 +605,6 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	        delete this.filters[k];
 	};
 	
-	var get_filter = function (filters, k, type_)
-	{
-	    if (!filters.hasOwnProperty(k))
-	        filters[k] = [type_, []];
-	    else if (filters[k][0] != type_)
-	    {
-	        filters[k][0] = type_;
-	        filters[k][1].length = 0;
-	    }	    
-	    return filters[k][1];
-	}
-
     Acts.prototype.AddToWhiteList = function (k, v)
 	{
 	    var cnd = get_filter(this.filters.filters, k, "include");
@@ -1012,17 +1012,17 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 
  	Exps.prototype.CurItemID = function (ret)
 	{
-		ret.set_string( this.get_itemValue(this.exp_CurItem, "id", "") );
+		ret.set_string( get_itemValue(this.exp_CurItem, "id", "") );
 	};
 	
  	Exps.prototype.CurItemContent = function (ret, k, default_value)
 	{
-		ret.set_any( this.get_itemValue(this.exp_CurItem, k, default_value) );
+		ret.set_any( get_itemValue(this.exp_CurItem, k, default_value) );
 	};
 		
  	Exps.prototype.CurSentAt = function (ret)
 	{
-		ret.set_float( this.get_itemValue(this.exp_CurItem, "updatedAt", 0) );	
+		ret.set_float( get_itemValue(this.exp_CurItem, "updatedAt", 0) );	
 	};
     
 	Exps.prototype.CurItemIndex = function (ret)
@@ -1055,15 +1055,15 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	
  	Exps.prototype.Index2ItemID = function (ret, index_)
 	{
-		ret.set_string( this.get_itemValue(this.itemTable.GetItem(index_), "id", "") );
+		ret.set_string( get_itemValue(this.itemTable.GetItem(index_), "id", "") );
 	};		
  	Exps.prototype.Index2ItemContent = function (ret, index_, k, default_value)
 	{
-		ret.set_any( this.get_itemValue(this.itemTable.GetItem(index_), k, default_value) );				
+		ret.set_any( get_itemValue(this.itemTable.GetItem(index_), k, default_value) );				
 	};	
  	Exps.prototype.Index2SentAt = function (ret)
 	{	
-		ret.set_float( this.get_itemValue(this.itemTable.GetItem(index_), "updatedAt", 0) );		        
+		ret.set_float( get_itemValue(this.itemTable.GetItem(index_), "updatedAt", 0) );		        
 	};
 	        
 	Exps.prototype.ItemsToJSON = function (ret)
@@ -1078,20 +1078,20 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	
  	Exps.prototype.LastFetchedItemID = function (ret)
 	{
-		ret.set_string( this.get_itemValue(this.exp_LastFetchedItem, "id", "") );
+		ret.set_string( get_itemValue(this.exp_LastFetchedItem, "id", "") );
 	};
 	
  	Exps.prototype.LastFetchedItemContent = function (ret, k, default_value)
 	{
-		ret.set_any( this.get_itemValue(this.exp_LastFetchedItem, k, default_value) );		
+		ret.set_any( get_itemValue(this.exp_LastFetchedItem, k, default_value) );		
 	};
 		
  	Exps.prototype.LastFetchedSentAt = function (ret)
 	{
-		ret.set_float( this.get_itemValue(this.exp_LastFetchedItem, "updatedAt", 0) );			
+		ret.set_float( get_itemValue(this.exp_LastFetchedItem, "updatedAt", 0) );			
 	};
 	   
-	Exps.prototype.LastRemovedMessageID = function (ret)
+	Exps.prototype.LastRemovedItemID = function (ret)
 	{
 		ret.set_string(this.exp_LastRemovedItemID);
 	};		
@@ -1115,240 +1115,3 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	};
 		
 }());
-
-(function ()
-{
-    if (window.ParseQuery != null)
-        return;  
-        
-   var request = function (query, handler, start, lines)
-   {	   	          
-	    if (start==null)
-	        start = 0;
-        
-        var all_items = [];            
-	    var is_onePage = (lines != null) && (lines <= 1000);
-	    var linesInPage = (is_onePage)? lines:1000;
-	                                       	    
-        var self = this;       
-	    var on_success = function(items)
-	    {
-	        all_items.push.apply(all_items, items);
-	        var is_last_page = (items.length < linesInPage);   
-	        	        
-	        if ((!is_onePage) && (!is_last_page))  // try next page
-	        {               
-	            start += linesInPage;
-	            query_page(start);
-	        }
-	        else  // finish
-	        {
-                handler["success"](all_items);            
-	        }
-	    };
-	     
-	    var read_page_handler = {"success":on_success, "error": handler["error"]};	 	    
-	    var query_page = function (start_)
-	    {
-	        // get 1000 lines for each request until get null or get userID	       
-            query["skip"](start_);
-            query["limit"](linesInPage);
-            query["find"](read_page_handler);
-        };
-
-	    query_page(start);
-	}; 
-	
-	var remove_all_items = function (query, handler)
-    {
-        query["select"]("id");    
-	    var on_read_all = function(all_items)
-	    {
-	        if (all_items.length === 0)
-	        {
-	            handler["success"](all_items);
-	            return;
-	        }
-	        window["Parse"]["Object"]["destroyAll"](all_items, handler); 
-	    };	    
-	    var on_read_handler = {"success":on_read_all, "error": handler["error"]};  
-	    request(query, on_read_handler);
-    };
-    
-    window.ParseQuery = request;
-    window.ParseRemoveAllItems = remove_all_items;
-}());
-
-(function ()
-{
-    if (window.ParseItemPageKlass != null)
-        return;    
-
-    var ItemPageKlass = function (page_lines)
-    {
-        // export
-        this.onReceived = null;
-        this.onReceivedError = null;
-        this.onGetIterItem = null;  // used in ForEachItem
-        // export
-	    this.items = [];
-        this.start = 0;
-        this.page_lines = page_lines;   
-        this.page_index = 0;     
-        this.is_last_page = false;
-    };
-    
-    var ItemPageKlassProto = ItemPageKlass.prototype;  
-     
-	ItemPageKlassProto.Reset = function()
-	{ 
-	    this.items.length = 0;
-        this.start = 0;     
-	};	
-	     
-    ItemPageKlassProto.request = function (query, start, lines)
-	{
-	    if (start==null)
-	        start = 0;
-        this.items.length = 0; 
-
-        var self = this;       
-	    var on_success = function(items)
-	    {
-            self.items = items;
-            self.start = start;
-            self.page_index = Math.floor(start/self.page_lines); 
-
-            var is_onePage = (lines != null) && (lines <= 1000);
-            if (is_onePage)
-                self.is_last_page = (items.length < lines);
-            else
-                self.is_last_page = true;
-	            
-            if (self.onReceived)
-                self.onReceived();
-	    };	    
-	    var on_error = function(error)
-	    { 
-	        self.items.length = 0;
-	        self.is_last_page = false;
-	        	        
-            if (self.onReceivedError)
-                self.onReceivedError(error);	 	           
-	    };
-        var on_read_handler = {"success":on_success, "error":on_error};               
-        window.ParseQuery(query, on_read_handler, start, lines);        
-	}; 	    
-
-    ItemPageKlassProto.RequestInRange = function (query, start, lines)
-	{
-	    this.request(query, start, lines);
-	};
-
-    ItemPageKlassProto.RequestTurnToPage = function (query, page_index)
-	{
-	    var start = page_index*this.page_lines;
-	    this.request(query, start, this.page_lines);
-	};	 
-    
-    ItemPageKlassProto.RequestUpdateCurrentPage = function (query)
-	{
-	    this.request(query, this.start, this.page_lines);
-	};    
-    
-    ItemPageKlassProto.RequestTurnToNextPage = function (query)
-	{
-        var start = this.start + this.page_lines;
-	    this.request(query, start, this.page_lines);
-	};     
-    
-    ItemPageKlassProto.RequestTurnToPreviousPage = function (query)
-	{
-        var start = this.start - this.page_lines;
-	    this.request(query, start, this.page_lines);
-	};  
-    
-    ItemPageKlassProto.LoadAllItems = function (query)
-	{
-	    this.request(query);
-	}; 
-	ItemPageKlassProto.ForEachItem = function (runtime, start, end)
-	{
-        var items_end = this.start + this.items.length - 1;       
-	    if (start == null)
-	        start = this.start; 
-	    else
-	        start = cr.clamp(start, this.start, items_end);
-	        
-	    if (end == null) 
-	        end = items_end;
-        else     
-            end = cr.clamp(end, start, items_end);
-        	    	     
-        var current_frame = runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-		         
-		var i;
-		for(i=start; i<=end; i++)
-		{
-            if (solModifierAfterCnds)
-            {
-                runtime.pushCopySol(current_event.solModifiers);
-            }
-            
-            if (this.onGetIterItem)
-                this.onGetIterItem(this.GetItem(i), i);
-                
-            current_event.retrigger();
-            
-		    if (solModifierAfterCnds)
-		    {
-		        runtime.popSol(current_event.solModifiers);
-		    }            
-		}
-    		
-		return false;
-	}; 
-
-	ItemPageKlassProto.FindFirst = function(key, value, start_index)
-	{
-	    if (start_index == null)
-	        start_index = 0;
-	        
-        var i, cnt=this.items.length;
-        for(i=start_index; i<cnt; i++)
-        {
-            if (this.items[i]["get"](key) == value)
-                return i + this.start;
-        }
-	    return -1;
-	};
-
-	ItemPageKlassProto.GetItem = function(i)
-	{
-	    return this.items[i - this.start];
-	};	
-
-	ItemPageKlassProto.GetItems = function()
-	{
-	    return this.items;
-	};	
-	
-	ItemPageKlassProto.IsTheLastPage = function()
-	{
-	    return this.is_last_page;
-	};		
-	
-	ItemPageKlassProto.GetStartIndex = function()
-	{
-	    return this.start;
-	};	
-	
-	ItemPageKlassProto.GetCurrentPageIndex = function ()
-	{
-	    return this.page_index;
-	};	
-
-	window.ParseItemPageKlass = ItemPageKlass;
-}());       

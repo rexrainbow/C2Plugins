@@ -150,6 +150,11 @@ AddCondition(27, cf_not_invertible, "Pick chess inside a square", "SOL - logical
              "Pick <i>{0}</i> inside a square - LX from <i>{1}</i> to <i>{2}</i>, LY from <i>{3}</i> to <i>{4}</i>", 
              "Pick chess inside a square.", "PickChessInsideSquare");
              
+AddNumberParam("Logic X", "The X index (0-based) of the tile.", 0);
+AddNumberParam("Logic Y", "The Y index (0-based) of the tile.", 0);             
+AddCondition(28, cf_looping | cf_not_invertible, "For each LZ at LXY", "For each LZ", 
+             "For each LZ at [<i>{0}</i>,<i>{1}</i>] ", 
+             "Repeat the event for each LZ at LXY.", "ForEachLZ");             
             
 //////////////////////////////////////////////////////////////
 // Actions   
@@ -478,7 +483,9 @@ AddExpression(28, ef_return_any | ef_variadic_parameters,
 AddExpression(31, ef_return_number, "Current LX", "For Each cell", "CurLX", 
               "Get the current logic X index in a For Each loop.");
 AddExpression(32, ef_return_number, "Current LY", "For Each cell", "CurLY", 
-              "Get the current logic Y index in a For Each loop.");     
+              "Get the current logic Y index in a For Each loop.");   
+AddExpression(33, ef_return_any, "Current LZ", "For Each LZ", "CurLZ", 
+              "Get the current logic Z index in a For Each loop.");              
 
 AddExpression(61, ef_return_number, "Max LX", "Max-min", "MaxLX", 
               "Get maximum of LX of all chess.");

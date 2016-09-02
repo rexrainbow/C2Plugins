@@ -32,7 +32,11 @@ AddCondition(5, 0, "Compare dragging angle", "Value",
              "CompareDragAngle");        
 //////////////////////////////////////////////////////////////
 // Actions
-
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Choose whether to enable or disable the behavior.");
+AddAction(0, af_none, "Set enabled", "Enable", "Set {my} {0}", "Enable or disable the drag and drop behavior.", "SetEnabled");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Touch X position", "Current", "X", 
@@ -60,6 +64,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
     ];
 	
 // Called by IDE when a new behavior type is to be created

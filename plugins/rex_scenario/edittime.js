@@ -26,6 +26,17 @@ AddCondition(2, cf_trigger, "On tag changed", "Tag", "On tag changed",
 AddStringParam("Tag", 'Tag in csv table. "" is start from 1st command.', "");             
 AddCondition(3, 0, "Is tag existed", "Tag", "Is tag <i>{0}</i> existed", 
              "Return true if tag is existed.", "IsTagExisted");
+
+AddCondition(11, 0, "Is waiting any", "Wait", "Is waiting", 
+             "Is scenario waiting for any signal.", "IsWaiting");    
+AddAnyTypeParam("Key", "Key of locked-wait command", '""');               
+AddCondition(12, 0, "Is waiting", "Wait", "Is waiting", 
+             "Is scenario waiting for signal.", "IsWaiting");                 
+AddCondition(13, cf_trigger, "On waiting any start", "Wait", "On waiting start", 
+             "Triggered when On waiting (for signal) start.", "OnWaitingStart");       
+AddAnyTypeParam("Key", "Key of locked-wait command", '""');                 
+AddCondition(14, cf_trigger, "On waiting start", "Wait", "On waiting <i>{0}</i> start", 
+             "Triggered when On waiting (for signal) start.", "OnWaitingStart");                   
              
 //////////////////////////////////////////////////////////////
 // Actions     
@@ -108,13 +119,19 @@ AddAction(101, 0, "Set delimiters", "Mustache",
 AddExpression(2, ef_return_string, "Get last tag", 
               "Tag", "LastTag", 
               "Get last tag."); 
-AddAnyTypeParam(0, "The index of memory to get, can be number of string.", 0);
+AddAnyTypeParam("Index", "Index of memory, can be number of string", 0);
 AddExpression(3, ef_return_any, 
               "Get memory", "Memory", "Mem", 
               "Get the value from memory by index.");
 AddExpression(4, ef_return_string, "Transfer memory to string", 
               "Memory", "MEMToString", 
               "Transfer memory to JSON string."); 
+AddExpression(5, ef_return_string, "Get previous tag", 
+              "Tag", "PreviousTag", 
+              "Get previous tag.");
+AddExpression(6, ef_return_string, "Get current tag", 
+              "Tag", "CurrentTag", 
+              "Get current(last) tag.");        
               
 ACESDone();
 

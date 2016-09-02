@@ -46,11 +46,7 @@ cr.plugins_.Rex_Dice = function(runtime)
 		this.dice_faces = 0;
 		this.dice_sum = 0;	
 
-        this.randomGenUid = -1;    // for loading   
-
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];      
-        /**END-PREVIEWONLY**/            
+        this.randomGenUid = -1;    // for loading               
 	};
 	cr.plugins_.Rex_Dice._random_gen = null;  // random generator for Shuffing	
 	
@@ -116,18 +112,19 @@ cr.plugins_.Rex_Dice = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-        this.propsections.push({"name": "Count", "value": this.dice_count});
-        this.propsections.push({"name": "Faces", "value": this.dice_faces});
-        this.propsections.push({"name": "Sum", "value": this.dice_sum});
+        var prop = [
+            {"name": "Count", "value": this.dice_count},
+            {"name": "Faces", "value": this.dice_faces},
+            {"name": "Sum", "value": this.dice_sum}
+        ];
         var i, cnt=this.dice_results.length;
         for (i=0; i<cnt; i++)
         {
-	        this.propsections.push({"name": "Die-"+i.toString(), "value": this.dice_results[i]});
+	        prop.push({"name": "Die-"+i.toString(), "value": this.dice_results[i]});
         }
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	
@@ -152,7 +149,7 @@ cr.plugins_.Rex_Dice = function(runtime)
 	
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
-        var random_gen = random_gen_objs.instances[0];
+        var random_gen = random_gen_objs.getFirstPicked();
         if (random_gen.check_name == "RANDOM")
             cr.plugins_.Rex_Dice._random_gen = random_gen;        
         else

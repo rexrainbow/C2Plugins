@@ -45,11 +45,7 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
         this.exp_tool = new cr.plugins_.Rex_Fuzzy.FExp();
         this.err = null;
         this.raw_exp_save = [];  
-        this.raw_memship_save = [];
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];     
-        /**END-PREVIEWONLY**/                
+        this.raw_memship_save = [];         
 	};
     var has_string = function(main, sub)
     {
@@ -152,11 +148,11 @@ cr.plugins_.Rex_Fuzzy = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-	    this.rule_bank.getDebuggerValues(this.propsections);        
+	    var prop = [];
+	    this.rule_bank.getDebuggerValues(tprop);        
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

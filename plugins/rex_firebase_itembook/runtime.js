@@ -195,54 +195,6 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
         this.exp_LastRandomBase32 = o["lr"];        
 	};    
     
-    var din = function (d, default_value)
-    {       
-        var o;
-	    if (d === true)
-	        o = 1;
-	    else if (d === false)
-	        o = 0;
-        else if (d == null)
-        {
-            if (default_value != null)
-                o = default_value;
-            else
-                o = 0;
-        }
-        else if (typeof(d) == "object")
-            o = JSON.stringify(d);
-        else
-            o = d;
-	    return o;
-    };
-    
-    var getValueByKeyPath = function (o, keyPath)
-    {  
-        // invalid key    
-        if ((keyPath == null) || (keyPath === ""))
-            return o;
-        
-        // key but no object
-        else if (typeof(o) !== "object")
-            return null;
-        
-        else if (keyPath.indexOf(".") === -1)
-            return o[keyPath];
-        else
-        {
-            var val = o;              
-            var keys = keyPath.split(".");
-            var i, cnt=keys.length;
-            for(i=0; i<cnt; i++)
-            {
-                val = val[keys[i]];
-                if (val == null)
-                    return null;
-            }
-            return val;
-        }
-    }
-    
     var isCleanBook = function (o)
     {
         // object has only one property, and this property is ""
@@ -778,25 +730,16 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 	    ret.set_string(this.exp_LastGeneratedKey);
 	};
     
-    Exps.prototype.At = function (ret, tableID_, itemID_, key_, default_value_)
+    Exps.prototype.At = function (ret, tableID, itemID, key, default_value)
 	{
-        var val = this.readTables;
-        var default_value;
-        if (tableID_)
+        var item = this.readTables;
+        if (tableID)
         {
-            val = val[tableID_];
-            if (val && itemID_)
-            {
-                val = val[itemID_];
-                if (val && key_)                    
-                {
-                    default_value = default_value_;   
-                    val = getValueByKeyPath(val, key_);
-                }
-            }
+            item = item[tableID];
+            if (item && itemID)
+                item = item[itemID];        
         }
-        val = din(val, default_value || "");
-		ret.set_any(val);
+		ret.set_any( window.FirebaseGetValueByKeyPath(item, key, default_value) );
 	};	    
     
 	Exps.prototype.LastTableID = function (ret)
@@ -818,25 +761,14 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
 		ret.set_string(this.exp_CurKey);
 	};	
 	
-    Exps.prototype.CurValue = function (ret, subKey)
+    Exps.prototype.CurValue = function (ret, subKey, default_value)
 	{
-	    var v = this.exp_CurValue;
-	    v = din(v);
-		ret.set_any(v);
+		ret.set_any( window.FirebaseGetValueByKeyPath(this.exp_CurValue, subKey, default_value ) );
 	};	
     	
-    Exps.prototype.CurItemContent = function (ret, key_, default_value)
+    Exps.prototype.CurItemContent = function (ret, k, default_value)
 	{
-	    var v;
-        if (key_ == null)
-            v = din(this.exp_CurItemContent);
-        else
-        {
-            v = getValueByKeyPath(this.exp_CurItemContent, key_);
-            v = din(v, default_value);
-        }
- 
-		ret.set_any(v);
+		ret.set_any( window.FirebaseGetValueByKeyPath(this.exp_CurItemContent, k, default_value ) );
 	};    
         
     Exps.prototype.AsItemList = function (ret, tableID_, itemID_)
@@ -891,6 +823,31 @@ cr.plugins_.Rex_Firebase_ItemBook = function(runtime)
         
 		ret.set_string(json_);
 	};	 
+    
+    Exps.prototype.ItemCount = function (ret, tableID_)
+	{
+        var cnt=0;
+        if (tableID_ != null)
+        {
+            var table = this.readTables[tableID_];
+            if (table)
+            {
+                for (var itemID in table)                
+                    cnt++                
+            }
+        }
+        else
+        {
+            var table;
+            for(var tableID in this.readTables)
+            {
+                table = this.readTables[tableID];
+                for (var itemID in table)                
+                    cnt++        
+            }
+        }
+		ret.set_int(cnt);
+	};    
     
     Exps.prototype.Ref = function (ret, tableID_, itemID_, key_)
 	{

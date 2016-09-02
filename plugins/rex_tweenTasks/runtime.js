@@ -190,11 +190,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.exp_bindInstTypeSID = null;        
         
         this.my_timescale = -1.0;
-        this.runtime.tickMe(this);
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];      
-        /**END-PREVIEWONLY**/         
+        this.runtime.tickMe(this);      
 	};
 	instanceProto.onDestroy = function ()
 	{
@@ -338,12 +334,12 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-        this.tasksMgr.getDebuggerValues(this.propsections);
+	    var prop = [];
+        this.tasksMgr.getDebuggerValues(prop);
         
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

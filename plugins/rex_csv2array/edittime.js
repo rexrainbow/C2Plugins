@@ -41,6 +41,10 @@ AddNumberParam("Z", "Z index (0-based) of array.", 0);
 AddAction(2, 0, "Put csv data into array", "CSV to Array", 
           "Put csv data <i>{0}</i> into array <i>{1}</i> at Z index to <i>{3}</i>, map <i>{2}</i>", 
           "Put csv data into array.", "CSV2Array");          
+          
+AddStringParam("Delimiter", "Set delimiter for splitting items.", '","');
+AddAction(11, 0, "Set delimiter", "Delimiter", "Set delimiter to <i>{0}</i>",
+         "Set delimiter for splitting items.", "SetDelimiter");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Current X", "For Each cell", "CurX", 

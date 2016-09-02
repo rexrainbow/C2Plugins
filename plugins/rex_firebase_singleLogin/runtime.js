@@ -212,7 +212,11 @@ cr.plugins_.Rex_Firebase_SingleLogin = function(runtime)
                 if (self.loginList === null)
                     self.loginList = self.create_loginList();
                 var query = userRef["orderByKey"]();
-                self.loginList.StartUpdate(query);
+                
+                setTimeout(function()
+                {
+                    self.loginList.StartUpdate(query);
+                }, 0);
             }
 	    };
 

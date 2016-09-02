@@ -50,7 +50,7 @@ cr.plugins_.Rex_hexShapeMap = function(runtime)
 
     var get_hex_board = function(board_objs)
     {   
-        var board = board_objs.instances[0];
+        var board = board_objs.getFirstPicked();
         if (!board)
             return null; 
         var layout = board.GetLayout();

@@ -92,6 +92,35 @@ cr.plugins_.Rex_NGIO_Authentication = function(runtime)
 	{
         return this.ngio;
 	};    
+    
+
+	/**BEGIN-PREVIEWONLY**/
+    var fake_ret = {
+        value:0,
+        set_any: function(value){this.value=value;},
+        set_int: function(value){this.value=value;},
+        set_float: function(value){this.value=value;}, 
+        set_string: function(value) {this.value=value;},
+    };
+    
+	instanceProto.getDebuggerValues = function (propsections)
+	{       
+        cr.plugins_.Rex_NGIO_Authentication.prototype.exps.UserName.call(this, fake_ret);
+        var userName = fake_ret.value;
+        
+        cr.plugins_.Rex_NGIO_Authentication.prototype.exps.UserID.call(this, fake_ret);
+        var userID = fake_ret.value;        
+        
+        var self = this;
+		propsections.push({
+			"title": this.type.name,
+			"properties": [
+                {"name":"User name", "value":userName ,"readonly":true},                                      
+                {"name":"User ID", "value":userID ,"readonly":true},                    
+            ]
+		});	
+	};	
+	/**END-PREVIEWONLY**/	     
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

@@ -151,9 +151,6 @@ cr.plugins_.Rex_FirebaseAPIV3 = function(runtime)
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------    
-    if (window.FirebaseItemListKlass != null)
-        return;    
-    
     var ItemListKlass = function ()
     {
         // -----------------------------------------------------------------------
@@ -453,10 +450,7 @@ cr.plugins_.Rex_FirebaseAPIV3 = function(runtime)
 
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------    
-    // --------------------------------------------------------------------------
-    if (window.FirebaseCallbackMapKlass != null)
-        return;    
-
+    // -------------------------------------------------------------------------- 
     var CallbackMapKlass = function ()
     {
         this.map = {};
@@ -625,4 +619,61 @@ cr.plugins_.Rex_FirebaseAPIV3 = function(runtime)
     };    
     
 	window.FirebaseCallbackMapKlass = CallbackMapKlass;
+    
+    var getValueByKeyPath = function (item, k, default_value)
+    {  
+        var v;
+        if (item == null)
+            v = null;
+        
+        // invalid key    
+        else if ((k == null) || (k === ""))
+            v = item;
+        
+        // key but no object
+        else if (typeof(item) !== "object")
+            v = null;
+        
+        // only one key
+        else if (k.indexOf(".") === -1)
+            v = item[k];
+        else
+        {
+            v = item;              
+            var keys = k.split(".");
+            var i, cnt=keys.length;
+            for(i=0; i<cnt; i++)
+            {
+                v = v[ keys[i] ];
+                if (v == null)
+                    break;
+            }
+        }
+        
+        return din(v, default_value);
+    }    
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };    
+    
+	window.FirebaseGetValueByKeyPath = getValueByKeyPath;    
+    
 }()); 

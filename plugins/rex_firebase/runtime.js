@@ -82,10 +82,6 @@ cr.plugins_.Rex_Firebase = function(runtime)
                 self.serverTimeOffsetDetectingStart();
         }
         setTimeout(setupFn, 0);
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];       
-        /**END-PREVIEWONLY**/          
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -248,12 +244,12 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-        this.callbackMap.getDebuggerValues(this.propsections);        
+	    var prop = [];
+        this.callbackMap.getDebuggerValues(prop);        
         
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

@@ -51,10 +51,6 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	    this.nickname2objtype = cr.plugins_.Rex_Nickname.nickname2objtype;
         this.sid2nickname = cr.plugins_.Rex_Nickname.sid2nickname;
         this.exp_LastCreatedInstUID = -1;
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];
-        /**END-PREVIEWONLY**/	        
 	};
     
 	// export		
@@ -214,18 +210,17 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
     /**BEGIN-PREVIEWONLY**/
     instanceProto.getDebuggerValues = function (propsections)
     {
-        this.propsections.length = 0;
-        this.propsections.push({"name": "Object type", "value": "Nickname", "readonly":true});
+        var porp = [];
         var nickname;
         for (nickname in this.nickname2objtype)
         {
-            this.propsections.push({"name": this.Nickname2Type(nickname).name, "value": nickname, "readonly":true});
+            porp.push({"name": this.Nickname2Type(nickname).name, "value": nickname, "readonly":true});
         }
         
         
         propsections.push({
             "title": this.type.name,
-            "properties": this.propsections
+            "properties": porp
         });
     };
     

@@ -226,7 +226,7 @@ IDEInstance.prototype.RecreateFont = function(renderer)
 	var had_font = false;
 	
 	// Release any existing font first
-	if (this.font != null)
+	if (this.font)
 	{
 		renderer.ReleaseFont(this.font);
 		had_font = true;
@@ -239,7 +239,7 @@ IDEInstance.prototype.RecreateFont = function(renderer)
 	this.font = renderer.CreateFont(font_info.face_name, font_info.face_size, font_info.bold, font_info.italic);
 	
 	// Creating the font failed: fall back to arial
-	if (this.font == null)
+	if (!this.font)
 	{
 		this.font = renderer.CreateFont("Arial", font_info.face_size, false, false);
 		
@@ -263,7 +263,7 @@ IDEInstance.prototype.RecreateFont = function(renderer)
 							   bti_warning);
 	}
 	
-	assert2(this.font != null, "Failed to create font or default Arial font");
+	assert2(this.font, "Failed to create font or default Arial font");
 		
 	// Font has been created
 	this.recreate_font = false;

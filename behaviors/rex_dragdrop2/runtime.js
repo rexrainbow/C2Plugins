@@ -177,7 +177,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	behinstProto.onCreate = function()
 	{   
-        this.enabled = (this.properties[0]==1);  
+        this.enabled = (this.properties[0]===1);  
         this.move_axis = this.properties[1];  
 
         if (!this.recycled)
@@ -446,7 +446,11 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	        	    
 		return cr.do_cmp(this.drag_info.DragAngle(), cmp, s);
 	}; 
-	
+    
+ 	Cnds.prototype.IsEnabled = function ()
+	{   
+        return this.enabled;
+    };	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};

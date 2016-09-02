@@ -52,7 +52,6 @@ AddAction(2, 0, "Leave", "Group",
 AddExpression(1, ef_return_string, "Get owner ID", "Token", "OwnerID", 
               "Get owner ID."); 
               
-ACESDone();
               
 ACESDone();
 

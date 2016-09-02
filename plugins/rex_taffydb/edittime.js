@@ -7,7 +7,7 @@
 		"description":	"Database. Reference from http://www.taffydb.com/",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_taffydb.html",
-		"category":		"Data & Storage",
+		"category":		"Rex - Data structure - Database",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -91,7 +91,7 @@ AddAction(2, 0, "Insert JSON data", "Insert - JSON",
          "Insert data to <i>{0}</i> (JSON format)",
          "Insert data from JSON string.", "InsertJSON");
 
-AddAction(3, 0, "Remove all", "Remove - queried rows", 
+AddAction(3, 0, "Remove all", "Remove", 
          "Remove all rows",
          "Remove all rows.", "RemoveAll");
          
@@ -102,7 +102,7 @@ AddAction(4, 0, "Set index keys", "Index keys",
 
 AddStringParam("Row ID", "Row ID");           
 AddAction(5, 0, "Remove by row ID", "Remove - row ID",
-         "Remove row by row ID to <i>{0}</i>",
+         "Remove row by row ID: <i>{0}</i>",
          "Remove row by row ID.", "RemoveByRowID");
 
 AddNumberParam("Index", "Index of queried rows.", 0);         
@@ -112,8 +112,12 @@ AddAction(6, 0, "Remove by row index", "Remove - row ID",
          
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddComboParamOption("");
+AddComboParamOption("if greater");
+AddComboParamOption("if less");
+AddComboParam("Condition", "Set value if new value is greater or less then old value.", 0);
 AddAction(11, 0, "Set value", "Save - prepare item", 
-          "Prepare- Set key <i>{0}</i> to <i>{1}</i>", 
+          "Prepare- Set key <i>{0}</i> to <i>{1}</i> <i>{2}</i>", 
           "Set value into current item.", "SetValue");
           
 AddStringParam("Key", "The name of the key.", '""');
@@ -151,7 +155,13 @@ AddNumberParam("Index", "Index of queried rows.", 0);
 AddAction(17, 0, "Set row index", "Save - row ID", 
           "Prepare- Set index of queried rows to <i>{0}</i>", 
           "Convert index of queried rows to row ID for saving. Append row if row ID had not found.", "SetRowIndex");            
-          
+
+AddStringParam("Key", "The name of the key.", '""');
+AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
+AddAction(18, 0, "Add to", "Save - prepare item", 
+          "Prepare- Add <i>{1}</i> to key <i>{0}</i>", 
+          "Add value to key.", "IncValue");     
+
 AddAction(21, 0, "1. New", "Filter - 1. new", 
           "Filter- 1. Create a new row filter", 
           "Create a new row filter.", "NewFilters");

@@ -11,20 +11,7 @@
 		"flags":		bf_onlyone
 	};
 };
-
-//////////////////////////////////////////////////////////////
-// Actions
-AddComboParamOption("Disabled");
-AddComboParamOption("Enabled");
-AddComboParam("State", "Choose whether to enable or disable the behavior.");
-AddAction(0, af_none, "Set enabled", "", "Set {my} {0}", "Enable or disable the drag and drop behavior.", "SetEnabled");
-          
-AddAction(1, 0, "Drop", "Drop", "Drop {my}", 
-          "If currently being dragged, force the object to be dropped.", 
-          "ForceDrop");          
-AddAction(2, 0, "Try drag", "Drag", "Try drag {my}", 
-          "Try to drag this object if is in touched.", "TryDrag"); 
-                    
+           
 //////////////////////////////////////////////////////////////
 // Conditions
 AddCondition(0,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when object drag start.", "OnDragStart");
@@ -50,7 +37,25 @@ AddCmpParam("Comparison", "Choose the way to compare drag-distance.");
 AddNumberParam("Angle", "The angle to compare the drag-angle to, in degrees.");
 AddCondition(9, 0, "Compare drag-angle", "Drag-angle", 
              "{my} drag-angle {0} {1}", 
-             "Compare drag-angle.", "CompareDragAngle");				 
+             "Compare drag-angle.", "CompareDragAngle");	
+
+AddCondition(11,	0, "Is enabled", "Enable", 
+             "Is {my} enabled", 
+             "Is behavior enabled.", "IsEnabled");		
+
+//////////////////////////////////////////////////////////////
+// Actions
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Choose whether to enable or disable the behavior.");
+AddAction(0, af_none, "Set enabled", "Enable", "Set {my} {0}", "Enable or disable the drag and drop behavior.", "SetEnabled");
+          
+AddAction(1, 0, "Drop", "Drop", "Drop {my}", 
+          "If currently being dragged, force the object to be dropped.", 
+          "ForceDrop");          
+AddAction(2, 0, "Try drag", "Drag", "Try drag {my}", 
+          "Try to drag this object if is in touched.", "TryDrag"); 
+                      
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Touch X position", "Position", "X", "Get the touch X co-ordinate in the layout.");

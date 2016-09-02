@@ -13,6 +13,14 @@
 };
 
 //////////////////////////////////////////////////////////////
+// Conditions
+AddCondition(0,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when dragging start.", "OnDragStart");          
+AddCondition(2,	cf_trigger, "On canceled", "Cancel", "On {my} canceled", "Triggered when dragging canceled.", "OnCanceled"); 
+AddCondition(3,	0, "Is dragging", "Drag", "Is {my} dragging", "Is dragging.", "IsDragging");
+AddCondition(4,	cf_trigger, "On dragging moving start", "Dragging moving", "On {my} dragging moving start", "Triggered when object dragging moving start.", "OnDragMoveStart"); 
+AddCondition(5,	cf_trigger, "On dragging moving", "Dragging moving", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
+
+//////////////////////////////////////////////////////////////
 // Actions
 AddComboParamOption("No");
 AddComboParamOption("Yes");
@@ -22,14 +30,6 @@ AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Auto scale", "Enable to auto scale instance size with dragging.",1);
 AddAction(1, 0, "Set auto scale", "Auto scale", "Set {my} auto scale to <i>{0}</i>", "Enable to auto scale instance size with dragging.", "SetAutoScale");
-
-//////////////////////////////////////////////////////////////
-// Conditions
-AddCondition(0,	cf_trigger, "On dragging start", "Drag", "On {my} drag start", "Triggered when dragging start.", "OnDragStart");          
-AddCondition(2,	cf_trigger, "On canceled", "Cancel", "On {my} canceled", "Triggered when dragging canceled.", "OnCanceled"); 
-AddCondition(3,	0, "Is dragging", "Drag", "Is {my} dragging", "Is dragging.", "IsDragging");
-AddCondition(4,	cf_trigger, "On dragging moving start", "Dragging moving", "On {my} dragging moving start", "Triggered when object dragging moving start.", "OnDragMoveStart"); 
-AddCondition(5,	cf_trigger, "On dragging moving", "Dragging moving", "On {my} dragging moving", "Triggered when object dragging moving.", "OnDragMove"); 
 
 //////////////////////////////////////////////////////////////
 // Expressions

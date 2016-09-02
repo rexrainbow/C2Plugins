@@ -50,6 +50,10 @@ AddCondition(15, 0, "Compare current track ID", "Note",
 AddCondition(16, cf_trigger, "On ended", "Play", 
             "On playing ended", 
             "Triggered when playing ended.", "OnEnded");
+                        
+AddCondition(21, cf_looping | cf_not_invertible, "For each note", "For each", 
+             "For each note", 
+             "Repeat the event for each note.", "ForEachNote");                
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("URL", "URL of midi file.", '""');
@@ -100,6 +104,8 @@ AddExpression(20, ef_return_number, "Current channel of note", "Note", "CurChann
 AddExpression(21, ef_return_number, "Current track ID of note", "Note", "CurTrackID", 
               "Get current track ID of note.");
               
+AddExpression(101, ef_return_number, "Current loop index", "For each", "LoopIndex", 
+              "Current loop index in for each loop.");              
 ACESDone();
 
 // Property grid properties for this plugin

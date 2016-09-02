@@ -130,8 +130,26 @@ AddExpression(13, ef_return_number,
               "Get logic Y of previos tile."); 
 AddExpression(14, ef_return_number,
               "Get path cost of previos tile", "Request: Previous", "PreTilePathCost",
-              "Get path cost of previos tile.");      
+              "Get path cost of previos tile."); 
+
+AddExpression(21, ef_return_number,
+              "Get logic X of start position", "Request", "StartX",
+              "Get logic X of target position.");
+AddExpression(22, ef_return_number,
+              "Get logic Y of start position", "Request", "StartY",
+              "Get logic Y of start position.");               
                    
+AddExpression(31, ef_return_any,
+              "Get UID of end tile", "Result", "EndTileUID",
+              "Get UID of end tile.");
+AddExpression(32, ef_return_number,
+              "Get logic X of end tile", "Result", "EndX",
+              "Get logic X of end tile.");
+AddExpression(33, ef_return_number,
+              "Get logic Y of end tile", "Result", "EndY",
+              "Get logic Y of end tile.");    
+
+              
 ACESDone();
 
 // Property grid properties for this plugin

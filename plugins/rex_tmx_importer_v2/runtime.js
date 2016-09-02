@@ -917,7 +917,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{	     
         if (!objType)
             return;
-        var parser = objType.instances[0];
+        var parser = objType.getFirstPicked();
         if (!parser.TMXObjGet)
         {
             alert ("TMX Importer v2: wrong parser object.");
@@ -965,7 +965,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{
         if (!objType)
             return;
-        var tilemap_inst = objType.instances[0];
+        var tilemap_inst = objType.getFirstPicked();
         if (!tilemap_inst || !this._tmx_obj)
             return;
             

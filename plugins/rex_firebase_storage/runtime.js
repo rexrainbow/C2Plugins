@@ -303,7 +303,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 		return tmpcanvas;
 	};  
 
-    Acts.prototype.UploadFromDataURI = function (dataURI, storagePath)
+    Acts.prototype.UploadDataURI = function (dataURI, storagePath)
 	{
         var obj = dataURItoBlob(dataURI);
         var blob = obj[0];
@@ -337,9 +337,16 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         }
     
         var dataView = new DataView(arrayBuffer);
-        var blob = new Blob([dataView], { type: mimeString });
+        var blob = new Blob([dataView], { "type": mimeString });
         return [blob, mimeString];
     };
+    
+    Acts.prototype.UploadString = function (s, storagePath)
+	{
+        var blob = new Blob([s], {"type": 'text/plain'});       
+        var metadata = {"contentType":  'text/plain'};    
+        this.upload(blob, storagePath, metadata);   
+	};       
     
     Acts.prototype.GetDownloadURL = function (storagePath)
 	{

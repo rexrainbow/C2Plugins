@@ -370,26 +370,3 @@ cr.plugins_.Rex_Parse_dateInARow = function(runtime)
 		ret.set_string(val);
 	};  
 }());
-
-(function ()
-{
-    if (window.ParseInitTable != null)
-        return;  
-        
-    var init_table = function (item_obj)
-    { 
-	    var on_write_success = function(item_obj)
-	    {
-	        item_obj["destroy"]();
-	    };	
-	    
-	    var on_write_error = function(item_obj, error)
-	    {
-	    };
-        var write_handler = {"success":on_write_success, "error":on_write_error};
-        
-	    item_obj["save"](null, write_handler);
-    };
-
-    window.ParseInitTable = init_table;
-}());

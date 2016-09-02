@@ -57,7 +57,6 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.check_name = "CSV";   
         
         /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];
         this.dbg_page_name = "_";
         this.dbg_col_name = "";        
         /**END-PREVIEWONLY**/        
@@ -154,7 +153,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 			                "k":this.current_table.keys, 
 							"i":this.current_table.items}
 		}
-		return { "d": tables };
+		return { "d": tables,
+                      "delimiter": this.strDelimiter,
+                   };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -169,14 +170,16 @@ cr.plugins_.Rex_CSV = function(runtime)
 			this.current_table.keys = table["k"];
 			this.current_table.items = table["i"];
 		}
+        
+        this.strDelimiter = o["delimiter"];
 	};
 	
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-	    this.propsections.push({"name": "Page", "value": this.dbg_page_name});
-	    this.propsections.push({"name": "Col", "value": this.dbg_col_name});
+	    var prop = [];
+	    prop.push({"name": "Page", "value": this.dbg_page_name});
+	    prop.push({"name": "Col", "value": this.dbg_col_name});
 
         if (this.HasPage(this.dbg_page_name))
         {
@@ -189,13 +192,13 @@ cr.plugins_.Rex_CSV = function(runtime)
 	            {
 	                r = rows[i];
 	                d = table.At(this.dbg_col_name,r);
-	                this.propsections.push({"name": "Row-"+r, "value": d});
+	                prop.push({"name": "Row-"+r, "value": d});
 	            }
 	        }
 	    }
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

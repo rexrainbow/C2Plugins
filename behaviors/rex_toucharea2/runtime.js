@@ -66,6 +66,7 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
 
     behinstProto.onCreate = function()
     {
+        this.enabled = (this.properties[0]===1);          
         this.is_touched = false;	    
         this.cur_touchX = -1;
         this.cur_touchY = -1;
@@ -80,6 +81,9 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
 
     behinstProto.tick = function ()
     {  
+        if (!this.enabled)
+            return;
+        
         var touch_obj = this.type.touchwrap;
         var touch_pts = touch_obj.touches;
         var cnt=touch_pts.length;
@@ -319,6 +323,11 @@ cr.behaviors.Rex_TouchArea2 = function(runtime)
     function Acts() {};
     behaviorProto.acts = new Acts();
 
+	Acts.prototype.SetEnabled = function (s)
+	{
+		this.enabled = (s !== 0);
+	};
+    
     //////////////////////////////////////
     // Expressions
     function Exps() {};

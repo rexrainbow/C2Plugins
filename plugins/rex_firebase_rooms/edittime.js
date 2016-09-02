@@ -41,6 +41,15 @@ AddCondition(15, cf_trigger, "On left", "Leave room",
 AddCondition(16, cf_trigger, "On kicked", "Leave room", 
             "On kicked out from room", 
             "Triggered when user kicked out or room removed.", "OnKicked");
+            
+// Room - open or close
+AddCondition(17, cf_trigger, "On opened", "Door state", 
+            "On opened", 
+            "Triggered when room is opened.", "OnOpened");
+        
+AddCondition(18, cf_trigger, "On closed", "Door state", 
+            "On closed", 
+            "Triggered when room is closed.", "OnClosed");         
            
 // Room            
 AddCondition(19, 0, "In room", "Room", 
@@ -66,7 +75,7 @@ AddCondition(31, cf_trigger, "On update", "Users list",
             "Triggered when user list updated.", "OnUpdateUsersList"); 
 AddCondition(32, cf_looping | cf_not_invertible, "For each user", "Users list", 
              "For each user", 
-             "Repeat the event for each room in rooms list.", "ForEachUser");     
+             "Repeat the event for each user in users list.", "ForEachUser");     
 AddNumberParam("Start", "Start from index (0-based).", 0);  
 AddNumberParam("End", "End to index (0-based). This value should larger than Start.", 2);    
 AddCondition(33, cf_looping | cf_not_invertible, "For each user in a range", "Users list", 
@@ -87,15 +96,17 @@ AddCondition(38, 0, "Is full", "Users list",
 AddCondition(39, cf_trigger, "On become first user", "Users list", 
             "On become first user",
             "Triggered when became first user of current room.", "OnBecomeFirstUser");   
-            
-// deprecated            
-AddCondition(41, cf_deprecated| cf_trigger, "On receive", "Message", 
-            "On receive message",
-            "Triggered when received message.", "OnReceivedMessage");                       
-            
-AddCondition(51, cf_trigger, "On receive permission lists", "Room - permission list", 
-            "On receive permission lists",
-            "Triggered when receive permission lists.", "OnReceivedPermissionLists");            
+          
+AddComboParamOption("white - list");
+AddComboParamOption("black - lisk");
+AddComboParam("List", "List type.", 1);
+AddCondition(51, cf_looping | cf_not_invertible, "For each user", "Permission list", 
+             "For each user in  <i>{0}</i>", 
+             "Repeat the event for each user in permission list.", "ForEachUserInPermissionList");     
+             
+AddCondition(61, cf_trigger, "On receive metadata", "Room - metadata", 
+            "On receive metadata",
+            "Triggered when receive metadata.", "OnReceivedMetadata");            
             
 AddCondition(100, 0, "Locked", "Action", 
             "Is locked",
@@ -103,8 +114,8 @@ AddCondition(100, 0, "Locked", "Action",
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("UserID", "UserID from authentication.", '""');
-AddStringParam("Name", "Player name.", '""');
-AddAction(1, 0, "Set user", "User info", 
+AddStringParam("Name", "User name.", '""');
+AddAction(1, 0, "Set my info", "0. My info", 
           "Set user name to <i>{1}</i>, user ID to <i>{0}</i>", 
           "Set user info.", "SetUserInfo");
 
@@ -117,22 +128,18 @@ AddComboParam("Life period ", "Life period of this room.", 0);
 AddComboParamOption("Closed");
 AddComboParamOption("Open");
 AddComboParam("Door state", "Door state of this room.", 1);
-AddComboParamOption("Anyone");
-AddComboParamOption("Black list");
-AddComboParamOption("White list");
-AddComboParam("Join permission", "Join permission.", 0);
 AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""');
 AddComboParamOption("Create");
 AddComboParamOption("Leave current room, then create or join");
 AddComboParam("Create action", "Create action.", 1);
 AddAction(11, 0, "Create", "Room", 
-          "{7} <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
+          "{6} <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{5}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>", 
           "Create then join this room.", "CreateRoom"); 
 
-AddComboParamOption("Closed");
+AddComboParamOption("Close");
 AddComboParamOption("Open");
 AddComboParam("Door state", "Door state of this room.", 1);
-AddAction(12, 0, "Open or close", "Room state", 
+AddAction(12, 0, "Open", "Door state", 
           "<i>{0}</i> current room", 
           "Open or close current room.", "SwitchDoor");    
           
@@ -160,49 +167,13 @@ AddAction(15, 0, "Join", "Room",
 
 AddAction(16, 0, "Leave", "Room", 
           "Leave current room", 
-          "Leave current room.", "LeaveRoom"); 
+          "Leave current room.", "LeaveRoom");             
           
-// deprecated          
-AddStringParam("Name", "Room name.", '""');
-AddStringParam("Type", 'Room type. "public", "private", or others.', '"public"');
-AddNumberParam("Max peers", "The maximum number of peers that can join this room. Leave 0 for unlimited.", 0);
-AddComboParamOption("Temporary");
-AddComboParamOption("Persisted");
-AddComboParam("Life period ", "Life period of this room.", 0);
-AddComboParamOption("Closed");
-AddComboParamOption("Open");
-AddComboParam("Door state", "Door state of this room.", 1);
-AddComboParamOption("Anyone");
-AddComboParamOption("Black list");
-AddComboParamOption("White list");
-AddComboParam("Join permission", "Join permission.", 0);
-AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""');
-AddAction(17, af_deprecated, "Create or join", "Room", 
-          "Create or join <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
-          "Try create room, or join the room if existed.", "CreateOrJoinRoom");           
-          
-// deprecated          
-AddStringParam("Name", "Room name.", '""');
-AddStringParam("Type", 'Room type. "public", "private", or others.', '"public"');
-AddNumberParam("Max peers", "The maximum number of peers that can join this room. Leave 0 for unlimited.", 0);
-AddNumberParam("Life period", "0=Temporary, 1=Persisted.", 0);
-AddNumberParam("Door state", "0=Closed, 1=Open.", 1);
-AddNumberParam("oin permission", "0=Anyone, 1=Black list, 2=White list.", 0);
-AddStringParam("Room ID", 'Room ID. Leave "" to use timestamp form server.', '""');
-AddAction(18, af_deprecated, "Create or join (#)", "Room", 
-          "Create <i>{3}</i> <i>{1}</i> room: <i>{0}</i>, ID: <i>{6}</i>, with max peers to <i>{2}</i>, door state to <i>{4}</i>, Join permission to <i>{5}</i>", 
-          "Create room.", "CreateOrJoinRoom"); 
-          
-          
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddAction(19, 0, "Kick user", "Room", 
+          "Kick user ID: <i>{0}</i>", 
+          "Kick user.", "KickUser");          
                     
-//AddStringParam("Room ID", "Room ID.", '""');
-//AddComboParamOption("Anyone");
-//AddComboParamOption("Creater");
-//AddComboParam("Permission ", "Permission.", 1);
-//AddAction(17, 0, "Remove", "Room", 
-//          "Remove room ID: <i>{0}</i> (Permission: <i>{1}</i>)", 
-//          "Remove room.", "RemoveRoom");        
-
 AddStringParam("Type", 'Room type. "public", "private", or others. Leave "" to get all "open" rooms for all types.', '"public"');          
 AddAction(21, 0, "Update", "Room list", 
           "Start updating <i>{0}</i> rooms list", 
@@ -212,38 +183,26 @@ AddAction(22, 0, "Stop updating", "Room list",
           "Stop updating rooms list", 
           "Stop updating opened rooms list.", "StopUpdatingOpenRoomsList");   
           
-// deprecated          
-AddStringParam("Message", "Message.", '""');
-AddAction(41, af_deprecated, "Broadcast", "Message", 
-          "Broadcast message: <i>{0}</i>", 
-          "Broadcast message.", "BroadcastMessage");
-          
-// unfinished       
 AddStringParam("UserID", "UserID from authentication.", '""');
 AddStringParam("Name", "Player name.", '""');
-AddAction(51, af_deprecated, "Add white list", "Room - permission list", 
-          "Add user <i>{1}</i>, ID: <i>{0}</i> to white list", 
-          "Add user to white list.", "AddUserToWhiteList");             
+AddComboParamOption("white - list");
+AddComboParamOption("black - lisk");
+AddComboParam("List", "List type.", 1);
+AddAction(51, 0, "Add", "Permission list", 
+          "Add user <i>{1}</i>, ID: <i>{0}</i> to <i>{2}</i>", 
+          "Add user to permission list.", "PermissionListAdd");             
 
 AddStringParam("UserID", "UserID from authentication.", '""');
-AddAction(52, af_deprecated, "Remove white list", "Room - permission list", 
-          "Remove user ID: <i>{0}</i> from white list", 
-          "Remove user from white list.", "RemoveUserFromWhiteList");    
+AddComboParamOption("white - list");
+AddComboParamOption("black - lisk");
+AddComboParam("List", "List type.", 1);
+AddAction(52, 0, "Remove", "Permission list", 
+          "Remove user ID: <i>{0}</i> from <i>{1}</i>", 
+          "Remove user from permission list.", "PermissionListRemove");    
           
-AddStringParam("UserID", "UserID from authentication.", '""');
-AddStringParam("Name", "Player name.", '""');
-AddAction(55, af_deprecated, "Add black list", "Room - permission list", 
-          "Add user <i>{1}</i>, ID: <i>{0}</i> to black list", 
-          "Add user to black list.", "AddUserToBlackList");             
-
-AddStringParam("UserID", "UserID from authentication.", '""');
-AddAction(56, af_deprecated, "Remove black list", "Room - permission list", 
-          "Remove user ID: <i>{0}</i> from black list", 
-          "Remove user from black list.", "RemoveUserFromBlackList"); 
-          
-AddAction(59, af_deprecated, "Request permission lists", "Room - permission list", 
-          "Request permission lists", 
-          "Request permission list (white list, black list).", "RequestPermissionLists");                         
+AddAction(61, 0, "Get metadata", "Room - metadata", 
+          "Get metadata", 
+          "Get metadata included white list and black list.", "RequestMetadata");                         
                    
 //AddStringParam("UserID", "UserID from authentication.", '""');          
 //AddAction(90, 0, "Request", "User metadata", 
@@ -285,46 +244,44 @@ AddExpression(23, ef_return_string, "Current creater name", "Rooms list", "CurCr
 AddExpression(24, ef_return_string, "Current creater ID", "Rooms list", "CurCreaterID", 
               "Get the current creater ID in a For Each loop.");  
 AddNumberParam("Index", "Room index.", 0);
-AddExpression(25, ef_return_string, "Get room name by room index", "Rooms list - index", "RoomIndex2Name", 
+AddExpression(25, ef_return_string, "Get room name by room index", "Rooms list - index", "Index2RoomName", 
               "Get room name by room index.");  
 AddNumberParam("Index", "Room index.", 0);              
-AddExpression(26, ef_return_string, "Get room ID by room index", "Rooms list - index", "RoomIndex2ID", 
+AddExpression(26, ef_return_string, "Get room ID by room index", "Rooms list - index", "Index2RoomID", 
               "Get room ID by room index.");  
+AddExpression(27, ef_return_number, "Rooms count", "Rooms list", "RoomsCount", 
+              "Get amount of opened rooms.");              
               
 // users list              
-AddExpression(31, ef_return_string, "Current user name", "Users list", "CurUserName", 
+AddExpression(31, ef_return_string, "Current user name", "Users list - for each", "CurUserName", 
               "Get the current user name in a For Each loop.");  
-AddExpression(32, ef_return_string, "Current user ID", "Users list", "CurUserID", 
+AddExpression(32, ef_return_string, "Current user ID", "Users list - for each", "CurUserID", 
               "Get the current user ID in a For Each loop.");  
 AddNumberParam("Index", "User index.", 0);
-AddExpression(33, ef_return_string, "Get user name by user index", "Users list - index", "UserIndex2Name", 
+AddExpression(33, ef_return_string, "Get user name by user index", "Users list - index", "Index2UserName", 
               "Get user name by user index.");  
 AddNumberParam("Index", "User index.", 0);              
-AddExpression(34, ef_return_string, "Get user ID by user index", "Users list - index", "UserIndex2ID", 
+AddExpression(34, ef_return_string, "Get user ID by user index", "Users list - index", "Index2UserID", 
               "Get user ID by user index.");  
 AddExpression(35, ef_return_string, "Triggered user name", "Users list", "TriggeredUserName", 
               "Get triggered user name.");  
 AddExpression(36, ef_return_string, "Triggered user ID", "Users list", "TriggeredUserID", 
-              "Get triggered user ID.");                 
-
-// deprecated              
-AddExpression(41, ef_deprecated | ef_return_string, "Lest sender ID", "Message", "LastSenderID", 
-              "Get sender ID of last message.");  
-AddExpression(42, ef_deprecated | ef_return_string, "Lest sender name", "Message", "LastSenderName", 
-              "Get sender name of last message.");            
-AddExpression(43, ef_deprecated | ef_return_string, "Lest message", "Message", "LastMessage", 
-              "Get last message.");  
-
-AddExpression(51, ef_return_string, "Get white list", "White list", "WhiteListToJSON", 
+              "Get triggered user ID."); 
+AddExpression(37, ef_return_number, "Users count", "Users list", "UsersCount", 
+              "Get amount of users in users list.");               
+              
+AddExpression(51, ef_return_string, "Get white list in JSON", "Permission list", "WhiteListToJSON", 
               "Get white list in JSON string.");
 			  
-AddExpression(52, ef_return_string, "Get black list", "Black list", "BlackListToJSON", 
+AddExpression(52, ef_return_string, "Get black list in JSON", "Permission list", "BlackListToJSON", 
               "Get black list in JSON string.");
           
 //AddStringParam("Channel name", "Custom channel name.", '""');  
 AddExpression(81, ef_return_string | ef_variadic_parameters, "Get custom channel reference", "Custom channel", "ChannelRef", 
               "Get custom channel absolute reference. Add 2nd parameter for roomID.");
               
+AddExpression(100, ef_return_number, "Current loop index", "For each - index", "LoopIndex", 
+              "Get loop index in for each loop.");                
               
 ACESDone();
 
@@ -332,7 +289,7 @@ ACESDone();
 var property_list = [
     new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data."),
     new cr.Property(ept_text, "Sub domain", "Rooms", "Sub domain for this function."), 
-    //new cr.Property(ept_combo, "Message type", "String", "Sent message type, string or JSON object in string.", "String|JSON string"),    
+    new cr.Property(ept_combo, "Door control", "Manual", 'Set "Auto" to close or open door when room is full or not.', "Manual|Auto"),  
 	];
 	
 // Called by IDE when a new object type is to be created

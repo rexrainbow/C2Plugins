@@ -46,13 +46,19 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         this.isMyLogOutCall = false;         
         this.lastError = null;
         this.lastAuthData = null;  // only used in 2.x
+        this.lastLoginResult = null; // only used in 3.x
 
         var self=this;
         var setupFn = function ()
         {
             self.setOnLogoutHandler();
         }
-        setTimeout(setupFn, 0);        
+        setTimeout(setupFn, 0);       
+
+        window.FirebaseGetCurrentUserID = function()
+        {
+            return self.getCurrentUserID();
+        };
 	};
     
 	var isFirebase3x = function()
@@ -86,21 +92,23 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	{        
         var self = this;        
         var onAuthStateChanged = function (authData)
-        {
+        {                      
             if (authData) 
             {
                 // user authenticated with Firebase
                 //console.log("User ID: " + authData.uid + ", Provider: " + authData.provider);
                 
-                var isMyLoginCall = self.isMyLoginCall;
-                self.isMyLoginCall = false;                
+                var isMyLoginCall = self.isMyLoginCall && !self.isMyLogOutCall;               
                 self.lastError = null;
-                self.lastAuthData = authData;                
+                self.lastAuthData = authData;  
                 
                 if (!isMyLoginCall)
                     self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginByOther, self);
                 else
+                {
+                    self.isMyLoginCall = false; 
                     self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessfully, self);        
+                }
                 
             }
             else 
@@ -108,6 +116,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
                 var isMyLogOutCall = self.isMyLogOutCall;
                 self.isMyLogOutCall = false;                
                 self.lastAuthData = null;   
+                self.lastLoginResult = null;
                 
                 // user is logged out                
                 if (!isMyLogOutCall)
@@ -133,6 +142,74 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         
         this.hasLogoutHandler = true;
 	};    
+    
+    instanceProto.getCurrentUserID = function()
+    {
+        var uid;
+        // 2.x
+        if (!isFirebase3x())
+            uid = (this.lastAuthData)? this.lastAuthData["uid"]:"";
+        
+        // 3.x
+        else
+            uid = getUserProperty3x("uid");
+
+        return uid;        
+    }    
+    
+	/**BEGIN-PREVIEWONLY**/
+    var fake_ret = {
+        value:0,
+        set_any: function(value){this.value=value;},
+        set_int: function(value){this.value=value;},
+        set_float: function(value){this.value=value;}, 
+        set_string: function(value) {this.value=value;},
+    };
+    
+	instanceProto.getDebuggerValues = function (propsections)
+	{        
+        var provider;
+        if (Cnds.prototype.IsAnonymous.call(this))
+        {
+            provider = "anonymous";
+        }
+        else
+        {
+            cr.plugins_.Rex_Firebase_Authentication.prototype.exps.Provider.call(this, fake_ret);
+            var provider = fake_ret.value;    
+        }
+        
+        cr.plugins_.Rex_Firebase_Authentication.prototype.exps.DisplayName.call(this, fake_ret);
+        var displayname = fake_ret.value;
+        
+        cr.plugins_.Rex_Firebase_Authentication.prototype.exps.Email.call(this, fake_ret);
+        var email = fake_ret.value;        
+        
+        cr.plugins_.Rex_Firebase_Authentication.prototype.exps.PhotoURL.call(this, fake_ret);
+        var photoURL = fake_ret.value;        
+        
+        cr.plugins_.Rex_Firebase_Authentication.prototype.exps.AccessToken.call(this, fake_ret);
+        var accessToken = fake_ret.value;  
+        
+        var self = this;
+		propsections.push({
+			"title": this.type.name,
+			"properties": [         
+                {"name":"UserID", "value":this.getCurrentUserID() ,"readonly":true},                  
+                {"name":"Provider", "value":provider ,"readonly":true},                     
+                {"name":"Display name", "value":displayname ,"readonly":true},
+                {"name":"Email", "value":email ,"readonly":true},    
+                {"name":"PhotoURL", "value":photoURL ,"readonly":true},                  
+                {"name":"AccessToken", "value":accessToken ,"readonly":true},  
+            ]
+		});	
+	};
+	
+	instanceProto.onDebugValueEdited = function (header, name, value)
+	{
+	};
+	/**END-PREVIEWONLY**/	 
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -186,7 +263,28 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	Cnds.prototype.EmailPassword_OnUpdatingProfileError = function ()
 	{
 	    return true;
-	}; 		
+	}; 
+
+	Cnds.prototype.IsAnonymous = function ()
+	{
+        var val;
+        if (!isFirebase3x())
+        {
+            var user = this.lastAuthData;
+            if (user)            
+                val = (user["provider"] === "anonymous");            
+            else
+                val = false;
+        }
+        else
+        {
+            var user = getAuthObj()["currentUser"];
+            val = user && user["isAnonymous"];
+        }
+        
+        return val;
+	};
+    
 	Cnds.prototype.OnLoginSuccessfully = function ()
 	{
 	    return true;
@@ -218,7 +316,19 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	Cnds.prototype.OnLoggedOutByOther = function ()
 	{
 	    return true;
-	}; 	    
+	}; 	 
+    
+	Cnds.prototype.OnLinkSuccessfully = function ()
+	{
+	    return true;
+	}; 	
+    
+	Cnds.prototype.OnLinkError = function ()
+	{
+	    return true;
+	}; 
+
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -291,12 +401,13 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
     {
         var onSuccess = function (result)
         {
+            self.lastLoginResult = result;
         };
         var onError = function (error)
-        {
+        {       
             self.isMyLoginCall = false;
             self.lastError = error;
-            self.lastAuthData = null;
+            self.lastLoginResult = null;
             self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginError, self);            
         };        
         self.isMyLoginCall = true;
@@ -361,8 +472,11 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            // ???
-            alert("EmailPassword - ChangePassword had not implemented in firebase 3.x");
+            var authObj = getAuthObj()["currentUser"]["updatePassword"](new_p_);
+            addHandler(this, authObj, 
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordSuccessfully,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordError
+                              );    
         }    
 	}; 
 	
@@ -381,8 +495,11 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            // ???
-            alert("EmailPassword - SendPasswordResultEmail had not implemented in firebase 3.x");
+            var authObj = getAuthObj()["sendPasswordResetEmail"](e_);
+            addHandler(this, authObj, 
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResultEmailSuccessfully,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResultEmailError
+                              );                             
         }         
 	};		
 	
@@ -401,11 +518,14 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            // ???
-            alert("EmailPassword - DeleteUser had not implemented in firebase 3.x");            
+            var authObj = getAuthObj()["currentUser"]["delete"]();
+            addHandler(this, authObj, 
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserSuccessfully,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserError
+                              );      
         }            
-	};	
-	
+	};		
+    
     Acts.prototype.Anonymous_Login = function (r_)
 	{
         // 2.x
@@ -525,7 +645,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         else
         {
             var authObj = getAuthObj()["signOut"]();
-        }
+        }      
 	};
 		
     Acts.prototype.GoOffline = function ()
@@ -564,6 +684,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 2.x
         if (!isFirebase3x())
         {        
+            alert("Does not support in firebase 2.x api");
 	        return;    
         }
         
@@ -587,6 +708,90 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
             user["updateProfile"](data)["then"](onSuccess)["catch"](onError);
         }
 	};    
+
+    Acts.prototype.LinkToFB = function (access_token)
+	{      
+        // 2.x
+        if (!isFirebase3x())
+        {        
+            alert("Does not support in firebase 2.x api");
+	        return;    
+        }
+        
+        var user = getAuthObj()["currentUser"];   
+        if (user == null)
+        {
+            return;
+        }
+    
+        if (access_token == "")
+        {        
+	        if (typeof (FB) == null) 
+	         return;
+	    
+	         var auth_response = FB["getAuthResponse"]();
+	         if (!auth_response)
+	             return;
+	    
+	        access_token = auth_response["accessToken"];
+        }
+        
+        // 3.x
+        var credential = window["Firebase"]["auth"]["FacebookAuthProvider"]["credential"](access_token);
+        var authObj = user["link"](credential);
+        addHandler(this, authObj, 
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
+                          ); 
+	};
+    
+    Acts.prototype.LinkToGoogle = function (id_token)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {        
+            alert("Does not support in firebase 2.x api");
+	        return;    
+        }
+        
+        var user = getAuthObj()["currentUser"];   
+        if (user == null)
+        {
+            return;
+        }        
+    
+        // 3.x
+        var credential = window["Firebase"]["auth"]["GoogleAuthProvider"]["credential"](id_token);
+        var authObj = user["link"](credential);
+        addHandler(this, authObj, 
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
+                          ); 
+	};	
+    
+    Acts.prototype.LinkToEmailPassword = function (e_, p_)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {        
+            alert("Does not support in firebase 2.x api");
+	        return;    
+        }
+        
+        var user = getAuthObj()["currentUser"];   
+        if (user == null)
+        {
+            return;
+        }        
+             
+        // 3.x
+        var credential = window["Firebase"]["auth"]["EmailAuthProvider"]["credential"](e_, p_);
+        var authObj = user["link"](credential);
+        addHandler(this, authObj, 
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
+                          ); 
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -644,20 +849,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	}; 	
     
 	Exps.prototype.UserID = function (ret)
-	{
-        var uid;
-        // 2.x
-        if (!isFirebase3x())
-        {
-            uid = (this.lastAuthData)? this.lastAuthData["uid"]:"";
-        }  
-        
-        // 3.x
-        else
-        {
-            uid = getUserProperty3x("uid");
-        }        
-		ret.set_string(uid || "");
+	{            
+		ret.set_string(this.getCurrentUserID() || "");
 	}; 	
 	Exps.prototype.Provider = function (ret)
 	{
@@ -720,8 +913,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            if (this.lastAuthData)
-                token = this.lastAuthData["credential"]["accessToken"];
+            if (this.lastLoginResult && this.lastLoginResult["credential"])
+                token = this.lastLoginResult["credential"]["accessToken"];
         }       
 		ret.set_string(token || "");
 	};	    
@@ -771,7 +964,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            alert("UserName had not implemented in firebase 3.x");
+            name = getUserProperty3x("displayName");            
         }
         
 		ret.set_string(name || "");

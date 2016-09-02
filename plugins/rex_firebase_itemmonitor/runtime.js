@@ -70,10 +70,6 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
         this.exp_CurItemContent = null;       
         this.exp_CurKey = "";  
         this.exp_CurValue = 0;
-        
-	    /**BEGIN-PREVIEWONLY**/ 
-        this.propsections = [];    
-        /**END-PREVIEWONLY**/  
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -399,12 +395,12 @@ cr.plugins_.Rex_Firebase_ItemMonitor = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
-        this.callbackMap.getDebuggerValues(this.propsections);        
+	    var prop = [];
+        this.callbackMap.getDebuggerValues(prop);        
         
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

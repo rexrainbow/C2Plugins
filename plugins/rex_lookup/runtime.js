@@ -49,10 +49,6 @@ cr.plugins_.Rex_Lookup = function(runtime)
         
         // for each
         this.exp_CurPassedTestName = "";
-        
-        /**BEGIN-PREVIEWONLY**/
-        this.propsections = [];
-	    /**END-PREVIEWONLY**/	
 	};
     
 	instanceProto.run_test = function()
@@ -87,20 +83,20 @@ cr.plugins_.Rex_Lookup = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    this.propsections.length = 0;
+	    var prop = [];
 	    // show test result
-	    this.tests.getDebuggerValues(this.propsections);
+	    this.tests.getDebuggerValues(prop);
 
 	    // show property	    
-	    this.propsections.push({"name": "Property", "value": "Value"});
+	    prop.push({"name": "Property", "value": "Value"});
 	    for (var n in this.props)
 	    {
-	        this.propsections.push({"name": n, "value": this.props[n]});
+	        prop.push({"name": n, "value": this.props[n]});
 	    }	    
 	    
 		propsections.push({
 			"title": this.type.name,
-			"properties": this.propsections
+			"properties": prop
 		});
 	};
 	

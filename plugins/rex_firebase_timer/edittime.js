@@ -7,7 +7,7 @@
 		"description":	"Get elapsed interval from firebase.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_timer.html",
-		"category":		"Rex - Web - firebase",
+		"category":		"Rex - Web - firebase - date",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

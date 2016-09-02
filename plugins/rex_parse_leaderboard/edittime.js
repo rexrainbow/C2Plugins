@@ -10,7 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0
+		"flags":		pf_deprecated
 	};
 };
 
@@ -20,7 +20,7 @@ AddCondition(1, cf_trigger, "On post complete", "Score - post",
             "On post complete",
             "Triggered when post complete.", "OnPostComplete");
 
-AddCondition(2, cf_trigger, "On post error", "Score- post", 
+AddCondition(2, cf_trigger, "On post error", "Score - post", 
             "On post error",
             "Triggered when post error.", "OnPostError");
             
