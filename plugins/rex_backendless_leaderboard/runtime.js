@@ -662,7 +662,7 @@ cr.plugins_.Rex_Backendless_Leaderboard = function(runtime)
         var key = (this.LinkOwnerToTable)? "owner.objectId":"owner";             
 		ret.set_string( window.BackendlessGetItemValue(this.leaderboard.GetItem(i), key, (default_value || "")) );          
 	};	
-	Exps.prototype.Rank2UserData = function (ret, key, default_value)
+	Exps.prototype.Rank2UserData = function (ret, i, subKey, default_value)
 	{
 		ret.set_any( window.BackendlessGetSubItemValue(this.leaderboard.GetItem(i), "owner", subKey, default_value)  ); 
 	};    

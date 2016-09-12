@@ -348,19 +348,16 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	
 	instanceProto.SetPlaybackTime = function (s)
 	{	    
-		if (!this.youtube_player || !this.youtube_player["seekTo"])
-		{
-            var self=this;
-            var callback = function ()
-            {
-                self.youtube_player["seekTo"](s);
-            };
-            this.pendingCallbacks.push(callback);            
-		    return;
-		}
+        var self=this;
+        var callback = function ()
+        {
+            self.youtube_player["seekTo"](s);
+        };
 
-        // ready
-		this.youtube_player["seekTo"](s);
+	    if (!this.youtube_player || !this.youtube_player["seekTo"])	    
+            this.pendingCallbacks.push(callback);  
+        else        
+            callback();
 	};
 	
 	instanceProto.SetLooping = function (l)
@@ -370,74 +367,61 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	
 	instanceProto.SetMuted = function (m)
 	{
-		if (!this.youtube_player || !this.youtube_player[cmd])
-		{
-            var self=this;
-            var callback = function ()
-            {
-                if (m)
-                    self.youtube_player["mute"]();
-                else
-                    self.youtube_player["unMute"]();                    
-            };
-            this.pendingCallbacks.push(callback);            
-		    return;
-		}
+        var cmd = (m ===  1)? "mute":"unMute";
+        
+        var self=this;
+        var callback = function ()
+        {
+            self.youtube_player[cmd]();
+        };
 
-        // ready			    	    
-	    this.youtube_player[cmd]();
+	    if (!this.youtube_player || !this.youtube_player[cmd])	    
+            this.pendingCallbacks.push(callback);  
+        else        
+            callback();
 	};
 	
 	instanceProto.SetVolume = function (v)
 	{
-	    var vol = cr.clamp(v, 0, 100);
-		if (!this.youtube_player || !this.youtube_player["setVolume"])
-		{
-            var self=this;
-            var callback = function ()
-            {
-                self.youtube_player["setVolume"](vol);                
-            }
-            this.pendingCallbacks.push(callback);            
-		    return;
-		}
+	    v = cr.clamp(v, 0, 100);        
+        var self=this;
+        var callback = function ()
+        {
+            self.youtube_player["setVolume"](v); 
+        };
 
-        // ready		    
-		this.youtube_player["setVolume"]( vol );    
+	    if (!this.youtube_player || !this.youtube_player["setVolume"])	    
+            this.pendingCallbacks.push(callback);  
+        else        
+            callback();
 	};
 	
 	instanceProto.Pause = function ()
 	{
-		if (!this.youtube_player || !this.youtube_player["pauseVideo"])
-		{
-            var self=this;
-            var callback = function ()
-            {
-                self.youtube_player["pauseVideo"]();                
-            }
-            this.pendingCallbacks.push(callback);            
-		    return;
-		}
+        var self=this;
+        var callback = function ()
+        {
+            self.youtube_player["pauseVideo"](); 
+        };
 
-        // ready			
-		this.youtube_player["pauseVideo"]();
+	    if (!this.youtube_player || !this.youtube_player["pauseVideo"])	    
+            this.pendingCallbacks.push(callback);  
+        else        
+            callback();
 	};
 	
 	instanceProto.Play = function ()
 	{
-	    if (!this.youtube_player || !this.youtube_player["playVideo"])
-		{
-            var self=this;
-            var callback = function ()
-            {
-                self.youtube_player["playVideo"]();
-            }
-            this.pendingCallbacks.push(callback);
-		    return;
-		}
+        var self=this;
+        var callback = function ()
+        {
+            self.youtube_player["playVideo"](); 
+        };
 
-        // ready		
-		this.youtube_player["playVideo"]();
+	    if (!this.youtube_player || !this.youtube_player["playVideo"])	    
+            this.pendingCallbacks.push(callback);  
+        else        
+            callback();
 	};
 		
 	instanceProto.get_playbackTime = function (ret)
@@ -499,7 +483,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{   
-        pendingCallbacks.length = 0;
+        this.pendingCallbacks.length = 0;
         
         this.LoadVideoID(o["videoId"], o["isAutoPlay"]);
         this.SetPlaybackTime(o["playBackTime"]);

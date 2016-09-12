@@ -76,6 +76,12 @@ var property_list = [
     new cr.Property(ept_float, "Icon scaled width", -1, 'The size of the entire image after scaling. Set (-1) to use default value.'),    
     new cr.Property(ept_float, "Icon scaled height", -1, 'The size of the entire image after scaling.  Set (-1) to use default value.'),        
     
+    new cr.Property(ept_section, "Symbol", "",	""),   
+    new cr.Property(ept_text, "Symbol fill color", "black", "The symbol's fill color."),    
+    new cr.Property(ept_float, "Symbol fill opacity", 0, "The symbol's fill opacity."),    
+    new cr.Property(ept_text, "Symbol stroke color", "black",  "The symbol's stroke color."),
+    new cr.Property(ept_float, "Symbol stroke opacity", 1, "The symbol's stroke opacity."),        
+    
     new cr.Property(ept_section, "UI - Drag", "",	""),   
     new cr.Property(ept_combo, "Clickable", "Enabled", "If true, the marker receives mouse and touch events.", "Disabled|Enabled"),  
     new cr.Property(ept_combo, "Draggable", "Disabled", "If true, the marker can be dragged.", "Disabled|Enabled"),    

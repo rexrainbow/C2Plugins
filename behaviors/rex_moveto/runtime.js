@@ -129,6 +129,9 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         this.remain_distance -= distance;   
         
         var is_hit_target = false;
+        var angle = this.target["a"];           
+        var ux = Math.cos(angle);
+        var uy = Math.sin(angle);
         // is hit to target at next tick?
         if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
         {
@@ -144,9 +147,9 @@ cr.behaviors.Rex_MoveTo = function(runtime)
         }
         else
         {
-            var angle = this.target["a"];
-            this.inst.x += (distance * Math.cos(angle));
-            this.inst.y += (distance * Math.sin(angle));
+            var angle = this.target["a"];           
+            this.inst.x += (distance * ux);
+            this.inst.y += (distance * uy);
         } 
 
 		this.inst.set_bbox_changed();
@@ -157,8 +160,8 @@ cr.behaviors.Rex_MoveTo = function(runtime)
 		    var collobj = this.runtime.testOverlapSolid(this.inst);
 		    if (collobj)
 		    {
-			    this.runtime.registerCollision(this.inst, collobj);
-			    this.runtime.pushOutSolidNearest(this.inst);
+			    this.runtime.registerCollision(this.inst, collobj);           
+			    this.runtime.pushOutSolid(this.inst, -ux, -uy, Math.max(distance, 50));                
                 is_solid_stop = true;
 		    }
         }

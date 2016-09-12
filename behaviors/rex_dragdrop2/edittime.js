@@ -55,6 +55,10 @@ AddAction(1, 0, "Drop", "Drop", "Drop {my}",
           "ForceDrop");          
 AddAction(2, 0, "Try drag", "Drag", "Try drag {my}", 
           "Try to drag this object if is in touched.", "TryDrag"); 
+          
+AddNumberParam("Angle", "Axis angle, in degrees.", 0);              
+AddAction(3, 0, "Set angle", "Axis", "Set {my} axis-angle to <i>{0}</i>", 
+          "Set axis angle.", "SetAxisAngle");           
                       
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -71,6 +75,7 @@ AddExpression(9, ef_return_number, "X co-ordinate of object's dragging start pos
 AddExpression(10, ef_return_number, "Y co-ordinate of object's dragging start position", "Instance start", "InstStartY", "Get Y co-ordinate of object's position at dragging start.");
 AddExpression(11, ef_return_number, "Distance between current touch position to drag-start position", "Drag-distance", "DragDistance", "Get distance between current touch position to drag-start position.");
 AddExpression(12, ef_return_number, "Angle of dragging", "Drag-angle", "DragAngle", "Get angle of dragging.");
+AddExpression(13, ef_return_number, "Angle of axis", "Axis", "AxisAngle", "Get angle of axis.");
 
 ACESDone();
 
@@ -78,6 +83,7 @@ ACESDone();
 var property_list = [
 	new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"),
     new cr.Property(ept_combo, "Axis", "Both", "The axis this object can drag on.", "Both|Horizontal|Vertical"),
+    new cr.Property(ept_float, "Axis angle", 0, "Offset angle of dragging axis."),
     ];
 	
 // Called by IDE when a new behavior type is to be created

@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Simulate key event",
-		"id":			"Rex_SimulateInput",
+		"name":			"Copy to clipboard",
+		"id":			"Rex_CopyToClipboard",
 		"version":		"0.1",        
-		"description":	"Fire keyboard or touch events.",
+		"description":	"Copy string to clipboard",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_simulateinput.html",
-		"category":		"Rex - Input",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_copytoclipboard.html",
+		"category":		"Rex - Browser helper",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal
@@ -16,48 +16,20 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(1, 0, "Is success", "Result", 
+            "Is copying success", 
+            "Return true if copying success", "IsSuccess");
 //////////////////////////////////////////////////////////////
 // Actions
-AddKeybParam("Key", "Choose a key.  Note that international users and users on different operating systems or devices may not have the same keys available.");
-AddComboParamOption("down");
-AddComboParamOption("up");
-AddComboParam("Event type", "Event type.",0);
-AddAction(1, 0, "Simulate keyboard event", "Keyboard", 
-          "Simulate keyboard <i>{0}</i> <i>{1}</i>", 
-          "Simulate keyboard event.", "SimulateKeyboard");
+AddStringParam("Content", "Content.", '""');
+AddAction(1, 0, "Copy", "Copy", 
+          "Copy <i>{0}</i> to clipboard", "Copy content to clipboard.", "Copy");
            
-AddNumberParam("Keycode", "Choose a numeric key code to fire.");
-AddComboParamOption("down");
-AddComboParamOption("up");
-AddComboParam("Event type", "Event type.",0);
-AddAction(2, 0, "Simulate keyboard event by keycode", "Keyboard", 
-          "Simulate keyboard <i>{0}</i> <i>{1}</i>", 
-          "Simulate keyboard event.", "SimulateKeyboard");
-               
-AddNumberParam("X", "Touch X position.");
-AddNumberParam("Y", "Touch Y position.");          
-AddLayerParam("Layer", "Position related on layer.");
-AddNumberParam("Identifier", "Identifier of this touch start event.", 0);   
-AddAction(11, 0, "Simulate touch start", "Touch", 
-          "Simulate touch: <i>{3}</i> start at (<i>{0}</i> , <i>{1}</i>) on layer <i>{2}</i>", 
-          "Simulate touch start.", "SimulateTouchStart");       
-
-AddNumberParam("Identifier", "Identifier of this touch start event.", 0);    
-AddAction(12, 0, "Simulate touch end", "Touch", 
-          "Simulate touch: <i>{0}</i> end", 
-          "Simulate touch end.", "SimulateTouchEnd");
-        
-AddNumberParam("X", "Touch X position.");
-AddNumberParam("Y", "Touch Y position.");          
-AddLayerParam("Layer", "Position related on layer.");
-AddNumberParam("Identifier", "Identifier of this touch start event.", 0);    
-AddAction(13, 0, "Simulate touch move", "Touch", 
-          "Simulate touch: <i>{3}</i> move to (<i>{0}</i> , <i>{1}</i>) on layer <i>{2}</i>", 
-          "Simulate touch move.", "SimulateTouchMove"); 
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_string, "Content", "Content", "Content", "Get copyed content.");
+
 
 
 ACESDone();

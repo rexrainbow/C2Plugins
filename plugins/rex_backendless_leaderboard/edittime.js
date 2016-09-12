@@ -178,7 +178,7 @@ AddExpression(24, ef_return_any | ef_variadic_parameters, "Get score by rank", "
 AddNumberParam("Rank", "Rank index (0-based).", 0);   
 AddExpression(26, ef_return_string | ef_variadic_parameters, "Get userID by rank", "Rank index", "Rank2UserID",
               "Get userID by rank index. Add default value at 2nd parameter."); 
-//AddStringParam("Key", "Key of object.", '""');  
+AddNumberParam("Rank", "Rank index (0-based).", 0);    
 AddExpression(27, ef_return_string | ef_variadic_parameters, "Get property in user data by rank", "Rank index", "Rank2UserData",
               "Get user data by rank index. Add default value at 2nd parameter.");               
 

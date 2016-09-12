@@ -1,10 +1,10 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Pattern gen",
+		"name":			"Gashapon",
 		"id":			"Rex_PatternGen",
 		"version":		"0.1",   		
-		"description":	"Generate patterns with shuffle or random mode.",
+		"description":	"Gashapon in shuffle or random mode.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_patterngen.html",
 		"category":		"Rex - Random",

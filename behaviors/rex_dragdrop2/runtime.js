@@ -178,7 +178,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	behinstProto.onCreate = function()
 	{   
         this.enabled = (this.properties[0]===1);  
-        this.move_axis = this.properties[1];  
+        this.move_axis = this.properties[1];
+        this.setAxisAngle(this.properties[2]); 
 
         if (!this.recycled)
         {        	           
@@ -187,7 +188,14 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         
         this.drag_info.init(this);               
 	};
+    
+	behinstProto.setAxisAngle = function (a)
+	{
+        this.axis_angle = a;
+        this.axis_rad = cr.to_clamped_radians(this.axis_angle);  // in radians    
+	};
 
+    var P0={},P1={};
 	behinstProto.tick = function ()
 	{  
         if (!(this.enabled && this.drag_info.is_on_dragged))
@@ -203,21 +211,49 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
                             
         if ( is_moving )
         {
-            var drag_x = cur_x + drag_info.drag_dx;
-            var drag_y = cur_y + drag_info.drag_dy;
-            switch (this.move_axis)
+            var new_x, new_y;
+            if (this.move_axis === 0)
             {
-                case 1:
-                    inst.x = drag_x;
-                    break;
-                case 2:
-                    inst.y = drag_y;
-                    break;
-                default:
-                    inst.x = drag_x;
-                    inst.y = drag_y;
-                    break;
+                new_x = cur_x + drag_info.drag_dx;
+                new_y = cur_y + drag_info.drag_dy;
             }
+            
+            // this.move_axis !== 0 && no rotate
+            else if (this.axis_rad === 0)
+            {
+                if (this.move_axis === 1)
+                {                    
+                    new_x = cur_x + drag_info.drag_dx;
+                    new_y = inst.y;
+                }
+                else
+                {
+                    new_x = inst.x;
+                    new_y = cur_y + drag_info.drag_dy;
+                }                
+            }
+            
+            // rotate axis
+            else
+            {
+                P0.x = inst.x; 
+                P0.y = inst.y;                
+                P1.x = cur_x + drag_info.drag_dx;
+                P1.y = cur_y + drag_info.drag_dy;
+                rotate_point(P1, P0, -this.axis_rad);  
+                
+                if (this.move_axis === 1)                 
+                    P1.y = P0.y;
+                else
+                    P1.x = P0.x;  
+                
+                rotate_point(P1, P0, this.axis_rad); 
+                new_x = P1.x;
+                new_y = P1.y;
+            }
+            
+            inst.x = new_x;
+            inst.y = new_y;
             inst.set_bbox_changed();
             drag_info.pre_x = cur_x;
             drag_info.pre_y = cur_y;                    
@@ -225,6 +261,15 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         
         this.drag_info.IsMovingSet(is_moving);
 	}; 
+    
+    var rotate_point = function(p1, p0, angle)
+    {
+        var new_angle = cr.angleTo(p0.x, p0.y, p1.x, p1.y) + angle;
+        var d = cr.distanceTo(p0.x, p0.y, p1.x, p1.y); 
+        p1.x = p0.x + (d * Math.cos(new_angle));
+        p1.y = p0.y + (d * Math.sin(new_angle));        
+        return p1;
+    }
  
 	behinstProto.GetABSX = function ()
 	{
@@ -384,12 +429,16 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-		return { "en": this.enabled };
+		return { 
+            "en": this.enabled,
+            "aa": this.axis_angle,
+            };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
 		this.enabled = o["en"];
+        this.setAxisAngle(o["aa"]);
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -495,7 +544,11 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             }
         }        
 	};  
-    
+
+	Acts.prototype.SetAxisAngle = function (a)
+	{
+        this.setAxisAngle(a);
+	};  
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -564,5 +617,11 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	Exps.prototype.DragAngle = function (ret)
 	{
 	    ret.set_float( this.drag_info.DragAngle() );
-	}; 	   
+	}; 	
+	
+	Exps.prototype.AxisAngle = function (ret)
+	{
+	    ret.set_float( this.axis_angle );
+	};
+    
 }());
