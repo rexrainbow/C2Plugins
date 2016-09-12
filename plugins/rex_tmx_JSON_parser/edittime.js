@@ -6,7 +6,7 @@
 		"version":		"0.11",          
 		"description":	"A TMX-JSON parser.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_tmx_json_parser.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tmx_json_parser.html",
 		"category":		"Rex - Board - tmx importer v2.x",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

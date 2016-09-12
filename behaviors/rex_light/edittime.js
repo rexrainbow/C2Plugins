@@ -5,7 +5,7 @@
 		"id":			"Rex_light",
 		"description":	"Adjust width until hit obstacle.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_light.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_light.html",
 		"category":		"Rex - Movement - width",
 		"flags":		bf_onlyone
 	};

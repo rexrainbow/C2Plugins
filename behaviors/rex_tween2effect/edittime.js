@@ -5,7 +5,7 @@
 		"id":			"Rex_Tween2Effect",
 		"description":	"Set effect parameter from tween behavior. Put this behavior under tween behavior.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tween2effect.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tween2effect.html",
 		"category":		"Rex - Effect",
 		"flags":		0
 	};

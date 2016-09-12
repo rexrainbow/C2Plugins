@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Transfer csv string to dictionary object",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_csv2dictionary.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_csv2dictionary.html",
 		"category":		"Rex - Data structure - CSV",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

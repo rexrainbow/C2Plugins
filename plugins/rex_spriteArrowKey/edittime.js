@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	'Get arrow key event from sprites\' "is in touch".',
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_spriteArrowKey.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_spriteArrowKey.html",
 		"category":		"Input",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

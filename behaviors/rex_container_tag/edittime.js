@@ -5,7 +5,7 @@
 		"id":			"Rex_container_tag",
 		"description":	"Container tag to add sprite into container at layout editor.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_container_tag.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_container_tag.html",
 		"category":		"Container",
 		"flags":		bf_onlyone
 	};

@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Put sprites or other objects into this box.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_container.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_container.html",
 		"category":		"Data & Storage",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

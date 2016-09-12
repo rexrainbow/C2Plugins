@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Marker of google map.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_googlemap_marker.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_googlemap_marker.html",
 		"category":		"Rex - Web - Google map",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

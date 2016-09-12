@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Send/receive messages.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_message.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_parse_message.html",
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

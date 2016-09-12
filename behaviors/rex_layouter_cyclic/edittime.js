@@ -5,7 +5,7 @@
 		"id":			"Rex_layouter_cyclic",
 		"description":	"Put instnces cyclic on layouter.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_cyclic.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_layouter_cyclic.html",
 		"category":		"Rex - Layouter",
 		"flags":		bf_onlyone
 	};

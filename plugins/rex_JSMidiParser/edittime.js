@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Convert a midi binary data to JSON to get note events.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_jsmidiparser.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_jsmidiparser.html",
 		"category":		"Rex - Media",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

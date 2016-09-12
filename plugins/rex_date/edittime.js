@@ -6,7 +6,7 @@
 		"version":		"1.0",
 		"description":	"Get system data and time",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_date.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_date.html",
 		"category":		"Rex - Date & time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

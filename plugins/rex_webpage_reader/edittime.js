@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Read web page by cross domain request.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_webpage_reader.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_webpage_reader.html",
 		"category":		"Rex - Web - YQL",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

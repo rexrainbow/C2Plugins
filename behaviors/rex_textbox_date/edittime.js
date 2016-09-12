@@ -5,7 +5,7 @@
 		"id":			"Rex_textbox_date",
 		"description":	"Accept date input",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_textbox_date.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_textbox_date.html",
 		"category":		"Rex - Textbox helper",
 		"flags":		bf_onlyone
 	};

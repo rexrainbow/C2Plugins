@@ -5,7 +5,7 @@
 		"id":			"Rex_canvas_chart_pie",
 		"description":	"Draw a pie chart on the canvas. The api of chart - http://www.chartjs.org/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_pie.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_canvas_chart_pie.html",
 		"category":		"Rex - Canvas - Chart.js",
 		"flags":		0,	
 	};

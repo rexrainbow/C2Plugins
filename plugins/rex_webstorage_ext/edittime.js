@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Provide some methods to access webstorage.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_webstorageext.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_webstorageext.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

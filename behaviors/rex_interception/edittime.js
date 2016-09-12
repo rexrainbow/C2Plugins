@@ -5,7 +5,7 @@
 		"id":			"Rex_Interception",
 		"description":	"Predict the point of intersection. It assumes that objects move with constant speed.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_interception.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_interception.html",
 		"category":		"Rex - AI",
 		"flags":		0
 	};

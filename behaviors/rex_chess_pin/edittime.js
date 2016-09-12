@@ -5,7 +5,7 @@
 		"id":			"rex_ChessPin",	
 		"description":	"Change logic position (X, Y) with pined chess.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_chess_pin.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_chess_pin.html",
 		"category":		"Rex - Board - application",
 		"flags":		bf_onlyone
 	};

@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Sync queue on firebase.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_syncqueue.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_syncqueue.html",
 		"category":		"Rex - Web - firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

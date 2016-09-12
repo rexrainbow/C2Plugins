@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Rotate Sprite",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_rotate.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_rotate.html",
 		"category":		"Rex - Movement - angle",
 		"flags":		0
 	};

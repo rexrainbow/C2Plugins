@@ -5,7 +5,7 @@
 		"id":			"Rex_pinOffsetXY",
 		"description":	"Stick to another object maintaining a relative offsetXY.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pinxyoffset.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_pinxyoffset.html",
 		"category":		"Rex - Movement - pin",
 		"flags":		bf_onlyone
 	};

@@ -5,7 +5,7 @@
 		"id":			"Rex_pushOutSolid",
 		"description":	"Push out from solid object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pushoutsolid.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_pushoutsolid.html",
 		"category":		"Rex - Movement - position",
 		"flags":		bf_onlyone
 	};

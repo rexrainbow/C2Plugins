@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Save string with any kind of size. This plugin will divide string into many rows for saving.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_string.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_parse_string.html",
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

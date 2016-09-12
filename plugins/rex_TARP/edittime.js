@@ -6,7 +6,7 @@
 		"version":		"0.1",           
 		"description":	"Time-Action Recorder and Player",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_TARP.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_TARP.html",
 		"category":		"Rex - Timeline",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

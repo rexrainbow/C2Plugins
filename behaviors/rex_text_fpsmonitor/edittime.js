@@ -5,7 +5,7 @@
 		"id":			"Rex_text_fpsmonitor",
 		"description":	"Dump fps infomation.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_text_fpsmonitor.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_text_fpsmonitor.html",
 		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};

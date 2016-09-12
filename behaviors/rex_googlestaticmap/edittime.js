@@ -5,7 +5,7 @@
 		"id":			"Rex_GoogleStaticMap",
 		"description":	"Display google static map on sprite or canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_googlestaticmap.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_googlestaticmap.html",
 		"category":		"Rex - Web - Google map",
 		"flags":		0
 	};

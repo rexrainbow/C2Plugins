@@ -5,7 +5,7 @@
 		"id":			"Rex_mode7ground",
 		"description":	"Ground instance with mode7 effect.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_mode7ground.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_mode7ground.html",
 		"category":		"Rex - Effect - mode7",
 		"flags":		bf_onlyone
 	};

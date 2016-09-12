@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Get forwarding path on the board, used in Monopoly-like game.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_monopoly_movement.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_monopoly_movement.html",
 		"category":		"Rex - Board - application",
 		"flags":		0
 	};

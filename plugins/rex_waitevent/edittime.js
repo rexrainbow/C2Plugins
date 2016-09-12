@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Wait events finished.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_waitevent.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_waitevent.html",
 		"category":		"Rex - Logic - flow control",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

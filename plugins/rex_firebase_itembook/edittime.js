@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Item tables to save and query items. Each value is indexed by (tableID, itemID, key).",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_itembook.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_itembook.html",
 		"category":		"Rex - Web - firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

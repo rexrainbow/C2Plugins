@@ -5,7 +5,7 @@
 		"id":			"Rex_TriggerTouch",
 		"description":	"Trigger touch events manually.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_triggertouch.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_triggertouch.html",
 		"category":		"Rex - Touch",
 		"flags":		0
 	};

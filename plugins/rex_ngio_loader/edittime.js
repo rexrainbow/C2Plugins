@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Handles loading various URLs and tracking referral stats.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ngio_medal.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_ngio_medal.html",
 		"category":		"Rex - Web - newgrounds.io",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

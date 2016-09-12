@@ -5,7 +5,7 @@
 		"id":			"Rex_text_typing",
 		"description":	"Typing text on text / sprite font object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_text_typing.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_text_typing.html",
 		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};

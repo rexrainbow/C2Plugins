@@ -5,7 +5,7 @@
 		"id":			"Rex_physics_speedclamp",
 		"description":	"Clamp speed between upper and lower bounds.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_physics_speedclamp.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_physics_speedclamp.html",
 		"category":		"Rex - Physics helper",
 		"flags":		0
 	};

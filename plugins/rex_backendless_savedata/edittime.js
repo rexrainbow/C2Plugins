@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Save slot on backendless.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendless_saveslot.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_backendless_saveslot.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

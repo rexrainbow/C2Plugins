@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Parse and display dates in any timezone. http://momentjs.com/timezone/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_momenjs.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_momenjs.html",
 		"category":		"Rex - Date & time - Moment",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

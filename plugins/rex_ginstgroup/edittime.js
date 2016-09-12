@@ -6,7 +6,7 @@
 		"version":		"1.0",         
 		"description":	"A set/list to store instances by uid",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ginstgroup.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_ginstgroup.html",
 		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

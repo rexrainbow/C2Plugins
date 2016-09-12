@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Dictionary cache for local storage.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/eex_dictionaryLCache.html",
+		"help url":		"http://c2rexplugins.weebly.com/eex_dictionaryLCache.html",
 		"category":		"Rex - Local storage",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

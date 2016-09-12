@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Accumulate escaped time.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_stopwatch.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_stopwatch.html",
 		"category":		"Rex - Date & time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

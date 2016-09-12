@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Lock the sprite angle.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_anglelock.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_anglelock.html",
 		"category":		"Rex - Movement - angle",
 		"flags":		0	
 						| bf_onlyone

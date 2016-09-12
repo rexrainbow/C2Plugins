@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"A hub of official multi-player plugin",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_mpwrap.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_mpwrap.html",
 		"category":		"Rex - Multiplayer helper",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Transfer date from solar to lunar (solar 1900~ 2049)",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_lunar.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_lunar.html",
 		"category":		"Rex - Date & time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

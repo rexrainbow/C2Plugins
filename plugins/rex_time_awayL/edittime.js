@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Get elapsed interval of turned off game from local storage.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timeawayl.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_timeawayl.html",
 		"category":		"Rex - Date & time",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

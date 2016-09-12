@@ -6,7 +6,7 @@
 		"version":		"0.1",          
 		"description":	"Changing value in a duration",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_ralue_interpolation.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_ralue_interpolation.html",
 		"category":		"Rex - Variable",
 		"flags":		0
 	};

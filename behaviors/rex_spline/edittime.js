@@ -5,7 +5,7 @@
 		"id":			"Rex_Spline",
 		"description":	"Move Sprite along a spline path.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_spline.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_spline.html",
 		"category":		"Rex - Movement - position",
 		"flags":		0
 	};

@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Generate random maze asynchronously. Reference: http://ondras.github.io/rot.js/hp/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_mazegen.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_mazegen.html",
 		"category":		"Rex - Board - random map",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

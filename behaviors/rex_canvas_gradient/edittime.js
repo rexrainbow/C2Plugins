@@ -5,7 +5,7 @@
 		"id":			"Rex_CanvasGradient",
 		"description":	"Fill gradient color at canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvasgradient.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_canvasgradient.html",
 		"category":		"Rex - Canvas helper",
 		"flags":		bf_onlyone
 	};

@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"TimeLine & Timer, to execute function while time-out.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timeline.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_timeline.html",
 		"category":		"Rex - Timeline",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

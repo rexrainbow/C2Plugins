@@ -5,7 +5,7 @@
 		"id":			"Rex_boundary",
 		"description":	"Clamp position of object in the boundary, or wrap the position at the other boundary.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_boundary.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_boundary.html",
 		"category":		"Rex - Movement - position",
 		"flags":		0
 	};

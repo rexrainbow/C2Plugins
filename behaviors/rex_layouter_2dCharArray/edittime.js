@@ -5,7 +5,7 @@
 		"id":			"Rex_layouter_2dCharArray",
 		"description":	"Map/create sprites by a 2d-char-array on layouter.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_2dCharArray.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_layouter_2dCharArray.html",
 		"category":		"Layouter",
 		"flags":		bf_onlyone
 	};

@@ -5,7 +5,7 @@
 		"id":			"Rex_miniboard_touch",
 		"description":	"Drag & drop mini board.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_miniboard_touch.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_miniboard_touch.html",
 		"category":		"Rex - Board - application - mini board",
 		"flags":		bf_onlyone
 	};

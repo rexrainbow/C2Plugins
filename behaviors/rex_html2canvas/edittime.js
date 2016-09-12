@@ -5,7 +5,7 @@
 		"id":			"Rex_HTML2Canvas",
 		"description":	"Snapshot html element into an image",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_html2canvas.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_html2canvas.html",
 		"category":		"Rex - HTML",
 		"flags":		0,
 		"dependency":	"html2canvas.min.js"        

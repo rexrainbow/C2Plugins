@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Set sprite visible when cursor is over.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ninja2.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_ninja2.html",
 		"category":		"Rex - Touch",
 		"flags":		bf_onlyone
 	};

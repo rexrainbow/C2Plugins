@@ -6,7 +6,7 @@
 		"version":		"0.1",            
 		"description":	"Save/Load instances.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_instancebank2.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_instancebank2.html",
 		"category":		"Rex - Save-load",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

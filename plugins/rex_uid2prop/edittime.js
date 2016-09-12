@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Get/set properties (x,y,angle,opacity,private variable) by UID without picking first.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_uid2prop.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_uid2prop.html",
 		"category":		"Rex - Instance properties",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

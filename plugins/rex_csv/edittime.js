@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Read 2d table from cvs string.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_csv.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_csv.html",
 		"category":		"Rex - Data structure - CSV",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

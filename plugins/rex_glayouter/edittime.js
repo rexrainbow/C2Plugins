@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Layout instances to get position and angle.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_glayouter.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_glayouter.html",
 		"category":		"Rex - Layouter",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

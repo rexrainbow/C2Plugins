@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Manipulate instances of each line in a list.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_listctrl.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_listctrl.html",
 		"category":		"Rex - GUI controller",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

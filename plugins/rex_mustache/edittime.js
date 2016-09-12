@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Logic-less templates to render text content. Reference - https://github.com/janl/mustache.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_mustache.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_mustache.html",
 		"category":		"Rex - String",
 		"type":			"object",			// not in layout
 		"rotatable":	false,         

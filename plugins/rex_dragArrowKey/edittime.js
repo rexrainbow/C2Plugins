@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get arrow key event from dragging input.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_dragArrowKey.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_dragArrowKey.html",
 		"category":		"Rex - Arrow key",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
