@@ -45,7 +45,10 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	behinstProto.onCreate = function()
 	{         
         this.is_auto_resize = (this.properties[0] === 1);
-        this.max_width = this.inst.width;
+        this.minWidth = this.properties[1];
+        this.minHeight = this.properties[2];
+        
+        this.maxWidth = this.inst.width;
         this.is_resize_now = false;
         this.background_objects = {};        
         this.pre_width = this.inst.width;
@@ -110,7 +113,7 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	{
         var inst = this.inst;
         // use the max width to render text
-        inst.width = this.max_width;
+        inst.width = this.maxWidth;
         inst.set_bbox_changed();
             
         // resize next tick
@@ -168,12 +171,13 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	    
 	behinstProto.resize_myself = function ()
 	{
+        var new_width= this.get_TextWidth() + 1;        
+        new_width = cr.clamp(new_width, this.minWidth, this.maxWidth);
+
         var new_height = this.get_TextHeight() + 1;
-        var new_width= this.get_TextWidth() + 1;
+        if (new_height < this.minHeight)        
+            new_height = this.minHeight;
         
-        if (new_width > this.max_width)
-            new_width = this.max_width;
-                	    
         var inst=this.inst, is_resized=false;
         if ((new_width !== inst.width) || (new_height !== inst.height))
         {
@@ -327,7 +331,9 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	    }
 	    
 		return {
-			"mw": this.max_width,
+            "minw":this.minWidth,
+            "minh":this.minHeight,
+			"maxw": this.maxWidth,
             "pw": this.pre_width,
             "ph": this.pre_height,
             "bg": bg_insts_save,
@@ -336,7 +342,9 @@ cr.behaviors.Rex_text_resize = function(runtime)
     
 	behinstProto.loadFromJSON = function (o)
 	{
-		this.max_width = o["mw"];
+        this.minWidth = o["minw"];
+        this.minHeight = o["minh"];
+		this.maxWidth = o["maxw"];
 		this.pre_width = o["pw"];
 		this.pre_height = o["ph"];		
 		this.bgInsts_save = o["bg"];
@@ -384,7 +392,17 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	
 	Acts.prototype.SetMaxWidth = function (w)
 	{
-	    this.max_width = w;
+	    this.maxWidth = w;
+	};
+	
+	Acts.prototype.SetMinWidth = function (w)
+	{
+	    this.minWidth = w;
+	};
+	
+	Acts.prototype.SetMinHeight = function (h)
+	{
+	    this.minHeight = h;
 	};
 	
 	Acts.prototype.AddBackground = function (obj, resize_mode)

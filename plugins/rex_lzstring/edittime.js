@@ -20,9 +20,19 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
+AddComboParamOption("None");
+AddComboParamOption("Base64");
+AddComboParamOption("UTF16");
+AddComboParamOption("URI");
+AddComboParam("Encoding", "Encoding mode.",0);
+AddAction(1, 0, "Set encoding mode", "Encoding", 
+          "Set encoding mode to <i>{0}</i>", 
+          "Set encoding mode.", "SetEncodingMode");
+          
+// deprecated
 AddStringParam("Key","Enter the name of the key to associate the value with.", "\"\"");
 AddAnyTypeParam("Value","Enter the value to store.", "\"\"");
-AddAction(11,0,"Set local value","Local","Set local key {0} to {1}","Store a value in local storage (available in any session).","StoreLocal");
+AddAction(11,af_deprecated,"Set local value","Local","Set local key {0} to {1}","Store a value in local storage (available in any session).","StoreLocal");
 
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -30,15 +40,18 @@ AddStringParam("Source", "Source string to compress", '""');
 AddExpression(1, ef_return_string, "Compress", "Compress", "Compress", "Compress source string.");
 AddStringParam("Result", "Result string to decompress", '""');
 AddExpression(2, ef_return_string, "Decompress", "Decompress", "Decompress", "Decompress result string.");
+
+// deprecated
 AddStringParam("Key", "Key name", "\"\"");
 AddAnyTypeParam("Default","The default value if the key does not existed.", 0);
-AddExpression(11, ef_return_any, "Get local value", "Local", "LocalValue", 
+AddExpression(11, ef_deprecated | ef_return_any, "Get local value", "Local", "LocalValue", 
               "Get the value from a key in local storage. Return the default value if the key does not existed, and save the default value to webstorage.");
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo, "Encoding", "None", "Encoding of compression result.", "None|Base64|UTF16|URI"),   
 	];
 	
 // Called by IDE when a new object type is to be created

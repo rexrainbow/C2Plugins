@@ -25,7 +25,14 @@ AddAction(1, 0, "Resize", "Resize",
           
 AddAction(2, 0, "Set max width", "Resize", 
           "{my} set max width to <i>{1}</i>", 
-          "Set max width of this object.", "SetMaxWidth");          
+          "Set maximum width of this object.", "SetMaxWidth");    
+
+AddAction(3, 0, "Set min width", "Resize", 
+          "{my} set min width to <i>{1}</i>", 
+          "Set minimum width of this object.", "SetMinWidth");             
+AddAction(4, 0, "Set min height", "Resize", 
+          "{my} set min height to <i>{1}</i>", 
+          "Set minimum height of this object.", "SetMinHeight");
           
 AddObjectParam("Baclground", "Baclground object.");
 AddComboParamOption("width and height");
@@ -43,6 +50,8 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [   
     new cr.Property(ept_combo, "Auto resize", "Yes", "Enable to resize object automatically.", "No|Yes"),   
+	new cr.Property(ept_float, "Min width", 0, "Minimum text width, in pixels."), 
+	new cr.Property(ept_float, "Min height", 0, "Minimum text height, in pixels."),     
 	];
 	
 // Called by IDE when a new behavior type is to be created
