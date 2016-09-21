@@ -45,8 +45,10 @@ cr.plugins_.Rex_LayerObj = function(runtime)
 	// called whenever an instance is created    
 	instanceProto.onCreate = function()
 	{
+        this.visible = (this.properties[0] === 1);
 	    this._width_init = this.width;
 	    this._height_init = this.height;
+                
  
 	    this.runtime.tick2Me(this);        
 	};

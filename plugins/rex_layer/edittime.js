@@ -26,6 +26,7 @@
 ACESDone();
 
 var property_list = [
+    new cr.Property(ept_combo, "Initial visibility", "Visible", "Choose whether the layer object is visible on startup.", "Invisible|Visible")
 	];
 	
 // Called by IDE when a new object type is to be created
