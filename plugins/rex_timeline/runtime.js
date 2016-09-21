@@ -735,7 +735,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             this.delay_time = delay_time;
         }
         
-        var t = this.delay_time * this.timescale;
+        var t = this.delay_time / this.timescale;
         this._abs_timeout_set(t);
         if (this._is_alive)
         {
@@ -889,7 +889,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.delay_time = o["dt"];     
         this._is_alive = o["alive"];
         this._is_active = o["active"];       
-        this.timescale = o.hasOwnProperty("ts")? o["ts"]:1;    // compaticable           
+        this.timescale = o["ts"];    // compaticable           
         this.extra = o["ex"];          
         this.RemainderTimeSet(o["rt"]);  // set remaind_time and abs_time    
         // this._handler will be set at timer created
@@ -940,7 +940,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     };
     
     TimerProto.__set_timescale__ = function(timescale)
-    {        
+    {     
         if (timescale < 0)   // invalid
             return;
             
