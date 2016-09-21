@@ -639,7 +639,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     TimeLineProto.SetTimescale = function(timer, timescale)
     {
-        timer._set_timescale(timescale);
+        timer.__set_timescale__(timescale);
         var is_success = this._remove_timer_from_lists(timer, true);  //activate_only=True
         if (is_success)
         {
@@ -650,7 +650,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimeLineProto.ChangeTimerRate = function(timer, rate)
     {
-        timer._change_rate(rate);
+        timer.__change_rate__(rate);
         var is_success = this._remove_timer_from_lists(timer, true);  //activate_only=True
         if (is_success)
         {
@@ -792,28 +792,39 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         return (this._is_alive && this._is_active);    
     };
     
-    TimerProto.RemainderTimeGet = function()
+    TimerProto.RemainderTimeGet = function(ignoreTimeScale)
     {
-        var remainder_time = 0;
-        if (this.IsActive())       // -> run     
+        var remainder_time;
+        
+        if (this.IsActive())       // -> run             
+            remainder_time = this.abs_time - this.timeline.CurrentTimeGet();        
+        else if (this.IsAlive())   // (!this.IsActive() && this.IsAlive()) -> suspend        
+            remainder_time = this._remainder_time;        
+        else
+            remainder_time = 0;
+
+        // ignoreTimeScale to get real remain time (for saving)
+        if (!ignoreTimeScale)
         {
-            remainder_time = this.abs_time - this.timeline.CurrentTimeGet();
+            if ((this.timescale !== 0) || (this.timescale !== 1))
+                remainder_time *= this.timescale;
         }
-        else if (this.IsAlive())   // (!this.IsActive() && this.IsAlive()) -> suspend
-        {
-            remainder_time = this._remainder_time;
-        }
+        
         return remainder_time;  
     };  
      
-    TimerProto.RemainderTimeSet = function(_t)
+    TimerProto.RemainderTimeSet = function(remainder_time)
     {
         if (!this.IsAlive())
             return;
-             
-        var remainder_time = cr.clamp(_t, 0, this.delay_time);
-        this._remainder_time = remainder_time;
-        this.abs_time = this.timeline.CurrentTimeGet() + remainder_time;         
+        
+        // scale delay time
+        var delay_time = this.delay_time;
+        if ((this.timescale !== 0) || (this.timescale !== 1))
+            delay_time /= this.timescale;
+        
+        this._remainder_time = cr.clamp(remainder_time, 0, delay_time);
+        this.abs_time = this.timeline.CurrentTimeGet() + this._remainder_time;         
     };
     TimerProto.ElapsedTimeGet = function()
     {
@@ -863,7 +874,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // export to save/load timer
 	TimerProto.saveToJSON = function ()
 	{
-	    var remainder_time = this.RemainderTimeGet();
+	    var remainder_time = this.RemainderTimeGet(true);
 		return { "dt": this.delay_time,
                  "rt": remainder_time, 
                  "ts": this.timescale,                
@@ -882,8 +893,6 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.extra = o["ex"];          
         this.RemainderTimeSet(o["rt"]);  // set remaind_time and abs_time    
         // this._handler will be set at timer created
-        
-        
 	};     
 	
 	TimerProto.afterLoad = function ()
@@ -930,7 +939,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this._is_active = true;
     };
     
-    TimerProto._set_timescale = function(timescale)
+    TimerProto.__set_timescale__ = function(timescale)
     {        
         if (timescale < 0)   // invalid
             return;
@@ -952,13 +961,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         
         if (do_change_rate)
         {
-            var rate = timescale/this.timescale;
-            this._change_rate(rate);
+            var rate = this.timescale / timescale;
+            this.__change_rate__(rate);
             this.timescale = timescale;
         }
     };        
     
-    TimerProto._change_rate = function(rate)
+    TimerProto.__change_rate__ = function(rate)
     {
         if (this._is_active)
         {
