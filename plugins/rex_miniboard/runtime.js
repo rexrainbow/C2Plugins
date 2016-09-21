@@ -1010,7 +1010,29 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        this.RemoveChess(chess[i].uid);
 	    }
 	};	
-    
+	
+	Acts.prototype.MoveToLayer = function (layerMove)
+	{
+        if (!layerMove)
+            return;
+        
+        var uid, inst;
+        var items = this.GetAllChess();
+	    for (uid in items)
+	    {
+		    inst = this.uid2inst(uid);
+		    if ((inst == null) || 
+                (inst.layer == layerMove))
+		        continue;
+                
+	         inst.layer.removeFromInstanceList(inst, true);
+	         
+	         inst.layer = layerMove;
+	         layerMove.appendToInstanceList(inst, true);
+	         
+	         inst.runtime.redraw = true;            
+	    }
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -166,7 +166,12 @@ AddAction(12, 0, "Shift LOXY", "Position",
 AddObjectParam("Chess", "Chess object.");
 AddAction(13, 0, "Remove chess", "Mini-board: Remove", 
           "Remove chess <i>{0}</i>", 
-          "Remove chess from mini board.", "RemoveChess");          
+          "Remove chess from mini board.", "RemoveChess");   
+
+AddLayerParam("Layer", "Layer name of number.");
+AddAction(21, 0, "Move chess to layer", "Mini-board: Layer", 
+          "Move all chess to layer <i>{0}</i>", 
+          "Move all chess to layer.", "MoveToLayer");               
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,
