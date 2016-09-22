@@ -357,7 +357,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
 	};	
 		
-	Acts.prototype.SetTouchLayer = function (layer)
+	Acts.prototype.SetTouchedLayer = function (layer)
 	{
         if (!layer)
             return;

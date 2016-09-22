@@ -60,9 +60,9 @@ AddAction(1, 0, "Cancel", "Detector",
           "Cancel current dragging like touch end.", "Cancel");  
           
 AddLayerParam("Layer", "Layer name of number.");
-AddAction(11, 0, "Set touch layer", "Touch layer", 
-          "Set touch layer to <i>{0}</i>", 
-          "Set touch layer.", "SetTouchLayer");   
+AddAction(11, 0, "Set touched layer", "Touched layer", 
+          "Set touched layer to <i>{0}</i>", 
+          "Set touched layer.", "SetTouchedLayer");   
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Position X of origin point", "Origin", "OX", "Position X of origin point.");
