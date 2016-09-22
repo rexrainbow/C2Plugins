@@ -421,6 +421,10 @@ cr.behaviors.Rex_MoveTo = function(runtime)
             this.SetTargetPos(inst.x, inst.y);
 	};
     
+ 	Acts.prototype.SetStopBySolid = function (en)
+	{
+		this.soild_stop_enable = (en === 1);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

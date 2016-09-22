@@ -46,7 +46,8 @@ AddCondition(5, cf_trigger, "On stop by solid", "Solid",
 AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
 AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
-AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>", 
+AddAction(0, 0, "Set enabled", "Enable", 
+          "Set {my} <b>{0}</b>", 
           "Set whether this behavior is enabled. It will also pause current moving.", "SetEnabled");
 
 AddNumberParam("Max speed", "Maximum speed, in pixel per second.");
@@ -103,7 +104,14 @@ AddNumberParam("UID", "UID of target object.");
 AddAction(10, 0, "Move to UID", "MoveTo", 
           "{my} move to UID: <i>{0}</i>", 
           "Move to object by UID.", 
-          "SetTargetPosOnUID");            
+          "SetTargetPosOnUID");  
+
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
+AddAction(11, 0, "Stop by solid", "Enable", 
+          "Set {my} stop by solid <b>{0}</b>", 
+          "Enabled or disable stop by solid.", "SetStopBySolid");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 
