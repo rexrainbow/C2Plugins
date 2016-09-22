@@ -44,7 +44,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this._directions = this.properties[0]; 
         this._sensitivity = this.properties[1]; 
 	    this._reset_origin = (this.properties[2] == 1); 
-        var touch_layer = this.properties[3];
+        var touched_layer = this.properties[3];
 	            
         this.runtime.tickMe(this);
 
@@ -53,7 +53,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this.GetX = null;
         this.GetY = null; 
         this.touch_src = null;    
-        this.touch_layer = (isNaN(touch_layer))? touch_layer: parseInt(touch_layer);
+        this.touched_layer = (isNaN(touched_layer))? touched_layer: parseInt(touched_layer);
 		this.origin_x = 0;
 		this.origin_y = 0;
 		this.curr_x = 0;
@@ -130,7 +130,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         
         var touch_obj = this.TouchWrapGet();
         this.GetX.call(touch_obj, 
-            touch_obj.fake_ret, this.touch_src, this.touch_layer);
+            touch_obj.fake_ret, this.touch_src, this.touched_layer);
         return touch_obj.fake_ret.value;
 	};  
 
@@ -141,7 +141,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         
         var touch_obj = this.TouchWrapGet();
         this.GetY.call(touch_obj, 
-            touch_obj.fake_ret, this.touch_src, this.touch_layer);
+            touch_obj.fake_ret, this.touch_src, this.touched_layer);
         return touch_obj.fake_ret.value;   
 	};
     
@@ -362,7 +362,7 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         if (!layer)
             return;
         
-        this.touch_layer = layer.index;
+        this.touched_layer = layer.index;
 	};	    
     
 	//////////////////////////////////////
