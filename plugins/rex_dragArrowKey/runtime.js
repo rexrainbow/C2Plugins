@@ -44,15 +44,16 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         this._directions = this.properties[0]; 
         this._sensitivity = this.properties[1]; 
 	    this._reset_origin = (this.properties[2] == 1); 
+        var touch_layer = this.properties[3];
 	            
         this.runtime.tickMe(this);
-     
-        this.setup_stage = true;
+
         // touch   
         this.touchwrap = null;
         this.GetX = null;
         this.GetY = null; 
-        this.touch_src = null;        
+        this.touch_src = null;    
+        this.touch_layer = (isNaN(touch_layer))? touch_layer: parseInt(touch_layer);
 		this.origin_x = 0;
 		this.origin_y = 0;
 		this.curr_x = 0;
@@ -75,22 +76,27 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
 	};
 
 	instanceProto.TouchWrapGet = function ()
-	{  
-        var plugins = this.runtime.types;
-        var name, obj;
+	{
+        if (this.touchwrap != null)
+            return this.touchwrap;
+            
+        assert2(cr.plugins_.rex_TouchWrap, "Dragging to ArrowKey: Can not find touchWrap oject.");
+        var plugins = this.runtime.types
+        var name, inst;
         for (name in plugins)
         {
-            obj = plugins[name].instances[0];
-            if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
+            inst = plugins[name].instances[0];
+            if (inst instanceof cr.plugins_.rex_TouchWrap.prototype.Instance)
             {
-                this.touchwrap = obj;
+                this.touchwrap = inst;
                 this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
                 this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;                
                 this.touchwrap.HookMe(this);
-                break;
+                return this.touchwrap;
             }
         }
-	}; 
+        assert2(this.touchwrap, "Dragging to ArrowKey: Can not find touchWrap oject.");
+	};     
     
     instanceProto.OnTouchStart = function (touch_src, touchX, touchY)
     { 
@@ -119,45 +125,36 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
     
 	instanceProto.get_touch_x = function ()
 	{
-        var touch_obj = this.touchwrap;
-        this.GetX.call(touch_obj, touch_obj.fake_ret, this.touch_src);
+	    if (this.touch_src === null)
+	        return 0;
+        
+        var touch_obj = this.TouchWrapGet();
+        this.GetX.call(touch_obj, 
+            touch_obj.fake_ret, this.touch_src, this.touch_layer);
         return touch_obj.fake_ret.value;
 	};  
 
 	instanceProto.get_touch_y = function ()
 	{
-        var touch_obj = this.touchwrap;
-        this.GetY.call(touch_obj, touch_obj.fake_ret, this.touch_src);
-        return touch_obj.fake_ret.value;   
-	};
-    
-    instanceProto.tick = function()
-    {
-        this._setup();
-        this._touch_arrow();
-    };
-
-	instanceProto._setup = function ()
-	{
-        if (!this.setup_stage)
-            return;
+	    if (this.touch_src === null)
+	        return 0;
         
-        this.TouchWrapGet();  
-        this.setup_stage = false;
-        if (this.touchwrap == null)
-            assert("Arrow key object need at least one input signal.");
+        var touch_obj = this.TouchWrapGet();
+        this.GetY.call(touch_obj, 
+            touch_obj.fake_ret, this.touch_src, this.touch_layer);
+        return touch_obj.fake_ret.value;   
 	};
     
     var RIGHTKEY = 0x1;
     var DOWNKEY = 0x2;
     var LEFTKEY = 0x4;
     var UPKEY = 0x8;
-	instanceProto._touch_arrow = function ()
+	instanceProto.tick = function ()
 	{
-	    if (this.cmd_cancel)
-	        this.cmd_cancel = false;
+	    this.cmd_cancel = false;
 	        
-        if ((this.touchwrap == null) || (!this.is_on_dragging)) 
+        var touch_obj = this.TouchWrapGet();
+        if ((touch_obj == null) || (!this.is_on_dragging)) 
             return;
 
 		this.curr_x = this.get_touch_x();
@@ -359,6 +356,15 @@ cr.plugins_.Rex_ArrowKey = function(runtime)
         if (is_on_dragging)
             this.runtime.trigger(cr.plugins_.Rex_ArrowKey.prototype.cnds.OnDetectingEnd, this);
 	};	
+		
+	Acts.prototype.SetTouchLayer = function (layer)
+	{
+        if (!layer)
+            return;
+        
+        this.touch_layer = layer.index;
+	};	    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

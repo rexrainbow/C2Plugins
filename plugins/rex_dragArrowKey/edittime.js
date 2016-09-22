@@ -59,6 +59,10 @@ AddAction(1, 0, "Cancel", "Detector",
           "Cancel current dragging", 
           "Cancel current dragging like touch end.", "Cancel");  
           
+AddLayerParam("Layer", "Layer name of number.");
+AddAction(11, 0, "Set touch layer", "Touch layer", 
+          "Set touch layer to <i>{0}</i>", 
+          "Set touch layer.", "SetTouchLayer");   
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Position X of origin point", "Origin", "OX", "Position X of origin point.");
@@ -75,6 +79,7 @@ var property_list = [
     new cr.Property(ept_combo, "Directions", "8 directions", "The number of directions of movement available.", "Up & down|Left & right|4 directions|8 directions"),
     new cr.Property(ept_float, "Sensitivity", 50, "Sensitivity of touch movment, in pixel."),    
     new cr.Property(ept_combo, "Reset origin", "No", 'Reset origin when pressing changing. Set "No" for virtual joystick.', "No|Yes"),    
+    new cr.Property(ept_text, "Touch layer", "0", "Touch layer name of number."),        
 	];
 	
 // Called by IDE when a new object type is to be created
