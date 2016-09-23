@@ -132,6 +132,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.triggeredHold = false;
 		this.tooFarForHold = false;
+        this.touchedState = true;
 	};
 	
 	TouchInfo.prototype.init = function (x, y, id, index)
@@ -156,6 +157,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.triggeredHold = false;
 		this.tooFarForHold = false;
+        this.touchedState = true;
 	};
 	
 	TouchInfo.prototype.update = function (nowtime, x, y, width, height, pressure)
@@ -851,10 +853,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
 			info.preventDefault();
 		
+        var index = this.findTouch(0);
+        if (index !== -1)
+        {
+            ReleaseTouchInfo(this.touches[index]);
+            cr.arrayRemove( this.touches, index );     
+        }
+
 		// Send a fake touch start event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
-		var fakeinfo = { changedTouches: [t] };
-        this.touches.length = 0;
+		var fakeinfo = { changedTouches: [t] };        
 		this.onTouchStart(fakeinfo);
 	};
 	
@@ -868,8 +876,8 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Send a fake touch move event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
-		if (this.touches.length==0)
-		    this._fake_onTouchStart(fakeinfo);
+		if (this.touches.length === 0)
+		    this.__addMouseMovePoint__(fakeinfo);
 		else
 		    this.onTouchMove(fakeinfo);
 	};
@@ -890,7 +898,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
 		this.onTouchEnd(fakeinfo);
-		this._fake_onTouchStart(fakeinfo);
+		this.__addMouseMovePoint__(fakeinfo);
 	};
 	
 	instanceProto.tick2 = function()
@@ -920,13 +928,15 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-		var props = [], i, len, t;
+		var props = [], i, len, t, val;
 		
 		for (i = 0, len = this.touches.length; i < len; ++i)
 		{
 			t = this.touches[i];
-			
-			props.push({"name": i.toString(), "value": "(" + t.x + ", " + t.y + "), ID: " + t["id"], "readonly": true});
+		    val = "(" + t.x + ", " + t.y + "), ID: " + t["id"];
+            if (!t.touchedState)
+                val += " , mouse moving only";
+			props.push({"name": i.toString(), "value": val, "readonly": true});
 		}
 		
 		propsections.push({
@@ -1692,7 +1702,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
     
     // wrapper --------
-	instanceProto._fake_onTouchStart = function (info)
+	instanceProto.__addMouseMovePoint__ = function (info)
 	{
 		if (info.preventDefault)
 			info.preventDefault();
@@ -1710,7 +1720,9 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 			this.trigger_index = this.touches.length;
             
-            this.touches.push(AllocTouchInfo(touchx, touchy, t["identifier"], this.trigger_index));
+            var t = AllocTouchInfo(touchx, touchy, t["identifier"], this.trigger_index);
+            t.touchedState = false;
+            this.touches.push(t);
 		}		
 	};
 
@@ -1726,14 +1738,15 @@ cr.plugins_.rex_TouchWrap = function(runtime)
     instanceProto.UseMouseInput = function()
     {
         return this.useMouseInput;
-    }
-	instanceProto.IsMouseMode = function ()
-	{
-		return this._is_mouse_mode;
-	};
+    };
 	instanceProto.IsInTouch = function ()
 	{
-		return (this._is_mouse_mode)? this.mouseDown : this.touches.length;
+        if (this.touches.length === 0)
+            return false;
+        else if (this.touches.length === 1)
+            return this.touches[0].touchedState;
+        else
+            return true;
 	};    
     // wrapper --------    
     

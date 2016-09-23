@@ -202,7 +202,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
         this._click_mode = this.properties[1];      
         this._auto_CLICK2ACTIVE = (this.properties[2]==1);
 		this._is_visible_checking = (this.properties[3]==1);
-        this._touch_src = OFF_STATE;
+        this._touch_src = null;
         this._state = OFF_STATE; 
         this._pre_state = null;       
         this._init_flag = true;
@@ -373,18 +373,16 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.GetX = function()
 	{
         var touch_obj = this.type.touchwrap;
-		var src = (touch_obj.IsMouseMode())? 0: this._touch_src;
 		this.type.GetX.call(touch_obj, 
-                            touch_obj.fake_ret, src, this.inst.layer.index);
+                            touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;          
 	};
     
 	behinstProto.GetY = function()
 	{
         var touch_obj = this.type.touchwrap;
-		var src = (touch_obj.IsMouseMode())? 0: this._touch_src;
 		this.type.GetY.call(touch_obj, 
-                            touch_obj.fake_ret, src, this.inst.layer.index);
+                            touch_obj.fake_ret, this._touch_src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
 	};
 	
