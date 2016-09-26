@@ -1016,6 +1016,16 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         if (!layerMove)
             return;
         
+        if (this.layer !== layerMove)
+        {
+	        this.layer.removeFromInstanceList(this, true);
+	        
+	        this.layer = layerMove;
+	        layerMove.appendToInstanceList(this, true);
+	        
+	        this.runtime.redraw = true;  
+        }
+        
         var uid, inst;
         var items = this.GetAllChess();
 	    for (uid in items)
@@ -1025,12 +1035,12 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
                 (inst.layer == layerMove))
 		        continue;
                 
-	         inst.layer.removeFromInstanceList(inst, true);
+	        inst.layer.removeFromInstanceList(inst, true);
 	         
-	         inst.layer = layerMove;
-	         layerMove.appendToInstanceList(inst, true);
+	        inst.layer = layerMove;
+	        layerMove.appendToInstanceList(inst, true);
 	         
-	         inst.runtime.redraw = true;            
+	        inst.runtime.redraw = true;            
 	    }
 	};	    
 	//////////////////////////////////////

@@ -169,9 +169,9 @@ AddAction(13, 0, "Remove chess", "Mini-board: Remove",
           "Remove chess from mini board.", "RemoveChess");   
 
 AddLayerParam("Layer", "Layer name of number.");
-AddAction(21, 0, "Move chess to layer", "Mini-board: Layer", 
-          "Move all chess to layer <i>{0}</i>", 
-          "Move all chess to layer.", "MoveToLayer");               
+AddAction(21, 0, "Move all to layer", "Mini-board: Layer", 
+          "Move all to layer <i>{0}</i>", 
+          "Move all to layer.", "MoveToLayer");               
 ////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number,
