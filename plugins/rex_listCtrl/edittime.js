@@ -194,7 +194,9 @@ AddExpression(8, ef_return_number, "Get default line height", "Line height", "De
               "Get default line height."); 
 AddNumberParam("Index", "Index of line.", 0);
 AddExpression(9, ef_return_number, "Get line height", "Line height", "LineHeight", 
-              "Get line height.");                
+              "Get line height.");
+AddExpression(10, ef_return_number, "Get list height", "List", "ListHeight", 
+              "Get list height.");              
 
 AddNumberParam("Index", "Index of line.", 0);
 AddStringParam("Key", "The name of the key.", '""');

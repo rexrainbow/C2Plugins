@@ -1138,10 +1138,21 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 		ret.set_int(this.lines_mgr.colNum);
 	};		
 	
-    Exps.prototype.CellHeight = function (ret, index_)
+    Exps.prototype.ListHeight = function (ret)
 	{ 
-		ret.set_float(this.lines_mgr.GetLineHeight(index_));
-	};    	
+		ret.set_float(this.lines_mgr.GetTotalRowsHeight());
+	};   
+
+    Exps.prototype.ListWidth = function (ret)
+	{ 
+		ret.set_float(this.lines_mgr.GetTotalColWidth());
+	};			
+	
+    Exps.prototype.DefaultCellWidth = function (ret)
+	{ 
+		ret.set_float(this.lines_mgr.defaultLineWidth);
+	};	 	
+    
     Exps.prototype.At = function (ret, index_, key_, default_value)
 	{
 	    var v = this.lines_mgr.GetCustomData(index_, key_);   

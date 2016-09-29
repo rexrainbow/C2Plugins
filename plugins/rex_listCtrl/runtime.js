@@ -877,6 +877,12 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{ 
 		ret.set_float(this.lines_mgr.GetLineHeight(index_));
 	};    
+	
+    Exps.prototype.ListHeight = function (ret)
+	{ 
+		ret.set_float(this.lines_mgr.GetTotalLinesHeight());
+	};        
+    
     Exps.prototype.At = function (ret, index_, key_, default_value)
 	{
 	    var v = this.lines_mgr.GetCustomData(index_, key_);   

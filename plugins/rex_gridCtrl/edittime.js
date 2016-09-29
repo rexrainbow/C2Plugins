@@ -251,7 +251,11 @@ AddExpression(24, ef_return_number, "Get total columns count", "List", "TotalCol
               "Get total columns count."); 
 AddNumberParam("Index", "Index of cell.", 0);
 AddExpression(25, ef_return_number, "Get cell height", "Cell size", "CellHeight", 
-              "Get cell height.");                     
+              "Get cell height.");
+AddExpression(26, ef_return_number, "Get list height", "List", "ListHeight", 
+              "Get list height.");
+AddExpression(27, ef_return_number, "Get list width", "List", "ListWidth", 
+              "Get list width.");	              
               
 AddNumberParam("Index", "Index of cell.", 0);
 AddStringParam("Key", "The name of the key.", '""');
@@ -277,9 +281,9 @@ AddExpression(54, ef_return_number, "Get last bound of OY", "Bound", "LastBoundO
 AddExpression(61, ef_return_number, "Get current OX", "OX", "OX", 
               "Get current OX.");			  
 AddExpression(62, ef_return_number, "Get left OX", "OX", "LeftOX", 
-              "Get left OY.");     
+              "Get left OX.");     
 AddExpression(63, ef_return_number, "Get right OY", "OX", "RightOX", 
-              "Get right OY.");          
+              "Get right OX.");          
                                           
 AddExpression(71, ef_return_number, "Get current cell index", "For each", "CurCellIndex", 
               'Get current cell index in "Condition: For each cell", or "Condition: For each visible cell".');		
