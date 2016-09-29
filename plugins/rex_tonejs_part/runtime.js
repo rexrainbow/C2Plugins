@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_ToneJS_sequence = function(runtime)
+cr.plugins_.Rex_ToneJS_part = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_ToneJS_sequence.prototype;
+	var pluginProto = cr.plugins_.Rex_ToneJS_part.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -41,12 +41,12 @@ cr.plugins_.Rex_ToneJS_sequence = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.subdivision = this.properties[0];
-        this.loopCnt = this.properties[1];
+        this.loopCnt = this.properties[0];
 
         this.part = null;
+        this.eventObj = {};
         this.exp_TrigTime = 0;
-        this.exp_TrigNote = "";
+        this.exp_TrigValue = "";
 	};
     
 	instanceProto.onDestroy = function ()
@@ -58,28 +58,28 @@ cr.plugins_.Rex_ToneJS_sequence = function(runtime)
         }
 	};   
     
-	instanceProto.getPart = function (notes)
+	instanceProto.getPart = function (events)
 	{
         // create a new part
-        if (notes != null)
+        if (events != null)
             this.part = null;
         
         // return current part
         else if (this.part !== null)        
             return this.part;
         
-        // create a new part with empty notes
+        // create a new part with empty events
         else
-            notes = [];  
+            events = [];  
 
         var self=this;
-        var callback = function(time, note)
+        var callback = function(time, value)
         {
             self.exp_TrigTime = time;
-            self.exp_TrigNote = note;            
-            self.runtime.trigger(cr.plugins_.Rex_ToneJS_sequence.prototype.cnds.OnEvent, self); 
+            self.exp_TrigValue = value;            
+            self.runtime.trigger(cr.plugins_.Rex_ToneJS_part.prototype.cnds.OnEvent, self); 
         };
-        this.part = new window["Tone"]["Sequence"](callback, notes, this.subdivision);
+        this.part = new window["Tone"]["Part"](callback, events);
         this.part["loop"] = (this.loopCnt === 0)? true : this.loopCnt;
         
         return this.part;
@@ -109,34 +109,39 @@ cr.plugins_.Rex_ToneJS_sequence = function(runtime)
         this.getPart()["stop"](time);      
 	};    
     
-	Acts.prototype.Reload = function (notes)
+	Acts.prototype.Reload = function (events)
 	{
         try
         {
-            notes = JSON.parse(notes);
+            events = JSON.parse(events);
         }
         catch(e)
         {
             return;
         }
-        this.getPart(notes);      
+        this.getPart(events);      
 	}; 
 	Acts.prototype.RemoveAll = function ()
 	{
         this.getPart()["removeAll"]();      
 	}; 
 
-	Acts.prototype.Add = function (index, value)
+	Acts.prototype.Remove = function (time)
 	{
-        if (value.indexOf(",") !== -1)
-            value = value.split(",");
-        this.getPart()["add"](index, value);      
-	};
-
-	Acts.prototype.Remove = function (index)
+        this.getPart()["remove"](time);      
+	};  
+    
+	Acts.prototype.PrepareEvent = function (name, value)
+	{ 
+        this.eventObj[name] = value;
+	}; 
+    
+	Acts.prototype.Add = function (time)
 	{
-        this.getPart()["remove"](index);      
+        this.getPart()["add"](time, this.eventObj);  
+        this.eventObj = {};
 	};    
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -152,20 +157,15 @@ cr.plugins_.Rex_ToneJS_sequence = function(runtime)
 		ret.set_any(this.exp_TrigTime);
 	};
     
-	Exps.prototype.Note = function (ret)
+	Exps.prototype.Value = function (ret, k, default_value)
 	{
-		ret.set_any(this.exp_TrigNote);
+		ret.set_any(window.ToneJSGetItemValue( this.exp_TrigValue, k, default_value) );
 	};    
-    
-    var idxs = [];
-	Exps.prototype.At = function (ret, idx0)
+
+	Exps.prototype.At = function (ret, time, k, default_value)
 	{
-        var i,cnt=arguments.length;
-        for(i=1; i<cnt; i++)
-            idxs.push(arguments[i]);        
-        var note = this.getPart()["at"].apply(this.part, idxs);
-        idxs.length = 0;
-		ret.set_any(note);
+        var event = this.getPart()["at"](time);
+		ret.set_any( window.ToneJSGetItemValue( event, k, default_value) );
 	};
 
     

@@ -40,50 +40,11 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
     var PREFIX_MAP = ["", "fm" ,"am", "fat"];    
-    var OSCTYPE_MAP = ["sine", "square", "triangle", "custom", "pwm", "pulse"];
-    var FLTTYPE_MAP = ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "notch", "allpass", "peaking"];
+    var OSC_MAP = ["sine", "square", "triangle", "custom", "pwm", "pulse"];
+    var FILTER_MAP = ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "notch", "allpass", "peaking"];
     var ROLLOFF_MAP = [-12, -24, -48];
 	instanceProto.onCreate = function()
 	{
-        //var oscillatorOpts = {};
-        //oscillatorOpts["detune"] = this.properties[0];
-        //oscillatorOpts["phase"] = this.properties[1];          
-        //oscillatorOpts["volume"] = this.properties[2];  
-        //
-        //var prefix = PREFIX_MAP[ this.properties[3] ];
-        //var type = OSCTYPE_MAP[ this.properties[4] ];
-        //oscillatorOpts["type"] = prefix + type;
-        //
-        //if (type === "custom")
-        //    oscillatorOpts["partials"] = JSON.parse( "[" + this.properties[5] + "]");
-        //else if (type === "pulse")
-        //    oscillatorOpts["width"] = this.properties[6];
-        //
-        //var envelopeOpts = {
-        //    "attack": this.properties[7],
-        //    "decay": this.properties[8],
-        //    "sustain": this.properties[9],
-        //    "release": this.properties[10],
-        //};
-        //
-        //var filterOpts = {
-        //   "type" : FLTTYPE_MAP[ this.properties[11] ],
-        //   "frequency": this.properties[12],
-        //   "rolloff": ROLLOFF_MAP[ this.properties[13] ],
-        //   "Q": this.properties[14],
-        //   "gain": this.properties[15],
-        //};
-        //
-        //var options = {
-        //    "oscillator": oscillatorOpts,
-        //    "envelope": envelopeOpts,
-        //    "filter": filterOpts,
-        //                
-        //    "volume": this.properties[16],
-        //    "portamento": parseTime( this.properties[17] ),
-        //    "frequency": parseTime( this.properties[18] ),
-        //    "detune": this.properties[19]            
-        //}
         this.synth = new window["Tone"]["MonoSynth"]();
 	};
     
@@ -135,7 +96,76 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
 	Acts.prototype.SetNote = function (time)
 	{
         this.synth["setNote"](time);      
+	};   
+    
+	Acts.prototype.SetPortamento = function (portamento)
+	{
+        this.synth["portamento"] = portamento;  
+	};    
+    
+	Acts.prototype.SetDetune = function (detune)
+	{
+        this.synth["detune"] = detune;  
+	};        
+    
+    
+	Acts.prototype.SetOscillatorType = function (prefix, type)
+	{
+        var oscillator = this.synth["oscillator"];
+        oscillator["type"] = PREFIX_MAP[prefix] + OSC_MAP[type];       
+	};   
+    
+	Acts.prototype.SetPartials = function (partials)
+	{
+        try
+        {
+            partials = JSON.parse(partials);
+        }
+        catch(e)
+        {
+            return;
+        }
+        
+        var oscillator = this.synth["oscillator"];
+        oscillator["partials"] = partials;
 	};     
+    
+	Acts.prototype.SetWidth = function (width)
+	{
+        var oscillator = this.synth["oscillator"];
+        oscillator["width"] = width;    
+	};     
+        
+	Acts.prototype.SetEnvelope = function (a, d, s, r)
+	{
+        var envelope = this.synth["envelope"];
+        envelope["attack"] = a;
+        envelope["decay"] = d;    
+        envelope["sustain"] = s;
+        envelope["release"] = r;            
+	};
+        
+	Acts.prototype.SetFilterEnvelope = function (a, d, s, r, baseFrequency, octaves, exponent)
+	{
+        var envelope = this.synth["filterEnvelope"];
+        envelope["attack"] = a;
+        envelope["decay"] = d;    
+        envelope["sustain"] = s;
+        envelope["release"] = r;      
+        envelope["baseFrequency"] = baseFrequency;    
+        envelope["octaves"] = octaves;
+        envelope["exponent"] = exponent;     
+        
+	};    
+        
+	Acts.prototype.SetFilter = function (type, Q, gain)
+	{
+        var filter = this.synth["filter"];
+        filter["type"] = FILTER_MAP[ type ];
+        filter["Q"] = Q;    
+        filter["gain"] = gain;
+        
+	};        
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

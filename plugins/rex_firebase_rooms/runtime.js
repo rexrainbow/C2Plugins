@@ -416,17 +416,15 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 		return false;
 	};  	
 	
-    
-	Cnds.prototype.OnReceivedMetadata = function ()
-	{
-	    return true;
-	};	
-	
 	Cnds.prototype.IsLocked = function ()
 	{
 	    return this.LockedByAction;
 	};	
-	
+	    
+	Cnds.prototype.OnGetUsersList = function ()
+	{
+	    return true;
+	};	
 		    
 	//////////////////////////////////////
 	// Actions
@@ -659,6 +657,17 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
         // step 1. try join a random room
         
         main();
+	}; 
+
+    Acts.prototype.GetUsersList = function (roomID)
+	{
+        var on_read = function (snapshot)
+        {
+            var val = snapshot["val"]();
+        }
+
+        var usersList_ref = this.get_roomUser_ref(roomID);  
+        usersList_ref["once"]("value", on_read);
 	};       
 	//////////////////////////////////////
 	// Expressions
@@ -709,7 +718,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 		ret.set_string(ID);
 	}; 
     
-	Exps.prototype.CurCreaterName = function (ret)
+	Exps.prototype.CurCreatorName = function (ret)
 	{
         var room = this.exp_CurRoom;
         var name;
@@ -727,7 +736,7 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 		ret.set_string(name);
 	}; 
     
-	Exps.prototype.CurCreaterID = function (ret)
+	Exps.prototype.CurCreatorID = function (ret)
 	{
         var room = this.exp_CurRoom;
         var ID;
@@ -805,7 +814,21 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{        
 		ret.set_int(this.usersList.usersList.GetItems().length);
 	};   
-
+		
+	Exps.prototype.CurRoomMaxPeers = function (ret)
+	{        
+        var room = this.exp_CurRoom;
+        var maxPeers = (room)? (room["maxPeers"] || 0) : 0;
+		ret.set_int(maxPeers);
+	};  
+    
+    Exps.prototype.Index2RoomMaxPeers = function (ret, index)
+	{        
+        var room = this.roomsList.GetRooms()[index];
+        var maxPeers = (room)? (room["maxPeers"] || 0) : 0;
+		ret.set_int(maxPeers);
+	};	    
+    
 	Exps.prototype.WhiteListToJSON = function (ret)
 	{
         var permissionList;

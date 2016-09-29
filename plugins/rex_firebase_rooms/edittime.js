@@ -103,14 +103,14 @@ AddComboParam("List", "List type.", 1);
 AddCondition(51, cf_looping | cf_not_invertible, "For each user", "Permission list", 
              "For each user in  <i>{0}</i>", 
              "Repeat the event for each user in permission list.", "ForEachUserInPermissionList");     
-             
-AddCondition(61, cf_trigger, "On receive metadata", "Room - metadata", 
-            "On receive metadata",
-            "Triggered when receive metadata.", "OnReceivedMetadata");            
-            
+
 AddCondition(100, 0, "Locked", "Action", 
             "Is locked",
-            "Return true if plugin is locked which could not run any action.", "IsLocked");                            
+            "Return true if plugin is locked which could not run any action.", "IsLocked");     
+
+AddCondition(111, cf_trigger, "On get users list", "Users list", 
+            "On get users list", 
+            "Triggered when get users list.", "OnGetUsersList");            
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("UserID", "UserID from authentication.", '""');
@@ -203,13 +203,7 @@ AddAction(52, 0, "Remove", "Permission list",
 AddAction(61, 0, "Get metadata", "Room - metadata", 
           "Get metadata", 
           "Get metadata included white list and black list.", "RequestMetadata");                         
-                   
-//AddStringParam("UserID", "UserID from authentication.", '""');          
-//AddAction(90, 0, "Request", "User metadata", 
-//          "Request metadata of user ID: <i>{0}</i>", 
-//          "Request metadata of the user.", "RequestUserMetadata");           
-
-
+          
 AddComboParamOption("Join");
 AddComboParamOption("Leave current room then join");
 AddComboParam("Join action", "Join action.", 1);
@@ -217,6 +211,11 @@ AddNumberParam("Retry", "Retry count to get default value.", 10);
 AddAction(101, 0, "Join random", "Room", 
           "<i>{0}</i> random room with retry <i>{1}</i> times", 
           "Join random room from current rooms list.", "JoinRandomRoom");           
+          
+AddStringParam("Room ID", "Room ID.", '""');
+AddAction(111, 0, "Get users list of room", "User list", 
+          "Get users list of room ID: <i>{0}</i>", 
+          "Get users list of room.", "GetUsersList");           
           
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -239,9 +238,9 @@ AddExpression(21, ef_return_string, "Current room name", "Rooms list - for each"
               "Get the current room name in a For Each loop.");  
 AddExpression(22, ef_return_string, "Current room ID", "Rooms list - for each", "CurRoomID", 
               "Get the current room ID in a For Each loop.");       
-AddExpression(23, ef_return_string, "Current creater name", "Rooms list", "CurCreaterName", 
+AddExpression(23, ef_return_string, "Current creater name", "Rooms list", "CurCreatorName", 
               "Get the current creater name in a For Each loop.");  
-AddExpression(24, ef_return_string, "Current creater ID", "Rooms list", "CurCreaterID", 
+AddExpression(24, ef_return_string, "Current creater ID", "Rooms list", "CurCreatorID", 
               "Get the current creater ID in a For Each loop.");  
 AddNumberParam("Index", "Room index.", 0);
 AddExpression(25, ef_return_string, "Get room name by room index", "Rooms list - index", "Index2RoomName", 
@@ -268,8 +267,18 @@ AddExpression(35, ef_return_string, "Triggered user name", "Users list", "Trigge
 AddExpression(36, ef_return_string, "Triggered user ID", "Users list", "TriggeredUserID", 
               "Get triggered user ID."); 
 AddExpression(37, ef_return_number, "Users count", "Users list", "UsersCount", 
-              "Get amount of users in users list.");               
+              "Get amount of users in users list.");  
+
+// max peers and user count            
+AddExpression(41, ef_return_string, "Max peers of current room", "Rooms list - for each", "CurRoomMaxPeers", 
+              "Get max peers of current room in a For Each loop.");               
+
+AddNumberParam("Index", "Room index.", 0);
+AddExpression(42, ef_return_string, "Get max peers by room index", "Rooms list - index", "Index2RoomMaxPeers", 
+              "Get room name by room index.");                
               
+              
+// black or white list              
 AddExpression(51, ef_return_string, "Get white list in JSON", "Permission list", "WhiteListToJSON", 
               "Get white list in JSON string.");
 			  

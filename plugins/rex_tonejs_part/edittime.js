@@ -1,12 +1,12 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Sequence",
-		"id":			"Rex_ToneJS_sequence",
+		"name":			"Part",
+		"id":			"Rex_ToneJS_part",
 		"version":		"0.1",        
 		"description":	"An alternate notation of a part.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_master.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_part.html",
 		"category":		"Rex - Audio - Tone - Event",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -32,50 +32,55 @@ AddAction(12, 0, "Stop", "Control",
           "Stop at time <i>{0}</i>", 
           "Stop the part at the given time.", "Stop");   
           
-AddStringParam("Notes", 'Notes in array.', '"[]"');
-AddAction(21, 0, "Reload", "Notes", 
+AddStringParam("Events", 'Events in array.', '"[]"');
+AddAction(21, 0, "Reload", "Events", 
           "Reload notes to <i>{0}</i>", 
           "Stop and reload notes.", "Reload");
           
-AddAction(22, 0, "Remove all", "Notes", 
+AddAction(22, 0, "Remove all", "Events", 
           "Remove all notes", 
           "Remove all of the notes from the group.", "RemoveAll"); 
-          
-AddNumberParam("Index", 'The index to add the event to.', 0);
-AddAnyTypeParam("Value", 'Notes to add at that index, separated by ","', '""');
-AddAction(23, 0, "Add", "Notes", 
-          "Add <i>{1}</i> at <i>{0}</i>", 
-          "Add notes at an index, if there's already something at that index, overwrite it.", "Add");   
-          
-AddNumberParam("Index", 'The index of the event to remove.', 0);
-AddAction(24, 0, "Remove", "Notes", 
+
+AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
+AddAction(23, 0, "Remove", "Events", 
           "Remove notes at <i>{0}</i>", 
           "Remove a value from the sequence by index.", "Remove"); 
+
+AddAnyTypeParam("Name", 'Parameter name', '"note"');
+AddAnyTypeParam("Value", 'Value', '"C4"');
+AddAction(31, 0, "Prepare", "Events - add", 
+          "Prepare event: <i>{0}</i> to <i>{1}</i>", 
+          "Prepare event object.", "PrepareEvent");   
+          
+AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
+AddAction(32, 0, "Add", "Events - add", 
+          "Add event at <i>{0}</i>", 
+          "Add event at the time, if there's already something at that time, overwrite it.", "Add");   
+                    
           
 //////////////////////////////////////////////////////////////
 // Expressions                      
 AddExpression(1, ef_return_number, 
               "The current progress of the loop interval", "State", "Progress", 
               "The current progress of the loop interval.");                
-                  
+                            
 AddExpression(11, ef_return_any, 
-              "Get time of note event", "Event", "Time", 
+              "Get time of event", "Event", "Time", 
               "Get time of note event.");
               
-AddExpression(12, ef_return_any, 
-              "Get note of note event", "Event", "Note", 
-              "Get note of note event.");              
+AddExpression(12, ef_return_any | ef_variadic_parameters, 
+              "Get value of event", "Event", "Value", 
+              "Get all values of event in JSON. Add 2nd parameter to get a specific key, add 3rd parameter for default value if key does not exist.");              
              
-AddNumberParam("Index", 'The index of the event to remove.', 0);             
+AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');           
 AddExpression(21, ef_return_any | ef_variadic_parameters, 
-              "Get note of the sequence", "Notes", "At", 
-              "Get note of the sequence. Add 2nd or more parameters to get note in subsequence.");   
+              "Get note of the sequence", "Events", "At", 
+              "Get note of the sequence. Add 2nd or more parameters to get note in subsequence.  Add 3rd parameter to get a specific key, add 4th parameter for default value if key does not exist.");   
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Subdivision", "4n", 'The subdivision between which events are placed.'),
     new cr.Property(ept_integer, "Loop", 1, "Loop count. Set 0 to be an infinity loop."),    
 	];
 	

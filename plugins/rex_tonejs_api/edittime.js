@@ -20,10 +20,36 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
-
+AddObjectParam("Object", "Object to assign."); 
+AddStringParam("Property", "Property name in dot notation", '""');
+AddAnyTypeParam("Value", "Value to set", 0);
+AddAction(101, 0, "Set value", "Property", 
+          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
+          "Set property of an object.", "SetValue"); 
+          
+AddObjectParam("Object", "Object to assign."); 
+AddStringParam("Property", "Property name in dot notation", '""');
+AddStringParam("JSON", "JSON value to set", '""');
+AddAction(102, 0, "Set JSON", "Property", 
+          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
+          "Set property of an object.", "SetJSON"); 
+          
+AddObjectParam("Object", "Object to assign."); 
+AddStringParam("Property", "Property name in dot notation", '""');
+AddComboParamOption("false");
+AddComboParamOption("true");
+AddComboParam("Boolean", "Boolean value.", 0);
+AddAction(103, 0, "Set boolean", "Property", 
+          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
+          "Set property of an object.", "SetBoolean");
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "The currentTime from the AudioContext", "Time", "Now", "Get the currentTime from the AudioContext.");
+
+AddNumberParam("UID", "UID of a tone instance", 0);
+AddStringParam("Property", "Property name in dot notation", '""');
+AddExpression(101, ef_return_any, "Property of an instance", "Property", "Property", "Get property of an instance.");
 
 ACESDone();
 

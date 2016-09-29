@@ -1,12 +1,12 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Synth",
-		"id":			"Rex_ToneJS_synth",
+		"name":			"FMSynth",
+		"id":			"Rex_ToneJS_fmsynth",
 		"version":		"0.1",        
-		"description":	"Composed simply of an OmniOscillator routed through an AmplitudeEnvelope.",
+		"description":	"Composed of two Tone.Synths where one Tone.Synth modulates the frequency of a second Tone.Synth.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_synth.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_fmsynth.html",
 		"category":		"Rex - Audio - Tone - Instrument",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -37,26 +37,30 @@ AddAction(2, 0, "Attack", "Trigger",
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddAction(3, 0, "Release", "Trigger", 
           "Release, at time <i>{0}</i>", 
-          "Trigger the release portion of the envelope.", "TriggerRelease");
-          
+          "Trigger the release portion of the envelope.", "TriggerRelease");                   
+
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddAction(4, 0, "Set note", "Trigger", 
           "Set note: <i>{0}</i>, at time <i>{1}</i>", 
           "Set the note at the given time.", "SetNote"); 
-          
-          
+
 AddAnyTypeParam("Portamento", 'The glide time between notes', 0);
-AddAction(11, 0, "Set portamento", "Configuration", 
+AddAction(11, 0, "Set portamento", "Portamento", 
           "Set portamento to <i>{0}</i>", 
           "Set portamento.", "SetPortamento");
-          
+                              
 AddNumberParam("Detune", 'The glide time between notes', 0);
 AddAction(12, 0, "Set detune", "Configuration", 
           "Set detune to <i>{0}</i>", 
           "Set detune.", "SetDetune");
-                    
-          
+                              
+AddNumberParam("Harmonicity", 'Harmonicity is the ratio between the two voices. A harmonicity of 1 is no change. Harmonicity = 2 means a change of an octave.', 3);
+AddAction(13, 0, "Set harmonicity", "Configuration", 
+          "Set harmonicity to <i>{0}</i>", 
+          "Set harmonicity.", "SetHarmonicity");             
+               
+               
 // Oscillator       
 AddComboParamOption("");
 AddComboParamOption("am");
@@ -84,6 +88,7 @@ AddAction(23, 0, "Set width", "Oscillator - pulse",
           "Set width to <i>{0}</i>", 
           'Set width, only if the oscillator is set to "pulse".', "SetWidth");          
           
+          
 // Envelope
 AddNumberParam("Attack", "When triggerAttack is called, the attack time is the amount of time it takes for the envelope to reach it's maximum value.", 0.005);
 AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
@@ -91,9 +96,27 @@ AddNumberParam("Sustain", "The sustain value is the value which the envelope res
 AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
 AddAction(41, 0, "Set envelope", "Envelope", 
           "Set envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>", 
-          "Set envelope.", "SetEnvelope");          
+          "Set envelope.", "SetEnvelope");            
+
           
-          
+// Filter envelope
+AddNumberParam("Attack", "When triggerAttack is called, the attack time is the amount of time it takes for the envelope to reach it's maximum value.", 0.005);
+AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
+AddNumberParam("Sustain", "The sustain value is the value which the envelope rests at after triggerAttack is called, but before triggerRelease is invoked.", 0.3);
+AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
+AddAnyTypeParam("Base frequency", "The envelope's mininum output value. This is the value which it starts at.", '"C2"');          
+AddNumberParam("Octaves", "The number of octaves above the baseFrequency that the envelope will scale to.", 4);   
+AddNumberParam("Exponent", "The envelope's exponent value.", 2); 
+AddAction(51, 0, "Set filter envelope", "Filter envelope", 
+          "Set filter envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>, base frequency to <i>{4}</i>, octaves to <i>{5}</i>, exponent to <i>{6}</i>", 
+          "Set filter envelope.", "SetFilterEnvelope");  
+                              
+AddNumberParam("ModulationIndex", 'The modulation index which essentially the depth or amount of the modulation. It is the ratio of the frequency of the modulating signal (mf) to the amplitude of the modulating signal (ma) -- as in ma/mf.', 10);
+AddAction(101, 0, "Set modulation index", "Configuration", 
+          "Set modulation index to <i>{0}</i>", 
+          "Set modulation index.", "SetModulationIndex");             
+               
+                         
 //////////////////////////////////////////////////////////////
 // Expressions
 
@@ -101,6 +124,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    
 	];
 	
 // Called by IDE when a new object type is to be created

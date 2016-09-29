@@ -1,12 +1,12 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Synth",
-		"id":			"Rex_ToneJS_synth",
+		"name":			"DuoSynth",
+		"id":			"Rex_ToneJS_duosynth",
 		"version":		"0.1",        
-		"description":	"Composed simply of an OmniOscillator routed through an AmplitudeEnvelope.",
+		"description":	"A monophonic synth composed of two MonoSynths run in parallel with control over the frequency ratio between the two voices and vibrato effect. ",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_synth.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_duosynth.html",
 		"category":		"Rex - Audio - Tone - Instrument",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -47,7 +47,7 @@ AddAction(4, 0, "Set note", "Trigger",
           
           
 AddAnyTypeParam("Portamento", 'The glide time between notes', 0);
-AddAction(11, 0, "Set portamento", "Configuration", 
+AddAction(11, 0, "Set portamento", "Portamento", 
           "Set portamento to <i>{0}</i>", 
           "Set portamento.", "SetPortamento");
           
@@ -55,8 +55,13 @@ AddNumberParam("Detune", 'The glide time between notes', 0);
 AddAction(12, 0, "Set detune", "Configuration", 
           "Set detune to <i>{0}</i>", 
           "Set detune.", "SetDetune");
+                              
+AddNumberParam("Harmonicity", 'Harmonicity is the ratio between the two voices. A harmonicity of 1 is no change. Harmonicity = 2 means a change of an octave.', 1.5);
+AddAction(13, 0, "Set harmonicity", "Configuration", 
+          "Set harmonicity to <i>{0}</i>", 
+          "Set harmonicity.", "SetHarmonicity");             
+                                                  
                     
-          
 // Oscillator       
 AddComboParamOption("");
 AddComboParamOption("am");
@@ -70,18 +75,27 @@ AddComboParamOption("custom");
 AddComboParamOption("pwm");
 AddComboParamOption("pulse");
 AddComboParam("Type", "Scan direction.", 2);
+AddComboParamOption("voice0");
+AddComboParamOption("voice1");
+AddComboParam("Voice", "Voice type.", 0);
 AddAction(21, 0, "Set type", "Oscillator", 
-          "Set oscillator type to <i>{0}</i><i>{1}</i>", 
+          "<i>{2}</i>: set oscillator type to <i>{0}</i><i>{1}</i>", 
           "Set oscillator type.", "SetOscillatorType");
 
 AddStringParam("Partials", 'Partials in an array.', '"[2,1,2,2]"');
+AddComboParamOption("voice0");
+AddComboParamOption("voice1");
+AddComboParam("Voice", "Voice type.", 0);
 AddAction(22, 0, "Set partials", "Oscillator - custom", 
-          "Set partials to <i>{0}</i>", 
+          "<i>{1}</i>: set partials to <i>{0}</i>", 
           'Set partials, only if the oscillator is set to "custom".', "SetPartials");
           
 AddNumberParam("Width", 'The width of the oscillator.', 0);
+AddComboParamOption("voice0");
+AddComboParamOption("voice1");
+AddComboParam("Voice", "Voice type.", 0);
 AddAction(23, 0, "Set width", "Oscillator - pulse", 
-          "Set width to <i>{0}</i>", 
+          "<i>{1}</i>: set width to <i>{0}</i>", 
           'Set width, only if the oscillator is set to "pulse".', "SetWidth");          
           
 // Envelope
@@ -89,10 +103,52 @@ AddNumberParam("Attack", "When triggerAttack is called, the attack time is the a
 AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
 AddNumberParam("Sustain", "The sustain value is the value which the envelope rests at after triggerAttack is called, but before triggerRelease is invoked.", 0.3);
 AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
+AddComboParamOption("voice0");
+AddComboParamOption("voice1");
+AddComboParam("Voice", "Voice type.", 0);
 AddAction(41, 0, "Set envelope", "Envelope", 
-          "Set envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>", 
+          "<i>{4}</i>: set envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>", 
           "Set envelope.", "SetEnvelope");          
+
+// Filter envelope
+AddNumberParam("Attack", "When triggerAttack is called, the attack time is the amount of time it takes for the envelope to reach it's maximum value.", 0.005);
+AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
+AddNumberParam("Sustain", "The sustain value is the value which the envelope rests at after triggerAttack is called, but before triggerRelease is invoked.", 0.3);
+AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
+AddAnyTypeParam("Base frequency", "The envelope's mininum output value. This is the value which it starts at.", '"C2"');          
+AddNumberParam("Octaves", "The number of octaves above the baseFrequency that the envelope will scale to.", 4);   
+AddNumberParam("Exponent", "The envelope's exponent value.", 2); 
+AddComboParamOption("voice0");
+AddComboParamOption("voice1");
+AddComboParam("Voice", "Voice type.", 0);
+AddAction(51, 0, "Set filter envelope", "Filter envelope", 
+          "<i>{7}</i>: set filter envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>, base frequency to <i>{4}</i>, octaves to <i>{5}</i>, exponent to <i>{6}</i>", 
+          "Set filter envelope.", "SetFilterEnvelope");
           
+// Filter     
+AddComboParamOption("lowpass");
+AddComboParamOption("highpass");
+AddComboParamOption("bandpass");
+AddComboParamOption("lowshelf");
+AddComboParamOption("highshelf");
+AddComboParamOption("notch");
+AddComboParamOption("allpass");
+AddComboParamOption("peaking");
+AddComboParam("Type", "The type of the filter.", 0);     
+AddComboParamOption("-12");
+AddComboParamOption("-24");
+AddComboParamOption("-48");
+AddComboParamOption("-96");
+AddComboParam("Rolloff", "The rolloff of the filter which is the drop in db per octave. Implemented internally by cascading filters.", 1);  
+AddNumberParam("Q", "The Q or Quality of the filter", 1);
+AddNumberParam("Gain", "The gain of the filter, only used in certain filter types.", 0);
+AddComboParamOption("voice0");
+AddComboParamOption("voice1");
+AddComboParam("Voice", "Voice type.", 0);
+AddAction(61, 0, "Set filter", "Filter", 
+          "<i>{3}</i>: set filter to <i>{0}</i>, Q to <i>{1}</i>, gain to <i>{2}</i>", 
+          "Set filter.", "SetFilter");          
+                              
           
 //////////////////////////////////////////////////////////////
 // Expressions

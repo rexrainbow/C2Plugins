@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_ToneJS_synth = function(runtime)
+cr.plugins_.Rex_ToneJS_duosynth = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_ToneJS_synth.prototype;
+	var pluginProto = cr.plugins_.Rex_ToneJS_duosynth.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -39,11 +39,13 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
+    var VOICE_MAP = ["voice0", "voice0"];      
     var PREFIX_MAP = ["", "fm" ,"am", "fat"];    
     var OSCTYPE_MAP = ["sine", "square", "triangle", "custom", "pwm", "pulse"];
+  
 	instanceProto.onCreate = function()
 	{
-        this.synth = new window["Tone"]["Synth"]();
+        this.synth = new window["Tone"]["DuoSynth"]();
 	};
     
 	instanceProto.onDestroy = function ()
@@ -106,14 +108,20 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
         this.synth["detune"] = detune;  
 	};        
     
-    
-	Acts.prototype.SetOscillatorType = function (prefix, type)
+	Acts.prototype.SetHarmonicity = function (harmonicity)
 	{
-        var oscillator = this.synth["oscillator"];
+        this.synth["harmonicity"] = harmonicity;  
+	};     
+        
+        
+
+	Acts.prototype.SetOscillatorType = function (prefix, type, voiceType)
+	{
+        var oscillator = this.synth[ VOICE_MAP[voiceType] ]["oscillator"];
         oscillator["type"] = PREFIX_MAP[prefix] + OSCTYPE_MAP[type];       
 	};   
     
-	Acts.prototype.SetPartials = function (partials)
+	Acts.prototype.SetPartials = function (partials, voiceType)
 	{
         try
         {
@@ -124,25 +132,46 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
             return;
         }
         
-        var oscillator = this.synth["oscillator"];
+        var oscillator = this.synth[ VOICE_MAP[voiceType] ]["oscillator"];
         oscillator["partials"] = partials;
 	};     
     
-	Acts.prototype.SetWidth = function (width)
+	Acts.prototype.SetWidth = function (width, voiceType)
 	{
-        var oscillator = this.synth["oscillator"];
+        var oscillator = this.synth[ VOICE_MAP[voiceType] ]["oscillator"];
         oscillator["width"] = width;    
 	};      
     
-	Acts.prototype.SetEnvelope = function (a, d, s, r)
+	Acts.prototype.SetEnvelope = function (a, d, s, r, voiceType)
 	{
-        var envelope = this.synth["envelope"];
+        var envelope = this.synth[ VOICE_MAP[voiceType] ]["envelope"];
         envelope["attack"] = a;
         envelope["decay"] = d;    
         envelope["sustain"] = s;
         envelope["release"] = r;            
 	};   
 
+	Acts.prototype.SetFilterEnvelope = function (a, d, s, r, baseFrequency, octaves, exponent)
+	{
+        var envelope = this.synth[ VOICE_MAP[voiceType] ]["filterEnvelope"];
+        envelope["attack"] = a;
+        envelope["decay"] = d;    
+        envelope["sustain"] = s;
+        envelope["release"] = r;      
+        envelope["baseFrequency"] = baseFrequency;    
+        envelope["octaves"] = octaves;
+        envelope["exponent"] = exponent;     
+        
+	};    
+        
+	Acts.prototype.SetFilter = function (type, Q, gain)
+	{
+        var filter = this.synth[ VOICE_MAP[voiceType] ]["filter"];
+        filter["type"] = FILTER_MAP[ type ];
+        filter["Q"] = Q;    
+        filter["gain"] = gain;
+        
+	};      
     
 	//////////////////////////////////////
 	// Expressions

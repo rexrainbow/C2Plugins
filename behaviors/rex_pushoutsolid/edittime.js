@@ -23,11 +23,11 @@ AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>",
           "Set whether this behavior is enabled.", "SetEnabled");
 
 AddObjectParam("Obstacle", "Choose an object to add as an obstacle, obstructing line-of-sight.");
-AddAction(11, af_none, "Add obstacle", "Tick", 
+AddAction(11, af_none, "Add obstacle", "Obstacle", 
            "Add {my} obstacle {0}", 
            "Add a custom object as an obstacle to line-of-sight.", "AddObstacle");
 
-AddAction(12, af_none, "Clear obstacles", "Tick", 
+AddAction(12, af_none, "Clear obstacles", "Obstacle", 
           "Clear {my} obstacles", 
           "Remove all added obstacle objects.", "ClearObstacles");
 //////////////////////////////////////////////////////////////

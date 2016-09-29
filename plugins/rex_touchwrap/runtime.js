@@ -545,7 +545,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 			
-	    this._is_mouse_mode = false;			
+	    //this._is_mouse_mode = false;			
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -583,7 +583,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 	
-	    this._is_mouse_mode = false;			
+	    //this._is_mouse_mode = false;			
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 		
@@ -626,7 +626,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 	
-        this._is_mouse_mode = false;			
+        //this._is_mouse_mode = false;			
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
@@ -1739,6 +1739,10 @@ cr.plugins_.rex_TouchWrap = function(runtime)
     {
         return this.useMouseInput;
     };
+    instanceProto.IsMouseMode = function ()
+    {
+        return this._is_mouse_mode;
+    };    
 	instanceProto.IsInTouch = function ()
 	{
         if (this.touches.length === 0)

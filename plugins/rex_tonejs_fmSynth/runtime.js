@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_ToneJS_synth = function(runtime)
+cr.plugins_.Rex_ToneJS_fmsynth = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_ToneJS_synth.prototype;
+	var pluginProto = cr.plugins_.Rex_ToneJS_fmsynth.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -41,15 +41,17 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
 
     var PREFIX_MAP = ["", "fm" ,"am", "fat"];    
     var OSCTYPE_MAP = ["sine", "square", "triangle", "custom", "pwm", "pulse"];
+    var FLTTYPE_MAP = ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "notch", "allpass", "peaking"];
+    var ROLLOFF_MAP = [-12, -24, -48];
 	instanceProto.onCreate = function()
 	{
-        this.synth = new window["Tone"]["Synth"]();
+        this.synth = new window["Tone"]["FMSynth"]();
 	};
     
 	instanceProto.onDestroy = function ()
 	{
         this.synth["dispose"]();
-        this.synth = null;
+        this.synth = null;        
 	};   
     
     var parseTime = function (timeString)
@@ -58,7 +60,7 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
             return timeString;
         else
             return parseFloat(timeString);
-    };
+    };    
         
     // export
 	instanceProto.GetObject = function ()
@@ -77,8 +79,8 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
 	pluginProto.acts = new Acts();
 
 	Acts.prototype.TriggerAttackRelease = function (note, duration, time, velocity)
-	{        
-        this.synth["triggerAttackRelease"](note, duration, time, velocity);         
+	{
+        this.synth["triggerAttackRelease"](note, duration, time, velocity);      
 	};  
     
 	Acts.prototype.TriggerAttack = function (note, time, velocity)
@@ -94,7 +96,7 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
 	Acts.prototype.SetNote = function (time)
 	{
         this.synth["setNote"](time);      
-	}; 
+	};   
     
 	Acts.prototype.SetPortamento = function (portamento)
 	{
@@ -106,7 +108,12 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
         this.synth["detune"] = detune;  
 	};        
     
-    
+	Acts.prototype.SetHarmonicity = function (harmonicity)
+	{
+        this.synth["harmonicity"] = harmonicity;  
+	};     
+        
+        
 	Acts.prototype.SetOscillatorType = function (prefix, type)
 	{
         var oscillator = this.synth["oscillator"];
@@ -132,8 +139,8 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
 	{
         var oscillator = this.synth["oscillator"];
         oscillator["width"] = width;    
-	};      
-    
+	};     
+        
 	Acts.prototype.SetEnvelope = function (a, d, s, r)
 	{
         var envelope = this.synth["envelope"];
@@ -141,9 +148,25 @@ cr.plugins_.Rex_ToneJS_synth = function(runtime)
         envelope["decay"] = d;    
         envelope["sustain"] = s;
         envelope["release"] = r;            
-	};   
-
+	};
+        
+	Acts.prototype.SetFilterEnvelope = function (a, d, s, r, baseFrequency, octaves, exponent)
+	{
+        var envelope = this.synth["filterEnvelope"];
+        envelope["attack"] = a;
+        envelope["decay"] = d;    
+        envelope["sustain"] = s;
+        envelope["release"] = r;      
+        envelope["baseFrequency"] = baseFrequency;    
+        envelope["octaves"] = octaves;
+        envelope["exponent"] = exponent;     
+        
+	};    
     
+	Acts.prototype.SetModulationIndex = function (modulationIndex)
+	{
+        this.synth["modulationIndex"] = modulationIndex;  
+	};       
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
