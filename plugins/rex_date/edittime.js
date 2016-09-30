@@ -20,7 +20,13 @@
 //////////////////////////////////////////////////////////////
 // Actions
 AddAnyTypeParam("Name", "The name of timer.", "0");
-AddAction(0, 0, "Start timer", "Timer", "Start timer <i>{0}</i> ", "Start a timer.", "StartTimer");
+AddAction(0, 0, "Start", "Timer", "Start timer <i>{0}</i> ", "Start a timer.", "StartTimer");
+
+AddAnyTypeParam("Name", "The name of timer.", "0");
+AddAction(1, 0, "Pause", "Timer", "Pause timer <i>{0}</i> ", "Pause a timer.", "PauseTimer");
+
+AddAnyTypeParam("Name", "The name of timer.", "0");
+AddAction(2, 0, "Resume", "Timer", "Resume timer <i>{0}</i> ", "Resume a timer.", "ResumeTimer");
 
 //////////////////////////////////////////////////////////////
 // Expressions

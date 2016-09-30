@@ -41,16 +41,67 @@ cr.plugins_.Rex_Date = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-	    this._timers = {};
+	    this.timers = {};
+        /*
+        {
+            "state":1=run, 0=paused
+            "start": timstamp, updated when resumed
+            "acc": delta-time, updated when paused
+        }
+        */
 	};
+
+    var startTimer = function(timer)
+    {
+        if (!timer)
+            timer = {};
+        
+        timer["state"] = 1;
+        timer["start"] = (new Date()).getTime();
+        timer["acc"] = 0; 
+        return timer;
+    };
+    var getElapsedTime = function(timer)
+    {
+        if (!timer)
+            return 0;
+        
+        var deltaTime = timer["acc"];
+        if (timer["state"] === 1)
+        {
+            var curTime = (new Date()).getTime();
+            deltaTime += (curTime - timer["start"]);
+        }
+        return deltaTime;
+    };
+    var pauseTimer = function(timer)
+    {
+        if ((!timer) || (timer["state"] === 0))
+            return;
+
+        timer["state"] = 0;
+        
+        var curTime = (new Date()).getTime();
+        timer["acc"] += (curTime - timer["start"]);
+    };
+    var resumeTimer = function(timer)
+    {
+        if ((!timer) || (timer["state"] === 1))
+            return;
+
+        timer["state"] = 1;
+        timer["start"] = (new Date()).getTime();        
+    };    
+        
+    
     instanceProto.saveToJSON = function ()
 	{    
-		return { "tims": this._timers,
+		return { "tims": this.timers,
                 };
 	};
 	instanceProto.loadFromJSON = function (o)
 	{	    
-		this._timers = o["tims"];
+		this.timers = o["tims"];
 	};
 	//////////////////////////////////////
 	// Conditions
@@ -61,12 +112,21 @@ cr.plugins_.Rex_Date = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
+    
 	Acts.prototype.StartTimer = function (name)
 	{
-	    var timer = new Date();
-		this._timers[name] = timer.getTime();
+        this.timers[name] = startTimer(this.timers[name]);
 	};	
-
+    
+	Acts.prototype.PauseTimer = function (name)
+	{
+        pauseTimer(this.timers[name]);
+	};	
+    
+	Acts.prototype.ResumeTimer = function (name)
+	{
+        resumeTimer(this.timers[name]);
+	};	    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -122,13 +182,7 @@ cr.plugins_.Rex_Date = function(runtime)
 	
 	Exps.prototype.Timer = function (ret, name)
 	{
-	    var delta = 0;
-		var start_tick = this._timers[name];
-		if (start_tick != null) {
-		    var timer = new Date();
-		    delta = timer.getTime() - start_tick;
-		}
-		ret.set_float(delta/1000);
+		ret.set_float(getElapsedTime(this.timers[name])/1000);
 	};	
 
 	Exps.prototype.CurTicks = function (ret)
