@@ -163,15 +163,7 @@ cr.plugins_.Rex_ToneJS_duosynth = function(runtime)
         envelope["exponent"] = exponent;     
         
 	};    
-        
-	Acts.prototype.SetFilter = function (type, Q, gain)
-	{
-        var filter = this.synth[ VOICE_MAP[voiceType] ]["filter"];
-        filter["type"] = FILTER_MAP[ type ];
-        filter["Q"] = Q;    
-        filter["gain"] = gain;
-        
-	};      
+    
     
 	//////////////////////////////////////
 	// Expressions

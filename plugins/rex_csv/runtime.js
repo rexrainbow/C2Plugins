@@ -1058,7 +1058,10 @@ cr.plugins_.Rex_CSV = function(runtime)
             }
             dump_lines.push(l);
         }
-        return dump_lines.join("\n");
+        
+        var csvString = dump_lines.join("\n");
+        dump_lines.length = 0;
+        return csvString;
     };  
     
     var cell_string_get = function (value_, is_eval_mode, strDelimiter)

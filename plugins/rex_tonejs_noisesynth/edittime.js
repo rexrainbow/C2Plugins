@@ -29,7 +29,7 @@ AddAction(1, 0, "Attack then release", "Trigger",
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
 AddAction(2, 0, "Attack", "Trigger", 
-          "Attack at time <i>{0</i> with velocity <i>{1}</i>", 
+          "Attack at time <i>{0}</i> with velocity <i>{1}</i>", 
           "Trigger the attack of the note optionally with a given velocity.", "TriggerAttack"); 
           
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');

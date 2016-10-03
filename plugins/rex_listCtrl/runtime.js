@@ -444,7 +444,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         if (totalLinesHeight > inst_height)
             h = totalLinesHeight - inst_height;
         else
-            h = totalLinesHeight;
+            h = 0;
         
         return h;
 	};    

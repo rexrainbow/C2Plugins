@@ -21,10 +21,36 @@ AddCondition(5, cf_trigger, "On error", "Local storage",
              "Triggered if any error occurs while accessing local storage.", "OnError");
 
 AddStringParam("Key", "Key name of local storage", '""');
-AddCondition(11, cf_trigger, "On elapsed time get", "Timer", 
-             "On elapsed time <i>{0}</i> get", 
-             'Triggered after "action: Get elapsed time", get elapsed time by "expression:ElapsedTime".', "OnGetElapsedTime");
+AddCondition(11, cf_trigger, "On get time", "Timer", 
+             "On get time <i>{0}</i>", 
+             'Triggered after "action: Get timer", get elapsed time by "expression:ElapsedTime".', "OnGetTimer");
+             
+AddStringParam("Key", "Key name of local storage", '""');
+AddCondition(12, cf_trigger, "On start timer", "Timer", 
+             "On start timer <i>{0}</i>", 
+             'Triggered after "action: Start", when the timer has been written to local storage.', "OnStartTimer");             
+             
+AddStringParam("Key", "Key name of local storage", '""');
+AddCondition(13, cf_trigger, "On remove timer", "Timer", 
+             "On remove timer <i>{0}</i>", 
+             'Triggered after "action: Remove", when the timer has been deleted from local storage.', "OnRemoveTimer");
+             
+AddStringParam("Key", "Key name of local storage", '""');
+AddCondition(14, cf_trigger, "On pause timer", "Timer", 
+             "On pause timer <i>{0}</i>", 
+             'Triggered after "action: Pause", when the timer has been written to local storage.', "OnPauseTimer");             
+             
+AddStringParam("Key", "Key name of local storage", '""');
+AddCondition(15, cf_trigger, "On resume timer", "Timer", 
+             "On resume timer <i>{0}</i>", 
+             'Triggered after "action: Resume", when the timer has been written to local storage.', "OnResumeTimer");  
+             
+AddStringParam("Key", "Key name of local storage", '""');             
+AddCondition(21, 0, "Is valid", "Valid", 
+            "Is valid",
+            "Return true if get valid timer.", "IsValid");               
 
+             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Key", "Key name of local storage", '""');
@@ -38,9 +64,25 @@ AddAction(2, 0, "Remove", "Timer",
           "Remove timer.", "RemoveTimer");
           
 AddStringParam("Key", "Key name of local storage", '""');
-AddAction(11, 0, "Get elapsed time", "Timer", 
-          "Get elapsed time <i>{0}</i>", 
-          "Get elapsed time.", "GetElapsedTime");
+AddAction(3, 0, "Pause", "Timer", 
+          "Pause timer <i>{0}</i> ", 
+          "Pause timer.", "PauseTimer");
+
+AddStringParam("Key", "Key name of local storage", '""');
+AddAction(4, 0, "Resume", "Timer", 
+          "Resume timer <i>{0}</i> ", 
+          "Resume timer.", "ResumeTimer");
+          
+AddStringParam("Key", "Key name of local storage", '""');
+AddAction(5, 0, "Get or start", "Timer", 
+          "Get or start timer <i>{0}</i>", 
+          "Get or start timer if the timer does not exist.", "GetORStartTimer");          
+          
+          
+AddStringParam("Key", "Key name of local storage", '""');
+AddAction(11, 0, "Get", "Timer", 
+          "Get timer <i>{0}</i>", 
+          "Get timer.", "GetTimer");
           
           
 //////////////////////////////////////////////////////////////

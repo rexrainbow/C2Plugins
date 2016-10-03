@@ -165,7 +165,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
             behavior_inst = GetThisBehavior(inst);
             if (behavior_inst == null)
                 continue;            
-			if ((behavior_inst._touch_src == touch_src) && (behavior_inst._state == CLICK_DETECTING_STATE))
+			if ((behavior_inst.touchSrc == touch_src) && (behavior_inst.buttonState == CLICK_DETECTING_STATE))
                 behavior_inst.finish_click_detecting();            
         }	    
     };
@@ -198,27 +198,29 @@ cr.behaviors.Rex_Button2 = function(runtime)
     var ROLLINGIN_DISPLAY = 3;
 	behinstProto.onCreate = function()
 	{
-	    this._init_activated = (this.properties[0]==1);
-        this._click_mode = this.properties[1];      
-        this._auto_CLICK2ACTIVE = (this.properties[2]==1);
-		this._is_visible_checking = (this.properties[3]==1);
-        this._touch_src = null;
-        this._state = OFF_STATE; 
-        this._pre_state = null;       
-        this._init_flag = true;
-        this._rollingover_flag = false;
-        this._display = {normal:"", 
+	    this.initActivated = (this.properties[0]==1);
+        this.clickMode = this.properties[1];      
+        this.isAutoCLICK2ACTIVE = (this.properties[2]==1);
+		this.isVisibleChecking = (this.properties[3]==1);
+        this.touchSrc = null;
+        this.buttonState = OFF_STATE; 
+        this.buttonPreState = null;       
+        this.initFlag = true;
+        this.rollingoverFlag = false;
+        this.displayAnim = {normal:"", 
                          click:"",
                          inactive:"", 
                          rollingin:"",
-                         frame_speed_save:0,
-                         cur_name:null};                        
+                         frameSpeedSave:0,
+                         cur_name:null};
+
+        this.isSetStateInAction = false;
 	};
 
 	behinstProto.tick = function ()
 	{  
         this._init();                      
-        if (this._state == INACTIVE_STATE)
+        if (this.buttonState == INACTIVE_STATE)
             return;
         var is_touch_inside = this._is_touch_inside();         
         this._check_click_cancel(is_touch_inside);    
@@ -228,19 +230,19 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.is_enable = function()
 	{
 	    var is_visible;
-	    if (this._is_visible_checking)
+	    if (this.isVisibleChecking)
 		{
 	        var layer = this.runtime.getLayerByNumber(this.inst.layer.index);
 	        is_visible = (layer.visible && this.inst.visible);
         }
 		else
 		    is_visible = true;
-        return ( (this._state == ACTIVE_STATE) && is_visible );               
+        return ( (this.buttonState == ACTIVE_STATE) && is_visible );               
 	}; 	
 
 	behinstProto._display_frame = function(frame_index)
 	{
-        this._display.frame_speed_save = this.inst.cur_anim_speed;
+        this.displayAnim.frameSpeedSave = this.inst.cur_anim_speed;
         this.inst.cur_anim_speed = 0;
         if (frame_index != null)
             cr.plugins_.Sprite.prototype.acts.SetAnimFrame.apply(this.inst, [frame_index]); 
@@ -248,9 +250,9 @@ cr.behaviors.Rex_Button2 = function(runtime)
     
 	behinstProto._display_animation = function(anim_name)
 	{
-        var frame_speed_save = this._display.frame_speed_save;
-        if (frame_speed_save != null)
-            this.inst.cur_anim_speed = frame_speed_save;
+        var frameSpeedSave = this.displayAnim.frameSpeedSave;
+        if (frameSpeedSave != null)
+            this.inst.cur_anim_speed = frameSpeedSave;
         if (anim_name != "")
             cr.plugins_.Sprite.prototype.acts.SetAnim.apply(this.inst, [anim_name, 1]);
 	}; 
@@ -265,23 +267,23 @@ cr.behaviors.Rex_Button2 = function(runtime)
        {
            this._display_animation(display);
        }
-       this._display.cur_name = name;        
+       this.displayAnim.cur_name = name;        
 	}; 
     
 	behinstProto._init = function()
 	{
-        if (!this._init_flag)
+        if (!this.initFlag)
             return;
             
-        this._display.frame_speed_save = this.inst.cur_anim_speed;
-        if (this._init_activated != null)
+        this.displayAnim.frameSpeedSave = this.inst.cur_anim_speed;
+        if (this.initActivated != null)
         {
-            if (this._init_activated)        
+            if (this.initActivated)        
                 this._goto_active_state();    
             else
                 this._goto_inactive_state();         
         }
-        this._init_flag = false;
+        this.initFlag = false;
 	};    
 	behinstProto._is_touch_inside = function ()
 	{
@@ -293,7 +295,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	};
 	behinstProto._check_click_cancel = function (is_touch_inside)
 	{
-        if ((this._state == CLICK_DETECTING_STATE) && (!is_touch_inside))
+        if ((this.buttonState == CLICK_DETECTING_STATE) && (!is_touch_inside))
         {
             this.cancel_click_detecting(); 
             this._goto_active_state();
@@ -303,20 +305,20 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	{
         if (is_touch_inside)
         {            
-            if (!this._rollingover_flag)
+            if (!this.rollingoverFlag)
             {
-                this._set_animation(this._display.rollingin, ROLLINGIN_DISPLAY);  
-                this._rollingover_flag = true;
+                this._set_animation(this.displayAnim.rollingin, ROLLINGIN_DISPLAY);  
+                this.rollingoverFlag = true;
                 this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnRollingIn, this.inst);
             }
         }
         else
         {
-            if (this._rollingover_flag)
+            if (this.rollingoverFlag)
             {        
-                this._rollingover_flag = false;
-                if (this._display.cur_name == ROLLINGIN_DISPLAY)
-                    this._set_animation(this._display.normal, NORMAL_DISPLAY);
+                this.rollingoverFlag = false;
+                if (this.displayAnim.cur_name == ROLLINGIN_DISPLAY)
+                    this._set_animation(this.displayAnim.normal, NORMAL_DISPLAY);
                 this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnRollingOut, this.inst);
             }
         }
@@ -324,14 +326,14 @@ cr.behaviors.Rex_Button2 = function(runtime)
  
 	behinstProto._set_state = function (state)
 	{
-	    this._pre_state = this._state;
-        this._state = state;
+	    this.buttonPreState = this.buttonState;
+        this.buttonState = state;
 	};
 	behinstProto.start_click_detecting = function (touch_src)
 	{
-        if (this._click_mode == 0)
+        if (this.clickMode == 0)
         {
-            this._touch_src = touch_src;
+            this.touchSrc = touch_src;
             this._set_state(CLICK_DETECTING_STATE);
             this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnClickStart, this.inst);         
         }        
@@ -340,18 +342,18 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	};
 	behinstProto._goto_active_state = function ()
 	{
-	    this._init_activated = null;
-        this._touch_src = null;
+	    this.initActivated = null;
+        this.touchSrc = null;
         this._set_state(ACTIVE_STATE);
-        this._set_animation(this._display.normal, NORMAL_DISPLAY);  
+        this._set_animation(this.displayAnim.normal, NORMAL_DISPLAY);  
         this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnActivated, this.inst);  
 	};  	
 	behinstProto._goto_inactive_state = function ()
 	{
-	    this._init_activated = null;	    
-        this._touch_src = null;
+	    this.initActivated = null;	    
+        this.touchSrc = null;
         this._set_state(INACTIVE_STATE);
-        this._set_animation(this._display.inactive, INACTIVE_DISPLAY);      
+        this._set_animation(this.displayAnim.inactive, INACTIVE_DISPLAY);      
         this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnInactivated, this.inst);
 	};  
 	behinstProto.cancel_click_detecting = function ()
@@ -361,11 +363,12 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.finish_click_detecting = function ()
 	{
         this._set_state(CLICKED_STATE);
-        this._set_animation(this._display.click, CLICKED_DISPLAY);
+        this._set_animation(this.displayAnim.click, CLICKED_DISPLAY);
+        this.isSetStateInAction = false;         
         this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnClick, this.inst);  
-        if (this._auto_CLICK2ACTIVE)
+        if (this.isAutoCLICK2ACTIVE && !this.isSetStateInAction)
         {
-            this._set_animation(this._display.normal, NORMAL_DISPLAY);  
+            this._set_animation(this.displayAnim.normal, NORMAL_DISPLAY);  
             this._set_state(ACTIVE_STATE);
         }
 	};  
@@ -373,7 +376,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.GetX = function()
 	{
         var touch_obj = this.type.touchwrap;
-        var src = (touch_obj.IsMouseMode())? 0: this._touch_src;
+        var src = (touch_obj.IsMouseMode())? 0: this.touchSrc;
 		this.type.GetX.call(touch_obj, 
                             touch_obj.fake_ret, src, this.inst.layer.index);
         return touch_obj.fake_ret.value;          
@@ -382,7 +385,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto.GetY = function()
 	{
         var touch_obj = this.type.touchwrap;
-        var src = (touch_obj.IsMouseMode())? 0: this._touch_src;        
+        var src = (touch_obj.IsMouseMode())? 0: this.touchSrc;        
 		this.type.GetY.call(touch_obj, 
                             touch_obj.fake_ret, src, this.inst.layer.index);
         return touch_obj.fake_ret.value;         
@@ -390,12 +393,12 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-	    var activated = (this._state != INACTIVE_STATE);
+	    var activated = (this.buttonState != INACTIVE_STATE);
 		return { "en": activated,
-                 "fn": this._display.normal,
-                 "fc": this._display.click,
-                 "fi": this._display.inactive,
-                 "fr": this._display.rollingin};
+                 "fn": this.displayAnim.normal,
+                 "fc": this.displayAnim.click,
+                 "fi": this.displayAnim.inactive,
+                 "fr": this.displayAnim.rollingin};
 	};
 	
 	behinstProto.loadFromJSON = function (o)
@@ -405,17 +408,17 @@ cr.behaviors.Rex_Button2 = function(runtime)
 		    this._goto_active_state();
 		else
 		    this._goto_inactive_state(); 
-        this._display.normal = o["fn"];
-        this._display.click = o["fc"];
-        this._display.inactive = o["fi"];
-        this._display.rollingin = o["fr"];           
+        this.displayAnim.normal = o["fn"];
+        this.displayAnim.click = o["fc"];
+        this.displayAnim.inactive = o["fi"];
+        this.displayAnim.rollingin = o["fr"];           
 	};
 	
 	behinstProto._cmd_goto_state = function (state)
 	{
-	    if (state == this._state)  // state does not change
+	    if (state == this.buttonState)  // state does not change
 	        return;
-	    if (this._state == CLICK_DETECTING_STATE)
+	    if (this.buttonState == CLICK_DETECTING_STATE)
 	        this.cancel_click_detecting();	
 	        
 	    if (state == ACTIVE_STATE)       
@@ -430,7 +433,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 		propsections.push({
 			"title": this.type.name,
 			"properties": [
-				{"name": "State", "value": state2name[this._state]},
+				{"name": "State", "value": state2name[this.buttonState]},
 			]
 		});
 	};
@@ -487,6 +490,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 
 	Acts.prototype.GotoACTIVE = function (_layer)
 	{
+        this.isSetStateInAction = true;        
 	    var state = ACTIVE_STATE;
 	    if ((_layer!= null) && (this.inst.layer != _layer))
 	        state = INACTIVE_STATE;	    
@@ -495,6 +499,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	
 	Acts.prototype.GotoINACTIVE = function (_layer)
 	{	
+        this.isSetStateInAction = true;     
 	    var state = INACTIVE_STATE;
 	    if ((_layer!= null) && (this.inst.layer != _layer))
 	        state = ACTIVE_STATE;	  	    
@@ -504,10 +509,10 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	Acts.prototype.SetDisplay = function (display_normal, display_click, display_inactive, display_rollingin)
 	{
         // check sprite
-        this._display.normal = display_normal;
-        this._display.click = display_click;
-        this._display.inactive = display_inactive;
-        this._display.rollingin = display_rollingin;        
+        this.displayAnim.normal = display_normal;
+        this.displayAnim.click = display_click;
+        this.displayAnim.inactive = display_inactive;
+        this.displayAnim.rollingin = display_rollingin;        
         this._init();
 	};   
 	 
@@ -534,11 +539,11 @@ cr.behaviors.Rex_Button2 = function(runtime)
 
 	Exps.prototype.CurState = function (ret)
 	{
-	    ret.set_string(state2name[this._state]);
+	    ret.set_string(state2name[this.buttonState]);
 	};	
 	
 	Exps.prototype.PreState = function (ret)
 	{
-	    ret.set_string(state2name[this._pre_state]);
+	    ret.set_string(state2name[this.buttonPreState]);
 	};
 }());

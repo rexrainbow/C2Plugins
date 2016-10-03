@@ -272,7 +272,7 @@ AddExpression(42, ef_return_string, "Get custom data of cells", "Custom data", "
 AddExpression(51, ef_return_number, "Get current OY", "OY", "OY", 
               "Get current OY.");
 AddExpression(52, ef_return_number, "Get bottom OY", "OY", "BottomOY", 
-              "Get bottom OY.");     
+              "Get bottom OY for showing the last cell, i.e. Scrollable length of current grid table.");     
 AddExpression(53, ef_return_number, "Get top OY", "OY", "TopOY", 
               "Get top OY.");    
 AddExpression(54, ef_return_number, "Get last bound of OY", "Bound", "LastBoundOY", 

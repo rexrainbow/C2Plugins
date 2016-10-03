@@ -62,7 +62,15 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-	    this.cache = {};	    
+	    this.cache = {};	// timers cache    
+        /*
+        {
+            "state":1=run, 0=paused
+            "start": timstamp, updated when resumed
+            "acc": delta-time, updated when paused
+        }
+        */
+        
 	    this.pending_save = {};  // keys
 	    this.waiting_save = {};
 	    this.pending_remove = {};
@@ -70,8 +78,6 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
         this.current_key = null;
         this.exp_Time = 0;
         this.exp_ErrorMessage = "";
-        
-        this.runtime.tick2Me(this);
 	};
 
 	function getErrorString(err)
@@ -90,56 +96,124 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 			return "unknown error";
 	};
 	
-    instanceProto.tick2 = function()
-    { 
-        var job_name, t, self=this;
-        for (job_name in this.pending_save)
+    instanceProto.GetTimer = function(key, onCompleted)
+    {
+        if (this.cache.hasOwnProperty(key))
         {
-            if (this.waiting_save.hasOwnProperty(job_name))
-                continue;
-                
-            // do writting
-            if (!t)
-                t = new Date().getTime();
-               
-            this.cache[job_name] = t;               
-            this.waiting_save[job_name] = true;
-		    localforage["setItem"](job_name, t, function (err, valueSet)
-		    {
-		    	if (err)
-		    	{
-		    		self.exp_ErrorMessage = getErrorString(err);
-		    		self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
-		    	}
-		    	else
-		    	{
-		    		delete self.waiting_save[job_name];
-		    	}
-		    });            
-            
-            delete this.pending_save[job_name];
+            onCompleted(null, this.cache[key]);
+            return;
         }
-        
-        
-        for (job_name in this.pending_remove)
-        {         
-            localforage["removeItem"](job_name);  
+        else
+        {
+		    var self = this;
+            var callback = function(err, value)
+            {
+                if (err)
+                {
+                    if (this.cache.hasOwnProperty(key))
+                        delete this.cache[key];
+                }
+                else if (value == null)
+                {
+                    if (self.cache.hasOwnProperty(key))
+                        delete self.cache[key];
+                }
+                else
+                {
+                    self.cache[key] = value;
+                }
+                
+                onCompleted(err, value);                
+            }
+		    localforage["getItem"](key, callback);
         }
     };
+
+    var startTimer = function(timer, curTimestamp)
+    {        
+        if (!timer)
+            timer = {};
+        
+        if (!curTimestamp)
+            curTimestamp = (new Date()).getTime();
+        
+        timer["state"] = 1;        
+        timer["start"] = curTimestamp;
+        timer["acc"] = 0; 
+        return timer;
+    };
+    var getElapsedTime = function(timer, curTimestamp)
+    {
+        if (!timer)
+            return 0;
+        
+        if (!curTimestamp)
+            curTimestamp = (new Date()).getTime();        
+        
+        var deltaTime = timer["acc"];
+        if (timer["state"] === 1)
+            deltaTime += (curTimestamp - timer["start"]);
+        
+        return deltaTime;
+    };
+    var pauseTimer = function(timer)
+    {
+        if ((!timer) || (timer["state"] === 0))
+            return;
+
+        timer["state"] = 0;
+        
+        var curTime = (new Date()).getTime();
+        timer["acc"] += (curTime - timer["start"]);
+    };
+    var resumeTimer = function(timer)
+    {
+        if ((!timer) || (timer["state"] === 1))
+            return;
+
+        timer["state"] = 1;
+        timer["start"] = (new Date()).getTime();        
+    };        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 
-	Cnds.prototype.OnGetElapsedTime = function (key)
-	{
-		return this.current_key === key;
-	};
-
 	Cnds.prototype.OnError = function (key)
 	{
 		return true;
+	};
+    
+	Cnds.prototype.OnGetTimer = function (key)
+	{
+		return (this.current_key === key);
+	};
+    
+	Cnds.prototype.OnStartTimer = function (key)
+	{
+		return (this.current_key === key);
 	};	
+    
+	Cnds.prototype.OnRemoveTimer = function (key)
+	{
+		return (this.current_key === key);
+	};	    
+    
+	Cnds.prototype.OnPauseTimer = function (key)
+	{
+		return (this.current_key === key);
+	};	     
+    
+	Cnds.prototype.OnResumeTimer = function (key)
+	{
+		return (this.current_key === key);
+	};	    
+    
+	Cnds.prototype.IsValid = function (key)
+	{
+		return this.cache.hasOwnProperty(key);
+	};	     
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -147,51 +221,182 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 
 	Acts.prototype.StartTimer = function (key)
 	{
-        this.pending_save[key] = true;    
+        this.cache[key] = startTimer( this.cache[key] ); 
         
-        if (this.pending_remove.hasOwnProperty(key))
-            delete this.pending_remove[key];
+        var self=this;
+        var onWriteTimer = function(err, valueSet)
+		{
+            self.current_key = key;             
+			if (err)
+			{
+				self.exp_ErrorMessage = getErrorString(err);
+				self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+			}
+            else
+            {
+                self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnStartTimer, self);
+            }
+		};
+		localforage["setItem"](key, this.cache[key], onWriteTimer);
 	};	
 
 	Acts.prototype.RemoveTimer = function (key)
 	{
-        this.pending_remove[key] = true;   
-        	    
-	    if (this.pending_save.hasOwnProperty(key))
-            delete this.pending_save[key];
-            
 	    if (this.cache.hasOwnProperty(key))
-            delete this.cache[key];             
+            delete this.cache[key]; 
+
+        var self=this;
+        var callback = function(err)
+		{
+            self.current_key = key;                
+			if (err)
+			{
+				self.exp_ErrorMessage = getErrorString(err);
+				self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+			}
+            else
+            {
+                self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnRemoveTimer, self);
+            }            
+		};
+		localforage["removeItem"](key, callback);        
 	};	
-	
-	Acts.prototype.GetElapsedTime = function (key)
+
+    
+	Acts.prototype.PauseTimer = function (key)
 	{
-	    if (this.cache.hasOwnProperty(key))
-	    {
-	        this.current_key = key;
-	        this.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnGetElapsedTime, this);
-	    }
-	    else
-	    {
-		    var self = this;
-		    localforage["getItem"](key, function (err, value)
+        var self=this;
+        var onGetTimer = function(err, timer)
+        {        
+		    if (err)
 		    {
-		    	if (err)
-		    	{		
-		    		delete self.cache[key];
-    	            self.exp_ErrorMessage = getErrorString(err);		    		
-		    		self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
-		    	}
-		    	else
-		    	{
-                    self.cache[key] = value;
-		    	}
+                self.current_key = key;                
+    	        self.exp_ErrorMessage = getErrorString(err);		    		
+		    	self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+		    }
+		    else
+		    {
+                if (timer == null)
+                    return;
                 
-                self.current_key = key;
-                self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnGetElapsedTime, self);
-		    });
-	    }     
+                pauseTimer(self.cache[key]);
+                
+                var onWriteTimer = function(err, valueSet)
+		        {
+                    self.current_key = key;                     
+		        	if (err)
+		        	{
+		        		self.exp_ErrorMessage = getErrorString(err);
+		        		self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+		        	}
+                    else
+                    {
+                        self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnPauseTimer, self);
+                    }
+		        };
+		        localforage["setItem"](key, self.cache[key], onWriteTimer);
+		    }
+        }
+        this.GetTimer(key, onGetTimer);        
+	};	
+    
+	Acts.prototype.ResumeTimer = function (key)
+	{
+        var self=this;
+        var onGetTimer = function(err, timer)
+        {       
+		    if (err)
+		    {
+                self.current_key = key;                     
+    	        self.exp_ErrorMessage = getErrorString(err);		    		
+		    	self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+		    }
+		    else
+		    {
+                if (timer == null)
+                    return;
+                
+                resumeTimer(self.cache[key]);
+                
+                var onWriteTimer = function(err, valueSet)
+		        {
+                    self.current_key = key;                    
+		        	if (err)
+		        	{
+		        		self.exp_ErrorMessage = getErrorString(err);
+		        		self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+		        	}
+                    else
+                    {
+                        self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnResumeTimer, self);
+                    }
+		        };
+		        localforage["setItem"](key, self.cache[key], onWriteTimer);
+		    }
+        }
+        this.GetTimer(key, onGetTimer);        
 	};	    
+
+	Acts.prototype.GetORStartTimer = function (key)
+	{        
+        var self=this;        
+        var onGetTimer = function(err, timer)
+        {
+            if (err)
+            {
+                self.current_key = key;                     
+    	        self.exp_ErrorMessage = getErrorString(err);		    		
+		    	self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+            }
+            
+            // start timer
+            else if (timer == null)
+            {              
+                self.cache[key] = startTimer( self.cache[key] );                 
+                var onWriteTimer = function(err, valueSet)
+		        {
+                    self.current_key = key;             
+		        	if (err)
+		        	{
+		        		self.exp_ErrorMessage = getErrorString(err);
+		        		self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+		        	}
+                    else
+                    {
+                        self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnGetTimer, self);
+                    }
+		        };
+		        localforage["setItem"](key, self.cache[key], onWriteTimer);
+            }
+            
+            // get timer
+            else
+            {
+                self.current_key = key;  
+                self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnGetTimer, self);
+            }
+        }
+        this.GetTimer(key, onGetTimer);           
+	};	    
+	
+	Acts.prototype.GetTimer = function (key)
+	{
+        var self=this;
+        var onGetTimer = function(err, timer)
+        {
+            self.current_key = key;            
+		    if (err)
+		    {
+    	        self.exp_ErrorMessage = getErrorString(err);		    		
+		    	self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnError, self);
+		    }
+		    else
+		    {
+                self.runtime.trigger(cr.plugins_.Rex_TimeAwayL.prototype.cnds.OnGetTimer, self);
+		    }
+        }
+        this.GetTimer(key, onGetTimer);
+	};
     
 	//////////////////////////////////////
 	// Expressions
@@ -208,22 +413,7 @@ cr.plugins_.Rex_TimeAwayL = function(runtime)
 	    if (!timer_name)
 	        timer_name = this.current_key;	    
 	      
-	    var delta;
-	    if (this.cache.hasOwnProperty(timer_name))
-	    {  
-	        var pretime = this.cache[timer_name];	    
-            var nowtime = new Date().getTime();
-            if (pretime === null)
-                delta = 0;
-            else
-                delta = (nowtime - pretime)/1000;
-	    }
-	    else
-	    {
-	        delta = 0;
-	    }
-	
-        ret.set_float(delta);
+		ret.set_float( getElapsedTime(this.cache[timer_name])/1000 );        
 	};
 	
 }());

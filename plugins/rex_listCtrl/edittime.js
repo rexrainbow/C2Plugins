@@ -214,7 +214,7 @@ AddExpression(22, ef_return_string, "Get custom data of lines", "Custom data", "
 AddExpression(31, ef_return_number, "Get current OY", "OY", "OY", 
               "Get current OY.");                   
 AddExpression(32, ef_return_number, "Get bottom OY", "OY", "BotomOY", 
-              "Get bottom OY.");     
+              "Get bottom OY for showing the last cell, i.e. Scrollable length of current grid table.");    
 AddExpression(33, ef_return_number, "Get top OY", "OY", "TopOY", 
               "Get top OY.");              
                           

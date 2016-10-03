@@ -42,7 +42,7 @@ cr.plugins_.Rex_ToneJS_noisesynth = function(runtime)
     var NOISE_MAP = ["white", "brown", "pink"];
 	instanceProto.onCreate = function()
 	{
-        this.synth = new window["Tone"]["Synth"]();
+        this.synth = new window["Tone"]["NoiseSynth"]();
 	};
     
 	instanceProto.onDestroy = function ()

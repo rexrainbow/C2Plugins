@@ -123,32 +123,8 @@ AddComboParamOption("voice1");
 AddComboParam("Voice", "Voice type.", 0);
 AddAction(51, 0, "Set filter envelope", "Filter envelope", 
           "<i>{7}</i>: set filter envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>, base frequency to <i>{4}</i>, octaves to <i>{5}</i>, exponent to <i>{6}</i>", 
-          "Set filter envelope.", "SetFilterEnvelope");
-          
-// Filter     
-AddComboParamOption("lowpass");
-AddComboParamOption("highpass");
-AddComboParamOption("bandpass");
-AddComboParamOption("lowshelf");
-AddComboParamOption("highshelf");
-AddComboParamOption("notch");
-AddComboParamOption("allpass");
-AddComboParamOption("peaking");
-AddComboParam("Type", "The type of the filter.", 0);     
-AddComboParamOption("-12");
-AddComboParamOption("-24");
-AddComboParamOption("-48");
-AddComboParamOption("-96");
-AddComboParam("Rolloff", "The rolloff of the filter which is the drop in db per octave. Implemented internally by cascading filters.", 1);  
-AddNumberParam("Q", "The Q or Quality of the filter", 1);
-AddNumberParam("Gain", "The gain of the filter, only used in certain filter types.", 0);
-AddComboParamOption("voice0");
-AddComboParamOption("voice1");
-AddComboParam("Voice", "Voice type.", 0);
-AddAction(61, 0, "Set filter", "Filter", 
-          "<i>{3}</i>: set filter to <i>{0}</i>, Q to <i>{1}</i>, gain to <i>{2}</i>", 
-          "Set filter.", "SetFilter");          
-                              
+          "Set filter envelope.", "SetFilterEnvelope");  
+                    
           
 //////////////////////////////////////////////////////////////
 // Expressions

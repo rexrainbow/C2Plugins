@@ -564,7 +564,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         if (totalRowsHeight > inst_height)
             h = totalRowsHeight - inst_height;
         else
-            h = totalRowsHeight;
+            h = 0;
         
         return h;
 	};    
@@ -1298,7 +1298,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 
 	LinesMgrKlassProto.SetLinesCount = function(cnt)
 	{
-        var end = this.GetLinesCount();
+        var end = this.GetLinesCount();        
         if (end > cnt)
         {
             var i, line;
@@ -1323,6 +1323,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
                 this.lines[i] = null;
             }
         }
+        
+        if (Math.floor(end/this.colNum) !== Math.floor(cnt/this.colNum))
+            this.totalRowsHeight = null;        
 	};
     
 	LinesMgrKlassProto.SetColNum = function(colNum)
@@ -1331,6 +1334,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
             return false;
         
         this.colNum = colNum;
+        this.totalRowsHeight = null;   
         return true;
 	};    
     

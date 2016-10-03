@@ -51,13 +51,16 @@ cr.plugins_.Rex_Date = function(runtime)
         */
 	};
 
-    var startTimer = function(timer)
-    {
+    var startTimer = function(timer, curTimestamp)
+    {        
         if (!timer)
             timer = {};
         
-        timer["state"] = 1;
-        timer["start"] = (new Date()).getTime();
+        if (!curTimestamp)
+            curTimestamp = (new Date()).getTime();
+        
+        timer["state"] = 1;        
+        timer["start"] = curTimestamp;
         timer["acc"] = 0; 
         return timer;
     };

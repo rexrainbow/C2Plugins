@@ -10,7 +10,7 @@
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		pf_deprecated
+		"flags":		0
 	};
 };
 
