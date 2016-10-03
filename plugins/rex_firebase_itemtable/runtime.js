@@ -396,6 +396,15 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 
 		return false;
 	};	
+    
+	Cnds.prototype.OnCleanAllComplete = function ()
+	{
+	    return true;
+	}; 
+	Cnds.prototype.OnCleanAllError = function ()
+	{
+	    return true;
+	};    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -558,6 +567,18 @@ cr.plugins_.Rex_Firebase_ItemTable = function(runtime)
 	    this.disconnectRemove_absRefs[ref["toString"]()] = true;
 	};
     
+    Acts.prototype.CleanAll = function ()
+	{
+        var self=this;
+        var onComplete = function(error)
+        {
+	        var trig = (!error)? cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnCleanAllComplete:
+	                                    cr.plugins_.Rex_Firebase_ItemTable.prototype.cnds.OnCleanAllError;
+	        self.runtime.trigger(trig, self);  
+        };
+	    var ref = this.get_ref();	
+        ref["remove"](onComplete);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

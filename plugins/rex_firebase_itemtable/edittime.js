@@ -51,7 +51,15 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each itemID", "Load",
 AddStringParam("ID", "ID of item.", '""');
 AddCondition(13, cf_looping | cf_not_invertible, "For each key", "Load", 
              "For each key in item: <i>{0}</i>", 
-             "Repeat the event for each key of a item of load result.", "ForEachKey");             
+             "Repeat the event for each key of a item of load result.", "ForEachKey");
+
+AddCondition(31, cf_trigger, "On remove all complete", "Remove", 
+            "On remove all complete",
+            "Triggered when remove all items complete.", "OnCleanAllComplete");
+
+AddCondition(32, cf_trigger, "On remove all error", "Remove", 
+            "On remove all error",
+            "Triggered when remove all items error.", "OnCleanAllError");             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Domain", "The root location of the Firebase data.", '""');
