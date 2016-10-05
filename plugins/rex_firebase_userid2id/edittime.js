@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Mapping between UserID and another alias ID.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_Firebase_userID2ID.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_Firebase_userID2ID.html",
 		"category":		"Rex - Web - firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

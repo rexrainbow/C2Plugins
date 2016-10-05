@@ -5,7 +5,7 @@
 		"id":			"Rex_filechooser_media",
 		"description":	"Accept media(camera/microphone/camcorder) input.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/eex_filechooser_media.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/eex_filechooser_media.html",
 		"category":		"Rex - filechooser helper",
 		"flags":		bf_onlyone
 	};

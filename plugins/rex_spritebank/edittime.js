@@ -6,7 +6,7 @@
 		"version":		"0.8",            
 		"description":	"(Deprecated) Save/Load sprites.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_spritebank.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_spritebank.html",
 		"category":		"Data & Storage",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

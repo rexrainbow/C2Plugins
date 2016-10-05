@@ -49,6 +49,7 @@ cr.behaviors.Rex_text_resize = function(runtime)
         this.minHeight = this.properties[2];
         
         this.maxWidth = this.inst.width;
+        this.maxHeight = this.inst.height;
         this.is_resize_now = false;
         this.background_objects = {};        
         this.pre_width = this.inst.width;
@@ -210,8 +211,8 @@ cr.behaviors.Rex_text_resize = function(runtime)
         var my_width = this.inst.width;
         var my_height = this.inst.height;
         
-        var dw = this.inst.width - this.pre_width;
-        var dh = this.inst.height - this.pre_height;
+        var dw = this.inst.width - this.maxWidth;
+        var dh = this.inst.height - this.maxHeight;
         var w, h;
         
         var uid, bg_obj, bg_inst, resize_mode;
@@ -221,8 +222,8 @@ cr.behaviors.Rex_text_resize = function(runtime)
             bg_inst = bg_obj["inst"];
             resize_mode = bg_obj["rm"];
             
-            w = bg_inst.width + dw;
-            h = bg_inst.height + dh;
+            w = bg_obj["maxw"] + dw;
+            h = bg_obj["maxh"] + dh;
             if (resize_mode === 0)
             {
                 if (  (bg_inst.width !== w) || (bg_inst.height !== h)  )
@@ -324,16 +325,22 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-	    var uid, bg_insts_save = {};
+	    var uid, bg_insts_save = {}, bgInfo;
 	    for (uid in this.background_objects)
 	    {
-	        bg_insts_save[uid] = this.background_objects[uid]["rm"];
+            bgInfo = this.background_objects[uid];
+	        bg_insts_save[uid] = {
+               "rm": bgInfo["rm"],
+               "maxw": bgInfo["maxw"],
+               "maxh": bgInfo["maxh"],
+            };
 	    }
 	    
 		return {
             "minw":this.minWidth,
             "minh":this.minHeight,
 			"maxw": this.maxWidth,
+            "maxh": this.maxHeight,
             "pw": this.pre_width,
             "ph": this.pre_height,
             "bg": bg_insts_save,
@@ -345,6 +352,7 @@ cr.behaviors.Rex_text_resize = function(runtime)
         this.minWidth = o["minw"];
         this.minHeight = o["minh"];
 		this.maxWidth = o["maxw"];
+        this.maxHeight = o["maxh"];
 		this.pre_width = o["pw"];
 		this.pre_height = o["ph"];		
 		this.bgInsts_save = o["bg"];
@@ -359,13 +367,12 @@ cr.behaviors.Rex_text_resize = function(runtime)
 	    var bg_inst, rm;
 	    for(uid in this.bgInsts_save)
 	    {
-	        rm = this.bgInsts_save[uid];
+            uid = parseInt(uid);
 	        bg_inst = this.runtime.getObjectByUID(uid);
 	        assert2(bg_inst, "Failed to find background object by UID");
 	        
-	        this.background_objects[parseInt(uid)] = { "inst": bg_inst, 
-	                                                   "rm":rm };
-	                                         	                                        
+	        this.background_objects[uid] = this.bgInsts_save[uid];
+            this.background_objects[uid]["inst"] = bg_inst;  
 	    }   
 	    
 	    this.bgInsts_save = null; 
@@ -415,8 +422,12 @@ cr.behaviors.Rex_text_resize = function(runtime)
 		if (!inst)
 			return;
 	
-        var bg_obj = {"inst":inst, 
-                      "rm": resize_mode};
+        var bg_obj = {
+            "inst":inst, 
+            "rm": resize_mode,
+            "maxw": inst.width,
+            "maxh": inst.height,
+        };
                       
         this.background_objects[inst.uid] = bg_obj;
 	};	

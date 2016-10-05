@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Play youtube video at iframe.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_youtube_player.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_youtube_player.html",
 		"category":		"Web - Youtube",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Move mini board logically and physically on main board.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_miniboard_move.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_miniboard_move.html",
 		"category":		"Rex - Board - application - mini board",
 		"flags":		0	
 						| bf_onlyone

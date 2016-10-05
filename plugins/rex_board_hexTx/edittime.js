@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Transfer logic position to physical position with hexagonal layout",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_board_hexTx.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board_hexTx.html",
 		"category":		"Rex - Board - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

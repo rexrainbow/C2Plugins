@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get user data from Bahamut website. http://www.gamer.com.tw/",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_bahamut.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bahamut.html",
 		"category":		"Rex - Web - YQL",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

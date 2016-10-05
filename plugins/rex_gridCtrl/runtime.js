@@ -1138,6 +1138,11 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 		ret.set_int(this.lines_mgr.colNum);
 	};		
 	
+    Exps.prototype.CellHeight = function (ret, cell_index)
+	{ 
+		ret.set_int(this.lines_mgr.GetRowHeight(cell_index));
+	};		
+    
     Exps.prototype.ListHeight = function (ret)
 	{ 
 		ret.set_float(this.lines_mgr.GetTotalRowsHeight());

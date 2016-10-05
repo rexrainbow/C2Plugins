@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Provide 2d/3d perlin noise and simplex noise . Reference: https://github.com/josephg/noisejs/blob/master/perlin.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_noisejsmod.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_noisejsmod.html",
 		"category":		"Rex - Random",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

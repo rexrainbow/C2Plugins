@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Shape map of hex grid",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_hexshapemap.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_hexshapemap.html",
 		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

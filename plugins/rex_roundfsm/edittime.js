@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"A finite state machine to descript a round",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_roundfsm.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_roundfsm.html",
 		"category":		"Control flow",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

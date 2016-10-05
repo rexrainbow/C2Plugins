@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Upload image to parse server, then get public URL.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_parse_fileupload.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_fileupload.html",
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

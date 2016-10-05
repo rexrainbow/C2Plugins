@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Leader board built on firebase.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_leaderboard.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_leaderboard.html",
 		"category":		"Rex - Web - firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

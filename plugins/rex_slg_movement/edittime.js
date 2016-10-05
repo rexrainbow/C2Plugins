@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Movement on the chess board of strategy game.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_slg_movement.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_slg_movement.html",
 		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

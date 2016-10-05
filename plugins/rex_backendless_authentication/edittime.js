@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Authentication which is provided by backendless. https://backendless.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_backendless_authentication.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendless_authentication.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -53,8 +53,16 @@ AddCondition(34, cf_trigger, "On logged out error", "General - logged out",
             
 AddCondition(35, 0, "Is login", "General - login", 
             "Is login", 
-            "Return true if logging now.", "IsLogin");     
-            
+            "Return true if logging now.", "IsLogin"); 
+
+AddCondition(41, cf_trigger, "On get valid session", "General - session", 
+            "On get valid session", 
+            "Triggered when get valid session.", "OnGetValidSession");	
+
+AddCondition(42, cf_trigger, "On get invalid session", "General - session", 
+            "On get invalid session", 
+            "Triggered when get invalid session.", "OnGetInvalidSession");	  
+
 AddCondition(121, cf_trigger, "On updating user data", "User data", 
             "On update user data success", 
             "Triggered when updating user data success.", "OnUpdateUserDataSuccessfully");
@@ -106,8 +114,12 @@ AddAction(23, 0, "Login by twitter", "Authentication provider",
 // general         
 AddAction(31, 0, "Logging out", "General", 
           "Logging out current account", 
-          "Logging out current account.", "LoggingOut");                           
-          
+          "Logging out current account.", "LoggingOut");    
+
+// Validating User Login          
+AddAction(41, 0, "Test session", "Session", 
+          "Test session", 
+          "Test if current session is valided.", "IsValidLogin");                     
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);

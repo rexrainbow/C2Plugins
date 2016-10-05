@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"API of real time database-as-a-service. https://www.wilddog.com/ It is compatiable with firebase service.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_wilddogapi.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_wilddogapi.html",
 		"category":		"Rex - Web - Wild dog",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

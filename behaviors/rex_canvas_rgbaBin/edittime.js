@@ -5,7 +5,7 @@
 		"id":			"Rex_Canvas_rgbaBin",
 		"description":	"Get Bins of RGBA from the canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_canvas_rgbabin.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_rgbabin.html",
 		"category":		"Rex - Canvas - Color analysis",
 		"dependency":	"rgbaBin.js",        
 		"flags":		bf_onlyone,

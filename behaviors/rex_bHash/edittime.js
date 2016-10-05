@@ -5,7 +5,7 @@
 		"id":			"Rex_bHash",
 		"description":	"Access JSON structure table.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_bhash.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bhash.html",
 		"category":		"Rex - Data structure - JSON",
 		"flags":		0
 	};

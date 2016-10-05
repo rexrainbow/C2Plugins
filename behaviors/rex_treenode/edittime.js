@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Get parent or children instance(s) from a tree.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_treenode.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_treenode.html",
 		"category":		"General",
 		"flags":		bf_onlyone
 	};

@@ -6,7 +6,7 @@
 		"version":		"1.0",
 		"description":	"Run other events in an action, like functions in programming languages.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_function2.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function2.html",
 		"category":		"Rex - Logic - function",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

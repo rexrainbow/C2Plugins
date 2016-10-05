@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get moveable or moving path on the graph.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_graph_movement.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_graph_movement.html",
 		"category":		"Rex - Graph - Application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

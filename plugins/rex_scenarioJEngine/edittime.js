@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Execute Scenario-Json commands.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_scenariojengine.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_scenariojengine.html",
 		"category":		"Rex - Script",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

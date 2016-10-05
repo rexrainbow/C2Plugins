@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Send/receive messages.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_backendless_message.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendless_message.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

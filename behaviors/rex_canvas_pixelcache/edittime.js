@@ -5,7 +5,7 @@
 		"id":			"Rex_Canvas_PixelCahce",
 		"description":	"Read pixels from canvas, modify, then write back to canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_canvas_pixelcahce.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_pixelcahce.html",
 		"category":		"Rex - Canvas helper",
 		"flags":		0,
         "dependency":	"zlib_and_gzip.min.js"

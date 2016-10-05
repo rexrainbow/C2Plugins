@@ -5,7 +5,7 @@
 		"id":			"Rex_LJ_potential",
 		"description":	"Lennard-Jones potential formula - ( (A/r^n)-(B/r^m) ) for attracting or rejecting objects.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_lj_potential.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_lj_potential.html",
 		"category":		"Rex - AI",
 		"flags":		bf_onlyone
 	};

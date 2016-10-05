@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Accept request when cooldown",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_cooldown.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_cooldown.html",
 		"category":		"Rex - Timeline",
 		"flags":		0
 	};

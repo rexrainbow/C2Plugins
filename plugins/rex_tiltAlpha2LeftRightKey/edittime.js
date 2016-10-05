@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get left or right key event from tilt's alpha input.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tiltAlpha2LeftRightKey.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_tiltAlpha2LeftRightKey.html",
 		"category":		"Input",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

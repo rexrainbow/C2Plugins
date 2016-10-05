@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Fire the trigger when time-out.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_timer.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_timer.html",
 		"category":		"Rex - Timeline",
 		"flags":		0
 	};

@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Achievements in csv table.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_achievements.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_achievements.html",
 		"category":		"Rex - Data structure - CSV",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

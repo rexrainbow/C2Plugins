@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Items table indexed by (itemID, key), supports writing an item or reading items back.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_backendless_itemtable.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendless_itemtable.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

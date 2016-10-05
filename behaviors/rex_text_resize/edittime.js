@@ -5,7 +5,7 @@
 		"id":			"Rex_text_resize",
 		"description":	"Resize text object and background to show all lines.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_text_resize.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_text_resize.html",
 		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};

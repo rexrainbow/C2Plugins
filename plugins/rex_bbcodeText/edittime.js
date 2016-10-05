@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Displays text with bbcode protocol.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_bbcodetext.html",
+		"help url":		"",
 		"category":		"Rex - Text",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,				// can be rotated in layout

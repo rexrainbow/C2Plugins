@@ -5,7 +5,7 @@
 		"id":			"Rex_bNickname",
 		"description":	"Assign a nickname to this object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_bnickname.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_bnickname.html",
 		"category":		"Rex - Nickname",
 		"flags":		bf_onlyone
 	};

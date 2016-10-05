@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Gashapon in shuffle or random mode.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_patterngen.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_patterngen.html",
 		"category":		"Rex - Random",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -6,7 +6,7 @@
 		"version":		"2.4.2",   		
 		"description":	"API of real time database-as-a-service. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_firebaseapi.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebaseapi.html",
 		"category":		"Rex - Web - Firebase - api",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

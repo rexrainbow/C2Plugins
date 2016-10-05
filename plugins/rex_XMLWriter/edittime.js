@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Build XML structure. Reference: http://flesler.blogspot.com/2008/03/xmlwriter-for-javascript.html",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_xmlwriter.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_xmlwriter.html",
 		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

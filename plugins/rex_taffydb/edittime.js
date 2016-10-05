@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Database. Reference from http://www.taffydb.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_taffydb.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_taffydb.html",
 		"category":		"Rex - Data structure - Database",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

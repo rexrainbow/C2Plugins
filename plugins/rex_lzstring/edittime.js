@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Compress string using LZ-based compression algorithm. Reference - https://github.com/pieroxy/lz-string",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_lzstring.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_lzstring.html",
 		"category":		"Rex - String",
 		"type":			"object",			// not in layout
 		"rotatable":	false,         

@@ -6,7 +6,7 @@
 		"version":		"0.1",          
 		"description":	"Create sprites according to tmx exported file.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tmx_importer_v2.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_tmx_importer_v2.html",
 		"category":		"Rex - Board - tmx importer v2.x",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

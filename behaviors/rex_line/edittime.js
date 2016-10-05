@@ -5,7 +5,7 @@
 		"id":			"Rex_Line",
 		"description":	"Set position, angle, and width of this instance, to be a line.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_line.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_line.html",
 		"category":		"Rex - Movement - width",
 		"flags":		bf_onlyone
 	};

@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Timer service. http://api.shephertz.com/app42-docs/timer-service/",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_appwarp_timer.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_appwarp_timer.html",
         "category":		"Rex - Web - appwarp",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

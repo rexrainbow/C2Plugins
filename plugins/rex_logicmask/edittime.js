@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"A logical area to test which tiles had been entered coverage, or had been exited coverage.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_logicmask.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_logicmask.html",
 		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

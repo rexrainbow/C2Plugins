@@ -6,7 +6,7 @@
 		"version":		"1.0",           
 		"description":	"Executing instructions from a string while time-out",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_worksheet.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_worksheet.html",
 		"category":		"Rex - Script",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

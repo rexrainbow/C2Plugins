@@ -5,7 +5,7 @@
 		"id":			"Rex_bFunction2",
 		"description":	"Run other events in an action, like functions in programming languages.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_bfunction2.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bfunction2.html",
 		"category":		"Rex - Logic - function",
 		"flags":		0,
 	};

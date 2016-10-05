@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"A switch for toggling between on and off.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_pToggleSwitch.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pToggleSwitch.html",
 		"category":		"Rex - Variable",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

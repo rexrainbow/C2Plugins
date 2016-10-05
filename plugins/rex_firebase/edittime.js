@@ -6,7 +6,7 @@
 		"version":		"1.3.1",   		
 		"description":	"Real time database-as-a-service. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_firebase.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase.html",
 		"category":		"Rex - Web - Firebase - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

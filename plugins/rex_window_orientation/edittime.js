@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get orientation of window. (landspcape or portrait)",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_window_orientation.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_window_orientation.html",
 		"category":		"Input",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

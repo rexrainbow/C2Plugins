@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Asynchronous database. Reference from https://github.com/louischatriot/nedb",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_nedb.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_nedb.html",
 		"category":		"Rex - Data structure - Database",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

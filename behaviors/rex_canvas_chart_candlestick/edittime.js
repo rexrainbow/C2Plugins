@@ -5,7 +5,7 @@
 		"id":			"Rex_canvas_chart_candlestick",
 		"description":	"Draw a candlestick chart on the canvas. The api of chart - https://github.com/amih/Candlestick.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_canvas_chart_candlestick.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_candlestick.html",
 		"category":		"Rex - Canvas - Chart",
 		"flags":		0,
 		"dependency":	"Candlestick.js"	

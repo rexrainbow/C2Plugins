@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"File storage in firebase serivice (v3.x only).",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_storage.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_storage.html",
 		"category":		"Rex - Web - firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

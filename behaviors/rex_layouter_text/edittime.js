@@ -5,7 +5,7 @@
 		"id":			"Rex_layouter_text",
 		"description":	"Show text using sprites in layouter.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_layouter_text.html",
+		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_text.html",
 		"category":		"Rex - Layouter",
 		"flags":		bf_onlyone
 	};

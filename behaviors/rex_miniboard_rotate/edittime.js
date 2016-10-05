@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Spin chess on mini board logically and physically.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_miniboard_rotate.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_miniboard_rotate.html",
 		"category":		"Rex - Board - application - mini board",
 		"flags":		0	
 						| bf_onlyone

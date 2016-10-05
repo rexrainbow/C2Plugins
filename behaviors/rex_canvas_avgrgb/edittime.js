@@ -5,7 +5,7 @@
 		"id":			"Rex_CanvasAVGRGBA",
 		"description":	"Get average RGBA value from the canvas asynchronously.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_Canvasavgrgba.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_Canvasavgrgba.html",
 		"category":		"Rex - Canvas - Color analysis",
 		"dependency":	"avgRGB.js",        
 		"flags":		bf_onlyone,

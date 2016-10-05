@@ -135,8 +135,17 @@ cr.plugins_.Rex_Backendless_Authentication = function(runtime)
 	{
         return ( window["Backendless"]["UserService"]["getCurrentUser"]() != null );
 	};	
-    
-	
+
+	Cnds.prototype.OnGetValidSession = function ()
+	{
+	    return true;
+	}; 		
+
+	Cnds.prototype.OnGetInvalidSession = function ()
+	{
+	    return true;
+	};     
+   
 	Cnds.prototype.OnUpdateUserDataSuccessfully = function ()
 	{
 	    return true;
@@ -233,6 +242,12 @@ cr.plugins_.Rex_Backendless_Authentication = function(runtime)
         var handler = getHandler(this, cnds.OnLoggedOut, cnds.OnLoggedOutError);
         window["Backendless"]["UserService"]["logout"]( handler );
 	};
+		
+    Acts.prototype.IsValidLogin = function ()
+	{
+        var handler = getHandler(this, cnds.OnGetValidSession, cnds.OnGetInvalidSession);
+        window["Backendless"]["UserService"]["isValidLogin"]( handler );
+	};    
     
     Acts.prototype.SetValue = function (key_, value_)
 	{

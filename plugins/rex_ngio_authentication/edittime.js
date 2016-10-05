@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Authentication which is provided by Newgrounds.io.",        
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_ngio_authentication.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ngio_authentication.html",
 		"category":		"Rex - Web - newgrounds.io",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

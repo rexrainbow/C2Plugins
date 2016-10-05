@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Info window of google map.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_googlemap_infowindow.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_googlemap_infowindow.html",
 		"category":		"Rex - Web - Google map",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

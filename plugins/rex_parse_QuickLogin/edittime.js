@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Try to login parse server. Creates account if it had not existed.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_parse_quicklogin.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_quicklogin.html",
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

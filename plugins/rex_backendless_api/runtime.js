@@ -124,21 +124,13 @@ cr.plugins_.Rex_BackendlessAPI.onInitCallbacks = [];
     var klasses = {};    
     var createKlass = function (name)
     {
-        var fnObj;
-        if (klasses.hasOwnProperty(name))
+        if (!klasses.hasOwnProperty(name))
         {
-            fnObj = klasses[name];
+            var s = "(function "+ name + "() {this.___class="+ name + ";})";  
+            klasses[name] = eval(s);
         }
-        else
-        {
-            fnObj = function() 
-            { 
-                this["___class"] = name;
-            };
-            Object.defineProperty(fnObj, "name", {"value":name});      
-            klasses[name] = fnObj; 
-        }
-        return fnObj;
+        
+        return klasses[name];
     };    
     
     window.BackendlessGetKlass = createKlass;

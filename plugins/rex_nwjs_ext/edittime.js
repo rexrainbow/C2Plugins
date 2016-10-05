@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Extend function of nw.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_nwjsext.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_nwjsext.html",
 		"category":		"Rex - NW.js",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

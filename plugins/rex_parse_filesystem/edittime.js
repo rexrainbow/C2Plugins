@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"File system to save files and folders.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_parse_filesystem.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_parse_filesystem.html",
 		"category":		"Rex - Web - parse",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

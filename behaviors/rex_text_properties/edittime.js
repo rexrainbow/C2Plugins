@@ -5,7 +5,7 @@
 		"id":			"Rex_text_properties",
 		"description":	"Support actions to change properties of official text or sprite font object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_text_properties.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_text_properties.html",
 		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};

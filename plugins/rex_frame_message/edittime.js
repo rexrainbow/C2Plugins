@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Call function (postMessage) on other frames.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_framemessage.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_framemessage.html",
 		"category":		"Rex - Iframe",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

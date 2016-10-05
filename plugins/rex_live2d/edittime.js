@@ -5,7 +5,7 @@
 		"id":			"Rex_Live2DObj",      
 		"description":	"Load and play Live2D object. http://www.live2d.com/en",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_live2dobj.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_live2dobj.html",
 		"category":		"Rex - Live2D",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

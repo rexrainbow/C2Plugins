@@ -6,7 +6,7 @@
 		"version":		"0.1",          
 		"description":	"Graph with vertices and edges.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_topology.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_topology.html",
 		"category":		"Rex - Graph",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

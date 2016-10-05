@@ -6,7 +6,7 @@
 		"version":		"1.0",
 		"description":	"Position objects relative to the size of the window.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_anchor_mod.html",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_anchor_mod.html",
 		"category":		"Rex - Movement - position",
 		"flags":		0	
 						| bf_onlyone
