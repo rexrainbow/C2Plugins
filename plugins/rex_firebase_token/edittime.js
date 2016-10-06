@@ -7,7 +7,7 @@
 		"description":	"The first user of a group.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_token.html",
-		"category":		"Rex - Web - firebase",
+		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0

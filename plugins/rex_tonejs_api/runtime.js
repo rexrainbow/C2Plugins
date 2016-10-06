@@ -96,7 +96,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         {
             var toneObj = inst.GetObject();
             if (!toneObj)
-                return
+                return;
             
             var entry = getEntry(keys, toneObj);
             entry[lastKey] = value;            
@@ -115,7 +115,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         {
             var toneObj = inst.GetObject();
             if (!toneObj)
-                return
+                return;
             
             var entry = getEntry(keys, toneObj);
             entry[lastKey] = JSON.parse(value);
@@ -135,7 +135,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         {
             var toneObj = inst.GetObject();
             if (!toneObj)
-                return
+                return;
             
             var entry = getEntry(keys, toneObj);
             entry[lastKey] = value;
@@ -144,6 +144,21 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         forEachInst(objType, callback);
 	};     
     
+	Acts.prototype.SetJSON = function (objType, params)
+	{            
+        var self=this;
+        var callback = function(inst)
+        {
+            var toneObj = inst.GetObject();
+            if (!toneObj)
+                return;
+            
+            toneObj["set"](JSON.parse(params));
+        }
+        
+        forEachInst(objType, callback);       
+	};  
+        
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

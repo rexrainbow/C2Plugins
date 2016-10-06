@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Authentication which is provided by firebase. https://www.firebase.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_authentication.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_authentication.html",
 		"category":		"Rex - Web - Firebase - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -98,7 +98,7 @@ AddCondition(52, cf_trigger, "On link error", "Link multiple auth providers",
             "Triggered when link error.", "OnLinkError");            
 //////////////////////////////////////////////////////////////
 // Actions 
-  
+
 // email - password  
 AddStringParam("Email", "User email", '""');
 AddStringParam("Password", "User password", '""');
@@ -261,7 +261,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data. Deprecated in firebase3.x.")
+    new cr.Property(ept_text, "Domain", "", "The root location of the Firebase data. Deprecated in firebase3.x."),    
 	];
 	
 // Called by IDE when a new object type is to be created

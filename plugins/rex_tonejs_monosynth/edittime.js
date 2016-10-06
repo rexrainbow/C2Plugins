@@ -50,11 +50,6 @@ AddAction(11, 0, "Set portamento", "Portamento",
           "Set portamento to <i>{0}</i>", 
           "Set portamento.", "SetPortamento");
           
-AddNumberParam("Detune", 'The glide time between notes', 0);
-AddAction(12, 0, "Set detune", "Configuration", 
-          "Set detune to <i>{0}</i>", 
-          "Set detune.", "SetDetune");
-                    
                     
 // Oscillator       
 AddComboParamOption("");

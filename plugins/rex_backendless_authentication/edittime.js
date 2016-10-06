@@ -119,7 +119,7 @@ AddAction(31, 0, "Logging out", "General",
 // Validating User Login          
 AddAction(41, 0, "Test session", "Session", 
           "Test session", 
-          "Test if current session is valided.", "IsValidLogin");                     
+          "Test if current session is valid.", "IsValidLogin");                     
           
 AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);

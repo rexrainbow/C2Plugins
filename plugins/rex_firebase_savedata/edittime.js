@@ -7,7 +7,7 @@
 		"description":	"Save slot on firebase.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_saveslot.html",
-		"category":		"Rex - Web - firebase",
+		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

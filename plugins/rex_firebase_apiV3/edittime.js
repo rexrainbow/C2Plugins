@@ -6,7 +6,7 @@
 		"version":		"3.3.0",   		
 		"description":	"3.x API of real time database-as-a-service. https://firebase.google.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebaseapiv3.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_firebaseapiv3.html",
 		"category":		"Rex - Web - Firebase - api",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -20,7 +20,13 @@
 
 //////////////////////////////////////////////////////////////
 // Actions     
-      
+AddStringParam("Api key", "Api key", '""');
+AddStringParam("Auth domain", "Auth domain", '""');
+AddStringParam("Database URL", "Database URL", '""');
+AddStringParam("Storage bucket", "Storage bucket", '""');
+AddAction(1, 0, "Initialize", "Initialize", 
+          "Initialize with Api key: <i>{0}</i>, Auth domain: <i>{1}</i>, Database URL: <i>{2}</i>, Storage bucket: <i>{3}</i>", 
+          "Initialize connection.", "initializeApp"); 
 //////////////////////////////////////////////////////////////
 // Expressions
 

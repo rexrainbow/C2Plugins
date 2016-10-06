@@ -46,28 +46,27 @@ cr.plugins_.Rex_FirebaseAPIV3 = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-
-        var ref = window["Firebase"];
-        
-        var config = {
-            "apiKey": this.properties[0],
-            "authDomain": this.properties[1],
-            "databaseURL": this.properties[2],
-            "storageBucket": this.properties[3],
-        };
-        
-        var appName = "";//this.properties[4];
-        if (appName === "")
-            this.app = ref["initializeApp"](config);
-        else
-            this.app = ref["initializeApp"](config, appName);
-        
-        ref["database"]["enableLogging"](this.properties[4] === 1);
+        window["Firebase"]["database"]["enableLogging"](this.properties[4] === 1);        
+        if (this.properties[0] !== "")
+        {
+            this.initializeApp(this.properties[0], this.properties[1], this.properties[2], this.properties[3]);
+        }        
 	};
 	
 	instanceProto.onDestroy = function ()
 	{		
 	};
+	instanceProto.initializeApp = function (apiKey, authDomain, databaseURL, storageBucket)
+	{
+        var config = {
+            "apiKey": apiKey,
+            "authDomain": authDomain,
+            "databaseURL": databaseURL,
+            "storageBucket": storageBucket,
+        };
+        window["Firebase"]["initializeApp"](config);
+        runAfterInitializeHandlers();
+	};    
     
     // 2.x , 3.x    
 	var isFirebase3x = function()
@@ -143,6 +142,11 @@ cr.plugins_.Rex_FirebaseAPIV3 = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
     
+	Acts.prototype.initializeApp = function (apiKey, authDomain, databaseURL, storageBucket)
+	{
+        this.initializeApp(apiKey, authDomain, databaseURL, storageBucket);
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -151,6 +155,27 @@ cr.plugins_.Rex_FirebaseAPIV3 = function(runtime)
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------    
+    var __afterInitialHandler = [];
+    var addAfterInitialHandler = function(callback)
+    {
+        if (__afterInitialHandler === null)
+            callback()
+        else
+            __afterInitialHandler.push(callback);
+    };
+    var runAfterInitializeHandlers = function()
+    {
+        var i, cnt=__afterInitialHandler.length;
+        for(i=0; i<cnt; i++)
+        {
+            __afterInitialHandler[i]();
+        }
+        __afterInitialHandler = null;
+    };
+	window.FirebaseAddAfterInitializeHandler = addAfterInitialHandler;
+    
+    
+    
     var ItemListKlass = function ()
     {
         // -----------------------------------------------------------------------

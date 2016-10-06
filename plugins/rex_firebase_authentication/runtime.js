@@ -52,8 +52,9 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         var setupFn = function ()
         {
             self.setOnLogoutHandler();
-        }
-        setTimeout(setupFn, 0);       
+        }         
+        window.FirebaseAddAfterInitializeHandler(setupFn);
+
 
         window.FirebaseGetCurrentUserID = function()
         {
@@ -138,9 +139,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         else
         {
             getAuthObj()["onAuthStateChanged"](onAuthStateChanged);
-        }
-        
-        this.hasLogoutHandler = true;
+        }        
 	};    
     
     instanceProto.getCurrentUserID = function()
@@ -727,11 +726,11 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         if (access_token == "")
         {        
 	        if (typeof (FB) == null) 
-	         return;
+	            return;
 	    
-	         var auth_response = FB["getAuthResponse"]();
-	         if (!auth_response)
-	             return;
+	        var auth_response = FB["getAuthResponse"]();
+	        if (!auth_response)
+	            return;
 	    
 	        access_token = auth_response["accessToken"];
         }
@@ -791,7 +790,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
                           cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
                           cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
                           ); 
-	};	    
+	};	 
+
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

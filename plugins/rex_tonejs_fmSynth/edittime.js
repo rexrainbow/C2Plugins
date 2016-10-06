@@ -50,11 +50,6 @@ AddAction(11, 0, "Set portamento", "Portamento",
           "Set portamento to <i>{0}</i>", 
           "Set portamento.", "SetPortamento");
                               
-AddNumberParam("Detune", 'The glide time between notes', 0);
-AddAction(12, 0, "Set detune", "Configuration", 
-          "Set detune to <i>{0}</i>", 
-          "Set detune.", "SetDetune");
-                              
 AddNumberParam("Harmonicity", 'Harmonicity is the ratio between the two voices. A harmonicity of 1 is no change. Harmonicity = 2 means a change of an octave.', 3);
 AddAction(13, 0, "Set harmonicity", "Configuration", 
           "Set harmonicity to <i>{0}</i>", 

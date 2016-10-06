@@ -7,7 +7,7 @@
 		"description":	"Items table indexed by (itemID, key), supports writing a item or reading items back.",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_itemtable.html",
-		"category":		"Rex - Web - firebase",
+		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

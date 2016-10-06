@@ -81,7 +81,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             if (self.properties[2] === 1)
                 self.serverTimeOffsetDetectingStart();
         }
-        setTimeout(setupFn, 0);
+        window.FirebaseAddAfterInitializeHandler(setupFn);        
 	};
 	
 	instanceProto.onDestroy = function ()

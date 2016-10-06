@@ -7,7 +7,7 @@
 		"description":	"Rooms management.",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_rooms.html",
-		"category":		"Rex - Web - firebase",
+		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

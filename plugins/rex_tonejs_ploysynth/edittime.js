@@ -1,12 +1,12 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Synth",
-		"id":			"Rex_ToneJS_synth",
+		"name":			"PloySynth",
+		"id":			"Rex_ToneJS_ploysynth",
 		"version":		"0.1",        
-		"description":	"Composed simply of an OmniOscillator routed through an AmplitudeEnvelope.",
+		"description":	"Polyphonic.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_synth.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_ploysynth.html",
 		"category":		"Rex - Audio - Tone - Instrument",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -18,8 +18,8 @@
 // Conditions
 
 //////////////////////////////////////////////////////////////
-// Actions                
-AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
+// Actions          
+AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262), or a notes array.', '"C4"');
 AddAnyTypeParam("Duration ", 'How long the note should be held for before triggering the release. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"8n"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
@@ -27,7 +27,7 @@ AddAction(1, 0, "Attack then release", "Trigger",
           "Attack then release note: <i>{0}</i>, duration: <i>{1}</i>, at time <i>{2}</i> with velocity <i>{3}</i>", 
           "Trigger the attack and then the release after the duration.", "TriggerAttackRelease ");   
           
-AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
+AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262), or a notes array.', '"C4"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
 AddAction(2, 0, "Attack", "Trigger", 
@@ -51,43 +51,6 @@ AddAction(11, 0, "Set portamento", "Configuration",
           "Set portamento to <i>{0}</i>", 
           "Set portamento.", "SetPortamento");
           
-// Oscillator       
-AddComboParamOption("");
-AddComboParamOption("am");
-AddComboParamOption("Left to right");
-AddComboParamOption("fat");
-AddComboParam("Prefix", "Prefix of type.", 0);
-AddComboParamOption("sine");
-AddComboParamOption("square");
-AddComboParamOption("triangle");
-AddComboParamOption("custom");
-AddComboParamOption("pwm");
-AddComboParamOption("pulse");
-AddComboParam("Type", "Scan direction.", 2);
-AddAction(21, 0, "Set type", "Oscillator", 
-          "Set oscillator type to <i>{0}</i><i>{1}</i>", 
-          "Set oscillator type.", "SetOscillatorType");
-
-AddStringParam("Partials", 'Partials in an array.', '"[2,1,2,2]"');
-AddAction(22, 0, "Set partials", "Oscillator - custom", 
-          "Set partials to <i>{0}</i>", 
-          'Set partials, only if the oscillator is set to "custom".', "SetPartials");
-          
-AddNumberParam("Width", 'The width of the oscillator.', 0);
-AddAction(23, 0, "Set width", "Oscillator - pulse", 
-          "Set width to <i>{0}</i>", 
-          'Set width, only if the oscillator is set to "pulse".', "SetWidth");          
-          
-// Envelope
-AddNumberParam("Attack", "When triggerAttack is called, the attack time is the amount of time it takes for the envelope to reach it's maximum value.", 0.005);
-AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
-AddNumberParam("Sustain", "The sustain value is the value which the envelope rests at after triggerAttack is called, but before triggerRelease is invoked.", 0.3);
-AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
-AddAction(41, 0, "Set envelope", "Envelope", 
-          "Set envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>", 
-          "Set envelope.", "SetEnvelope");          
-          
-          
 //////////////////////////////////////////////////////////////
 // Expressions
 
@@ -95,6 +58,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_integer, "Polyphony", 4, "The number of voices to create."),
+	new cr.Property(ept_combo, "Voice", "Synth", "The constructor of the voices.", "Synth|MonoSynth|FMSynth|AMSynth|DuoSynth"),    
 	];
 	
 // Called by IDE when a new object type is to be created

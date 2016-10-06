@@ -103,11 +103,6 @@ cr.plugins_.Rex_ToneJS_duosynth = function(runtime)
         this.synth["portamento"] = portamento;  
 	};    
     
-	Acts.prototype.SetDetune = function (detune)
-	{
-        this.synth["detune"] = detune;  
-	};        
-    
 	Acts.prototype.SetHarmonicity = function (harmonicity)
 	{
         this.synth["harmonicity"] = harmonicity;  

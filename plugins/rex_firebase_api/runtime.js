@@ -41,8 +41,8 @@ cr.plugins_.Rex_FirebaseAPI = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        if (!this.recycled)
-            window["Firebase"]["enableLogging"](this.properties[0] == 1);        
+        window["Firebase"]["enableLogging"](this.properties[0] == 1);        
+        runAfterInitializeHandlers();
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -131,7 +131,27 @@ cr.plugins_.Rex_FirebaseAPI = function(runtime)
  
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------
-    // --------------------------------------------------------------------------    
+    // --------------------------------------------------------------------------
+    var __afterInitialHandler = [];
+    var addAfterInitialHandler = function(callback)
+    {
+        if (__afterInitialHandler === null)
+            callback()
+        else
+            __afterInitialHandler.push(callback);
+    };
+    var runAfterInitializeHandlers = function()
+    {
+        var i, cnt=__afterInitialHandler.length;
+        for(i=0; i<cnt; i++)
+        {
+            __afterInitialHandler[i]();
+        }
+        __afterInitialHandler = null;
+    };
+	window.FirebaseAddAfterInitializeHandler = addAfterInitialHandler;
+
+    
     var ItemListKlass = function ()
     {
         // -----------------------------------------------------------------------

@@ -43,6 +43,12 @@ AddAction(103, 0, "Set boolean", "Property",
           "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
           "Set property of an object.", "SetBoolean");
           
+AddObjectParam("Object", "Object to assign."); 
+AddStringParam("Properties", "Properties in JSON", '"{}"');
+AddAction(111, 0, "Set JSON", "Properties", 
+          "<i>{0}</i>: Set properties to <i>{1}</i>", 
+          "Set properties by JSON string.", "SetJSONProps");          
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "The currentTime from the AudioContext", "Time", "Now", "Get the currentTime from the AudioContext.");

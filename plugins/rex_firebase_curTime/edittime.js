@@ -6,8 +6,8 @@
 		"version":		"0.1",        
 		"description":	"Get server timestamp periodically.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_curTime.html",
-		"category":		"Rex - Web - firebase - date",
+		"help url":		"http://c2rexplugins.weebly.com/rex_firebase_curTime.html",
+		"category":		"Rex - Web - Firebase - date",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal

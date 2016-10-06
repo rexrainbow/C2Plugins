@@ -58,10 +58,11 @@ cr.plugins_.Rex_Firebase_CurTime = function(runtime)
         this.runtime.tickMe(this);
         
         var self=this;
-        setTimeout(function()
+        var setupFn = function()
         {
             self.serverTimeOffsetDetectingStart();
-        }, 0);        
+        };        
+        window.FirebaseAddAfterInitializeHandler(setupFn);            
 	};
 	
 	instanceProto.onDestroy = function ()

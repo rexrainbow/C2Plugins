@@ -103,12 +103,6 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
         this.synth["portamento"] = portamento;  
 	};    
     
-	Acts.prototype.SetDetune = function (detune)
-	{
-        this.synth["detune"] = detune;  
-	};        
-    
-    
 	Acts.prototype.SetOscillatorType = function (prefix, type)
 	{
         var oscillator = this.synth["oscillator"];

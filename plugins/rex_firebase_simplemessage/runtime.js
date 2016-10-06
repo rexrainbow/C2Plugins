@@ -272,6 +272,17 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
 
 (function ()
 {
+    // 2.x , 3.x    
+	var isFirebase3x = function()
+	{ 
+        return (window["FirebaseV3x"] === true);
+    };
+    var get_refPath = function (obj)
+    {       
+        return (!isFirebase3x())?  obj["ref"]() : obj["ref"];
+    };    
+    // 2.x , 3.x  
+    
     if (window.FirebaseStackMessageKlass != null)
         return;    
     
@@ -351,7 +362,7 @@ cr.plugins_.Rex_Firebase_SimpleMessage = function(runtime)
                 self.onReceived(d);
                 
             // remove this child
-            snapshot["ref"]()["remove"]();
+            get_refPath(snapshot)["remove"]();
         };
 
         this.ref["limitToFirst"](1)["on"]("child_added", on_update);        
