@@ -1,69 +1,91 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"ToneJS api",
-		"id":			"Rex_ToneJS_api",
+		"name":			"Instrument shell",
+		"id":			"Rex_ToneJS_instrumentshell",
 		"version":		"0.1",        
-		"description":	"Api of tone.js. https://github.com/Tonejs/Tone.js",
+		"description":	"Shell of instrument.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_api.html",
-		"category":		"Rex - Audio - Tone - Core",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_instrumentshel.html",
+		"category":		"Rex - Audio - Tone - Instrument - Advance",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		pf_singleglobal,
-		"dependency":	"Tone.js"
+		"flags":		0,
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+ AddCondition(1, cf_trigger, "On load", "Sampler", 
+            "On load",
+            "Triggered when load audio file.", "OnLoad");
+            
 //////////////////////////////////////////////////////////////
 // Actions
-AddObjectParam("Object", "Object to assign."); 
+AddStringParam("Instrument type", "Instrument type.", '"Synth"');
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(1, 0, "Create instrument", "Creator", 
+          "Create <i>{0}</i> (<i>{...}</i>)", 
+          "Create instrument.", "CreateInstrument");   
+
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
-AddAction(101, 0, "Set value", "Property", 
-          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
-          "Set property of an object.", "SetValue"); 
-          
-AddObjectParam("Object", "Object to assign."); 
+AddAction(11, 0, "Set value", "Property", 
+          "Set <i>{0}</i> to <i>{1}</i>", 
+          "Set property.", "SetValue"); 
+
 AddStringParam("Property", "Property name in dot notation", '""');
 AddStringParam("JSON", "JSON value to set", '""');
-AddAction(102, 0, "Set JSON", "Property", 
-          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
-          "Set property of an object.", "SetJSON"); 
-          
-AddObjectParam("Object", "Object to assign."); 
+AddAction(12, 0, "Set JSON", "Property", 
+          "Set <i>{0}</i> to <i>{1}</i>", 
+          "Set property to JSON string.", "SetJSON"); 
+
 AddStringParam("Property", "Property name in dot notation", '""');
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.", 0);
-AddAction(103, 0, "Set boolean", "Property", 
-          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
-          "Set property of an object.", "SetBoolean");
-          
-AddObjectParam("Object", "Object to assign."); 
+AddAction(13, 0, "Set boolean", "Property", 
+          "Set <i>{0}</i> to <i>{1}</i>", 
+          "Set property to a boolean value.", "SetBoolean");
+
 AddStringParam("Properties", "Properties in JSON", '"{}"');
-AddAction(111, 0, "Set JSON", "Properties", 
-          "<i>{0}</i>: Set properties to <i>{1}</i>", 
-          "Set properties by JSON string.", "SetJSONProps");          
+AddAction(14, 0, "Set JSON", "Properties", 
+          "Set properties to <i>{1}</i>", 
+          "Set properties to JSON string.", "SetJSONProps");          
           
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(21, 0, "Attack then release", "Trigger", 
+          "Attack then release (<i>{...}</i>)", 
+          "Trigger the attack and then the release after the duration.", "TriggerAttackRelease ");   
+          
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(22, 0, "Attack", "Trigger", 
+          "Attack (<i>{...}</i>)", 
+          "Trigger the attack.", "TriggerAttack"); 
+          
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(23, 0, "Release", "Trigger", 
+          "Release (<i>{...}</i>)", 
+          "Trigger the release portion of the envelope.", "TriggerRelease");
+          
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(24, 0, "Set note", "Trigger", 
+          "Set note (<i>{...}</i>)", 
+          "Set the note at the given time.", "SetNote"); 
+        
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(25, 0, "Release all", "Trigger", 
+          "Release all (<i>{...}</i>)", 
+          "Trigger the release portion of all the currently active voices.", "ReleaseAll");          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "The currentTime from the AudioContext", "Time", "Now", "Get the currentTime from the AudioContext.");
-
-AddNumberParam("UID", "UID of a tone instance", 0);
 //AddStringParam("Property", "Property name in dot notation", '""');
-AddExpression(101, ef_return_any | ef_variadic_parameters, "Property of an instance", "Property", "Property", "Get property of an instance.");
+AddExpression(11, ef_return_any | ef_variadic_parameters, "Get property", "Property", "Property", "Get property.");
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_section, "Transport", "",	"Transport for timing musical events."), 
-    new cr.Property(ept_combo, "Start timeline", "Yes", "Set Yes to start timeline.", "No|Yes"),            
-    new cr.Property(ept_integer, "BPM", 120, "The Beats Per Minute of the Transport."),
 	];
 	
 // Called by IDE when a new object type is to be created

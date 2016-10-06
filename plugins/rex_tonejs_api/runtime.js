@@ -88,9 +88,6 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
      
 	Acts.prototype.SetValue = function (objType, keys, value)
 	{
-        keys = keys.split(".");
-        var lastKey = keys.pop(); 
-        
         var self=this;
         var callback = function(inst)
         {
@@ -98,8 +95,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             if (!toneObj)
                 return;
             
-            var entry = getEntry(keys, toneObj);
-            entry[lastKey] = value;            
+            toneObj["set"](keys, value);     
         }
         
         forEachInst(objType, callback);
@@ -107,9 +103,6 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
      
 	Acts.prototype.SetJSON = function (objType, keys, value)
 	{
-        keys = keys.split(".");
-        var lastKey = keys.pop(); 
-        
         var self=this;
         var callback = function(inst)
         {
@@ -117,8 +110,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             if (!toneObj)
                 return;
             
-            var entry = getEntry(keys, toneObj);
-            entry[lastKey] = JSON.parse(value);
+            toneObj["set"](keys, JSON.parse(value));
         }
         
         forEachInst(objType, callback);
@@ -126,8 +118,6 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
      
 	Acts.prototype.SetBoolean = function (objType, keys, value)
 	{
-        keys = keys.split(".");
-        var lastKey = keys.pop(); 
         value = (value === 1);
         
         var self=this;
@@ -137,8 +127,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             if (!toneObj)
                 return;
             
-            var entry = getEntry(keys, toneObj);
-            entry[lastKey] = value;
+            toneObj["set"](keys, value);
         }
         
         forEachInst(objType, callback);
@@ -175,9 +164,9 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         var inst = this.runtime.getObjectByUID(uid);
         if (inst)
         {
-            val = window.ToneJSGetItemValue(inst.GetObject(), keys, 0);
+            val = inst.GetObject()["get"](keys);
         }
-		ret.set_any( val );
+		ret.set_any( window.ToneJSGetItemValue(val) );
 	};    
     
     
