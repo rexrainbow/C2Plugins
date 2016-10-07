@@ -4,7 +4,7 @@
 		"name":			"ToneJS api",
 		"id":			"Rex_ToneJS_api",
 		"version":		"0.1",        
-		"description":	"Api of tone.js. https://github.com/Tonejs/Tone.js",
+		"description":	"Base object of tone.js. https://github.com/Tonejs/Tone.js",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_api.html",
 		"category":		"Rex - Audio - Tone - Core",
@@ -20,6 +20,27 @@
 
 //////////////////////////////////////////////////////////////
 // Actions
+AddNumberParam("BPM", "Beats Per Minute", 0);
+AddAction(1, 0, "Set BPM", "Transport", 
+          "Set BPM to <i>{0}</i>", 
+          "Set BPM.", "SetBPM"); 
+          
+AddAnyTypeParam("Time", 'The time when the transport should start. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');          
+AddAnyTypeParam("Offset", 'The timeline offset to start the transport. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');          
+AddAction(2, 0, "Start", "Transport - timeline", 
+          "Start timeline at time <i>{0}</i>, offset to <i>{1}</i>", 
+          "Start timeline.", "StartTimeline"); 
+          
+AddAnyTypeParam("Time", 'The time when the transport should stop. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');                    
+AddAction(3, 0, "Stop", "Transport - timeline", 
+          "Stop timeline at time <i>{0}</i>", 
+          "Stop timeline.", "StopTimeline"); 
+
+AddAnyTypeParam("Time", 'The time when the transport should pause. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');                    
+AddAction(4, 0, "Pause", "Transport - timeline", 
+          "Pause timeline at time <i>{0}</i>", 
+          "Pause timeline.", "PauseTimeline"); 
+          
 AddObjectParam("Object", "Object to assign."); 
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);

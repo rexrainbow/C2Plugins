@@ -19,42 +19,53 @@
 
 //////////////////////////////////////////////////////////////
 // Actions          
+AddStringParam("Options", "Options in JSON string.", '"{}"');
+AddAction(1, 0, "Create", "Creator", 
+          "Create with options <i>{0}</i>", 
+          "Create instrument.", "CreateInstrument");   
+          
+AddAnyTypeParam("Portamento", 'The glide time between notes', 0);
+AddAction(11, 0, "Set portamento", "Configuration", 
+          "Set portamento to <i>{0}</i>", 
+          "Set portamento.", "SetPortamento");
+          
+AddNumberParam("Detune", 'The glide time between notes', 0);
+AddAction(12, 0, "Set detune", "Configuration", 
+          "Set detune to <i>{0}</i>", 
+          "Set detune.", "SetDetune");   
+
+AddNumberParam("Harmonicity", 'Harmonicity is the ratio between the two voices. A harmonicity of 1 is no change. Harmonicity = 2 means a change of an octave.', 3);
+AddAction(13, 0, "Set harmonicity", "Configuration", 
+          "Set harmonicity to <i>{0}</i>", 
+          "Set harmonicity.", "SetHarmonicity");             
+                
+                
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Duration ", 'How long the note should be held for before triggering the release. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"8n"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
-AddAction(1, 0, "Attack then release", "Trigger", 
+AddAction(21, 0, "Attack then release", "Trigger", 
           "Attack then release note: <i>{0}</i>, duration: <i>{1}</i>, at time <i>{2}</i> with velocity <i>{3}</i>", 
           "Trigger the attack and then the release after the duration.", "TriggerAttackRelease ");   
           
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
-AddAction(2, 0, "Attack", "Trigger", 
+AddAction(22, 0, "Attack", "Trigger", 
           "Attack note: <i>{0}</i>, at time <i>{1}</i> with velocity <i>{2}</i>", 
           "Trigger the attack of the note optionally with a given velocity.", "TriggerAttack"); 
           
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
-AddAction(3, 0, "Release", "Trigger", 
+AddAction(23, 0, "Release", "Trigger", 
           "Release, at time <i>{0}</i>", 
           "Trigger the release portion of the envelope.", "TriggerRelease");                   
 
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
-AddAction(4, 0, "Set note", "Trigger", 
+AddAction(24, 0, "Set note", "Trigger", 
           "Set note: <i>{0}</i>, at time <i>{1}</i>", 
           "Set the note at the given time.", "SetNote"); 
 
-AddAnyTypeParam("Portamento", 'The glide time between notes', 0);
-AddAction(11, 0, "Set portamento", "Portamento", 
-          "Set portamento to <i>{0}</i>", 
-          "Set portamento.", "SetPortamento");
-                              
-AddNumberParam("Harmonicity", 'Harmonicity is the ratio between the two voices. A harmonicity of 1 is no change. Harmonicity = 2 means a change of an octave.', 3);
-AddAction(13, 0, "Set harmonicity", "Configuration", 
-          "Set harmonicity to <i>{0}</i>", 
-          "Set harmonicity.", "SetHarmonicity");             
-               
                
 // Oscillator       
 AddComboParamOption("");
@@ -89,7 +100,7 @@ AddNumberParam("Attack", "When triggerAttack is called, the attack time is the a
 AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
 AddNumberParam("Sustain", "The sustain value is the value which the envelope rests at after triggerAttack is called, but before triggerRelease is invoked.", 0.3);
 AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
-AddAction(41, 0, "Set envelope", "Envelope", 
+AddAction(111, 0, "Set envelope", "Envelope", 
           "Set envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>", 
           "Set envelope.", "SetEnvelope");            
 
@@ -102,7 +113,7 @@ AddNumberParam("Release", "After triggerRelease is called, the envelope's value 
 AddAnyTypeParam("Base frequency", "The envelope's mininum output value. This is the value which it starts at.", '"C2"');          
 AddNumberParam("Octaves", "The number of octaves above the baseFrequency that the envelope will scale to.", 4);   
 AddNumberParam("Exponent", "The envelope's exponent value.", 2); 
-AddAction(51, 0, "Set filter envelope", "Filter envelope", 
+AddAction(121, 0, "Set filter envelope", "Filter envelope", 
           "Set filter envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>, base frequency to <i>{4}</i>, octaves to <i>{5}</i>, exponent to <i>{6}</i>", 
           "Set filter envelope.", "SetFilterEnvelope");  
                               

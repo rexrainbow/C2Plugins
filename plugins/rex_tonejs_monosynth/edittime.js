@@ -18,38 +18,49 @@
 // Conditions
 
 //////////////////////////////////////////////////////////////
-// Actions          
+// Actions  
+AddStringParam("Options", "Options in JSON string.", '"{}"');
+AddAction(1, 0, "Create", "Creator", 
+          "Create with options <i>{0}</i>", 
+          "Create instrument.", "CreateInstrument");   
+          
+AddAnyTypeParam("Portamento", 'The glide time between notes', 0);
+AddAction(11, 0, "Set portamento", "Configuration", 
+          "Set portamento to <i>{0}</i>", 
+          "Set portamento.", "SetPortamento");
+          
+AddNumberParam("Detune", 'The glide time between notes', 0);
+AddAction(12, 0, "Set detune", "Configuration", 
+          "Set detune to <i>{0}</i>", 
+          "Set detune.", "SetDetune");   
+
+          
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Duration ", 'How long the note should be held for before triggering the release. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"8n"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
-AddAction(1, 0, "Attack then release", "Trigger", 
+AddAction(21, 0, "Attack then release", "Trigger", 
           "Attack then release note: <i>{0}</i>, duration: <i>{1}</i>, at time <i>{2}</i> with velocity <i>{3}</i>", 
           "Trigger the attack and then the release after the duration.", "TriggerAttackRelease ");   
           
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
 AddNumberParam("Velocity", 'The velocity the note should be triggered at, within the range [0, 1]', 1);
-AddAction(2, 0, "Attack", "Trigger", 
+AddAction(22, 0, "Attack", "Trigger", 
           "Attack note: <i>{0}</i>, at time <i>{1}</i> with velocity <i>{2}</i>", 
           "Trigger the attack of the note optionally with a given velocity.", "TriggerAttack"); 
           
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
-AddAction(3, 0, "Release", "Trigger", 
+AddAction(23, 0, "Release", "Trigger", 
           "Release, at time <i>{0}</i>", 
           "Trigger the release portion of the envelope.", "TriggerRelease");                   
 
 AddAnyTypeParam("Note", 'The note to trigger. Note-Octave("C4") or frequency(262).', '"C4"');
 AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');
-AddAction(4, 0, "Set note", "Trigger", 
+AddAction(24, 0, "Set note", "Trigger", 
           "Set note: <i>{0}</i>, at time <i>{1}</i>", 
           "Set the note at the given time.", "SetNote"); 
-
-AddAnyTypeParam("Portamento", 'The glide time between notes', 0);
-AddAction(11, 0, "Set portamento", "Portamento", 
-          "Set portamento to <i>{0}</i>", 
-          "Set portamento.", "SetPortamento");
-          
+ 
                     
 // Oscillator       
 AddComboParamOption("");
@@ -64,17 +75,17 @@ AddComboParamOption("custom");
 AddComboParamOption("pwm");
 AddComboParamOption("pulse");
 AddComboParam("Type", "Scan direction.", 2);
-AddAction(21, 0, "Set type", "Oscillator", 
+AddAction(101, 0, "Set type", "Oscillator", 
           "Set oscillator type to <i>{0}</i><i>{1}</i>", 
           "Set oscillator type.", "SetOscillatorType");
 
 AddStringParam("Partials", 'Partials in an array.', '"[2,1,2,2]"');
-AddAction(22, 0, "Set partials", "Oscillator - custom", 
+AddAction(102, 0, "Set partials", "Oscillator - custom", 
           "Set partials to <i>{0}</i>", 
           'Set partials, only if the oscillator is set to "custom".', "SetPartials");
           
 AddNumberParam("Width", 'The width of the oscillator.', 0);
-AddAction(23, 0, "Set width", "Oscillator - pulse", 
+AddAction(103, 0, "Set width", "Oscillator - pulse", 
           "Set width to <i>{0}</i>", 
           'Set width, only if the oscillator is set to "pulse".', "SetWidth");          
           
@@ -84,7 +95,7 @@ AddNumberParam("Attack", "When triggerAttack is called, the attack time is the a
 AddNumberParam("Decay", "After the attack portion of the envelope, the value will fall over the duration of the decay time to it's sustain value.", 0.1);
 AddNumberParam("Sustain", "The sustain value is the value which the envelope rests at after triggerAttack is called, but before triggerRelease is invoked.", 0.3);
 AddNumberParam("Release", "After triggerRelease is called, the envelope's value will fall to it's miminum value over the duration of the release time.", 1);          
-AddAction(41, 0, "Set envelope", "Envelope", 
+AddAction(111, 0, "Set envelope", "Envelope", 
           "Set envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>", 
           "Set envelope.", "SetEnvelope");
 
@@ -97,7 +108,7 @@ AddNumberParam("Release", "After triggerRelease is called, the envelope's value 
 AddAnyTypeParam("Base frequency", "The envelope's mininum output value. This is the value which it starts at.", '"C2"');          
 AddNumberParam("Octaves", "The number of octaves above the baseFrequency that the envelope will scale to.", 4);   
 AddNumberParam("Exponent", "The envelope's exponent value.", 2); 
-AddAction(51, 0, "Set filter envelope", "Filter envelope", 
+AddAction(121, 0, "Set filter envelope", "Filter envelope", 
           "Set filter envelope: attack to <i>{0}</i>, decay to <i>{1}</i>, sustain to <i>{2}</i>, release to <i>{3}</i>, base frequency to <i>{4}</i>, octaves to <i>{5}</i>, exponent to <i>{6}</i>", 
           "Set filter envelope.", "SetFilterEnvelope");  
           
@@ -118,7 +129,7 @@ AddComboParamOption("-96");
 AddComboParam("Rolloff", "The rolloff of the filter which is the drop in db per octave. Implemented internally by cascading filters.", 1);  
 AddNumberParam("Q", "The Q or Quality of the filter", 1);
 AddNumberParam("Gain", "The gain of the filter, only used in certain filter types.", 0);
-AddAction(61, 0, "Set filter", "Filter", 
+AddAction(131, 0, "Set filter", "Filter", 
           "Set filter to <i>{0}</i>, Q to <i>{1}</i>, gain to <i>{2}</i>", 
           "Set filter.", "SetFilter");          
           

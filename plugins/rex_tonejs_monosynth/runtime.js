@@ -45,29 +45,103 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
     var ROLLOFF_MAP = [-12, -24, -48];
 	instanceProto.onCreate = function()
 	{
-        this.synth = new window["Tone"]["MonoSynth"]();
+        this.instrumentType = "";
+        this.instrument = null;
 	};
     
 	instanceProto.onDestroy = function ()
 	{
-        this.synth["dispose"]();
-        this.synth = null;        
+        if (this.instrument == null)
+            return;
+        
+        this.instrument["dispose"]();
+        this.instrumentType = "";        
+        this.instrument = null;
 	};   
     
-    var parseTime = function (timeString)
+    
+    
+    // The comments around these functions ensure they are removed when exporting, since the
+    // debugger code is no longer relevant after publishing.
+    /**BEGIN-PREVIEWONLY**/
+
+    // slightly modified neet simple function from Pumbaa80
+    // http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript#answer-7220510
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // basic html escaping
+        return json
+            .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'red';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'blue';
+                    } else {
+                        cls = 'green';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'Sienna';
+                } else if (/null/.test(match)) {
+                    cls = 'gray';
+                }
+                return '<span style="color:' + cls + ';">' + match + '</span>';
+            })
+            .replace(/\t/g,"&nbsp;&nbsp;") // to keep indentation in html
+            .replace(/\n/g,"<br/>");       // to keep line break in html
+    }
+
+    instanceProto.getDebuggerValues = function (propsections)
     {
-        if (isNaN(timeString))
-            return timeString;
-        else
-            return parseFloat(timeString);
-    };    
-        
+        // Append to propsections any debugger sections you want to appear.
+        // Each section is an object with two members: "title" and "properties".
+        // "properties" is an array of individual debugger properties to display
+        // with their name and value, and some other optional settings.
+        var props = (this.instrument)?  JSON.stringify(this.instrument["get"](),null,"\t") : "";
+
+        propsections.push({
+            "title": "JSON",
+            "properties": [
+                {
+                    "name":"Type",
+                    "value": this.instrumentType,
+                    "readonly":true
+                },            
+                {
+                    "name":"Properties",
+                    "value": "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+syntaxHighlight(props)+"</style>",
+                    "html": true,
+                    "readonly":true
+                }
+
+                // Each property entry can use the following values:
+                // "name" (required): name of the property (must be unique within this section)
+                // "value" (required): a boolean, number or string for the value
+                // "html" (optional, default false): set to true to interpret the name and value
+                //                                   as HTML strings rather than simple plain text
+                // "readonly" (optional, default false): set to true to disable editing the property
+                
+                // Example:
+                // {"name": "My property", "value": this.myValue}
+            ]
+        });
+    };
+    
+    instanceProto.onDebugValueEdited = function (header, name, value)
+    {
+        // Called when a non-readonly property has been edited in the debugger. Usually you only
+        // will need 'name' (the property name) and 'value', but you can also use 'header' (the
+        // header title for the section) to distinguish properties with the same name.
+        // if (name === "My property")
+        //  this.myProperty = value;
+    };
+    /**END-PREVIEWONLY**/  
+    
+    
     // export
 	instanceProto.GetObject = function ()
 	{
-        return this.synth;
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");                
+        return this.instrument;
 	};     
-    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -78,6 +152,28 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
+	Acts.prototype.CreateInstrument = function (options)
+	{
+        if (this.instrument !== null)
+            this.onDestroy();
+        
+        var type = "MonoSynth";
+        this.instrumentType = type;
+        this.instrument = new window["Tone"][type](JSON.parse(options));
+	};  
+    
+	Acts.prototype.SetPortamento = function (portamento)
+	{
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
+        this.instrument["set"]("portamento", portamento);
+	};    
+    
+    Acts.prototype.SetDetune = function (detune)
+	{
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
+        this.instrument["set"]("detune", detune);        
+    };     
+    
 	Acts.prototype.TriggerAttackRelease = function (note, duration, time, velocity)
 	{
         this.synth["triggerAttackRelease"](note, duration, time, velocity);      
@@ -98,67 +194,60 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
         this.synth["setNote"](time);      
 	};   
     
-	Acts.prototype.SetPortamento = function (portamento)
-	{
-        this.synth["portamento"] = portamento;  
-	};    
-    
 	Acts.prototype.SetOscillatorType = function (prefix, type)
 	{
-        var oscillator = this.synth["oscillator"];
-        oscillator["type"] = PREFIX_MAP[prefix] + OSC_MAP[type];       
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");            
+        this.instrument["set"]("oscillator.type", PREFIX_MAP[prefix] + OSCTYPE_MAP[type]);    
 	};   
     
 	Acts.prototype.SetPartials = function (partials)
 	{
-        try
-        {
-            partials = JSON.parse(partials);
-        }
-        catch(e)
-        {
-            return;
-        }
-        
-        var oscillator = this.synth["oscillator"];
-        oscillator["partials"] = partials;
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");            
+        this.instrument["set"]("oscillator.partials", JSON.parse(partials));
 	};     
     
 	Acts.prototype.SetWidth = function (width)
 	{
-        var oscillator = this.synth["oscillator"];
-        oscillator["width"] = width;    
-	};     
-        
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");            
+        this.instrument["set"]("oscillator.width", width);
+	};      
+    
 	Acts.prototype.SetEnvelope = function (a, d, s, r)
 	{
-        var envelope = this.synth["envelope"];
-        envelope["attack"] = a;
-        envelope["decay"] = d;    
-        envelope["sustain"] = s;
-        envelope["release"] = r;            
-	};
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");      
+        var params = {
+            "attack": a,
+            "decay": d,
+            "sustain": s,
+            "release": r,
+        }        
+        this.instrument["set"]("envelope", params);
+	};   
         
 	Acts.prototype.SetFilterEnvelope = function (a, d, s, r, baseFrequency, octaves, exponent)
 	{
-        var envelope = this.synth["filterEnvelope"];
-        envelope["attack"] = a;
-        envelope["decay"] = d;    
-        envelope["sustain"] = s;
-        envelope["release"] = r;      
-        envelope["baseFrequency"] = baseFrequency;    
-        envelope["octaves"] = octaves;
-        envelope["exponent"] = exponent;     
-        
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");      
+        var params = {
+            "attack": a,
+            "decay": d,
+            "sustain": s,
+            "release": r,
+            "baseFrequency": baseFrequency,
+            "octaves": octaves,
+            "exponent": exponent,
+        }        
+        this.instrument["set"]("filterEnvelope", params);
 	};    
         
 	Acts.prototype.SetFilter = function (type, Q, gain)
 	{
-        var filter = this.synth["filter"];
-        filter["type"] = FILTER_MAP[ type ];
-        filter["Q"] = Q;    
-        filter["gain"] = gain;
-        
+        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");      
+        var params = {
+            "type": FILTER_MAP[ type ],
+            "Q": Q,
+            "gain": gain,
+        }        
+        this.instrument["set"]("filter", params);
 	};        
 	//////////////////////////////////////
 	// Expressions

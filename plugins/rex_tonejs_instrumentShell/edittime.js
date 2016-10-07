@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Shell of instrument.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_instrumentshel.html",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_instrumentshell.html",
 		"category":		"Rex - Audio - Tone - Instrument - Advance",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -26,7 +26,11 @@ AddStringParam("Instrument type", "Instrument type.", '"Synth"');
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
 AddAction(1, 0, "Create instrument", "Creator", 
           "Create <i>{0}</i> (<i>{...}</i>)", 
-          "Create instrument.", "CreateInstrument");   
+          "Create instrument.", "CreateInstrument"); 
+
+AddAction(2, 0, "Dispose", "Dispose", 
+          "Dispose", 
+          "Clean up.", "Dispose");          
 
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);

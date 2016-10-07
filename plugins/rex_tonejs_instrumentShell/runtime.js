@@ -188,7 +188,12 @@ cr.plugins_.Rex_ToneJS_instrumentshell = function(runtime)
         }
 	};     
     
-
+	Acts.prototype.Dispose = function ()
+	{        
+        assert2(this.instrument, "Instrument shell: missing instrument '"+ this.type.name + "'");    
+        this.instrument["dispose"]();
+	};
+    
 	Acts.prototype.SetValue = function (keys, value)
 	{        
         assert2(this.instrument, "Instrument shell: missing instrument '"+ this.type.name + "'");    

@@ -18,7 +18,19 @@
 // Conditions
 
 //////////////////////////////////////////////////////////////
-// Actions          
+// Actions
+AddNumberParam("Volume", "Decibels", 0);                    
+AddAction(1, 0, "Set volume", "Volume", 
+          "Set volume to <i>{0}</i>", 
+          "Set volume.", "SetVolume"); 
+          
+AddComboParamOption("No");
+AddComboParamOption("Yes");
+AddComboParam("Mute", "Mute or not.", 0);
+AddAction(2, 0, "Set mute", "Mute", 
+          "Set mute to <i>{0}</i>", 
+          "Set mute.", "SetMute");
+          
 AddObjectParam("Object", "Object to plug.");          
 AddAction(11, 0, "Plug", "Plug", 
           "Plug <i>{0}</i>", 
@@ -31,8 +43,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    //new cr.Property(ept_float, "Volume", 0, "The volume of the master output, in decibels."),
-    //new cr.Property(ept_combo, "Mute", "No", "Mute the output.", "No|Yes"),         
+    new cr.Property(ept_float, "Volume", 0, "The volume of the master output, in decibels."),
+    new cr.Property(ept_combo, "Mute", "No", "Mute the output.", "No|Yes"),         
 	];
 	
 // Called by IDE when a new object type is to be created

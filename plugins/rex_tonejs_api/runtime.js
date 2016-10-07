@@ -46,7 +46,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         if (this.properties[0] === 1)
             transport["start"]();        
         
-        transport["bpm"]["value"] =  this.properties[1]; 
+        transport["set"]("bpm", this.properties[1]);
 	};
     
 	instanceProto.onDestroy = function ()
@@ -63,19 +63,76 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         for (i=0; i<cnt; i++)
             callback(insts[i]);        
     };
+       
+    // The comments around these functions ensure they are removed when exporting, since the
+    // debugger code is no longer relevant after publishing.
+    /**BEGIN-PREVIEWONLY**/
+
+    // slightly modified neet simple function from Pumbaa80
+    // http://stackoverflow.com/questions/4810841/how-can-i-pretty-print-json-using-javascript#answer-7220510
+    function syntaxHighlight(json) {
+        json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); // basic html escaping
+        return json
+            .replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'red';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'blue';
+                    } else {
+                        cls = 'green';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'Sienna';
+                } else if (/null/.test(match)) {
+                    cls = 'gray';
+                }
+                return '<span style="color:' + cls + ';">' + match + '</span>';
+            })
+            .replace(/\t/g,"&nbsp;&nbsp;") // to keep indentation in html
+            .replace(/\n/g,"<br/>");       // to keep line break in html
+    }
+
+    instanceProto.getDebuggerValues = function (propsections)
+    {
+        // Append to propsections any debugger sections you want to appear.
+        // Each section is an object with two members: "title" and "properties".
+        // "properties" is an array of individual debugger properties to display
+        // with their name and value, and some other optional settings.
+        var transport = JSON.stringify(window["Tone"]["Transport"]["get"](),null,"\t");
+
+        propsections.push({
+            "title": "JSON",
+            "properties": [
+                {
+                    "name":"Transport",
+                    "value": "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+syntaxHighlight(transport)+"</style>",
+                    "html": true,
+                    "readonly":true
+                }
+
+                // Each property entry can use the following values:
+                // "name" (required): name of the property (must be unique within this section)
+                // "value" (required): a boolean, number or string for the value
+                // "html" (optional, default false): set to true to interpret the name and value
+                //                                   as HTML strings rather than simple plain text
+                // "readonly" (optional, default false): set to true to disable editing the property
+                
+                // Example:
+                // {"name": "My property", "value": this.myValue}
+            ]
+        });
+    };
     
-	var getEntry = function(keys, root)
-	{
-        var entry = root;
-        var i,  cnt=keys.length, key;
-        for (i=0; i< cnt; i++)
-        {
-            entry = entry[ keys[i] ];            
-        }  
-        
-        return entry;
-	};    
- 
+    instanceProto.onDebugValueEdited = function (header, name, value)
+    {
+        // Called when a non-readonly property has been edited in the debugger. Usually you only
+        // will need 'name' (the property name) and 'value', but you can also use 'header' (the
+        // header title for the section) to distinguish properties with the same name.
+        // if (name === "My property")
+        //  this.myProperty = value;
+    };
+    /**END-PREVIEWONLY**/  
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -85,7 +142,27 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-     
+    
+	Acts.prototype.SetBPM = function (bpm)
+	{
+        window["Tone"]["Transport"]["set"]("bpm", bpm);
+	};    
+    
+	Acts.prototype.StartTimeline = function (time, offset)
+	{
+        window["Tone"]["Transport"]["start"](time, offset);  
+	};       
+    
+	Acts.prototype.StopTimeline = function (time)
+	{
+        window["Tone"]["Transport"]["stop"](time);  
+	};    
+    
+	Acts.prototype.PauseTimeline = function (time)
+	{
+        window["Tone"]["Transport"]["pause"](time);  
+	};  
+    
 	Acts.prototype.SetValue = function (objType, keys, value)
 	{
         var self=this;
