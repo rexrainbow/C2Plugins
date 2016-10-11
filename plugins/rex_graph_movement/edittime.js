@@ -119,7 +119,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Path mode", "A*", "Geometry of moving path.", "Random|A*|Line|A* -line|A* -random"),  
+    new cr.Property(ept_combo, "Path mode", "Random", "Geometry of moving path.", "Random|A*|Line|A* -line|A* -random"),  
     new cr.Property(ept_combo, "Cache cost", "Yes", "Cache the cost of each tile in a request.", "No|Yes"),
     new cr.Property(ept_combo, "Shuffle neighbors", "No", "Shuffle the order of checking neighbors.", "No|Yes"),
 	new cr.Property(ept_float, "Weight", 10, "Weight of heuristic estimation for A*- path mode."),    

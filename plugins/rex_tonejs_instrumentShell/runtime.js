@@ -156,36 +156,50 @@ cr.plugins_.Rex_ToneJS_instrumentshell = function(runtime)
 	{
         if (this.instrument !== null)
             this.onDestroy();
-        
-        this.instrumentType = type;            
-        if (type === "PolySynth")
+            
+        this.instrumentType = type;               
+        var options = params[0];
+        if (options == null)
         {
+            options = {};
+        }        
+        else if ((typeof(options) === "string") && (options.indexOf("{") !== -1))
+        {
+            options = JSON.parse(options);         
+        }
+        else if (type === "PolySynth")
+        {            
+            options = {};
             var polyphony = params[0];
+            if (polyphony != null)
+                options["polyphony"] = polyphony;
+            
             var voice = params[1];
             if (voice != null)
-                voice = window["Tone"][voice];
-            var options = params[2];
-            if (options != null)
-                options = JSON.parse(options);    
-            this.instrument = new window["Tone"][type](polyphony, voice, options);
+                options["voice"] = voice;
         }
         else if (type === "Sampler")
         {
-            var url = params[1];
+            options = {};
+            var url = params[0];
+            if (url != null)
+                options["url"] = url;
+        }
+
+        if (type === "PolySynth")
+        {            
+            options["voice"] = window["Tone"][ options["voice"] ];
+        }
+        else if (type === "Sampler")
+        {
             var self=this;
             var onload = function ()
             {
                 self.runtime.trigger(cr.plugins_.Rex_ToneJS_instrumentshell.prototype.cnds.OnLoad, self); 
             }
-            this.instrument = new window["Tone"][type](url, onload);
+            options["onload"] = onload;
         }
-        else
-        {
-            var options = params[0];
-            if (options != null)
-                options = JSON.parse(options);
-            this.instrument = new window["Tone"][type](options);
-        }
+        this.instrument = new window["Tone"][type](options);
 	};     
     
 	Acts.prototype.Dispose = function ()
@@ -212,7 +226,7 @@ cr.plugins_.Rex_ToneJS_instrumentshell = function(runtime)
         this.instrument["set"](keys, (value === 1));
 	};     
     
-	Acts.prototype.SetJSON = function (params)
+	Acts.prototype.SetJSONProps = function (params)
 	{        
         assert2(this.instrument, "Instrument shell: missing instrument '"+ this.type.name + "'");             
         this.instrument["set"](JSON.parse(params));      

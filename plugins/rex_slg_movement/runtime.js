@@ -346,6 +346,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
     var CMD_AREA = 16;
 	instanceProto.ASTAR_search = function (start_tile_uid, end_tile_uid, moving_points, cost, search_cmd)
 	{ 
+        // path mode: 0=Random, 1=Diagonal, 2=Straight, 3=A*, 4=Line, 5=A* -line, 6=A* -random
+        
         var IS_PATH_SEARCH = (search_cmd == CMD_PATH) || (search_cmd == CMD_PATH_NEAREST);
         var IS_AREA_SEARCH = (search_cmd == CMD_AREA); 
         var is_astar = (this.path_mode == 3) || (this.path_mode == 5) || (this.path_mode == 6);  
@@ -405,7 +407,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
             var currentNode = openHeap.pop();
             
             // End case -- result has been found, return the traced path.
-            if (currentNode === end)
+            if (astar_heuristic_enable && (currentNode === end))
             {
                 break;
                 //return GLOBOL_NODES;
@@ -425,6 +427,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                 if(neighbor.closed || is_wall(neighbor_cost))
                 {
                     // Not a valid node to process, skip to next neighbor.
+                    //log("("+neighbor.x+","+neighbor.y+") is closed");
                     continue;
                 }
 
@@ -433,8 +436,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                 var gScore = currentNode.g + neighbor_cost,
                     beenVisited = neighbor.visited;
                     
+                //log("("+currentNode.x+","+currentNode.y+") -> ("+neighbor.x+","+neighbor.y+")="+neighbor_cost+" ,acc="+gScore);
                 if ((moving_points != prop_INFINITY) && (gScore > moving_points))
                 {
+                    //log("("+neighbor.x+","+neighbor.y+") out of range");
                     continue;
                 }
 
@@ -469,21 +474,29 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
                     {
                         // Pushing to heap will put it in proper place based on the 'f' value.
                         openHeap.push(neighbor);
+                        //log("push ("+neighbor.x+","+neighbor.y+") ")
                     }
                     else 
                     {
                         // Already seen the node, but since it has been rescored we need to reorder it in the heap
                         openHeap.rescoreElement(neighbor);
+                        //log("reorder ("+neighbor.x+","+neighbor.y+") ")
                     }
                 }
-                else if ((gScore == neighbor.g) && shortest_path_enable)
+                else if (shortest_path_enable && (gScore == neighbor.g))
                 {
                     neighbor.parent.push(currentNode.uid);
                     
                     //if (neighbor.parent.indexOf(currentNode.uid) == -1)                    
                     //    neighbor.parent.push(currentNode.uid);                    
                     //else                    
-                    //    debugger;                    
+                    //    debugger;                 
+
+                    //log("drop ("+neighbor.x+","+neighbor.y+") ")                
+                }
+                else
+                {
+                    //log("drop ("+neighbor.x+","+neighbor.y+") ")       
                 }
             }            
             
@@ -1069,10 +1082,10 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	{	  
 	    this.request_init_clean();
 	    	    
-	    var group = this.GetInstGroup(); 
+	    var saveToGroup = this.GetInstGroup().GetGroup(group_name); 
 	    var board = this.GetBoard();
 	    
-	    group.GetGroup(group_name).Clean();	    
+	    saveToGroup.Clean();	    
 	    var chess_uid = _get_uid(chess_objs);	    	        
 	    var _xyz = this.uid2xyz(chess_uid);
         if (_xyz == null)
@@ -1086,7 +1099,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         // no filter applied
         if (filter_name == "")
         {
-            group.GetGroup(group_name).SetByUIDList(tiles_uids);
+            saveToGroup.SetByUIDList(tiles_uids);
             return;
         }
         
@@ -1105,17 +1118,17 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	        this.exp_CurTile.y = _xyz.y;
             this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
 		}
-		group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);
+		saveToGroup.SetByUIDList(this._filter_uid_list);
 	};  
 		
 	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name, is_nearest)	
 	{     
 	    this.request_init_clean();
 	    	    
-	    var group = this.GetInstGroup(); 
+	    var saveToGroup = this.GetInstGroup().GetGroup(group_name); 
 	    var board = this.GetBoard();  
 	    
-	    group.GetGroup(group_name).Clean();
+	    saveToGroup.Clean();
 	    var chess_uid = _get_uid(chess_objs);
 	    var tile_uid = _get_uid(tile_objs);
         if ((chess_uid == null) || (tile_uid == null))
@@ -1132,7 +1145,7 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
 	    var path_tiles_uids = this.get_moving_path(chess_uid, tile_uid, moving_points, cost, is_nearest);
         if (path_tiles_uids.length > 0)
         {
-	        group.GetGroup(group_name).SetByUIDList(path_tiles_uids);
+	        saveToGroup.SetByUIDList(path_tiles_uids);
             
 	        this.exp_EndTileUID = path_tiles_uids[ path_tiles_uids.length -1 ];
             var xyz = this.uid2xyz(this.exp_EndTileUID);

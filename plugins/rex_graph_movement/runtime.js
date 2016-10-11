@@ -281,7 +281,7 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
             var currentNode = openHeap.pop();
             
             // End case -- result has been found, return the traced path.
-            if (currentNode === end)
+            if (astar_heuristic_enable && (currentNode === end))
             {
                 break;
                 //return GLOBOL_NODES;
@@ -895,10 +895,10 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
 	{	  
 	    this.request_init_clean();
 	    	    
-	    var group = this.GetInstGroup(); 
+	    var saveToGroup = this.GetInstGroup()GetGroup(group_name); 
 	    var graph = this.GetGraph();
 	    
-	    group.GetGroup(group_name).Clean();	    
+	    saveToGroup.Clean();	    
 	    if ((moving_points != prop_INFINITY) && (moving_points<=0))
 	        return;
 	    
@@ -908,7 +908,7 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
         // no filter applied
         if (filter_name == "")
         {
-            group.GetGroup(group_name).SetByUIDList(uids);
+            saveToGroup.SetByUIDList(uids);
             return;
         }
         
@@ -923,22 +923,22 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
             this.exp_CurVertexUID = uid;
             this.runtime.trigger(cr.plugins_.Rex_GraphMovement.prototype.cnds.OnFilterFn, this);
 		}
-		group.GetGroup(group_name).SetByUIDList(this._filter_uid_list);        
+		saveToGroup.SetByUIDList(this._filter_uid_list);        
 	};  
 		
 	Acts.prototype.GetMovingPath = function (startVertexUID, endVertexUID, moving_points, cost, group_name, is_nearest, result_mode)	
 	{     
 	    this.request_init_clean();
 	    	    
-	    var group = this.GetInstGroup(); 
-	    group.GetGroup(group_name).Clean();	    
+	    var saveToGroup = this.GetInstGroup().GetGroup(group_name); 
+	    saveToGroup.Clean();	    
 	    if ((moving_points != prop_INFINITY) && (moving_points<=0))
 	        return;
         
 	    this.exp_startVertexUID = startVertexUID;
 	    var uids = this.get_moving_path(startVertexUID, endVertexUID, moving_points, cost, is_nearest, result_mode);
         if (uids.length > 0)
-	        group.GetGroup(group_name).SetByUIDList(uids);
+	        saveToGroup.GetGroup(group_name).SetByUIDList(uids);
 	};	 
     
     Acts.prototype.SetPathMode = function (m)
