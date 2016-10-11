@@ -220,15 +220,15 @@ AddAction(102, cf_not_invertible, "Pick all instances", "SOL: instances",
           "Pick all instances on cell <i>{0}</i>", "Pick all instances on cell.", "PickAllInstsOnCell");           
 ////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "Get selected cell index", "Visibl - On visible", "CellIndex", 
+AddExpression(1, ef_return_number, "Get selected cell index", "Visible - On visible", "CellIndex", 
               'Get selected cell index in "Condition: On cell visible", or "Condition: On cell invisible".');		
-AddExpression(2, ef_return_number, "Get selected cell X index", "Visibl - On visible", "CellXIndex", 
+AddExpression(2, ef_return_number, "Get selected cell X index", "Visible - On visible", "CellXIndex", 
               'Get selected cell X index in "Condition: On cell visible", or "Condition: On cell invisible".');
-AddExpression(3, ef_return_number, "Get selected cell Y index", "Visibl - On visible", "CellYIndex", 
+AddExpression(3, ef_return_number, "Get selected cell Y index", "Visible - On visible", "CellYIndex", 
               'Get selected cell Y index in "Condition: On cell visible", or "Condition: On cell invisible".');					  
-AddExpression(4, ef_return_number, "Get position X of selected cell", "Visibl - On visible", "CellTLX", 
+AddExpression(4, ef_return_number, "Get position X of selected cell", "Visible - On visible", "CellTLX", 
               'Get top-left position X of cell in "Condition: On cell visible", in pixels');
-AddExpression(5, ef_return_number, "Get position Y of selected cell", "Visibl - On visible", "CellTLY", 
+AddExpression(5, ef_return_number, "Get position Y of selected cell", "Visible - On visible", "CellTLY", 
               'Get top-left position Y of cell in "Condition: On cell visible", in pixels');              
 			  
 AddNumberParam("UID", "UID of pinned instance.", 0);              

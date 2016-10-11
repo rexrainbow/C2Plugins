@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Instrument shell",
-		"id":			"Rex_ToneJS_instrumentshell",
+		"name":			"Microphone",
+		"id":			"Rex_ToneJS_microphone",
 		"version":		"0.1",        
-		"description":	"Shell of instrument.",
+		"description":	"Opens up the default source (typically the microphone).",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_instrumentshell.html",
-		"category":		"Rex - Audio - Tone - Instrument - Advance",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_microphone.html",
+		"category":		"Rex - Audio - Tone - Source",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -16,22 +16,25 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On load", "Sampler", 
-            "On load",
-            "Triggered when load audio file.", "OnLoad");
+AddCondition(1, cf_trigger, "On opened", "open", 
+            "On opened",
+            "Triggered when the stream is open.", "OnOpen");
+            
+AddCondition(2, cf_trigger, "On opened error", "open", 
+            "On opened error",
+            "Triggered when the media stream can't open. This is fired either because the browser doesn't support the media stream, or the user blocked opening the microphone.", 
+            "OnOpenError");            
             
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Instrument type", "Instrument type.", '"Synth"');
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create instrument", "Creator", 
-          "Create <i>{0}</i> (<i>{...}</i>)", 
-          "Create instrument.", "CreateInstrument"); 
+AddAction(1, 0, "Create microphone", "Creator", 
+          "Create and open microphone", 
+          "Create and open microphone.", "CreateMicrophone"); 
 
 AddAction(2, 0, "Dispose", "Dispose", 
           "Dispose", 
           "Clean up.", "Dispose");          
-
+          
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
 AddAction(11, 0, "Set value", "Property", 
@@ -57,30 +60,24 @@ AddAction(14, 0, "Set JSON", "Properties",
           "Set properties to <i>{1}</i>", 
           "Set properties to JSON string.", "SetJSONProps");          
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(21, 0, "Attack then release", "Trigger", 
-          "Attack then release (<i>{...}</i>)", 
-          "Trigger the attack and then the release after the duration.", "TriggerAttackRelease");   
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(22, 0, "Attack", "Trigger", 
-          "Attack (<i>{...}</i>)", 
-          "Trigger the attack.", "TriggerAttack"); 
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(23, 0, "Release", "Trigger", 
-          "Release (<i>{...}</i>)", 
-          "Trigger the release portion of the envelope.", "TriggerRelease");
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(24, 0, "Set note", "Trigger", 
-          "Set note (<i>{...}</i>)", 
-          "Set the note at the given time.", "SetNote"); 
-        
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(25, 0, "Release all", "Trigger", 
-          "Release all (<i>{...}</i>)", 
-          "Trigger the release portion of all the currently active voices.", "ReleaseAll");          
+AddAnyTypeParam("Time", 'When the source should be started. Set "" to ignore this parameter.', '""');
+AddAction(21, 0, "Start", "Control", 
+          "Start at <i>{0}</i>", 
+          "Start the source at the specified time.", "Start");
+
+AddAnyTypeParam("Time", 'When the source should be stopped. Set "" to ignore this parameter.', '""');
+AddAction(22, 0, "Stop", "Control", 
+          "Stop at <i>{0}</i>", 
+          "Stop the source at the specified time.", "Stop");          
+
+AddAction(31, 0, "Sync", "Sync", 
+          "Sync", 
+          "Sync the source to the Transport so that all subsequent calls to start and stop are synced to the TransportTime instead of the AudioContext time.", "Start");
+
+AddAction(32, 0, "Unsync", "Sync", 
+          "Unsync", 
+          "Unsync the source to the Transport.", "Unsync");           
+
 //////////////////////////////////////////////////////////////
 // Expressions
 //AddStringParam("Property", "Property name in dot notation", '""');

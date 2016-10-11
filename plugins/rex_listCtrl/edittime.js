@@ -176,11 +176,11 @@ AddAction(102, 0, "Pick all instances", "SOL: instances",
           "Line <i>{0}</i>: pick all instances", "Pick all instances on line.", "PickAllInstsOnLine");                   
 ////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "Get selected line index", "Visibl - On visible", "LineIndex", 
+AddExpression(1, ef_return_number, "Get selected line index", "Visible - On visible", "LineIndex", 
               'Get selected line index in "Condition: On line visible", or "Condition: On line invisible".');
-AddExpression(3, ef_return_number, "Get position X of selected line", "Visibl - On visible", "LineTLX", 
+AddExpression(3, ef_return_number, "Get position X of selected line", "Visible - On visible", "LineTLX", 
               'Get top-left position X of line in "Condition: On line visible", in pixels');
-AddExpression(4, ef_return_number, "Get position Y of selected line", "Visibl - On visible", "LineTLY", 
+AddExpression(4, ef_return_number, "Get position Y of selected line", "Visible - On visible", "LineTLY", 
               'Get top-left position Y of line in "Condition: On line visible", in pixels');
 AddNumberParam("UID", "UID of pinned instance.", 0);              
 AddExpression(5, ef_return_number, "Get line index of pinned instance", "Line index", "UID2LineIndex", 

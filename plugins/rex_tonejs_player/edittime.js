@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Instrument shell",
-		"id":			"Rex_ToneJS_instrumentshell",
+		"name":			"Player",
+		"id":			"Rex_ToneJS_player",
 		"version":		"0.1",        
-		"description":	"Shell of instrument.",
+		"description":	"An audio file player with start, loop, and stop functions.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_instrumentshell.html",
-		"category":		"Rex - Audio - Tone - Instrument - Advance",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_player.html",
+		"category":		"Rex - Audio - Tone - Source",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -19,14 +19,13 @@
 AddCondition(1, cf_trigger, "On load", "Sampler", 
             "On load",
             "Triggered when load audio file.", "OnLoad");
-            
+     
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Instrument type", "Instrument type.", '"Synth"');
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create instrument", "Creator", 
-          "Create <i>{0}</i> (<i>{...}</i>)", 
-          "Create instrument.", "CreateInstrument"); 
+AddStringParam("URL", "The url from which to load the AudioBuffer.", '""');
+AddAction(1, 0, "Create player", "Creator", 
+          "Create player: load from <i>{0}</i>", 
+          "Create player.", "CreatePlayer"); 
 
 AddAction(2, 0, "Dispose", "Dispose", 
           "Dispose", 
@@ -57,39 +56,50 @@ AddAction(14, 0, "Set JSON", "Properties",
           "Set properties to <i>{1}</i>", 
           "Set properties to JSON string.", "SetJSONProps");          
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(21, 0, "Attack then release", "Trigger", 
-          "Attack then release (<i>{...}</i>)", 
-          "Trigger the attack and then the release after the duration.", "TriggerAttackRelease");   
+AddAnyTypeParam("Start time", 'When the player should start. Set "" to ignore this parameter.', '""');
+AddAnyTypeParam("Offset", 'The offset from the beginning of the sample to start at. Set "" to ignore this parameter.', '""');
+AddAnyTypeParam("Duration", 'How long the sample should play. Set "" to play full length of the sample (minus any offset).', '""');
+AddAction(21, 0, "Start", "Control", 
+          "Start at <i>{0}</i>, with sample offset to <i>{1}</i>, duration to <i>{2}</i>", 
+          "Play the buffer.", "Start");   
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(22, 0, "Attack", "Trigger", 
-          "Attack (<i>{...}</i>)", 
-          "Trigger the attack.", "TriggerAttack"); 
+AddAnyTypeParam("Time", 'When the source should be stopped. Set "" to ignore this parameter.', '""');
+AddAction(22, 0, "Stop", "Control", 
+          "Stop at <i>{0}</i>", 
+          "Stop the source at the specified time.", "Stop");             
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(23, 0, "Release", "Trigger", 
-          "Release (<i>{...}</i>)", 
-          "Trigger the release portion of the envelope.", "TriggerRelease");
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(24, 0, "Set note", "Trigger", 
-          "Set note (<i>{...}</i>)", 
-          "Set the note at the given time.", "SetNote"); 
-        
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(25, 0, "Release all", "Trigger", 
-          "Release all (<i>{...}</i>)", 
-          "Trigger the release portion of all the currently active voices.", "ReleaseAll");          
+AddAnyTypeParam("Offset", 'The time to seek to.', '""');
+AddAnyTypeParam("Time", 'The time for the seek event to occur. Set "" to ignore this parameter.', '""');
+AddAction(23, 0, "Seek", "Control", 
+          "Seek to sample offset <i>{0}</i>, at <i>{1}</i>", 
+          "Seek to a specific time in the player's buffer. If the source is no longer playing at that time, it will stop.", "Seek");  
+
+AddAnyTypeParam("Loop start", 'The loop start time.', '""');
+AddAnyTypeParam("Loop end", 'The loop end time.', '""');
+AddAction(24, 0, "Set loop points", "Loop", 
+          "Set loop from <i>{0}</i> to <i>{1}</i>", 
+          "Set the loop start and end. Will only loop if loop is set to true.", "SetLoopPoints");             
+
+AddAction(31, 0, "Sync", "Sync", 
+          "Sync", 
+          "Sync the source to the Transport so that all subsequent calls to start and stop are synced to the TransportTime instead of the AudioContext time.", "Start");
+
+AddAction(32, 0, "Unsync", "Sync", 
+          "Unsync", 
+          "Unsync the source to the Transport.", "Unsync");     
+
+AddStringParam("URL", "The url from which to load the AudioBuffer.", '""');
+AddAction(41, 0, "Load", "Load", 
+          "Load from <i>{0}</i>", 
+          "Load the audio file as an audio buffer.", "Load");          
+
 //////////////////////////////////////////////////////////////
 // Expressions
-//AddStringParam("Property", "Property name in dot notation", '""');
-AddExpression(11, ef_return_any | ef_variadic_parameters, "Get property", "Property", "Property", "Get property.");
 
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [
+var property_list = [     
 	];
 	
 // Called by IDE when a new object type is to be created

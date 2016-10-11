@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
+cr.plugins_.Rex_ToneJS_player = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_ToneJS_monosynth.prototype;
+	var pluginProto = cr.plugins_.Rex_ToneJS_player.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -39,26 +39,21 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
-    var PREFIX_MAP = ["", "fm" ,"am", "fat"];    
-    var OSC_MAP = ["sine", "square", "triangle", "custom", "pwm", "pulse"];
-    var FILTER_MAP = ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "notch", "allpass", "peaking"];
-    var ROLLOFF_MAP = [-12, -24, -48];
 	instanceProto.onCreate = function()
 	{
-        this.instrumentType = "";
-        this.instrument = null;
+        this.sourceType = "";
+        this.player = null;
 	};
     
 	instanceProto.onDestroy = function ()
 	{
-        if (this.instrument == null)
+        if (this.player == null)
             return;
         
-        this.instrument["dispose"]();
-        this.instrumentType = "";        
-        this.instrument = null;
+        this.player["dispose"]();
+        this.sourceType = "";        
+        this.player = null;
 	};   
-    
     
     
     // The comments around these functions ensure they are removed when exporting, since the
@@ -95,14 +90,14 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
         // Each section is an object with two members: "title" and "properties".
         // "properties" is an array of individual debugger properties to display
         // with their name and value, and some other optional settings.
-        var props = (this.instrument)?  JSON.stringify(this.instrument["get"](),null,"\t") : "";
+        var props = (this.player)?  JSON.stringify(this.player["get"](),null,"\t") : "";
 
         propsections.push({
             "title": "JSON",
             "properties": [
                 {
                     "name":"Type",
-                    "value": this.instrumentType,
+                    "value": this.sourceType,
                     "readonly":true
                 },            
                 {
@@ -135,123 +130,153 @@ cr.plugins_.Rex_ToneJS_monosynth = function(runtime)
     };
     /**END-PREVIEWONLY**/  
     
-    
     // export
 	instanceProto.GetObject = function ()
 	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");                
-        return this.instrument;
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");                
+        return this.player;
 	};     
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
 
+	Cnds.prototype.OnLoad = function ()
+	{
+	    return true;
+	}; 
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-	Acts.prototype.CreateInstrument = function (options)
+	Acts.prototype.CreatePlayer = function (url)
 	{
-        if (this.instrument !== null)
+        if (this.player !== null)
             this.onDestroy();
-        
-        var type = "MonoSynth";
-        this.instrumentType = type;
-        this.instrument = new window["Tone"][type](JSON.parse(options));
-	};  
-    
-	Acts.prototype.SetPortamento = function (portamento)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
-        this.instrument["set"]("portamento", portamento);
-	};    
-    
-    Acts.prototype.SetDetune = function (detune)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
-        this.instrument["set"]("detune", detune);        
-    };     
-    
-	Acts.prototype.TriggerAttackRelease = function (note, duration, time, velocity)
-	{
-        this.synth["triggerAttackRelease"](note, duration, time, velocity);      
-	};  
-    
-	Acts.prototype.TriggerAttack = function (note, time, velocity)
-	{
-        this.synth["triggerAttack"](note, time, velocity);      
-	};   
-    
-	Acts.prototype.TriggerRelease = function (time)
-	{
-        this.synth["triggerRelease"](time);      
-	};   
-    
-	Acts.prototype.SetNote = function (time)
-	{
-        this.synth["setNote"](time);      
-	};   
-    
-	Acts.prototype.SetOscillatorType = function (prefix, type)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");            
-        this.instrument["set"]("oscillator.type", PREFIX_MAP[prefix] + OSCTYPE_MAP[type]);    
-	};   
-    
-	Acts.prototype.SetPartials = function (partials)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");            
-        this.instrument["set"]("oscillator.partials", JSON.parse(partials));
+            
+        var self=this;
+        var onload = function ()
+        {
+            self.runtime.trigger(cr.plugins_.Rex_ToneJS_player.prototype.cnds.OnLoad, self); 
+        }
+            
+        this.sourceType = "Player";
+        this.player = new window["Tone"][this.sourceType](url, onload);
 	};     
     
-	Acts.prototype.SetWidth = function (width)
+	Acts.prototype.Dispose = function ()
+	{        
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");    
+        this.player["dispose"]();
+	};
+    
+	Acts.prototype.SetValue = function (keys, value)
+	{        
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");    
+        this.player["set"](keys, value);
+	};
+     
+	Acts.prototype.SetJSON = function (keys, value)
 	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");            
-        this.instrument["set"]("oscillator.width", width);
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");                  
+        this.player["set"](keys, JSON.parse(value));
+	};    
+     
+	Acts.prototype.SetBoolean = function (keys, value)
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");      
+        this.player["set"](keys, (value === 1));
+	};     
+    
+	Acts.prototype.SetJSONProps = function (params)
+	{        
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");             
+        this.player["set"](JSON.parse(params));      
+	};  
+    
+	Acts.prototype.Start = function (startTime, offset, duration)
+	{        
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");
+        
+        var params = [startTime, offset, duration];
+        if (startTime === "")
+            params.length = 0;
+        else if (offset === "")
+            params.length = 1;    
+        else if (duration === "")
+            params.length = 2;            
+        
+        this.player["start"].apply(this.player, params);         
+	};  
+    
+	Acts.prototype.Stop = function (time)
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");
+        
+        var params = [time];
+        if (time === "")
+            params.length = 0;
+        
+        this.player["stop"].apply(this.player, params);    
+	};   
+    
+	Acts.prototype.Seek = function (offset, time)
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");
+        
+        var params = [offset, time];
+        if (time === "")
+            params.length = 1;
+        
+        this.player["seek"].apply(this.player, params);    
+	};
+    
+	Acts.prototype.SetLoopPoints = function (loopStart, loopEnd)
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");
+        
+        var params = [offset, time];
+        if (time === "")
+            params.length = 1;
+        
+        this.player["setLoopPoints"](loopStart, loopEnd);    
+	};
+    
+	Acts.prototype.Sync = function ()
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");               
+        this.player["sync"]();     
+	};   
+    
+	Acts.prototype.Unsync = function ()
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");             
+        this.player["unsync"]();     
+	};   
+
+	Acts.prototype.Load = function (url)
+	{
+        var self=this;
+        var onload = function ()
+        {
+            self.runtime.trigger(cr.plugins_.Rex_ToneJS_player.prototype.cnds.OnLoad, self); 
+        }
+        this.player["load"](url, onload);
 	};      
     
-	Acts.prototype.SetEnvelope = function (a, d, s, r)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");      
-        var params = {
-            "attack": a,
-            "decay": d,
-            "sustain": s,
-            "release": r,
-        }        
-        this.instrument["set"]("envelope", params);
-	};   
-        
-	Acts.prototype.SetFilterEnvelope = function (a, d, s, r, baseFrequency, octaves, exponent)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");      
-        var params = {
-            "attack": a,
-            "decay": d,
-            "sustain": s,
-            "release": r,
-            "baseFrequency": baseFrequency,
-            "octaves": octaves,
-            "exponent": exponent,
-        }        
-        this.instrument["set"]("filterEnvelope", params);
-	};    
-        
-	Acts.prototype.SetFilter = function (type, Q, gain)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");      
-        var params = {
-            "type": FILTER_MAP[ type ],
-            "Q": Q,
-            "gain": gain,
-        }        
-        this.instrument["set"]("filter", params);
-	};        
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
+	Exps.prototype.Property = function (ret, keys)
+	{
+        assert2(this.player, "Player: missing player '"+ this.type.name + "'");                
+        var val = this.player["get"](keys);
+		ret.set_any( window.ToneJSGetItemValue(val) );
+	}; 
 }());

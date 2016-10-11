@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Effect shell",
-		"id":			"Rex_ToneJS_effectshell",
+		"name":			"MultiPlayer",
+		"id":			"Rex_ToneJS_multiplayer",
 		"version":		"0.1",        
-		"description":	"Shell of effect.",
+		"description":	"Play a bunch of audio buffers.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_effectshell.html",
-		"category":		"Rex - Audio - Tone - Effect - Advance",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_multiplayer.html",
+		"category":		"Rex - Audio - Tone - Source",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -16,27 +16,21 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
- AddCondition(1, cf_trigger, "On load", "Sampler", 
+AddCondition(1, cf_trigger, "On load", "Sampler", 
             "On load",
             "Triggered when load audio file.", "OnLoad");
-            
+     
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Effect type", "Effect type.", '"Effect"');
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create effect", "Create", 
-          "Create <i>{0}</i> (<i>{...}</i>)", 
-          "Create effect.", "CreateEffect"); 
+AddStringParam("URL", "name:url pairs .", '"{}"');
+AddAction(1, 0, "Create player", "Creator", 
+          "Create player: load from <i>{0}</i>", 
+          "Create player.", "CreatePlayer"); 
 
 AddAction(2, 0, "Dispose", "Dispose", 
           "Dispose", 
           "Clean up.", "Dispose");          
 
-AddObjectParam("Object", "Object to plug.");          
-AddAction(3, 0, "Plug", "Plug", 
-          "Plug <i>{0}</i>", 
-          "Plug object.", "Plug"); 
-          
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
 AddAction(11, 0, "Set value", "Property", 
@@ -62,36 +56,60 @@ AddAction(14, 0, "Set JSON", "Properties",
           "Set properties to <i>{1}</i>", 
           "Set properties to JSON string.", "SetJSONProps");          
           
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddStringParam("Buffer name", 'The name of the buffer to start.', '""');          
+AddAnyTypeParam("Time", 'When to start the buffer. Set "" to ignore this parameter.', '""');
+AddAnyTypeParam("Offset", 'The offset into the buffer to play from. Set "" to ignore this parameter.', '""');
+AddAnyTypeParam("Duration", 'How long to play the buffer for. Set "" to play full length of the sample (minus any offset).', '""');
+AddAnyTypeParam("Pitch", 'The interval to repitch the buffer. Set "" to play full length of the sample (minus any offset).', '""');
+AddAnyTypeParam("Gain", 'The gain to play the sample at. Set "" to play full length of the sample (minus any offset).', '""');
 AddAction(21, 0, "Start", "Control", 
-          "Start (<i>{...}</i>)", 
-          "Start the effect.", "Start"); 
+          "Start <i>{0}</i> at <i>{1}</i>, with sample offset to <i>{2}</i>, duration to <i>{3}</i>, pitch to <i>{4}</i>, gain to <i>{5}</i>", 
+          "Start a buffer by name.", "Start");   
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddStringParam("Buffer name", 'The name of the buffer to start.', '""');               
+AddAnyTypeParam("Time", 'When to stop the buffer. Set "" to ignore this parameter.', '""');
 AddAction(22, 0, "Stop", "Control", 
-          "Stop (<i>{...}</i>)", 
-          "Stop the effect.", "Stop");           
+          "Stop <i>{0}</i> at <i>{1}</i>", 
+          "Stop the buffer at the specified time.", "Stop");             
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAnyTypeParam("Time", 'When to stop the buffers. Set "" to ignore this parameter.', '""');
+AddAction(23, 0, "Stop all", "Control", 
+          "Stop all at <i>{1}</i>", 
+          "Stop all currently playing buffers at the given time.", "StopAll");      
+         
+AddStringParam("Buffer name", 'The name of the buffer to start.', '""');
+AddAnyTypeParam("Time", 'When to start the buffer. Set "" to ignore this parameter.', '""');    
+AddAnyTypeParam("Offset", 'The offset into the buffer to play from. Set "" to ignore this parameter.', '""');
+AddAnyTypeParam("Loop start", 'The loop start time.', '""');
+AddAnyTypeParam("Loop end", 'The loop end time.', '""');
+AddAnyTypeParam("Pitch", 'The interval to repitch the buffer. Set "" to play full length of the sample (minus any offset).', '""');
+AddAnyTypeParam("Gain", 'The gain to play the sample at. Set "" to play full length of the sample (minus any offset).', '""');
+AddAction(24, 0, "Start loop", "Control", 
+          "Start <i>{0}</i> at <i>{1}</i>, with sample offset to <i>{2}</i>, loop from <i>{3}</i> to <i>{4}</i>, pitch to <i>{5}</i>, gain to <i>{6}</i>", 
+          "Start a looping buffer by name.", "StarttLoop");              
+          
+
 AddAction(31, 0, "Sync", "Sync", 
-          "Sync (<i>{...}</i>) to transport", 
-          "Sync the filter to the transport.", "Sync");   
+          "Sync", 
+          "Sync the source to the Transport so that all subsequent calls to start and stop are synced to the TransportTime instead of the AudioContext time.", "Start");
 
 AddAction(32, 0, "Unsync", "Sync", 
-          "Unsync from transport", 
-          "Unsync the filter from the transport.", "Unsync");       
-          
+          "Unsync", 
+          "Unsync the source to the Transport.", "Unsync");           
+
+AddStringParam("Buffer name", 'The name of the buffer to start.', '""');                    
+AddStringParam("URL", "The url from which to load the AudioBuffer.", '""');
+AddAction(41, 0, "Add", "Load", 
+          "Add <i>{0}</i> from <i>{0}</i>", 
+          "Add another buffer to the available buffers.", "Add");          
+
 //////////////////////////////////////////////////////////////
 // Expressions
-//AddStringParam("Property", "Property name in dot notation", '""');
-AddExpression(11, ef_return_any | ef_variadic_parameters, "Get property", "Property", "Property", "Get property.");
-
 
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [      
+var property_list = [     
 	];
 	
 // Called by IDE when a new object type is to be created

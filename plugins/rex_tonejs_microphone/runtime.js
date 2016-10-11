@@ -6,14 +6,14 @@ assert2(cr.plugins_, "cr.plugins_ not created");
 
 /////////////////////////////////////
 // Plugin class
-cr.plugins_.Rex_ToneJS_fmsynth = function(runtime)
+cr.plugins_.Rex_ToneJS_microphone = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var pluginProto = cr.plugins_.Rex_ToneJS_fmsynth.prototype;
+	var pluginProto = cr.plugins_.Rex_ToneJS_microphone.prototype;
 		
 	/////////////////////////////////////
 	// Object type class
@@ -39,26 +39,21 @@ cr.plugins_.Rex_ToneJS_fmsynth = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
-    var PREFIX_MAP = ["", "fm" ,"am", "fat"];    
-    var OSCTYPE_MAP = ["sine", "square", "triangle", "custom", "pwm", "pulse"];
-    var FLTTYPE_MAP = ["lowpass", "highpass", "bandpass", "lowshelf", "highshelf", "notch", "allpass", "peaking"];
-    var ROLLOFF_MAP = [-12, -24, -48];
 	instanceProto.onCreate = function()
 	{
-        this.instrumentType = "";
-        this.instrument = null;
+        this.sourceType = "";
+        this.microphone = null;
 	};
     
 	instanceProto.onDestroy = function ()
 	{
-        if (this.instrument == null)
+        if (this.microphone == null)
             return;
         
-        this.instrument["dispose"]();
-        this.instrumentType = "";        
-        this.instrument = null;
+        this.microphone["dispose"]();
+        this.sourceType = "";        
+        this.microphone = null;
 	};   
-    
     
     
     // The comments around these functions ensure they are removed when exporting, since the
@@ -95,14 +90,14 @@ cr.plugins_.Rex_ToneJS_fmsynth = function(runtime)
         // Each section is an object with two members: "title" and "properties".
         // "properties" is an array of individual debugger properties to display
         // with their name and value, and some other optional settings.
-        var props = (this.instrument)?  JSON.stringify(this.instrument["get"](),null,"\t") : "";
+        var props = (this.microphone)?  JSON.stringify(this.microphone["get"](),null,"\t") : "";
 
         propsections.push({
             "title": "JSON",
             "properties": [
                 {
                     "name":"Type",
-                    "value": this.instrumentType,
+                    "value": this.sourceType,
                     "readonly":true
                 },            
                 {
@@ -135,12 +130,11 @@ cr.plugins_.Rex_ToneJS_fmsynth = function(runtime)
     };
     /**END-PREVIEWONLY**/  
     
-    
     // export
 	instanceProto.GetObject = function ()
 	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");                
-        return this.instrument;
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");                
+        return this.microphone;
 	};     
     
 	//////////////////////////////////////
@@ -148,117 +142,113 @@ cr.plugins_.Rex_ToneJS_fmsynth = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
 
+	Cnds.prototype.OnOpen = function ()
+	{
+	    return true;
+	}; 
+
+	Cnds.prototype.OnOpenError = function ()
+	{
+	    return true;
+	};     
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-	Acts.prototype.CreateInstrument = function (options)
+	Acts.prototype.CreateMicrophone = function ()
 	{
-        if (this.instrument !== null)
+        if (this.microphone !== null)
             this.onDestroy();
+            
+        this.sourceType = "Microphone";
+        this.microphone = new window["Tone"][this.sourceType]();
         
-        var type = "FMSynth";
-        this.instrumentType = type;
-        this.instrument = new window["Tone"][type](JSON.parse(options));
-	};  
-    
-	Acts.prototype.SetPortamento = function (portamento)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
-        this.instrument["set"]("portamento", portamento);
-	};    
-    
-    Acts.prototype.SetDetune = function (detune)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
-        this.instrument["set"]("detune", detune);        
-    };     
-    
-	Acts.prototype.SetHarmonicity = function (harmonicity)
-	{
-        assert2(this.instrument, "Mono Synth: missing '"+ this.type.name + "'");     
-        this.instrument["set"]("harmonicity", harmonicity);
-	};     
-    
-    
-	Acts.prototype.TriggerAttackRelease = function (note, duration, time, velocity)
-	{
-        this.synth["triggerAttackRelease"](note, duration, time, velocity);      
-	};  
-    
-	Acts.prototype.TriggerAttack = function (note, time, velocity)
-	{
-        this.synth["triggerAttack"](note, time, velocity);      
-	};   
-    
-	Acts.prototype.TriggerRelease = function (time)
-	{
-        this.synth["triggerRelease"](time);      
-	};   
-    
-	Acts.prototype.SetNote = function (time)
-	{
-        this.synth["setNote"](time);      
-	};   
-
-        
-	Acts.prototype.SetOscillatorType = function (prefix, type)
-	{
-        var oscillator = this.synth["oscillator"];
-        oscillator["type"] = PREFIX_MAP[prefix] + OSCTYPE_MAP[type];       
-	};   
-    
-	Acts.prototype.SetPartials = function (partials)
-	{
-        try
+        var self=this;        
+        var onOpen = function()        
         {
-            partials = JSON.parse(partials);
-        }
-        catch(e)
+            self.runtime.trigger(cr.plugins_.Rex_ToneJS_microphone.prototype.OnOpen, self); 
+        };
+        var onOpenError = function()        
         {
-            return;
-        }
+            self.runtime.trigger(cr.plugins_.Rex_ToneJS_microphone.prototype.OnOpenError, self); 
+        };     
         
-        var oscillator = this.synth["oscillator"];
-        oscillator["partials"] = partials;
+        this.microphone["open"](onOpen, onOpenError);        
 	};     
     
-	Acts.prototype.SetWidth = function (width)
-	{
-        var oscillator = this.synth["oscillator"];
-        oscillator["width"] = width;    
-	};     
-        
-	Acts.prototype.SetEnvelope = function (a, d, s, r)
-	{
-        var envelope = this.synth["envelope"];
-        envelope["attack"] = a;
-        envelope["decay"] = d;    
-        envelope["sustain"] = s;
-        envelope["release"] = r;            
+	Acts.prototype.Dispose = function ()
+	{        
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");    
+        this.microphone["dispose"]();
 	};
-        
-	Acts.prototype.SetFilterEnvelope = function (a, d, s, r, baseFrequency, octaves, exponent)
-	{
-        var envelope = this.synth["filterEnvelope"];
-        envelope["attack"] = a;
-        envelope["decay"] = d;    
-        envelope["sustain"] = s;
-        envelope["release"] = r;      
-        envelope["baseFrequency"] = baseFrequency;    
-        envelope["octaves"] = octaves;
-        envelope["exponent"] = exponent;     
-        
-	};    
     
-	Acts.prototype.SetModulationIndex = function (modulationIndex)
+	Acts.prototype.SetValue = function (keys, value)
+	{        
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");    
+        this.microphone["set"](keys, value);
+	};
+     
+	Acts.prototype.SetJSON = function (keys, value)
 	{
-        this.synth["modulationIndex"] = modulationIndex;  
-	};       
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");                  
+        this.microphone["set"](keys, JSON.parse(value));
+	};    
+     
+	Acts.prototype.SetBoolean = function (keys, value)
+	{
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");      
+        this.microphone["set"](keys, (value === 1));
+	};     
+    
+	Acts.prototype.SetJSONProps = function (params)
+	{        
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");             
+        this.microphone["set"](JSON.parse(params));      
+	};  
+    
+	Acts.prototype.Start = function (time)
+	{        
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");       
+
+        var params = [time];
+        if (time === "")
+            params.length = 0;        
+        this.microphone["start"].apply(this.microphone, params);         
+	};  
+    
+	Acts.prototype.Stop = function (time)
+	{
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");
+
+        var params = [time];
+        if (time === "")
+            params.length = 0;          
+        this.microphone["stop"].apply(this.microphone, params);    
+	};   
+    
+	Acts.prototype.Sync = function ()
+	{
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");                
+        this.microphone["sync"]();     
+	};   
+    
+	Acts.prototype.Unsync = function ()
+	{
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");                
+        this.microphone["unsync"]();     
+	};   
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
+	Exps.prototype.Property = function (ret, keys)
+	{
+        assert2(this.microphone, "Microphone: missing microphone '"+ this.type.name + "'");                
+        var val = this.microphone["get"](keys);
+		ret.set_any( window.ToneJSGetItemValue(val) );
+	}; 
 }());

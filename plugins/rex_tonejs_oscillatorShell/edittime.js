@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Instrument shell",
-		"id":			"Rex_ToneJS_instrumentshell",
+		"name":			"Oscillator shell",
+		"id":			"Rex_ToneJS_oscillatortshell",
 		"version":		"0.1",        
-		"description":	"Shell of instrument.",
+		"description":	"Shell of oscillator.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_instrumentshell.html",
-		"category":		"Rex - Audio - Tone - Instrument - Advance",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_oscillatortshell.html",
+		"category":		"Rex - Audio - Tone - Source - Oscillator - Advance",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -16,17 +16,14 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On load", "Sampler", 
-            "On load",
-            "Triggered when load audio file.", "OnLoad");
-            
+
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Instrument type", "Instrument type.", '"Synth"');
+AddStringParam("Oscillator type", "Oscillator type.", '"Oscillator"');
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create instrument", "Creator", 
+AddAction(1, 0, "Create oscillator", "Creator", 
           "Create <i>{0}</i> (<i>{...}</i>)", 
-          "Create instrument.", "CreateInstrument"); 
+          "Create oscillator.", "CreateOscillator"); 
 
 AddAction(2, 0, "Dispose", "Dispose", 
           "Dispose", 
@@ -58,29 +55,31 @@ AddAction(14, 0, "Set JSON", "Properties",
           "Set properties to JSON string.", "SetJSONProps");          
           
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(21, 0, "Attack then release", "Trigger", 
-          "Attack then release (<i>{...}</i>)", 
-          "Trigger the attack and then the release after the duration.", "TriggerAttackRelease");   
+AddAction(21, 0, "Start", "Control", 
+          "Start (<i>{...}</i>)", 
+          "Start the source at the specified time.", "Start");
+
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(22, 0, "Stop", "Control", 
+          "Stop (<i>{...}</i>)", 
+          "Stop the source at the specified time.", "Stop");          
+
+AddAction(31, 0, "Sync", "Sync", 
+          "Sync", 
+          "Sync the source to the Transport so that all subsequent calls to start and stop are synced to the TransportTime instead of the AudioContext time.", "Start");
+
+AddAction(32, 0, "Unsync", "Sync", 
+          "Unsync", 
+          "Unsync the source to the Transport.", "Unsync");           
+
+AddAction(33, 0, "Sync frequency", "Sync", 
+          "Sync", 
+          "Sync the signal to the Transport's bpm. Any changes to the transports bpm, will also affect the oscillators frequency.", "SyncFrequency");
+
+AddAction(34, 0, "Unsync frequency", "Sync", 
+          "Unsync frequency", 
+          "Unsync the oscillator's frequency from the Transport.", "UnsyncFrequency");             
           
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(22, 0, "Attack", "Trigger", 
-          "Attack (<i>{...}</i>)", 
-          "Trigger the attack.", "TriggerAttack"); 
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(23, 0, "Release", "Trigger", 
-          "Release (<i>{...}</i>)", 
-          "Trigger the release portion of the envelope.", "TriggerRelease");
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(24, 0, "Set note", "Trigger", 
-          "Set note (<i>{...}</i>)", 
-          "Set the note at the given time.", "SetNote"); 
-        
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(25, 0, "Release all", "Trigger", 
-          "Release all (<i>{...}</i>)", 
-          "Trigger the release portion of all the currently active voices.", "ReleaseAll");          
 //////////////////////////////////////////////////////////////
 // Expressions
 //AddStringParam("Property", "Property name in dot notation", '""');
