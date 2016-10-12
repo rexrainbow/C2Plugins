@@ -166,11 +166,15 @@ cr.plugins_.Rex_ToneJS_objectshell = function(runtime)
         }
         else if (params instanceof Array)
         {
+            var options = params[0];
+            if ((typeof(options) === "string") && (options.indexOf("{") !== -1))
+            {
+                params[0] = JSON.parse(options);         
+            }
+            
             params.unshift(null);
             this.toneObject = new (Function.prototype.bind.apply(window["Tone"][type], params));
         }
-        else
-            this.toneObject = new window["Tone"][type]( params );
 	};     
     
 	Acts.prototype.Dispose = function ()

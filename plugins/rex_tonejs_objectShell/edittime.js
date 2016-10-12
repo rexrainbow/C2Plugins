@@ -40,12 +40,6 @@ AddAction(4, 0, "Connect", "Connect",
           "Connect to <i>{0}</i> (<i>{1}</i>)", 
           "Connect to object.", "Connect"); 
 
-AddStringParam("Type name", "Type name.", '""');
-AddStringParam("JSON", "Options in JSON", '"{}"');
-AddAction(5, 0, "Create object w JSON", "Create", 
-          "Create <i>{0}</i> (<i>{1}</i>)", 
-          "Create object.", "CreateObject");           
-          
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
 AddAction(11, 0, "Set value", "Property", 
