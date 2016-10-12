@@ -1,13 +1,13 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Effect shell",
-		"id":			"Rex_ToneJS_effectshell",
+		"name":			"Object shell",
+		"id":			"Rex_ToneJS_objectshell",
 		"version":		"0.1",        
-		"description":	"Shell of effect.",
+		"description":	"Shell of tone object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_effectshell.html",
-		"category":		"Rex - Audio - Tone - Effect - Advance",
+		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_objectshell.html",
+		"category":		"Rex - Audio - Tone - Advance",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -16,17 +16,14 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
- AddCondition(1, cf_trigger, "On load", "Sampler", 
-            "On load",
-            "Triggered when load audio file.", "OnLoad");
-            
+
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Effect type", "Effect type.", '"Effect"');
+AddStringParam("Type name", "Type name.", '""');
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create effect", "Create", 
+AddAction(1, 0, "Create object", "Create", 
           "Create <i>{0}</i> (<i>{...}</i>)", 
-          "Create effect.", "CreateEffect"); 
+          "Create object.", "CreateObject"); 
 
 AddAction(2, 0, "Dispose", "Dispose", 
           "Dispose", 
@@ -41,7 +38,13 @@ AddObjectParam("Object", "Object to plug.");
 AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
 AddAction(4, 0, "Connect", "Connect", 
           "Connect to <i>{0}</i> (<i>{1}</i>)", 
-          "Connect to object.", "Connect");           
+          "Connect to object.", "Connect"); 
+
+AddStringParam("Type name", "Type name.", '""');
+AddStringParam("JSON", "Options in JSON", '"{}"');
+AddAction(5, 0, "Create object w JSON", "Create", 
+          "Create <i>{0}</i> (<i>{1}</i>)", 
+          "Create object.", "CreateObject");           
           
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
@@ -68,25 +71,11 @@ AddAction(14, 0, "Set JSON", "Properties",
           "Set properties to <i>{0}</i>", 
           "Set properties to JSON string.", "SetJSONProps");          
           
-          
+AddStringParam("Function name", "Function name.", '""');  
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(21, 0, "Start", "Control", 
-          "Start (<i>{...}</i>)", 
-          "Start the effect.", "Start"); 
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(22, 0, "Stop", "Control", 
-          "Stop (<i>{...}</i>)", 
-          "Stop the effect.", "Stop");           
-          
-AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(31, 0, "Sync", "Sync", 
-          "Sync (<i>{...}</i>) to transport", 
-          "Sync the filter to the transport.", "Sync");   
-
-AddAction(32, 0, "Unsync", "Sync", 
-          "Unsync from transport", 
-          "Unsync the filter from the transport.", "Unsync");       
+AddAction(21, 0, "Call", "Function", 
+          "Call <i>{0}</i> (<i>{...}</i>)", 
+          "Call function.", "Call"); 
           
 //////////////////////////////////////////////////////////////
 // Expressions

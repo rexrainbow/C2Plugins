@@ -246,11 +246,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 		ret.set_any( window.ToneJSGetItemValue(val) );
 	};    
     
-    
-}());
 
-(function ()
-{
  	var getItemValue = function (item, k, default_value)
 	{
         var v;
@@ -301,4 +297,14 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 	    return o;
     };    
     window.ToneJSGetItemValue = getItemValue;    
+    
+    var connect = function(a, b, port)
+    {
+        if ((typeof(port) === "string") && (port !== ""))
+            b = b[port];
+        
+        a["connect"](b);
+    }
+    window.ToneJSConnect = connect;       
+    
 }());

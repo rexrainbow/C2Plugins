@@ -32,7 +32,7 @@ AddAction(2, 0, "Set mute", "Mute",
           "Set mute.", "SetMute");
           
 AddObjectParam("Object", "Object to plug.");          
-AddAction(11, 0, "Plug", "Plug", 
+AddAction(11, af_deprecated, "Plug", "Plug", 
           "Plug <i>{0}</i>", 
           "Plug object.", "Plug"); 
           

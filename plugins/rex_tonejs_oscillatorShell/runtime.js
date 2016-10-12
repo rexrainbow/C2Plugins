@@ -231,7 +231,23 @@ cr.plugins_.Rex_ToneJS_oscillatortshell = function(runtime)
         assert2(this.oscillator, "Oscillator shell: missing oscillator '"+ this.type.name + "'");    
         this.oscillator["dispose"]();
 	};
-    
+
+	Acts.prototype.Connect = function (objType, port)
+	{
+        assert2(this.effect, "Effect shell: missing effect '"+ this.type.name + "'");            
+        if (!objType)
+            return;
+        
+        var insts = objType.getCurrentSol().getObjects();
+        var i,cnt=insts.length, toneObj, myToneObj=this.GetObject();
+        for (i=0; i<cnt; i++)
+        {
+            toneObj = insts[i].GetObject(); 
+            window.ToneJSConnect(myToneObj, toneObj, port);
+        }
+	};   
+       
+       
 	Acts.prototype.SetValue = function (keys, value)
 	{        
         assert2(this.oscillator, "Oscillator shell: missing oscillator '"+ this.type.name + "'");    

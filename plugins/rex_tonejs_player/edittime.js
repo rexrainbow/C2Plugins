@@ -31,6 +31,13 @@ AddAction(2, 0, "Dispose", "Dispose",
           "Dispose", 
           "Clean up.", "Dispose");          
 
+AddObjectParam("Object", "Object to plug.");          
+AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
+AddAction(4, 0, "Connect", "Connect", 
+          "Connect to <i>{0}</i> (<i>{1}</i>)", 
+          "Connect to object.", "Connect");           
+                                         
+
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
 AddAction(11, 0, "Set value", "Property", 
@@ -53,7 +60,7 @@ AddAction(13, 0, "Set boolean", "Property",
 
 AddStringParam("Properties", "Properties in JSON", '"{}"');
 AddAction(14, 0, "Set JSON", "Properties", 
-          "Set properties to <i>{1}</i>", 
+          "Set properties to <i>{0}</i>", 
           "Set properties to JSON string.", "SetJSONProps");          
           
 AddAnyTypeParam("Start time", 'When the player should start. Set "" to ignore this parameter.', '""');
