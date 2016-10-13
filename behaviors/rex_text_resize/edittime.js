@@ -23,15 +23,19 @@ AddAction(1, 0, "Resize", "Resize",
           "{my} resize", 
           "Resize text object to show all text with minimal height.", "Resize");
           
+AddNumberParam("Width", "Width in pixels.");          
 AddAction(2, 0, "Set max width", "Resize", 
-          "{my} set max width to <i>{1}</i>", 
+          "{my} set max width to <i>{0}</i>", 
           "Set maximum width of this object.", "SetMaxWidth");    
 
+AddNumberParam("Width", "Width in pixels.");             
 AddAction(3, 0, "Set min width", "Resize", 
-          "{my} set min width to <i>{1}</i>", 
-          "Set minimum width of this object.", "SetMinWidth");             
+          "{my} set min width to <i>{0}</i>", 
+          "Set minimum width of this object.", "SetMinWidth");   
+
+AddNumberParam("Height", "Height in pixels.");             
 AddAction(4, 0, "Set min height", "Resize", 
-          "{my} set min height to <i>{1}</i>", 
+          "{my} set min height to <i>{0}</i>", 
           "Set minimum height of this object.", "SetMinHeight");
           
 AddObjectParam("Baclground", "Baclground object.");
