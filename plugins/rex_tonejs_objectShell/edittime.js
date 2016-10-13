@@ -16,7 +16,13 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddCondition(1, cf_trigger, "On completed", "Callback", 
+            "On completed",
+            "Callback of completed (On load).", "OnCompleted");
+            
+AddCondition(2, cf_trigger, "On error", "Callback", 
+            "On error",
+            "Callback of error.", "OnError");   
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Type name", "Type name.", '""');
@@ -29,11 +35,6 @@ AddAction(2, 0, "Dispose", "Dispose",
           "Dispose", 
           "Clean up.", "Dispose");          
 
-AddObjectParam("Object", "Object to plug.");          
-AddAction(3, af_deprecated, "Plug", "Plug", 
-          "Plug <i>{0}</i>", 
-          "Plug object.", "Plug"); 
-          
 AddObjectParam("Object", "Object to plug.");          
 AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
 AddAction(4, 0, "Connect", "Connect", 
