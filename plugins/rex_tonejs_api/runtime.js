@@ -46,24 +46,35 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         if (this.properties[0] === 1)
             transport["start"]();        
         
-        transport["set"]("bpm", this.properties[1]);
+        this.toneObjects = {};
+        
+        // callback
+        this.callbackTag = "";   
+        this.params = [];   
+        var self=this;
+        this.getCallback = function(callbackTag)
+        {
+            if (callbackTag == null)
+                return null;
+        
+            var cb = function ()
+            {
+                self.callbackTag = callbackTag;
+                cr.shallowAssignArray(self.params, arguments);
+                self.runtime.trigger(cr.plugins_.Rex_ToneJS_api.prototype.cnds.OnCallback, self); 
+            }
+            return cb;
+        };          
+        
+        /**BEGIN-PREVIEWONLY**/
+        this.dbg_varName = "";
+        /**END-PREVIEWONLY**/           
 	};
     
 	instanceProto.onDestroy = function ()
 	{
 	};   
 
-    var forEachInst = function(objType, callback)
-    {
-        if (!objType)
-            return;
-        
-        var insts = objType.getCurrentSol().getObjects();
-        var i,cnt=insts.length;
-        for (i=0; i<cnt; i++)
-            callback(insts[i]);        
-    };
-       
     // The comments around these functions ensure they are removed when exporting, since the
     // debugger code is no longer relevant after publishing.
     /**BEGIN-PREVIEWONLY**/
@@ -94,42 +105,45 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 
     instanceProto.getDebuggerValues = function (propsections)
     {
-        // Append to propsections any debugger sections you want to appear.
-        // Each section is an object with two members: "title" and "properties".
-        // "properties" is an array of individual debugger properties to display
-        // with their name and value, and some other optional settings.
-        var transport = JSON.stringify(window["Tone"]["Transport"]["get"](),null,"\t");
+        var object2Type = {};
+        for (var varName in this.toneObjects)
+        {
+            object2Type[varName] = this.toneObjects[varName]["extra"]["type"];
+        }
+        object2Type = JSON.stringify(object2Type,null,"\t");
+        
+        var toneObject = this.toneObjects[this.dbg_varName];
+        toneObject = (toneObject)? JSON.stringify(toneObject["get"](),null,"\t") : "";
 
         propsections.push({
-            "title": "JSON",
+            "title": "Tone objects",
             "properties": [
                 {
-                    "name":"Transport",
-                    "value": "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+syntaxHighlight(transport)+"</style>",
+                    "name":"Objects",
+                    "value": "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+syntaxHighlight(object2Type)+"</style>",
                     "html": true,
                     "readonly":true
-                }
-
-                // Each property entry can use the following values:
-                // "name" (required): name of the property (must be unique within this section)
-                // "value" (required): a boolean, number or string for the value
-                // "html" (optional, default false): set to true to interpret the name and value
-                //                                   as HTML strings rather than simple plain text
-                // "readonly" (optional, default false): set to true to disable editing the property
-                
-                // Example:
-                // {"name": "My property", "value": this.myValue}
+                },
+                {
+                    "name":"Name",
+                    "value": this.dbg_varName,
+                },                
+                {
+                    "name":"Properties",
+                    "value": "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+syntaxHighlight(toneObject)+"</style>",
+                    "html": true,
+                    "readonly":true
+                },
             ]
         });
     };
     
     instanceProto.onDebugValueEdited = function (header, name, value)
     {
-        // Called when a non-readonly property has been edited in the debugger. Usually you only
-        // will need 'name' (the property name) and 'value', but you can also use 'header' (the
-        // header title for the section) to distinguish properties with the same name.
-        // if (name === "My property")
-        //  this.myProperty = value;
+		if (name == "Name")    // change page
+		{
+		    this.dbg_varName = value;
+		}
     };
     /**END-PREVIEWONLY**/  
     
@@ -138,115 +152,100 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
 
+	Cnds.prototype.OnCallback = function (tag)
+	{
+		return cr.equals_nocase(tag, this.callbackTag);
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-    
-	Acts.prototype.SetBPM = function (bpm)
+
+	Acts.prototype.CreateObject = function (varName, type, params)
 	{
-        window["Tone"]["Transport"]["set"]("bpm", bpm);
-	};    
-    
-	Acts.prototype.StartTimeline = function (time, offset)
-	{
-        window["Tone"]["Transport"]["start"](time, offset);  
-	};       
-    
-	Acts.prototype.StopTimeline = function (time)
-	{
-        window["Tone"]["Transport"]["stop"](time);  
-	};    
-    
-	Acts.prototype.PauseTimeline = function (time)
-	{
-        window["Tone"]["Transport"]["pause"](time);  
-	};  
-    
-	Acts.prototype.SetValue = function (objType, keys, value)
-	{
-        var self=this;
-        var callback = function(inst)
+        var toneObject = this.toneObjects[varName];
+        if (toneObject != null)
         {
-            var toneObj = inst.GetObject();
-            if (!toneObj)
-                return;
-            
-            toneObj["set"](keys, value);     
+            toneObject["dispose"]();
+            toneObject = null;
         }
         
-        forEachInst(objType, callback);
-	};
-     
-	Acts.prototype.SetJSON = function (objType, keys, value)
-	{
-        var self=this;
-        var callback = function(inst)
-        {
-            var toneObj = inst.GetObject();
-            if (!toneObj)
-                return;
-            
-            toneObj["set"](keys, JSON.parse(value));
-        }
-        
-        forEachInst(objType, callback);
-	};    
-     
-	Acts.prototype.SetBoolean = function (objType, keys, value)
-	{
-        value = (value === 1);
-        
-        var self=this;
-        var callback = function(inst)
-        {
-            var toneObj = inst.GetObject();
-            if (!toneObj)
-                return;
-            
-            toneObj["set"](keys, value);
-        }
-        
-        forEachInst(objType, callback);
+        this.objectType = type;      
+        this.toneObjects[varName] = window.ToneJSObjectNew(type, params, this.getCallback);
 	};     
     
-	Acts.prototype.SetJSON = function (objType, params)
-	{            
-        var self=this;
-        var callback = function(inst)
-        {
-            var toneObj = inst.GetObject();
-            if (!toneObj)
-                return;
-            
-            toneObj["set"](JSON.parse(params));
-        }
+	Acts.prototype.Connect = function (varNameA, varNameB, port)
+	{
+        var toneObjectA = this.toneObjects[varNameA];
+        var toneObjectB = this.toneObjects[varNameB];
+        assert2(toneObjectA, "ToneJS API: missing object '"+ varNameA + "'");      
+        assert2(toneObjectB, "ToneJS API: missing object '"+ varNameB + "'"); 
+        if (!toneObjectA || !toneObjectB)
+            return;
         
-        forEachInst(objType, callback);       
+        window.ToneJSConnect(toneObjectA, toneObjectB, port);
+	};   
+    
+	Acts.prototype.SetValue = function (varName, keys, value)
+	{       
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
+        toneObject["set"](keys, value);
+	};
+     
+	Acts.prototype.SetJSON = function (varName, keys, value)
+	{
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
+        toneObject["set"](keys, JSON.parse(value));
+	};    
+     
+	Acts.prototype.SetBoolean = function (varName, keys, value)
+	{
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
+        toneObject["set"](keys, (value === 1));
+	};     
+    
+	Acts.prototype.SetJSONProps = function (varName, params)
+	{
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
+        toneObject["set"](JSON.parse(params));      
 	};  
+    
+	Acts.prototype.Call = function (varName, fnName, params)
+	{        
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
+        window.ToneJSObjectCall(toneObject, fnName, params, this.getCallback);        
+	};
         
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
-	Exps.prototype.Now = function (ret)
-	{
-		ret.set_float(window["Tone"]["now"]());
-	};
-
-	Exps.prototype.Property = function (ret, uid, keys)
-	{
-        var val = 0;
-        var inst = this.runtime.getObjectByUID(uid);
-        if (inst)
-        {
-            val = inst.GetObject()["get"](keys);
-        }
-		ret.set_any( window.ToneJSGetItemValue(val) );
-	};    
+	Exps.prototype.Param = function (ret, index, keys)
+	{             
+        var val = this.params[index];        
+		ret.set_any( window.ToneJSGetItemValue(val, keys) );
+	}; 
     
+	Exps.prototype.Property = function (ret, varName, keys)
+	{
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");  
+        
+        var val = toneObject["get"](keys);
+		ret.set_any( window.ToneJSGetItemValue(val, keys) );
+	}; 
 
+    
+    // ------------------------------------------------------------------------
+    // ------------------------------------------------------------------------    
+    // ------------------------------------------------------------------------    
  	var getItemValue = function (item, k, default_value)
 	{
         var v;
@@ -307,4 +306,175 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
     }
     window.ToneJSConnect = connect;       
     
+    
+	var createObject = function (type, params, getCallback)
+	{
+        var toneObject;
+        if ((type === "Master") || (type === "Transport") || (type === "Listener"))
+        {
+            toneObject = window["Tone"][type];
+        }       
+        else
+        {
+            var options = params[0];
+            var isOptionMode = (typeof(options) === "string") && (options.indexOf("{") !== -1);            
+            if (isOptionMode)
+            {
+                options = JSON.parse(options);  
+                params[0] = options;            
+            }
+
+            // instrument
+            if (type === "PolySynth")
+            {
+                if (isOptionMode)
+                    options["voice"] = window["Tone"][ options["voice"] ];
+                else if (params[1] != null)
+                    params[1] = window["Tone"][ params[1] ];
+            }
+            else if (type === "Sampler")
+            {
+                var callbackTag = params[1];
+                
+                if (callbackTag != null)
+                {            
+                    var onload = getCallback(callbackTag);                    
+                    if (isOptionMode)
+                        options["onload"] = onload;
+                    else
+                        params[1] = onload;
+                }
+            }
+            // instrument   
+            
+            // effect
+            else if (type === "Convolver")
+            {
+                var callbackTag = params[1];
+                if (callbackTag != null)
+                {                
+                    var onload = getCallback(callbackTag);                    
+                    if (isOptionMode)
+                        options["onload"] = onload;
+                    else
+                        params[1] = onload;
+                }
+            } 
+            // effect
+
+            // source            
+            else if ((type === "Player") || (type === "GrainPlayer"))
+            {
+                var callbackTag = params[1];
+                if (callbackTag != null)
+                {     
+                    var onload = getCallback(callbackTag);
+                    if (isOptionMode)
+                        options["onload"] = onload;
+                    else
+                        params[1] = onload;
+                }
+            }
+            else if (type === "MultiPlayer")
+            {
+                var callbackTag = params[1];
+                if (callbackTag != null)
+                { 
+                    var onload = getCallback(callbackTag);
+                    isOptionMode = options.hasOwnProperty("buffers");
+                    if (isOptionMode)
+                        options["onload"] = onload;
+                    else
+                        params[1] = onload;
+                }
+            }                        
+            // source
+            
+            // event            
+            else if (type === "Loop")
+            {
+                var callbackTag = params[0];
+                if (callbackTag != null)
+                {     
+                    var onload = getCallback(callbackTag);
+                    if (isOptionMode)
+                        options["callback"] = onload;
+                    else
+                        params[0] = onload;
+                }
+            }
+            else if ((type === "Part") || (type === "Pattern") || (type === "Sequence"))
+            {
+                var callbackTag = params[0];
+                if (callbackTag != null)
+                {     
+                    var onload = getCallback(callbackTag);
+                    if (isOptionMode)
+                        options["callback"] = onload;
+                    else
+                        params[0] = onload;
+                }
+                
+                if (!isOptionMode)
+                {
+                    params[1] = JSON.parse( params[1] );
+                }
+            }            
+            // event         
+            
+            // reference: http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible/#1608546
+            params.unshift(null);
+            toneObject = new (Function.prototype.bind.apply(window["Tone"][type], params));
+        }
+        
+        toneObject["extra"] = {};
+        toneObject["extra"]["type"] = type;
+        return toneObject;
+	};     
+    window.ToneJSObjectNew = createObject;      
+        
+    var isType = function(o, type)
+    {
+        return (o instanceof window["Tone"][type]);
+    }     
+	var objectCall = function (toneObject, fnName, params, getCallback)
+	{        
+        var i, cnt=params.length;
+        for (i=0; i<cnt; i++)
+        {
+            if (typeof(params[i]) === "string")
+            {
+                if ((params[i].indexOf("{") !== -1) || (params[i].indexOf("[") !== -1))
+                    params[i] = JSON.parse(params[i]);
+            }
+        }
+        
+        // source
+        if (isType(toneObject, "Player"))
+        {
+            if (fnName === "load")
+            {
+                params[1] = getCallback(params[1]); 
+            }
+        }
+        else if (isType(toneObject, "MultiPlayer"))
+        {
+            if (fnName === "add")
+            {
+                params[2] = getCallback(params[2]);
+            }
+        }   
+        else if (isType(toneObject, "Microphone"))
+        {
+            if (fnName === "open")
+            {
+                params[0] = getCallback(params[0]); 
+                params[1] = getCallback(params[1]);
+            }
+        }   
+        // source
+        
+        toneObject[fnName].apply(toneObject, params);         
+	};
+    window.ToneJSObjectCall = objectCall;
 }());

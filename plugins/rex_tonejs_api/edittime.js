@@ -17,74 +17,78 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different callback.", "\"\"");
+AddCondition(1, cf_trigger, "Callback", "Callback", 
+            "On <i>{0}</i>",
+            "Callback.", "OnCallback");
+            
 //////////////////////////////////////////////////////////////
 // Actions
-AddNumberParam("BPM", "Beats Per Minute", 0);
-AddAction(1, 0, "Set BPM", "Transport", 
-          "Set BPM to <i>{0}</i>", 
-          "Set BPM.", "SetBPM"); 
-          
-AddAnyTypeParam("Time", 'The time when the transport should start. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');          
-AddAnyTypeParam("Offset", 'The timeline offset to start the transport. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');          
-AddAction(2, 0, "Start", "Transport - timeline", 
-          "Start timeline at time <i>{0}</i>, offset to <i>{1}</i>", 
-          "Start timeline.", "StartTimeline"); 
-          
-AddAnyTypeParam("Time", 'The time when the transport should stop. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');                    
-AddAction(3, 0, "Stop", "Transport - timeline", 
-          "Stop timeline at time <i>{0}</i>", 
-          "Stop timeline.", "StopTimeline"); 
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');
+AddStringParam("Type name", "Type name.", '""');
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(1, 0, "Create object", "Create", 
+          "{0}: Create <i>{1}</i> (<i>{...}</i>)", 
+          "Create object.", "CreateObject"); 
 
-AddAnyTypeParam("Time", 'The time when the transport should pause. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)")', '"+0"');                    
-AddAction(4, 0, "Pause", "Transport - timeline", 
-          "Pause timeline at time <i>{0}</i>", 
-          "Pause timeline.", "PauseTimeline"); 
-          
-AddObjectParam("Object", "Object to assign."); 
+AddStringParam("A", "Variable name of this tone object", '""');          
+AddStringParam("B", "Connect to object", '""');       
+AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
+AddAction(4, 0, "Connect", "Connect", 
+          "{0}: Connect to <i>{1}</i>(<i>{2}</i>)", 
+          "Connect to object.", "Connect"); 
+
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');         
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
-AddAction(101, 0, "Set value", "Property", 
-          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
-          "Set property of an object.", "SetValue"); 
-          
-AddObjectParam("Object", "Object to assign."); 
+AddAction(11, 0, "Set value", "Property", 
+          "{0}: Set <i>{1}</i> to <i>{2}</i>",
+          "Set property.", "SetValue"); 
+
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');             
 AddStringParam("Property", "Property name in dot notation", '""');
 AddStringParam("JSON", "JSON value to set", '""');
-AddAction(102, 0, "Set JSON", "Property", 
-          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
-          "Set property of an object.", "SetJSON"); 
-          
-AddObjectParam("Object", "Object to assign."); 
+AddAction(12, 0, "Set JSON", "Property", 
+          "{0}: Set <i>{1}</i> to <i>{2}</i>",
+          "Set property to JSON string.", "SetJSON"); 
+
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');            
 AddStringParam("Property", "Property name in dot notation", '""');
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.", 0);
-AddAction(103, 0, "Set boolean", "Property", 
-          "<i>{0}</i>: set <i>{0}</i> to <i>{1}</i>", 
-          "Set property of an object.", "SetBoolean");
-          
-AddObjectParam("Object", "Object to assign."); 
+AddAction(13, 0, "Set boolean", "Property", 
+          "{0}: Set <i>{1}</i> to <i>{2}</i>",
+          "Set property to a boolean value.", "SetBoolean");
+
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');                  
 AddStringParam("Properties", "Properties in JSON", '"{}"');
-AddAction(111, 0, "Set JSON", "Properties", 
-          "<i>{0}</i>: Set properties to <i>{1}</i>", 
-          "Set properties by JSON string.", "SetJSONProps");          
+AddAction(14, 0, "Set JSON", "Properties", 
+          "{0}: Set properties to <i>{1}</i>", 
+          "Set properties to JSON string.", "SetJSONProps");          
+          
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');           
+AddStringParam("Function name", "Function name.", '""');  
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(21, 0, "Call", "Function", 
+          "{0}: Call <i>{1}</i> (<i>{...}</i>)",
+          "Call function.", "Call"); 
           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "The currentTime from the AudioContext", "Time", "Now", "Get the currentTime from the AudioContext.");
+AddAnyTypeParam("Index", "The zero-based index of the parameter to get, or name in string.");
+AddExpression(1, ef_return_any | ef_variadic_parameters, "Get parameter", "Callback", "Param", "Get the value of a parameter passed to the callback.");
 
-AddNumberParam("UID", "UID of a tone instance", 0);
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');        
 //AddStringParam("Property", "Property name in dot notation", '""');
-AddExpression(101, ef_return_any | ef_variadic_parameters, "Property of an instance", "Property", "Property", "Get property of an instance.");
+AddExpression(11, ef_return_any | ef_variadic_parameters, "Get property", "Property", "Property", "Get property.");
+
 
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_section, "Transport", "",	"Transport for timing musical events."), 
-    new cr.Property(ept_combo, "Start timeline", "Yes", "Set Yes to start timeline.", "No|Yes"),            
-    new cr.Property(ept_integer, "BPM", 120, "The Beats Per Minute of the Transport."),
+    new cr.Property(ept_combo, "Start timeline", "Yes", "Set Yes to start timeline.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

@@ -16,13 +16,10 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On completed", "Callback", 
-            "On completed",
-            "Callback of completed (On load).", "OnCompleted");
-            
-AddCondition(2, cf_trigger, "On error", "Callback", 
-            "On error",
-            "Callback of error.", "OnError");   
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different callback.", "\"\"");
+AddCondition(1, cf_trigger, "Callback", "Callback", 
+            "On <i>{0}</i>",
+            "Callback.", "OnCallback");
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Type name", "Type name.", '""');
@@ -31,14 +28,10 @@ AddAction(1, 0, "Create object", "Create",
           "Create <i>{0}</i> (<i>{...}</i>)", 
           "Create object.", "CreateObject"); 
 
-AddAction(2, 0, "Dispose", "Dispose", 
-          "Dispose", 
-          "Clean up.", "Dispose");          
-
 AddObjectParam("Object", "Object to plug.");          
 AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
 AddAction(4, 0, "Connect", "Connect", 
-          "Connect to <i>{0}</i> (<i>{1}</i>)", 
+          "Connect to <i>{0}</i>(<i>{1}</i>)", 
           "Connect to object.", "Connect"); 
 
 AddStringParam("Property", "Property name in dot notation", '""');
@@ -74,6 +67,9 @@ AddAction(21, 0, "Call", "Function",
           
 //////////////////////////////////////////////////////////////
 // Expressions
+AddAnyTypeParam("Index", "The zero-based index of the parameter to get, or name in string.");
+AddExpression(1, ef_return_any | ef_variadic_parameters, "Get parameter", "Callback", "Param", "Get the value of a parameter passed to the callback.");
+
 //AddStringParam("Property", "Property name in dot notation", '""');
 AddExpression(11, ef_return_any | ef_variadic_parameters, "Get property", "Property", "Property", "Get property.");
 
