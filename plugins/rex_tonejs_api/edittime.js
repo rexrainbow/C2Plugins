@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,
-		"dependency":	"Tone.js"
+		"dependency":	"Tone.min.js"
 	};
 };
 
@@ -88,7 +88,6 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-    new cr.Property(ept_combo, "Start timeline", "Yes", "Set Yes to start timeline.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

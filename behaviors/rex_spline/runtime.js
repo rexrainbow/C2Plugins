@@ -138,16 +138,19 @@ cr.behaviors.Rex_Spline = function(runtime)
         if (this.setAngle)
             this.inst.angle = this.movingAngle;
         
-        this.inst.set_bbox_changed();
+        if (this.speed !== 0)
+        {
+            this.inst.set_bbox_changed();
         
-        if (seg == null)
-        {
-            this.onReachLastPoint();
-        }
-        else
-        {
-            seg.preX = nx;
-            seg.preY = ny;
+            if (seg == null)
+            {
+                this.onReachLastPoint();
+            }
+            else
+            {
+                seg.preX = nx;
+                seg.preY = ny;
+            }
         }
 	};     
 

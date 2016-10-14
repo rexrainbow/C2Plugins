@@ -300,14 +300,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
-	    var prop = [];
-	    prop.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
+	    var props = [];
+	    props.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
         
         var name, timer;
         for (name in this.timers)
         {
             timer = this.timers[name];
-            prop.push({"name": name, "value": timer._cb.command});
+            props.push({"name": name, "value": timer._cb.command});
         }
         
 

@@ -683,7 +683,10 @@ cr.plugins_.Rex_Firebase_Rooms = function(runtime)
 	{
 		ret.set_string(this.room.userID);
 	}; 
-	
+
+	Exps.prototype.MyUserName = Exps.prototype.UserName;    
+	Exps.prototype.MyUserID = Exps.prototype.UserID;
+    
 	Exps.prototype.RoomName = function (ret)
 	{
 		ret.set_string(this.room.roomName);

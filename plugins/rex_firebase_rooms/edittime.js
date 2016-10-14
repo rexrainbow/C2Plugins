@@ -219,10 +219,15 @@ AddAction(111, 0, "Get users list of room", "User list",
           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "My user name", "My", "UserName", 
+AddExpression(1, ef_return_string | ef_deprecated, "My user name", "My", "UserName", 
               "Get my user name.");  
-AddExpression(2, ef_return_string, "My user ID", "My", "UserID", 
+AddExpression(2, ef_return_string | ef_deprecated, "My user ID", "My", "UserID", 
               "Get my user ID.");
+
+AddExpression(3, ef_return_string, "My user name", "My", "MyUserName", 
+              "Get my user name.");  
+AddExpression(4, ef_return_string, "My user ID", "My", "MyUserID", 
+              "Get my user ID.");              
               
 AddExpression(11, ef_return_string, "Room name", "Room", "RoomName", 
               "Get current room name.");  

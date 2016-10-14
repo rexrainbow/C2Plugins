@@ -78,10 +78,9 @@ cr.behaviors.rex_Anchor2 = function(runtime)
     
 	behinstProto.tick = function ()
 	{	   
-        var enable = this.enabled && (this.alignModeX !== 4) && (this.alignModeY !== 4);
-		if (!enable)
-			return;  
-
+        if (!this.enabled)
+            return;        
+        
         if (this.set_once)
         {            
             if (this.is_layer_size_changed())
@@ -100,17 +99,22 @@ cr.behaviors.rex_Anchor2 = function(runtime)
                 this.update_cnt -= 1;
         }
 
-		
-		var nx=0, ny=0;
+        var enableX = (this.alignModeX !== 4);
+        var enableY = (this.alignModeY !== 4);
+        
+        if (!enableX && !enableY)
+            return;
+                
 		var layer = this.inst.layer;
+        var targetX = (enableX)? layer.viewLeft + ( (layer.viewRight - layer.viewLeft) * this.viewPortScaleX ) : 0;
+        var targetY = (enableY)? layer.viewTop + ( (layer.viewBottom - layer.viewTop) * this.viewPortScaleY ) : 0;
+        
 		var inst = this.inst;
-		var bbox = this.inst.bbox;
-        
-        var targetX = layer.viewLeft + ( (layer.viewRight - layer.viewLeft) * this.viewPortScaleX );
-        var targetY = layer.viewTop + ( (layer.viewBottom - layer.viewTop) * this.viewPortScaleY );
-        
+		var bbox = this.inst.bbox;     
         inst.update_bbox();
 		
+		
+		var nx=0, ny=0;        
         // X
         switch (this.alignModeX)
         {
@@ -128,7 +132,11 @@ cr.behaviors.rex_Anchor2 = function(runtime)
 
         case 3:    // hotspot
             nx = targetX;
-            break;                  
+            break; 
+
+        case 4:    // None
+            nx = this.inst.x;
+            break;         
         }
         
         // Y
@@ -148,7 +156,11 @@ cr.behaviors.rex_Anchor2 = function(runtime)
 
         case 3:    // hotspot
             ny = targetY;
-            break;      
+            break;
+
+        case 4:    // None
+            ny = this.inst.y;
+            break;               
         }        
         
         if ((nx !== this.inst.x) || (ny !== this.inst.y))

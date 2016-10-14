@@ -91,10 +91,10 @@ cr.plugins_.rex_googlemap_marker = function(runtime)
         }  
         
         if (this.properties[10] === 0)
-            mapOptions["clickable"] = false; 
+            markerOptions["clickable"] = false; 
         
         if (this.properties[11] === 1)
-            mapOptions["draggable"] = true; 
+            markerOptions["draggable"] = true; 
                 
         if (this.properties[12] !== 1)
             markerOptions["opacity"] = this.properties[12];     

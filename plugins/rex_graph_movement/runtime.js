@@ -895,7 +895,7 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
 	{	  
 	    this.request_init_clean();
 	    	    
-	    var saveToGroup = this.GetInstGroup()GetGroup(group_name); 
+	    var saveToGroup = this.GetInstGroup().GetGroup(group_name); 
 	    var graph = this.GetGraph();
 	    
 	    saveToGroup.Clean();	    
@@ -938,7 +938,7 @@ cr.plugins_.Rex_GraphMovement = function(runtime)
 	    this.exp_startVertexUID = startVertexUID;
 	    var uids = this.get_moving_path(startVertexUID, endVertexUID, moving_points, cost, is_nearest, result_mode);
         if (uids.length > 0)
-	        saveToGroup.GetGroup(group_name).SetByUIDList(uids);
+	        saveToGroup.SetByUIDList(uids);
 	};	 
     
     Acts.prototype.SetPathMode = function (m)

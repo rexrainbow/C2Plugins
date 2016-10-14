@@ -41,11 +41,6 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        var transport = window["Tone"]["Transport"];
-        
-        if (this.properties[0] === 1)
-            transport["start"]();        
-        
         this.toneObjects = {};
         
         // callback

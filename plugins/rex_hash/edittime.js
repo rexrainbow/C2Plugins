@@ -106,10 +106,10 @@ AddAction(23, 0, "Push JSON", "Array",
           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddStringParam("Key", "The key string of the hash to get.", '""');
+//AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(0, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "Hash", "Get value from the hash by key string. Add 2nd parameter to return default value when got invalid value.");
-AddStringParam("Key", "The key string of the hash value to get.", '""');
+//AddStringParam("Key", "The key string of the hash value to get.", '""');
 AddExpression(1, ef_deprecated| ef_return_any | ef_variadic_parameters, 
               "Get value from current entry", "Entry", "Entry", 
               "Get value from current entry.");              
