@@ -7,7 +7,7 @@
 		"description":	"An alternate notation of a part.",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_part.html",
-		"category":		"Rex - Audio - Tone - Event",
+		"category":		"Rex - Audio - Tone - object",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,

@@ -4,10 +4,10 @@
 		"name":			"ToneJS api",
 		"id":			"Rex_ToneJS_api",
 		"version":		"0.1",        
-		"description":	"Base object of tone.js. https://github.com/Tonejs/Tone.js",
+		"description":	"Tone objects in a dictionary. https://github.com/Tonejs/Tone.js",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_api.html",
-		"category":		"Rex - Audio - Tone - Core",
+		"category":		"Rex - Audio - Tone",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,
@@ -27,12 +27,12 @@ AddCondition(1, cf_trigger, "Callback", "Callback",
 AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');
 AddStringParam("Type name", "Type name.", '""');
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create object", "Create", 
+AddAction(1, 0, "Create object", "0. Create", 
           "{0}: Create <i>{1}</i> (<i>{...}</i>)", 
           "Create object.", "CreateObject"); 
 
-AddStringParam("A", "Variable name of this tone object", '""');          
-AddStringParam("B", "Connect to object", '""');       
+AddAnyTypeParam("A", "Variable name of this tone object", '""');          
+AddAnyTypeParam("B", "Connect to object", '""');       
 AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
 AddAction(4, 0, "Connect", "Connect", 
           "{0}: Connect to <i>{1}</i>(<i>{2}</i>)", 

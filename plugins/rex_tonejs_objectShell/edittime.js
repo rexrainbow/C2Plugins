@@ -7,7 +7,7 @@
 		"description":	"Shell of tone object.",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_objectshell.html",
-		"category":		"Rex - Audio - Tone - Advance",
+		"category":		"Rex - Audio - Tone - object",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -24,7 +24,7 @@ AddCondition(1, cf_trigger, "Callback", "Callback",
 // Actions
 AddStringParam("Type name", "Type name.", '""');
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
-AddAction(1, 0, "Create object", "Create", 
+AddAction(1, 0, "Create object", "0. Create", 
           "Create <i>{0}</i> (<i>{...}</i>)", 
           "Create object.", "CreateObject"); 
 
