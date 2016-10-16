@@ -214,7 +214,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 	{        
         var toneObject = this.toneObjects[varName];
         assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
-        window.ToneJSObjectCall(toneObject, fnName, params, this.getCallback);        
+        window.ToneJSObjectCall(toneObject, fnName, params, this.getCallback);
 	};
         
 	//////////////////////////////////////
@@ -237,6 +237,13 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 		ret.set_any( window.ToneJSGetItemValue(val, keys) );
 	}; 
 
+	Exps.prototype.ReturnValue = function (ret, varName, keys)
+	{        
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");  
+        var retVal = toneObject["extra"]["returnValue"];
+		ret.set_any( window.ToneJSGetItemValue(retVal, keys, 0) );
+	}; 
     
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------    
@@ -248,7 +255,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             v = null;
         else if ( (k == null) || (k === "") )
             v = item;
-        else if (k.indexOf(".") == -1)
+        else if ((typeof(k) === "number") || (k.indexOf(".") == -1))
             v = item[k];
         else
         {
@@ -468,8 +475,20 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             }
         }   
         // source
+                   
+        var retVal = toneObject[fnName].apply(toneObject, params);         
         
-        toneObject[fnName].apply(toneObject, params);         
+        toneObject["extra"]["returnValue"] = null;
+        // component
+        if (isType(toneObject, "Analyser"))
+        {
+            if (fnName === "analyse")
+            {
+                toneObject["extra"]["returnValue"] = retVal;
+            }
+        }
+        // component
+        
 	};
     window.ToneJSObjectCall = objectCall;
 }());

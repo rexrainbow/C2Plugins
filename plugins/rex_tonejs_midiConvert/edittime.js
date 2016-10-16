@@ -44,7 +44,17 @@ AddCmpParam("Comparison", "Choose the way to compare the current track.");
 AddNumberParam("Track index", "The track index, to compare to.");
 AddCondition(21, 0, "Compare track index", "Note", 
              "Current track index {0} {1}", 
-             "Compare track index of note event.", "CompareTrackIndex");              
+             "Compare track index of note event.", "CompareTrackIndex");           
+
+      
+//AddCondition(51, cf_looping | cf_not_invertible, "For each track", "For each", 
+//             "For each track", 
+//             "Repeat the event for each track.", "ForEachTrack");     
+//             
+//AddNumberParam("Track index", "Track index", 0);              
+//AddCondition(52, cf_looping | cf_not_invertible, "For each note", "For each", 
+//             "For each note in track <i>{0}</i>", 
+//             "Repeat the event for each note in a track.", "ForEachNote");               
                                      
             
 //////////////////////////////////////////////////////////////
@@ -135,10 +145,10 @@ AddExpression(16, ef_return_number,
               "Get midi number of event", "Event", "Midi", 
               "Get midi number of note event.");                
     
-AddExpression(22, ef_return_any, 
+AddExpression(21, ef_return_any, 
               "Get track index of event", "Event", "TrackIndex", 
               "Get track index of note event.");              
-
+              
 ACESDone();
 
 // Property grid properties for this plugin

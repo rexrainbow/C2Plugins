@@ -54,6 +54,10 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         this.exp_Event = null;
         this.exp_TrackIndex = 0;
         
+        this.exp_CurTrackIndex = -1;
+        this.exp_CurEventIndex = -1;
+        this.exp_CurEvent = null;
+        
         if (this.properties[0] === 1)
         {
             this.my_timescale = -1.0;
@@ -378,7 +382,66 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
             
 		return cr.do_cmp(this.exp_TrackIndex, cmp, s);
 	};
+    
+	Cnds.prototype.ForEachTrack = function ()
+	{
+        if (this.midiData == null)
+            return false;
         
+        var tracks = this.midiData["tracks"];
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
+        var i, cnt=tracks.length;        
+		for(i=0; i<cnt; i++)
+	    {
+		    if (solModifierAfterCnds)
+                this.runtime.pushCopySol(current_event.solModifiers);
+            
+            this.exp_CurTrackIndex = i;
+		    current_event.retrigger();
+		    	
+            if (solModifierAfterCnds)
+		        this.runtime.popSol(current_event.solModifiers);
+		}        
+
+        this.exp_CurTrackIndex = -1;        
+		return false;   
+	};    
+    
+	Cnds.prototype.ForEachNote = function (trackIndex)
+	{
+        if (this.midiData == null)
+            return false;
+        
+        var notes = this.midiData["tracks"][trackIndex];
+        if (notes == null)
+            return false;
+        
+        var current_frame = this.runtime.getCurrentEventStack();
+        var current_event = current_frame.current_event;
+		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
+
+        var i, cnt=notes.length;        
+		for(i=0; i<cnt; i++)
+	    {
+		    if (solModifierAfterCnds)
+                this.runtime.pushCopySol(current_event.solModifiers);
+            
+            this.exp_CurEventIndex = i;
+            this.exp_CurEvent = notes[i];
+		    current_event.retrigger();
+		    	
+            if (solModifierAfterCnds)
+		        this.runtime.popSol(current_event.solModifiers);
+		}        
+
+        this.exp_CurEventIndex = -1;
+        this.exp_CurEvent = null;        
+		return false;   
+	};
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
