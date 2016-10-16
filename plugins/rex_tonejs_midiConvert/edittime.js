@@ -100,7 +100,7 @@ AddAction(24, 0, "Resume", "Control",
           "Resume playing notes at the given time.", "Resume");
           
 AddNumberParam("Playback rate", "Playback rate to set", 1);               
-AddAction(25, 0, "Start", "Control", 
+AddAction(31, 0, "Set playback rate", "Configuration", 
           "Set playback rate to <i>{0}</i>", 
           "Set playback rate.", "SetPlaybackRate");           
 //////////////////////////////////////////////////////////////
