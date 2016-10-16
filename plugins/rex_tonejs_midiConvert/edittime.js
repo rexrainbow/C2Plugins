@@ -24,38 +24,92 @@ AddCondition(2, cf_trigger, "On convert error", "Convert",
             "On convert error", 
             "Triggered when convert error.", "OnConvertError");
             
-AddCondition(11, cf_trigger, "On event", "Event", 
+AddCondition(11, cf_trigger, "On event", "Play", 
             "On event", 
             "Triggered when event fired.", "OnEvent");
-                        
+            
+AddCondition(12, cf_trigger, "On ended", "Play", 
+            "On ended", 
+            "Triggered when playing ended.", "OnEnded");      
+
+AddCondition(13, cf_trigger, "On started", "Play", 
+            "On started", 
+            "Triggered when playing started.", "OnStarted");             
+            
+AddCondition(14, 0, "Is playing", "Play", 
+             "Is playing", 
+             "Is playing.", "IsPlaying");
+             
+AddCmpParam("Comparison", "Choose the way to compare the current track.");
+AddNumberParam("Track index", "The track index, to compare to.");
+AddCondition(21, 0, "Compare track index", "Note", 
+             "Current track index {0} {1}", 
+             "Compare track index of note event.", "CompareTrackIndex");              
+                                     
             
 //////////////////////////////////////////////////////////////
 // Actions            
 AddStringParam("URL", "URL of midi file.", '""');
 AddAction(1, 0, "Load & Convert midi", "0. Load & Convert", 
-          "Load & Convert midi from URL to <i>{0}</i> to JSON object", 
+          "Load & Convert midi from URL <i>{0}</i>", 
           "Load & Convert midi to JSON object.", "ConvertMidi2JSON");
-
-AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)").', '"+0"');          
-AddAction(11, 0, "Start", "Control", 
+     
+AddStringParam("Property", "Property name in dot notation", '""');
+AddAnyTypeParam("Value", "Value to set", 0);
+AddAction(11, 0, "Set value", "Property", 
+          "Set <i>{0}</i> to <i>{1}</i>",
+          "Set property.", "SetValue"); 
+          
+AddStringParam("Property", "Property name in dot notation", '""');
+AddStringParam("JSON", "JSON value to set", '""');
+AddAction(12, 0, "Set JSON", "Property", 
+          "Set <i>{0}</i> to <i>{1}</i>",
+          "Set property to JSON string.", "SetJSON"); 
+        
+AddStringParam("Property", "Property name in dot notation", '""');
+AddComboParamOption("false");
+AddComboParamOption("true");
+AddComboParam("Boolean", "Boolean value.", 0);
+AddAction(13, 0, "Set boolean", "Property", 
+          "Set <i>{0}</i> to <i>{1}</i>",
+          "Set property to a boolean value.", "SetBoolean");
+                  
+AddStringParam("Properties", "Properties in JSON", '"{}"');
+AddAction(14, 0, "Set JSON", "Properties", 
+          "Set properties to <i>{0}</i>", 
+          "Set properties to JSON string.", "SetJSONProps");          
+          
+AddStringParam("Time", 'When the note should be triggered. Time in Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)").', '"+0"');          
+AddAction(21, 0, "Start", "Control", 
           "Start at time <i>{0}</i>", 
           "Start playing notes at the given time.", "Start"); 
           
-AddAnyTypeParam("Time", 'When the note should be triggered. Time in seconds(1), Notation("4n", "8t"), TransportTime("4:3:2"), Frequency("8hz"), Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)").', '"+0"');          
-AddAction(12, 0, "Stop", "Control", 
+AddStringParam("Time", 'When the note should be triggered. Time in Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)").', '"+0"');       
+AddAction(22, 0, "Stop", "Control", 
           "Stop at time <i>{0}</i>", 
           "Stop playing notes at the given time.", "Stop");
+
+AddStringParam("Time", 'When the note should be triggered. Time in Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)").', '"+0"');           
+AddAction(23, 0, "Pause", "Control", 
+          "Pause at time <i>{0}</i>",
+          "Pause playing notes at the given time.", "Pause");
           
-//AddAction(13, 0, "Pause", "Control", 
-//          "Pause", 
-//          "Pause playing notes.", "Pause"); 
-//AddAction(14, 0, "Resume", "Control", 
-//          "Resume", 
-//          "Resume playing notes.", "Resume");          
+AddStringParam("Time", 'When the note should be triggered. Time in Now-Relative("+1"), Expressions("3:0 + 2 - (1m / 7)").', '"+0"');              
+AddAction(24, 0, "Resume", "Control", 
+          "Resume at time <i>{0}</i>",
+          "Resume playing notes at the given time.", "Resume");
+          
+AddNumberParam("Playback rate", "Playback rate to set", 1);               
+AddAction(25, 0, "Start", "Control", 
+          "Set playback rate to <i>{0}</i>", 
+          "Set playback rate.", "SetPlaybackRate");           
 //////////////////////////////////////////////////////////////
 // Expressions                      
 AddExpression(1, ef_return_string, "Midi in JSON", "Midi", "Midi2JSON", 
               "Midi in JSON.");  
+              
+AddExpression(2, ef_return_number, "End time of current midi", "Midi", "EndTime", 
+              "End time of current midi, in seconds.");              
 
 AddExpression(11, ef_return_any, 
               "Get time of event", "Event", "Time", 
@@ -80,15 +134,16 @@ AddExpression(15, ef_return_number,
 AddExpression(16, ef_return_number, 
               "Get midi number of event", "Event", "Midi", 
               "Get midi number of note event.");                
-              
-AddExpression(21, ef_return_any, 
+    
+AddExpression(22, ef_return_any, 
               "Get track index of event", "Event", "TrackIndex", 
               "Get track index of note event.");              
-              
+
 ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+	new cr.Property(ept_combo, "Timescale to playbackRate", "No",	"Choose whether the playback rate changes with the time scale.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

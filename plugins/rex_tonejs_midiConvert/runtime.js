@@ -43,16 +43,57 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	{
         this.midiData = null;
         this.parts = [];
-        this.isFirstStart = true;
+        this.isPlaying = false;
+        this.isInitiated = false;
+        this.endTime = null;
+        this.isPaused = false;
+        this.startAt = 0;
+        this.elapsedTime = 0;
         
         this.exp_Time = 0;
         this.exp_Event = null;
         this.exp_TrackIndex = 0;
+        
+        if (this.properties[0] === 1)
+        {
+            this.my_timescale = -1.0;
+            this.runtime.tick2Me(this);
+        }
 	};
     
 	instanceProto.onDestroy = function ()
 	{
-	};   
+        this.invokeAllParts("stop");
+        this.invokeAllParts("removeAll");
+        partCache.freeAllLines( this.parts ); 
+	}; 
+    
+	
+    instanceProto.tick2 = function()
+    {
+        if (this.parts.length === 0)
+            return;
+        
+        var ts = this.my_timescale;
+        if (ts == -1)
+            ts = this.runtime.timescale;
+        
+        this.SetPlaybackRate(ts);
+    };    
+
+        
+	instanceProto.invokeAllParts = function (fnName, params)
+	{
+        var i, cnt=this.parts.length, midiPart
+        for(i=0; i<cnt; i++)
+        {
+            midiPart = this.parts[i];
+            if (params == null)
+                midiPart[fnName]();
+            else
+                midiPart[fnName].apply(midiPart, params);
+        }        
+	};  
     
 	instanceProto.doRequest = function ( url_, callback )
 	{
@@ -76,6 +117,225 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         
         oReq.send(null);
 	};    
+    
+	var blob2json = function ( text )
+	{
+        if (text == null)
+            return null;
+        
+        var midiData;
+        var ff = new Array(text.length);
+        for (var i = 0; i < text.length; i++) 
+        {
+            ff[i] = String.fromCharCode(text.charCodeAt(i) & 255);
+        }    
+        
+        try
+        {                
+	        midiData = window["MidiConvert"]["parse"](ff.join(""));
+        }
+	    catch(e) 
+        { 
+            midiData = null;
+        } 
+        return midiData;
+	};   
+    
+
+// ---------
+// object pool class
+// ---------
+    var ObjCacheKlass = function ()
+    {        
+        this.lines = [];       
+    };
+    var ObjCacheKlassProto = ObjCacheKlass.prototype;   
+    
+	ObjCacheKlassProto.allocLine = function()
+	{
+		return (this.lines.length > 0)? this.lines.pop(): null;
+	};    
+	ObjCacheKlassProto.freeLine = function (l)
+	{
+		this.lines.push(l);
+	};	
+	ObjCacheKlassProto.freeAllLines= function (arr)
+	{
+		var i, len;
+		for (i = 0, len = arr.length; i < len; i++)
+			this.freeLine(arr[i]);
+		arr.length = 0;
+	};
+    
+    var partCache = new ObjCacheKlass();
+// ---------
+// object pool class
+// ---------
+
+    
+    instanceProto.InitParts = function (midiData)
+	{
+        if (!midiData || this.isInitiated)
+            return;
+        
+        this.invokeAllParts("removeAll");
+        partCache.freeAllLines( this.parts );
+        
+        window["Tone"]["Transport"]["set"](midiData["transport"]);        
+        var tracks = midiData["tracks"], notes;
+        var i, cnt=tracks.length;
+        var self=this;
+        for (i=0; i<cnt; i++)
+        {
+            notes = tracks[i]["notes"];
+            if (!notes)
+                continue;
+            
+            var callback = function(time, event)
+            {
+                self.exp_TrackIndex = i;
+                self.exp_Time = time;
+                self.exp_Event = event;
+                
+                if (!self.isPlaying)
+                {
+                    self.isPlaying = true;            
+                    self.startAt = time;                    
+                    self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnStarted, self);	                        
+                }
+                
+                if (event["note"] != null)          
+                    self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEvent, self);                        
+                else if (event["end"])
+                {
+                    self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEnded, self);	                    
+                    self.isPlaying = false;
+                    self.invokeAllParts("stop");
+                }
+            }
+            
+            var midiPart = partCache.allocLine() || new window["Tone"]["Part"]();
+            midiPart["callback"] = callback;
+            
+            var j, jcnt=notes.length;
+            for (j=0; j<jcnt; j++)
+            {
+                midiPart["add"](notes[j]);
+            }
+          
+            this.parts.push(midiPart);           
+        }
+        
+        var midiPart = this.parts[0];
+        if (midiPart)
+        {
+            midiPart["add"]({"time":0, "start":true});
+            midiPart["add"]({"time":this.getEndTime(midiData), "end":true});
+        }     
+
+        this.isInitiated = true;        
+	}; 
+
+    instanceProto.Start = function (time)
+	{
+        if (!this.midiData)
+            return;
+        
+        //log("act: Start");  
+        
+        this.invokeAllParts("stop");
+        this.InitParts(this.midiData);
+
+        this.invokeAllParts("start", [time]);
+	};
+     
+    instanceProto.Stop = function (time)
+	{ 
+        //log("act: Stop");     
+        this.invokeAllParts("stop", [time]);
+	};     
+     
+    instanceProto.Pause = function (time)
+	{ 
+        if (!this.isPlaying)
+            return;
+         
+        this.elapsedTime = window["Tone"]["Transport"]["seconds"] - this.startAt + ((time)? parseFloat(time):0);
+        //log("act: Pause, offset=" + this.elapsedTime);           
+        this.invokeAllParts("stop", [time]);
+	};     
+     
+    instanceProto.Resume = function (time)
+	{ 
+        if (!this.isPlaying)
+            return;
+        
+        //log("act: Resume, offset=" + this.elapsedTime);      
+        this.invokeAllParts("start", [time, this.elapsedTime]);
+	};    
+    
+    instanceProto.SetPlaybackRate = function(rate)
+    {
+        if (!this.isPlaying)
+            return;
+        
+        var state = this.parts[0]["state"];    
+        log(state)        
+        if (rate == 0)
+        {
+            if (state === "started")
+            {
+                this.Pause();
+            }
+        }
+        else
+        {
+            if (this.isPaused)
+                return;
+            
+            if (state === "stopped")
+            {
+                this.Resume();     
+            }
+            
+            var playbackRate = this.parts[0]["playbackRate"];   
+            if (rate != playbackRate)
+            {
+                this.invokeAllParts("set", ["playbackRate", rate]);   
+            }
+        }
+    };        
+   
+    instanceProto.getEndTime = function(midiData)    
+    {
+        if (this.endTime !== null)
+            return this.endTime;
+        
+        this.endTime = 0;
+        if (!midiData)
+            return this.endTime;
+        
+        var tracks = midiData["tracks"], notes;
+        var i, cnt=tracks.length;
+        for (i=0; i<cnt; i++)
+        {
+            notes = tracks[i]["notes"];
+            if (!notes)
+                continue;
+            
+            var j, jcnt=notes.length;
+            var note, endTime;            
+            for(j=0; j<jcnt; j++)
+            {
+                note = notes[j];
+                endTime = note["time"] + note["duration"];
+                this.endTime = Math.max(endTime, this.endTime);                    
+            }
+        }
+        
+        return this.endTime;
+    };
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -95,6 +355,30 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	{
         return true;  
 	};	 
+
+	Cnds.prototype.OnEnded = function ()
+	{
+        return true;  
+	};	 
+
+	Cnds.prototype.OnStarted = function ()
+	{
+        return true;  
+	};	     
+    
+	Cnds.prototype.IsPlaying = function ()
+	{
+        return this.isPlaying; 
+	};
+        
+	Cnds.prototype.CompareTrackID = function (cmp, s)
+	{
+        if (!this.exp_note)
+            return false;
+            
+		return cr.do_cmp(this.exp_TrackIndex, cmp, s);
+	};
+        
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -105,29 +389,12 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	    var self = this;
 	    var callback = function (text)
 	    {
-            var midiData;
-	        if (text)  // complete
-	        {
-                var ff = new Array(text.length);
-                for (var i = 0; i < text.length; i++) 
-                {
-                    ff[i] = String.fromCharCode(text.charCodeAt(i) & 255);
-                }    
-                
-                try
-                {                
-	                midiData = window["MidiConvert"]["parse"](ff.join(""));
-                }
-		        catch(e) 
-                { 
-                    midiData = null;
-                }
-	        }
-
+            var midiData= blob2json(text);
 	        if (midiData)  // complete
 	        {
-	            self.midiData = midiData;   
-                self.isFirstStart = true;                
+	            self.midiData = midiData; 
+                self.isInitiated = false;                
+                self.endTime = null;
                 self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnConvertCompleted, self);	
 	        }
 	        else    // error
@@ -139,60 +406,55 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         this.doRequest(url_, callback);
 	};	
 
+	Acts.prototype.SetValue = function (keys, value)
+	{
+        this.invokeAllParts("set", [keys, value]);
+	};
+     
+	Acts.prototype.SetJSON = function (keys, value)
+	{
+        this.invokeAllParts("set", [keys, JSON.parse(value)]);
+	};    
+     
+	Acts.prototype.SetBoolean = function (keys, value)
+	{
+        this.invokeAllParts("set", [keys, (value === 1)]);     
+	};     
+    
+	Acts.prototype.SetJSONProps = function (params)
+	{
+        this.invokeAllParts("set", [JSON.parse(params)]);
+	};  
+    
     Acts.prototype.Start = function (time)
 	{
-        if (!this.midiData)
-            return;
-        
-        var transport = window["Tone"]["Transport"];
-        var Part = window["Tone"]["Part"];
-        transport["stop"]();
-        if (this.isFirstStart)
-        {
-            transport["set"](this.midiData["transport"]);
-            // TODO: recycle
-            var i, cnt=this.parts.length;
-            for(i=0; i<cnt; i++)
-            {
-                this.parts[i]["dispose"]();
-            }
-            this.parts.length = 0;
-            
-            var tracks = this.midiData["tracks"], notes;
-            var i, cnt=tracks.length;
-            var self=this;
-            for (i=0; i<cnt; i++)
-            {
-                notes = tracks[i]["notes"];
-                if (!notes)
-                    continue;
-                
-                var callback = function(time, event)
-                {
-                    self.exp_TrackIndex = i;
-                    self.exp_Time = time;
-                    self.exp_Event = event;
-                    self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEvent, self);	
-                }
-                var midiPart = new Part(callback, notes)["start"]();
-                this.parts.push(midiPart);
-            }
-            
-            this.isFirstStart = false;
-        }
-        
-        transport["start"](time);
+        this.isPaused = false;
+        this.Start(time);
 	};
      
     Acts.prototype.Stop = function (time)
 	{ 
-        var i, cnt=this.parts.length;
-        for(i=0; i<cnt; i++)
-        {
-            this.parts[i]["stop"](time);
-        }      
+        this.isPaused = false;     
+        this.isPlaying = false;
+        this.Stop(time);
 	};     
-        
+     
+    Acts.prototype.Pause = function (time)
+	{ 
+        this.isPaused = true;    
+        this.Pause(time);
+	};     
+     
+    Acts.prototype.Resume = function (time)
+	{ 
+        this.isPaused = false;     
+        this.Resume(time);
+	};
+     
+    Acts.prototype.SetPlaybackRate = function (rate)
+	{ 
+        this.SetPlaybackRate(rate);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -202,7 +464,12 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	{
 	    var json_ = this.midiData || {};
 		ret.set_string(JSON.stringify( json_ ));
-	}; 	    
+	}; 	   
+
+	Exps.prototype.EndTime = function (ret)
+	{
+	    ret.set_float(this.getEndTime(this.midiData));
+	};        
 
 	Exps.prototype.Time = function (ret)
 	{       
@@ -237,5 +504,6 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	Exps.prototype.TrackIndex = function (ret)
 	{       
 		ret.set_any(this.exp_TrackIndex);
-	};    
+	};
+    
 }());

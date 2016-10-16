@@ -58,7 +58,7 @@ AddCondition(21, cf_looping | cf_not_invertible, "For each note", "For each",
 // Actions
 AddStringParam("URL", "URL of midi file.", '""');
 AddAction(1, 0, "Load & Convert midi", "0. Load & Convert", 
-          "Load & Convert midi from URL to <i>{0}</i> to JSON object", 
+          "Load & Convert midi from URL <i>{0}</i> to JSON object", 
           "Load & Convert midi to JSON object.", "ConvertMidi2JSON");
 
 AddAction(11, 0, "Start", "Control", 

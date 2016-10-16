@@ -11,7 +11,7 @@
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		pf_singleglobal,
-		"dependency":	"Tone.min.js"
+		"dependency":	"Tone.js"
 	};
 };
 
