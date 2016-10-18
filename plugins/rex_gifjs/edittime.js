@@ -4,10 +4,10 @@
 		"name":			"GIF render",
 		"id":			"Rex_GIFJS",
 		"version":		"1.0",        
-		"description":	"JavaScript GIF encoder.",
+		"description":	"GIF encoder.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_gifjs.html",
-		"category":		"Rex - Canvas helper",
+		"category":		"Rex - Image",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -25,7 +25,7 @@ AddObjectParam("Frame", "Current frame of Sprite, or canvas object.");
 AddNumberParam("Delay", "Frame delay, in seconds", 0.5);
 AddComboParamOption("Add");
 AddComboParamOption("Copy");
-AddComboParam("Action", "Copy or add frame.", 0); 
+AddComboParam("Copy", "Copy or add frame.", 0); 
 AddAction(1, 0, "Add frame", "1. Add frame", 
           "<i>{2}</i> <i>{0}</i> with delay to <i>{1}</i>","Add frame from canvas.", "AddFrame");  
 
