@@ -227,4 +227,11 @@ cr.plugins_.Rex_ToneJS_objectshell = function(runtime)
         var val = this.toneObject["get"](keys);
 		ret.set_any( window.ToneJSGetItemValue(val, keys) );
 	}; 
+    
+	Exps.prototype.ReturnValue = function (ret, keys)
+	{        
+        assert2(this.toneObject, "Object shell: missing object '"+ this.type.name + "'");             
+        var retVal = this.toneObject["extra"]["returnValue"];
+		ret.set_any( window.ToneJSGetItemValue(retVal, keys, 0) );
+	};     
 }());

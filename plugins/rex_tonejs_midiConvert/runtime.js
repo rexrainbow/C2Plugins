@@ -45,9 +45,10 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         this.parts = [];
         this.isPlaying = false;
         this.isInitiated = false;
+        this.isPlayed = false;    // elapsedTime
         this.endTime = null;
         this.isPaused = false;
-        this.startAt = 0;
+        this.startAt = null;
         this.elapsedTime = 0;
         
         this.exp_Time = 0;
@@ -212,9 +213,10 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
                     self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEvent, self);                        
                 else if (event["end"])
                 {
-                    self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEnded, self);	                    
-                    self.isPlaying = false;
-                    self.invokeAllParts("stop");
+                    self.invokeAllParts("stop");                    
+                    self.isPlaying = false;   
+                    self.isPlayed = true;                    
+                    self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEnded, self);
                 }
             }
             
@@ -245,7 +247,7 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         if (!this.midiData)
             return;
         
-        //log("act: Start");  
+        log("act: Start");  
         
         this.invokeAllParts("stop");
         this.InitParts(this.midiData);
@@ -264,8 +266,8 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         if (!this.isPlaying)
             return;
          
-        this.elapsedTime = window["Tone"]["Transport"]["seconds"] - this.startAt + ((time)? parseFloat(time):0);
-        //log("act: Pause, offset=" + this.elapsedTime);           
+        this.elapsedTime = this.getElapsedTime() + ((time)? parseFloat(time):0);
+        log("act: Pause, offset=" + this.elapsedTime);           
         this.invokeAllParts("stop", [time]);
 	};     
      
@@ -274,7 +276,7 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         if (!this.isPlaying)
             return;
         
-        //log("act: Resume, offset=" + this.elapsedTime);      
+        log("act: Resume, offset=" + this.elapsedTime);      
         this.invokeAllParts("start", [time, this.elapsedTime]);
 	};    
     
@@ -339,6 +341,65 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         
         return this.endTime;
     };
+    
+    instanceProto.getElapsedTime = function ()
+	{ 
+        var elapsedTime;
+        if (this.isPlaying)
+        {
+            if (!this.isPaused)
+                elapsedTime = window["Tone"]["Transport"]["seconds"] - this.startAt;
+            else  // Paused
+                elapsedTime = this.elapsedTime;
+        }
+        else if (this.isPlayed)
+            elapsedTime = this.getEndTime(this.midiData);
+        else
+            elapsedTime = 0;
+        
+        return elapsedTime;
+	};   
+    
+	instanceProto.getProgress = function ()
+	{
+        return this.getElapsedTime()/this.getEndTime(this.midiData);
+	}    
+    
+    instanceProto.getState = function()    
+    {
+        var state;
+        if (!this.midiData)
+            state = "None";
+        else if (this.isPlaying)
+        {
+            if (!this.isPaused)
+                state = "Play";
+            else
+                state = "Pause";
+        }
+        else
+            state = "Idle";
+        return state.toUpperCase();
+    };
+    
+   
+    
+    /**BEGIN-PREVIEWONLY**/
+
+    instanceProto.getDebuggerValues = function (propsections)
+    {
+        propsections.push({
+            "title": "Midi convert",
+            "properties": [ 
+                {"name":"State", "value": this.getState(), "readonly":true },
+                {"name":"Elapsed time", "value": Math.floor(this.getElapsedTime()*100)/100, "readonly":true },
+                {"name":"Progress", "value": Math.floor(this.getProgress()*100)/100, "readonly":true },                
+            ]
+        });
+    };
+    
+    /**END-PREVIEWONLY**/      
+
     
 	//////////////////////////////////////
 	// Conditions
@@ -456,7 +517,9 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	        if (midiData)  // complete
 	        {
 	            self.midiData = midiData; 
-                self.isInitiated = false;                
+                self.isInitiated = false;   
+                self.isPlayed = false;                
+                self.startAt = null;
                 self.endTime = null;
                 self.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnConvertCompleted, self);	
 	        }
@@ -497,21 +560,31 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
      
     Acts.prototype.Stop = function (time)
 	{ 
+        if (!this.isPlaying)
+            return;
+        
+        this.Stop(time);       
         this.isPaused = false;     
-        this.isPlaying = false;
-        this.Stop(time);
+        this.isPlaying = false;        
+        this.runtime.trigger(cr.plugins_.Rex_ToneJS_MidiConvert.prototype.cnds.OnEnded, this);
 	};     
      
     Acts.prototype.Pause = function (time)
 	{ 
-        this.isPaused = true;    
+        if (!this.isPlaying)
+            return;
+        
         this.Pause(time);
+        this.isPaused = true;            
 	};     
      
     Acts.prototype.Resume = function (time)
 	{ 
-        this.isPaused = false;     
+        if (!this.isPlaying)
+            return;
+  
         this.Resume(time);
+        this.isPaused = false;           
 	};
      
     Acts.prototype.SetPlaybackRate = function (rate)
@@ -534,6 +607,21 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
 	    ret.set_float(this.getEndTime(this.midiData));
 	};        
 
+	Exps.prototype.ElapsedTime = function (ret)
+	{
+	    ret.set_float(this.getElapsedTime());
+	}; 
+
+	Exps.prototype.Progress = function (ret)
+	{
+	    ret.set_float(this.getProgress());
+	}; 
+
+	Exps.prototype.State = function (ret)
+	{
+	    ret.set_string(this.getState());
+	};     
+    
 	Exps.prototype.Time = function (ret)
 	{       
 		ret.set_any(this.exp_Time || 0);
