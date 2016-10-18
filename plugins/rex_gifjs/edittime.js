@@ -21,18 +21,18 @@ AddCondition(0, cf_trigger, "On finished", "Event", "On finished", "Trigger when
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddObjectParam("Frame", "Sprite, canvas object.");    
+AddObjectParam("Frame", "Current frame of Sprite, or canvas object.");    
 AddNumberParam("Delay", "Frame delay, in seconds", 0.5);
 AddComboParamOption("Add");
 AddComboParamOption("Copy");
-AddComboParam("Action", "Copy or add frame.", 1); 
+AddComboParam("Action", "Copy or add frame.", 0); 
 AddAction(1, 0, "Add frame", "1. Add frame", 
           "<i>{2}</i> <i>{0}</i> with delay to <i>{1}</i>","Add frame from canvas.", "AddFrame");  
 
 AddAction(2, 0, "Render", "2. Render", 
           "Render","Render GIF.", "Render");  
           
-AddNumberParam("Repeat", "Repeat count, -1 = no repeat, 0 = forever", 0); 
+AddNumberParam("Repeat", "Repeat count, -1 = no repeat, 0 = forever.", 0); 
 AddAction(11, 0, "Set repeat", "0. Configuration", 
           "Set repeat count to <i>{0}</i>","Set repeat count.", "SetRepeat");          
           
@@ -40,7 +40,7 @@ AddNumberParam("Quality", "Pixel sample interval, lower is better.", 10);
 AddAction(12, 0, "Set quality", "0. Configuration", 
           "Set pixel sample interval to <i>{0}</i>","Set pixel sample interval.", "SetQuality");
 
-AddNumberParam("Workers", "Number of web workers to spawn", 2); 
+AddNumberParam("Workers", "Number of web workers to spawn.", 2); 
 AddAction(13, 0, "Set workers", "0. Configuration", 
           "Set workers to <i>{0}</i>","Set workers.", "SetWorkers");           
           
@@ -59,6 +59,9 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+		new cr.Property(ept_integer, "Repeat", 0, "Repeat count, -1 = no repeat, 0 = forever."),
+		new cr.Property(ept_integer, "Quality", 10, "Pixel sample interval, lower is better."),   
+		new cr.Property(ept_integer, "Workers", 2, "Number of web workers to spawn."),              
 	];
 	
 // Called by IDE when a new object type is to be created

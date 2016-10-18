@@ -41,8 +41,12 @@ cr.plugins_.Rex_GIFJS = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.GIFObj = null;
-        this.options = {};
+        this.options = {
+            "repeat": this.properties[0],
+            "quality": this.properties[1],
+            "workers": this.properties[2],
+        };
+        this.GIFObj = null;        
         this.resultBlob = null;
         this.afterRender = false;
 	};
@@ -64,9 +68,7 @@ cr.plugins_.Rex_GIFJS = function(runtime)
             self.resultBlob = blob;
             self.runtime.trigger(cr.plugins_.Rex_GIFJS.prototype.cnds.OnFinished, self); 
         }
-        this.GIFObj["on"]("finished", onFinished)
-        
-        this.options = {};
+        this.GIFObj["on"]("finished", onFinished);        
         return this.GIFObj;
 	};     
     
