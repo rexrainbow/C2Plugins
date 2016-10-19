@@ -47,17 +47,25 @@ cr.plugins_.Rex_GIFJS = function(runtime)
             "workers": this.properties[2],
         };
         this.GIFObj = null;        
+<<<<<<< HEAD
         this.afterRender = false;        
         this.resultBlob = null;
         
         this.exp_ObjectURL = "";
         this.exp_ContentType = "";
 
+=======
+        this.resultBlob = null;
+        this.afterRender = false;
+>>>>>>> origin/master
 	};
     
 	instanceProto.onDestroy = function ()
 	{
+<<<<<<< HEAD
         this.releaseObjectURL(); 
+=======
+>>>>>>> origin/master
 	};   
     
 	instanceProto.getGIFObj = function ()
@@ -70,16 +78,21 @@ cr.plugins_.Rex_GIFJS = function(runtime)
         var self=this;
         var onFinished = function(blob)
         {
+<<<<<<< HEAD
             self.releaseObjectURL();            
             self.resultBlob = blob;
             self.exp_ObjectURL = URL.createObjectURL(blob);
             self.exp_ContentType = blob["type"] || "";
+=======
+            self.resultBlob = blob;
+>>>>>>> origin/master
             self.runtime.trigger(cr.plugins_.Rex_GIFJS.prototype.cnds.OnFinished, self); 
         }
         this.GIFObj["on"]("finished", onFinished);        
         return this.GIFObj;
 	};     
     
+<<<<<<< HEAD
 	instanceProto.releaseObjectURL = function ()
 	{
         if (this.exp_ObjectURL === "")
@@ -117,6 +130,14 @@ cr.plugins_.Rex_GIFJS = function(runtime)
         if (inst.canvas)
             img = inst.canvas;
         else if (inst.curFrame && inst.curFrame.texture_img)
+=======
+    var getImage= function (inst)
+    {
+        var img;
+        if (cr.plugins_.c2canvas && (inst instanceof cr.plugins_.c2canvas.prototype.Instance))
+            img = inst.canvas;
+        else if (cr.plugins_.Sprite && (inst instanceof cr.plugins_.Sprite.prototype.Instance))
+>>>>>>> origin/master
             img = inst.curFrame.texture_img;       
         else
             img = null;
@@ -139,13 +160,18 @@ cr.plugins_.Rex_GIFJS = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
+<<<<<<< HEAD
     Acts.prototype.AddCanvas = function (objs, delay, copy)
+=======
+    Acts.prototype.AddFrame = function (objs, delay, copy)
+>>>>>>> origin/master
 	{
         if (!objs)
             return;
         
         var inst = objs.getFirstPicked();
         var img = getImage(inst);
+<<<<<<< HEAD
         
         this.addFrame(img, delay, copy);
 	}; 
@@ -157,6 +183,24 @@ cr.plugins_.Rex_GIFJS = function(runtime)
         this.addFrame(img, delay);
 	}; 
     
+=======
+        if (!img)
+            return;
+        
+        if (this.afterRender)
+        {
+            this.GIFObj = null;
+            this.afterRender = false;
+        }
+        
+        var options = {
+            "delay": Math.floor(delay*1000),   
+            "copy": (copy === 1),
+        };        
+        this.getGIFObj()["addFrame"](img, options)
+	}; 
+
+>>>>>>> origin/master
     Acts.prototype.Render = function ()
 	{
         this.getGIFObj()["render"]();
@@ -186,6 +230,7 @@ cr.plugins_.Rex_GIFJS = function(runtime)
     Acts.prototype.SetTransparent = function (transparent)
 	{
         this.options["transparent"] = transparent;
+<<<<<<< HEAD
 	}; 
 
     Acts.prototype.Release = function ()
@@ -193,12 +238,16 @@ cr.plugins_.Rex_GIFJS = function(runtime)
         this.releaseObjectURL(); 
 	};
     
+=======
+	};    
+>>>>>>> origin/master
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	pluginProto.exps = new Exps();
 
 	Exps.prototype.ObjectURL = function (ret)
+<<<<<<< HEAD
 	{
 		ret.set_string( this.exp_ObjectURL );
 	}; 
@@ -207,5 +256,12 @@ cr.plugins_.Rex_GIFJS = function(runtime)
 	{
 		ret.set_string( this.exp_ContentType );
 	};     
+=======
+	{             
+        var val = (this.resultBlob)? URL.createObjectURL(this.resultBlob): "";
+		ret.set_string( val );
+	}; 
+    
+>>>>>>> origin/master
     
 }());

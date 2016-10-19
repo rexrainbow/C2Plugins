@@ -27,6 +27,7 @@ AddComboParamOption("Add");
 AddComboParamOption("Copy");
 AddComboParam("Copy", "Copy or add frame.", 0); 
 AddAction(1, 0, "Add frame", "1. Add frame", 
+<<<<<<< HEAD
           "<i>{2}</i> <i>{0}</i> with delay to <i>{1}</i>","Add frame from sprite or canvas.", "AddCanvas");  
 
 AddAction(2, 0, "Render", "2. Render", 
@@ -36,6 +37,12 @@ AddStringParam("URI", "Image in base64", '""');
 AddNumberParam("Delay", "Frame delay, in seconds", 0.5);          
 AddAction(3, 0, "Add uri", "1. Add frame", 
           "Add frame from <i>{0}</i> with delay to <i>{1}</i>","Add frame from base64 string.", "AddURI");            
+=======
+          "<i>{2}</i> <i>{0}</i> with delay to <i>{1}</i>","Add frame from canvas.", "AddFrame");  
+
+AddAction(2, 0, "Render", "2. Render", 
+          "Render","Render GIF.", "Render");  
+>>>>>>> origin/master
           
 AddNumberParam("Repeat", "Repeat count, -1 = no repeat, 0 = forever.", 0); 
 AddAction(11, 0, "Set repeat", "0. Configuration", 
@@ -55,6 +62,7 @@ AddAction(13, 0, "Set workers", "0. Configuration",
 //          
 //AddAnyTypeParam("Transparent", "Transparent hex color, 0x00FF00 = green.", '"0x000000"'); 
 //AddAction(15, 0, "Set transparent", "0. Configuration", 
+<<<<<<< HEAD
 //          "Set transparent hex color to <i>{0}</i>","Set transparent hex color", "SetTransparent");    
 
 AddAction(21, 0, "Release", "Result", 
@@ -63,6 +71,12 @@ AddAction(21, 0, "Release", "Result",
 // Expressions
 AddExpression(1, ef_return_string, "Get object URL", "Result", "ObjectURL", 'Get object URL of render result. Return "" if result is invalid.');
 AddExpression(2, ef_return_string, "Get content type", "Result", "ContentType", 'Get content type of render result. Return "" if result is invalid.');
+=======
+//          "Set transparent hex color to <i>{0}</i>","Set transparent hex color", "SetTransparent");               
+//////////////////////////////////////////////////////////////
+// Expressions
+AddExpression(1, ef_return_string, "Get object URL", "Result", "ObjectURL", 'Get object URL of render result. Return "" if result is invalid.');
+>>>>>>> origin/master
 
 ACESDone();
 
