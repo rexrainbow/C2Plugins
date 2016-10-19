@@ -92,6 +92,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
+    new cr.Property(ept_combo,	"Play in background",	"No",	"Keep playing audio even when the tab or app goes in to the background.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

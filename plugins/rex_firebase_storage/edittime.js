@@ -104,7 +104,14 @@ AddStringParam("Content", "String content", '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
 AddAction(7, 0, "Upload string", "Upload", 
           "Upload string <i>{0}</i> to <i>{1}</i>", 
-          "Upload string to firebase storage.", "UploadString");           
+          "Upload string to firebase storage.", "UploadString"); 
+
+AddStringParam("ObjectURL", "ObjectURL.", '""');
+AddStringParam("Content type", "Content type.", '""');
+AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddAction(8, 0, "Upload objectURL", "Upload", 
+          "Upload objectURL <i>{0}</i> (type <i>{1}</i>) to <i>{2}</i>", 
+          "Upload from objectURL to firebase storage.", "UploadObjectURL");           
 
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
 AddAction(11, 0, "Get download url", "Download", 

@@ -305,7 +305,6 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 		        this.runtime.popSol(current_event.solModifiers);
 		}        
 
-		this.forPage = "";
 		return false;   
 	}; 	    
 	//////////////////////////////////////

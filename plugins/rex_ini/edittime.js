@@ -1,51 +1,37 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Exif parser",
-		"id":			"Rex_exif_parser",
+		"name":			"INI",
+		"id":			"Rex_INI",
 		"version":		"0.1",        
-		"description":	"Get exif inforamtion. https://github.com/jseidelin/exif-js",
+		"description":	"An ini parser/serializer. Reference: https://github.com/npm/ini",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_exif_parser.html",
-		"category":		"Rex - Image",
+		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ini.html",
+		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
-		"flags":		0,
-		"dependency":	"exif.js"
-		
+		"flags":		0
 	};
 };
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On load", "Load image", 
-             "On load", 
-             "Trigger when loaded image.", "OnLoad");
 
-AddCondition(1, cf_trigger, "On error", "Load image", 
-             "On load error", 
-             "Trigger when loaded error.", "OnLoadError");             
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("URL", "Image url", '""');
-AddAction(1, 0, "Load", "Load image", 
-          "Load image from url <i>{0}</i>", 
-          "Load image from url.", "LoadImage");
 
-          
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Pretty string", "Exif", "Pretty", 
-              "Pretty string of all exif infomation.");
+AddStringParam("INI", "INI string.", '""');
+AddExpression(1, ef_return_any, "Parse INI to JSON", 
+              "Parser", "INI2JSON", "Parse INI to JSON.");
+         
+AddStringParam("JSON", "JSON string.", '""');         
+AddExpression(2, ef_return_string, "Export INI from JSON", 
+              "Serializer", "JSON2INI", "Export INI from JSON.");                 
 
-AddStringParam("Tag", "Tag name", '""');              
-AddExpression(2, ef_return_any, "Get tag", "Exif", "Tag", 
-              "Get tag.");
 
-AddExpression(3, ef_return_string, "Get all tags", "Exif", "AllTags", 
-              "Get all tags in JSON string.");
-                
-                            
+
 ACESDone();
 
 // Property grid properties for this plugin

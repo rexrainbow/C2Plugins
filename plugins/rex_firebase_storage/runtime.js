@@ -126,7 +126,30 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             metadata = {"contentType": metadata}
         this.uploadTask = this.get_storage_ref(path)["put"](file, metadata);
         this.uploadTask["on"]('state_changed', onStateChanged, onError, onComplete);   
-    }
+    };
+    
+    	
+	instanceProto.doRequest = function ( url_, callback )
+	{
+	    var oReq;
+	    
+		// Windows Phone 8 can't AJAX local files using the standards-based API, but
+		// can if we use the old-school ActiveXObject. So use ActiveX on WP8 only.
+		if (this.runtime.isWindowsPhone8)
+			oReq = new ActiveXObject("Microsoft.XMLHTTP");
+		else
+			oReq = new XMLHttpRequest();
+			
+        oReq.open("GET", url_, true);
+        oReq.responseType = "arraybuffer";
+        
+        oReq.onload = function (oEvent) 
+        {
+            callback(oReq.response);
+        };
+        
+        oReq.send(null);
+	};	   
 
 	//////////////////////////////////////
 	// Conditions
@@ -347,6 +370,16 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         var metadata = {"contentType":  'text/plain'};    
         this.upload(blob, storagePath, metadata);   
 	};       
+    
+    Acts.prototype.UploadObjectURL = function (objectURL, contentType, storagePath)
+	{
+        var self=this;
+        var callback = function (blob)
+        {
+            self.upload(blob, storagePath, contentType); 
+        }
+        this.doRequest(objectURL, callback);
+	};      
     
     Acts.prototype.GetDownloadURL = function (storagePath)
 	{

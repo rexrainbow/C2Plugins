@@ -72,6 +72,9 @@ AddExpression(1, ef_return_any | ef_variadic_parameters, "Get parameter", "Callb
 
 //AddStringParam("Property", "Property name in dot notation", '""');
 AddExpression(11, ef_return_any | ef_variadic_parameters, "Get property", "Property", "Property", "Get property.");
+  
+//AddStringParam("Property", "Property name in dot notation", '""');
+AddExpression(21, ef_return_any | ef_variadic_parameters, "Get return value", "Function", "ReturnValue", "Get return value.");
 
 
 ACESDone();

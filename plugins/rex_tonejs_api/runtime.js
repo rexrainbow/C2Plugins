@@ -41,6 +41,9 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
+        this.playinbackground = (this.properties[0] === 0);
+        this.suspendStates = {};
+        
         this.toneObjects = {};
         
         // callback
@@ -61,6 +64,12 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             return cb;
         };          
         
+        var self=this;
+		this.runtime.addSuspendCallback(function(s)
+		{
+			self.onSuspend(s);
+		});        
+        
         /**BEGIN-PREVIEWONLY**/
         this.dbg_varName = "";
         /**END-PREVIEWONLY**/           
@@ -69,6 +78,42 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
 	instanceProto.onDestroy = function ()
 	{
 	};   
+    
+	instanceProto.onSuspend = function (s)
+	{
+		// ignore suspend/resume events if set to play in background - normally
+		// everything is paused in response to a suspend event
+		if (this.playinbackground)
+			return;
+		
+        
+        var transport = window["Tone"]["Transport"];
+        var master = window["Tone"]["Master"];
+
+        // suspend
+        if (s)
+        {
+            var state = transport["state"];
+            this.suspendStates.transportState = state;            
+            if (state === "started")
+                transport["pause"]();
+          
+            var mute = master["mute"];         
+            this.suspendStates.masterMute = mute;            
+            if (!mute)
+                master["mute"] = true;
+        }
+        
+        // resume
+        else 
+        {
+            if (this.suspendStates.transportState === "started")
+                transport["start"]();
+            
+            if (!this.suspendStates.masterMute)
+                master["mute"] = false;
+        }        
+	};    
 
     // The comments around these functions ensure they are removed when exporting, since the
     // debugger code is no longer relevant after publishing.
@@ -398,11 +443,11 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
                 var callbackTag = params[0];
                 if (callbackTag != null)
                 {     
-                    var onload = getCallback(callbackTag);
+                    var callback = getCallback(callbackTag);
                     if (isOptionMode)
-                        options["callback"] = onload;
+                        options["callback"] = callback;
                     else
-                        params[0] = onload;
+                        params[0] = callback;
                 }
             }
             else if ((type === "Part") || (type === "Pattern") || (type === "Sequence"))
@@ -410,11 +455,11 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
                 var callbackTag = params[0];
                 if (callbackTag != null)
                 {     
-                    var onload = getCallback(callbackTag);
+                    var callback = getCallback(callbackTag);
                     if (isOptionMode)
-                        options["callback"] = onload;
+                        options["callback"] = callback;
                     else
-                        params[0] = onload;
+                        params[0] = callback;
                 }
                 
                 if (!isOptionMode)
@@ -422,7 +467,22 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
                     params[1] = JSON.parse( params[1] );
                 }
             }            
-            // event         
+            // event   
+
+            // core            
+            else if (type === "Clock")
+            {
+                var callbackTag = params[0];
+                if (callbackTag != null)
+                {     
+                    var callback = getCallback(callbackTag);
+                    if (isOptionMode)
+                        options["callback"] = callback;
+                    else
+                        params[0] = callback;
+                }
+            } 
+            // core                
             
             // reference: http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible/#1608546
             params.unshift(null);

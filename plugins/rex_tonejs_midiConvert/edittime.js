@@ -4,7 +4,7 @@
 		"name":			"MidiConvert",
 		"id":			"Rex_ToneJS_MidiConvert",
 		"version":		"0.1",        
-		"description":	"Convert MIDI into Tone.js-friendly JSON.",
+		"description":	"Convert MIDI into Tone.js-friendly JSON, and play it.",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_tonejs_midiconvert.html",
 		"category":		"Rex - Audio - Tone - midi",
@@ -119,8 +119,18 @@ AddExpression(1, ef_return_string, "Midi in JSON", "Midi", "Midi2JSON",
               "Midi in JSON.");  
               
 AddExpression(2, ef_return_number, "End time of current midi", "Midi", "EndTime", 
-              "End time of current midi, in seconds.");              
+              "End time of current midi, in seconds.");
 
+AddExpression(3, ef_return_number, "Get elapsed time", "Control", "ElapsedTime", 
+              "Get elapsed time, in seconds.");   
+
+AddExpression(4, ef_return_number, "Get progress", "Control", "Progress", 
+              "Get progress(0-1).");   
+
+AddExpression(5, ef_return_number, "Get state", "Control", "State", 
+              'Get state in "NONE", "PLAY", "PAUSE", "IDLE".');                 
+
+              
 AddExpression(11, ef_return_any, 
               "Get time of event", "Event", "Time", 
               "Get time of note event, in seconds.");
