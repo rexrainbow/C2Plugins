@@ -578,25 +578,25 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         // get time-out timer
         var quene_length = this._waiting_timer_queue.length;
         var i, timer;
-        var _timer_cnt = 0;
+        var timerCnt = 0;
         for (i=0; i<quene_length; i++)
         {
             timer = this._waiting_timer_queue[i];
             if (this._is_timer_time_out(timer))
             {
                 this._process_timer_queue.push(timer);
-                _timer_cnt += 1;
+                timerCnt += 1;
             }
         }
         
         // remainder timers   
-        if (_timer_cnt)
+        if (timerCnt)
         {
-            for(i=_timer_cnt; i<quene_length; i++)
+            for(i=timerCnt; i<quene_length; i++)
             {
-                this._waiting_timer_queue[i-_timer_cnt] = this._waiting_timer_queue[i];            
+                this._waiting_timer_queue[i-timerCnt] = this._waiting_timer_queue[i];            
             }
-            this._waiting_timer_queue.length -= _timer_cnt;
+            this._waiting_timer_queue.length -= timerCnt;
         }
 
         // do call back function with arg list
@@ -765,7 +765,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     TimerProto.SetTimescale = function(timescale)
     {
-        if (timescale == this.timescale)
+        if (this._is_active && (timescale === this.timescale))
             return;
             
         this.timeline.SetTimescale(this, timescale);
@@ -943,8 +943,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     {     
         if (timescale < 0)   // invalid
             return;
-            
-        var do_change_rate = false;
+
+        var reset_rate = false;
         if ((timescale == 0) && this._is_active) // suspend
         {
             this.Suspend();
@@ -952,19 +952,19 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         else if ((timescale > 0) && (!this._is_active)) // resume
         {
             this.Resume();
-            do_change_rate = true;
+            reset_rate = true;
         }
         else if ((timescale > 0) && this._is_active) // this._is_active, normal
         {
-            do_change_rate = true;
+            reset_rate = true;
         }
-        
-        if (do_change_rate)
+
+        if (reset_rate)
         {
             var rate = this.timescale / timescale;
             this.__change_rate__(rate);
-            this.timescale = timescale;
-        }
+            this.timescale = timescale;  
+        }    
     };        
     
     TimerProto.__change_rate__ = function(rate)

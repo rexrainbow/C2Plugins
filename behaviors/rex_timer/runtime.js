@@ -209,6 +209,7 @@ cr.behaviors.Rex_Timer = function(runtime)
 	    var ts = this.inst.my_timescale;
 	    if (ts == -1)
 	        ts = this.runtime.timescale;   
+
 	    return ts;
 	};
     

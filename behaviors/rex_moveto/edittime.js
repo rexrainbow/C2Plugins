@@ -14,9 +14,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On reach target position", "Reach", 
-             "On {my} reach target", 
-			 "Triggered when reach target position.", 
+AddCondition(0, cf_trigger, "On hit target position", "", 
+             "On {my} hit target", 
+			 "Triggered when hit target position.", 
 			 "OnHitTarget");   
              
 AddCmpParam("Comparison", "Choose the way to compare the current speed.");
