@@ -4,7 +4,7 @@
 		"name":			"GIF render",
 		"id":			"Rex_GIFJS",
 		"version":		"1.0",        
-		"description":	"GIF encoder.",
+		"description":	"GIF encoder. Reference: https://github.com/jnordberg/gif.js",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_gifjs.html",
 		"category":		"Rex - Image",
@@ -49,13 +49,13 @@ AddNumberParam("Workers", "Number of web workers to spawn.", 2);
 AddAction(13, 0, "Set workers", "0. Configuration", 
           "Set workers to <i>{0}</i>","Set workers.", "SetWorkers");           
           
-//AddAnyTypeParam("Background", "Background color where source image is transparent.", '"#fff"'); 
-//AddAction(14, 0, "Set background color", "0. Configuration", 
-//          "Set background color to <i>{0}</i>","Set background color", "SetBackground");     
-//          
-//AddAnyTypeParam("Transparent", "Transparent hex color, 0x00FF00 = green.", '"0x000000"'); 
-//AddAction(15, 0, "Set transparent", "0. Configuration", 
-//          "Set transparent hex color to <i>{0}</i>","Set transparent hex color", "SetTransparent");    
+AddAnyTypeParam("Background", "Background color where source image is transparent.", '"#fff"'); 
+AddAction(14, 0, "Set background color", "0. Configuration", 
+          "Set background color to <i>{0}</i>","Set background color", "SetBackground");     
+          
+AddAnyTypeParam("Transparent", 'Transparent hex color, "0x00FF00" = green, "" = null.', '""'); 
+AddAction(15, 0, "Set transparent", "0. Configuration", 
+          "Set transparent hex color to <i>{0}</i>","Set transparent hex color", "SetTransparent");    
 
 AddAction(21, 0, "Release", "Result", 
           "Release result","Release object URL of render result.", "Release");             
@@ -70,7 +70,9 @@ ACESDone();
 var property_list = [
 		new cr.Property(ept_integer, "Repeat", 0, "Repeat count, -1 = no repeat, 0 = forever."),
 		new cr.Property(ept_integer, "Quality", 10, "Pixel sample interval, lower is better."),   
-		new cr.Property(ept_integer, "Workers", 2, "Number of web workers to spawn."),              
+		new cr.Property(ept_integer, "Workers", 2, "Number of web workers to spawn."),            
+		new cr.Property(ept_text, "Background", "#fff", "Background color where source image is transparent."), 
+		new cr.Property(ept_text, "Transparent", "", 'Transparent hex color, "0x00FF00" = green, "" = null.'),                      
 	];
 	
 // Called by IDE when a new object type is to be created

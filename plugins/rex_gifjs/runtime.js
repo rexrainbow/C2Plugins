@@ -45,6 +45,8 @@ cr.plugins_.Rex_GIFJS = function(runtime)
             "repeat": this.properties[0],
             "quality": this.properties[1],
             "workers": this.properties[2],
+            "background": this.properties[3],
+            "transparent": (this.properties[4] !== "")? this.properties[4] : null,
         };
         this.GIFObj = null;        
         this.afterRender = false;        
@@ -185,7 +187,7 @@ cr.plugins_.Rex_GIFJS = function(runtime)
 
     Acts.prototype.SetTransparent = function (transparent)
 	{
-        this.options["transparent"] = transparent;
+        this.options["transparent"] = (transparent !== "")? transparent : null;
 	}; 
 
     Acts.prototype.Release = function ()
