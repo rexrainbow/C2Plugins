@@ -72,6 +72,32 @@ cr.plugins_.Rex_tesseractjs = function(runtime)
         return this.tesseractObj;
 	}; 
     
+	instanceProto.GetTesseractJob = function(img, fnName)
+    {
+        var self=this;
+        var onProgress = function(p)
+        {
+            self.progress = p;
+            self.runtime.trigger(cr.plugins_.Rex_tesseractjs.prototype.cnds.OnProgress, self);                 
+        };
+        var onError = function (err)
+        {
+            self.error = err;
+            self.runtime.trigger(cr.plugins_.Rex_tesseractjs.prototype.cnds.OnError, self);            
+        }
+        var onFinished = function(result)
+        {
+            self.result = result;
+            self.runtime.trigger(cr.plugins_.Rex_tesseractjs.prototype.cnds.OnCompleted, self);
+        };
+        var job = this.GetTesseractObj()[fnName](img, this.options);
+        job["progress"](onProgress);
+        job["catch"](onError);
+        job["then"](onFinished);   
+
+        return job;        
+    }    
+    
     var getImage= function (inst)
     {        
         if (!inst)
@@ -119,26 +145,18 @@ cr.plugins_.Rex_tesseractjs = function(runtime)
         var inst = objs.getFirstPicked();
         var img = getImage(inst);
         
-        var self=this;
-        var onProgress = function(p)
-        {
-            self.progress = p;
-            self.runtime.trigger(cr.plugins_.Rex_tesseractjs.prototype.cnds.OnProgress, self);                 
-        };
-        var onError = function (err)
-        {
-            self.error = err;
-            self.runtime.trigger(cr.plugins_.Rex_tesseractjs.prototype.cnds.OnError, self);            
-        }
-        var onFinished = function(result)
-        {
-            self.result = result;
-            self.runtime.trigger(cr.plugins_.Rex_tesseractjs.prototype.cnds.OnCompleted, self);
-        };
-        var job = this.GetTesseractObj()["recognize"](img, this.options);
-        job["progress"](onProgress);
-        job["catch"](onError);
-        job["then"](onFinished);        
+        this.GetTesseractJob(img, "recognize");
+	}; 
+
+    Acts.prototype.Detect = function (objs)
+	{
+        if (!objs)
+            return;
+        
+        var inst = objs.getFirstPicked();
+        var img = getImage(inst);
+        
+        this.GetTesseractJob(img, "detect");
 	}; 
     
 	Acts.prototype.AddProperty = function (name, value)
@@ -158,9 +176,22 @@ cr.plugins_.Rex_tesseractjs = function(runtime)
     
 	Exps.prototype.Result = function (ret)
 	{
-        var result = (!this.result)? "": this.result["text"];        
+        var result = "";
+        if (this.result)
+        {
+            if (this.result.hasOwnProperty("text"))
+                result = this.result["text"];        
+            else if (this.result.hasOwnProperty("script"))
+                result = this.result["script"];                                
+        } 
 		ret.set_string( result );
 	};
+    
+	Exps.prototype.Error = function (ret)
+	{
+        var error = (!this.error)? "": this.error;        
+		ret.set_string( error );
+	};    
     
 	Exps.prototype.Status = function (ret)
 	{
@@ -170,16 +201,14 @@ cr.plugins_.Rex_tesseractjs = function(runtime)
     
 	Exps.prototype.Progress = function (ret)
 	{
-        var progress;
+        var progress = 0;
         if (this.progress)
         {
-            progress = this.progress["progress"];
-            if (progress == null)
+            if (this.progress.hasOwnProperty("progress"))
+                progress = this.progress["progress"];
+            else
                 progress = 1;
         }
-        else
-            progress = 0;
-        
 		ret.set_float( progress );
 	};	    
     

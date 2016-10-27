@@ -24,8 +24,14 @@ AddCondition(3, cf_trigger, "On progress", "Event", "On progress", "Trigger when
 //////////////////////////////////////////////////////////////
 // Actions
 AddObjectParam("Image", "Current frame of Sprite, or canvas object.");    
-AddAction(1, 0, "Recognize", "recognize", 
-          "Recognize <i>{0}</i>","Recognize image.", "Recognize");  
+AddAction(1, 0, "Recognize", "Job", 
+          "Recognize <i>{0}</i>",
+          "Figures out what words are in image, where the words are in image.", "Recognize");  
+          
+AddObjectParam("Image", "Current frame of Sprite, or canvas object.");    
+AddAction(2, 0, "Detect", "Job", 
+          "Detect <i>{0}</i>",
+          "Figures out what script (e.g. 'Latin', 'Chinese') the words in image are written in.", "Detect");            
 
 AddStringParam("Property", "Property name", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
@@ -39,7 +45,8 @@ AddAction(12, 0, "Set language", "Options",
           "Set language.", "SetLanguage");           
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_string, "Result", "Result", "Result", "Get result text.");
+AddExpression(1, ef_return_string, "Get result", "Result", "Result", "Get result text or script type.");
+AddExpression(2, ef_return_string, "Get error", "Result", "Error", "Get error.");
 AddExpression(11, ef_return_string, "Current status", "Progress", "Status", "Get current status.");
 AddExpression(12, ef_return_number, "Current progress", "Progress", "Progress", "Get current progress.");
 
