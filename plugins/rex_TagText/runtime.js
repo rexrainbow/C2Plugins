@@ -82,6 +82,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.font = this.properties[2];
 		
 		this.color = this.properties[3];
+        this.stroke = "none";
 		this.halign = this.properties[4];				// 0=left, 1=center, 2=right
 		this.valign = this.properties[5];				// 0=top, 1=center, 2=bottom
         
@@ -315,6 +316,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this.canvas_text.default_propScope.ptSize = this.ptSize.toString() + "pt";
         this.canvas_text.default_propScope.style = this.fontstyle;
         this.canvas_text.default_propScope.color = this.color;
+        this.canvas_text.default_propScope.stroke = this.stroke;
         this.canvas_text.default_propScope.shadow = this.textShadow;        
         this.canvas_text.lineHeight = line_height;
 
@@ -973,6 +975,30 @@ cr.plugins_.rex_TagText = function(runtime)
 	    //}              
 	};	    
 	
+	Acts.prototype.SetStrokeColor = function (rgb)
+	{        
+	    var newcolor;
+        if (typeof(rgb) == "number")        
+            newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";        
+        else
+            newcolor = rgb;
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+	        this._tag["stroke"] = newcolor;
+            this.render_text(false);
+	    }
+	    else    // global
+	    {    		    	        	        
+		    if (newcolor === this.color)
+		        return;
+		    
+		    this.stroke = newcolor;
+		    this.render_text(this.is_force_render);
+		    
+		}
+	};
+		
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -1090,6 +1116,7 @@ cr.plugins_.rex_TagText = function(runtime)
             weight:"normal",
             ptSize:"12pt",
             color:"#000000",
+            stroke:"none",
             style:"normal",            
             shadow:"",
         };
@@ -1141,7 +1168,11 @@ cr.plugins_.rex_TagText = function(runtime)
 
                 case "color":
                     propScope["color"] = prop_in[atribute];
-                    break;                    
+                    break;            
+
+                case "stroke":
+                    propScope["stroke"] = prop_in[atribute];
+                    break;                      
                     
                 case "font-style":
                     propScope["style"] = prop_in[atribute];
@@ -1184,8 +1215,14 @@ cr.plugins_.rex_TagText = function(runtime)
             this.context.font = style + " " + weight + " " + ptSize + " " + family;            
         }
         
-        var color = this.getTextColor(propScope);
-        this.context.fillStyle = color;
+        var color = this.getFillColor(propScope);
+        var stroke = this.getStokeColor(propScope);
+
+        if (color.toLowerCase() !== "none")
+            this.context.fillStyle = color;
+        
+        if (stroke.toLowerCase() !== "none")
+            this.context.strokeStyle = stroke;        
         
         var shadow = propScope["shadow"] || this.default_propScope.shadow;
         if (shadow !== "") 
@@ -1201,12 +1238,31 @@ cr.plugins_.rex_TagText = function(runtime)
     
     CanvasTextProto.getTextSize = function(propScope)
     {
-        return propScope["ptSize"] || this.default_propScope.ptSize;      
+        var size;
+        if (propScope.hasOwnProperty("size"))
+            size = propScope["size"];
+        else
+            size = this.default_propScope.ptSize;
+        return size;      
     };  
-    CanvasTextProto.getTextColor = function(propScope)
+    CanvasTextProto.getFillColor = function(propScope)
     {
-        return propScope["color"] || this.default_propScope.color;          
-    };      
+        var color;
+        if (propScope.hasOwnProperty("color"))
+            color = propScope["color"];
+        else
+            color = this.default_propScope.color;  
+        return color;         
+    };  
+    CanvasTextProto.getStokeColor = function(propScope)
+    {
+        var color;
+        if (propScope.hasOwnProperty("stroke"))
+            color = propScope["stroke"];
+        else
+            color = this.default_propScope.stroke;
+        return color;         
+    };    
     
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
     {
@@ -1238,8 +1294,13 @@ cr.plugins_.rex_TagText = function(runtime)
             this.underline.offset = offset_save;            
         }
         
-        // draw text
-        this.context.fillText(pen.text, startX, startY);
+        // fill text
+        if (this.getFillColor(pen.prop).toLowerCase() !== "none")
+            this.context.fillText(pen.text, startX, startY);
+        
+        // stoke 
+        if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
+            this.context.strokeText(pen.text, startX, startY);
         
         this.context.restore();
     };

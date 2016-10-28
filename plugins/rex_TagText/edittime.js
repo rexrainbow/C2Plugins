@@ -140,6 +140,9 @@ AddNumberParam("Offset", "Offset Y in pixels.", 0);
 AddAction(63, 0, "Set underline", "Underline", 
           "Set underline with color to <i>{0}</i>, thinkness to <i>{1}</i>, offset Y to <i>{2}</i>", 
           "Set underline.", "SetUnderline");
+
+AddAnyTypeParam("Color", "The stroke color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
+AddAction(64, 0, "Set stroke color", "Appearance", "Set stroke color to <i>{0}</i>", "Set the stroke color.", "SetStrokeColor");
          
           
 ////////////////////////
