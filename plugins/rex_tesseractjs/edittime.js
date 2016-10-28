@@ -7,7 +7,7 @@
 		"description":	"Pure Javascript OCR for 62 Languages. Reference: https://github.com/naptha/tesseract.js",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tesseractjs.html",
-		"category":		"Rex - Text",
+		"category":		"Rex - Image",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
 		"flags":		0,
@@ -54,7 +54,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_text, "Lagunage", "eng", "Languages, listed in https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md"),
+	new cr.Property(ept_text, "Language", "eng", "Languages, listed in https://github.com/naptha/tesseract.js/blob/master/docs/tesseract_lang_list.md"),
     new cr.Property(ept_section, "Custom paths", "",	"Custom path."),   
 	new cr.Property(ept_text, "Core path", "", "A string specifying the location of the tesseract.js-core library."),
 	new cr.Property(ept_text, "Lang path", "", "A string specifying the location of the tesseract language files."),    

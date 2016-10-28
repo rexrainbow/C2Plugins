@@ -47,6 +47,7 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 	{        
 	    this.enabled = (this.properties[0] === 1);
 	    this.obstacleMode = this.properties[1];		// 0 = solids, 1 = custom
+        this.maxDist = 100;
 	};  
     
 	behinstProto.onDestroy = function()
@@ -57,49 +58,37 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 	{
 	    if (!this.enabled)
 	        return;
-	    
-	    if (this.obstacleMode === 0)    // solids
-	    {
-	        // copy from custom movement behavior
-		    // Is already overlapping solid: must have moved itself in (e.g. by rotating or being crushed),
-		    // so push out
-		    var collobj = this.runtime.testOverlapSolid(this.inst);
-		    if (collobj)
-		    {
-		    	this.runtime.registerCollision(this.inst, collobj);
-		    	this.runtime.pushOutSolidNearest(this.inst);
-		    }
-	    }	    
-	    else    // custom
-	    {
-            var candidates = this.get_candidates(this.type.obstacleTypes);
-            if (candidates.length === 0)
-                return;
-            
-            this.pushOutNearest(candidates);
-	    }
-	    
+    
+        this.pushOutNearest( this.getCandidates() , this.maxDist);	    
 	};
 
-
     var __candidates = [];
-	behinstProto.get_candidates = function (types)
+	behinstProto.getCandidates = function ()
 	{
-        __candidates.length = 0;    
-        var i, cnt=types.length;
-        for (i=0; i<cnt; i++)
+        __candidates.length = 0; 
+        if (this.obstacleMode === 0)  // use solids
         {
-            cr.appendArray(__candidates, types[i].instances);
+            var solid = this.runtime.getSolidBehavior();
+            if (solid)
+		        cr.appendArray(__candidates, solid.my_instances.valuesRef());
         }
-                     
+        else
+        {
+            var types = this.type.obstacleTypes; 
+            var i, cnt=types.length;
+            for (i=0; i<cnt; i++)
+            {
+                cr.appendArray(__candidates, types[i].instances);
+            }
+        }
+
         return __candidates;
 	}; 
-	
+    	
 	// Find nearest position not overlapping a solid
-	behinstProto.pushOutNearest = function (candidates, max_dist_)
+	behinstProto.pushOutNearest = function (candidates, max_dist)
 	{
 	    var inst = this.inst;
-		var max_dist = (cr.is_undefined(max_dist_) ? 100 : max_dist_);
 		var dist = 0;
 		var oldx = inst.x
 		var oldy = inst.y;
@@ -107,8 +96,7 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 		var dir = 0;
 		var dx = 0, dy = 0;
 		
-		var overlap_inst = this.get_first_overlap_inst(candidates);
-		
+		var overlap_inst = this.get_first_overlap_inst(candidates);		
 		if (!overlap_inst)
 			return true;		// no overlap candidate found
 		
@@ -132,16 +120,9 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 			inst.y = cr.floor(oldy + (dy * dist));
 			inst.set_bbox_changed();
 			
-			// Test if we've cleared the last instance we were overlapping
-			if (!this.runtime.testOverlap(inst, overlap_inst))
-			{
-				// See if we're still overlapping a different solid
-				overlap_inst = this.get_first_overlap_inst(candidates);
-				
-				// We're clear of all solids
-				if (!overlap_inst)
-					return true;
-			}
+            overlap_inst = this.get_first_overlap_inst(candidates, overlap_inst);
+	        if (!overlap_inst)
+		        return true;
 		}
 		
 		// Didn't get pushed out: restore old position and return false
@@ -151,8 +132,49 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 		return false;
 	};	
 
-	behinstProto.get_first_overlap_inst = function (candidates)
+    	
+	// Find nearest position not overlapping a solid
+	behinstProto.pushOut = function (candidates, ux, uy, max_dist)
 	{
+	    var inst = this.inst;
+		var dist = 0;
+		var oldx = inst.x
+		var oldy = inst.y;
+        var testx, testy;
+
+		var overlap_inst = this.get_first_overlap_inst(candidates);		
+		if (!overlap_inst)
+			return true;		// no overlap candidate found
+
+		while (dist <= max_dist)
+		{
+            dist++;
+            testx = cr.floor(oldx + (ux * dist));
+            testy = cr.floor(oldy + (uy * dist));
+            if ((inst.x === testx) && (inst.y === testy))
+                continue;
+            
+			inst.x = testx;
+			inst.y = testy;
+			inst.set_bbox_changed();
+			
+            overlap_inst = this.get_first_overlap_inst(candidates, overlap_inst);
+	        if (!overlap_inst)
+		        return true;
+		}
+		
+		// Didn't get pushed out: restore old position and return false
+		inst.x = oldx;
+		inst.y = oldy;
+		inst.set_bbox_changed();
+		return false;
+	};	
+    
+	behinstProto.get_first_overlap_inst = function (candidates, overlap_inst)
+	{
+        if (overlap_inst && this.runtime.testOverlap(this.inst, overlap_inst))
+            return overlap_inst;
+        
         var i,cnt=candidates.length;
         for (i=0; i<cnt; i++)
         {
@@ -233,7 +255,32 @@ cr.behaviors.Rex_pushOutSolid = function(runtime)
 	Acts.prototype.ClearObstacles = function ()
 	{
 		this.type.obstacleTypes.length = 0;
-	};	    
+	};	
+	
+	Acts.prototype.PushOutNearest = function (maxDist)
+	{
+        this.pushOutNearest( this.getCandidates() , maxDist);	    
+	};	
+    
+	Acts.prototype.PushOutAngle = function (a, maxDist)
+	{
+		a = cr.to_radians(a);
+		var ux = Math.cos(a);
+		var uy = Math.sin(a);
+		this.pushOut(this.getCandidates() , ux, uy, maxDist);
+	};    
+    
+	Acts.prototype.PushOutToPos = function (x, y)
+	{        
+        var dx = x - this.inst.x;
+        var dy = y - this.inst.y;
+        
+        var maxDist = Math.sqrt(dx*dx + dy*dy);       
+		var a = Math.atan2(dy, dx);
+		var ux = Math.cos(a);
+		var uy = Math.sin(a);
+		this.pushOut(this.getCandidates() , ux, uy, maxDist);
+	};      
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
