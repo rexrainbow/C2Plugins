@@ -979,11 +979,18 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         var weight = propScope["weight"] || this.default_propScope.weight;     
         var ptSize = this.getTextSize(propScope);    
         var family = propScope["family"] || this.default_propScope.family;        
-        var color = this.getTextColor(propScope);
+        var color = this.getFillColor(propScope);
+        var stroke = this.getStokeColor(propScope);
         var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";
         
         this.context.font = style + " " + weight + " " + ptSize + " " + family;
-        this.context.fillStyle = color;
+        
+        if (color.toLowerCase() !== "none")
+            this.context.fillStyle = color;
+        
+        if (stroke.toLowerCase() !== "none")
+            this.context.strokeStyle = stroke;
+        
         if (shadow !== "") 
         {
             shadow = shadow.split(" ");
@@ -997,13 +1004,31 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     
     CanvasTextProto.getTextSize = function(propScope)
     {
-        return propScope["size"] || this.default_propScope.ptSize;      
+        var size;
+        if (propScope.hasOwnProperty("size"))
+            size = propScope["size"];
+        else
+            size = this.default_propScope.ptSize;
+        return size;      
     };  
-    CanvasTextProto.getTextColor = function(propScope)
+    CanvasTextProto.getFillColor = function(propScope)
     {
-        return propScope["color"] || this.default_propScope.color;          
+        var color;
+        if (propScope.hasOwnProperty("color"))
+            color = propScope["color"];
+        else
+            color = this.default_propScope.color;  
+        return color;         
     };  
-    
+    CanvasTextProto.getStokeColor = function(propScope)
+    {
+        var color;
+        if (propScope.hasOwnProperty("stroke"))
+            color = propScope["stroke"];
+        else
+            color = "none";
+        return color;         
+    };    
     
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
     {
@@ -1018,15 +1043,20 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         var underline = pen.prop["u"];
         if (underline)
         {
-            var color = (underline === true)? this.getTextColor(pen.prop) : underline;
+            var color = (underline === true)? this.getFillColor(pen.prop) : underline;
             this.draw_underline(pen.text, startX, startY, 
                                            this.getTextSize(pen.prop), 
                                            color );
         }
         
-        // draw text
-        this.context.fillText(pen.text, startX, startY);
+        // fill text
+        if (this.getFillColor(pen.prop).toLowerCase() !== "none")
+            this.context.fillText(pen.text, startX, startY);
         
+        // stoke 
+        if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
+            this.context.strokeText(pen.text, startX, startY);            
+
         this.context.restore();
     };
     
@@ -1106,7 +1136,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __result=[];
     var split_text = function(txt, mode)
     {        
-        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]/ig;
+        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]/ig;
         __result.length = 0;
         var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
         while(true)    
@@ -1157,6 +1187,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __re_underline_close = /\[\/u\]/i;   
     var __re_shadow_open = /\[shadow\]/i;
     var __re_shadow_close = /\[\/shadow\]/i;    
+    var __re_stroke_open = /\[stroke=([a-z]+|#[0-9abcdef]+)\]/i;
+    var __re_stroke_close = /\[\/stroke\]/i;      
     var __curr_propScope = {};
     var PROP_REMOVE = false;
     var PROP_ADD = true;
@@ -1260,7 +1292,18 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             { 
                 update_propScope(__curr_propScope, PROP_REMOVE, "shadow");
                 continue;
-            }             
+            } 
+            else if (__re_stroke_open.test(m)) 
+            { 
+                innerMatch = m.match(__re_stroke_open);
+                update_propScope(__curr_propScope, PROP_ADD, "stroke", innerMatch[1]);
+                continue;
+            }
+            else if (__re_stroke_close.test(m)) 
+            { 
+                update_propScope(__curr_propScope, PROP_REMOVE, "stroke");
+                continue;
+            }            
             else 
             {
                 proText = m;
@@ -1889,15 +1932,16 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 continue;
             
             if (k === "size")
-                header +=  ("[size=" + prop["size"].replace("pt", "") + "]");
-            else if (k === "color")
-                header += ("[color=" + prop["color"] + "]");   
+                header +=  ("[size=" + prop[k].replace("pt", "") + "]");
+            else if ((k === "color") || (k === "stroke"))
+                header += ("[" + k + "=" + prop[k] + "]");
+            
             else if (k === "u")
             {
-                if (prop["u"] === true)
+                if (prop[k] === true)
                     header += "[u]";
                 else
-                    header += ("[u=" + prop["u"] + "]");   
+                    header += ("[u=" + prop[k] + "]");   
             }
             else                
                 header += ("[" + k + "]");                      
