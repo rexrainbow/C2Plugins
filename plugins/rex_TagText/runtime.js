@@ -23,8 +23,10 @@ cr.plugins_.rex_TagText = function(runtime)
 			if (this.width !== w)
 			{
 				this.width = w;
-				this.set_bbox_changed();								
-				this.render_text(this.is_force_render);
+				this.set_bbox_changed();			
+                
+                if (!this.isCanvasSizeLocked)                
+				    this.render_text(this.is_force_render);
 			}
 		};
 	};
@@ -97,6 +99,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this.baseLine_mode = this.properties[9];
 		this.vshift = this.properties[10] * this.runtime.devicePixelRatio;
 		this.is_force_render = (this.properties[11] === 1);
+        this.LockCanvasSize( (this.properties[12] === 1), this.width, this.height);           
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
@@ -354,24 +357,28 @@ cr.plugins_.rex_TagText = function(runtime)
 		
 		var halfw = this.runtime.draw_width / 2;
 		var halfh = this.runtime.draw_height / 2;
+        
+        // canvas size  
+        var canvaswidth = (!this.isCanvasSizeLocked)? scaledwidth : Math.ceil(layer_scale * this.lockedCanvasWidth);
+		var canvasheight = (!this.isCanvasSizeLocked)? scaledheight: Math.ceil(layer_scale * this.lockedCanvasHeight);         
 		
 		// Create 2D context for this instance if not already
 		if (!this.myctx)
 		{
 			this.mycanvas = document.createElement("canvas");
-			this.mycanvas.width = scaledwidth;
-			this.mycanvas.height = scaledheight;
-			this.lastwidth = scaledwidth;
-			this.lastheight = scaledheight;
+			this.mycanvas.width = canvaswidth;
+			this.mycanvas.height = canvasheight;
+			this.lastwidth = canvaswidth;
+			this.lastheight = canvasheight;
 			need_redraw = true;
 			this.myctx = this.mycanvas.getContext("2d");
 		}
 		
 		// Update size if changed
-		if (scaledwidth !== this.lastwidth || scaledheight !== this.lastheight)
+		if (canvaswidth !== this.lastwidth || canvasheight !== this.lastheight)
 		{
-			this.mycanvas.width = scaledwidth;
-			this.mycanvas.height = scaledheight;
+			this.mycanvas.width = canvaswidth;
+			this.mycanvas.height = canvasheight;
 			
 			if (this.mytex)
 			{
@@ -399,8 +406,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			glw.videoToTexture(this.mycanvas, this.mytex, this.runtime.isMobile);
 		}
 		
-		this.lastwidth = scaledwidth;
-		this.lastheight = scaledheight;
+		this.lastwidth = canvaswidth;
+		this.lastheight = canvasheight;
 		
 		// Draw GL texture
 		glw.setTexture(this.mytex);
@@ -514,6 +521,13 @@ cr.plugins_.rex_TagText = function(runtime)
 			this.render_text(this.is_force_render);
 		}
     };  
+    
+	instanceProto.LockCanvasSize = function(isLocked, width, height)
+	{
+        this.isCanvasSizeLocked = isLocked;
+        this.lockedCanvasWidth = width;
+        this.lockedCanvasHeight = height;         
+	};           
     
     var copy_dict = function (in_obj, out_obj, is_merge)
     {

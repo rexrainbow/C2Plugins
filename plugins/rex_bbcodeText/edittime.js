@@ -127,6 +127,12 @@ AddAction(71, 0, "Set thickness", "Underline", "Set thickness to <i>{0}</i>", "S
 AddNumberParam("Offset", "Offset Y in pixels.", 1);
 AddAction(72, 0, "Set offset Y", "Underline", "Set offset Y to <i>{0}</i>", "Set offset Y of underline.", "SetOffsetY"); 
 
+AddNumberParam("Width", "Canvas width in pixels.", 0);
+AddNumberParam("Height", "Canvas height in pixels.", 0);
+AddAction(101, 0, "Lock canvas size", "Canvas", "Lock canvas size to <i>{0}</i>x<i>{1}</i>", "Lock canvas size.", "LockCanvasSize"); 
+
+AddAction(102, 0, "Unlock canvas size", "Canvas", "Unlock canvas size", "Unlock canvas size.", "UnLockCanvasSize"); 
+
 ////////////////////////
 AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");
 AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");
@@ -156,6 +162,7 @@ var property_list = [
 	new cr.Property(ept_combo, "Baseline", "Top", "Baseline of text alignment.", "Alphabetic|Top"),
 	new cr.Property(ept_float, "Shift down", 13, "Shift the text down for alphabetic baseline, in pixels."),	
     new cr.Property(ept_combo, "Force render", "No", "Force rendering immediately after any property setting.", "No|Yes"),	
+    new cr.Property(ept_combo, "Lock canvas size", "No", "Lock canvas size to initial size.", "No|Yes"),	    
     
     new cr.Property(ept_section, "Underline", "",	""),  
     new cr.Property(ept_integer, "Underline thickness", 1, "Thickness of underline, in pixels."),

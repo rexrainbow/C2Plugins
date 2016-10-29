@@ -23,8 +23,10 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			if (this.width !== w)
 			{
 				this.width = w;
-				this.set_bbox_changed();								
-				this.render_text(this.is_force_render);
+				this.set_bbox_changed();
+
+                if (!this.isCanvasSizeLocked)                
+				    this.render_text(this.is_force_render);
 			}
 		};
 	};
@@ -96,6 +98,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.baseLine_mode = this.properties[9];
 		this.vshift = this.properties[10] * this.runtime.devicePixelRatio;
 		this.is_force_render = (this.properties[11] === 1);
+        this.LockCanvasSize( (this.properties[12] === 1), this.width, this.height);     
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
@@ -133,9 +136,9 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.canvas_text.Reset(this);
         this.canvas_text.textBaseline = (this.baseLine_mode === 0)? "alphabetic":"top";
 		//this.lines = this.canvas_text.getLines();
-        this.canvas_text.underline.thickness = this.properties[12];
-        this.canvas_text.underline.offset = this.properties[13];
-		this.setShadow(this.properties[14], this.properties[15], this.properties[16], this.properties[17]);
+        this.canvas_text.underline.thickness = this.properties[13];
+        this.canvas_text.underline.offset = this.properties[14];
+		this.setShadow(this.properties[15], this.properties[16], this.properties[17], this.properties[18]);
         
 		
 		// render text at object initialize
@@ -355,24 +358,28 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		
 		var halfw = this.runtime.draw_width / 2;
 		var halfh = this.runtime.draw_height / 2;
+        
+        // canvas size  
+        var canvaswidth = (!this.isCanvasSizeLocked)? scaledwidth : Math.ceil(layer_scale * this.lockedCanvasWidth);
+		var canvasheight = (!this.isCanvasSizeLocked)? scaledheight: Math.ceil(layer_scale * this.lockedCanvasHeight);        
 		
 		// Create 2D context for this instance if not already
 		if (!this.myctx)
 		{
 			this.mycanvas = document.createElement("canvas");
-			this.mycanvas.width = scaledwidth;
-			this.mycanvas.height = scaledheight;
-			this.lastwidth = scaledwidth;
-			this.lastheight = scaledheight;
+			this.mycanvas.width = canvaswidth;
+			this.mycanvas.height = canvasheight;
+			this.lastwidth = canvaswidth;
+			this.lastheight = canvasheight;
 			need_redraw = true;
 			this.myctx = this.mycanvas.getContext("2d");
 		}
 		
 		// Update size if changed
-		if (scaledwidth !== this.lastwidth || scaledheight !== this.lastheight)
+		if (canvaswidth !== this.lastwidth || canvasheight !== this.lastheight)
 		{
-			this.mycanvas.width = scaledwidth;
-			this.mycanvas.height = scaledheight;
+			this.mycanvas.width = canvaswidth;
+			this.mycanvas.height = canvasheight;
 			
 			if (this.mytex)
 			{
@@ -400,8 +407,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			glw.videoToTexture(this.mycanvas, this.mytex, this.runtime.isMobile);
 		}
 		
-		this.lastwidth = scaledwidth;
-		this.lastheight = scaledheight;
+		this.lastwidth = canvaswidth;
+		this.lastheight = canvasheight;
 		
 		// Draw GL texture
 		glw.setTexture(this.mytex);
@@ -525,6 +532,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	    this.textShadow = shadow;          
 	};    
     
+	instanceProto.LockCanvasSize = function(isLocked, width, height)
+	{
+        this.isCanvasSizeLocked = isLocked;
+        this.lockedCanvasWidth = width;
+        this.lockedCanvasHeight = height;         
+	};       
     var copy_dict = function (in_obj, out_obj, is_merge)
     {
         if (out_obj == null)
@@ -819,7 +832,17 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	Acts.prototype.SetOffsetY = function(offset)
 	{
 	    this.canvas_text.underline.offset = offset;              
-	};	    
+	};
+
+    
+	Acts.prototype.LockCanvasSize = function(width, height)
+	{
+	    this.LockCanvasSize(true, width, height);
+	};
+	Acts.prototype.UnLockCanvasSize = function()
+	{
+	    this.LockCanvasSize(false);
+	};    
     
 	//////////////////////////////////////
 	// Expressions
