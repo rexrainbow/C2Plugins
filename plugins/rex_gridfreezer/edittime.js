@@ -85,15 +85,26 @@ AddAction(65, 0, "Set extra data", "Extra data",
           "Set extra data [<i>{0}</i>] to <i>{1}</i>", 
           'Set extra data. Used in "condition:On save".', 
           "SetExtraData");
+          
+AddAnyTypeParam("Index", "Index of extra data, can be number of string", 0);
+AddAnyTypeParam("Value", "Value of extra data", 0);
+AddAction(66, 0, "Set global data", "Global data", 
+          "Set global data [<i>{0}</i>] to <i>{1}</i>", 
+          'Set global data.', 
+          "SetGlobalData");          
 		  
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get grids data", "Export", "GridData", "Export the grids data.");
-AddAnyTypeParam("Index", "Index of extra data, can be number of string", 0);
+// AddAnyTypeParam("Index", "Index of extra data, can be number of string", 0);
 AddExpression(2, ef_return_any | ef_variadic_parameters, 
               "Get extra data", "Extra data", "ExtraData", 
-              'Get extra data by index. Used in "condition:On load". Add 2nd parameter for default value.');
+              'Get extra data. Used in "condition:On load". Add 1st parameter for key, add 2nd parameter for default value.');
 AddExpression(3, ef_return_number, "Get instance UID", "Load", "LoadInstUID", 'Get UID of current loaded instance. Used in "condition:On load".');
+// AddAnyTypeParam("Index", "Index of extra data, can be number of string", 0);
+AddExpression(4, ef_return_any | ef_variadic_parameters, 
+              "Get global data", "Global data", "GlobalData", 
+              'Get global data. Used in "condition:On load". Add 1st parameter for key, add 2nd parameter for default value.');
   
 AddExpression(101, ef_return_number, "Current Logical X ", "For each", "CurLX", 
               "Current Logical X in a For Each loop.");   			  

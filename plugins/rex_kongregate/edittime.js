@@ -79,7 +79,7 @@ AddComboParamOption("Mobile/Zong");
 AddComboParam("Type", "Optional type of offer to display.", 0);
 AddAction(304, 0, "Show Kred purchase dialog", "Kreds & Virtual Goods", 
           "Show Kred purchase <i>{0}</i> dialog ", 
-          "Consume an item instance from the user's inventory.", "MtxShowKredPurchaseDialog");                  
+          "Opens the Kred Purchase lightbox.", "MtxShowKredPurchaseDialog");                  
           
 // Feeds & User Messaging
 AddStringParam("Content", "A string containing the text for the feed post.", '""');

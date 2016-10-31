@@ -53,6 +53,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 	    this.board2mask = {};  // board - mask		
 	    this.onenter = [];
 		this.is_mask_update = false;
+        this.global_data = null;
 		
 		this.layout = null;
 		
@@ -349,6 +350,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 
 		var layout = this.GetLayout();
 		grids_data["layout"] = layout.saveToJSON();
+        grids_data["global_data"] = this.global_data;
 		
         return JSON.stringify( grids_data );		
 	};
@@ -380,7 +382,9 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
         }
 		
 		var layout = this.GetLayout();
-		layout.loadFromJSON( o["layout"] );		
+		layout.loadFromJSON( o["layout"] );
+
+        this.global_data = o["global_data"];
 	};    
 	
 	instanceProto.cond_for_each = function (klist, for_each_key)
@@ -427,6 +431,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 		         "target_types" : types2sid(this.target_types),
 		         "board2insts" : this.board2insts,
 				 "mask_update" : this.is_mask_update,
+                 "global_data": this.global_data,
 		        };
 	};
 	
@@ -446,8 +451,60 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 		}
 		
 	    this.board2insts = o["board2insts"];
-        this.is_mask_update = o["mask_update"];		
+        this.is_mask_update = o["mask_update"];	
+
+        this.global_data = o["global_data"];   
 	};
+    
+ 	var getItemValue = function (item, k, default_value)
+	{
+        var v;
+	    if (item == null)
+            v = null;
+        else if ( (k == null) || (k === "") )
+            v = item;
+        else if ((typeof(k) === "number") || (k.indexOf(".") == -1))
+            v = item[k];
+        else
+        {
+            var kList = k.split(".");
+            v = item;
+            var i,cnt=kList.length;
+            for(i=0; i<cnt; i++)
+            {
+                if (typeof(v) !== "object")
+                {
+                    v = null;
+                    break;
+                }
+                    
+                v = v[kList[i]];
+            }
+        }
+
+        return din(v, default_value);
+	};	    
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };     
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -612,7 +669,16 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 		    this.extra_data = {};
 			
         this.extra_data[index] = value;
-	}; 	
+	}; 
+
+	Acts.prototype.SetGlobalData = function (index, value)
+	{
+	    if (this.global_data == null)
+		    this.global_data = {};
+			
+        this.global_data[index] = value;
+	}; 
+	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -621,28 +687,19 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
     Exps.prototype.GridData = function (ret)
 	{
 	    ret.set_string(this.export_grids_data());
-	};
-	
-    Exps.prototype.ExtraData = function (ret, index, default_value)
+	};	
+    Exps.prototype.ExtraData = function (ret, keys, default_value)
 	{
-	    var val;
-	    if( this.exp_ExtraData != null)
-		{
-		    val = this.exp_ExtraData[index];
-		}
-        if (val == null)
-		{
-		    if (default_value != null)
-			    val = default_value;
-		    else
-			    val = 0;
-		}
-	    ret.set_any(val);
+	    ret.set_any( getItemValue(this.exp_ExtraData, keys, default_value) );
 	};	
 	Exps.prototype.LoadInstUID = function (ret)
 	{
 		ret.set_int(this.exp_LoadInstUID);
 	}; 	
+    Exps.prototype.GlobalData = function (ret, keys, default_value)
+	{
+	    ret.set_any( getItemValue(this.global_data, keys, default_value) );
+	};	    
 	Exps.prototype.CurLX = function (ret)
 	{
 		ret.set_int(this.exp_CurLX);

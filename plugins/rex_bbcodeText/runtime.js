@@ -195,6 +195,9 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			"lrt": this.last_render_tick,
             "bl": this.canvas_text.textBaseline,			
 			"txtObj": this.canvas_text.saveToJSON(),
+            "isLcs": this.isCanvasSizeLocked,
+            "lcw": this.lockedCanvasWidth,
+            "lch": this.lockedCanvasHeight,            
 		};
 	};
 	
@@ -222,9 +225,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		this.lastwrapwidth = this.width;
 		this.lastheight = this.height;
 
-        this.canvas_text.textBaseline = o["bl"];	
-        
+        this.canvas_text.textBaseline = o["bl"];	        
         this.canvas_text.loadFromJSON(o["txtObj"]);
+                
+        this.isCanvasSizeLocked = o["isLcs"];
+        this.lockedCanvasWidth = o["lcw"];
+        this.lockedCanvasHeight = o["lch"];        
 	};
 	
 	instanceProto.tick = function ()
@@ -282,14 +288,15 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		}
 		
 		// If text has changed, run the word wrap.
-		if (this.text_changed || this.width !== this.lastwrapwidth)
+        var width = (this.isCanvasSizeLocked)? this.lockedCanvasWidth : this.width;
+        var height = (this.isCanvasSizeLocked)? this.lockedCanvasHeight : this.height;
+		if (this.text_changed || width !== this.lastwrapwidth)
 		{
             this.canvas_text.text_changed = true;  // it will update pens (wordwrap) to redraw
 			this.text_changed = false;
-			this.lastwrapwidth = this.width;
+			this.lastwrapwidth = width;
 		}
 		
-		// Draw each line after word wrap
 		this.update_bbox();
 		var penX = glmode ? 0 : this.bquad.tlx;
 		var penY = glmode ? 0 : this.bquad.tly;
@@ -327,8 +334,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.canvas_text.textInfo["text"] = this.text;
         this.canvas_text.textInfo["x"] = penX;
         this.canvas_text.textInfo["y"] = penY;  
-        this.canvas_text.textInfo["boxWidth"] = this.width;
-        this.canvas_text.textInfo["boxHeight"] = this.height;
+        this.canvas_text.textInfo["boxWidth"] = width;
+        this.canvas_text.textInfo["boxHeight"] = height;
         this.canvas_text.textInfo["ignore"] = is_ignore;        
         this.canvas_text.drawText();
         
@@ -394,7 +401,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		if (need_redraw)
 		{
 			// Draw to my context
-			this.myctx.clearRect(0, 0, scaledwidth, scaledheight);
+			this.myctx.clearRect(0, 0, canvaswidth, canvasheight);
 			this.draw(this.myctx, true);
 			
 			// Create GL texture if none exists
@@ -1028,8 +1035,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     CanvasTextProto.getTextSize = function(propScope)
     {
         var size;
-        if (propScope.hasOwnProperty("size"))
-            size = propScope["size"];
+        if (propScope.hasOwnProperty("ptSize"))
+            size = propScope["ptSize"];
         else
             size = this.default_propScope.ptSize;
         return size;      

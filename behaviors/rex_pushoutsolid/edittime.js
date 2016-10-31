@@ -45,8 +45,8 @@ AddAction(22, af_none, "Push out at angle", "Push out",
 AddNumberParam("X", "The X co-ordinate in the layout to accelerate toward.");
 AddNumberParam("Y", "The Y co-ordinate in the layout to accelerate toward.");
 AddAction(23, af_none, "Push out toward position", "Push out", 
-          "{my} push toward toward (<i>{0}</i>, <i>{1}</i>)", 
-          "Push out toward toward.", "PushOutToPos");              
+          "{my} push toward (<i>{0}</i>, <i>{1}</i>)", 
+          "Push out toward position.", "PushOutToPos");              
 //////////////////////////////////////////////////////////////
 // Expressions
 
