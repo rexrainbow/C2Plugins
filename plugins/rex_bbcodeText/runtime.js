@@ -1030,36 +1030,36 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 
     CanvasTextProto.apply_propScope = function (propScope)
     {
-        if (propScope.hasOwnProperty("img"))
-            return;
+        if (!propScope.hasOwnProperty("img"))
+        {
+            // draw text
+            var style;
+            if (propScope.hasOwnProperty("b") || propScope.hasOwnProperty("i"))
+            {
+                 if (propScope["b"] && propScope["i"])
+                     style = "bold italic";
+                 else if (propScope["b"])
+                     style = "bold";
+                 else if (propScope["i"])
+                     style = "italic";
+            }
+            else
+            {
+                 style = this.default_propScope.weight;
+            }        
+            var weight = propScope["weight"] || this.default_propScope.weight;     
+            var ptSize = this.getTextSize(propScope);    
+            var family = propScope["family"] || this.default_propScope.family;        
+            this.context.font = style + " " + weight + " " + ptSize + " " + family;
             
-        // draw text
-        var style;
-        if (propScope.hasOwnProperty("b") || propScope.hasOwnProperty("i"))
-        {
-             if (propScope["b"] && propScope["i"])
-                 style = "bold italic";
-             else if (propScope["b"])
-                 style = "bold";
-             else if (propScope["i"])
-                 style = "italic";
+            var color = this.getFillColor(propScope);        
+            if (color.toLowerCase() !== "none")
+                this.context.fillStyle = color;
+            
+            var stroke = this.getStokeColor(propScope);        
+            if (stroke.toLowerCase() !== "none")
+                this.context.strokeStyle = stroke;
         }
-        else
-        {
-             style = this.default_propScope.weight;
-        }        
-        var weight = propScope["weight"] || this.default_propScope.weight;     
-        var ptSize = this.getTextSize(propScope);    
-        var family = propScope["family"] || this.default_propScope.family;        
-        this.context.font = style + " " + weight + " " + ptSize + " " + family;
-        
-        var color = this.getFillColor(propScope);        
-        if (color.toLowerCase() !== "none")
-            this.context.fillStyle = color;
-        
-        var stroke = this.getStokeColor(propScope);        
-        if (stroke.toLowerCase() !== "none")
-            this.context.strokeStyle = stroke;
         
         var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";        
         if (shadow !== "") 
@@ -1111,19 +1111,19 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         var startX = offset_x + pen.x;
         var startY = offset_y + pen.y;
         
+        // underline
+        var underline = pen.prop["u"];
+        if (underline)
+        {
+            var color = (underline === true)? this.getFillColor(pen.prop) : underline;
+            this.draw_underline(pen.text, startX, startY, 
+                                           this.getTextSize(pen.prop), 
+                                           color );
+        }
+            
         // draw text
         if (!pen.prop.hasOwnProperty("img"))
         {
-            // underline
-            var underline = pen.prop["u"];
-            if (underline)
-            {
-                var color = (underline === true)? this.getFillColor(pen.prop) : underline;
-                this.draw_underline(pen.text, startX, startY, 
-                                               this.getTextSize(pen.prop), 
-                                               color );
-            }
-            
             // fill text
             if (this.getFillColor(pen.prop).toLowerCase() !== "none")
                 ctx.fillText(pen.text, startX, startY);
@@ -1139,11 +1139,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             var img = window.RexImageBank.GetImage(pen.prop["img"]);  
             if (img)    
             {
+                var y = startY+img.yoffset;
                 if (this.textBaseline == "alphabetic")
                 {
-                    startY -= this.lineHeight;
+                    y -= this.lineHeight;
                 }
-                ctx.drawImage(img.img, startX, startY+img.yoffset, img.width, img.height);
+                ctx.drawImage(img.img, startX, y, img.width, img.height);
             }
         }
 
