@@ -1148,7 +1148,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             }
         }
 
-        this.context.restore();
+        ctx.restore();
     };
     
     CanvasTextProto.drawPens = function (pensMgr, textInfo)
@@ -1400,9 +1400,14 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             else if (__re_image_open.test(m)) 
             { 
                 innerMatch = m.match(__re_image_open);
-                update_propScope(__curr_propScope, PROP_ADD, "img", innerMatch[1]);
                 
-                var img = window.RexImageBank.GetImage(innerMatch[1]);
+                var key = innerMatch[1];
+                var img = window.RexImageBank.GetImage(key);
+                if (!img)
+                    continue;
+                
+                update_propScope(__curr_propScope, PROP_ADD, "img", key); 
+                
                 if (!ignore_wrap)
                 {           
                     if ( img.width > boxWidth - (cursor_x-start_x) )
