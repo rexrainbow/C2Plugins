@@ -133,6 +133,12 @@ AddAction(101, 0, "Lock canvas size", "Canvas", "Lock canvas size to <i>{0}</i>x
 
 AddAction(102, 0, "Unlock canvas size", "Canvas", "Unlock canvas size", "Unlock canvas size.", "UnLockCanvasSize"); 
 
+AddStringParam("Key", "Index of this image.", '""');
+AddObjectParam("Image", "Current frame of Sprite, or canvas object.");
+AddNumberParam("Y offset", "Y offset of this image.", 0);
+AddAction(111, 0, "Add image", "Image bank", 
+          "Add key <i>{0}</i> with <i>{1}</i>, Y offset to <i>{2}</i>","Add image from sprite or canvas.", "AddImage"); 
+
 ////////////////////////
 AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");
 AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");

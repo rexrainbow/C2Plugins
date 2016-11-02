@@ -276,20 +276,26 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 
 	instanceProto.draw = function(ctx, glmode, is_ignore)
 	{
-        ctx.globalAlpha = glmode ? 1 : this.opacity;
-            
+        var isCtxSave = false;
+        var width = (this.isCanvasSizeLocked)? this.lockedCanvasWidth : this.width;
+        var height = (this.isCanvasSizeLocked)? this.lockedCanvasHeight : this.height;  
+    
+        ctx.globalAlpha = glmode ? 1 : this.opacity;      
 		var myscale = 1;
 		
 		if (glmode)
 		{
 			myscale = this.layer.getScale();
-			ctx.save();
+            
+            if (!isCtxSave)
+            {
+			    ctx.save();
+                isCtxSave = true;
+            }
 			ctx.scale(myscale, myscale);
 		}
 		
 		// If text has changed, run the word wrap.
-        var width = (this.isCanvasSizeLocked)? this.lockedCanvasWidth : this.width;
-        var height = (this.isCanvasSizeLocked)? this.lockedCanvasHeight : this.height;
 		if (this.text_changed || width !== this.lastwrapwidth)
 		{
             this.canvas_text.text_changed = true;  // it will update pens (wordwrap) to redraw
@@ -307,14 +313,39 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			penY = (penY + 0.5) | 0;
 		}
 		
-		if (this.angle !== 0 && !glmode)
-		{
-			ctx.save();
-			ctx.translate(penX, penY);
-			ctx.rotate(this.angle);
-			penX = 0;
-			penY = 0;
-		}
+
+        if (!glmode)
+        {
+            var isResized = (width !== this.width) || (height !== this.height);
+            var isRotated = (this.angle !== 0 );
+            if ( isRotated || isResized )
+            {
+                if (!isCtxSave)
+                {
+		    	    ctx.save();
+                    isCtxSave = true;
+                } 
+                
+                if (isResized)
+                {
+                    var scalew = this.width/width;
+                    var scaleh = this.height/height;
+                    ctx.scale(scalew, scaleh);      
+                    ctx.translate(penX/scalew, penY/scaleh);      
+		    	    penX = 0;
+		    	    penY = 0;                         
+                }
+
+                if (isRotated)
+                {
+                    if ((penX !== 0) || (penY !== 0))
+		    	        ctx.translate(penX, penY);
+                    
+		    	    ctx.rotate(this.angle);                   
+                }                
+           
+            }
+        }
 
 		var line_height = this.pxHeight;
 		line_height += (this.line_height_offset * this.runtime.devicePixelRatio);
@@ -340,8 +371,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.canvas_text.drawText();
         
 		
-		if (this.angle !== 0 || glmode)
-			ctx.restore();
+        if (isCtxSave)
+            ctx.restore();        
 			
 		this.last_render_tick = this.runtime.tickcount;
 	};
@@ -850,6 +881,15 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	{
 	    this.LockCanvasSize(false);
 	};    
+    	
+	Acts.prototype.AddImage = function (key, objs, yoffset)
+	{      
+        if (!objs)
+            return;
+        
+        window.RexImageBank.AddImage(key, objs.getFirstPicked(), yoffset);
+	    this.render_text(this.is_force_render);        
+	};		
     
 	//////////////////////////////////////
 	// Expressions
@@ -990,6 +1030,10 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 
     CanvasTextProto.apply_propScope = function (propScope)
     {
+        if (propScope.hasOwnProperty("img"))
+            return;
+            
+        // draw text
         var style;
         if (propScope.hasOwnProperty("b") || propScope.hasOwnProperty("i"))
         {
@@ -1003,24 +1047,21 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         else
         {
              style = this.default_propScope.weight;
-        }
-        
-        
+        }        
         var weight = propScope["weight"] || this.default_propScope.weight;     
         var ptSize = this.getTextSize(propScope);    
         var family = propScope["family"] || this.default_propScope.family;        
-        var color = this.getFillColor(propScope);
-        var stroke = this.getStokeColor(propScope);
-        var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";
-        
         this.context.font = style + " " + weight + " " + ptSize + " " + family;
         
+        var color = this.getFillColor(propScope);        
         if (color.toLowerCase() !== "none")
             this.context.fillStyle = color;
         
+        var stroke = this.getStokeColor(propScope);        
         if (stroke.toLowerCase() !== "none")
             this.context.strokeStyle = stroke;
         
+        var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";        
         if (shadow !== "") 
         {
             shadow = shadow.split(" ");
@@ -1062,30 +1103,49 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
     {
-        this.context.save(); 
+        var ctx = this.context;
+        ctx.save(); 
                           
         this.apply_propScope(pen.prop);        
         
         var startX = offset_x + pen.x;
         var startY = offset_y + pen.y;
         
-        // underline
-        var underline = pen.prop["u"];
-        if (underline)
+        // draw text
+        if (!pen.prop.hasOwnProperty("img"))
         {
-            var color = (underline === true)? this.getFillColor(pen.prop) : underline;
-            this.draw_underline(pen.text, startX, startY, 
-                                           this.getTextSize(pen.prop), 
-                                           color );
+            // underline
+            var underline = pen.prop["u"];
+            if (underline)
+            {
+                var color = (underline === true)? this.getFillColor(pen.prop) : underline;
+                this.draw_underline(pen.text, startX, startY, 
+                                               this.getTextSize(pen.prop), 
+                                               color );
+            }
+            
+            // fill text
+            if (this.getFillColor(pen.prop).toLowerCase() !== "none")
+                ctx.fillText(pen.text, startX, startY);
+            
+            // stoke 
+            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
+                ctx.strokeText(pen.text, startX, startY);
         }
         
-        // fill text
-        if (this.getFillColor(pen.prop).toLowerCase() !== "none")
-            this.context.fillText(pen.text, startX, startY);
-        
-        // stoke 
-        if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
-            this.context.strokeText(pen.text, startX, startY);            
+        // draw image
+        else
+        {
+            var img = window.RexImageBank.GetImage(pen.prop["img"]);  
+            if (img)    
+            {
+                if (this.textBaseline == "alphabetic")
+                {
+                    startY -= this.lineHeight;
+                }
+                ctx.drawImage(img.img, startX, startY+img.yoffset, img.width, img.height);
+            }
+        }
 
         this.context.restore();
     };
@@ -1166,7 +1226,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __result=[];
     var split_text = function(txt, mode)
     {        
-        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]/ig;
+        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]|\[img=([a-z]+)\]|\[\/img\]/ig;
         __result.length = 0;
         var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
         while(true)    
@@ -1218,7 +1278,9 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __re_shadow_open = /\[shadow\]/i;
     var __re_shadow_close = /\[\/shadow\]/i;    
     var __re_stroke_open = /\[stroke=([a-z]+|#[0-9abcdef]+)\]/i;
-    var __re_stroke_close = /\[\/stroke\]/i;      
+    var __re_stroke_close = /\[\/stroke\]/i;   
+    var __re_image_open = /\[img=([a-z]+)\]/i;
+    var __re_image_close = /\[\/img\]/i;       
     var __curr_propScope = {};
     var PROP_REMOVE = false;
     var PROP_ADD = true;
@@ -1333,59 +1395,104 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             { 
                 update_propScope(__curr_propScope, PROP_REMOVE, "stroke");
                 continue;
-            }            
-            else 
-            {
-                proText = m;
-            }            
-            
-            if (!ignore_wrap)
-            {            
-                // Save the current context.
-                this.context.save();   
-            
-                this.apply_propScope(__curr_propScope);
+            }  
+            else if (__re_image_open.test(m)) 
+            { 
+                innerMatch = m.match(__re_image_open);
+                update_propScope(__curr_propScope, PROP_ADD, "img", innerMatch[1]);
                 
-                var wrap_lines = wordWrap(proText, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
-                
-                // add pens
-                var lcnt=wrap_lines.length, n, wrap_line; 
-                for (n=0; n<lcnt; n++) 
-                {
-                    wrap_line = wrap_lines[n];                       
-                    pensMgr.addPen(wrap_line.text,       // text
-                                             cursor_x,             // x
-                                             cursor_y,             // y
-                                             wrap_line.width,      // width
-                                             __curr_propScope,       // prop
-                                             wrap_line.newLineMode // new_line_mode
-                                           );
-                
-                    if (wrap_line.newLineMode !== NO_NEWLINE)
+                var img = window.RexImageBank.GetImage(innerMatch[1]);
+                if (!ignore_wrap)
+                {           
+                    if ( img.width > boxWidth - (cursor_x-start_x) )
                     {
                         cursor_x = start_x;
                         cursor_y += this.lineHeight;
                     }
-                    else
-                    {
-			    	    cursor_x += wrap_line.width;                    
-                    }
-               
+                    pensMgr.addPen(null,       // text
+                                             cursor_x,             // x
+                                             cursor_y,             // y
+                                             img.width,      // width
+                                             __curr_propScope,       // prop
+                                             0                   // new_line_mode
+                                           ); 
+
+                    cursor_x += img.width;                       
+                }
+                else
+                {
+                    pensMgr.addPen(null,       // text
+                                             null,                        // x
+                                             null,                        // y
+                                             null,                        // width
+                                             __curr_propScope,   // prop
+                                             0                            // new_line_mode
+                                             );  
                 }
                 
-                this.context.restore();                         
+                update_propScope(__curr_propScope, PROP_REMOVE, "img");                
+                continue;
             }
-            else
+            else if (__re_image_close.test(m)) 
+            { 
+                update_propScope(__curr_propScope, PROP_REMOVE, "img");  
+                continue;
+            }             
+            
+            // add text pen
+            else 
             {
-                pensMgr.addPen(proText,                   // text
-                                         null,                        // x
-                                         null,                        // y
-                                         null,                        // width
-                                         __curr_propScope,   // prop
-                                         0                            // new_line_mode
-                                         );            
-                 // new line had been included in raw text
-            }
+                proText = m;
+                
+                if (!ignore_wrap)
+                {            
+                    // Save the current context.
+                    this.context.save();   
+                
+                    this.apply_propScope(__curr_propScope);
+                    
+                    var wrap_lines = wordWrap(proText, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
+                    
+                    // add pens
+                    var lcnt=wrap_lines.length, n, wrap_line; 
+                    for (n=0; n<lcnt; n++) 
+                    {
+                        wrap_line = wrap_lines[n];                       
+                        pensMgr.addPen(wrap_line.text,       // text
+                                                 cursor_x,             // x
+                                                 cursor_y,             // y
+                                                 wrap_line.width,      // width
+                                                 __curr_propScope,       // prop
+                                                 wrap_line.newLineMode // new_line_mode
+                                               );
+                    
+                        if (wrap_line.newLineMode !== NO_NEWLINE)
+                        {
+                            cursor_x = start_x;
+                            cursor_y += this.lineHeight;
+                        }
+                        else
+                        {
+			        	    cursor_x += wrap_line.width;                    
+                        }
+                   
+                    }
+                    
+                    this.context.restore();                         
+                }
+                else
+                {
+                    pensMgr.addPen(proText,                   // text
+                                             null,                        // x
+                                             null,                        // y
+                                             null,                        // width
+                                             __curr_propScope,   // prop
+                                             0                            // new_line_mode
+                                             );            
+                     // new line had been included in raw text
+                }
+                continue;                
+            }            
         }  // for (i = 0; i < match_cnt; i++) 
             
         
@@ -1958,12 +2065,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         var header = "";
         for (var k in prop)
         {
-            if (pre_prop.hasOwnProperty(k))
+            if (pre_prop[k] === prop[k])
                 continue;
             
             if (k === "size")
                 header +=  ("[size=" + prop[k].replace("pt", "") + "]");
-            else if ((k === "color") || (k === "stroke"))
+            else if ((k === "color") || (k === "stroke") || (k === "img"))
                 header += ("[" + k + "=" + prop[k] + "]");
             
             else if (k === "u")
@@ -2014,7 +2121,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     
     PenKlassProto.getRawText = function ()
     {
-        var txt = this.text;
+        var txt = this.text || "";
         if (this.newLineMode == RAW_NEWLINE)
             txt += "\n";
         
@@ -2036,5 +2143,53 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     };
 // ---------
 // pens manager
-// ---------        
+// --------- 
+
+// ---------
+// Image bank
+// ---------   
+    var ImageBankKlass = function ()
+    {
+        this.images = {};
+    }
+	var ImageBankKlassProto = ImageBankKlass.prototype;    
+    
+    ImageBankKlassProto.AddImage = function (name, inst, yoffset_)
+    {
+        var img = getImage(inst)
+        if (!inst)
+            return;
+        
+        this.images[name] = {
+            img: img, 
+            width: inst.width,
+            height: inst.height,
+            yoffset: yoffset_
+        };
+    };
+    ImageBankKlassProto.GetImage = function (name, inst)
+    {
+        return this.images[name];
+    };    
+    
+    var getImage = function (inst)
+    {        
+        if (!inst)
+            return null;
+        
+        var img;
+        if (inst.canvas)
+            img = inst.canvas;
+        else if (inst.curFrame && inst.curFrame.texture_img)
+            img = inst.curFrame.texture_img;       
+        else
+            img = null;
+        
+        return img;
+    };
+    
+    window.RexImageBank = new ImageBankKlass();
+// ---------
+// Image bank
+// ---------         
 }());     
