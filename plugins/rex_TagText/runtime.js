@@ -274,20 +274,26 @@ cr.plugins_.rex_TagText = function(runtime)
 
 	instanceProto.draw = function(ctx, glmode, is_ignore)
 	{
-        ctx.globalAlpha = glmode ? 1 : this.opacity;
-            
+        var isCtxSave = false;
+        var width = (this.isCanvasSizeLocked)? this.lockedCanvasWidth : this.width;
+        var height = (this.isCanvasSizeLocked)? this.lockedCanvasHeight : this.height;  
+    
+        ctx.globalAlpha = glmode ? 1 : this.opacity;      
 		var myscale = 1;
 		
 		if (glmode)
 		{
 			myscale = this.layer.getScale();
-			ctx.save();
+            
+            if (!isCtxSave)
+            {
+			    ctx.save();
+                isCtxSave = true;
+            }
 			ctx.scale(myscale, myscale);
 		}
 		
 		// If text has changed, run the word wrap.
-        var width = (this.isCanvasSizeLocked)? this.lockedCanvasWidth : this.width;
-        var height = (this.isCanvasSizeLocked)? this.lockedCanvasHeight : this.height;
 		if (this.text_changed || width !== this.lastwrapwidth)
 		{
             this.canvas_text.text_changed = true;  // it will update pens (wordwrap) to redraw
@@ -305,14 +311,38 @@ cr.plugins_.rex_TagText = function(runtime)
 			penY = (penY + 0.5) | 0;
 		}
 		
-		if (this.angle !== 0 && !glmode)
-		{
-			ctx.save();
-			ctx.translate(penX, penY);
-			ctx.rotate(this.angle);
-			penX = 0;
-			penY = 0;
-		}
+        if (!glmode)
+        {
+            var isResized = (width !== this.width) || (height !== this.height);
+            var isRotated = (this.angle !== 0 );
+            if ( isRotated || isResized )
+            {
+                if (!isCtxSave)
+                {
+		    	    ctx.save();
+                    isCtxSave = true;
+                } 
+                
+                if (isResized)
+                {
+                    var scalew = this.width/width;
+                    var scaleh = this.height/height;
+                    ctx.scale(scalew, scaleh);      
+                    ctx.translate(penX/scalew, penY/scaleh);      
+		    	    penX = 0;
+		    	    penY = 0;                         
+                }
+
+                if (isRotated)
+                {
+                    if ((penX !== 0) || (penY !== 0))
+		    	        ctx.translate(penX, penY);
+                    
+		    	    ctx.rotate(this.angle);                   
+                }                
+           
+            }
+        }
 
 		var line_height = this.pxHeight;
 		line_height += (this.line_height_offset * this.runtime.devicePixelRatio);
@@ -338,10 +368,10 @@ cr.plugins_.rex_TagText = function(runtime)
         this.canvas_text.textInfo["ignore"] = is_ignore;        
         this.canvas_text.drawText();
         
-		
-		if (this.angle !== 0 || glmode)
-			ctx.restore();
-			
+
+        if (isCtxSave)
+            ctx.restore();        
+
 		this.last_render_tick = this.runtime.tickcount;
 	};
 	
@@ -1184,7 +1214,7 @@ cr.plugins_.rex_TagText = function(runtime)
                     break;
                     
                 case "font-size":
-                    propScope["ptSize"] = prop_in[atribute];
+                    propScope["size"] = prop_in[atribute];
                     break;
 
                 case "color":
@@ -1260,8 +1290,8 @@ cr.plugins_.rex_TagText = function(runtime)
     CanvasTextProto.getTextSize = function(propScope)
     {
         var size;
-        if (propScope.hasOwnProperty("ptSize"))
-            size = propScope["ptSize"];
+        if (propScope.hasOwnProperty("size"))
+            size = propScope["size"];
         else
             size = this.default_propScope.ptSize;
         return size;      
