@@ -890,6 +890,18 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         window.RexImageBank.AddImage(key, objs.getFirstPicked(), yoffset);
 	    this.render_text(this.is_force_render);        
 	};		
+    	
+	Acts.prototype.RemoveImage = function (key)
+	{
+        window.RexImageBank.RemoveImage(key);
+	    this.render_text(this.is_force_render);        
+	};	
+    	
+	Acts.prototype.RemoveAll = function ()
+	{
+        window.RexImageBank.RemoveAll();
+	    this.render_text(this.is_force_render);        
+	};	
     
 	//////////////////////////////////////
 	// Expressions
@@ -1030,7 +1042,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 
     CanvasTextProto.apply_propScope = function (propScope)
     {
-        if (!propScope.hasOwnProperty("img"))
+        if (this.isTextMode(propScope))
         {
             // draw text
             var style;
@@ -1072,6 +1084,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         } 
         
     };
+    
+    CanvasTextProto.isTextMode = function(propScope)
+    {
+        var isImageMode = propScope.hasOwnProperty("img");
+        return !isImageMode;
+    };     
     
     CanvasTextProto.getTextSize = function(propScope)
     {
@@ -1121,20 +1139,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                                            color );
         }
             
-        // draw text
-        if (!pen.prop.hasOwnProperty("img"))
-        {
-            // fill text
-            if (this.getFillColor(pen.prop).toLowerCase() !== "none")
-                ctx.fillText(pen.text, startX, startY);
-            
-            // stoke 
-            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
-                ctx.strokeText(pen.text, startX, startY);
-        }
-        
         // draw image
-        else
+        if (pen.prop.hasOwnProperty("img"))
         {
             var img = window.RexImageBank.GetImage(pen.prop["img"]);  
             if (img)    
@@ -1147,7 +1153,20 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 ctx.drawImage(img.img, startX, y, img.width, img.height);
             }
         }
-
+        
+        // draw text
+        else
+        {
+            // fill text
+            if (this.getFillColor(pen.prop).toLowerCase() !== "none")
+                ctx.fillText(pen.text, startX, startY);
+            
+            // stoke 
+            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
+                ctx.strokeText(pen.text, startX, startY);
+        }
+        
+        
         ctx.restore();
     };
     
@@ -1227,7 +1246,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __result=[];
     var split_text = function(txt, mode)
     {        
-        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]|\[img=([a-z]+)\]|\[\/img\]/ig;
+        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]|\[img=(.+)\]]|\[\/img\]/ig;
         __result.length = 0;
         var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
         while(true)    
@@ -1280,7 +1299,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __re_shadow_close = /\[\/shadow\]/i;    
     var __re_stroke_open = /\[stroke=([a-z]+|#[0-9abcdef]+)\]/i;
     var __re_stroke_close = /\[\/stroke\]/i;   
-    var __re_image_open = /\[img=([a-z]+)\]/i;
+    var __re_image_open = /\[img=(.+)\]/i;
     var __re_image_close = /\[\/img\]/i;       
     var __curr_propScope = {};
     var PROP_REMOVE = false;
@@ -2177,6 +2196,16 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     {
         return this.images[name];
     };    
+    ImageBankKlassProto.RemoveImage = function (name)
+    {
+        if (this.images.hasOwnProperty(name))
+            delete this.images[name];
+    };    
+    ImageBankKlassProto.RemoveAll = function ()
+    {
+        for (var n in this.images)
+            delete this.images[n];
+    };     
     
     var getImage = function (inst)
     {        
