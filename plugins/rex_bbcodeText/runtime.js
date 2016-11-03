@@ -1246,7 +1246,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __result=[];
     var split_text = function(txt, mode)
     {        
-        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]|\[img=([0-9a-z]+)\]|\[\/img\]/ig;
+        var re = /\[b\]|\[\/b\]|\[i\]|\[\/i\]|\[size=(\d+)\]|\[\/size\]|\[color=([a-z]+|#[0-9abcdef]+)\]|\[\/color\]|\[u\]|\[u=([a-z]+|#[0-9abcdef]+)\]|\[\/u\]|\[shadow\]|\[\/shadow\]|\[stroke=([a-z]+|#[0-9abcdef]+)\]|\[\/stroke\]|\[img=([^\]]+)\]|\[\/img\]/ig;
         __result.length = 0;
         var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
         while(true)    
@@ -1299,7 +1299,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
     var __re_shadow_close = /\[\/shadow\]/i;    
     var __re_stroke_open = /\[stroke=([a-z]+|#[0-9abcdef]+)\]/i;
     var __re_stroke_close = /\[\/stroke\]/i;   
-    var __re_image_open = /\[img=([0-9a-z]+)\]/i;
+    var __re_image_open = /\[img=([^\]]+)\]/i;
     var __re_image_close = /\[\/img\]/i;       
     var __curr_propScope = {};
     var PROP_REMOVE = false;
