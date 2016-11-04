@@ -143,7 +143,10 @@ AddAction(63, 0, "Set underline", "Underline",
 
 AddAnyTypeParam("Color", "The stroke color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
 AddAction(64, 0, "Set stroke color", "Appearance", "Set stroke color to <i>{0}</i>", "Set the stroke color.", "SetStrokeColor");
-         
+
+AddStringParam("Key", "Index of this image.", '""');
+AddAction(65, 0, "Insert image", "Appearance", "Insert image <i>{0}</i>", "Insert image.", "InsertImage");
+      
 
 AddNumberParam("Width", "Canvas width in pixels.", 0);
 AddNumberParam("Height", "Canvas height in pixels.", 0);
@@ -151,6 +154,19 @@ AddAction(101, 0, "Lock canvas size", "Canvas", "Lock canvas size to <i>{0}</i>x
 
 AddAction(102, 0, "Unlock canvas size", "Canvas", "Unlock canvas size", "Unlock canvas size.", "UnLockCanvasSize"); 
 
+AddStringParam("Key", "Index of this image.", '""');
+AddObjectParam("Image", "Current frame of Sprite, or canvas object.");
+AddNumberParam("Y offset", "Y offset of this image.", 0);
+AddAction(111, 0, "Add image", "Image bank", 
+          "Add <i>{1}</i> with key <i>{0}</i>, Y offset to <i>{2}</i>","Add image from sprite or canvas.", "AddImage"); 
+
+AddStringParam("Key", "Index of this image.", '""');
+AddAction(112, 0, "Remove image", "Image bank", 
+          "Remve image with key <i>{0}</i>","Remove image by key.", "RemoveImage"); 
+          
+AddAction(113, 0, "Remove all", "Image bank", 
+          "Remve all images","Remove all images.", "RemoveAll"); 
+          
 ////////////////////////
 AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");
 AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");

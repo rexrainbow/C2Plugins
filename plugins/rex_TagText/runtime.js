@@ -23,8 +23,8 @@ cr.plugins_.rex_TagText = function(runtime)
 			if (this.width !== w)
 			{
 				this.width = w;
-				this.set_bbox_changed();			
-                
+				this.set_bbox_changed();
+
                 if (!this.isCanvasSizeLocked)                
 				    this.render_text(this.is_force_render);
 			}
@@ -89,7 +89,7 @@ cr.plugins_.rex_TagText = function(runtime)
 		this.valign = this.properties[5];				// 0=top, 1=center, 2=bottom
         
         this.textShadow = "";
-		
+
 		this.wrapbyword = (this.properties[7] === 0);	// 0=word, 1=character
 		this.lastwidth = this.width;
 		this.lastwrapwidth = this.width;
@@ -99,7 +99,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this.baseLine_mode = this.properties[9];
 		this.vshift = this.properties[10] * this.runtime.devicePixelRatio;
 		this.is_force_render = (this.properties[11] === 1);
-        this.LockCanvasSize( (this.properties[12] === 1), this.width, this.height);           
+        this.LockCanvasSize( (this.properties[12] === 1), this.width, this.height);     
 		
 		// Get the font height in pixels.
 		// Look for token ending "NNpt" in font string (e.g. "bold 12pt Arial").
@@ -195,7 +195,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			"txtObj": this.canvas_text.saveToJSON(),
             "isLcs": this.isCanvasSizeLocked,
             "lcw": this.lockedCanvasWidth,
-            "lch": this.lockedCanvasHeight,
+            "lch": this.lockedCanvasHeight,            
 		};
 	};
 	
@@ -225,10 +225,10 @@ cr.plugins_.rex_TagText = function(runtime)
 
         this.canvas_text.textBaseline = o["bl"];	        
         this.canvas_text.loadFromJSON(o["txtObj"]);
-        
+                
         this.isCanvasSizeLocked = o["isLcs"];
         this.lockedCanvasWidth = o["lcw"];
-        this.lockedCanvasHeight = o["lch"];
+        this.lockedCanvasHeight = o["lch"];        
 	};
 	
 	instanceProto.tick = function ()
@@ -311,6 +311,7 @@ cr.plugins_.rex_TagText = function(runtime)
 			penY = (penY + 0.5) | 0;
 		}
 		
+
         if (!glmode)
         {
             var isResized = (width !== this.width) || (height !== this.height);
@@ -368,10 +369,10 @@ cr.plugins_.rex_TagText = function(runtime)
         this.canvas_text.textInfo["ignore"] = is_ignore;        
         this.canvas_text.drawText();
         
-
+		
         if (isCtxSave)
             ctx.restore();        
-
+			
 		this.last_render_tick = this.runtime.tickcount;
 	};
 	
@@ -397,7 +398,7 @@ cr.plugins_.rex_TagText = function(runtime)
         
         // canvas size  
         var canvaswidth = (!this.isCanvasSizeLocked)? scaledwidth : Math.ceil(layer_scale * this.lockedCanvasWidth);
-		var canvasheight = (!this.isCanvasSizeLocked)? scaledheight: Math.ceil(layer_scale * this.lockedCanvasHeight);         
+		var canvasheight = (!this.isCanvasSizeLocked)? scaledheight: Math.ceil(layer_scale * this.lockedCanvasHeight);        
 		
 		// Create 2D context for this instance if not already
 		if (!this.myctx)
@@ -968,7 +969,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	    var render_me = false;
 	    var arr;
 	    var tag_name, comments;
-	    var tag, rules, i, cnt, elems, prop_name, prop_value;
+	    var props, rules, i, cnt, elems, n, v;
 	    while (true)
 	    {
 	        arr = cssRegex.exec(css_);
@@ -986,7 +987,7 @@ cr.plugins_.rex_TagText = function(runtime)
             tag_name = tag_name.replace(/\n+/, "\n");
       	        
       	    // rules
-	        tag = {};	        
+	        props = {};	        
 	        rules = arr[2].split('\r\n').join('\n').split(';');
 	        cnt = rules.length;
 	        for (i=0; i<cnt ; i++) 
@@ -995,12 +996,11 @@ cr.plugins_.rex_TagText = function(runtime)
 	                continue;
 	                
 	            elems = rules[i].trim().split(':');	    
-	            prop_name = elems[0].trim().toLowerCase();
-	            prop_value = elems[1].trim();                 
-	            tag[ prop_name ] = prop_value;
+	            n = elems[0].trim().toLowerCase();
+	            v = elems[1].trim();                 
+	            props[ n ] = v;
 	        }
-	        
-	        this.canvas_text.defineClass(tag_name, tag);
+	        this.canvas_text.defineClass(tag_name, props);
 	        render_me = true;	        
 	    }
 	  	 
@@ -1048,7 +1048,41 @@ cr.plugins_.rex_TagText = function(runtime)
 		    
 		}
 	};
-		
+	
+	Acts.prototype.InsertImage = function (key)
+	{        
+	    if (this._tag != null)  // <class> ... </class>
+	    {
+	        this._tag["image"] = key;
+            this.render_text(false);
+	    }
+	    //else    // global
+	    //{
+        //    this.render_text(this.is_force_render);
+	    //}          
+	};
+    
+	Acts.prototype.AddImage = function (key, objs, yoffset)
+	{      
+        if (!objs)
+            return;
+        
+        window.RexImageBank.AddImage(key, objs.getFirstPicked(), yoffset);
+	    this.render_text(this.is_force_render);        
+	};		
+    	
+	Acts.prototype.RemoveImage = function (key)
+	{
+        window.RexImageBank.RemoveImage(key);
+	    this.render_text(this.is_force_render);        
+	};	
+    	
+	Acts.prototype.RemoveAll = function ()
+	{
+        window.RexImageBank.RemoveAll();
+	    this.render_text(this.is_force_render);        
+	};	
+    
     
 	//////////////////////////////////////
 	// Expressions
@@ -1235,9 +1269,13 @@ cr.plugins_.rex_TagText = function(runtime)
                     break;     
 
                 case "underline":
-                    propScope["underline"] = prop_in[atribute];
+                    propScope["u"] = prop_in[atribute];
                     break;                            
-                
+
+                case "image":
+                    propScope["img"] = prop_in[atribute];
+                    break;               
+                    
                 
                 // custom property
                 default:
@@ -1249,33 +1287,36 @@ cr.plugins_.rex_TagText = function(runtime)
        
         return propScope;
     };
-    
+
     CanvasTextProto.apply_propScope = function (propScope)
     {
-        var font = propScope["font"];
-        if (font)
+        if (this.isTextMode(propScope))
         {
-            this.context.font = font;
+            // draw text
+            var font = propScope["font"];
+            if (font)
+            {
+                this.context.font = font;
+            }
+            else
+            {
+                var style = propScope["style"] || this.default_propScope.style;
+                var weight = propScope["weight"] || this.default_propScope.weight;
+                var ptSize = this.getTextSize(propScope);  
+                var family = propScope["family"] || this.default_propScope.family;        
+                this.context.font = style + " " + weight + " " + ptSize + " " + family;            
+            }
+            
+            var color = this.getFillColor(propScope);        
+            if (color.toLowerCase() !== "none")
+                this.context.fillStyle = color;
+            
+            var stroke = this.getStokeColor(propScope);        
+            if (stroke.toLowerCase() !== "none")
+                this.context.strokeStyle = stroke;
         }
-        else
-        {
-            var style = propScope["style"] || this.default_propScope.style;
-            var weight = propScope["weight"] || this.default_propScope.weight;
-            var ptSize = this.getTextSize(propScope);  
-            var family = propScope["family"] || this.default_propScope.family;        
-            this.context.font = style + " " + weight + " " + ptSize + " " + family;            
-        }
         
-        var color = this.getFillColor(propScope);
-        var stroke = this.getStokeColor(propScope);
-
-        if (color.toLowerCase() !== "none")
-            this.context.fillStyle = color;
-        
-        if (stroke.toLowerCase() !== "none")
-            this.context.strokeStyle = stroke;        
-        
-        var shadow = propScope["shadow"] || this.default_propScope.shadow;
+        var shadow = (propScope["shadow"])? propScope["shadow"] : this.default_propScope.shadow;          
         if (shadow !== "") 
         {
             shadow = shadow.split(" ");
@@ -1283,9 +1324,15 @@ cr.plugins_.rex_TagText = function(runtime)
             this.context.shadowOffsetY = parseFloat(shadow[1].replace("px", ""));
             this.context.shadowBlur = parseFloat(shadow[2].replace("px", ""));
             this.context.shadowColor = shadow[3];
-        }      
+        } 
         
     };
+    
+    CanvasTextProto.isTextMode = function(propScope)
+    {
+        var isImageMode = propScope.hasOwnProperty("img");
+        return !isImageMode;
+    };     
     
     CanvasTextProto.getTextSize = function(propScope)
     {
@@ -1314,18 +1361,19 @@ cr.plugins_.rex_TagText = function(runtime)
             color = this.default_propScope.stroke;
         return color;         
     };    
-    
+
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
     {
-        this.context.save(); 
-        
-        this.apply_propScope(pen.prop);   
+        var ctx = this.context;
+        ctx.save(); 
+                          
+        this.apply_propScope(pen.prop);        
         
         var startX = offset_x + pen.x;
         var startY = offset_y + pen.y;
         
         // underline
-        var underline = pen.prop["underline"];
+        var underline = pen.prop["u"];
         if (underline)
         {
             underline = underline.split(" ");
@@ -1344,16 +1392,36 @@ cr.plugins_.rex_TagText = function(runtime)
             this.underline.thickness = thickness_save;
             this.underline.offset = offset_save;            
         }
+            
+        // draw image
+        if (pen.prop.hasOwnProperty("img"))
+        {
+            var img = window.RexImageBank.GetImage(pen.prop["img"]);  
+            if (img)    
+            {
+                var y = startY+img.yoffset;
+                if (this.textBaseline == "alphabetic")
+                {
+                    y -= this.lineHeight;
+                }
+                ctx.drawImage(img.img, startX, y, img.width, img.height);
+            }
+        }
         
-        // fill text
-        if (this.getFillColor(pen.prop).toLowerCase() !== "none")
-            this.context.fillText(pen.text, startX, startY);
+        // draw text
+        else
+        {
+            // fill text
+            if (this.getFillColor(pen.prop).toLowerCase() !== "none")
+                ctx.fillText(pen.text, startX, startY);
+            
+            // stoke 
+            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
+                ctx.strokeText(pen.text, startX, startY);
+        }
         
-        // stoke 
-        if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
-            this.context.strokeText(pen.text, startX, startY);
         
-        this.context.restore();
+        ctx.restore();
     };
     
     CanvasTextProto.drawPens = function (pensMgr, textInfo)
@@ -1567,56 +1635,95 @@ cr.plugins_.rex_TagText = function(runtime)
                 curr_propScope = {};
             }
             
-
-            
-            
-            if (!ignore_wrap)
+            // add image pen                    
+            if (curr_propScope.hasOwnProperty("img"))
             {
-                // Save the current context.
-                this.context.save();   
-            
-                this.apply_propScope(curr_propScope);
-            
-                // wrap text
-                var wrap_lines = wordWrap(proText, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
+                var img = window.RexImageBank.GetImage(curr_propScope["img"]);
+                if (!img)
+                    continue;
                 
-                // add pens
-                var lcnt=wrap_lines.length, n, wrap_line; 
-                for (n=0; n<lcnt; n++) 
-                {
-                    wrap_line = wrap_lines[n];                       
-                    pensMgr.addPen(wrap_line.text,       // text
-                                             cursor_x,             // x
-                                             cursor_y,             // y
-                                            wrap_line.width,      // width
-                                            curr_propScope,       // prop
-                                            wrap_line.newLineMode // new_line_mode
-                                           );
-                
-                    if (wrap_line.newLineMode !== NO_NEWLINE)
+                if (!ignore_wrap)
+                {           
+                    if ( img.width > boxWidth - (cursor_x-start_x) )
                     {
                         cursor_x = start_x;
                         cursor_y += this.lineHeight;
                     }
-                    else
-                    {
-			    	    cursor_x += wrap_line.width;                    
-                    }
-                
+                    pensMgr.addPen(null,       // text
+                                             cursor_x,             // x
+                                             cursor_y,             // y
+                                             img.width,      // width
+                                             curr_propScope,       // prop
+                                             0                   // new_line_mode
+                                           ); 
+
+                    cursor_x += img.width;                       
                 }
-                this.context.restore();                
+                else
+                {
+                    pensMgr.addPen(null,       // text
+                                             null,                        // x
+                                             null,                        // y
+                                             null,                        // width
+                                             curr_propScope,   // prop
+                                             0                            // new_line_mode
+                                             );  
+                }
             }
+            
+            // add text pen            
             else
             {
-                pensMgr.addPen(proText,                   // text
-                                         null,                        // x
-                                         null,                        // y
-                                         null,                        // width
-                                         curr_propScope,       // prop
-                                         0                            // new_line_mode
-                                         );            
-                 // new line had been included in raw text
-            }
+
+                if (!ignore_wrap)
+                {
+                    // Save the current context.
+                    this.context.save();   
+                
+                    this.apply_propScope(curr_propScope);
+                
+                    // wrap text
+                    var wrap_lines = wordWrap(proText, this.context, boxWidth, this.plugin.wrapbyword, cursor_x-start_x );          
+                    
+                    // add pens
+                    var lcnt=wrap_lines.length, n, wrap_line; 
+                    for (n=0; n<lcnt; n++) 
+                    {
+                        wrap_line = wrap_lines[n];                       
+                        pensMgr.addPen(wrap_line.text,       // text
+                                                 cursor_x,             // x
+                                                 cursor_y,             // y
+                                                wrap_line.width,      // width
+                                                curr_propScope,       // prop
+                                                wrap_line.newLineMode // new_line_mode
+                                               );
+                    
+                        if (wrap_line.newLineMode !== NO_NEWLINE)
+                        {
+                            cursor_x = start_x;
+                            cursor_y += this.lineHeight;
+                        }
+                        else
+                        {
+			        	    cursor_x += wrap_line.width;                    
+                        }
+                    
+                    }
+                    this.context.restore();                
+                }
+                else
+                {
+                    pensMgr.addPen(proText,                   // text
+                                             null,                        // x
+                                             null,                        // y
+                                             null,                        // width
+                                             curr_propScope,       // prop
+                                             0                            // new_line_mode
+                                             );            
+                     // new line had been included in raw text
+                }
+                
+            }            
         }  // for (i = 0; i < match_cnt; i++) 
     }; 
     
@@ -2189,7 +2296,7 @@ cr.plugins_.rex_TagText = function(runtime)
     
     PenKlassProto.getRawText = function ()
     {
-        var txt = this.text;
+        var txt = this.text || "";
         if (this.newLineMode == RAW_NEWLINE)
             txt += "\n";
         
@@ -2211,5 +2318,63 @@ cr.plugins_.rex_TagText = function(runtime)
     };
 // ---------
 // pens manager
-// ---------        
+// --------- 
+
+// ---------
+// Image bank
+// ---------   
+    var ImageBankKlass = function ()
+    {
+        this.images = {};
+    }
+	var ImageBankKlassProto = ImageBankKlass.prototype;    
+    
+    ImageBankKlassProto.AddImage = function (name, inst, yoffset_)
+    {
+        var img = getImage(inst)
+        if (!inst)
+            return;
+        
+        this.images[name] = {
+            img: img, 
+            width: inst.width,
+            height: inst.height,
+            yoffset: yoffset_
+        };
+    };
+    ImageBankKlassProto.GetImage = function (name, inst)
+    {
+        return this.images[name];
+    };    
+    ImageBankKlassProto.RemoveImage = function (name)
+    {
+        if (this.images.hasOwnProperty(name))
+            delete this.images[name];
+    };    
+    ImageBankKlassProto.RemoveAll = function ()
+    {
+        for (var n in this.images)
+            delete this.images[n];
+    };     
+    
+    var getImage = function (inst)
+    {        
+        if (!inst)
+            return null;
+        
+        var img;
+        if (inst.canvas)
+            img = inst.canvas;
+        else if (inst.curFrame && inst.curFrame.texture_img)
+            img = inst.curFrame.texture_img;       
+        else
+            img = null;
+        
+        return img;
+    };
+    
+    window.RexImageBank = new ImageBankKlass();
+// ---------
+// Image bank
+// ---------         
 }());     

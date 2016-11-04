@@ -575,7 +575,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.isCanvasSizeLocked = isLocked;
         this.lockedCanvasWidth = width;
         this.lockedCanvasHeight = height;         
-	};       
+	};           
+    
     var copy_dict = function (in_obj, out_obj, is_merge)
     {
         if (out_obj == null)
@@ -600,7 +601,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	instanceProto.getDebuggerValues = function (propsections)
 	{
 		propsections.push({
-			"title": "Text",
+			"title": this.type.name,
 			"properties": [
 				{"name": "Text", "value": this.text},
 				{"name": "Font", "value": this.font},
@@ -1073,7 +1074,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 this.context.strokeStyle = stroke;
         }
         
-        var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";        
+        var shadow = (propScope["shadow"])? propScope["shadow"] : this.default_propScope.shadow;        
         if (shadow !== "") 
         {
             shadow = shadow.split(" ");
@@ -1416,6 +1417,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 update_propScope(__curr_propScope, PROP_REMOVE, "stroke");
                 continue;
             }  
+            
+            // add image pen            
             else if (__re_image_open.test(m)) 
             { 
                 innerMatch = m.match(__re_image_open);
