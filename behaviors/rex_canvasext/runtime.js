@@ -246,6 +246,18 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 		
 		img.src = url_;
 	};
+    
+	Acts.prototype.Eval = function (code)
+	{
+        var f = "(function(ctx){" + code + "})";
+        f = eval(f);
+        
+        var inst = this.inst;
+        f(inst.ctx);
+		inst.runtime.redraw = true;
+        inst.update_tex = true;        
+	};   
+        
 	 
 	//////////////////////////////////////
 	// Expressions

@@ -32,6 +32,10 @@ AddComboParamOption("Scale down if larger than canvas");
 AddComboParam("Size", "Whether to resize the sprite to the size of the loaded image, or stretch it to the current size.");
 AddAction(10, 0, "Load image from URL", "Web", "Load image from <i>{0}</i> ({1})", "Replace the currently displaying animation frame with an image loaded from a web address or data URI.", "LoadURL");
 
+AddStringParam("Js code", "Code string for drawing.", '""');
+AddAction(21, 0, "Eval", "Script", 
+    "Run <i>{0}</i>", 
+    "Run code to draw on canvas (ctx).", "Eval");
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get image data as JSON", "Zlib", "AsJSON", "Return the image data in JSON format after zip.");
