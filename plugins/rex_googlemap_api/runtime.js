@@ -86,23 +86,29 @@ cr.plugins_.rex_googlemap_api = function(runtime)
         this.isLoadOK = null;
         this.pendingCallbacks = [];
         
-        this.apiURLType = this.properties[2];
-        this.apiLanguage = this.properties[1];
+        this.apiKey = this.properties[1];    
+        this.apiLanguage = this.properties[2];        
+        this.apiURLType = this.properties[3];
         
         if (this.properties[0] === 1)        
-            this.LoadAPI(getAPIURL(this.apiURLType, this.apiLanguage));
+            this.LoadAPI(getAPIURL(this.apiURLType, this.apiLanguage, this.apiKey));
 	};
 
     var APIURLTYPE_MAP = ["maps.googleapis.com", "maps.google.cn"];
-	var getAPIURL = function(apiURLType, language)
+	var getAPIURL = function(apiURLType, language, apiKey)
 	{ 
         var protocol = window["location"]["protocol"];
         var url_= 'http' + (/^https/.test(protocol)?'s':'') + "://";
         url_ += APIURLTYPE_MAP[apiURLType];
         url_ += "/maps/api/js";
         
+        if ((apiKey !== "") || (language !== ""))
+            url_ += "?";
+        
+        if (apiKey !== "")
+            url_ += "key=" + apiKey;
         if (language !== "")
-            url_ += "?language=" + language;
+            url_ += "language=" + language;
         
         return url_;
 	};        
@@ -190,7 +196,7 @@ cr.plugins_.rex_googlemap_api = function(runtime)
 
 	Acts.prototype.Load = function ()
 	{
-        this.LoadAPI(getAPIURL(this.apiURLType, this.apiLanguage));
+        this.LoadAPI(getAPIURL(this.apiURLType, this.apiLanguage, this.apiKey));
 	};    
 
 	Acts.prototype.SetLanguage = function (lang)
@@ -201,7 +207,13 @@ cr.plugins_.rex_googlemap_api = function(runtime)
 	Acts.prototype.SetAPIURL = function (apiURLType)
 	{
         this.apiURLType = apiURLType;
-	};      
+	};  
+
+	Acts.prototype.SetAPIKey = function (key)
+	{
+        this.apiKey = key;
+	};  
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

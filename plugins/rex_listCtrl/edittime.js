@@ -105,10 +105,15 @@ AddAnyTypeParam("Value", "The value to store in the line.", 0);
 AddAction(11, 0, "Set value", "Custom data", 
           "Line <i>{0}</i>: set key <i>{1}</i> to <i>{2}</i>",
           "Set custom data in a line.", "SetValue"); 
+          
 AddStringParam("Key", "The key of custom data.", '""');
 AddAction(12, 0, "Clean key in all lines", "Custom data", 
           "Clean key <i>{0}</i> in all lines",
           "Clean key in all line.", "CleanKeyInAllLine");
+          
+AddAction(13, 0, "Clean all keys in all lines", "Custom data", 
+          "Clean all keys in all lines",
+          "Clean all keys in all line.", "CleanAllKeysInAllLine");          
 		  
 
 AddNumberParam("Insert at", "Line index for inserting.", 0);

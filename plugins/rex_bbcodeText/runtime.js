@@ -1074,7 +1074,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 this.context.strokeStyle = stroke;
         }
         
-        var shadow = (propScope["shadow"])? propScope["shadow"] : this.default_propScope.shadow;        
+        var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";        
         if (shadow !== "") 
         {
             shadow = shadow.split(" ");

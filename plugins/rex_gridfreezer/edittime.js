@@ -91,7 +91,11 @@ AddAnyTypeParam("Value", "Value of extra data", 0);
 AddAction(66, 0, "Set global data", "Global data", 
           "Set global data [<i>{0}</i>] to <i>{1}</i>", 
           'Set global data.', 
-          "SetGlobalData");          
+          "SetGlobalData");        
+
+AddAction(101, 0, "Load all instances", "Load", 
+          "Load all instances", 
+          "Load all instances.", "LoadAll");          
 		  
 //////////////////////////////////////////////////////////////
 // Expressions

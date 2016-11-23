@@ -65,12 +65,18 @@ cr.plugins_.Rex_ToneJS_objectshell = function(runtime)
 
 	instanceProto.onDestroy = function ()
 	{
+        this.CleanToneObject();
+	};   
+
+	instanceProto.CleanToneObject = function ()
+	{
         if (this.toneObject == null)
             return;
         
-        this.toneObject["dispose"]();      
+        window.ToneJSObjectCall(this.toneObject, "dispose");
         this.toneObject = null;
 	};   
+        
     
     
     // The comments around these functions ensure they are removed when exporting, since the
@@ -142,6 +148,40 @@ cr.plugins_.Rex_ToneJS_objectshell = function(runtime)
         return this.toneObject;
 	};     
     
+
+	instanceProto.saveToJSON = function ()
+	{
+        var o = (this.toneObject)? window.ToneJSObjectSerialize( this.toneObject ) : null;
+        // serialize toneObject
+        return {
+            "obj": o,
+        }
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+        // clean object
+        this.CleanToneObject();
+        
+        // create toneObject
+        this.toneObject = window.ToneJSObjectDeserialize( o["obj"], this.getCallback );
+	};
+	
+	instanceProto.afterLoad = function ()
+	{
+        if (this.toneObject == null)
+            return;
+        
+        // connect to another objects
+        var objectA = this.toneObject;
+        var nodes = objectA["extra"]["co"];
+        for (var c in nodes)
+        {
+            var objectB = window.ToneJSGObjects[ c["uid"] ];
+            window.ToneJSConnect(objectA, objectB, c["port"]);
+        }
+	};	    
+    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -160,10 +200,16 @@ cr.plugins_.Rex_ToneJS_objectshell = function(runtime)
 	Acts.prototype.CreateObject = function (type, params)
 	{
         if (this.toneObject != null)
-            this.onDestroy();
+            this.CleanToneObject();
    
         this.toneObject = window.ToneJSObjectNew(type, params, this.getCallback);
 	};     
+    
+	Acts.prototype.ConnectToMaster = function ()
+	{
+        var myToneObj = this.GetObject();
+        window.ToneJSConnect(myToneObj, window["Tone"]["Master"], "");
+	}; 
     
 	Acts.prototype.Connect = function (objType, port)
 	{
@@ -203,6 +249,24 @@ cr.plugins_.Rex_ToneJS_objectshell = function(runtime)
         assert2(this.toneObject, "Object shell: missing object '"+ this.type.name + "'");             
         this.toneObject["set"](JSON.parse(params));      
 	};  
+    
+	Acts.prototype.SetByReturn = function (keys, objType, fnName, params)
+	{        
+        assert2(this.toneObject, "Object shell: missing object '"+ this.type.name + "'");            
+        if (!objType)
+            return;
+        
+        var inst = objType.getFirstPicked(); 
+        if (!inst)
+            return;
+        
+        var toneObjectB = inst.GetObject();
+        if (!toneObjectB)
+            return;  
+        
+        var retVal = window.ToneJSObjectCall(toneObjectBt, fnName, params, this.getCallback); 
+        this.toneObject["set"](keys, retVal);
+	};        
     
 	Acts.prototype.Call = function (fnName, params)
 	{        

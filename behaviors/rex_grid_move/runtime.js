@@ -113,8 +113,8 @@ cr.behaviors.Rex_GridMove = function(runtime)
         this._wander["rx"] = this.properties[4];
         this._wander["ry"] = this.properties[5];
 
-        this.force_move = (this.properties[6] == 1);    
-        this.enable_moveTo = (this.properties[7] == 1); 
+        this.force_move = (this.properties[6] === 1);    
+        this.enable_moveTo = (this.properties[7] === 1); 
         if (!this.recycled)
         {        
             this._dir_sequence = [];						
@@ -997,7 +997,14 @@ cr.behaviors.Rex_GridMove = function(runtime)
  	Acts.prototype.Stop = function ()
 	{
         this._cmd_move_to.is_moving = false;
-	};   	
+	};  
+    
+ 	Acts.prototype.SetForceMoving = function (e)
+	{
+        this.force_move = (e === 1);
+	};  
+
+ 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

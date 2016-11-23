@@ -77,6 +77,16 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
     
 	instanceProto.onDestroy = function ()
 	{
+        this.CleanAllToneObjects();
+	};   
+
+	instanceProto.CleanAllToneObjects = function ()
+	{
+        for (var n in this.toneObjects)
+        {
+            window.ToneJSObjectCall(this.toneObjects[n], "dispose");
+            delete this.toneObjects[n];
+        }
 	};   
     
 	instanceProto.onSuspend = function (s)
@@ -187,6 +197,53 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
     };
     /**END-PREVIEWONLY**/  
     
+
+	instanceProto.saveToJSON = function ()
+	{
+        // serialize toneObject
+        var o = {};
+        for (var n in this.toneObjects)
+        {
+            o[n] = window.ToneJSObjectSerialize( this.toneObjects[n] );
+        }
+        
+        return {
+            "objs":o,
+        };
+	};
+	
+	instanceProto.loadFromJSON = function (o)
+	{
+        // clean all objects
+        this.CleanAllToneObjects();
+        
+        // create toneObject
+        var objs = o["objs"];
+        for (var n in objs)
+        {
+            this.toneObjects[n] = window.ToneJSObjectDeserialize( objs[n], this.getCallback );
+        }
+	};
+	
+	instanceProto.afterLoad = function ()
+	{
+        // connect to another objects
+        for (var n in this.toneObjects)
+        {
+            var objectA = this.toneObjects[n];
+            var nodes = objectA["extra"]["co"];
+            for (var c in nodes)
+            {
+                var uid = nodes[c]["uid"];
+                var objectB = (uid != null)? window.ToneJSGObjects[ uid ] : window["Tone"]["Master"];
+                if (!objectB)
+                    continue;
+                
+                window.ToneJSConnect(objectA, objectB, nodes[c]["port"]);
+            }
+        }
+	};	
+        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -213,7 +270,17 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         
         this.objectType = type;      
         this.toneObjects[varName] = window.ToneJSObjectNew(type, params, this.getCallback);
-	};     
+	}; 
+
+	Acts.prototype.ConnectToMaster = function (varName)
+	{
+        var toneObject = this.toneObjects[varName];
+        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'"); 
+        if (!toneObject)
+            return;
+        
+        window.ToneJSConnect(toneObject, window["Tone"]["Master"], "");
+	};
     
 	Acts.prototype.Connect = function (varNameA, varNameB, port)
 	{
@@ -224,7 +291,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         if (!toneObjectA || !toneObjectB)
             return;
         
-        window.ToneJSConnect(toneObjectA, toneObjectB, port);
+        window.ToneJSConnect(toneObjectA, toneObjectB, port, varNameB);
 	};   
     
 	Acts.prototype.SetValue = function (varName, keys, value)
@@ -255,13 +322,25 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         toneObject["set"](JSON.parse(params));      
 	};  
     
+	Acts.prototype.SetByReturn = function (varNameA, keysA, varNameB, fnNameB, paramsB)
+	{        
+        var toneObjectA = this.toneObjects[varNameA];
+        assert2(toneObjectA, "ToneJS API: missing object '"+ varNameA + "'");      
+        var toneObjectB = this.toneObjects[varNameB];
+        assert2(toneObjectB, "ToneJS API: missing object '"+ varNameB + "'");    
+
+        var retValue = window.ToneJSObjectCall(toneObjectB, fnNameB, paramsB, this.getCallback);
+        toneObjectA["set"](keysA, retValue);        
+	};    
+
 	Acts.prototype.Call = function (varName, fnName, params)
 	{        
         var toneObject = this.toneObjects[varName];
         assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
         window.ToneJSObjectCall(toneObject, fnName, params, this.getCallback);
 	};
-        
+
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -292,7 +371,11 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
     
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------    
-    // ------------------------------------------------------------------------    
+    // ------------------------------------------------------------------------        
+    // Global objects dictonary
+    window.ToneJSGObjects = {};
+    window.ToneJSGObjectUID = 0;
+    
  	var getItemValue = function (item, k, default_value)
 	{
         var v;
@@ -350,11 +433,19 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             b = b[port];
         
         a["connect"](b);
+        
+        // uid of Master = null
+        var uid = (b["extra"])? b["extra"]["uid"] : null;
+        var node = {
+            "uid": uid,
+            "port": port
+        }
+        a["extra"]["co"].push( node );
     }
     window.ToneJSConnect = connect;       
     
     
-	var createObject = function (type, params, getCallback)
+	var createObject = function (type, params, getCallback, uid)
 	{
         var toneObject;
         if ((type === "Master") || (type === "Transport") || (type === "Listener"))
@@ -470,6 +561,39 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             // event   
 
             // core            
+            else if (type === "Buffer")
+            {
+                var onloadTag = params[1];
+                if (onloadTag != null)
+                {     
+                    var callback = getCallback(onloadTag);
+                    if (isOptionMode)
+                        options["onload"] = callback;
+                    else
+                        params[1] = callback;
+                }
+                var onerrorTag = params[2];
+                if (onerrorTag != null)
+                {     
+                    var callback = getCallback(onerrorTag);
+                    if (isOptionMode)
+                        options["onerror"] = callback;
+                    else
+                        params[2] = callback;
+                }                
+            }           
+            else if (type === "Buffers")
+            {
+                var callbackTag = params[1];
+                if (callbackTag != null)
+                {     
+                    var callback = getCallback(callbackTag);
+                    if (isOptionMode)
+                        options["callbackTag"] = callback;
+                    else
+                        params[1] = callback;
+                }                
+            }             
             else if (type === "Clock")
             {
                 var callbackTag = params[0];
@@ -489,8 +613,20 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
             toneObject = new (Function.prototype.bind.apply(window["Tone"][type], params));
         }
         
-        toneObject["extra"] = {};
-        toneObject["extra"]["type"] = type;
+        if (uid == null)
+        {
+            uid = window.ToneJSGObjectUID;
+            window.ToneJSGObjectUID ++;
+        }
+        
+        var extra = {};
+        extra["type"] = type;    
+        extra["uid"] = uid;
+        extra["co"] = [];
+        toneObject["extra"] = extra;
+        
+        window.ToneJSGObjects[ uid ] = toneObject;
+        
         return toneObject;
 	};     
     window.ToneJSObjectNew = createObject;      
@@ -500,7 +636,18 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         return (o instanceof window["Tone"][type]);
     }     
 	var objectCall = function (toneObject, fnName, params, getCallback)
-	{        
+	{
+        // dispose function will also remove reference in window.ToneJSGObjects
+        if (fnName === "dispose")
+        {
+            toneObject["dispose"]();            
+            var uid = toneObject["extra"] && toneObject["extra"]["uid"];
+            if (uid && window.ToneJSGObjects.hasOwnProperty(uid))
+                delete window.ToneJSGObjects[uid];
+            return;
+        }
+            
+        
         var i, cnt=params.length;
         for (i=0; i<cnt; i++)
         {
@@ -549,6 +696,33 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         }
         // component
         
+        return retVal;
 	};
     window.ToneJSObjectCall = objectCall;
+    
+    var serialize = function(toneObject)
+    {
+        return {
+            "params": toneObject["get"](),
+            "extra": toneObject["extra"],
+        };
+    };
+    window.ToneJSObjectSerialize = serialize;
+    
+    var deserialize = function (o, getCallback)
+    {
+        if (o ==null)
+            return null;
+        
+        var extra = o["extra"];
+        var type = extra["type"];
+        var uid = extra["uid"]
+        var toneObject = window.ToneJSObjectNew(type, [], getCallback, uid);
+        toneObject["set"](o["params"]);
+        toneObject["extra"] = extra;
+        
+        return toneObject;
+    };
+    window.ToneJSObjectDeserialize = deserialize;
+    
 }());

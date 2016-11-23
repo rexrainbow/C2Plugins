@@ -150,7 +150,8 @@ cr.plugins_.Rex_audio_helper = function(runtime)
         }
         else
         {
-            this[onFinished](task);      
+            if (onFinished)
+                task.FinishefHandlerSet(onFinished);
         }
         
         return task;
@@ -170,7 +171,8 @@ cr.plugins_.Rex_audio_helper = function(runtime)
         }
         else
         {
-            this[onFinished](task);      
+            if (onFinished)
+                task.FinishefHandlerSet(onFinished);
         }        
         
         return task;

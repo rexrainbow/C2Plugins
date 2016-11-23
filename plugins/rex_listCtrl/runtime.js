@@ -746,6 +746,10 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{
 	    this.lines_mgr.SetCustomData(null, key_, null);
 	};		
+    Acts.prototype.CleanKeyInAllLine = function ()
+	{
+	    this.lines_mgr.SetCustomData(null, null, null);
+	};	    
     Acts.prototype.InsertNewLines = function (line_index, cnt)
 	{
 	    this.insert_lines(line_index, cnt);
@@ -1503,6 +1507,11 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		    else if (this.custom_data.hasOwnProperty(k))  // v == null: clean key
 			    delete this.custom_data[k];
 	    }
+        else if (k === null)    // clean all
+        {
+            for (var n in this.custom_data)
+                delete this.custom_data[n];
+        }             
 	    else                          // copy all
 	    {
 	        var d = k;

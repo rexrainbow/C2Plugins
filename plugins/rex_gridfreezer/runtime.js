@@ -678,7 +678,12 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 			
         this.global_data[index] = value;
 	}; 
-	
+
+	Acts.prototype.LoadAll = function ()
+	{
+        for (var k in this.board2insts)
+	        this.load_instances(k);
+	}; 	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

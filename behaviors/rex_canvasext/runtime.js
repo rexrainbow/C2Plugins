@@ -258,7 +258,16 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
         inst.update_tex = true;        
 	};   
         
-	 
+    
+	Acts.prototype.SetShadow = function (offsetX, offsetY, blur, color)
+	{
+        var ctx = this.inst.ctx;
+        ctx["shadowOffsetX"] = offsetX;
+        ctx["shadowOffsetY"] = offsetY;
+        ctx["shadowBlur"] = blur;
+        ctx["shadowColor"] = color;        
+	}; 	   
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

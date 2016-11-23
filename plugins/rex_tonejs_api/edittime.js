@@ -19,7 +19,7 @@
 // Conditions
 AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different callback.", "\"\"");
 AddCondition(1, cf_trigger, "Callback", "Callback", 
-            "On <i>{0}</i>",
+            "On {0}",
             "Callback.", "OnCallback");
             
 //////////////////////////////////////////////////////////////
@@ -28,28 +28,33 @@ AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');
 AddStringParam("Type name", "Type name.", '""');
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
 AddAction(1, 0, "Create object", "0. Create", 
-          "{0}: Create <i>{1}</i> (<i>{...}</i>)", 
+          "{0}: Create {1} ({...})", 
           "Create object.", "CreateObject"); 
+          
+AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');         
+AddAction(3, 0, "Connect to Master", "Connect", 
+          "{0}: Connect to Master", 
+          "Connect to Master.", "ConnectToMaster");           
 
 AddAnyTypeParam("A", "Variable name of this tone object", '""');          
 AddAnyTypeParam("B", "Connect to object", '""');       
 AddStringParam("Port", 'Port name. set "" to ignore this parameter.', '""');
 AddAction(4, 0, "Connect", "Connect", 
-          "{0}: Connect to <i>{1}</i>(<i>{2}</i>)", 
+          "{0}: Connect to {1}({2})", 
           "Connect to object.", "Connect"); 
 
 AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');         
 AddStringParam("Property", "Property name in dot notation", '""');
 AddAnyTypeParam("Value", "Value to set", 0);
 AddAction(11, 0, "Set value", "Property", 
-          "{0}: Set <i>{1}</i> to <i>{2}</i>",
+          "{0}: Set {1} to {2}",
           "Set property.", "SetValue"); 
 
 AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');             
 AddStringParam("Property", "Property name in dot notation", '""');
 AddStringParam("JSON", "JSON value to set", '""');
 AddAction(12, 0, "Set JSON", "Property", 
-          "{0}: Set <i>{1}</i> to <i>{2}</i>",
+          "{0}: Set {1} to {2}",
           "Set property to JSON string.", "SetJSON"); 
 
 AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');            
@@ -58,22 +63,32 @@ AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.", 0);
 AddAction(13, 0, "Set boolean", "Property", 
-          "{0}: Set <i>{1}</i> to <i>{2}</i>",
+          "{0}: Set {1} to {2}",
           "Set property to a boolean value.", "SetBoolean");
 
 AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');                  
 AddStringParam("Properties", "Properties in JSON", '"{}"');
 AddAction(14, 0, "Set JSON", "Properties", 
-          "{0}: Set properties to <i>{1}</i>", 
-          "Set properties to JSON string.", "SetJSONProps");          
+          "{0}: Set properties to {1}", 
+          "Set properties to JSON string.", "SetJSONProps");
+
+AddAnyTypeParam("Object A", "Variable name of this tone object", '""');            
+AddStringParam("Property", "Property name in dot notation", '""');
+AddAnyTypeParam("Object B", "Variable name of this tone object", '""');           
+AddStringParam("Function name", "Function name.", '""');  
+AddVariadicParams("Parameter {n}", "Parameters of this function call.");
+AddAction(15, 0, "Set by return", "Property", 
+          "Set {0}[{1}] to {2}[{3}]({...})",
+          "Set property by return value.", "SetByReturn");            
           
 AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');           
 AddStringParam("Function name", "Function name.", '""');  
 AddVariadicParams("Parameter {n}", "Parameters of this function call.");
 AddAction(21, 0, "Call", "Function", 
-          "{0}: Call <i>{1}</i> (<i>{...}</i>)",
+          "{0}: Call {1} ({...})",
           "Call function.", "Call"); 
           
+         
 //////////////////////////////////////////////////////////////
 // Expressions
 AddAnyTypeParam("Index", "The zero-based index of the parameter to get, or name in string.");

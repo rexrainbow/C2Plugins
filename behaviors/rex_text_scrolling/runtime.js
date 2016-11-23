@@ -186,8 +186,13 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 		if ( (this.text_type === "Text") || (this.text_type === "Spritefont2") )
 		{
 		    txt = "";
-		    for (var i=start; i<end; i++)
-			    txt += (this.content_lines[i] + "\n");
+            end -= 1;
+		    for (var i=start; i<=end; i++)
+            {
+                txt += this.content_lines[i];
+                if (i > end )
+			        txt += "\n";
+            }
 		}
 		else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
 		{
@@ -236,8 +241,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
             this.visible_lines -= 1;	    
         
         // only show visible lines
-        if (this.start_line_index != 0)
-	        this.SetText(this.get_visible_text(this.start_line_index));
+        this.SetText("");     // clean remain text
+        this.SetText(this.get_visible_text(this.start_line_index));
 	};    
 	
 	behinstProto.get_line_height = function ()
@@ -260,13 +265,12 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    if (this.SetText_handler == null)
 		    return;
         
-        if (this.text_type === "rex_TagText")
+        if  ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
             var is_force_render_save = this.inst.is_force_render;
             this.inst.is_force_render = false;
         }
         
-        //this.SetText_handler.call(this.inst, "");      // clean remain text     
 		this.SetText_handler.call(this.inst, content); // set text
         
         if  ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))

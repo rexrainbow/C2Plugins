@@ -115,6 +115,7 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
             
             if ( (cr.plugins_.Rex_SLGSquareTx && (inst instanceof cr.plugins_.Rex_SLGSquareTx.prototype.Instance)) ||
                  (cr.plugins_.Rex_SLGHexTx && (inst instanceof cr.plugins_.Rex_SLGHexTx.prototype.Instance))       ||
+                 (cr.plugins_.Rex_ProjectionTx && (inst instanceof cr.plugins_.Rex_ProjectionTx.prototype.Instance))   ||                      
                  (cr.plugins_.Rex_SLGCubeTx && (inst instanceof cr.plugins_.Rex_SLGCubeTx.prototype.Instance)) 
                 )
             {

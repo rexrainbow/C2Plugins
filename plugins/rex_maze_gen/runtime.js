@@ -182,6 +182,13 @@ cr.plugins_.Rex_MazeGen = function(runtime)
     Exps.prototype.ValueAt = function (ret, x, y)
 	{
 	    ret.set_any( this.ValueAt(x,y) );
-	};   	
+	};
+
+    Exps.prototype.MapAsJson = function (ret)
+	{
+        var json = (this.map)? JSON.stringify( this.map ) : "";
+	    ret.set_string( json );
+	};
+   	
 }());
 

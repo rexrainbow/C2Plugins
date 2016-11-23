@@ -36,6 +36,15 @@ AddStringParam("Js code", "Code string for drawing.", '""');
 AddAction(21, 0, "Eval", "Script", 
     "Run <i>{0}</i>", 
     "Run code to draw on canvas (ctx).", "Eval");
+    
+AddNumberParam("Offset X", "Offset X of shadow, in pixels.", 10);
+AddNumberParam("Offset Y", "Offset Y of shadow, in pixels.", 10);
+AddNumberParam("Blur", "Blur of shadow, in pixels.", 20);    
+AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
+AddAction(61, 0, "Set shadow", "Shadow", 
+          "Set shadow with offset to (<i>{0}</i>, <i>{1}</i>), blur to <i>{2}</i>, color to <i>{3}</i>", 
+          "Set shadow.", "SetShadow");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get image data as JSON", "Zlib", "AsJSON", "Return the image data in JSON format after zip.");

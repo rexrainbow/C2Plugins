@@ -247,7 +247,7 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         if (!this.midiData)
             return;
         
-        log("act: Start");  
+        //log("act: Start");  
         
         this.invokeAllParts("stop");
         this.InitParts(this.midiData);
@@ -267,7 +267,7 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
             return;
          
         this.elapsedTime = this.getElapsedTime() + ((time)? parseFloat(time):0);
-        log("act: Pause, offset=" + this.elapsedTime);           
+        //og("act: Pause, offset=" + this.elapsedTime);           
         this.invokeAllParts("stop", [time]);
 	};     
      
@@ -276,17 +276,14 @@ cr.plugins_.Rex_ToneJS_MidiConvert = function(runtime)
         if (!this.isPlaying)
             return;
         
-        log("act: Resume, offset=" + this.elapsedTime);      
+        //log("act: Resume, offset=" + this.elapsedTime);      
         this.invokeAllParts("start", [time, this.elapsedTime]);
 	};    
     
     instanceProto.SetPlaybackRate = function(rate)
     {
-        if (!this.isPlaying)
-            return;
-        
         var state = this.parts[0]["state"];    
-        log(state)        
+        //log(state)        
         if (rate == 0)
         {
             if (state === "started")

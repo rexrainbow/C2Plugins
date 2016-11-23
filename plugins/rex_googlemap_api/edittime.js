@@ -40,7 +40,12 @@ AddComboParamOption("maps.google.cn");
 AddComboParam("Set API URL", 'Set to "maps.google.cn" if user is in China.',0);          
 AddAction(3, 0, "Set api URL", "URL", 
           "Set api URL to <i>{0}</i>", 
-          'Set api URL, set to "maps.google.cn" if user is in China.', "SetAPIURL");          
+          'Set api URL, set to "maps.google.cn" if user is in China.', "SetAPIURL");  
+
+AddStringParam("Key", 'API key', '""');          
+AddAction(4, 0, "Set API key", "API key", 
+          "Set API key to <i>{0}</i>", 
+          'Set API key.', "SetAPIKey");           
                     
 ////////////////////////////////////////
 // Expressions
@@ -50,6 +55,7 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
 	new cr.Property(ept_combo, "Initial loading", "Yes", "Enable if you wish to load map at the start of the layout.", "No|Yes"),
+    new cr.Property(ept_text, "API key", "", 'Google API key.'),    
     new cr.Property(ept_text, "Language code", "", 'Specifics language displayed in google map. Set "" to use local language.'),
 	new cr.Property(ept_combo, "API URL", "maps.googleapis.com", 'API URL, set to "maps.google.cn" if user is in China.', "maps.googleapis.com|maps.google.cn"),    
 	];

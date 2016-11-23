@@ -980,7 +980,11 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
     Acts.prototype.CleanKeyInAllCell = function (key_)
 	{
 	    this.lines_mgr.SetCustomData(null, key_, null);
-	};		
+	};	
+    Acts.prototype.CleanAllKeysInAllCell = function ()
+	{
+	    this.lines_mgr.SetCustomData(null, null, null);
+	};	
     Acts.prototype.InsertNewCells = function (cell_index, cnt)
 	{
 	    this.insert_cells(cell_index, cnt);
@@ -1438,7 +1442,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 				if (line == null)
 				    continue;
 					
-			    line.SetCustomData(k, v);
+                line.SetCustomData(k, v);
 	        }
 		}
 	}; 
@@ -1920,7 +1924,12 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	            this.custom_data[k] = v;	    
 		    else if (this.custom_data.hasOwnProperty(k))  // v == null: clean key
 			    delete this.custom_data[k];
-	    }
+	    }       
+        else if (k === null)    // clean all
+        {
+            for (var n in this.custom_data)
+                delete this.custom_data[n];
+        }        
 	    else                          // copy all
 	    {
 	        var d = k;

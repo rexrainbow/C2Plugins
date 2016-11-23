@@ -60,6 +60,9 @@ AddNumberParam("X", "Logic X.", 0);
 AddNumberParam("Y", "Logic Y.", 0);
 AddExpression(11, ef_return_any, "Get cell value", "Map", "ValueAt", 
               "Get cell value at logic X,Y. 1 is a wall, 0 is an empty space. Return -1 if this cell is invalid.");
+              
+AddExpression(12, ef_return_string, "Get map as JSON string", "Map", "MapAsJson", 
+              'Get map as JSON string. Return "" if map is not ready.');
 
 ACESDone();
 

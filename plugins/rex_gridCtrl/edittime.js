@@ -151,10 +151,15 @@ AddAnyTypeParam("Value", "The value to store in the cell.", 0);
 AddAction(31, 0, "Set value", "Custom data", 
           "Cell <i>{0}</i>: set key <i>{1}</i> to <i>{2}</i>",
           "Set custom data in a cell.", "SetValue"); 
+          
 AddStringParam("Key", "The key of custom data.", '""');
 AddAction(32, 0, "Clean key in all cells", "Custom data", 
-          "Clean key <i>{1}</i> in all cells",
+          "Clean key <i>{0}</i> in all cells",
           "Clean key in all cell.", "CleanKeyInAllCell");
+          
+AddAction(33, 0, "Clean all keys in all cells", "Custom data", 
+          "Clean all keys in all cells",
+          "Clean all keys in all cell.", "CleanAllKeysInAllCell");      
           
 AddNumberParam("Insert at", "Cell index for inserting.", 0);
 AddNumberParam("Cell number", "Cell number for inserting.", 1);
