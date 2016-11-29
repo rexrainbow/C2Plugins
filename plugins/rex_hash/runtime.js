@@ -93,16 +93,21 @@ cr.plugins_.Rex_Hash = function(runtime)
     
 	instanceProto.setValue = function(keys, value, root)
 	{        
-        if (root == null)
-            root = this.hashtable;
-        
         if ((keys === "") || (keys.length === 0))
         {
             if ((value !== null) && typeof(value) === "object")
-               root = value;
+            {
+                if (root == null)
+                    this.hashtable = value;
+                else
+                    root = value;
+            }
         }
         else
         {            
+            if (root == null)
+                root = this.hashtable;    
+    
             if (typeof (keys) === "string")
                 keys = keys.split(".");
             
@@ -543,12 +548,16 @@ cr.plugins_.Rex_Hash = function(runtime)
         if (!isArray(arr))
             return;
         
-        sortKey = sortKey.split(".");
+        if (sortKey === "")
+            sortKey = null;
+        else
+            sortKey = sortKey.split(".");
+        
         var self = this;        
         var sortFn = function (itemA, itemB)
         {
-            var valA = self.getValue(sortKey, itemA);
-            var valB = self.getValue(sortKey, itemB);
+            var valA = (sortKey)? self.getValue(sortKey, itemA): itemA;
+            var valB = (sortKey)? self.getValue(sortKey, itemB): itemB;
             var m = sortMode_;
             
             if (sortMode_ >= 2)  // logical descending, logical ascending
@@ -599,6 +608,29 @@ cr.plugins_.Rex_Hash = function(runtime)
             return;
         arr.push(val);
 	};    
+    
+	Acts.prototype.PushValue = function (keys, val)
+	{
+        var arr;
+        if (keys === "")
+        {
+            arr = this.hashtable;
+        }
+        else
+        {
+            keys = keys.split(".");
+            var lastKeys = keys.pop();
+            var entry = this.getValue(keys);
+            if (entry === undefined)
+                this.setValue(keys, []);
+            
+            arr = entry[lastKeys];
+        }
+        if (!isArray(arr))
+            return;
+        arr.push(val);
+	};     
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

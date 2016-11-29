@@ -102,7 +102,13 @@ AddStringParam("Key string", "The key string of the hash table value to set.", '
 AddStringParam("JSON", "JSON string.", '"{}"');
 AddAction(23, 0, "Push JSON", "Array", 
           "Push JSON <i>{1}</i> into array at <i>{0}</i> ",
-          "Push JSON into array.", "PushJSON");                 
+          "Push JSON into array.", "PushJSON");        
+
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
+AddAction(24, 0, "Push value", "Array", 
+          "Push value <i>{1}</i> into array at <i>{0}</i> ",
+          "Push value into array.", "PushValue");             
           
 //////////////////////////////////////////////////////////////
 // Expressions

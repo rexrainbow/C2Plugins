@@ -108,8 +108,8 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_section, "Origin", "",	"Position of Logic (0,0)."),    
-    new cr.Property(ept_float, "OX", 0, "Physical X co-ordinate at logic (0,0)."),
-    new cr.Property(ept_float, "OY", 0, "Physical Y co-ordinate at logic (0,0)."),
+    new cr.Property(ept_float, "X at (0,0)", 0, "Physical X co-ordinate at logic (0,0)."),
+    new cr.Property(ept_float, "Y at (0,0)", 0, "Physical Y co-ordinate at logic (0,0)."),
     
     new cr.Property(ept_section, "Vector U", "",	"Offset from Logic (1,0) to Logic (0,0)."),    
     new cr.Property(ept_float, "UX", 0, "Physical X offset of Logic (1,0) - Logic (0,0)."),

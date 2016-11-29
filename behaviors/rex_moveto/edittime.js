@@ -37,9 +37,9 @@ AddCondition(4, 0, "Compare moving angle", "Moving angle",
              "Compare the current moving angle of the object.", 
              "CompareMovingAngle");
 
-AddCondition(5, cf_trigger, "On stop by solid", "Solid", 
-             "On {my} stop by solid", 
-			 "Triggered when stop by solid object.", 
+AddCondition(5, cf_trigger, "On stopped by solid", "Solid", 
+             "On {my} stopped by solid", 
+			 "Triggered when stopped by solid object.", 
 			 "OnSolidStop");                
 //////////////////////////////////////////////////////////////
 // Actions
