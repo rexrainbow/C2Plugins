@@ -116,7 +116,8 @@ AddAction(4, af_deprecated, "Get matched tiles with 2d pattern", "Request: match
           "Get matched tiles with 2d pattern.", "GetMatchTiles2D");
 AddAction(5, 0, "Update all", "Symbol array: force update", 
           "Force updating symbol array", 
-          "Force updating symbol array.", "ForceUpdaeSymbolArray");		  
+          "Force updating symbol array.", "ForceUpdaeSymbolArray");
+          
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Horizontal", "Horizontal axis.",1);
@@ -147,7 +148,12 @@ AddAction(14, 0, "Update cell by chess", "Symbol array: force update",
 AddAnyTypeParam("UID", "The UID of chess", 0);
 AddAction(15, 0, "Update cell by chess uid", "Symbol array: force update", 
           "Force updating symbol at UID: <i>{0}</i>", 
-          "Force updating symbol at tile by UID.", "ForceUpdaeCellByTileUID");	          	              
+          "Force updating symbol at tile by UID.", "ForceUpdaeCellByTileUID");	         
+
+AddStringParam("Wildcard", 'Wildcard symbol, Set to "" will ignore this feature.', '""');
+AddAction(21, 0, "Set Wildcard", "Wildcard", 
+          "Set Wildcard to <i>{0}</i>", 
+          "Set Wildcard symbol.", "SetWildcard");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any,

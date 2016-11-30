@@ -848,7 +848,13 @@ cr.plugins_.Rex_Matcher = function(runtime)
         if (_xyz == null)
             return;
         this.write_symbol_cache(_xyz.x, _xyz.y);       
-	};	    
+	};
+
+	Acts.prototype.SetWildcard = function (s)	
+	{
+	    this.wildcard_symbol = s;    
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
