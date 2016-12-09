@@ -223,7 +223,18 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	Cnds.prototype.OnRequestUserIDFailed = function ()
 	{
 	    return true;
+	}; 
+	
+	Cnds.prototype.OnRemoveUserIDSuccessfully = function ()
+	{
+	    return true;
 	}; 	
+
+	Cnds.prototype.OnRemoveUserIDFailed = function ()
+	{
+	    return true;
+	}; 
+	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -328,6 +339,39 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         var query = this.get_ref()["orderByValue"]()["equalTo"](UserID)["limitToFirst"](1);
         query["once"]("value", on_read);
 	};	
+
+    Acts.prototype.RemoveUserID = function (UserID)
+	{               
+	    if (UserID === "")
+	        return;
+	        
+        var self = this;    
+        
+	    var onComplete = function(error) 
+	    {
+            if (error)
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDFailed, self); 
+            else
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDSuccessfully, self);  
+        };
+        var on_read = function(snapshot)
+        {
+            var result = snapshot["val"]();    // { ID:UserID }
+            var return_ID = _get_key(result);
+            if (return_ID == null)
+            {
+                onComplete();
+            }
+            else
+            {
+                var ref = self.get_ID_ref(return_ID);
+                ref["set"](null, onComplete);
+            }      
+        };
+
+        var query = this.get_ref()["orderByValue"]()["equalTo"](UserID)["limitToFirst"](1);
+        query["once"]("value", on_read);
+	};
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -92,8 +92,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             };        
         this.queriedRows = null;            
         // retrieve
+        this.exp_CurRowID = "";
         this.exp_CurRowIndex = -1;
-        this.exp_CurRow = null;
         this.exp_LastSavedRowID = "";
         
         // save/load
@@ -574,7 +574,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
                 runtime.pushCopySol(current_event.solModifiers);
             }
             
-            self.exp_CurRow = r;
+            self.exp_CurRowID = r["___id"];
             self.exp_CurRowIndex = i;
             current_event.retrigger();
            
@@ -585,8 +585,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 		    } 
 		};
 		queriedRows["each"](for_each_row);
-        
-        this.exp_CurRow = null;
+
+        this.exp_CurRowID = "";
         this.exp_CurRowIndex = -1;         
         
 		return false;
@@ -854,7 +854,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 
  	Exps.prototype.CurRowContent = function (ret, k, default_value)
 	{
-		ret.set_any( din(this.exp_CurRow, k, default_value) );
+	    var row = this.db(this.exp_CurRowID)["get"]()[0];
+		ret.set_any( din(row, k, default_value) );
 	};
 
  	Exps.prototype.Index2QueriedRowContent = function (ret, i, k, default_value)
@@ -915,8 +916,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	};    
     
  	Exps.prototype.CurRowID = function (ret)
-	{
-		ret.set_any( din(this.exp_CurRow, "___id", "") );
+	{     
+		ret.set_any( this.exp_CurRowID );
 	};
     
  	Exps.prototype.Index2QueriedRowID = function (ret, index_)

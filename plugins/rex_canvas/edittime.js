@@ -26,6 +26,10 @@ AddAction(1, 0, "Eval", "Script",
     "Run <i>{0}</i>", 
     "Run code to draw on canvas (ctx).", "Eval");
     
+AddNumberParam("width", "canvas width", 100);
+AddNumberParam("height", "canvas height", 100);
+AddAction(2, 0, "Resize canvas", "Canvas", "Resize canvas to ({0},{1})", "Resizes the canvas.", "ResizeCanvas");    
+    
 // Drawing rectangles
 AddNumberParam("x", "The x axis of the coordinate for the rectangle starting point.", 0);
 AddNumberParam("y", "The y axis of the coordinate for the rectangle starting point.", 0);
@@ -283,6 +287,9 @@ AddAction(2011, 0, "Erase object", "Paste", "Erase Object {0}", "Erase objects."
 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_number, "Get canvas width", "Canvas", "CanvasWidth", "Get canvas width.");
+AddExpression(2, ef_return_number, "Get canvas height", "Canvas", "CanvasHeight", "Get canvas height.");
+
 AddStringParam("Text", "The text to render.", 0);
 AddExpression(31, ef_return_number, "Get text width", "Drawing text", "TextWidth", "Get text width in current ctx.");
 

@@ -47,7 +47,7 @@ AddCondition(7, cf_trigger, "On deleting user success", "Email & Password - dele
             "Triggered when deleting user success.", "EmailPassword_OnDeleteUserSuccessfully");
             
 AddCondition(8, cf_trigger, "On deleting user error", "Email & Password - deleting user", 
-            "On sending password result email error", 
+            "On deleting user error", 
             "Triggered when deleting user error.", "EmailPassword_OnDeleteUserError"); 
             
 AddCondition(9, cf_trigger, "On updating profile success", "Email & Password - update profile", 

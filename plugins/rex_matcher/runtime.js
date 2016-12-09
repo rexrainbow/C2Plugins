@@ -50,6 +50,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	    this.exp_TileUID =0;	
 	    this.exp_TileX =0;	        
 	    this.exp_TileY =0;
+        this.exp_MatchedSymbol = null;
         this._group_name = ""; 
         this._symbol_value = "";        	    	    
         this._symbol_cache = {}; 
@@ -268,8 +269,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	instanceProto.pattern_search_square = function(pattern, is_any_pattern_mode)
 	{
         var is_matchN_mode = (typeof(pattern) == "number"); 
-        if (!is_matchN_mode)
-            pattern = pattern_splitting(pattern); 
+        if (!is_matchN_mode)        
+            pattern = pattern_splitting(pattern);         
             
 	    var x,y,i,s,is_matched,matched_tiles=[];
 	    var pattern_length=(is_matchN_mode)? pattern:pattern.length;
@@ -310,7 +311,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
                         {
                             pattern = [];
                             for (var r=0; r<pattern_length; r++)
-                                pattern.push(s.symbol);
+                                pattern.push(s.symbol);   
+
+                            this.exp_MatchedSymbol = s.symbol;                                       
                         }
 						
 						// symbol not matched
@@ -347,7 +350,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                if (is_matched)
 					{
 	                    this._tiles_groups.push({"uid":matched2uid(matched_tiles),
-	                                             "dir":m});            
+	                                             "dir":m}); 
+
 						if (is_any_pattern_mode)
 						    return;
 				    }
@@ -397,6 +401,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
                             pattern = [];
                             for (var r=0; r<pattern_length; r++)
                                 pattern.push(s.symbol);
+                            
+                            this.exp_MatchedSymbol = s.symbol;                            
                         }    
 
 						// symbol not matched
@@ -414,7 +420,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                if (is_matched)
 					{
 	                    this._tiles_groups.push({"uid":matched2uid(matched_tiles),
-	                                             "dir":dir}); 
+	                                             "dir":dir});                                                  
+                        
 						if (is_any_pattern_mode)
 						    return;						
 				    }
@@ -483,7 +490,8 @@ cr.plugins_.Rex_Matcher = function(runtime)
 	                    else if (is_template_pattern)
 	                    {
 	                        _fill_2d_template_pattern(pattern, s.symbol);
-	                        is_template_pattern = false;	                        
+	                        is_template_pattern = false;	      
+                            this.exp_MatchedSymbol = s.symbol;                                       
 	                    }
 	                    else if (s.symbol != c)
 	                    {
@@ -884,11 +892,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
     {
         ret.set_string(this.wildcard_symbol);
     };    	
-    	
-    Exps.prototype.LXY2Symbol = function (ret, x, y)
-    {
-        ret.set_string(this.write_symbol_cache(x,y));
-    };
+
     	
     Exps.prototype.UID2Symbol = function (ret, uid)
     {
@@ -899,5 +903,9 @@ cr.plugins_.Rex_Matcher = function(runtime)
             
         ret.set_string(s);
     };
- 	
+    	
+    Exps.prototype.MatchedSymbol = function (ret,)
+    {
+        ret.set_string(this.exp_MatchedSymbol || "");
+    }; 	
 }());

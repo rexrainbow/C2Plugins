@@ -70,11 +70,16 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
 	instanceProto.onCreate = function()
 	{     
-        this.update_manually       = (this.properties[0] == 0);
-        this.update_with_game_time = (this.properties[0] == 1);
-        this.update_with_real_time = (this.properties[0] == 2);
+        this.update_mode = this.properties[0];
+        this.ManualMode = (this.update_mode === 0);
+        this.GameTimeMode = (this.update_mode === 1);
+        this.RealTimeMode = (this.update_mode === 2);
         
-        if (this.update_with_real_time)
+        this.update_manually = this.ManualMode ;
+        this.update_with_game_time = this.GameTimeMode;
+        this.update_with_real_time = this.RealTimeMode;
+        
+        if (this.RealTimeMode)
         {
             var timer = new Date();
             this.last_real_time = timer.getTime();
@@ -88,7 +93,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         
         // timeline  
         this.timeline = new cr.plugins_.Rex_TimeLine.TimeLine();
-        if (this.update_with_game_time || this.update_with_real_time)
+        if (this.GameTimeMode || this.RealTimeMode)
             this.runtime.tickMe(this);
         this.check_name = "TIMELINE";
         
@@ -115,18 +120,26 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	
     instanceProto.tick = function()
     {
-        if (this.update_with_game_time)
+        if (this.GameTimeMode)
         {
-            var dt = this.runtime.getDt(this);
-            this.timeline.Dispatch(dt);
+            if (this.update_with_game_time)
+            {
+                var dt = this.runtime.getDt(this);
+                this.timeline.Dispatch(dt);
+            }
         }
-        else if (this.update_with_real_time)
+        else if (this.RealTimeMode)
         {
             var timer = new Date();
-            var last_real_time = timer.getTime();      
-            var dt = (last_real_time - this.last_real_time)/1000;
-            this.timeline.Dispatch(dt);
-            this.last_real_time = last_real_time;
+            var last_real_time = timer.getTime();                
+            
+            if (this.update_with_real_time)
+            {  
+                var dt = (last_real_time - this.last_real_time)/1000;
+                this.timeline.Dispatch(dt);
+            }
+            
+            this.last_real_time = last_real_time;            
         }
     };
     
@@ -412,12 +425,18 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     Acts.prototype.PauseTimeLine = function ()
 	{
-	    this.update_with_game_time = false;
+        if (this.GameTimeMode)
+	        this.update_with_game_time = false;
+        else if (this.RealTimeMode)
+            this.update_with_real_time = false;  
 	};   
 
     Acts.prototype.ResumeTimeLine = function ()
 	{     
-	    this.update_with_game_time = true;
+        if (this.GameTimeMode)
+	        this.update_with_game_time = true;
+        else if (this.RealTimeMode)
+            this.update_with_real_time = true;  
 	};   	
     
     Acts.prototype.CreateTimer = function (timer_name, callback_name, callback_params)

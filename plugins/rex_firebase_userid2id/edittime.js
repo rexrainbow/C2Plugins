@@ -30,7 +30,15 @@ AddCondition(3, cf_trigger, "On request User ID successfully", "Request - User I
             
 AddCondition(4, cf_trigger, "On request User ID failed", "Request - User ID", 
             "On request User ID failed", 
-            "Triggered when requested User ID failed.", "OnRequestUserIDFailed");                   
+            "Triggered when requested User ID failed.", "OnRequestUserIDFailed"); 
+
+AddCondition(11, cf_trigger, "On remove User ID successfully", "Remove", 
+            "On remove User ID successfully", 
+            "Triggered when removed User ID successfully.", "OnRemoveUserIDSuccessfully");
+            
+AddCondition(12, cf_trigger, "On remove User ID failed", "Remove", 
+            "On remove User ID failed", 
+            "Triggered when removed User ID failed.", "OnRemoveUserIDFailed");             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("User ID", "Key of User ID.", '""');
@@ -54,7 +62,12 @@ AddAction(3, 0, "Try set ID", "Request - ID",
 AddStringParam("User ID", "Key of User ID.", '""');
 AddAction(4, 0, "Get ID", "Request - ID", 
           "Request - get ID by User ID:<i>{0}</i>", 
-          "Request ID.", "RequestTryGetID");                            
+          "Request ID.", "RequestTryGetID");  
+          
+AddStringParam("User ID", "Key of User ID.", '""');
+AddAction(11, 0, "Remove User ID", "Remove", 
+          "Remove User ID:<i>{0}</i>", 
+          "Remove User ID.", "RemoveUserID");              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get ID of result", "Request - result", "ID", 

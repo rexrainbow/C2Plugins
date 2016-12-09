@@ -151,9 +151,9 @@ AddAction(15, 0, "Update cell by chess uid", "Symbol array: force update",
           "Force updating symbol at tile by UID.", "ForceUpdaeCellByTileUID");	         
 
 AddStringParam("Wildcard", 'Wildcard symbol, Set to "" will ignore this feature.', '""');
-AddAction(21, 0, "Set Wildcard", "Wildcard", 
-          "Set Wildcard to <i>{0}</i>", 
-          "Set Wildcard symbol.", "SetWildcard");          
+AddAction(21, 0, "Set wildcard", "Wildcard", 
+          "Set wildcard to <i>{0}</i>", 
+          "Set wildcard symbol.", "SetWildcard");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any,
@@ -182,6 +182,11 @@ AddAnyTypeParam("UID", "The UID of chess", 0);
 AddExpression(7, ef_return_string,
               "Get symobl by chess UID", "Symbol", "UID2Symbol",
               "Get symobl by tile/chess UID.");      
+    
+AddExpression(8, ef_return_string,
+              "Get matched symobl", "Request", "MatchedSymbol",
+              'Get matched symobl under "Condition:On N symbols", or "Condition:On 2D template pattern".');
+              
               
 ACESDone();
 

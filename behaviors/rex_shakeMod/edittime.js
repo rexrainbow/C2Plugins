@@ -62,9 +62,10 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_combo, "Activated", "Yes", "Enable if you wish this to begin at the start of the layout.", "No|Yes"), 
+    new cr.Property(ept_combo, "Mode", "Effect", 'Effect mode only sets position for render.', "Effect|Behavior"), 
 	new cr.Property(ept_float, "Duration", 0.5, "The time the shake should last, in seconds."), 
 	new cr.Property(ept_float, "Magnitude", 10, "The strength of the shake, in pixels."),
-    new cr.Property(ept_combo, "Magnitude mode", "Decay", "Decay or constant magnitude.", "Constant|Decay"),  
+    new cr.Property(ept_combo, "Magnitude mode", "Decay", "Decay or constant magnitude.", "Constant|Decay"),      
 	];
 	
 // Called by IDE when a new behavior type is to be created

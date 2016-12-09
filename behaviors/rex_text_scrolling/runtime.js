@@ -190,7 +190,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 		    for (var i=start; i<=end; i++)
             {
                 txt += this.content_lines[i];
-                if (i > end )
+                if (i < end )
 			        txt += "\n";
             }
 		}

@@ -253,7 +253,7 @@ AddObjectParam("Set target object", "Choose the object to follow as target to.")
 AddAction(27, af_none, "Set target object", "Parameter", "Set {my} target object to {0}", "Set the target object of the tween.", "SetTargetObject");
 
 AddNumberParam("Repeat count", "Repeat count, 0 is continue.", 0);
-AddAction(28, af_none, "Set repeat count", "Parameter", "Set {my} repeat count to <b>{8}</b>", "Set repeat count of the tween.", "SetRepeatCount");
+AddAction(28, af_none, "Set repeat count", "Parameter", "Set {my} repeat count to <b>{0}</b>", "Set repeat count of the tween.", "SetRepeatCount");
 
 // -----
 AddStringParam("Alias", "Alias of easing function.");

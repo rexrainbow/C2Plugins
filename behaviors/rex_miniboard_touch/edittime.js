@@ -55,7 +55,7 @@ AddAction(2, 0, "Force to drop", "Drop",
           "Force {my} to drop", 
           "Force the dragged object to drop.", "ForceDropp");  
           
-AddAction(3, 0, "Try drag", "Drag", "Try drag {my}", 
+AddAction(3, 0, "Try to drag", "Drag", "Try drag {my}", 
           "Try to drag this object if is in touched.", "TryDrag");            
           
 AddComboParamOption("No");
@@ -96,6 +96,7 @@ ACESDone();
 var property_list = [ 
     new cr.Property(ept_combo, "Enable", "Yes", "Enable to drag mini board.", "No|Yes"),
     new cr.Property(ept_combo, "Align to grids", "Yes", "Enable to align mini board to grids.", "No|Yes"),    
+    new cr.Property(ept_combo, "Drag Pull", "No", "Enable to pull out from main board when dragging start.", "No|Yes"),    
 	];
 	
 // Called by IDE when a new behavior type is to be created

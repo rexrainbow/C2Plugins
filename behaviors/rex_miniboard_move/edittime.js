@@ -227,6 +227,10 @@ AddExpression(10, ef_return_number, "Get logic X of destination", "Request", "De
               "Get logic X of destination X when moving request.");  
 AddExpression(11, ef_return_number, "Get logic Y of destination", "Request", "DestinationLY", 
               "Get logic Y of destination when moving request.");  
+AddExpression(13, ef_return_number, "Get logic X of source", "Request", "SourceLX", 
+              "Get logic X of source when moving request.");               
+AddExpression(14, ef_return_number, "Get logic Y of source", "Request", "SourceLY", 
+              "Get logic Y of source when moving request.");               
               
 ACESDone();
 

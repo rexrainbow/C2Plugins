@@ -70,6 +70,8 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
         this.is_moving_request_accepted = false;
         
         this.exp_Direction = (-1);
+        this.exp_SourceLX = (-1);
+        this.exp_SourceLY = (-1);        
         this.exp_DestinationLX = (-1);
         this.exp_DestinationLY = (-1);
         this.exp_TargetPX = 0;
@@ -85,6 +87,10 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	
     behinstProto.set_move_target = function (tlx, tly, dir)
     {
+        var mainboard = this.inst.mainboard;
+        this.exp_SourceLX = mainboard.LOX;
+        this.exp_SourceLY = mainboard.LOY;       
+               
         this.exp_DestinationLX = tlx;
         this.exp_DestinationLY = tly;
         this.exp_Direction = (dir != null)? dir:(-1); 
@@ -167,7 +173,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	{
 	    var mainboard_ref = this.inst.mainboard;
 	    if (mainboard_ref.inst == null)
-	        return false;
+            return false;
 
         var board = mainboard_ref.inst;
         var tlx = board.GetNeighborLX(mainboard_ref.LOX, mainboard_ref.LOY, dir);
@@ -179,7 +185,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	{
 	    var mainboard_ref = this.inst.mainboard;
 	    if (mainboard_ref.inst == null)
-	        return false;
+            return false;
         
         var board = mainboard_ref.inst;
         var tlx = mainboard_ref.LOX + dx;
@@ -192,7 +198,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	{
 	    var mainboard_ref = this.inst.mainboard;
 	    if (mainboard_ref.inst == null)
-	        return false;
+            return false;
         
         var board = mainboard_ref.inst;
         var dir = mainboard_ref.inst.xy2NeighborDir(mainboard_ref.LOX, mainboard_ref.LOY, lx, ly);
@@ -204,6 +210,8 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	    return { "mrq": this.is_moving_request_accepted,
                  "mt": this._cmd_move_to.saveToJSON(),
                  "e_dir" : this.exp_Direction,
+                 "e_slx" : this.exp_SourceLX,
+                 "e_sly" : this.exp_SourceLY,                 
                  "e_dlx" : this.exp_DestinationLX,
                  "e_dly" : this.exp_DestinationLY,
                  "e_tpx" : this.exp_TargetPX,
@@ -216,6 +224,8 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
         this.is_moving_request_accepted = o["mrq"];
 	    this._cmd_move_to.loadFromJSON(o["mt"]);
         this.exp_Direction = o["e_dir"]; 
+        this.exp_SourceLX = o["e_slx"];
+        this.exp_SourceLY = o["e_sly"];         
         this.exp_DestinationLX = o["e_dlx"];
         this.exp_DestinationLY = o["e_dly"];
         this.exp_TargetPX = o["e_tpx"];  
@@ -315,7 +325,7 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
 	{
 	    var mainboard_ref = this.inst.mainboard;
 	    if (mainboard_ref.inst == null)
-	        return;
+            return false;
             
         var board = mainboard_ref.inst;            
 	    var uid = _get_uid(objtype);
@@ -386,7 +396,17 @@ cr.behaviors.Rex_miniboard_move = function(runtime)
  	Exps.prototype.DestinationLY = function (ret)
 	{
         ret.set_int(this.exp_DestinationLY);		
-	};      
+	}; 
+        
+ 	Exps.prototype.SourceLX = function (ret)
+	{
+        ret.set_int(this.exp_SourceLX);		
+	};  	
+    
+ 	Exps.prototype.SourceLY = function (ret)
+	{
+        ret.set_int(this.exp_SourceLY);		
+	}; 
 }());
 
 (function ()

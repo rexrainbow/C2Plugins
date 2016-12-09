@@ -168,8 +168,8 @@ cr.plugins_.Rex_canvas = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-        this.canvas.width = o["w"];
-        this.canvas.height = o["h"];
+        this.canvas["width"] = o["w"];
+        this.canvas["height"] = o["h"];
         
         var plain = window.RexC2ZlibU8Arr.string2u8a(o["d"]);
         var img_data = inst.ctx["createImageData"](o["w"], o["h"]);
@@ -180,6 +180,7 @@ cr.plugins_.Rex_canvas = function(runtime)
             data[i] = plain[i];
         }
         this.ctx["putImageData"](img_data, 0, 0);
+		this.runtime.redraw = true;        
         this.update_tex = true;  
 	};
 	    
@@ -206,6 +207,15 @@ cr.plugins_.Rex_canvas = function(runtime)
 		this.runtime.redraw = true;
         this.update_tex = true;        
 	};   
+    	
+	Acts.prototype.ResizeCanvas = function (w, h)
+	{
+		this.canvas["width"] = w;
+		this.canvas["height"] = h;
+		this.runtime.redraw = true;
+        this.update_tex = true;
+	};
+	
     
     // Drawing rectangles    
 	Acts.prototype.ClearRect = function (x,y,w,h)
@@ -472,9 +482,19 @@ cr.plugins_.Rex_canvas = function(runtime)
 	function Exps() {};
 	pluginProto.exps = new Exps();
     
+	Exps.prototype.CanvasWidth = function (ret)
+	{
+		ret.set_float( this.canvas["width"] );
+	};    
+    
+	Exps.prototype.CanvasHeight = function (ret)
+	{
+		ret.set_float( this.canvas["height"] );
+	};   
+    
 	Exps.prototype.TextWidth = function (ret, text)
 	{
-		ret.set_float( this.ctx.measureText(text).width );
+		ret.set_float( this.ctx["measureText"](text)["width"] );
 	};
     
 }());

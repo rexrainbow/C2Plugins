@@ -45,13 +45,14 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 	behinstProto.onCreate = function()
 	{
 		this.enabled = (this.properties[0] !== 0);
-        this.duration = this.properties[1];
-        this.magnitude = this.properties[2];
-        this.magMode = this.properties[3];
+		this.mode = this.properties[1]      
+        this.duration = this.properties[2];
+        this.magnitude = this.properties[3];
+        this.magMode = this.properties[4];
 
         this.isShaking = false; 
-        this.OX = null;
-        this.OY = null;
+        this.OX = this.inst.x;
+        this.OY = this.inst.y;
         this.remaining = 0;
         
         this.is_my_call = false;        
@@ -59,10 +60,24 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        this.BackToOrigin();
+        if (this.mode === 0)          // Effect
+            this.BackToOrigin();
+        else if (this.mode === 1)  // Behavior
+        {
+            this.inst.x = this.OX;
+            this.inst.y = this.OY;
+            this.Shake();
+        }
 	};
 	
 	behinstProto.tick2 = function ()
+	{
+        if (this.mode === 0)
+            this.Shake();
+        //else if (this.mode === 1)
+	};
+    
+	behinstProto.Shake = function ()
 	{
         if ( (!this.enabled) || (!this.isShaking) ) 
             return;        
@@ -74,7 +89,7 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
         // save origin to current position
         this.OX = this.inst.x;
         this.OY = this.inst.y;
-		var isEnded = this.shake(dt);   
+		var isEnded = this.ShakePos(dt);   
 
         if (isEnded)        
         {
@@ -83,9 +98,9 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
             this.runtime.trigger(cr.behaviors.Rex_ShakeMod.prototype.cnds.OnShackingEnd, this.inst); 
             this.is_my_call = false;
         }
-	};
+	};    
 
-	behinstProto.shake = function (dt)
+	behinstProto.ShakePos = function (dt)
 	{		
         var isEnded = (this.remaining <= dt);
         
@@ -123,20 +138,14 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
     
 	behinstProto.BackToOrigin = function ()
 	{
-        if (this.OX == null)
+        if ((this.OX === this.inst.x) && (this.OY === this.inst.y))
             return;
         
         // go back to origin point
-        if ((this.OX !== this.inst.x) || (this.OY !== this.inst.y))
-        {
-            this.inst.x = this.OX;
-            this.inst.y = this.OY;
-            
-            this.inst.set_bbox_changed();
-        }
+        this.inst.x = this.OX;
+        this.inst.y = this.OY;
         
-        this.OX = null;
-        this.OY = null;        
+        this.inst.set_bbox_changed();   
 	};    
 
 	behinstProto.saveToJSON = function ()

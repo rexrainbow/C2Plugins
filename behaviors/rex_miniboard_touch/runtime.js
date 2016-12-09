@@ -168,9 +168,10 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.activated = (this.properties[0] == 1); 
-	    this.is_align = (this.properties[1] == 1);   
-	     
+	    this.activated = (this.properties[0] === 1); 
+	    this.is_align = (this.properties[1] === 1);  
+        this.pull_out_when_drag_start = (this.properties[2] === 1);       
+
         this.drag_info = {touch_src:-1,
 		                  pre_x:0,
                           pre_y:0,
@@ -306,7 +307,11 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
     
 	behinstProto.drag = function(touch_src)
 	{
-        this.DragInfoSet(touch_src);        
+        this.DragInfoSet(touch_src);     
+
+        if (this.pull_out_when_drag_start)        
+            this.inst.PullOutChess();        
+        
         this.tick();  
 	};    
 	

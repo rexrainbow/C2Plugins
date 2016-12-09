@@ -133,15 +133,15 @@ AddStringParam("Group", "Group name.", '""');
 AddStringParam("Sorting function", "Sorting function of group", '""');
 AddAction(14, 0, "Sort by function", "List: Sort", "Sort group <i>{0}</i> by function <i>{1}</i>", 
           "Sort group by function.", "SortByFn"); 
-AddNumberParam("Result", "Compared result. (-1) is (A < B), 0 is (A == B), 1 is (A > B)", 0);
-AddAction(15, 0, "Set compared result by number", "List: Sort function", "Set compare result to <i>{0}</i>", 
-          'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultDirectly");
+AddNumberParam("Result", "Comparing result. (-1) is (A < B), 0 is (A == B), 1 is (A > B)", 0);
+AddAction(15, 0, "Set comparing result by number", "List: Sort function", "Set compare result to <i>{0}</i>", 
+          'Set comparing result. Used in callback of "Action: Sort group by function"', "SetCmpResultDirectly");
 AddComboParamOption("<");
 AddComboParamOption("=");
 AddComboParamOption(">");
-AddComboParam("Result", "Compared result", 0);   
-AddAction(16, 0, "Set compared result", "List: Sort function", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
-          'Set compared result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");                              
+AddComboParam("Result", "Result", 0);   
+AddAction(16, 0, "Set comparing result", "List: Sort function", "Set compare result to CmpUIDA <i>{0}</i> CmpUIDB", 
+          'Set comparing result. Used in callback of "Action: Sort group by function"', "SetCmpResultCombo");                              
 AddStringParam("Group", "Group name.", '""');          
 AddObjectParam("Object", "Object for picking");
 AddComboParamOption("Keep");
