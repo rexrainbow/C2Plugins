@@ -45,14 +45,16 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 	behinstProto.onCreate = function()
 	{
 		this.enabled = (this.properties[0] !== 0);
-		this.mode = this.properties[1]      
+		var mode = this.properties[1];
+        this.effectMode = (mode === 0);
+        this.behaviorMode = (mode === 1);
         this.duration = this.properties[2];
         this.magnitude = this.properties[3];
         this.magMode = this.properties[4];
 
         this.isShaking = false; 
-        this.OX = this.inst.x;
-        this.OY = this.inst.y;
+        this.OX = null;
+        this.OY = null;
         this.remaining = 0;
         
         this.is_my_call = false;        
@@ -60,27 +62,33 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if (this.mode === 0)          // Effect
-            this.BackToOrigin();
-        else if (this.mode === 1)  // Behavior
+        if (this.effectMode)          // Effect
         {
-            this.inst.x = this.OX;
-            this.inst.y = this.OY;
+            this.BackToOrigin();
+        }
+        else if (this.behaviorMode)  // Behavior
+        {
+            this.BackToOrigin(true);
             this.Shake();
         }
 	};
 	
 	behinstProto.tick2 = function ()
 	{
-        if (this.mode === 0)
+        if (this.effectMode)
+        {
             this.Shake();
-        //else if (this.mode === 1)
+        }
+        else if (this.behaviorMode)
+        {
+            
+        }
 	};
     
 	behinstProto.Shake = function ()
 	{
         if ( (!this.enabled) || (!this.isShaking) ) 
-            return;        
+            return;
         
 		var dt = this.runtime.getDt(this.inst);
         if (dt === 0)
@@ -136,8 +144,14 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
         return isEnded;
 	};    
     
-	behinstProto.BackToOrigin = function ()
+	behinstProto.BackToOrigin = function (noUpdateBBox)
 	{
+        if ( (!this.enabled) || (!this.isShaking) ) 
+            return;        
+        
+        if (this.OX === null)
+            return;
+        
         if ((this.OX === this.inst.x) && (this.OY === this.inst.y))
             return;
         
@@ -145,7 +159,11 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
         this.inst.x = this.OX;
         this.inst.y = this.OY;
         
-        this.inst.set_bbox_changed();   
+        this.OX = null;
+        this.OY = null;                
+        
+        if (!noUpdateBBox)
+            this.inst.set_bbox_changed();   
 	};    
 
 	behinstProto.saveToJSON = function ()
@@ -214,24 +232,21 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.SetEnabled = function (e)
+	Acts.prototype.SetActivated = function (e)
 	{
-		this.enabled = (e === 1);
-        this.BackToOrigin();        
+		this.enabled = (e === 1);     
 	};
 
 	Acts.prototype.Start = function ()
 	{
         this.isShaking = true;
-        this.remaining = this.duration;
-        this.BackToOrigin();
+        this.remaining = this.duration;  
 	};
     
  	Acts.prototype.Stop = function ()
 	{
         this.isShaking = false;
         this.remaining = 0;
-        this.BackToOrigin();
 	};   	    
     
 	Acts.prototype.SetDuration = function (t)

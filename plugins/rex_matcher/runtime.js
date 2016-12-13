@@ -904,7 +904,7 @@ cr.plugins_.Rex_Matcher = function(runtime)
         ret.set_string(s);
     };
     	
-    Exps.prototype.MatchedSymbol = function (ret,)
+    Exps.prototype.MatchedSymbol = function (ret)
     {
         ret.set_string(this.exp_MatchedSymbol || "");
     }; 	

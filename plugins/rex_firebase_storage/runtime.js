@@ -53,6 +53,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         this.error = null;
         
         this.exp_LastDownloadURL = "";
+        this.exp_LastMetadata = null
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -83,6 +84,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             self.isUploading = false;
             self.snapshot = self.uploadTask["snapshot"];
             self.exp_LastDownloadURL = self.snapshot["downloadURL"];
+            self.exp_LastMetadata = self.snapshot["metadata"];
             self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUploadCompleted, self);
         };
         var onError = function (error)
@@ -122,8 +124,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUploadProgress, self);
         };
         
-        if (metadata)
-            metadata = {"contentType": metadata}
+        this.exp_LastMetadata = metadata;
         this.uploadTask = this.get_storage_ref(path)["put"](file, metadata);
         this.uploadTask["on"]('state_changed', onStateChanged, onError, onComplete);   
     };
@@ -149,8 +150,80 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         };
         
         oReq.send(null);
-	};	   
+	};	 
 
+    var parseMetadata = function(metadata, defaultContentType)
+    {
+        if (metadata !== "")
+        {
+            try 
+            {
+                metadata = JSON.parse(metadata);
+            } 
+            catch (e) 
+            {
+                rmetadata = {"contentType":  metadata}; 
+            }
+        }
+        else if (defaultContentType != null)
+        {
+            metadata = {"contentType":  defaultContentType}; 
+        }
+        else
+            metadata = null;
+        return metadata;
+    };
+
+
+ 	var getItemValue = function (item, k, default_value)
+	{
+        var v;
+	    if (item == null)
+            v = null;
+        else if ( (k == null) || (k === "") )
+            v = item;
+        else if ((typeof(k) === "number") || (k.indexOf(".") == -1))
+            v = item[k];
+        else
+        {
+            var kList = k.split(".");
+            v = item;
+            var i,cnt=kList.length;
+            for(i=0; i<cnt; i++)
+            {
+                if (typeof(v) !== "object")
+                {
+                    v = null;
+                    break;
+                }
+                    
+                v = v[kList[i]];
+            }
+        }
+
+        return din(v, default_value);
+	};	    
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };        
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -216,7 +289,25 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    return true;
 	};     
     
+	Cnds.prototype.OnGetMetadata = function ()
+	{
+	    return true;
+	}; 	
+
+	Cnds.prototype.OnGetMetadataError = function ()
+	{
+	    return true;
+	};    
     
+	Cnds.prototype.OnUpdateMetadata = function ()
+	{
+	    return true;
+	}; 	
+
+	Cnds.prototype.OnUpdateMetadataError = function ()
+	{
+	    return true;
+	};     
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -227,7 +318,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    this.rootpath = ref + "/";         
     };
  
-    Acts.prototype.UploadFromFileChooser = function (fileChooserObjs, storagePath)
+    Acts.prototype.UploadFromFileChooser = function (fileChooserObjs, storagePath, metadata)
 	{
         if (!fileChooserObjs)
             return;
@@ -245,7 +336,8 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         if (!f)
             return;
         
-        this.upload(f, storagePath)
+        metadata = parseMetadata(metadata);
+        this.upload(f, storagePath, metadata)
 	}; 
     
     Acts.prototype.CancelUploading = function ()
@@ -272,7 +364,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         this.uploadTask["resume"]();
 	};      
     
-    Acts.prototype.UploadFromSprite = function (objType, storagePath)
+    Acts.prototype.UploadFromSprite = function (objType, storagePath, metadata)
 	{
         if (!objType)
             return;
@@ -301,7 +393,8 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         var onGetBlob = function (blob)
         {
             // upload blob
-            self.upload(blob, storagePath);
+            metadata = parseMetadata(metadata);
+            self.upload(blob, storagePath, metadata);
         };
         canvas["toBlob"](onGetBlob);   
 	};     
@@ -324,13 +417,14 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         }
 		
 		return tmpcanvas;
-	};  
+	};
 
-    Acts.prototype.UploadDataURI = function (dataURI, storagePath)
+    Acts.prototype.UploadDataURI = function (dataURI, storagePath, metadata)
 	{
         var obj = dataURItoBlob(dataURI);
         var blob = obj[0];
-        var metadata = {"contentType":  obj[1]}; 
+        var contentType = obj[1];
+        metadata = parseMetadata(metadata, contentType);
         this.upload(blob, storagePath, metadata);   
 	};       
     
@@ -364,19 +458,21 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         return [blob, mimeString];
     };
     
-    Acts.prototype.UploadString = function (s, storagePath)
+    Acts.prototype.UploadString = function (s, storagePath, metadata)
 	{
-        var blob = new Blob([s], {"type": 'text/plain'});       
-        var metadata = {"contentType":  'text/plain'};    
+        var type = "text/plain";
+        var blob = new Blob([s], {"type": type});
+        metadata = parseMetadata(metadata, type);
         this.upload(blob, storagePath, metadata);   
 	};       
     
-    Acts.prototype.UploadObjectURL = function (objectURL, contentType, storagePath)
+    Acts.prototype.UploadObjectURL = function (objectURL, metadata, storagePath)
 	{
         var self=this;
         var callback = function (blob)
         {
-            self.upload(blob, storagePath, contentType); 
+            metadata = parseMetadata(metadata);
+            self.upload(blob, storagePath, metadata); 
         }
         this.doRequest(objectURL, callback);
 	};      
@@ -417,7 +513,49 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnDeleteError, self);
         }
         ref["delete"]()["then"](onComplete)["catch"](onError);
-	};    
+	};
+        
+    Acts.prototype.GetMetadata = function (storagePath)
+	{
+        var self=this;
+        var ref = this.get_storage_ref(storagePath);
+        
+        this.error = null;
+        this.exp_LastMetadata = null;
+        var onComplete = function (metadata)
+        {
+            self.exp_LastMetadata = metadata;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnGetMetadata, self);
+        };
+        var onError = function (error)
+        {
+            self.error = error;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnGetMetadataError, self);
+        }
+        ref["getMetadata"]()["then"](onComplete)["catch"](onError);
+	};
+        
+    Acts.prototype.UpdateMetadata = function (storagePath, newMetadata)
+	{
+        var self=this;
+        var ref = this.get_storage_ref(storagePath);
+        
+        this.error = null;
+        this.exp_LastMetadata = null;
+        var onComplete = function (metadata)
+        {
+            self.exp_LastMetadata = metadata;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUpdateMetadata, self);
+        };
+        var onError = function (error)
+        {
+            self.error = error;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUpdateMetadataError, self);
+        }
+        newMetadata = parseMetadata(newMetadata);
+        ref["updateMetadata"](newMetadata)["then"](onComplete)["catch"](onError);
+	};
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -469,5 +607,11 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    if (this.error)
             s = this.error["serverResponse"];
 		ret.set_string(s || "");
-	};	    
+	};	  
+	
+	Exps.prototype.LastMetadata = function (ret, k, default_value)
+	{
+		ret.set_any( getItemValue(this.exp_LastMetadata, k, default_value) );
+	};	
+    
 }());

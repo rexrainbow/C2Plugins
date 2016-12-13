@@ -47,7 +47,8 @@ AddComboParamOption("Decay");
 AddComboParamOption("Constant");
 AddComboParam("Mode", "Decay or constant magnitude.",0);
 AddAction(13, 0, "Set magnitude mode", "Magnitude", 
-          "Set {my} magnitude mode to <i>{0}</i>", "Set magnitude mode.", "SetMagnitudeMode");          
+          "Set {my} magnitude mode to <i>{0}</i>", "Set magnitude mode.", "SetMagnitudeMode");   
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get X co-ordinate of shaking origin", "Origin", "OX", "Get X co-ordinate of shaking origin.");

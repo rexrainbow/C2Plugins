@@ -62,7 +62,24 @@ AddCondition(21, cf_trigger, "On deleted", "Delete",
             
 AddCondition(22, cf_trigger, "On deleted error", "Delete", 
             "On delete error", 
-            "Triggered when delete error.", "OnDeleteError");            
+            "Triggered when delete error.", "OnDeleteError");  
+
+AddCondition(71, cf_trigger, "On get metadata", "Metadata", 
+            "On get metadata", 
+            "Triggered when get metadata success.", "OnGetMetadata");
+            
+AddCondition(72, cf_trigger, "On get metadata error", "Metadata", 
+            "On get metadata error", 
+            "Triggered when get metadata error.", "OnGetMetadataError");    
+
+AddCondition(73, cf_trigger, "On update metadata", "Metadata", 
+            "On update metadata", 
+            "Triggered when update metadata success.", "OnUpdateMetadata");
+            
+AddCondition(74, cf_trigger, "On update metadata error", "Metadata", 
+            "On update metadata error", 
+            "Triggered when update metadata error.", "OnUpdateMetadataError");
+            
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Sub domain", "The Firebase data ref URL", '""');
@@ -72,8 +89,9 @@ AddAction(0, 0, "Set sub domain", "Domain",
           
 AddObjectParam("File chooser", "File chooser object.");
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(1, 0, "Upload from file chooser", "Upload", 
-          "Upload file from <i>{0}</i> to <i>{1}</i>", 
+          "Upload file from <i>{0}</i> to <i>{1}</i>, with metadata <i>{2}</i>", 
           "Upload file from file chooser to firebase storage.", "UploadFromFileChooser");
           
 AddAction(2, 0, "Cancel", "Upload task", 
@@ -90,24 +108,27 @@ AddAction(4, 0, "Resume", "Upload task",
           
 AddObjectParam("Sprite", "Sprite or canvas object.");
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(5, 0, "Upload from sprite", "Upload", 
-          "Upload image from <i>{0}</i> to <i>{1}</i>", 
+          "Upload image from <i>{0}</i> to <i>{1}</i>, with metadata <i>{2}</i>", 
           "Upload image from sprite or canvas to firebase storage.", "UploadFromSprite");      
 
 AddStringParam("Data URI", "Data URI of file", '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(6, 0, "Upload data URL", "Upload", 
-          "Upload data URI <i>{0}</i> to <i>{1}</i>", 
+          "Upload data URI <i>{0}</i> to <i>{1}</i>, with metadata <i>{2}</i>", 
           "Upload from data URI to firebase storage.", "UploadDataURI");  
 
 AddStringParam("Content", "String content", '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(7, 0, "Upload string", "Upload", 
           "Upload string <i>{0}</i> to <i>{1}</i>", 
           "Upload string to firebase storage.", "UploadString"); 
 
 AddStringParam("ObjectURL", "ObjectURL.", '""');
-AddStringParam("Content type", "Content type.", '""');
+AddStringParam("Metadata", 'Metadata in JSON, or content type.', '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
 AddAction(8, 0, "Upload objectURL", "Upload", 
           "Upload objectURL <i>{0}</i> (type <i>{1}</i>) to <i>{2}</i>", 
@@ -121,11 +142,22 @@ AddAction(11, 0, "Get download url", "Download",
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
 AddAction(21, 0, "Detete", "Delete", 
           "Detete <i>{0}</i>", 
-          "Delete file at url of a firebase storage reference.", "DeleteAtURL");              
+          "Delete file at url of a firebase storage reference.", "DeleteAtURL");   
+
+AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddAction(71, 0, "Get metadata", "Metadata", 
+          "Get metadata of <i>{0}</i>", 
+          "Get metadata of a firebase storage reference.", "GetMetadata");        
+
+AddStringParam("DataRef", "The Firebase storage ref URL", '""');
+AddStringParam("Metadata", 'Metadata in JSON string.', '""');
+AddAction(72, 0, "Update metadata", "Metadata", 
+          "Update metadata of <i>{0}</i> to <i>{1}</i>", 
+          "Update metadata of a firebase storage reference.", "UpdateMetadata");            
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get download URL", "Upload", "LastDownloadURL", 
-              "Get download URL of last upload file.");
+              "Get download URL of last upload file, or result of the last request.");
               
 AddExpression(2, ef_return_number, "Get progress", "Upload", "Progress", "Get the progress, from 0 to 1, of the request in 'On upload progress'.");  
 
@@ -136,6 +168,9 @@ AddExpression(21, ef_return_string, "Error code", "Error", "LastErrorCode",
               "Error code.");        
 AddExpression(22, ef_return_string, "Error message", "Error", "LastErrorMessage", 
               "Error message (error.serverResponse) .");
+              
+AddExpression(71, ef_return_any | ef_variadic_parameters, "Get metadata", "Metadata", "LastMetadata", 
+              "Get metadata of last upload file, or result of the last request. Add 1st parameter to get value at the specific key. Add 2nd parameter for default value if this key is not existed.");
               
 ACESDone();
 
