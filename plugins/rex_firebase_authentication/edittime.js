@@ -18,41 +18,41 @@
 // Conditions	
 
 // email - password  
-AddCondition(1, cf_trigger, "On creating account success", "Email & Password - create account", 
+AddCondition(1, cf_trigger, "On creating account", "Email & Password - create account", 
             "On creating account success", 
-            "Triggered when creating account success.", "EmailPassword_OnCreateAccountSuccessfully");
+            "Triggered when creating account success.", "EmailPassword_OnCreateAccountSuccessful");
             
 AddCondition(2, cf_trigger, "On creating account error", "Email & Password - create account", 
             "On create account error", 
             "Triggered when creating account error.", "EmailPassword_OnCreateAccountError");   
             
-AddCondition(3, cf_trigger, "On changing password success", "Email & Password - changing password", 
+AddCondition(3, cf_trigger, "On changing password", "Email & Password - changing password", 
             "On changing password success", 
-            "Triggered when changing password success.", "EmailPassword_OnChangingPasswordSuccessfully");
+            "Triggered when changing password success.", "EmailPassword_OnChangingPasswordSuccessful");
             
 AddCondition(4, cf_trigger, "On changing password error", "Email & Password - changing password", 
             "On changing password error", 
             "Triggered when changing password error.", "EmailPassword_OnChangingPasswordError");    
             
-AddCondition(5, cf_trigger, "On sending password result email success", "Email & Password - sending password result email", 
-            "On sending password result email success", 
-            "Triggered when sending password result email success.", "EmailPassword_OnSendPasswordResultEmailSuccessfully");
+AddCondition(5, cf_trigger, "On sending password reset email", "Email & Password - sending password reset email", 
+            "On sending password reset email success", 
+            "Triggered when sending password reset email success.", "EmailPassword_OnSendPasswordResetEmailSuccessful");
             
-AddCondition(6, cf_trigger, "On sending password result email error", "Email & Password - sending password result email", 
-            "On sending password result email error", 
-            "Triggered when sending password result email error.", "EmailPassword_OnSendPasswordResultEmailError");                         
+AddCondition(6, cf_trigger, "On sending password reset email error", "Email & Password - sending password reset email", 
+            "On sending password reset email error", 
+            "Triggered when sending password reset email error.", "EmailPassword_OnSendPasswordResetEmailError");                         
      
-AddCondition(7, cf_trigger, "On deleting user success", "Email & Password - deleting user", 
-            "On deleting user success", 
-            "Triggered when deleting user success.", "EmailPassword_OnDeleteUserSuccessfully");
+AddCondition(7, cf_trigger, "On deleting user", "Email & Password - deleting user", 
+            "On deleting user", 
+            "Triggered when deleting user success.", "EmailPassword_OnDeleteUserSuccessful");
             
 AddCondition(8, cf_trigger, "On deleting user error", "Email & Password - deleting user", 
             "On deleting user error", 
             "Triggered when deleting user error.", "EmailPassword_OnDeleteUserError"); 
             
-AddCondition(9, cf_trigger, "On updating profile success", "Email & Password - update profile", 
+AddCondition(9, cf_trigger, "On updating profile", "Email & Password - update profile", 
             "On update profile success", 
-            "Triggered when updating profile success.", "EmailPassword_OnUpdatingProfileSuccessfully");
+            "Triggered when updating profile success.", "EmailPassword_OnUpdatingProfileSuccessful");
             
 AddCondition(10, cf_trigger, "On updating profile error", "Email & Password - update profile", 
             "On update profile error", 
@@ -63,9 +63,9 @@ AddCondition(21, cf_trigger, "Is anonymous", "Anonymous",
             "Return true if current user is anonymous.", "IsAnonymous");                  
                         
 // general            
-AddCondition(31, cf_trigger, "On login success", "General - login", 
+AddCondition(31, cf_trigger, "On login", "General - login", 
             "On login success", 
-            "Triggered when login success.", "OnLoginSuccessfully");
+            "Triggered when login success.", "OnLoginSuccessful");
             
 AddCondition(32, cf_trigger, "On login error", "General - login", 
             "On login error", 
@@ -89,9 +89,9 @@ AddCondition(42, cf_trigger, "On logged out by other app", "General - logged out
             "Triggered when logged out by other app.", "OnLoggedOutByOther");	
 
 
-AddCondition(51, cf_trigger, "On link success", "Link multiple auth providers", 
+AddCondition(51, cf_trigger, "On link", "Link multiple auth providers", 
             "On link success", 
-            "Triggered when link success.", "OnLinkSuccessfully");
+            "Triggered when link success.", "OnLinkSuccessful");
             
 AddCondition(52, cf_trigger, "On link error", "Link multiple auth providers", 
             "On link error", 
@@ -126,7 +126,7 @@ AddAction(3, 0, "Change password", "Email & Password",
 AddStringParam("Email", "User email", '""');
 AddAction(4, 0, "Sending password reset email", "Email & Password", 
           "Sending password reset email: <i>{0}</i>", 
-          "Sending password reset email", "EmailPassword_SendPasswordResultEmail"); 
+          "Sending password reset email", "EmailPassword_SendPasswordResetEmail"); 
              
 AddStringParam("Email", "(2.x) User email", '""');
 AddStringParam("Password", "(2.x) User password", '""');
@@ -246,12 +246,20 @@ AddExpression(6, ef_return_string, "User ID from provider", "General auth data",
               "User ID from provider.");
 AddExpression(7, ef_return_string, "Access token", "General auth data", "AccessToken", 
               "The FOAuth 2.0 access token granted by provider during user authentication.");						  
-AddExpression(8, ef_return_string, "Cached user profile", "General auth data", "CachedUserProfile", 
+              
+// ef_deprecated              
+AddExpression(8, ef_deprecated | ef_return_string, "Cached user profile", "General auth data", "CachedUserProfile", 
               "Cached user profile from provier.");	
+// ef_deprecated
+              
 AddExpression(9, ef_return_string, "Email", "General auth data", "Email", 
               "The user's primary email address as listed on their profile. Returned only if a valid email address is available, and the email permission was granted by the user. ");	
-AddExpression(10, ef_return_string, "User name", "General auth data", "UserName", 
+              
+// ef_deprecated               
+AddExpression(10, ef_deprecated | ef_return_string, "User name", "General auth data", "UserName", 
               "The user's screen name, handle, or alias. Twitter screen names are unique, but subject to change. .");
+// ef_deprecated              
+              
 AddExpression(11, ef_return_string, "Error detail", "Error", "ErrorDetail", 
               "Error detail.");
 AddExpression(12, ef_return_string, "Photo URL", "General auth data", "PhotoURL", 

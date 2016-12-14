@@ -74,7 +74,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             this.uploadTask["cancel"]();
         
         var self=this;
-        this.isUploading = false;
+        this.isUploading = null;
         this.snapshot = null;
         this.error = null;              
         this.exp_LastDownloadURL = "";
@@ -114,14 +114,16 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         {
             self.snapshot = self.uploadTask["snapshot"];            
             var isRunning = (snapshot["state"] === 'running');
-            if (isRunning && !self.isUploading)
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUploading, self); 
+            if (isRunning && (self.isUploading === null))
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnStart, self);                 
+            else if (isRunning && !self.isUploading)
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnResmue, self); 
             else if (!isRunning && self.isUploading)
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUploadPaused, self);
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnPaused, self);
                         
             self.isUploading = isRunning;
             
-            self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUploadProgress, self);
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnProgress, self);
         };
         
         this.exp_LastMetadata = metadata;
@@ -170,7 +172,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             metadata = {"contentType":  defaultContentType}; 
         }
         else
-            metadata = null;
+            metadata = {};
         return metadata;
     };
 
@@ -244,12 +246,12 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    return true;
 	};  
 
-	Cnds.prototype.OnUploadPaused = function ()
+	Cnds.prototype.OnPaused = function ()
 	{
 	    return true;
 	};     
 
-	Cnds.prototype.OnUploading = function ()
+	Cnds.prototype.OnResmue = function ()
 	{
 	    return true;
 	};  	
@@ -259,10 +261,15 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    return this.isUploading;
 	};  
 
-	Cnds.prototype.OnUploadProgress = function ()
+	Cnds.prototype.OnProgress = function ()
 	{
 	    return true;
 	}; 
+
+	Cnds.prototype.OnStart = function ()
+	{
+	    return true;
+	};     
     
 	Cnds.prototype.OnGetDownloadURL = function ()
 	{

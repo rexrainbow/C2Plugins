@@ -16,11 +16,11 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On upload complete", "Upload", 
-            "On upload complete", 
+AddCondition(1, cf_trigger, "On completed", "Upload", 
+            "On upload completed", 
             "Triggered when uploading completed.", "OnUploadCompleted");
             
-AddCondition(2, cf_trigger, "On upload error", "Upload", 
+AddCondition(2, cf_trigger, "On error", "Upload", 
             "On upload error", 
             "Triggered when uploading error.", "OnUploadError");
            
@@ -30,19 +30,23 @@ AddCondition(3, cf_trigger, "On canceled", "Upload",
 
 AddCondition(4, cf_trigger, "On paused", "Upload", 
             "On upload paused", 
-            "Triggered when uploading paused.", "OnUploadPaused");       
+            "Triggered when uploading paused.", "OnPaused");       
 
-AddCondition(5, cf_trigger, "On uploading", "Upload", 
-            "On uploading", 
-            "Triggered when uploading.", "OnUploading");       
+AddCondition(5, cf_trigger, "On resmue", "Upload", 
+            "On resmue", 
+            "Triggered when resmue.", "OnResmue");       
 
 AddCondition(6, 0, "Is uploading", "Upload", 
             "Is uploading", 
             "Return true if uploading.", "IsUploading");    
 
-AddCondition(7, cf_trigger, "On upload progress", "Upload", 
+AddCondition(7, cf_trigger, "On progress", "Upload", 
             "On upload progress",
-            "Triggered when uploading progress.", "OnUploadProgress"); 
+            "Triggered when uploading progress.", "OnProgress"); 
+            
+AddCondition(8, cf_trigger, "On starting", "Upload", 
+            "On upload starting", 
+            "Triggered when uploading starting.", "OnStart");             
 
 AddCondition(11, cf_trigger, "On get download URL", "Download", 
             "On get download URL", 

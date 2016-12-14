@@ -108,7 +108,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
                 else
                 {
                     self.isMyLoginCall = false; 
-                    self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessfully, self);        
+                    self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessful, self);        
                 }
                 
             }
@@ -214,7 +214,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();      
 
-	Cnds.prototype.EmailPassword_OnCreateAccountSuccessfully = function ()
+	Cnds.prototype.EmailPassword_OnCreateAccountSuccessful = function ()
 	{
 	    return true;
 	}; 	
@@ -224,7 +224,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	    return true;
 	}; 
 	
-	Cnds.prototype.EmailPassword_OnChangingPasswordSuccessfully = function ()
+	Cnds.prototype.EmailPassword_OnChangingPasswordSuccessful = function ()
 	{
 	    return true;
 	}; 	
@@ -234,17 +234,17 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	    return true;
 	}; 	
 	
-	Cnds.prototype.EmailPassword_OnSendPasswordResultEmailSuccessfully = function ()
+	Cnds.prototype.EmailPassword_OnSendPasswordResetEmailSuccessful = function ()
 	{
 	    return true;
 	}; 	
 
-	Cnds.prototype.EmailPassword_OnSendPasswordResultEmailError = function ()
+	Cnds.prototype.EmailPassword_OnSendPasswordResetEmailError = function ()
 	{
 	    return true;
 	}; 	
 	
-	Cnds.prototype.EmailPassword_OnDeleteUserSuccessfully = function ()
+	Cnds.prototype.EmailPassword_OnDeleteUserSuccessful = function ()
 	{
 	    return true;
 	}; 	
@@ -254,7 +254,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	    return true;
 	}; 	
 	
-	Cnds.prototype.EmailPassword_OnUpdatingProfileSuccessfully = function ()
+	Cnds.prototype.EmailPassword_OnUpdatingProfileSuccessful = function ()
 	{
 	    return true;
 	}; 	
@@ -284,7 +284,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         return val;
 	};
     
-	Cnds.prototype.OnLoginSuccessfully = function ()
+	Cnds.prototype.OnLoginSuccessful = function ()
 	{
 	    return true;
 	}; 	
@@ -317,7 +317,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	    return true;
 	}; 	 
     
-	Cnds.prototype.OnLinkSuccessfully = function ()
+	Cnds.prototype.OnLinkSuccessful = function ()
 	{
 	    return true;
 	}; 	
@@ -364,7 +364,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
             {
                 // self.isMyLoginCall = false;    // set it in onAuthStateChanged
                 // get auth data by expression:UserID, and expression:Provider
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessfully, self);                
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginSuccessful, self);                
             } 
             else 
             {
@@ -420,7 +420,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
 	        var reg_data = {"email":e_,  "password":p_ };
 	        var handler = getHandler2x(this,
-	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnCreateAccountSuccessfully,
+	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnCreateAccountSuccessful,
 	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnCreateAccountError);
 	        this.get_ref()["createUser"](reg_data, handler);
         }
@@ -430,7 +430,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
             var authObj = getAuthObj()["createUserWithEmailAndPassword"](e_, p_);
             addHandler(this, authObj, 
-                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnCreateAccountSuccessfully,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnCreateAccountSuccessful,
                               cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnCreateAccountError
                               );
         }
@@ -463,7 +463,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {         
 	        var reg_data = {"email":e_,  "oldPassword ":old_p_,  "newPassword":new_p_};
 	        var handler = getHandler2x(this,
-	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordSuccessfully,
+	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordSuccessful,
 	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordError);
 	        this.get_ref()["changePassword"](reg_data, handler);
         }
@@ -473,21 +473,21 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
             var authObj = getAuthObj()["currentUser"]["updatePassword"](new_p_);
             addHandler(this, authObj, 
-                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordSuccessfully,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordSuccessful,
                               cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnChangingPasswordError
                               );    
         }    
 	}; 
 	
-    Acts.prototype.EmailPassword_SendPasswordResultEmail = function (e_)
+    Acts.prototype.EmailPassword_SendPasswordResetEmail = function (e_)
 	{
         // 2.x
         if (!isFirebase3x())
         {   
 	        var reg_data = {"email":e_};
 	        var handler = getHandler2x(this,
-	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResultEmailSuccessfully,
-	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResultEmailError);
+	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResetEmailSuccessful,
+	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResetEmailError);
 	        this.get_ref()["resetPassword"](reg_data, handler);
         }
         
@@ -496,8 +496,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
             var authObj = getAuthObj()["sendPasswordResetEmail"](e_);
             addHandler(this, authObj, 
-                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResultEmailSuccessfully,
-                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResultEmailError
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResetEmailSuccessful,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendPasswordResetEmailError
                               );                             
         }         
 	};		
@@ -509,7 +509,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {           
 	        var reg_data = {"email":e_,  "password":p_};
 	        var handler = getHandler2x(this,
-	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserSuccessfully,
+	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserSuccessful,
 	                                     cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserError);
 	        this.get_ref()["removeUser"](reg_data, handler);           
         }
@@ -519,7 +519,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
             var authObj = getAuthObj()["currentUser"]["delete"]();
             addHandler(this, authObj, 
-                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserSuccessfully,
+                              cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserSuccessful,
                               cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnDeleteUserError
                               );      
         }            
@@ -698,7 +698,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
             }
             var onSuccess = function ()
             {
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingProfileSuccessfully, self);
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingProfileSuccessful, self);
             };
             var onError = function ()
             {
@@ -739,7 +739,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         var credential = window["Firebase"]["auth"]["FacebookAuthProvider"]["credential"](access_token);
         var authObj = user["link"](credential);
         addHandler(this, authObj, 
-                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessful,
                           cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
                           ); 
 	};
@@ -763,7 +763,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         var credential = window["Firebase"]["auth"]["GoogleAuthProvider"]["credential"](id_token);
         var authObj = user["link"](credential);
         addHandler(this, authObj, 
-                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessful,
                           cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
                           ); 
 	};	
@@ -787,7 +787,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         var credential = window["Firebase"]["auth"]["EmailAuthProvider"]["credential"](e_, p_);
         var authObj = user["link"](credential);
         addHandler(this, authObj, 
-                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessfully,
+                          cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkSuccessful,
                           cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
                           ); 
 	};	 
@@ -933,7 +933,6 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
             alert("CachedUserProfile had not implemented in firebase 3.x");
         }              
         // ??        
-        var val = 
         ret.set_string( profile || "" );
 	};
 	Exps.prototype.Email = function (ret)
