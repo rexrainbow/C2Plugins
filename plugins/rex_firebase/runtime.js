@@ -53,11 +53,10 @@ cr.plugins_.Rex_Firebase = function(runtime)
         this.onTransaction_output = null;
         // transaction completed
         this.onTransaction_completed_cb = null;
-        this.onTransaction_committed = false;
         this.onTransaction_committedValue = null;        
         // on complete
         this.onComplete_cb = null;
-        this.onComplete_error = null;
+        this.error = null;
         // reading
         if (!this.recycled)
             this.callbackMap = new window.FirebaseCallbackMapKlass();
@@ -295,10 +294,9 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    return (data === null);
 	}; 
 
-	Cnds.prototype.IsTransactionAborted = function ()
-	{
-	    return (!this.onTransaction_committed);
-	};     
+    // cf_deprecated
+	Cnds.prototype.IsTransactionAborted = function () { return false; };     
+    // cf_deprecated    
     
 	Cnds.prototype.OnTransactionComplete = function (cb)
 	{
@@ -309,6 +307,11 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 	    return cr.equals_nocase(cb, this.onTransaction_completed_cb);
 	};   
+
+	Cnds.prototype.OnTransactionAbort = function (cb)
+	{
+	    return cr.equals_nocase(cb, this.onTransaction_completed_cb);
+	};     
     
 	Cnds.prototype.OnConnected = function ()
 	{
@@ -342,12 +345,11 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    var handler = function(error) 
 	    {
 	        self.onComplete_cb = onComplete_cb;    
-	        self.onComplete_error = error; 
+	        self.error = error; 
 	        var trig = (error)? cr.plugins_.Rex_Firebase.prototype.cnds.OnError:
 	                            cr.plugins_.Rex_Firebase.prototype.cnds.OnComplete;
 	        self.runtime.trigger(trig, self); 
 	        self.onComplete_cb = null;
-	        self.onComplete_error = null;   
         };
         return handler;
 	};
@@ -391,15 +393,16 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	    var _onComplete = function(error, committed, snapshot) 
 	    {
 	        self.onTransaction_completed_cb = onComplete_cb;    
-	        self.onComplete_error = error; 
-            self.onTransaction_committed = committed;
+	        self.error = error; 
             self.onTransaction_committedValue = snapshot["val"]();
             
-	        var trig = (error)? cr.plugins_.Rex_Firebase.prototype.cnds.OnTransactionError:
-	                            cr.plugins_.Rex_Firebase.prototype.cnds.OnTransactionComplete;
+            var cnds = cr.plugins_.Rex_Firebase.prototype.cnds;            
+	        var trig = (error)? cnds.OnTransactionError:
+                           (!committed)? cnds.OnTransactionAbort:
+	                           cnds.OnTransactionComplete;
+                               
 	        self.runtime.trigger(trig, self); 
 	        self.onTransaction_completed_cb = null;
-	        self.onComplete_error = null;   
         };
         
         var _onTransaction = function(current_value)
@@ -619,5 +622,21 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	{
 	    ret.set_int(new Date().getTime() + this.exp_ServerTimeOffset);
 	};    
-    
+
+	Exps.prototype.LastErrorCode = function (ret)
+	{
+        var code;
+	    if (this.error)
+            code = this.error["code"];
+		ret.set_string(code || "");
+	}; 
+	
+	Exps.prototype.LastErrorMessage = function (ret)
+	{
+        var s;
+	    if (this.error)
+            s = this.error["serverResponse"];
+		ret.set_string(s || "");
+	};	  
+	
 }());

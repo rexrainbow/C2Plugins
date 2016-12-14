@@ -44,19 +44,24 @@ AddCondition(6, 0, "TransactionIn is null", "Transaction",
              "TransactionIn is null", 
              "Return true if TransactionIn is null.", "TransactionInIsNull");  
              
-AddCondition(7, 0, "TransactionIn aborted", "Transaction - completed", 
+AddCondition(7, cf_deprecated, "TransactionIn aborted", "Transaction - completed", 
              "Transaction is aborted", 
              "Return true if the last transaction is aborted.", "IsTransactionAborted");    
 
 AddStringParam("Callback function", "Callback function.", '"_"');
 AddCondition(8, cf_trigger, "On complete", "Transaction - completed", 
             "On transaction complete <b>{0}</b>", 
-            "Triggered after any transaction success.", "OnTransactionComplete"); 
+            "Triggered when transaction success.", "OnTransactionComplete"); 
                   
 AddStringParam("Callback function", "Callback function.", '"_"');
 AddCondition(9, cf_trigger, "On error", "Transaction - completed", 
             "On transaction error <b>{0}</b>", 
-            "Triggered after any transaction  error.", "OnTransactionError");     
+            "Triggered when transaction error.", "OnTransactionError");     
+                  
+AddStringParam("Callback function", "Callback function.", '"_"');
+AddCondition(10, cf_trigger, "On aborted", "Transaction - completed", 
+            "On transaction aborted <b>{0}</b>", 
+            "Triggered when transaction aborted.", "OnTransactionAbort");               
             
 AddCondition(11, cf_trigger, "On connected", "Connection", 
              "On connected", 
@@ -302,6 +307,12 @@ AddExpression(31, ef_return_number, "Current server time offset", "Server time o
 AddExpression(32, ef_return_number, "Estimated time", "Server time offset", "EstimatedTime", 
               "Get estimated time from curent time + current server time offset."); 
               
+
+AddExpression(101, ef_return_string, "Error code", "Error", "LastErrorCode", 
+              "Error code.");        
+AddExpression(102, ef_return_string, "Error message", "Error", "LastErrorMessage", 
+              "Error message (error.serverResponse) .");
+                            
 ACESDone();
 
 // Property grid properties for this plugin
