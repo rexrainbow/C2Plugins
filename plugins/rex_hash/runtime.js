@@ -86,10 +86,6 @@ cr.plugins_.Rex_Hash = function(runtime)
         
         return entry;
 	};        
-	instanceProto.setCurrentEntry = function(keys, root)
-	{
-        this.currentEntry = this.getEntry(keys, root);
-	};
     
 	instanceProto.setValue = function(keys, value, root)
 	{        
@@ -363,10 +359,9 @@ cr.plugins_.Rex_Hash = function(runtime)
         this.setValue(key, val);
 	};
 
-	Acts.prototype.SetCurHashEntey = function (key)
-	{        
-        this.setCurrentEntry(key);
-	};
+    // af_deprecated
+	Acts.prototype.SetCurHashEntey = function (key) { };
+    // af_deprecated
 
 	Acts.prototype.SetValueInCurHashEntey = function (key, val)
 	{        
@@ -589,48 +584,42 @@ cr.plugins_.Rex_Hash = function(runtime)
 	Acts.prototype.PushJSON = function (keys, val)
 	{        
         val = JSON.parse(val);
-        var arr;
-        if (keys === "")
-        {
-            arr = this.hashtable;
-        }
-        else
-        {
-            keys = keys.split(".");
-            var lastKeys = keys.pop();
-            var entry = this.getValue(keys);
-            if (entry === undefined)
-                this.setValue(keys, []);
-            
-            arr = entry[lastKeys];
-        }
-        if (!isArray(arr))
-            return;
-        arr.push(val);
+        Acts.prototype.PushValue.call(this, keys, val);
 	};    
-    
+
 	Acts.prototype.PushValue = function (keys, val)
 	{
-        var arr;
-        if (keys === "")
+        var arr = this.getEntry(keys);
+        if (arr == null)
         {
-            arr = this.hashtable;
-        }
-        else
-        {
-            keys = keys.split(".");
-            var lastKeys = keys.pop();
-            var entry = this.getValue(keys);
-            if (entry === undefined)
-                this.setValue(keys, []);
-            
-            arr = entry[lastKeys];
-        }
+            this.setValue(keys, []);
+            arr = this.getEntry(keys);
+        }        
         if (!isArray(arr))
             return;
+        
         arr.push(val);
 	};     
+  
+	Acts.prototype.InsertJSON = function (keys, val, idx)
+	{        
+        val = JSON.parse(val);
+        Acts.prototype.InsertValue.call(this, keys, val, idx);
+	};    
     
+	Acts.prototype.InsertValue = function (keys, val, idx)
+	{
+        var arr = this.getEntry(keys);
+        if (arr == null)
+        {
+            this.setValue(keys, []);
+            arr = this.getEntry(keys);
+        }        
+        if (!isArray(arr))
+            return;
+        
+        arr.splice(idx, 0, val);
+	};         
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -746,4 +735,20 @@ cr.plugins_.Rex_Hash = function(runtime)
 	{
 		ret.set_int(this.exp_Loopindex);
 	};
+    
+	Exps.prototype.Pop = function (ret, keys, idx)
+	{
+        var arr = this.getEntry(keys);        
+        var val;        
+        if (arr == null)
+            val = 0;
+        else if ((idx == null) || (idx === (arr.length-1)))
+            val = arr.pop()
+        else
+            val = arr.splice(idx, 1);
+        
+		ret.set_any( din(val) );
+	};    
+    
+    
 }());

@@ -1,7 +1,7 @@
 ﻿function GetBehaviorSettings()
 {
 	return {
-		"name":			"Hash",
+		"name":			"JSON",
 		"id":			"Rex_bHash",
 		"description":	"Access JSON structure table.",
 		"author":		"Rex.Rainbow",
@@ -100,16 +100,30 @@ AddAction(22, 0, "Sort", "Array",
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddStringParam("JSON", "JSON string.", '"{}"');
-AddAction(23, 0, "Push JSON", "Array", 
-          "{my} push JSON <i>{1}</i> into array at <i>{0}</i> ",
-          "Push JSON into array.", "PushJSON");     
+AddAction(23, 0, "Push JSON", "Array - Push",  
+          "Push JSON <i>{1}</i> into array at <i>{0}</i> ",
+          "Push JSON into array.", "PushJSON");        
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
-AddAction(24, 0, "Push value", "Array", 
+AddAction(24, 0, "Push value", "Array - Push", 
           "Push value <i>{1}</i> into array at <i>{0}</i> ",
-          "Push value into array.", "PushValue");             
-                    
+          "Push value into array.", "PushValue");   
+
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddStringParam("JSON", "JSON string.", '"{}"');
+AddNumberParam("Index", "Index of this array to insert.", 0);
+AddAction(25, 0, "Insert JSON", "Array - Insert", 
+          "Insert JSON <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
+          "Insert JSON into array.", "InsertJSON");        
+
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
+AddNumberParam("Index", "Index of this array to insert.", 0);
+AddAction(26, 0, "Insert value", "Array - Insert", 
+          "Insert value <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
+          "Insert value into array.", "InsertValue");            
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key", "The key string of the hash to get.", '""');
@@ -145,6 +159,13 @@ AddExpression(11, ef_return_any | ef_variadic_parameters, "Get random key", "Key
 AddExpression(12, ef_return_number, "Get loop index", "For each", "Loopindex", 
               "Get loop index in a for each loop.");
 
+AddStringParam("Key", "The key of the hash to get.", '""');
+//AddNumberParam("Index", "Index of this array to pop.", 0);
+AddExpression(21, ef_return_any | ef_variadic_parameters, "Pop from array", "Array", "Pop", 
+              "Pop from array.");  
+              
+              
+              
 ACESDone();
 
 // Property grid properties for this plugin

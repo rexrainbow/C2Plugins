@@ -1,10 +1,10 @@
 ﻿function GetPluginSettings()
 {
 	return {
-		"name":			"Hash",
+		"name":			"JSON",
 		"id":			"Rex_Hash",
 		"version":		"0.5",            
-		"description":	"Access JSON structure table.",
+		"description":	"Manipulate JSON data.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_hash.html",
 		"category":		"Rex - Data structure - JSON",
@@ -46,7 +46,7 @@ AddAction(4, 0, "Clean all", "Hash table", "Clean table",
          "Clean table.", "CleanAll"); 
          
 AddStringParam("JSON string", "JSON string.", '""');
-AddAction(5, 0, "Load from JSON", "Load", 
+AddAction(5, 0, "Load JSON", "Load", 
           "Load content from <i>{0}</i>",
           "Load content from JSON string.", "StringToHashTable");
           
@@ -83,7 +83,7 @@ AddAction(10, 0, "Add to", "Value",
          "Add to the value of key.", "AddToValueByKeyString");         
           
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
-AddAction(21, 0, "Shuffle", "Array", 
+AddAction(21, 0, "Shuffle", "Array - order", 
           "Shuffle array at <i>{0}</i>",
           "Shuffle items in array.", "Shuffle");    
 
@@ -94,21 +94,35 @@ AddComboParamOption("ascending");
 AddComboParamOption("logical descending");
 AddComboParamOption("logical ascending");
 AddComboParam("Sort", "Sort method.", 1);    
-AddAction(22, 0, "Sort", "Array", 
+AddAction(22, 0, "Sort", "Array - order", 
           "Sort array at <i>{0}</i> with key to <i>{1}</i> ( <i>{2}</i> )",
           "Sort items in array.", "Sort");        
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddStringParam("JSON", "JSON string.", '"{}"');
-AddAction(23, 0, "Push JSON", "Array", 
+AddAction(23, 0, "Push JSON", "Array - Push",  
           "Push JSON <i>{1}</i> into array at <i>{0}</i> ",
           "Push JSON into array.", "PushJSON");        
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
-AddAction(24, 0, "Push value", "Array", 
+AddAction(24, 0, "Push value", "Array - Push", 
           "Push value <i>{1}</i> into array at <i>{0}</i> ",
-          "Push value into array.", "PushValue");             
+          "Push value into array.", "PushValue");   
+
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddStringParam("JSON", "JSON string.", '"{}"');
+AddNumberParam("Index", "Index of this array to insert.", 0);
+AddAction(25, 0, "Insert JSON", "Array - Insert", 
+          "Insert JSON <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
+          "Insert JSON into array.", "InsertJSON");        
+
+AddStringParam("Key string", "The key string of the hash table value to set.", '""');
+AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
+AddNumberParam("Index", "Index of this array to insert.", 0);
+AddAction(26, 0, "Insert value", "Array - Insert", 
+          "Insert value <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
+          "Insert value into array.", "InsertValue");            
           
 //////////////////////////////////////////////////////////////
 // Expressions
@@ -144,6 +158,12 @@ AddExpression(11, ef_return_any | ef_variadic_parameters, "Get random key", "Key
               "Get random key in a table. Add 2nd parameter to return default value when got invalid value.");                 
 AddExpression(12, ef_return_number, "Get loop index", "For each", "Loopindex", 
               "Get loop index in a for each loop.");
+              
+AddStringParam("Key", "The key of the hash to get.", '""');
+//AddNumberParam("Index", "Index of this array to pop.", 0);
+AddExpression(21, ef_return_any | ef_variadic_parameters, "Pop from array", "Array", "Pop", 
+              "Pop from array.");  
+              
               
 ACESDone();
 
