@@ -47,6 +47,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    this.rootpath = this.properties[0] + "/";
         
         this.uploadTask = null;
+        this.metadata = {};
         
         this.snapshot = null;
         this.isUploading = false;
@@ -156,26 +157,58 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 
     var parseMetadata = function(metadata, defaultContentType)
     {
-        if (metadata !== "")
+        if ((metadata.indexOf("{") !== -1) && (metadata.indexOf("}") !== -1))
         {
-            try 
-            {
-                metadata = JSON.parse(metadata);
-            } 
-            catch (e) 
-            {
-                rmetadata = {"contentType":  metadata}; 
-            }
+            metadata = JSON.parse(metadata);
         }
-        else if (defaultContentType != null)
+        else if (metadata !== "")
         {
-            metadata = {"contentType":  defaultContentType}; 
+            metadata = {"contentType":  metadata}; 
         }
         else
             metadata = {};
+        
+        if (!metadata.hasOwnProperty("contentType") && defaultContentType)
+            metadata["contentType"] = defaultContentType;
+
         return metadata;
     };
-
+    
+	var setValue = function(keys, value, root)
+	{
+        if (typeof (keys) === "string")
+            keys = keys.split(".");
+        
+        var lastKey = keys.pop(); 
+        var entry = getEntry(keys, root);
+        entry[lastKey] = value;
+	};  
+    
+	var getEntry = function(keys, root)
+	{
+        var entry = root;
+        if ((keys === "") || (keys.length === 0))
+        {
+            //entry = root;
+        }
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];
+                if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
+                    entry[key] = {};
+                
+                entry = entry[key];            
+            }           
+        }
+        
+        return entry;
+	};         
 
  	var getItemValue = function (item, k, default_value)
 	{
@@ -225,7 +258,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         else
             o = d;
 	    return o;
-    };        
+    };      
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -325,7 +358,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 	    this.rootpath = ref + "/";         
     };
  
-    Acts.prototype.UploadFromFileChooser = function (fileChooserObjs, storagePath, metadata)
+    Acts.prototype.UploadFromFileChooser = function (fileChooserObjs, storagePath)
 	{
         if (!fileChooserObjs)
             return;
@@ -343,8 +376,8 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         if (!f)
             return;
         
-        metadata = parseMetadata(metadata);
-        this.upload(f, storagePath, metadata)
+        this.upload(f, storagePath, this.metadata);
+        this.metadata = {};
 	}; 
     
     Acts.prototype.CancelUploading = function ()
@@ -371,7 +404,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         this.uploadTask["resume"]();
 	};      
     
-    Acts.prototype.UploadFromSprite = function (objType, storagePath, metadata)
+    Acts.prototype.UploadFromSprite = function (objType, storagePath)
 	{
         if (!objType)
             return;
@@ -400,8 +433,8 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         var onGetBlob = function (blob)
         {
             // upload blob
-            metadata = parseMetadata(metadata);
-            self.upload(blob, storagePath, metadata);
+            self.upload(blob, storagePath, self.metadata);
+            self.metadata = {};
         };
         canvas["toBlob"](onGetBlob);   
 	};     
@@ -426,13 +459,17 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
 		return tmpcanvas;
 	};
 
-    Acts.prototype.UploadDataURI = function (dataURI, storagePath, metadata)
+    Acts.prototype.UploadDataURI = function (dataURI, storagePath)
 	{
         var obj = dataURItoBlob(dataURI);
         var blob = obj[0];
         var contentType = obj[1];
-        metadata = parseMetadata(metadata, contentType);
-        this.upload(blob, storagePath, metadata);   
+        
+        if (!this.metadata.hasOwnProperty("contentType"))
+            this.metadata["contentType"] = contentType;
+        
+        this.upload(blob, storagePath, this.metadata);   
+        this.metadata = {};
 	};       
     
     /*
@@ -465,21 +502,28 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         return [blob, mimeString];
     };
     
-    Acts.prototype.UploadString = function (s, storagePath, metadata)
+    Acts.prototype.UploadString = function (s, storagePath)
 	{
         var type = "text/plain";
         var blob = new Blob([s], {"type": type});
-        metadata = parseMetadata(metadata, type);
-        this.upload(blob, storagePath, metadata);   
+        
+        if (!this.metadata.hasOwnProperty("contentType"))
+            this.metadata["contentType"] = type;
+        
+        this.upload(blob, storagePath, this.metadata);   
+        this.metadata = {};
 	};       
     
-    Acts.prototype.UploadObjectURL = function (objectURL, metadata, storagePath)
+    Acts.prototype.UploadObjectURL = function (objectURL, contentType, storagePath)
 	{
         var self=this;
         var callback = function (blob)
         {
-            metadata = parseMetadata(metadata);
+            if (contentType !== "")
+                self.metadata["contentType"] = contentType;        
+            
             self.upload(blob, storagePath, metadata); 
+            self.metadata = {};
         }
         this.doRequest(objectURL, callback);
 	};      
@@ -542,7 +586,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
         ref["getMetadata"]()["then"](onComplete)["catch"](onError);
 	};
         
-    Acts.prototype.UpdateMetadata = function (storagePath, newMetadata)
+    Acts.prototype.UpdateMetadata = function (storagePath)
 	{
         var self=this;
         var ref = this.get_storage_ref(storagePath);
@@ -559,9 +603,26 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             self.error = error;
             self.runtime.trigger(cr.plugins_.Rex_Firebase_Storage.prototype.cnds.OnUpdateMetadataError, self);
         }
-        newMetadata = parseMetadata(newMetadata);
-        ref["updateMetadata"](newMetadata)["then"](onComplete)["catch"](onError);
+        ref["updateMetadata"](this.metadata)["then"](onComplete)["catch"](onError);
+        this.metadata = {};
 	};
+    
+    Acts.prototype.MetadataSetValue = function (k, v)
+	{
+        setValue(k, v, this.metadata);
+        this.metadata
+	};    
+        
+    Acts.prototype.MetadataLoadJSON = function (s)
+	{
+        this.metadata = JSON.parse(s);
+	};  
+    
+    Acts.prototype.MetadataRemoveKey = function (k)
+	{
+        setValue(k, null, this.metadata);
+        this.metadata
+	};  
     
 	//////////////////////////////////////
 	// Expressions

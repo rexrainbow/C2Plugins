@@ -16,8 +16,8 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On completed", "Upload", 
-            "On upload completed", 
+AddCondition(1, cf_trigger, "On complete", "Upload", 
+            "On upload complete", 
             "Triggered when uploading completed.", "OnUploadCompleted");
             
 AddCondition(2, cf_trigger, "On error", "Upload", 
@@ -44,7 +44,7 @@ AddCondition(7, cf_trigger, "On progress", "Upload",
             "On upload progress",
             "Triggered when uploading progress.", "OnProgress"); 
             
-AddCondition(8, cf_trigger, "On starting", "Upload", 
+AddCondition(8, cf_trigger, "On start", "Upload", 
             "On upload starting", 
             "Triggered when uploading starting.", "OnStart");             
 
@@ -93,9 +93,8 @@ AddAction(0, 0, "Set sub domain", "Domain",
           
 AddObjectParam("File chooser", "File chooser object.");
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
-AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(1, 0, "Upload from file chooser", "Upload", 
-          "Upload file from <i>{0}</i> to <i>{1}</i>, with metadata <i>{2}</i>", 
+          "Upload file from <i>{0}</i> to <i>{1}</i>", 
           "Upload file from file chooser to firebase storage.", "UploadFromFileChooser");
           
 AddAction(2, 0, "Cancel", "Upload task", 
@@ -112,27 +111,24 @@ AddAction(4, 0, "Resume", "Upload task",
           
 AddObjectParam("Sprite", "Sprite or canvas object.");
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
-AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(5, 0, "Upload from sprite", "Upload", 
-          "Upload image from <i>{0}</i> to <i>{1}</i>, with metadata <i>{2}</i>", 
+          "Upload image from <i>{0}</i> to <i>{1}</i>", 
           "Upload image from sprite or canvas to firebase storage.", "UploadFromSprite");      
 
 AddStringParam("Data URI", "Data URI of file", '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
-AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(6, 0, "Upload data URL", "Upload", 
-          "Upload data URI <i>{0}</i> to <i>{1}</i>, with metadata <i>{2}</i>", 
+          "Upload data URI <i>{0}</i> to <i>{1}</i>", 
           "Upload from data URI to firebase storage.", "UploadDataURI");  
 
 AddStringParam("Content", "String content", '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
-AddStringParam("Metadata", 'Metadata in JSON string. Set "" to use default metadata.', '""');
 AddAction(7, 0, "Upload string", "Upload", 
           "Upload string <i>{0}</i> to <i>{1}</i>", 
           "Upload string to firebase storage.", "UploadString"); 
 
 AddStringParam("ObjectURL", "ObjectURL.", '""');
-AddStringParam("Metadata", 'Metadata in JSON, or content type.', '""');
+AddStringParam("Content type", 'Content type.', '""');
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
 AddAction(8, 0, "Upload objectURL", "Upload", 
           "Upload objectURL <i>{0}</i> (type <i>{1}</i>) to <i>{2}</i>", 
@@ -154,10 +150,26 @@ AddAction(71, 0, "Get metadata", "Metadata",
           "Get metadata of a firebase storage reference.", "GetMetadata");        
 
 AddStringParam("DataRef", "The Firebase storage ref URL", '""');
-AddStringParam("Metadata", 'Metadata in JSON string.', '""');
 AddAction(72, 0, "Update metadata", "Metadata", 
-          "Update metadata of <i>{0}</i> to <i>{1}</i>", 
+          "Update metadata of <i>{0}</i>", 
           "Update metadata of a firebase storage reference.", "UpdateMetadata");            
+          
+AddStringParam("Key", 'Key string.', '""');
+AddAnyTypeParam("Value", 'Value.', '""');
+AddAction(73, 0, "Set value", "Metadata", 
+          "Set metadata <i>{0}</i> to <i>{1}</i>", 
+          "Set key of metadata.", "MetadataSetValue");
+          
+AddStringParam("JSON string", "JSON string.", '""');
+AddAction(74, 0, "Load JSON", "Metadata", 
+          "Load metadata to <i>{0}</i>", 
+          "Load metadata by JSON.", "MetadataLoadJSON");
+          
+AddStringParam("Key", 'Key string.', '""');
+AddAction(75, 0, "Remove key", "Metadata", 
+          "Remove metadata <i>{0}</i>", 
+          "Remove key of metadata.", "MetadataRemoveKey");          
+          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Get download URL", "Upload", "LastDownloadURL", 
