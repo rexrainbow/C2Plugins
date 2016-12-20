@@ -293,6 +293,8 @@ AddExpression(2, ef_return_number, "Get canvas height", "Canvas", "CanvasHeight"
 AddStringParam("Text", "The text to render.", 0);
 AddExpression(31, ef_return_number, "Get text width", "Drawing text", "TextWidth", "Get text width in current ctx.");
 
+AddExpression(2001, ef_return_string, "Get image url", "canvas", "ImageUrl", "Get the image url from current ctx.");
+
 ACESDone();
 
 // Property grid properties for this plugin

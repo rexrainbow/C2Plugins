@@ -18,45 +18,45 @@
 // Conditions	
 
 // email - password  
-AddCondition(1, cf_trigger, "On creating account", "Email & Password - create account", 
-            "On creating account success", 
-            "Triggered when creating account success.", "EmailPassword_OnCreateAccountSuccessful");
+AddCondition(1, cf_trigger, "On created account", "Email & Password - create account", 
+            "On created account success", 
+            "Triggered when created account success.", "EmailPassword_OnCreateAccountSuccessful");
             
-AddCondition(2, cf_trigger, "On creating account error", "Email & Password - create account", 
+AddCondition(2, cf_trigger, "On created account error", "Email & Password - create account", 
             "On create account error", 
-            "Triggered when creating account error.", "EmailPassword_OnCreateAccountError");   
+            "Triggered when created account error.", "EmailPassword_OnCreateAccountError");   
             
-AddCondition(3, cf_trigger, "On changing password", "Email & Password - changing password", 
-            "On changing password success", 
-            "Triggered when changing password success.", "EmailPassword_OnChangingPasswordSuccessful");
+AddCondition(3, cf_trigger, "On changed password", "Email & Password - change password", 
+            "On changed password success", 
+            "Triggered when changed password success.", "EmailPassword_OnChangingPasswordSuccessful");
             
-AddCondition(4, cf_trigger, "On changing password error", "Email & Password - changing password", 
-            "On changing password error", 
-            "Triggered when changing password error.", "EmailPassword_OnChangingPasswordError");    
+AddCondition(4, cf_trigger, "On changed password error", "Email & Password - change password", 
+            "On changed password error", 
+            "Triggered when changed password error.", "EmailPassword_OnChangingPasswordError");    
             
-AddCondition(5, cf_trigger, "On sending password reset email", "Email & Password - sending password reset email", 
-            "On sending password reset email success", 
-            "Triggered when sending password reset email success.", "EmailPassword_OnSendPasswordResetEmailSuccessful");
+AddCondition(5, cf_trigger, "On sent password reset email", "Email & Password - send password reset email", 
+            "On sent password reset email success", 
+            "Triggered when sent password reset email success.", "EmailPassword_OnSendPasswordResetEmailSuccessful");
             
-AddCondition(6, cf_trigger, "On sending password reset email error", "Email & Password - sending password reset email", 
-            "On sending password reset email error", 
-            "Triggered when sending password reset email error.", "EmailPassword_OnSendPasswordResetEmailError");                         
+AddCondition(6, cf_trigger, "On sent password reset email error", "Email & Password - send password reset email", 
+            "On sent password reset email error", 
+            "Triggered when sent password reset email error.", "EmailPassword_OnSendPasswordResetEmailError");                         
      
-AddCondition(7, cf_trigger, "On deleting user", "Email & Password - deleting user", 
-            "On deleting user", 
-            "Triggered when deleting user success.", "EmailPassword_OnDeleteUserSuccessful");
+AddCondition(7, cf_trigger, "On deleted user", "Email & Password - delete user", 
+            "On deleted user", 
+            "Triggered when deleted user success.", "EmailPassword_OnDeleteUserSuccessful");
             
-AddCondition(8, cf_trigger, "On deleting user error", "Email & Password - deleting user", 
-            "On deleting user error", 
-            "Triggered when deleting user error.", "EmailPassword_OnDeleteUserError"); 
+AddCondition(8, cf_trigger, "On deleted user error", "Email & Password - delete user", 
+            "On deleted user error", 
+            "Triggered when deleted user error.", "EmailPassword_OnDeleteUserError"); 
             
-AddCondition(9, cf_trigger, "On updating profile", "Email & Password - update profile", 
+AddCondition(9, cf_trigger, "On updated profile", "Email & Password - update profile", 
             "On update profile success", 
-            "Triggered when updating profile success.", "EmailPassword_OnUpdatingProfileSuccessful");
+            "Triggered when updated profile success.", "EmailPassword_OnUpdatingProfileSuccessful");
             
-AddCondition(10, cf_trigger, "On updating profile error", "Email & Password - update profile", 
+AddCondition(10, cf_trigger, "On updated profile error", "Email & Password - update profile", 
             "On update profile error", 
-            "Triggered when updating profile error.", "EmailPassword_OnUpdatingProfileError");         
+            "Triggered when updated profile error.", "EmailPassword_OnUpdatingProfileError");         
 
 AddCondition(21, cf_trigger, "Is anonymous", "Anonymous", 
             "Is anonymous login", 
@@ -124,9 +124,9 @@ AddAction(3, 0, "Change password", "Email & Password",
           "Change password of current user.", "EmailPassword_ChangePassword");          
 
 AddStringParam("Email", "User email", '""');
-AddAction(4, 0, "Sending password reset email", "Email & Password", 
-          "Sending password reset email: <i>{0}</i>", 
-          "Sending password reset email", "EmailPassword_SendPasswordResetEmail"); 
+AddAction(4, 0, "Send password reset email", "Email & Password", 
+          "Send password reset email: <i>{0}</i>", 
+          "Send password reset email", "EmailPassword_SendPasswordResetEmail"); 
              
 AddStringParam("Email", "(2.x) User email", '""');
 AddStringParam("Password", "(2.x) User password", '""');

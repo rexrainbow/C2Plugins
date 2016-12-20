@@ -497,6 +497,11 @@ cr.plugins_.Rex_canvas = function(runtime)
 		ret.set_float( this.ctx["measureText"](text)["width"] );
 	};
     
+	Exps.prototype.ImageUrl = function (ret)
+	{
+		ret.set_string(this.canvas["toDataURL"]());
+	};    
+    
 }());
 
 (function ()

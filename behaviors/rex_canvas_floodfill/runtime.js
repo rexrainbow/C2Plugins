@@ -6,14 +6,14 @@ assert2(cr.behaviors, "cr.behaviors not created");
 
 /////////////////////////////////////
 // Behavior class
-cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
+cr.behaviors.Rex_Canvas_floodfill = function(runtime)
 {
 	this.runtime = runtime;
 };
 
 (function ()
 {
-	var behaviorProto = cr.behaviors.Rex_CanvasAVGRGBA.prototype;
+	var behaviorProto = cr.behaviors.Rex_Canvas_floodfill.prototype;
 		
 	/////////////////////////////////////
 	// Behavior type class
@@ -45,14 +45,17 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	behinstProto.onCreate = function()
 	{
 	    if (!this.recycled)
-	        this.calc_avgrgb = new window["CalcAvgRGB"]();
-	        	    
-	    this.avg_r = 0;
-		this.avg_g = 0;
-		this.avg_b = 0;
-		this.avg_a = 0;
-		this.lum = 0;
-		
+	        this.floodfill = new window["FloodFill"]();
+	        	
+        this.fillStyle = "";
+        this.OX = 0;
+        this.OY = 0;
+        this.tolerance = 0;
+        this.bbLeft = null;
+        this.bbTop = null;
+        this.bbRight = null;
+        this.bbTop = null;
+        
         // for official save/load    
         this.current_task = null;
         // for official save/load
@@ -69,18 +72,14 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	
     behinstProto.Start = function ()
 	{
-	    this.calc_avgrgb["Stop"]();
+	    this.floodfill["Stop"]();
 	    
         var self = this;
         var on_complete = function (args)
         {
-		    self.lum = (0.3 * args[0]) + (0.59 * args[1]) + (0.11 * args[2]);
-		    self.avg_r = Math.floor(args[0]);
-		    self.avg_g = Math.floor(args[1]);
-		    self.avg_b = Math.floor(args[2]);
-		    self.avg_a = Math.floor(args[3]);  
+
             self.current_task = null;		              
-            self.runtime.trigger(cr.behaviors.Rex_CanvasAVGRGBA.prototype.cnds.OnFinished, self.inst);	      
+            self.runtime.trigger(cr.behaviors.Rex_Canvas_floodfill.prototype.cnds.OnFinished, self.inst);	      
         };
 
         // for official save/load
@@ -89,13 +88,13 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
                 
         var ctx = this.inst.ctx;
         var img_data = ctx["getImageData"](0,0, ctx["width"], ctx["height"])["data"];
-        this.calc_avgrgb["Start"](img_data, on_complete);
+        this.floodfill["Start"](img_data, on_complete);
 	}; 		
     
     behinstProto.Cencel = function ()
 	{
 	    this.current_task = null;
-	    this.calc_avgrgb["Stop"]();    
+	    this.floodfill["Stop"]();    
 	};		
 	
 	behinstProto.saveToJSON = function ()
@@ -128,13 +127,50 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	
 	Cnds.prototype.IsProcessing = function ()
 	{
-		return this.calc_avgrgb["IsProcessing"]();
+		return this.floodfill["IsProcessing"]();
 	};	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 	
+	Acts.prototype.SetFillColor = function (color)
+	{	
+	    this.fillStyle = color;
+	};
+	
+	Acts.prototype.SetStartPoint = function (x, y)
+	{	
+	    this.OX = x;
+        this.OY = y;
+	};	
+	
+	Acts.prototype.SetTolerance = function (tolerance)
+	{	
+	    this.tolerance = tolerance;
+	};   
+	
+	Acts.prototype.SetBoundingBox = function (left, top, right, bottom)
+	{	
+	    this.bbLeft = left;
+        this.bbTop = top;
+	    this.bbRight = right;
+        this.bbBottom = bottom;        
+	};    
+	
+	Acts.prototype.FillFlood = function ()
+	{	
+	    var ctx = this.inst.ctx;
+        ctx["fillStyle"] = this.fillStyle;
+        
+        var bbleft = (this.bbLeft !== null)? this.bbLeft: 0;
+        var bbtop = (this.bbTop !== null)? this.bbTop: 0;
+        var bbRight = (this.bbRight !== null)? this.bbRight: ctx["width"];
+        var bbBottom = (this.bbBottom !== null)? this.bbBottom: ctx["height"];        
+                
+        ctx["fillFlood"](this.OX, this.OY, this.tolerance, bbleft, bbtop, bbRight, bbBottom);
+	};     
+    
 	Acts.prototype.Start = function ()
 	{	
 	    this.Start();         
@@ -145,44 +181,9 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
 	    this.Cencel();   
 	};
 	
-	// deprecated
-	Acts.prototype.SetProcessingMode = function ()  { };		
-	Acts.prototype.SetProcessingTime = function ()  { };	
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
 	behaviorProto.exps = new Exps();
 
-	Exps.prototype.R = function (ret)
-	{
-		ret.set_int(this.avg_r);
-	};
-	Exps.prototype.G = function (ret)
-	{
-		ret.set_int(this.avg_g);
-	};	
-	Exps.prototype.B = function (ret)
-	{
-		ret.set_int(this.avg_b);
-	};	
-	Exps.prototype.A = function (ret)
-	{
-		ret.set_int(this.avg_a);
-	};	
-	Exps.prototype.RGB = function (ret)
-	{	
-		ret.set_string("rgb("+this.avg_r+","+this.avg_g+","+this.avg_b+")");
-	};	
-	Exps.prototype.RGBA = function (ret)
-	{	
-		ret.set_string("rgba("+this.avg_r+","+this.avg_g+","+this.avg_b+","+this.avg_a+")");
-	};	
-	Exps.prototype.Lum = function (ret)
-	{
-		ret.set_float(this.lum);
-	};		
-	Exps.prototype.Progress = function (ret)
-	{
-		ret.set_float(0);
-	};			
 }());

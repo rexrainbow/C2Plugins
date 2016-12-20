@@ -733,6 +733,7 @@ cr.plugins_.Rex_Graph = function(runtime)
     if (window.RexC2PickUIDs != null)
         return;
 
+    var _uidmap = {};
 	var PickUIDs = function (uids, objtype, check_callback)
 	{
         var sol = objtype.getCurrentSol();
@@ -751,11 +752,18 @@ cr.plugins_.Rex_Graph = function(runtime)
             var uid = uids[i];
             if (uid == null)
                 continue;
+            
+            if (_uidmap.hasOwnProperty(uid))
+                continue;
+            _uidmap[uid] = true;
+            
             var inst = this.runtime.getObjectByUID(uid);
             if (inst == null)
                 continue;
             if ((check_callback != null) && (!check_callback(uid)))
                 continue;
+            
+
             
             var type_name = inst.type.name;
             if (is_family)
@@ -778,6 +786,10 @@ cr.plugins_.Rex_Graph = function(runtime)
             }            
         }
         objtype.applySolToContainer();
+        
+        for (var k in _uidmap)
+            delete _uidmap[k];
+        
 	    return (sol.instances.length > 0);	    
 	};    
 

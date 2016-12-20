@@ -93,6 +93,11 @@ cr.behaviors.Rex_bHash = function(runtime)
         return entry;
 	};        
     
+	behinstProto.setCurrentEntry = function(keys, root)
+	{
+        this.currentEntry = this.getEntry(keys, root);
+    };    
+    
 	behinstProto.setValue = function(keys, value, root)
 	{        
         if ((keys === "") || (keys.length === 0))
@@ -365,9 +370,10 @@ cr.behaviors.Rex_bHash = function(runtime)
         this.setValue(key, val);
 	};
 
-    // af_deprecated
-	Acts.prototype.SetCurHashEntey = function (key) { };
-    // af_deprecated
+	Acts.prototype.SetCurHashEntey = function (key)
+	{        
+        this.setCurrentEntry(key);
+    };
 
 	Acts.prototype.SetValueInCurHashEntey = function (key, val)
 	{        

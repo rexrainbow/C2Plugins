@@ -85,7 +85,12 @@ cr.plugins_.Rex_Hash = function(runtime)
         }
         
         return entry;
-	};        
+	};  
+
+	instanceProto.setCurrentEntry = function(keys, root)
+	{
+        this.currentEntry = this.getEntry(keys, root);
+    };    
     
 	instanceProto.setValue = function(keys, value, root)
 	{        
@@ -358,10 +363,11 @@ cr.plugins_.Rex_Hash = function(runtime)
         
         this.setValue(key, val);
 	};
-
-    // af_deprecated
-	Acts.prototype.SetCurHashEntey = function (key) { };
-    // af_deprecated
+     
+	Acts.prototype.SetCurHashEntey = function (key)
+	{        
+        this.setCurrentEntry(key);
+    };
 
 	Acts.prototype.SetValueInCurHashEntey = function (key, val)
 	{        

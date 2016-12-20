@@ -884,33 +884,35 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         return has_inst;          
 	};        
 	
-	instanceProto.PickNeighborChess = function (origin_inst, dir, chess_type, isWrapMode)
+	instanceProto.PickNeighborChess = function (origin_insts, dir, chess_type, isWrapMode)
 	{
         if (!chess_type)
             return false;
             
-        if (origin_inst == null)
-            return false;
-        
         var layout = this.GetLayout();
         var dir_cnt = layout.GetDirCount();
-        var origin_uid = origin_inst.uid;
+        var origin_uid;
         var tiles_uid = [], i, cnt, neighbor_uid;
-        if (dir == ALLDIRECTIONS)
-        {
-            var i;         
-            for (i=0; i<dir_cnt; i++)
+        var i, cnt=origin_insts.length;
+        for (i=0; i<cnt; i++)
+        {       
+            origin_uid = origin_insts[i].uid;        
+            if (dir == ALLDIRECTIONS)
             {
-                neighbor_uid = this.dir2uid(origin_uid, i, 0, isWrapMode);
+                var i;         
+                for (i=0; i<dir_cnt; i++)
+                {
+                    neighbor_uid = this.dir2uid(origin_uid, i, 0, isWrapMode);
+                    if (neighbor_uid != null)
+                        tiles_uid.push(neighbor_uid);
+                }
+            }    
+            else if ((dir >= 0) && (dir <dir_cnt))
+            {
+                neighbor_uid = this.dir2uid(origin_uid, dir, 0, isWrapMode);
                 if (neighbor_uid != null)
-                    tiles_uid.push(neighbor_uid);
+                    tiles_uid.push(this.dir2uid(origin_uid, dir, 0, isWrapMode));
             }
-        }    
-        else if ((dir >= 0) && (dir <dir_cnt))
-        {
-            neighbor_uid = this.dir2uid(origin_uid, dir, 0, isWrapMode);
-            if (neighbor_uid != null)
-                tiles_uid.push(this.dir2uid(origin_uid, dir, 0, isWrapMode));
         }
 
         return this.PickChessAtTiles(chess_type, tiles_uid);;            
@@ -1151,7 +1153,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (!origin)
             return false;
                
-        return this.PickNeighborChess(origin.getFirstPicked(), dir, chess_type);            
+        var origin_insts = origin.getCurrentSol().getObjects();
+        return this.PickNeighborChess(origin_insts, dir, chess_type);            
 	};
 	
 	var __empty_cells=[];
@@ -1498,7 +1501,8 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
         if (!origin)
             return false;
                
-        this.PickNeighborChess(origin.getFirstPicked(), dir, chess_type);      
+        var origin_insts = origin.getCurrentSol().getObjects();
+        this.PickNeighborChess(origin_insts, dir, chess_type);      
 	};
 	
 	Acts.prototype.CreateChessAboveTile = function (chess_type, tile_type, z, layer)
@@ -2205,6 +2209,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     if (window.RexC2PickUIDs != null)
         return;
 
+    var _uidmap = {};
 	var PickUIDs = function (uids, objtype, check_callback)
 	{
         var sol = objtype.getCurrentSol();
@@ -2223,11 +2228,18 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             var uid = uids[i];
             if (uid == null)
                 continue;
+            
+            if (_uidmap.hasOwnProperty(uid))
+                continue;
+            _uidmap[uid] = true;
+            
             var inst = this.runtime.getObjectByUID(uid);
             if (inst == null)
                 continue;
             if ((check_callback != null) && (!check_callback(uid)))
                 continue;
+            
+
             
             var type_name = inst.type.name;
             if (is_family)
@@ -2250,6 +2262,10 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
             }            
         }
         objtype.applySolToContainer();
+        
+        for (var k in _uidmap)
+            delete _uidmap[k];
+        
 	    return (sol.instances.length > 0);	    
 	};    
 
