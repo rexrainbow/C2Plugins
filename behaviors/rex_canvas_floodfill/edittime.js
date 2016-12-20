@@ -14,13 +14,13 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On finished", "Process", 
-              "{my} On processing finsihed", 
-              "Triggered when process of  getting average RGB had finished.", "OnFinished");
-
-AddCondition(4,0 ,"Is processing","Process",
-             "Is processing",
-             "Return true if processing.","IsProcessing");
+//AddCondition(1, cf_trigger, "On finished", "Process", 
+//              "{my} On processing finsihed", 
+//              "Triggered when process of  getting average RGB had finished.", "OnFinished");
+//
+//AddCondition(4,0 ,"Is processing","Process",
+//             "Is processing",
+//             "Return true if processing.","IsProcessing");
 			 
 //////////////////////////////////////////////////////////////
 // Actions
