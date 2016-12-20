@@ -4,7 +4,7 @@
 		"name":			"UserID to ID",
 		"id":			"Rex_Firebase_UserID2ID",
 		"version":		"0.1",        
-		"description":	"Mapping between UserID and another alias ID.",
+		"description":	"Each UserID could register an alias ID.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_Firebase_userID2ID.html",
 		"category":		"Rex - Web - Firebase",
@@ -16,29 +16,29 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On request ID successfully", "Request - ID", 
-            "On request ID successfully", 
-            "Triggered when requested ID successfully.", "OnRequestIDSuccessfully");
+AddCondition(1, cf_trigger, "On request ID", "Request - ID", 
+            "On request ID", 
+            "Triggered when requested ID successful.", "OnRequestIDSuccessful");
             
-AddCondition(2, cf_trigger, "On request ID failed", "Request - ID", 
-            "On request ID failed", 
-            "Triggered when requested ID failed.", "OnRequestIDFailed");
+AddCondition(2, cf_trigger, "On request ID error", "Request - ID", 
+            "On request ID error", 
+            "Triggered when requested ID error.", "OnRequestIDError");
             
-AddCondition(3, cf_trigger, "On request User ID successfully", "Request - User ID", 
-            "On request User ID successfully", 
-            "Triggered when requested User ID successfully.", "OnRequestUserIDSuccessfully");
+AddCondition(3, cf_trigger, "On request User ID", "Request - User ID", 
+            "On request User ID", 
+            "Triggered when requested User ID successful.", "OnRequestUserIDSuccessful");
             
-AddCondition(4, cf_trigger, "On request User ID failed", "Request - User ID", 
-            "On request User ID failed", 
-            "Triggered when requested User ID failed.", "OnRequestUserIDFailed"); 
+AddCondition(4, cf_trigger, "On request User ID error", "Request - User ID", 
+            "On request User ID error", 
+            "Triggered when requested User ID error.", "OnRequestUserIDError"); 
 
-AddCondition(11, cf_trigger, "On remove User ID successfully", "Remove", 
-            "On remove User ID successfully", 
-            "Triggered when removed User ID successfully.", "OnRemoveUserIDSuccessfully");
+AddCondition(11, cf_trigger, "On remove User ID", "Remove", 
+            "On remove User ID", 
+            "Triggered when removed User ID successful.", "OnRemoveUserIDSuccessful");
             
-AddCondition(12, cf_trigger, "On remove User ID failed", "Remove", 
-            "On remove User ID failed", 
-            "Triggered when removed User ID failed.", "OnRemoveUserIDFailed");             
+AddCondition(12, cf_trigger, "On remove User ID error", "Remove", 
+            "On remove User ID error", 
+            "Triggered when removed User ID error.", "OnRemoveUserIDError");             
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("User ID", "Key of User ID.", '""');

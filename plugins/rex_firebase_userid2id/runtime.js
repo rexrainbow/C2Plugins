@@ -148,26 +148,26 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
     {
         this.exp_UserID = UserID_;
         this.exp_ID = ID_;
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDSuccessfully, this);
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDSuccessful, this);
     }; 
     instanceProto.on_getID_failed = function (UserID_)
     { 
         this.exp_UserID = UserID_;        
         this.exp_ID = "";
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDFailed, this);
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestIDError, this);
     }; 
     
     instanceProto.on_getUserID_successful = function (UserID_, ID_)
     {
         this.exp_UserID = UserID_;
         this.exp_ID = ID_;        
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDSuccessfully, this);
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDSuccessful, this);
     }; 
     instanceProto.on_getUserID_failed = function (ID_)
     { 
         this.exp_UserID = "";
         this.exp_ID = ID_;              
-        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDFailed, this);
+        this.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRequestUserIDError, this);
     }; 
     
 	var generate_ID = function(digits)
@@ -205,32 +205,32 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
     
-	Cnds.prototype.OnRequestIDSuccessfully = function ()
+	Cnds.prototype.OnRequestIDSuccessful = function ()
 	{
 	    return true;
 	}; 	
 
-	Cnds.prototype.OnRequestIDFailed = function ()
+	Cnds.prototype.OnRequestIDError = function ()
 	{
 	    return true;
 	}; 
 	
-	Cnds.prototype.OnRequestUserIDSuccessfully = function ()
+	Cnds.prototype.OnRequestUserIDSuccessful = function ()
 	{
 	    return true;
 	}; 	
 
-	Cnds.prototype.OnRequestUserIDFailed = function ()
+	Cnds.prototype.OnRequestUserIDError = function ()
 	{
 	    return true;
 	}; 
 	
-	Cnds.prototype.OnRemoveUserIDSuccessfully = function ()
+	Cnds.prototype.OnRemoveUserIDSuccessful = function ()
 	{
 	    return true;
 	}; 	
 
-	Cnds.prototype.OnRemoveUserIDFailed = function ()
+	Cnds.prototype.OnRemoveUserIDError = function ()
 	{
 	    return true;
 	}; 
@@ -349,10 +349,11 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         
 	    var onComplete = function(error) 
 	    {
+            self.exp_UserID = UserID;
             if (error)
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDFailed, self); 
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDError, self); 
             else
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDSuccessfully, self);  
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDSuccessful, self);  
         };
         var on_read = function(snapshot)
         {
