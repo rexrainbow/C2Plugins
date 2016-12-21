@@ -26,18 +26,18 @@
 // Actions
 AddStringParam("Color", "A DOMString parsed as CSS <color> value.", '"black"');
 AddAction(1, 0, "Set fill color", "Prepare", 
-    "Set {my} fill color to <i>{0}</i>", 
+    "{my} set fill color to <i>{0}</i>", 
     "Set fill color.", "SetFillColor"); 
     
 AddNumberParam("x", "The x axis of the coordinate for the starting point.", 0);
 AddNumberParam("y", "The y axis of the coordinate for the starting point.", 0);    
 AddAction(2, 0, "Set start point", "Prepare", 
-    "Set {my} start point to (<i>{0}</i>,<i>{1}</i>)", 
+    "{my} set start point to (<i>{0}</i>,<i>{1}</i>)", 
     "Set start point.", "SetStartPoint");
 
 AddNumberParam("Tolerance", "0: fills pixels exactly matching that of the starting x,y coordinate; 128: anti-alias; 254: fill over all other pixels.", 0);    
 AddAction(3, 0, "Set tolerance", "Prepare", 
-    "Set {my} tolerance to <i>{0}</i>", 
+    "{my} set tolerance to <i>{0}</i>", 
     "Set tolerance.", "SetTolerance");     
     
 AddNumberParam("Left", "Prevent the fill from occuring at any pixel coordinate with x less than this left value.", 0);
@@ -45,7 +45,7 @@ AddNumberParam("Top", "Prevent the fill from occuring at any pixel coordinate wi
 AddNumberParam("Right", "Prevent the fill from occuring at any pixel coordinate with x greater than this left value.", 0);
 AddNumberParam("Bottom", "Prevent the fill from occuring at any pixel coordinate with y greater than this top value.", 0); 
 AddAction(4, 0, "Set bounding box", "Prepare", 
-    "Set {my} bounding box to (<i>{0}</i>,<i>{1}</i>, <i>{2}</i>, <i>{3}</i>)", 
+    "{my} set bounding box to (<i>{0}</i>,<i>{1}</i>, <i>{2}</i>, <i>{3}</i>)", 
     "Set bounding box.", "SetBoundingBox");    
           
 AddAction(11, 0, "Fill", "One tick", 

@@ -172,7 +172,7 @@ cr.plugins_.Rex_canvas = function(runtime)
         this.canvas["height"] = o["h"];
         
         var plain = window.RexC2ZlibU8Arr.string2u8a(o["d"]);
-        var img_data = inst.ctx["createImageData"](o["w"], o["h"]);
+        var img_data = this.ctx["createImageData"](o["w"], o["h"]);
         var data = img_data["data"];
         var i, cnt = data.length;
         for (i=0; i<cnt; i++)
@@ -372,11 +372,15 @@ cr.plugins_.Rex_canvas = function(runtime)
         if (typeof(fillRule) === "number")
             fillRule = FillRuleMap[fillRule];        
         this.ctx["fill"](fillRule);
+		this.runtime.redraw = true;
+        this.update_tex = true;        
 	};    
     
 	Acts.prototype.Stroke = function ()
 	{       
         this.ctx["stroke"]();
+		this.runtime.redraw = true;
+        this.update_tex = true;
 	};  
 
 	Acts.prototype.Clip = function (fillRule)

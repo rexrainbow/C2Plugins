@@ -4,7 +4,7 @@
 		"name":			"Save slot",
 		"id":			"Rex_Firebase_SaveSlot",
 		"version":		"0.1",        
-		"description":	"Save slot on firebase.",
+		"description":	"Private save slots.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_saveslot.html",
 		"category":		"Rex - Web - Firebase",
@@ -16,9 +16,9 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(1, cf_trigger, "On save complete", "Save", 
-            "On save complete",
-            "Triggered when save complete.", "OnSaveComplete");
+AddCondition(1, cf_trigger, "On save", "Save", 
+            "On save",
+            "Triggered when save complete.", "OnSave");
 
 AddCondition(2, cf_trigger, "On save error", "Save", 
             "On save error",
@@ -32,20 +32,20 @@ AddCondition(12, cf_looping | cf_not_invertible, "For each header", "Load - head
              "For each header", 
              "Repeat the event for each slot header.", "ForEachHeader"); 
 			 
-AddCondition(13, cf_trigger, "On get body complete", "Load - body", 
-            "On get body complete", 
-            "Triggered when get slot body complete from server complete.", "OnGetBodyComplete");
+AddCondition(13, cf_trigger, "On get body", "Load - body", 
+            "On get body", 
+            "Triggered when get slot body complete from server complete.", "OnGetBody");
 
 AddCondition(14, cf_trigger, "On get unused body", "Load - body", 
             "On get unused body", 
             "Triggered when get unused body.", "OnGetUnusedBody");
             
-AddCondition(15, 0, "Empty", "Header", 
-             "No slots", 
-             "All slots are unused. Call it after load headers from server.", "IsEmpty");    
+AddCondition(15, 0, "All slots are empty", "Header", 
+             "All slots are empty", 
+             "All slots are unused. Call it after load headers from server.", "AllSlotAreEmpty");    
 
 AddAnyTypeParam("Name", "The slot name.", '""');
-AddCondition(16, 0, "Is occupied", "Header", 
+AddCondition(16, 0, "Slot is occupied", "Header", 
              "Slot <i>{0}</i> is occupied", 
              "Slot is occupied. Call it after load headers from server.", "IsOccupied");      
 
@@ -58,13 +58,13 @@ AddCondition(18, cf_looping | cf_not_invertible, "For each key", "Body - for eac
              "For each key in body", 
              "Repeat the event for each key in body.", "ForEachKeyInBody");     
 
-AddCondition(19, 0, "Empty", "Slot", 
-             "Slot is unused", 
-             "Current loaded slot is unused.", "SlotIsUnused");                 
+AddCondition(19, 0, "Invalid body", "Body", 
+             "Body is invalid", 
+             "Current loaded body is invalid.", "BodyIsInvalid");                 
 
-AddCondition(21, cf_trigger, "On clean complete", "Clean", 
-            "On clean complete", 
-            "Triggered when clean slots complete on server complete.", "OnCleanComplete");
+AddCondition(21, cf_trigger, "On clean", "Clean", 
+            "On clean", 
+            "Triggered when clean slots complete on server complete.", "OnClean");
 
 AddCondition(22, cf_trigger, "On clean error", "Clean", 
             "On clean error", 
@@ -87,7 +87,7 @@ AddAction(2, 0, "Set value", "Prepare",
 		  
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddAction(3, 0, "Save", "Save", 
-          "Save- Save slot with name <i>{0}</i> into server", 
+          "Save- Save slot with name <i>{0}</i>", 
           "Save slot into server.", "Save");	
 
 AddAnyTypeParam("Key", "The name of the key.", '""');
@@ -116,23 +116,32 @@ AddComboParam("Slot", "Header or body.", 0);
 AddAction(6, 0, "Remove key", "Prepare", 
           "Prepare- Remove key <i>{0}</i> in slot <i>{2}</i>", 
           "Remove from slot.", "RemoveKey");          
+          
+AddAnyTypeParam("Key", "The name of the key.", '""');
+AddStringParam("JSON", "The JSON to set", '""');
+AddComboParamOption("Header");
+AddComboParamOption("Body");
+AddComboParam("Slot", "Header or body.", 0);
+AddAction(7, 0, "Set JSON", "Prepare", 
+          "Prepare- Set key <i>{0}</i> to <i>{1}</i> in slot <i>{2}</i>", 
+          "Sets JSON into slot.", "SetJSON");          
 
 AddAction(11, 0, "Get all headers", "Load", 
-          "Get all slot headers from server", 
+          "Get all slot headers", 
           "Get all slot headers from server.", "GetAllHeaders");	
 
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddAction(12, 0, "Get body", "Load", 
-          "Get slot body with name <i>{0}</i> from server", 
+          "Get slot body with name <i>{0}</i>", 
           "Get slot body from server.", "GetSlotBody");	
 
 AddAction(21, 0, "Clean all slots", "Clean", 
           "Clean all slots on server", 
-          "Clean all slots on server.", "CleanAll");	
+          "Clean all slots on server.", "CleanSlot");	
 
 AddAnyTypeParam("Name", "The slot name.", '""');
 AddAction(22, 0, "Clean slot", "Clean", 
-          "Clean slot with name <i>{0}</i> on server", 
+          "Clean slot with name <i>{0}</i>", 
           "Clean slot on server.", "CleanSlot");
 //////////////////////////////////////////////////////////////
 // Expressions

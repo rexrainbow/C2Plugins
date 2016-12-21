@@ -88,7 +88,7 @@ cr.behaviors.Rex_CanvasAVGRGBA = function(runtime)
         // for official save/load
                 
         var ctx = this.inst.ctx;
-        var img_data = ctx["getImageData"](0,0, ctx["width"], ctx["height"])["data"];
+        var img_data = ctx["getImageData"](0,0, ctx["canvas"]["width"], ctx["canvas"]["height"])["data"];
         this.calc_avgrgb["Start"](img_data, on_complete);
 	}; 		
     

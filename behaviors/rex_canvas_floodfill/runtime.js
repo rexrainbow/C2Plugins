@@ -54,7 +54,7 @@ cr.behaviors.Rex_Canvas_floodfill = function(runtime)
         this.bbLeft = null;
         this.bbTop = null;
         this.bbRight = null;
-        this.bbTop = null;
+        this.bbBottom = null;
         
         // for official save/load    
         this.current_task = null;
@@ -161,14 +161,10 @@ cr.behaviors.Rex_Canvas_floodfill = function(runtime)
 	Acts.prototype.FillFlood = function ()
 	{	
 	    var ctx = this.inst.ctx;
-        ctx["fillStyle"] = this.fillStyle;
-        
-        var bbleft = (this.bbLeft !== null)? this.bbLeft: 0;
-        var bbtop = (this.bbTop !== null)? this.bbTop: 0;
-        var bbRight = (this.bbRight !== null)? this.bbRight: ctx["width"];
-        var bbBottom = (this.bbBottom !== null)? this.bbBottom: ctx["height"];        
-                
-        ctx["fillFlood"](this.OX, this.OY, this.tolerance, bbleft, bbtop, bbRight, bbBottom);
+        ctx["fillStyle"] = this.fillStyle;        
+        ctx["fillFlood"](this.OX, this.OY, this.tolerance, this.bbLeft, this.bbTop, this.bbRight, this.bbBottom);
+		this.inst.runtime.redraw = true;
+        this.inst.update_tex = true;        
 	};     
     
 	Acts.prototype.Start = function ()

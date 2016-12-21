@@ -174,8 +174,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         var load_header = this.load_headers[slot_name];
         for(var n in save_header)
         {
-            n = 
-            setItemValue(n, save_header[n], load_header);
+            n = setItemValue(n, save_header[n], load_header);
         }
         
         if (slot_name === this.exp_LastSlotName)
@@ -302,7 +301,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();
 	
-	Cnds.prototype.OnSaveComplete = function ()
+	Cnds.prototype.OnSave = function ()
 	{
 	    return true;
 	}; 
@@ -347,7 +346,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		return false;
 	};
 
-	Cnds.prototype.OnGetBodyComplete = function ()
+	Cnds.prototype.OnGetBody = function ()
 	{
 	    return true;
 	};
@@ -357,7 +356,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    return true;
 	};	
 
-	Cnds.prototype.IsEmpty = function ()
+	Cnds.prototype.AllSlotAreEmpty = function ()
 	{
 	    if (this.load_headers == null)
 	        return true;
@@ -432,12 +431,12 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		return false;
 	};    
     
-	Cnds.prototype.SlotIsUnused = function ()
+	Cnds.prototype.BodyIsInvalid = function ()
 	{
 	    return (this.load_body == null);
 	};	
     
-	Cnds.prototype.OnCleanComplete = function ()
+	Cnds.prototype.OnClean = function ()
 	{
 	    return true;
 	};
@@ -472,14 +471,13 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		var self = this;				
 	    var on_complete = function(error) 
 	    {
-			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveComplete:
+			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSave:
 				                 cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveError;
 			self.runtime.trigger(trig, self); 					   
         };
 		
-		// header could not be empty
-		if (is_empty(this.save_header))
-		    this.save_header["is-empty"] = true;
+        if (is_empty(this.save_header))
+		    this.save_header["is-used"] = true;
 			
         var k;
         for (k in this.save_header)
@@ -502,11 +500,11 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         var table = (is_body==1)? this.save_body:this.save_header;
 		table[k] = (b==1);
 	};
-    	
-    Acts.prototype.SetCurrentServerTimestamp = function (k, is_body)
+    
+    Acts.prototype.SetJSON = function (k, v, is_body)
 	{
         var table = (is_body==1)? this.save_body:this.save_header;
-		table[k] = serverTimeStamp();
+		table[k] = JSON.parse(v);
 	};	
     	
     Acts.prototype.RemoveKey = function (k, is_body)
@@ -514,7 +512,12 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         var table = (is_body==1)? this.save_body:this.save_header;
 		table[k] = null;
 	};	    
-    
+    	
+    Acts.prototype.SetBooleanValue = function (k, b, is_body)
+	{
+        var table = (is_body==1)? this.save_body:this.save_header;
+		table[k] = (b==1);
+	};
 	
     Acts.prototype.GetAllHeaders = function ()
 	{
@@ -539,54 +542,30 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
         {   
             self.exp_LastSlotName = slot_name;
             self.load_body = snapshot.val();
-			var trig = (self.load_body!=null)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetBodyComplete:
+			var trig = (self.load_body!=null)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetBody:
 				                               cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetUnusedBody;
             self.runtime.trigger(trig, self); 
         };
 			
 		ref["once"]("value", handler);
 	};
-	
-    Acts.prototype.CleanAll = function ()
-	{
-	    var ref = this.get_ref(this.ownerID)["child"];
-		
-		var self = this;
-        var on_complete = function (error)
-        {   
-			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnCleanComplete:
-				                 cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnCleanError;
-            self.runtime.trigger(trig, self); 
-        };
-			
-		ref["remove"](on_complete);
-	};		
-	
+
     Acts.prototype.CleanSlot = function (slot_name)
-	{
-	    var ref = this.get_ref(this.ownerID);
-        var header_ref = ref["child"]("headers")["child"](slot_name);
-		var body_ref = ref["child"]("bodies")["child"](slot_name);
-		
+	{		
 		var self = this;		
-		var complete_cnt = 0;
-		var error_cnt = 0;
 	    var on_complete = function(error) 
 	    {
-		    complete_cnt += 1;   
-		    if (error)
-			    error_cnt += 1;   
-				
-		    if (complete_cnt == 2)
-			{
-			    var trig = (error_cnt==0)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnCleanComplete:
-				                           cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnCleanError;
-				self.runtime.trigger(trig, self); 					   
-			}
+			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnClean:
+				                 cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnCleanError;
+			self.runtime.trigger(trig, self); 					   
         };
-			
-		header_ref["remove"](on_complete);
-		body_ref["remove"](on_complete);
+        
+	    var ref = this.get_ref(this.ownerID);	
+        var save_item = {};
+        slot_name = (slot_name)? ("/"+slot_name) : "";
+        save_item["headers" + slot_name] = null;
+        save_item["bodies" + slot_name] = null;     
+        ref["update"](save_item, on_complete);        
 	};
 	//////////////////////////////////////
 	// Expressions
