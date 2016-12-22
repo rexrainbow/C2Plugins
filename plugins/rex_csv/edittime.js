@@ -4,7 +4,7 @@
 		"name":			"CSV",
 		"id":			"Rex_CSV",
 		"version":		"1.0",          
-		"description":	"Read 2d table from cvs string.",
+		"description":	"Read 2d table from csv string.",
 		"author":		"Rex.Rainbow",
 		"help url":		"http://c2rexplugins.weebly.com/rex_csv.html",
 		"category":		"Rex - Data structure - CSV",
@@ -36,16 +36,20 @@ AddAnyTypeParam("Data", "Data to compare.", 0);
 AddStringParam("Row", "The row index.", '""');
 AddCondition(6, 0, "Data in row", "In", 
              "Data <i>{0}</i> in row <i>{1}</i>", "Return true if data in row.", "IsDataInRow");
+             
+// cf_deprecated
 AddStringParam("Key", "The col index.", '""');
-AddCondition(7, 0, "Key in col", "In", 
+AddCondition(7, cf_deprecated, "Key in col", "In", 
              "Key <i>{0}</i> in col", "Return true if key in col.", "IsKeyInCol");
 AddStringParam("Key", "The row index.", '""');
-AddCondition(8, 0, "Key in row", "In", 
+AddCondition(8, cf_deprecated, "Key in row", "In", 
              "Key <i>{0}</i> in row", "Return true if key in row.", "IsKeyInRow"); 
+// cf_deprecated             
+             
 AddStringParam("Col", "The col index.", '""');             
 AddStringParam("Row", "The row index.", '""');
-AddCondition(9, 0, "Entry is valid", "In", 
-             "(<i>{0}</i>, <i>{1}</i>) is valid", "Return true if the entry is valid.", "IsEntryValid");           
+AddCondition(9, 0, "Cell is valid", "In", 
+             "(<i>{0}</i>, <i>{1}</i>) is valid", "Return true if the cell is valid.", "IsCellValid");           
 AddStringParam("Col", "The col index.", '""');
 AddCondition(10, 0, "Has col", "In", 
              "Has col <i>{0}</i>", "Return true if this column index is in table.", "HasCol");       
@@ -61,32 +65,32 @@ AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
 AddAction(2, 0, "Set value", "Set", "Set (<i>{0}</i>, <i>{1}</i>) to <i>{2}</i>", 
-          "Set the value in the table at current page.", "SetEntry");
-AddAction(3, 0, "Clear", "Set", "Clear", "Clear all entries.", "Clear");
+          "Set the value in the table at current page.", "SetCell");
+AddAction(3, 0, "Clear", "Set", "Clear", "Clear all cells.", "Clear");
 AddStringParam("Row", "The row index.", '""');
 AddComboParamOption("Integer");
 AddComboParamOption("Float");
 AddComboParam("Type", "Conver type to numver.",0);
-AddAction(4, 0, "Convert row", "Convert", "Convert entries type to <i>{1}</i> on row <i>{0}</i>",
-         "Convert entries type in a row.", "ConvertRow");
+AddAction(4, 0, "Convert row", "Convert", "Convert cells type to <i>{1}</i> on row <i>{0}</i>",
+         "Convert cells type in a row.", "ConvertRow");
 AddStringParam("Page", "The index of page.", '""');
 AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
          "Turn the page.", "TurnPage");     
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(6, 0, "Load one table", "0: Load", "Load table from JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");  
-AddStringParam("Col index", "Column index.", '""');
+AddAnyTypeParam("Col", "Column index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
 AddAction(7, 0, "Append a column", "Resize", "Append column <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a column.", "AppendCol");
-AddStringParam("Row index", "Row index.", '""');
+AddAnyTypeParam("Row", "Row index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
 AddAction(8, 0, "Append a row", "Resize", "Append row <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a row.", "AppendRow");  
-AddStringParam("Col index", "Column index.", '""');
+AddAnyTypeParam("Col index", "Column index.", '""');
 AddAction(9, 0, "Remove a column", "Resize", "Remove column <i>{0}</i>",
          "Remove a column.", "RemoveCol");
-AddStringParam("Row index", "Row index.", '""');
+AddAnyTypeParam("Row index", "Row index.", '""');
 AddAction(10, 0, "Remove a row", "Resize", "Remove row <i>{0}</i>",
          "Remove a row.", "RemoveRow");           
 AddStringParam("Delimiter", "Set delimiter for splitting items.", '","');
@@ -117,27 +121,27 @@ AddStringParam("Row", "The row index.", '""');
 AddStringParam("Page", "The index of page.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
 AddAction(15, 0, "Set value at page", "Set", "Set value at (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>) to <i>{3}</i>", 
-          "Set the value in the table at a specific page.", "SetEntryAtPage");
+          "Set the value in the table at a specific page.", "SetCellAtPage");
           
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
 AddAction(16, 0, "Add to", "Set", "Add <i>{2}</i> to (<i>{0}</i>, <i>{1}</i>)", 
-           "Add to the value in the table at current page.", "AddToEntry"); 
+           "Add to the value in the table at current page.", "AddToCell"); 
 
 AddStringParam("Col", "The column index.", '""');
 AddStringParam("Row", "The row index.", '""');
 AddStringParam("Page", "The index of page.", '""');
 AddAnyTypeParam("Value", "The value to store.", "0");
 AddAction(17, 0, "Add at page", "Set", "Add <i>{3}</i> to (<i>{0}</i>, <i>{1}</i>, <i>{2}</i>)", 
-          "Add to the value in the table at a specific page.", "AddToEntryAtPage");      
+          "Add to the value in the table at a specific page.", "AddToCellAtPage");      
 
 AddStringParam("Col", "The column index.", '""');
 AddComboParamOption("Integer");
 AddComboParamOption("Float");
 AddComboParam("Type", "Conver type to numver.",0);
-AddAction(18, 0, "Convert col", "Convert", "Convert entries type to <i>{1}</i> on cl <i>{0}</i>",
-         "Convert entries type in a col.", "ConvertCol");          
+AddAction(18, 0, "Convert col", "Convert", "Convert cells type to <i>{1}</i> on cl <i>{0}</i>",
+         "Convert cells type in a col.", "ConvertCol");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddAnyTypeParam("Col", "The column index.", '""');
@@ -149,7 +153,7 @@ AddExpression(2, ef_return_string, "Current Row", "For Each", "CurRow", "Get the
 AddExpression(3, ef_return_any, "Current Value", "For Each", "CurValue", "Get the current value in a For Each loop.");
 AddExpression(4, ef_return_string, "At Col", "Table: At", "AtCol", "Get the column index in the last At expression.");
 AddExpression(5, ef_return_string, "At Row", "Table: At", "AtRow", "Get the row index in the last At expression.");
-AddExpression(6, ef_return_string, "At Page", "Page", "AtPage", "Get the page index in the last At expression.");
+AddExpression(6, ef_return_string, "At Page", "Table: At", "AtPage", "Get the page index in the last At expression.");
 AddExpression(7, ef_return_string, "Current Page", "For Each", "CurPage", "Get the current page index in a For Each loop.");
 AddExpression(8, ef_return_string, "Transfer page to string", "JSON", "TableToString", "Transfer current table to JSON string.");
 AddExpression(9, ef_return_number | ef_variadic_parameters, "Get col count", "Table: Count", "ColCnt", "Get column count.");

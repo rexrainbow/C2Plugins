@@ -111,7 +111,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             this.TurnPage(page);
         }
         this.atPage = this.current_page_name;  
-        this.current_table.SetEntry(col, row, value);       
+        this.current_table.SetCell(col, row, value);       
 	};
 
 	instanceProto.GetColCnt = function (page)
@@ -212,7 +212,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		{		    
 		    this.dbg_col_name = value;
 		}
-		else if (name.substring(0,4) == "Row-") // set entry value
+		else if (name.substring(0,4) == "Row-") // set cell value
 		{	        
 		    if (this.HasPage(this.dbg_page_name))
 		    {
@@ -221,7 +221,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		        if ((table.keys.indexOf(this.dbg_col_name) != (-1)) && 
                     (table.items.indexOf(r) != (-1))                 )
                 {
-                    table.SetEntry(this.dbg_col_name, r, value);  
+                    table.SetCell(this.dbg_col_name, r, value);  
                 }		       
 		    }
 	    }
@@ -319,17 +319,21 @@ cr.plugins_.Rex_CSV = function(runtime)
 		return matched;
 	}; 
 
+    // cf_deprecated
 	Cnds.prototype.IsKeyInCol = function (key)
 	{
         return (this.current_table.keys.indexOf(key) != (-1));     
 	};
+    // cf_deprecated
 
+    // cf_deprecated    
 	Cnds.prototype.IsKeyInRow = function (key)
 	{
         return (this.current_table.items.indexOf(key) != (-1));
 	};
+    // cf_deprecated    
 
-	Cnds.prototype.IsEntryValid = function (col, row)
+	Cnds.prototype.IsCellValid = function (col, row)
 	{
         return ((this.current_table.keys.indexOf(col) != (-1)) && 
                 (this.current_table.items.indexOf(row) != (-1))   );
@@ -354,9 +358,9 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.current_table._parsing(csv_string);
 	};
     
-	Acts.prototype.SetEntry = function (col, row, val)
+	Acts.prototype.SetCell = function (col, row, val)
 	{
-        this.current_table.SetEntry(col, row, val);       
+        this.current_table.SetCell(col, row, val);       
 	};
     
 	Acts.prototype.Clear = function ()
@@ -386,21 +390,45 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Acts.prototype.AppendCol = function (col, init_value)
 	{
+        if (typeof (col) === "number")
+        {
+            var cols = this.current_table.keys;
+            col = cols[col];
+        }
+
         this.current_table.AppendCol(col, init_value);
 	}; 
     
 	Acts.prototype.AppendRow = function (row, init_value)
 	{
+        if (typeof (row) === "number")
+        {
+            var rows = this.current_table.items;
+            row = rows[row];
+        }   
+        
         this.current_table.AppendRow(row, init_value);
 	}; 
     
 	Acts.prototype.RemoveCol = function (col)
 	{
+        if (typeof (col) === "number")
+        {
+            var cols = this.current_table.keys;
+            col = cols[col];
+        }
+        
         this.current_table.RemoveCol(col);
 	}; 
     
 	Acts.prototype.RemoveRow = function (row)
 	{
+        if (typeof (row) === "number")
+        {
+            var rows = this.current_table.items;
+            row = rows[row];
+        }  
+        
         this.current_table.RemoveRow(row);
 	};     
     
@@ -430,23 +458,23 @@ cr.plugins_.Rex_CSV = function(runtime)
         this.current_table.SortRow(row, is_increasing);
 	}; 
     
-	Acts.prototype.SetEntryAtPage = function (col, row, page, val)
+	Acts.prototype.SetCellAtPage = function (col, row, page, val)
 	{
         this.TurnPage(page);
-        this.current_table.SetEntry(col, row, val);       
+        this.current_table.SetCell(col, row, val);       
 	};
     
-	Acts.prototype.AddToEntry = function (col, row, val)
+	Acts.prototype.AddToCell = function (col, row, val)
 	{
         var value = this.Get(col, row) || 0;        
-        this.current_table.SetEntry(col, row, value + val);       
+        this.current_table.SetCell(col, row, value + val);       
 	};
     
-	Acts.prototype.AddToEntryAtPage = function (col, row, page, val)
+	Acts.prototype.AddToCellAtPage = function (col, row, page, val)
 	{
         var value = this.Get(col, row, page) || 0;  
         this.TurnPage(page);
-        this.current_table.SetEntry(col, row, value + val);       
+        this.current_table.SetCell(col, row, value + val);       
 	};
 
 	Acts.prototype.ConvertCol = function (col, to_type)
@@ -697,35 +725,35 @@ cr.plugins_.Rex_CSV = function(runtime)
 
     CSVKlassProto.At = function(col, row)
 	{
-	    var entry;
-	    entry = this.table[col];
-	    if (entry == null)
+	    var cell;
+	    cell = this.table[col];
+	    if (cell == null)
         {
             log("[CSV] Expression:At - Can not find col index '" +col+"' in table.");
 	        return null;
         }
-	    entry = entry[row];
-	    if (entry == null)
+	    cell = cell[row];
+	    if (cell == null)
         {
             log("[CSV] Expression:At - Can not find row index " +row+" in table.");
 	        return null;	 
         }
-        return entry;   
+        return cell;   
 	};
     
-	CSVKlassProto.SetEntry = function (col, row, val)
+	CSVKlassProto.SetCell = function (col, row, val)
 	{
-	    var entry;
-	    entry = this.table[col];
-	    if (entry == null)
+	    var cell;
+	    cell = this.table[col];
+	    if (cell == null)
         {
-            log("[CSV] Action:SetEntry - Can not find col index " +col+" in table.");
+            log("[CSV] Action:SetCell - Can not find col index " +col+" in table.");
 	        return;
         }
-	    entry = entry[row];
-	    if (entry == null)
+	    cell = cell[row];
+	    if (cell == null)
         {
-            log("[CSV] Action:SetEntry - Can not find row index " +row+" in table.");
+            log("[CSV] Action:SetCell - Can not find row index " +row+" in table.");
 	        return;	    
         }
         this.table[col][row] = val;        
@@ -871,7 +899,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         }
         this.forCol = col;
             
-        // current_entry is valid
+        // current_cell is valid
         var current_frame = this.plugin.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
@@ -931,7 +959,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         }
         this.forRow = row;
             
-        // current_entry is valid
+        // current_cell is valid
         var current_frame = this.plugin.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();

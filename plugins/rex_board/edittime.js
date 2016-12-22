@@ -4,7 +4,7 @@
 		"name":			"Board",
 		"id":			"Rex_SLGBoard",
 		"version":		"0.1",   		
-		"description":	"A chess board container",
+		"description":	"Store the logical position of chess, based plugin of my board-series plugins/behaviors.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board.html",
 		"category":		"Rex - Board - core",
