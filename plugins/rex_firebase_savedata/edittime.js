@@ -68,7 +68,15 @@ AddCondition(21, cf_trigger, "On clean", "Clean",
 
 AddCondition(22, cf_trigger, "On clean error", "Clean", 
             "On clean error", 
-            "Triggered when clean slots error on server error.", "OnCleanError");			
+            "Triggered when clean slots error on server error.", "OnCleanError");	
+
+AddCondition(31, cf_trigger, "On get headers error", "Load - header", 
+            "On get all headers error", 
+            "Triggered when get all slot headers error.", "OnGetAllHeadersError");            
+
+AddCondition(32, cf_trigger, "On get body error", "Load - body", 
+            "On get body error", 
+            "Triggered when get slot body error.", "OnGetBodyError");            
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("User ID", "User ID from authentication.", '""');
@@ -174,6 +182,11 @@ AddExpression(8, ef_return_any, "Get current value", "For each key", "CurValue",
               
 AddExpression(9, ef_return_any, "Get last slot name", "Body", "LastSlotName", 
               "Get last loaded slot name.");     
+               
+AddExpression(21, ef_return_string, "Error code", "Error", "LastErrorCode", 
+              "Error code.");        
+AddExpression(22, ef_return_string, "Error message", "Error", "LastErrorMessage", 
+              "Error message (error.serverResponse) .");     
               
 ACESDone();
 

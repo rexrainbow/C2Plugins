@@ -55,7 +55,8 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    this.rootpath = this.properties[0] + "/" + this.properties[1] + "/";        
 
         this.ownerID = "";
-        
+
+        this.error = null;             
 		this.save_header = {};
 		this.save_body = {};
 		this.save_item = {};
@@ -445,6 +446,17 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	{
 	    return true;
 	};		
+    
+	Cnds.prototype.OnGetAllHeadersError = function ()
+	{
+	    return true;
+	};
+
+	Cnds.prototype.OnGetBodyError = function ()
+	{
+	    return true;
+	};	    
+    
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -471,6 +483,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		var self = this;				
 	    var on_complete = function(error) 
 	    {
+            self.error = error;
 			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSave:
 				                 cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnSaveError;
 			self.runtime.trigger(trig, self); 					   
@@ -524,13 +537,19 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    var ref = this.get_ref(this.ownerID)["child"]("headers");
 		
 		var self = this;
-        var handler = function (snapshot)
+        var on_read = function (snapshot)
         {   
+            self.error = null;
             self.load_headers = snapshot.val();
             self.runtime.trigger(cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetAllHeaders, self); 
         };
+        var on_read_failure = function(error)
+        {
+            self.error = error;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetAllHeadersError, self);                         
+        };        
 			
-		ref["once"]("value", handler);
+		ref["once"]("value", on_read, on_read_failure);
 	};
 	
     Acts.prototype.GetSlotBody = function (slot_name)
@@ -538,16 +557,24 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	    var ref = this.get_ref(this.ownerID)["child"]("bodies")["child"](slot_name);
 		
 		var self = this;
-        var handler = function (snapshot)
+        var on_read = function (snapshot)
         {   
             self.exp_LastSlotName = slot_name;
             self.load_body = snapshot.val();
+            self.error = null;            
 			var trig = (self.load_body!=null)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetBody:
 				                               cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetUnusedBody;
             self.runtime.trigger(trig, self); 
         };
+        var on_read_failure = function(error)
+        {
+            self.error = error;
+            self.exp_LastSlotName = slot_name;
+            self.load_body = null;
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnGetBodyError, self);               
+        };              
 			
-		ref["once"]("value", handler);
+		ref["once"]("value", on_read, on_read_failure);
 	};
 
     Acts.prototype.CleanSlot = function (slot_name)
@@ -555,6 +582,7 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 		var self = this;		
 	    var on_complete = function(error) 
 	    {
+            self.error = error;
 			var trig = (!error)? cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnClean:
 				                 cr.plugins_.Rex_Firebase_SaveSlot.prototype.cnds.OnCleanError;
 			self.runtime.trigger(trig, self); 					   
@@ -625,4 +653,20 @@ cr.plugins_.Rex_Firebase_SaveSlot = function(runtime)
 	{
 		ret.set_any( this.exp_LastSlotName || "" );        
 	};	    
+    
+	Exps.prototype.LastErrorCode = function (ret)
+	{
+        var code;
+	    if (this.error)
+            code = this.error["code"];
+		ret.set_string(code || "");
+	}; 
+	
+	Exps.prototype.LastErrorMessage = function (ret)
+	{
+        var s;
+	    if (this.error)
+            s = this.error["serverResponse"];
+		ret.set_string(s || "");
+	};	        
 }());

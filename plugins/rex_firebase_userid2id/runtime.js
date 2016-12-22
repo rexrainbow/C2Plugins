@@ -277,8 +277,14 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                 self.on_getID_successful(UserID, return_ID);
             }
         };
+        
+        var on_read_failure = function(error)
+        {
+            log("on_read_failure")
+            self.on_getID_failed(UserID);
+        }
         var query = this.get_ref()["orderByValue"]()["equalTo"](UserID)["limitToFirst"](1);
-        query["once"]("value", on_read);
+        query["once"]("value", on_read, on_read_failure);
 	};
 	
     Acts.prototype.RequestGetUserID = function (ID)
