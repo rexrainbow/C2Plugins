@@ -368,6 +368,14 @@ cr.plugins_.Rex_NGIO_Medal = function(runtime)
 	    ret.set_int(val || -1);
 	};        
     
+	Exps.prototype.MedalsCount = function (ret)
+	{
+        var val;
+        if (this.lastMedals)
+            val = this.lastMedals.lngth;
+	    ret.set_int(val || 0);
+	};	       
+    
 	Exps.prototype.LastUnlockedMedalID = function (ret)
 	{
         var val; 

@@ -254,6 +254,12 @@ cr.behaviors.Rex_RotateTo = function(runtime)
 	    var angle = Math.atan2(ty-this.inst.y , tx-this.inst.x);
         this.SetTargetAngle(angle, clockwise_mode);
 	}; 
+       
+ 	Acts.prototype.Stop = function ()
+	{
+        this.is_rotating = false;
+	};   	
+        
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

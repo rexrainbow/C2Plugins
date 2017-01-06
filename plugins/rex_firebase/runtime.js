@@ -183,28 +183,7 @@ cr.plugins_.Rex_Firebase = function(runtime)
             self.reading_cb = null; 
         };
 	    refObj["once"](eventType, reading_handler);                         
-	}; 		
-	
-	var get_data = function(in_data, default_value)
-	{
-	    var val;
-	    if (in_data === null)
-	    {
-	        if (default_value === null)
-	            val = 0;
-	        else
-	            val = default_value;
-	    }
-        else if (typeof(in_data) == "object")
-        {
-            val = JSON.stringify(in_data);
-        }
-        else
-        {
-            val = in_data;
-        }	    
-        return val;
-	};    
+	};   
     
 	instanceProto.connectionDetectingStart = function ()
 	{
@@ -212,8 +191,8 @@ cr.plugins_.Rex_Firebase = function(runtime)
         var onValueChanged = function (snap)
         {
             var trig;                   
-            var isConnected = snap["val"]();
-            if ( isConnected === true )            
+            var isConnected = !!snap["val"]();
+            if ( isConnected )            
                 trig = cr.plugins_.Rex_Firebase.prototype.cnds.OnConnected;        
             else if (self.isConnected && !isConnected)   // disconnected after connected
                 trig = cr.plugins_.Rex_Firebase.prototype.cnds.OnDisconnected;
@@ -571,29 +550,29 @@ cr.plugins_.Rex_Firebase = function(runtime)
 	
 	Exps.prototype.TransactionIn = function (ret, default_value)
 	{	
-		ret.set_any(get_data(this.onTransaction_input, default_value));
+		ret.set_any(window.FirebaseGetValueByKeyPath(this.onTransaction_input, null, default_value));    
 	};
 	
 	Exps.prototype.LastData = function (ret, default_value)
 	{	
         var data =(this.snapshot === null)? null: this.snapshot["val"]();
-		ret.set_any(get_data(data, default_value));
+		ret.set_any(window.FirebaseGetValueByKeyPath(data, null, default_value));        
 	};
 	
 	Exps.prototype.LastKey = function (ret, default_value)
 	{	
         var key =(this.snapshot === null)? null: get_key(this.snapshot);
-		ret.set_any(get_data(key, default_value));
+		ret.set_any(window.FirebaseGetValueByKeyPath(key, null, default_value));               
 	};
 	
 	Exps.prototype.PrevChildName = function (ret, default_value)
 	{	
-		ret.set_any(get_data(this.prevChildName, default_value));
+		ret.set_any(window.FirebaseGetValueByKeyPath(this.prevChildName, null, default_value));
 	};	
 
 	Exps.prototype.TransactionResult = function (ret, default_value)
 	{	
-		ret.set_any(get_data(this.onTransaction_committedValue, default_value));
+		ret.set_any(window.FirebaseGetValueByKeyPath(this.onTransaction_committedValue, null, default_value));        
 	};
 	
 	Exps.prototype.LastPushRef = function (ret)

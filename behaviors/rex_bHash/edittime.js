@@ -139,7 +139,7 @@ AddStringParam("Key", "The key string of the hash to get.", '""');
 AddExpression(3, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "At", "Get value from the hash by key string, return JSON string if the item is an object. Add 2nd parameter to return default value when got invalid value.");
 AddExpression(4, ef_return_string, "Current key", "For each", "CurKey", "Get the current key in a For Each loop.");
-AddExpression(5, ef_return_any, "Current value", "For each", "CurValue", "Get the current value in a For Each loop. Add 2nd parameter to return sub-item by keys. Add 3rd parameter to return default value when got invalid value.");
+AddExpression(5, ef_return_any | ef_variadic_parameters, "Current value", "For each", "CurValue", "Get the current value in a For Each loop. Add 2nd parameter to return sub-item by keys. Add 3rd parameter to return default value when got invalid value.");
 AddAnyTypeParam("Key", "The key of the hash to get.", '""');
 AddExpression(6, ef_return_any | ef_variadic_parameters, "Get value at", 
               "Value", "AtKeys", "Get value from the hash by keys, each parameter is a key.");

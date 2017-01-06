@@ -38,7 +38,9 @@ AddExpression(1, ef_return_string, "Current key", "For Each cell", "CurKey",
               "Get the current key in a For Each loop.");
 AddExpression(2, ef_return_any, "Current value", "For Each cell", "CurValue", 
               "Get the current cell value in a For Each loop.");
-                         
+
+AddExpression(11, ef_return_string, "Get delimiter", "Delimiter", "Delimiter", "Get delimiter.");
+                     
 ACESDone();
 
 // Property grid properties for this plugin

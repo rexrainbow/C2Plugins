@@ -2057,7 +2057,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             pen_si = pen.startIndex;
             pen_ei = pen.getNextStartIndex();
             
-            if (pen_ei <= start)
+            if (pen_ei < start)
                 continue;
             
             in_range = (pen_si >= start) && (pen_ei < end);

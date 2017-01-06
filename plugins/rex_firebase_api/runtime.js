@@ -59,17 +59,9 @@ cr.plugins_.Rex_FirebaseAPI = function(runtime)
     {
         return (p.substring(0,8) === "https://");
     };
-	
-	instanceProto.get_ref = function(k)
+    
+	var get_ref = function(path)
 	{
-        if (k == null)
-	        k = "";
-	    var path;
-	    if (isFullPath(k))
-	        path = k;
-	    else
-	        path = this.rootpath + k + "/";
-            
         // 2.x
         if (!isFirebase3x())
         {
@@ -83,6 +75,19 @@ cr.plugins_.Rex_FirebaseAPI = function(runtime)
             return window["Firebase"]["database"]()[fnName](path);
         }
         
+	};    
+	
+	instanceProto.get_ref = function(k)
+	{
+        if (k == null)
+	        k = "";
+	    var path;
+	    if (isFullPath(k))
+	        path = k;
+	    else
+	        path = this.rootpath + k + "/";
+            
+        return get_ref(path);
 	};
     
     var get_key = function (obj)
@@ -464,12 +469,7 @@ cr.plugins_.Rex_FirebaseAPI = function(runtime)
         for (var k in this.map)
             delete this.map[k];
 	}; 
-	    
-	CallbackMapKlassProto.get_ref = function(k)
-	{
-        return new window["Firebase"](k);
-	};    
-	
+
 	CallbackMapKlassProto.get_callback = function(absRef, eventType, cbName)
 	{
         if (!this.IsExisted(absRef, eventType, cbName))

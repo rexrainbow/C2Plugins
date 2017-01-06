@@ -49,6 +49,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                 
         this.exp_ID = "";
         this.exp_UserID = "";
+        this.error = null;        
 	};
 	
     // 2.x , 3.x    
@@ -133,7 +134,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             if (error || !committed) 
             {
                 if (on_failed)
-                    on_failed();               
+                    on_failed(error);               
             }
             else
             {
@@ -253,6 +254,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
             if (retry_cnt == 0)
             {
                 // failed
+                self.error = null;
                 self.on_getID_failed(UserID);
             }
             else
@@ -280,9 +282,9 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         
         var on_read_failure = function(error)
         {
-            log("on_read_failure")
+            self.error = error;
             self.on_getID_failed(UserID);
-        }
+        };
         var query = this.get_ref()["orderByValue"]()["equalTo"](UserID)["limitToFirst"](1);
         query["once"]("value", on_read, on_read_failure);
 	};
@@ -296,14 +298,20 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         var on_read = function(snapshot)
         {
             var return_UserID = snapshot["val"]();
+            self.error = null;            
             if (return_UserID == null)
                 self.on_getUserID_failed(ID);
             else
                 self.on_getUserID_successful(return_UserID, ID);
         };
-                        
+        var on_read_failure = function(error)
+        {
+            self.error = error;
+            self.on_getUserID_failed(ID);
+        };
+        
         var ID_ref = this.get_ID_ref(ID);                        
-        ID_ref["once"]("value", on_read);
+        ID_ref["once"]("value", on_read, on_read_failure);
 	};	
 	
     Acts.prototype.RequestTryGetID = function (UserID, ID)
@@ -317,6 +325,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         {
             var result = snapshot["val"]();    // { ID:UserID }
             var return_ID = _get_key(result);
+            self.error = null;            
             if (GETCMD)  // get existed ID
             {
                 if (return_ID == null)
@@ -341,9 +350,15 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
         {
             self.on_getID_failed(UserID);
         };
+        
+        var on_read_failure = function(error)
+        {
+            self.error = error;
+            self.on_getID_failed(UserID);
+        };        
                 
         var query = this.get_ref()["orderByValue"]()["equalTo"](UserID)["limitToFirst"](1);
-        query["once"]("value", on_read);
+        query["once"]("value", on_read, on_read_failure);
 	};	
 
     Acts.prototype.RemoveUserID = function (UserID)
@@ -356,6 +371,7 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 	    var onComplete = function(error) 
 	    {
             self.exp_UserID = UserID;
+            self.error = error;   
             if (error)
                 self.runtime.trigger(cr.plugins_.Rex_Firebase_UserID2ID.prototype.cnds.OnRemoveUserIDError, self); 
             else
@@ -375,6 +391,10 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
                 ref["set"](null, onComplete);
             }      
         };
+        var on_read_failure = function(error)
+        {
+            onComplete(error);
+        };        
 
         var query = this.get_ref()["orderByValue"]()["equalTo"](UserID)["limitToFirst"](1);
         query["once"]("value", on_read);
@@ -394,4 +414,19 @@ cr.plugins_.Rex_Firebase_UserID2ID = function(runtime)
 		ret.set_string(this.exp_UserID);
 	};	
 	
+	Exps.prototype.LastErrorCode = function (ret)
+	{
+        var code;
+	    if (this.error)
+            code = this.error["code"];
+		ret.set_string(code || "");
+	}; 
+	
+	Exps.prototype.LastErrorMessage = function (ret)
+	{
+        var s;
+	    if (this.error)
+            s = this.error["serverResponse"];
+		ret.set_string(s || "");
+	};	      
 }());

@@ -369,7 +369,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.SetContent();
 	};
 
-	Acts.prototype.ScrollByPercent = function(percent)
+	Acts.prototype.ScrollToPercent = function(percent)
 	{   
         this.redraw_text();            
         this.line_pos_percent = cr.clamp(percent, 0, 1);
@@ -383,7 +383,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.text_changed = true;
 	}; 
 
-	Acts.prototype.ScrollByIndex = function(line_index)
+	Acts.prototype.ScrollToLineIndex = function(line_index)
 	{               
         this.redraw_text();       
         this.SetText(this.get_visible_text(line_index));
@@ -412,7 +412,13 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.redraw_text();      
         this.SetText(this.get_visible_text(this.start_line_index-this.visible_lines));
 	};   
-	  
+
+	Acts.prototype.ScrollToPageIndex = function(page_index)
+	{               
+        this.redraw_text();       
+        this.SetText(this.get_visible_text(page_index*this.visible_lines));
+	}; 
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

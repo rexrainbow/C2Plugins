@@ -314,4 +314,9 @@ cr.plugins_.Rex_CSV2Array = function(runtime)
 	{
 		ret.set_int(this.exp_Height);
 	};	    
+	
+	Exps.prototype.Delimiter = function (ret)
+	{ 
+		ret.set_string(this.strDelimiter);
+	};     
 }());

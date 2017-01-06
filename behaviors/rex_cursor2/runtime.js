@@ -28,12 +28,7 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 
 	behtypeProto.onCreate = function()
 	{
-        this.touchwrap = null;
-        this.GetX = null;
-        this.GetY = null;
-        this.GetAbsoluteX = null;
-        this.GetAbsoluteY = null;
-        this.behavior_index = null;        
+        this.touchwrap = null;   
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -48,11 +43,7 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
             obj = plugins[name].instances[0];
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
-                this.touchwrap = obj;
-                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.X;
-                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.Y;
-                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteX;
-                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteY;                
+                this.touchwrap = obj;               
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -69,8 +60,8 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 		this.runtime = type.runtime;
         
         type.TouchWrapGet();        
-		this.pre_x = this.GetX();
-		this.pre_y = this.GetY();
+		this.pre_x = this.GetCursorX();
+		this.pre_y = this.GetCursorY();
         this.is_moving = false;
 	};
 
@@ -88,8 +79,8 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
         if (this.activated) 
         {
             var inst = this.inst;        
-            var cur_x = this.GetX();
-            var cur_y = this.GetY();
+            var cur_x = this.GetCursorX();
+            var cur_y = this.GetCursorY();
             var is_moving = (this.pre_x != cur_x) ||
                             (this.pre_y != cur_y);            
             if ( is_moving )
@@ -132,38 +123,32 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 
 	};
   
-	behinstProto.GetABSX = function ()
-	{
-	    var touch_obj = this.type.touchwrap;
-        this.type.GetAbsoluteX.call(touch_obj, touch_obj.fake_ret);
-        return touch_obj.fake_ret.value;
-	};  
-
-	behinstProto.GetABSY = function ()
+	behinstProto.GetCursorX = function()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetAbsoluteY.call(touch_obj, touch_obj.fake_ret);
-        return touch_obj.fake_ret.value;        
-	};     
-        
-	behinstProto.GetX = function()
-	{
-        var touch_obj = this.type.touchwrap;
-        this.type.GetX.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
-        return touch_obj.fake_ret.value;          
+        var x = touch_obj.CursorX(this.inst.layer.index);
+        if (x == null)
+        {
+            x = touch_obj.X(this.inst.layer.index);
+        }
+        return x;     
 	};
     
-	behinstProto.GetY = function()
+	behinstProto.GetCursorY = function()
 	{
         var touch_obj = this.type.touchwrap;
-        this.type.GetY.call(touch_obj, touch_obj.fake_ret, this.inst.layer.index);
-        return touch_obj.fake_ret.value;         
+        var y = touch_obj.CursorY(this.inst.layer.index);
+        if (y == null)
+        {
+            y = touch_obj.Y(this.inst.layer.index);
+        }
+        return y;   
 	};   
 
 	behinstProto.IsCursorExisted = function()
 	{
         var touch_obj = this.type.touchwrap;
-        return (touch_obj.UseMouseInput())?  true : touch_obj.IsInTouch();
+        return (touch_obj.IsInTouch() || (touch_obj.CursorAbsoluteX() !== null));
 	};   
 	
 	behinstProto.saveToJSON = function ()
@@ -211,22 +196,36 @@ cr.behaviors.Rex_Cursor2 = function(runtime)
 
 	Exps.prototype.X = function (ret)
 	{
-        ret.set_float( this.GetX() );
+        ret.set_float( this.GetCursorX() );
 	};
 	
 	Exps.prototype.Y = function (ret)
 	{
-	    ret.set_float( this.GetY() );
+	    ret.set_float( this.GetCursorY() );
 	};
 	
 	Exps.prototype.AbsoluteX = function (ret)
 	{
-        ret.set_float( this.GetABSX() );
+	    var touch_obj = this.type.touchwrap;
+        var x = touch_obj.CursorAbsoluteX();
+        if (x == null)
+        {
+            x = touch_obj.AbsoluteX();
+        }
+        
+        ret.set_float( x );
 	};
 	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
-        ret.set_float( this.GetABSY() );
+	    var touch_obj = this.type.touchwrap;
+        var y = touch_obj.CursorAbsoluteY();
+        if (y == null)
+        {
+            y = touch_obj.AbsoluteY();
+        }
+                
+        ret.set_float( y );
 	};
     
 	Exps.prototype.Activated = function (ret)

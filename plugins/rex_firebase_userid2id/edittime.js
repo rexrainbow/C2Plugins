@@ -74,7 +74,11 @@ AddExpression(1, ef_return_string, "Get ID of result", "Request - result", "ID",
               "Get ID of result."); 
 AddExpression(2, ef_return_string, "Get User ID of result", "Request - result", "UserID", 
               "Get User ID of result.");
-                            
+               
+AddExpression(21, ef_return_string, "Error code", "Error", "LastErrorCode", 
+              "Error code.");        
+AddExpression(22, ef_return_string, "Error message", "Error", "LastErrorMessage", 
+              "Error message (error.serverResponse) .");               
 ACESDone();
 
 // Property grid properties for this plugin

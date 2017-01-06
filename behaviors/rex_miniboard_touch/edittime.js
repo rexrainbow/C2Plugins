@@ -51,9 +51,9 @@ AddComboParam("Enable", "Enable to drag this miniboard.",1);
 AddAction(1, 0, "Set enable", "Drag & Drop", 
           "Set {my} drag-able to <i>{0}</i>", 
           "Set drag-able of this miniboard.", "SetDragable");         
-AddAction(2, 0, "Force to drop", "Drop", 
-          "Force {my} to drop", 
-          "Force the dragged object to drop.", "ForceDropp");  
+AddAction(2, 0, "Drop", "Drop", 
+          "Drop {my}", 
+          "If currently being dragged, force the object to be dropped.", "ForceDropp");  
           
 AddAction(3, 0, "Try to drag", "Drag", "Try drag {my}", 
           "Try to drag this object if is in touched.", "TryDrag");            

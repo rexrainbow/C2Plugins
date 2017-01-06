@@ -194,10 +194,24 @@ cr.plugins_.Rex_Date = function(runtime)
         ret.set_int(today.getTime());
 	};	
 
-	Exps.prototype.UnixTimestamp = function (ret)
+	Exps.prototype.UnixTimestamp = function (ret, year, month, day, hours, minutes, seconds, milliseconds)
 	{
-	    var today = new Date();
-        ret.set_float(today.getTime());
+        var d;
+        if (year == null)
+        {
+            d = new Date();
+        }
+        else
+        {
+            month = month || 1;
+            day = day || 1;
+            hours = hours || 0;
+            minutes = minutes || 0;
+            seconds = seconds || 0;
+            milliseconds = milliseconds || 0;
+            d = new Date(year, month-1, day, hours, minutes, seconds, milliseconds); 
+        }
+        ret.set_float(d.getTime());
 	};
 
 	Exps.prototype.Date2UnixTimestamp = function (ret, year, month, day, hours, minutes, seconds, milliseconds)

@@ -144,7 +144,10 @@ AddExpression(17, ef_return_number, "Get 1 if medal is secret by index", "Get li
               
 AddNumberParam("Index", "Medal index, 0-based.", 0);                      
 AddExpression(18, ef_return_number, "Get 1 if medal is unlocked by index", "Get list - index", "Index2MedalIsUnlocked", 
-              "Get 1 if current medal is unlocked by index.");                 
+              "Get 1 if current medal is unlocked by index.");        
+
+AddExpression(19, ef_return_number, "Get amount of medals","Get list", "MedalsCount", 
+              "Get amount of medals.");                  
 
 AddExpression(21, ef_return_number, "Get last unlocked medal ID", "Unlock", "LastUnlockedMedalID", 
               "Get last unlocked medal ID.");                     

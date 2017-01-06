@@ -39,7 +39,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.mouseDown = false;
 		this.touchDown = false;
         this.check_name = "TOUCHWRAP";
-		this._is_mouse_mode = false;
+        this.cursor = {x:null, y:null};
         this._callbackObjs = [];
 	    this.fake_ret = {value:0,
 	                     set_any: function(value){this.value=value;},
@@ -132,7 +132,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.triggeredHold = false;
 		this.tooFarForHold = false;
-        this.touchedState = true;
 	};
 	
 	TouchInfo.prototype.init = function (x, y, id, index)
@@ -157,7 +156,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		this.triggeredHold = false;
 		this.tooFarForHold = false;
-        this.touchedState = true;
 	};
 	
 	TouchInfo.prototype.update = function (nowtime, x, y, width, height, pressure)
@@ -294,8 +292,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 		var self = this;
 		
-		// IE11-style standard pointer events
-		if (window.navigator["pointerEnabled"])
+		if (typeof PointerEvent !== "undefined")
 		{
 			elem.addEventListener("pointerdown",
 				function(info) {
@@ -544,8 +541,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Ignore mouse events (note check for both IE10 and IE11 style pointerType values)
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
-			
-	    //this._is_mouse_mode = false;			
+				
 		if (info.preventDefault)
 			info.preventDefault();
 		
@@ -582,8 +578,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		// Ignore mouse events (note check for both IE10 and IE11 style pointerType values)
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
-	
-	    //this._is_mouse_mode = false;			
+		
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 		
@@ -626,7 +621,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info["pointerType"] === info["MSPOINTER_TYPE_MOUSE"] || info["pointerType"] === "mouse")
 			return;
 	
-        //this._is_mouse_mode = false;			
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
@@ -716,7 +710,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	{
 	    if (!this.enable)
 	        return;
-	        	    
+                    
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
@@ -769,7 +763,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	{
 	    if (!this.enable)
 	        return;
-	        	    
+
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
@@ -843,12 +837,20 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	var noop_func = function(){};
 
+    instanceProto.updateCursor = function(info)
+    {
+        var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+        
+        this.cursor.x = info.pageX - offset.left;
+        this.cursor.y = info.pageY - offset.top; 
+    }
 	instanceProto.onMouseDown = function(info)
 	{
 	    if (!this.enable)
 	        return;
 	        	    
-	    this._is_mouse_mode = true;
+        this.updateCursor(info);
+        
 		this.mouseDown = true;	    
 		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
 			info.preventDefault();
@@ -870,24 +872,25 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	{
 	    if (!this.enable)
 	        return;
-	        	    
-        this._is_mouse_mode = true;	
+                
+        this.updateCursor(info);
+        
+		if (!this.mouseDown)
+			return;
 			
 		// Send a fake touch move event
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
-		if (this.touches.length === 0)
-		    this.__addMouseMovePoint__(fakeinfo);
-		else
-		    this.onTouchMove(fakeinfo);
+		this.onTouchMove(fakeinfo);
 	};
 
 	instanceProto.onMouseUp = function(info)
 	{
 	    if (!this.enable)
 	        return;
+
+        this.updateCursor(info);        
 	        	    
-	    this._is_mouse_mode = true;	    
 		this.mouseDown = false;			    
 		if (info.preventDefault && this.runtime.had_a_click && !this.runtime.isMobile)
 			info.preventDefault();
@@ -898,7 +901,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var t = { pageX: info.pageX, pageY: info.pageY, "identifier": 0 };
 		var fakeinfo = { changedTouches: [t] };
 		this.onTouchEnd(fakeinfo);
-		this.__addMouseMovePoint__(fakeinfo);
 	};
 	
 	instanceProto.tick2 = function()
@@ -934,8 +936,6 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		{
 			t = this.touches[i];
 		    val = "(" + t.x + ", " + t.y + "), ID: " + t["id"];
-            if (!t.touchedState)
-                val += " , mouse moving only";
 			props.push({"name": i.toString(), "value": val, "readonly": true});
 		}
 		
@@ -1697,35 +1697,11 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var touch = this.touches[index];
 		ret.set_float(touch.pressure);
 	};
-	
+    
 	pluginProto.exps = new Exps();
 	
     
     // wrapper --------
-	instanceProto.__addMouseMovePoint__ = function (info)
-	{
-		if (info.preventDefault)
-			info.preventDefault();
-			
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
-		var nowtime = cr.performance_now();
-		
-		var i, len, t;        
-		for (i = 0, len = info.changedTouches.length; i < len; i++)
-		{
-			t = info.changedTouches[i];
-			
-			var touchx = t.pageX - offset.left;
-			var touchy = t.pageY - offset.top;
-			
-			this.trigger_index = this.touches.length;
-            
-            var t = AllocTouchInfo(touchx, touchy, t["identifier"], this.trigger_index);
-            t.touchedState = false;
-            this.touches.push(t);
-		}		
-	};
-
     instanceProto.HookMe = function (obj)
     {
         this._callbackObjs.push(obj);
@@ -1735,23 +1711,177 @@ cr.plugins_.rex_TouchWrap = function(runtime)
     {
         cr.arrayFindRemove(this._callbackObjs, obj);
     };    
-    instanceProto.UseMouseInput = function()
-    {
-        return this.useMouseInput;
-    };
-    instanceProto.IsMouseMode = function ()
-    {
-        return this._is_mouse_mode;
-    };    
-	instanceProto.IsInTouch = function ()
+    instanceProto.IsInTouch = function ()
 	{
-        if (this.touches.length === 0)
-            return false;
-        else if (this.touches.length === 1)
-            return this.touches[0].touchedState;
-        else
-            return true;
+        return (this.touches.length > 0);
+    };     
+    
+    // epxort
+    var exps = cr.plugins_.rex_TouchWrap.prototype.exps;
+    instanceProto.TouchCount = function()
+    {
+        exps.TouchCount.call(this, this.fake_ret);
+        return this.fake_ret.value
+    };     
+    instanceProto.X = function(layerparam)
+    {
+        exps.X.call(this, this.fake_ret, layerparam);
+        return this.fake_ret.value
+    };  
+    instanceProto.XAt = function(index, layerparam)
+    {
+        exps.XAt.call(this, this.fake_ret, index, layerparam);
+        return this.fake_ret.value
+    };
+    instanceProto.XForID = function(id, layerparam)
+    {
+        exps.XForID.call(this, this.fake_ret, id, layerparam);
+        return this.fake_ret.value
+    };    
+    instanceProto.Y = function(layerparam)
+    {
+        exps.Y.call(this, this.fake_ret, layerparam);
+        return this.fake_ret.value
+    };     
+    instanceProto.YAt = function(index, layerparam)
+    {
+        exps.YAt.call(this, this.fake_ret, index, layerparam);
+        return this.fake_ret.value
+    };     
+    instanceProto.YForID = function(id, layerparam)
+    {
+        exps.YForID.call(this, this.fake_ret, id, layerparam);
+        return this.fake_ret.value
+    };     
+    instanceProto.AbsoluteX = function()
+    {
+        exps.AbsoluteX.call(this, this.fake_ret);
+        return this.fake_ret.value
+    };     
+    instanceProto.AbsoluteXAt = function(index)
+    {
+        exps.AbsoluteXAt.call(this, this.fake_ret, index);
+        return this.fake_ret.value
+    };    
+    instanceProto.AbsoluteXForID = function(id)
+    {
+        exps.AbsoluteXForID.call(this, this.fake_ret, id);
+        return this.fake_ret.value
+    };
+    instanceProto.AbsoluteY = function()
+    {
+        exps.AbsoluteY.call(this, this.fake_ret);
+        return this.fake_ret.value
+    };     
+    instanceProto.AbsoluteYAt = function(index)
+    {
+        exps.AbsoluteYAt.call(this, this.fake_ret, index);
+        return this.fake_ret.value
+    };    
+    instanceProto.AbsoluteYForID = function(id)
+    {
+        exps.AbsoluteYForID.call(this, this.fake_ret, id);
+        return this.fake_ret.value
+    };    
+    
+
+	instanceProto.CursorX = function (layerparam)
+	{
+        if (this.cursor.x == null)
+            return null;
+
+        var x;
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			x = layer.canvasToLayer(this.cursor.x, this.cursor.y, true);
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				x = layer.canvasToLayer(this.cursor.x, this.cursor.y, true);
+			else
+				x = 0;
+		}
+        
+        return x;
+	};
+
+
+	instanceProto.CursorY = function (layerparam)
+	{
+        if (this.cursor.y == null)
+            return null;
+
+        var y;
+		var layer, oldScale, oldZoomRate, oldParallaxX, oldAngle;
+	
+		if (cr.is_undefined(layerparam))
+		{
+			// calculate X position on bottom layer as if its scale were 1.0
+			layer = this.runtime.getLayerByNumber(0);
+			oldScale = layer.scale;
+			oldZoomRate = layer.zoomRate;
+			oldParallaxX = layer.parallaxX;
+			oldAngle = layer.angle;
+			layer.scale = 1;
+			layer.zoomRate = 1.0;
+			layer.parallaxX = 1.0;
+			layer.angle = 0;
+			y = layer.canvasToLayer(this.cursor.x, this.cursor.y, false);
+			layer.scale = oldScale;
+			layer.zoomRate = oldZoomRate;
+			layer.parallaxX = oldParallaxX;
+			layer.angle = oldAngle;
+		}
+		else
+		{
+			// use given layer param
+			if (cr.is_number(layerparam))
+				layer = this.runtime.getLayerByNumber(layerparam);
+			else
+				layer = this.runtime.getLayerByName(layerparam);
+				
+			if (layer)
+				y = layer.canvasToLayer(this.cursor.x, this.cursor.y, false);
+			else
+				y = 0;
+		}
+        
+        return y;
 	};    
+    
+    instanceProto.CursorAbsoluteX = function ()
+    {
+        return this.cursor.x;
+    };
+    
+    instanceProto.CursorAbsoluteY = function ()
+    {
+        return this.cursor.y;
+    };    
+    
     // wrapper --------    
     
 }());

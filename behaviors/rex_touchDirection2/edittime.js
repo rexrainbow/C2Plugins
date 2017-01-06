@@ -34,8 +34,12 @@ AddCondition(3,	0, "Is dragging", "", "Is {my} dragging", "Is object dragging.",
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Get mouse X position", "Position", "X", "Get the mouse cursor X co-ordinate in the layout.");
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Get mouse Y position", "Position", "Y", "Get the mouse cursor Y co-ordinate in the layout.");
-AddExpression(2, ef_return_number, "Get absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
-AddExpression(3, ef_return_number, "Get absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
+
+// ef_deprecated
+AddExpression(2, ef_deprecated | ef_return_number, "Get absolute mouse X", "Position", "AbsoluteX", "Get the mouse cursor X co-ordinate on the canvas.");
+AddExpression(3, ef_deprecated | ef_return_number, "Get absolute mouse Y", "Position", "AbsoluteY", "Get the mouse cursor Y co-ordinate on the canvas.");
+// ef_deprecated
+
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
 AddExpression(5, ef_return_number, "Get Proportion", "", "Proportion", "The Proportion setting.");
 AddExpression(10, ef_return_number, "Get speed", "Position", "Speed", "Get the speed of a touch, pixels per second.");

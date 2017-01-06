@@ -128,14 +128,23 @@ AddExpression(4, ef_return_string, "Get substring", "String", "SubString",
               "Get substring from (start index) to (end index-1).");
                    
 AddNumberParam("Source", "Source number.", 0);
-AddNumberParam("Digital", "Digital.", 1);
-AddExpression(5, ef_return_string, "Number to string with N decimals", "Number to string", "ToFixed", 
-              "Convert a number into a string, keeping only N decimals.");  
+//AddNumberParam("Digital", "Digital.", 10);
+AddExpression(5, ef_return_string | ef_variadic_parameters, "Number to string with N decimals", "Number to string", "ToFixed", 
+              "Convert a number into a string, keeping only N decimals. Add 2nd parameter for decimals, default is 10.");  
 
 AddNumberParam("Source", "Source number.", 0);
-AddNumberParam("Digital", "Digital.", 1);
-AddExpression(6, ef_return_string, "Number to string with a specified length", "Number to string", "ToPrecision", 
-              "Format a number into a specified length.");                
+//AddNumberParam("Digital", "Digital.", 10);
+AddExpression(6, ef_return_string | ef_variadic_parameters, "Number to string with a specified length", "Number to string", "ToPrecision", 
+              "Format a number into a specified length. Add 2nd parameter for length, default is 10.");             
+
+AddNumberParam("Source", "Source number.", 0);
+//AddNumberParam("Digital", "Digital.", 10);
+AddExpression(7, ef_return_number | ef_variadic_parameters, "Truncate number with N decimals", "Number", "ToFixedNumber", 
+              "Truncate number with N decimals. Add 2nd parameter for decimals, default is 10.");       
+
+//AddNumberParam("Count", "Count.", 1);
+AddExpression(8, ef_return_string | ef_variadic_parameters, "Get new line(s)", "String", "Newline", 
+              "Get new line(s). Add 1st parameter for line count.");              
               
 AddNumberParam('Mean', "Mean value", 0);  
 AddNumberParam('Standard deviation', "Standard deviation value", 1);       
@@ -156,7 +165,7 @@ AddExpression(21, ef_return_number, "Get reflection angle", "Angle", "Reflection
         
 AddNumberParam("Digital", "Digital.", 1);
 AddExpression(31, ef_return_string, "Get a random base32 string", "String", "RandomBase32", 
-              "Get a random base32 string.");
+              "Get a random base32 string.");                           
               
 ACESDone();
 

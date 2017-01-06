@@ -119,6 +119,9 @@ AddNumberParam("Y", "Logic Y.", 0);
 AddExpression(11, ef_return_any, "Get cell value", "Map", "ValueAt", 
               "Get cell value at logic X,Y. Return 1 if this cell is a wall, 0 if this cell is a room space/corridor/door, return -1 if this cell is invalid.");
 
+AddExpression(12, ef_return_string, "Get map as JSON string", "Map", "MapAsJson", 
+              'Get map as JSON string. Return "" if map is not ready.');              
+
 AddExpression(21, ef_return_number, "Get left X index of current room", "For each room", "CurRoomLeft", 
               "Get left X index of current room in a For Each loop.");
 AddExpression(22, ef_return_number, "Get right X of current room", "For each room", "CurRoomRight", 

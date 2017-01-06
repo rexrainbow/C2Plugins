@@ -59,7 +59,7 @@ AddExpression(8, ef_return_number | ef_variadic_parameters,
               "Get escaped seconds", "Timer", "Timer", "Get escaped seconds of timer.");
 AddExpression(9, ef_deprecated | ef_return_number, 
               "Get current ticks", "Timer", "CurTicks", "Get current ticks of timer in milliseconds. (Date.getTime())");
-AddExpression(10, ef_return_number, 
+AddExpression(10, ef_return_number | ef_variadic_parameters, 
               "Get current unix timestamp", "UnixTimestamp", "UnixTimestamp", "Get current number of milliseconds since the epoch.");
 AddNumberParam("Year", "Year, start with 0.", 0);
 AddNumberParam("Month", "Month, start with 1.", 1);

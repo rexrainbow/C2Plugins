@@ -461,12 +461,35 @@ cr.plugins_.Rex_SysExt = function(runtime)
     
     Exps.prototype.ToFixed = function (ret, n, dig)
 	{
-	    ret.set_string( n.toFixed(dig) );
+        if (dig == null)
+            dig = 10;
+	    ret.set_string( n["toFixed"](dig) );
 	};	
     
     Exps.prototype.ToPrecision = function (ret, n, dig)
 	{
-	    ret.set_string( n.toPrecision(dig) );
+        if (dig == null)
+            dig = 10;        
+	    ret.set_string( n["toPrecision"](dig) );
+	};	    
+    
+    Exps.prototype.ToFixedNumber = function (ret, n, dig)
+	{
+        if (dig == null)
+            dig = 10;
+        var val = n["toFixed"](dig);
+	    ret.set_float( parseFloat( val ) );
+	};	    
+    
+    Exps.prototype.Newline = function (ret, cnt)
+	{
+        if (cnt == null)
+            cnt = 1;
+        
+        var i, s = "";
+        for (i=0; i<cnt; i++)
+            s += "\n";
+	    ret.set_string( s );
 	};	    
     
     Exps.prototype.NormalRandom = function (ret, mean, stddev)

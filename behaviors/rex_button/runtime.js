@@ -29,8 +29,6 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.touchwrap = null;
-        this.GetX = null;
-        this.GetY = null;
 	};
     
 	behtypeProto.TouchWrapGet = function ()
@@ -45,9 +43,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
             obj = plugins[name].instances[0];
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
-                this.touchwrap = obj;
-                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
-                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;                
+                this.touchwrap = obj;               
                 this.touchwrap.HookMe(this);
                 break;
             }
@@ -84,7 +80,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 			// Transform point from canvas to instance's layer
 			lx = inst.layer.canvasToLayer(touchX, touchY, true);
 			ly = inst.layer.canvasToLayer(touchX, touchY, false);
-            
+
             if (inst.contains_pt(lx, ly))
                 _touch_insts.push(inst);
         }
@@ -288,10 +284,10 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	behinstProto._is_touch_inside = function ()
 	{
         var touchwrap = this.type.touchwrap;
-        var touch_x = this.GetX();
-        var touch_y = this.GetY();
+        var touch_x = this.GetTouchX();
+        var touch_y = this.GetTouchY();
         this.inst.update_bbox();  
-        return this.inst.contains_pt(touch_x, touch_y)
+        return this.inst.contains_pt(touch_x, touch_y);
 	};
 	behinstProto._check_click_cancel = function (is_touch_inside)
 	{
@@ -333,7 +329,7 @@ cr.behaviors.Rex_Button2 = function(runtime)
 	{
         if (this.clickMode == 0)
         {
-            this.touchSrc = touch_src;
+            this.touchSrc = touch_src;        
             this._set_state(CLICK_DETECTING_STATE);
             this.runtime.trigger(cr.behaviors.Rex_Button2.prototype.cnds.OnClickStart, this.inst);         
         }        
@@ -373,22 +369,14 @@ cr.behaviors.Rex_Button2 = function(runtime)
         }
 	};  
     
-	behinstProto.GetX = function()
+	behinstProto.GetTouchX = function()
 	{
-        var touch_obj = this.type.touchwrap;
-        var src = (touch_obj.IsMouseMode())? 0: this.touchSrc;
-		this.type.GetX.call(touch_obj, 
-                            touch_obj.fake_ret, src, this.inst.layer.index);
-        return touch_obj.fake_ret.value;          
+        return this.type.touchwrap.XForID(this.touchSrc, this.inst.layer.index);
 	};
     
-	behinstProto.GetY = function()
+	behinstProto.GetTouchY = function()
 	{
-        var touch_obj = this.type.touchwrap;
-        var src = (touch_obj.IsMouseMode())? 0: this.touchSrc;        
-		this.type.GetY.call(touch_obj, 
-                            touch_obj.fake_ret, src, this.inst.layer.index);
-        return touch_obj.fake_ret.value;         
+        return this.type.touchwrap.YForID(this.touchSrc, this.inst.layer.index);      
 	};
 	
 	behinstProto.saveToJSON = function ()

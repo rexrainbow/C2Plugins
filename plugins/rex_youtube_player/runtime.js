@@ -108,8 +108,6 @@ cr.plugins_.rex_youtube_player = function(runtime)
         else
             this.visible = true;
 					
-		this.updatePosition(true);  // init position and size
-		
         if (!this.recycled)
 		    this.pendingCallbacks = [];
         else
@@ -129,6 +127,8 @@ cr.plugins_.rex_youtube_player = function(runtime)
         		
         this.isInFullScreen = false;
         this.beforefullwindow = {"x":null, "y":null, "w":null, "h":null};
+        
+		this.updatePosition(true);  // init position and size        
 		this.runtime.tickMe(this);
        
 	};       

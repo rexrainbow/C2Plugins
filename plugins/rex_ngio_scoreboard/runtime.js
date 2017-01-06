@@ -424,6 +424,14 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
 	    ret.set_string(val || "");
 	};
     
+	Exps.prototype.BoardsCount = function (ret)
+	{
+        var val;
+        if (this.lastBoards)
+            val = this.lastBoards.lngth;
+	    ret.set_int(val || 0);
+	};	      
+    
 	Exps.prototype.ScoresAsJSON = function (ret)
 	{
         var val;
@@ -504,10 +512,12 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
 	    ret.set_int(val || 0);
 	}; 
    
-	Exps.prototype.CurStartIndex = function (ret)
+	Exps.prototype.StartIndex = function (ret)
 	{
-	    ret.set_int(vthis.lastScoresStartIndex);
+	    ret.set_int(this.lastScoresStartIndex);
 	};     
+    
+    Exps.prototype.ScoresCount = Exps.prototype.CurStartIndex;
     
     
 }());

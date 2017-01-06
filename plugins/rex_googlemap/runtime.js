@@ -82,10 +82,10 @@ cr.plugins_.rex_googlemap = function(runtime)
 		//	this.element_hidden = true;
 		//}
 					
-		this.updatePosition(true);  // init position and size
-
         this.isInFullScreen = false;
         this.beforefullwindow = {"x":null, "y":null, "w":null, "h":null};
+        
+		this.updatePosition(true);  // init position and size        
 		this.runtime.tickMe(this);      
 	};     
 

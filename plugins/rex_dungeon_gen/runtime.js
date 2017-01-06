@@ -453,6 +453,12 @@ cr.plugins_.Rex_DungeonGen = function(runtime)
 	    ret.set_any( this.ValueAt(x,y) );
 	};   	    
     
+    Exps.prototype.MapAsJson = function (ret)
+	{
+        var json = (this.map)? JSON.stringify( this.map ) : "";
+	    ret.set_string( json );
+	};    
+    
     Exps.prototype.CurRoomLeft = function (ret)
 	{
 	    ret.set_int( this.getRoomLeft(this.exp_CurRoom) );

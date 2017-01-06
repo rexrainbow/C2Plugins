@@ -248,5 +248,10 @@ cr.plugins_.Rex_CSV2Dictionary = function(runtime)
 	Exps.prototype.CurValue = function (ret)
 	{
 		ret.set_any(this.exp_CurValue);
-	};		
+	};	
+	
+	Exps.prototype.Delimiter = function (ret)
+	{ 
+		ret.set_string(this.strDelimiter);
+	};    	
 }());

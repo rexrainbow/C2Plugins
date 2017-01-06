@@ -37,10 +37,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 		
 		// touchwrap
         this.touchwrap = null;
-        this.GetX = null;
-        this.GetY = null;
-        this.GetAbsoluteX = null;
-        this.GetAbsoluteY = null;        		
 	};
 	
 	behaviorProto.TouchWrapGet = function ()
@@ -57,10 +53,6 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             if (inst instanceof cr.plugins_.rex_TouchWrap.prototype.Instance)
             {
                 this.touchwrap = inst;
-                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
-                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID;
-                this.GetAbsoluteX = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteXForID;
-                this.GetAbsoluteY = cr.plugins_.rex_TouchWrap.prototype.exps.AbsoluteYForID;
                 this.touchwrap.HookMe(this);
                 return this.touchwrap;
             }
@@ -204,8 +196,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         // this.enabled == 1 && this.is_on_dragged        
         var inst=this.inst;
         var drag_info=this.drag_info;
-        var cur_x=this.GetX();
-        var cur_y=this.GetY();
+        var cur_x=this.GetTouchX();
+        var cur_y=this.GetTouchY();
         var is_moving = (drag_info.pre_x != cur_x) ||
                         (drag_info.pre_y != cur_y);  
                             
@@ -269,50 +261,24 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
         p1.x = p0.x + (d * Math.cos(new_angle));
         p1.y = p0.y + (d * Math.sin(new_angle));        
         return p1;
-    }
- 
-	behinstProto.GetABSX = function ()
-	{
-	    if (this.drag_info.touch_src == -1)
-	        return 0;
-	    
-        var touch_obj = this.behavior.touchwrap;
-        this.behavior.GetAbsoluteX.call(touch_obj, 
-                                        touch_obj.fake_ret, this.drag_info.touch_src);
-        return touch_obj.fake_ret.value;
-	};  
-
-	behinstProto.GetABSY = function ()
-	{
-	    if (this.drag_info.touch_src == -1)
-	        return 0;
-	    
-        var touch_obj = this.behavior.TouchWrapGet();  
-        this.behavior.GetAbsoluteY.call(touch_obj, 
-                                        touch_obj.fake_ret, this.drag_info.touch_src);
-        return touch_obj.fake_ret.value;        
-	};     
+    }   
         
-	behinstProto.GetX = function()
+	behinstProto.GetTouchX = function()
 	{
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
-	    
+	            
         var touch_obj = this.behavior.TouchWrapGet();  
-        this.behavior.GetX.call(touch_obj, 
-                                touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
-        return touch_obj.fake_ret.value;          
+        return touch_obj.XForID(this.drag_info.touch_src, this.inst.layer.index);
 	};
     
-	behinstProto.GetY = function()
+	behinstProto.GetTouchY = function()
 	{
 	    if (this.drag_info.touch_src == -1)
 	        return 0;
 	    
         var touch_obj = this.behavior.TouchWrapGet();  
-        this.behavior.GetY.call(touch_obj, 
-                                touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
-        return touch_obj.fake_ret.value;         
+        return touch_obj.YForID(this.drag_info.touch_src, this.inst.layer.index);
 	};
 	
 	behinstProto.DragSrcSet = function (src)
@@ -361,7 +327,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
             // !! should set these before get touchXY
             
 	        var inst = this.plugin.inst;              
-            var cur_x=this.plugin.GetX(), cur_y=this.plugin.GetY();
+            var cur_x=this.plugin.GetTouchX(), cur_y=this.plugin.GetTouchY();
             this.drag_dx = inst.x - cur_x;
             this.drag_dy = inst.y - cur_y;
             this.pre_x = cur_x;
@@ -407,8 +373,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	        
 	    var startx = this.drag_start_x;
 	    var starty = this.drag_start_y;
-	    var endx = this.plugin.GetX();
-	    var endy = this.plugin.GetY();
+	    var endx = this.plugin.GetTouchX();
+	    var endy = this.plugin.GetTouchY();
 	    var d = cr.distanceTo(startx,starty,endx,endy);
 	    return d;
 	};
@@ -420,8 +386,8 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	        
 	    var startx = this.drag_start_x;
 	    var starty = this.drag_start_y;
-	    var endx = this.plugin.GetX();
-	    var endy = this.plugin.GetY();
+	    var endx = this.plugin.GetTouchX();
+	    var endy = this.plugin.GetTouchY();
 	    var a = cr.angleTo(startx,starty,endx,endy);
 		a = cr.to_clamped_degrees(a);
 	    return a;
@@ -556,29 +522,48 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 
 	Exps.prototype.X = function (ret)
 	{
-        ret.set_float( this.GetX() );
+        ret.set_float( this.GetTouchX() );
 	};
 	
 	Exps.prototype.Y = function (ret)
 	{
-	    ret.set_float( this.GetY() );
+	    ret.set_float( this.GetTouchY() );
 	};
 	
+    // ef_deprecated    
 	Exps.prototype.AbsoluteX = function (ret)
 	{
-        ret.set_float( this.GetABSX() );
+        var x;
+	    if (this.drag_info.touch_src == -1)
+	        x = 0;
+        else
+        {
+            var touch_obj = this.behavior.touchwrap;
+            x = touch_obj.AbsoluteXForID(this.drag_info.touch_src);
+        }
+	    ret.set_float( x );
 	};
 	
 	Exps.prototype.AbsoluteY = function (ret)
 	{
-        ret.set_float( this.GetABSY() );
+        var y;
+	    if (this.drag_info.touch_src == -1)
+	        y = 0;
+        else
+        {
+            var touch_obj = this.behavior.touchwrap;
+            y = touch_obj.AbsoluteYForID(this.drag_info.touch_src);
+        }
+	    ret.set_float( y );
 	};
+    // ef_deprecated
     
 	Exps.prototype.Activated = function (ret)
 	{
 		ret.set_int((this.enabled)? 1:0);
 	};  
 
+    // ef_deprecated
 	Exps.prototype.StartX = function (ret)
 	{
         ret.set_float( this.drag_info.inst_start_x );
@@ -588,6 +573,7 @@ cr.behaviors.Rex_DragDrop2 = function(runtime)
 	{
 	    ret.set_float( this.drag_info.inst_start_y );
 	}; 
+    // ef_deprecated
 
 	Exps.prototype.DragStartX = function (ret)
 	{

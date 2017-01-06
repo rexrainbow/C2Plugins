@@ -4,5 +4,3 @@
   :: hook plugins to get triggers. Plugins need to implement
      - OnTouchStart(NthTouch, TouchX, TouchY)
      - OnTouchEnd(NthTouch)
-- touchwrap.UseMouseInput()
-  :: is using mouse input

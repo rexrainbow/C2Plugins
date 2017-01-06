@@ -144,13 +144,61 @@ cr.plugins_.Rex_canvas = function(runtime)
 			ctx["translate"](-canvas_inst.bquad.tlx, -canvas_inst.bquad.tly);
 			mode_save = inst.compositeOp;
 			inst.compositeOp = blend_mode;
-            ctx.globalCompositeOperation = blend_mode;
+            ctx["globalCompositeOperation"] = blend_mode;
 			inst["draw"](ctx);		
 			inst.compositeOp = mode_save;	
 			ctx["restore"]();
 		}
 	};
     
+	instanceProto.DrawObject = function (objtype, blend_mode)
+	{
+        if (!objtype)
+            return;
+
+		this.update_bbox();
+		
+		var sol = objtype.getCurrentSol();
+		var instances;
+		if (sol.select_all)
+			instances = sol.type.instances;
+		else
+			instances = sol.instances;
+		
+		this.draw_instances(instances, this, blend_mode);
+		
+		this.runtime.redraw = true;
+        this.update_tex = true;  
+	};    
+    
+    var CompositingMap = [
+        "source-over",
+        "source-in",
+        "source-out",
+        "source-atop",
+        "destination-over",
+        "destination-in",
+        "destination-out",
+        "destination-atop",
+        "lighter",
+        "copy",
+        "xor",
+        "multiply",
+        "screen",
+        "overlay",
+        "darken",
+        "lighten",
+        "color-dodge",
+        "color-burn",
+        "hard-light",
+        "soft-light",
+        "difference",
+        "exclusion",
+        "hue",
+        "saturation",
+        "color",
+        "luminosity",  
+    ];
 
 	instanceProto.saveToJSON = function ()
 	{
@@ -392,24 +440,17 @@ cr.plugins_.Rex_canvas = function(runtime)
 
     
 	// http://www.scirra.com/forum/plugin-canvas_topic46006_post289303.html#289303
-	Acts.prototype.EraseObject = function (object)
+	Acts.prototype.EraseObject = function (objtype)
 	{
-	    var canvas_inst = this.inst;	
-		this.update_bbox();
-		
-		var sol = object.getCurrentSol();
-		var instances;
-		if (sol.select_all)
-			instances = sol.type.instances;
-		else
-			instances = sol.instances;
-		
-		this.draw_instances(instances, canvas_inst, "destination-out");
-		
-		this.runtime.redraw = true;
-        this.update_tex = true;  
+        this.DrawObject(objtype, "destination-out");
 	};
-	
+    
+	Acts.prototype.DrawObject = function (objtype, mode)
+	{
+        if (typeof(mode) === "number")
+            mode = CompositingMap[mode];
+        this.DrawObject(objtype, mode);
+	};	
 	Acts.prototype.LoadURL = function (url_, resize_)
 	{
 		var img = new Image();

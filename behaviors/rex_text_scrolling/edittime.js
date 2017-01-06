@@ -23,17 +23,17 @@ AddAction(1, 0, "Set content", "Content",
           "{my} Set content to <i>{0}</i>", 
           "Set content.", "SetContent");
 AddNumberParam("Percentage", "Scroll content, 0 is top, 1 is bottom.", 1);
-AddAction(2, 0, "Scroll by percentage", "Scrolling", 
-          "{my} Scroll content by percentage to <i>{0}</i>", 
-          "Scroll content by percentage. 0 is top, 1 is bottom.", "ScrollByPercent");
+AddAction(2, 0, "To percentage", "Scrolling", 
+          "{my} Scroll content to percentage to <i>{0}</i>", 
+          "Scroll content to percentage. 0 is top, 1 is bottom.", "ScrollToPercent");
 AddAnyTypeParam("Text", "Enter the text to append to the object's content.", "\"\"");
 AddAction(3, 0, "Append content", "Content", 
           "{my} Append <i>{0}</i>", 
           "Add text to the end of the existing content.", "AppendContent");          
 AddNumberParam("Line index", "Scroll the first line to index (0-based).", 0);
-AddAction(4, 0, "Scroll by line index", "Line scrolling", 
-          "{my} Scroll content by line index to <i>{0}</i>", 
-          "Scroll content by line index.", "ScrollByIndex");
+AddAction(4, 0, "To line", "Line scrolling", 
+          "{my} Scroll content to line <i>{0}</i>", 
+          "Scroll content to line.", "ScrollToLineIndex");
 AddAction(6, 0, "Next line", "Line scrolling", 
           "{my} Scroll content to next line", 
           "Scroll content to next line.", "NextLine");     
@@ -45,7 +45,11 @@ AddAction(8, 0, "Next page", "Page scrolling",
           "Scroll content to next page.", "NextPage");     
 AddAction(9, 0, "Previous page", "Page scrolling", 
           "{my} Scroll content to previous page", 
-          "Scroll content to previous page.", "PreviousPage");            
+          "Scroll content to previous page.", "PreviousPage");
+AddNumberParam("Page index", "Scroll the first line to page index (0-based).", 0);
+AddAction(10, 0, "To page", "Page scrolling", 
+          "{my} Scroll content to page <i>{0}</i>", 
+          "Scroll content to page.", "ScrollToPageIndex");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_string, "Get text", "Text", "Text", "Get text.");

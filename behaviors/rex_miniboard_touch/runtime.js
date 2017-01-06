@@ -29,8 +29,6 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	behtypeProto.onCreate = function()
 	{
         this.touchwrap = null;
-        this.GetX = null;
-        this.GetY = null;
         this.board_types = [];
 	};
 	
@@ -61,8 +59,6 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
             if ((obj != null) && (obj.check_name == "TOUCHWRAP"))
             {
                 this.touchwrap = obj;
-                this.GetX = cr.plugins_.rex_TouchWrap.prototype.exps.XForID;
-                this.GetY = cr.plugins_.rex_TouchWrap.prototype.exps.YForID; 
                 this.touchwrap.HookMe(this);
                 return this.touchwrap;
             }
@@ -289,9 +285,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	        return 0;
 	    
         var touch_obj = this.type.touchwrap;
-        this.type.GetX.call(touch_obj, 
-                            touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
-        return touch_obj.fake_ret.value;          
+        return touch_obj.XForID(this.drag_info.touch_src, this.inst.layer.index);
 	};
     
 	behinstProto.GetY = function()
@@ -300,9 +294,7 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	        return 0;
 	    
         var touch_obj = this.type.touchwrap;
-        this.type.GetY.call(touch_obj, 
-                            touch_obj.fake_ret, this.drag_info.touch_src, this.inst.layer.index);
-        return touch_obj.fake_ret.value;         
+        return touch_obj.YForID(this.drag_info.touch_src, this.inst.layer.index); 
 	}; 
     
 	behinstProto.drag = function(touch_src)
@@ -475,15 +467,21 @@ cr.behaviors.Rex_miniboard_touch = function(runtime)
 	Acts.prototype.SetDragable = function (en)
 	{
 		this.activated = (en === 1);
+        
+        if (!this.activated)
+            this.drop();
 	}; 
 
 	Acts.prototype.ForceDrop = function ()
-	{
+	{        
         this.drop();
 	}; 
 
 	Acts.prototype.TryDrag = function ()
 	{
+        if (!this.activated)
+            return;
+        
         if (this.drag_info.is_on_dragged)  // already dragged
             return;
 

@@ -3,7 +3,7 @@
 	return {
 		"name":			"Boundary",
 		"id":			"Rex_boundary",
-		"description":	"Clamp position of object in the boundary, or wrap the position at the other boundary.",
+		"description":	"Clamp or wrap position.",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_boundary.html",
 		"category":		"Rex - Movement - position",

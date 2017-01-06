@@ -79,11 +79,11 @@ AddAction(5, 0, "Turn page", "Page", "Turn the page to <i>{0}</i>",
 AddStringParam("JSON string", "JSON string.", '""');
 AddAction(6, 0, "Load one table", "0: Load", "Load table from JSON string <i>{0}</i>",
          "Load table from JSON string.", "StringToPage");  
-AddAnyTypeParam("Col", "Column index.", '""');
+AddStringParam("Col", "Column index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
 AddAction(7, 0, "Append a column", "Resize", "Append column <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a column.", "AppendCol");
-AddAnyTypeParam("Row", "Row index.", '""');
+AddStringParam("Row", "Row index.", '""');
 AddAnyTypeParam("Value", "The initial value.", '""');
 AddAction(8, 0, "Append a row", "Resize", "Append row <i>{0}</i> with initial value to <i>{1}</i>",
          "Append a row.", "AppendRow");  

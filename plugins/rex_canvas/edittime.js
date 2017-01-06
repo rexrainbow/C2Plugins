@@ -285,6 +285,40 @@ AddAction(2001, 0, "Load image from URL", "Load", "Load image from <i>{0}</i> ({
 AddObjectParam("object", "Object to erase.");
 AddAction(2011, 0, "Erase object", "Paste", "Erase Object {0}", "Erase objects.", "EraseObject");
 
+AddObjectParam("object", "Object to erase.");
+AddComboParamOption("source-over");
+AddComboParamOption("source-in");
+AddComboParamOption("source-out");
+AddComboParamOption("source-atop");
+AddComboParamOption("destination-over");
+AddComboParamOption("destination-in");
+AddComboParamOption("destination-out");
+AddComboParamOption("destination-atop");
+AddComboParamOption("lighter");
+AddComboParamOption("copy");
+AddComboParamOption("xor");
+AddComboParamOption("multiply");
+AddComboParamOption("screen");
+AddComboParamOption("overlay");
+AddComboParamOption("darken");
+AddComboParamOption("lighten");
+AddComboParamOption("color-dodge");
+AddComboParamOption("color-burn");
+AddComboParamOption("hard-light");
+AddComboParamOption("soft-light");
+AddComboParamOption("difference");
+AddComboParamOption("exclusion");
+AddComboParamOption("hue");
+AddComboParamOption("saturation");
+AddComboParamOption("color");
+AddComboParamOption("luminosity");
+AddComboParam("Compositing", "Choose the compositing of this drawing.");
+AddAction(2012, 0, "Draw object", "Paste", "Draw Object {0} ({1})", "Draw objects.", "DrawObject");
+
+AddObjectParam("object", "Object to erase.");
+AddStringParam("Compositing", "Compositing of this drawing.", "source-over");
+AddAction(2013, 0, "Draw object #", "Paste", "Draw Object {0} ({1})", "Draw objects.", "DrawObject");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_number, "Get canvas width", "Canvas", "CanvasWidth", "Get canvas width.");

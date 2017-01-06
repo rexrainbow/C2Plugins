@@ -390,23 +390,11 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Acts.prototype.AppendCol = function (col, init_value)
 	{
-        if (typeof (col) === "number")
-        {
-            var cols = this.current_table.keys;
-            col = cols[col];
-        }
-
         this.current_table.AppendCol(col, init_value);
 	}; 
     
 	Acts.prototype.AppendRow = function (row, init_value)
 	{
-        if (typeof (row) === "number")
-        {
-            var rows = this.current_table.items;
-            row = rows[row];
-        }   
-        
         this.current_table.AppendRow(row, init_value);
 	}; 
     

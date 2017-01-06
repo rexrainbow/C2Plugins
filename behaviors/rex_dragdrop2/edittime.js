@@ -48,12 +48,12 @@ AddCondition(11,	0, "Is enabled", "Enable",
 AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
 AddComboParam("State", "Choose whether to enable or disable the behavior.");
-AddAction(0, af_none, "Set enabled", "Enable", "Set {my} {0}", "Enable or disable the drag and drop behavior.", "SetEnabled");
+AddAction(0, af_none, "Set enable", "Enable", "Set {my} {0}", "Enable or disable the drag and drop behavior.", "SetEnabled");
           
 AddAction(1, 0, "Drop", "Drop", "Drop {my}", 
           "If currently being dragged, force the object to be dropped.", 
           "ForceDrop");          
-AddAction(2, 0, "Try drag", "Drag", "Try drag {my}", 
+AddAction(2, 0, "Try to drag", "Drag", "Try drag {my}", 
           "Try to drag this object if is in touched.", "TryDrag"); 
           
 AddNumberParam("Angle", "Axis angle, in degrees.", 0);              
@@ -64,11 +64,19 @@ AddAction(3, 0, "Set angle", "Axis", "Set {my} axis-angle to <i>{0}</i>",
 // Expressions
 AddExpression(0, ef_return_number | ef_variadic_parameters, "Touch X position", "Position", "X", "Get the touch X co-ordinate in the layout.");
 AddExpression(1, ef_return_number | ef_variadic_parameters, "Touch Y position", "Position", "Y", "Get the touch Y co-ordinate in the layout.");
-AddExpression(2, ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the touch X co-ordinate on the canvas.");
-AddExpression(3, ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the touch Y co-ordinate on the canvas.");
+
+// ef_deprecated
+AddExpression(2, ef_deprecated | ef_return_number, "Absolute mouse X", "Position", "AbsoluteX", "Get the touch X co-ordinate on the canvas.");
+AddExpression(3, ef_deprecated| ef_return_number, "Absolute mouse Y", "Position", "AbsoluteY", "Get the touch Y co-ordinate on the canvas.");
+// ef_deprecated
+
 AddExpression(4, ef_return_number, "Get activated", "", "Activated", "The activated setting, 1 is activated.");
+
+// ef_deprecated
 AddExpression(5, ef_deprecated | ef_return_number, "X co-ordinate of object's dragging start position", "Start", "StartX", "Get X co-ordinate of object's position at dragging start.");
 AddExpression(6, ef_deprecated | ef_return_number, "Y co-ordinate of object's dragging start position", "Start", "StartY", "Get Y co-ordinate of object's position at dragging start.");
+// ef_deprecated
+
 AddExpression(7, ef_return_number, "X co-ordinate of dragging start position", "Start", "DragStartX", "Get X co-ordinate of dragging start position.");
 AddExpression(8, ef_return_number, "Y co-ordinate of dragging start position", "Start", "DragStartY", "Get Y co-ordinate of dragging start position.");
 AddExpression(9, ef_return_number, "X co-ordinate of object's dragging start position", "Instance start", "InstStartX", "Get X co-ordinate of object's position at dragging start.");

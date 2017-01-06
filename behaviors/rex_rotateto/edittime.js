@@ -4,7 +4,7 @@
 		"name":			"RotateTo",
 		"id":			"Rex_RotateTo",
 		"version":		"0.1",        
-		"description":	"Rotate sprite to specific angle",
+		"description":	"Spin sprite to specific angle",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_rotateto.html",
 		"category":		"Rex - Movement - angle",
@@ -32,8 +32,8 @@ AddCondition(3,	0, "Is rotating", "", "Is {my} rotating", "Is object rotating.",
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Activated", "Enable the behavior.",1);
-AddAction(0, 0, "Set activated", "", 
-          "Set {my} activated to <i>{0}</i>", 
+AddAction(0, 0, "Set enable", "", 
+          "Set {my} enable to <i>{0}</i>", 
           "Enable the object's RotateTo behavior.", "SetActivated");
 
 AddNumberParam("Max speed", "Maximum speed, in degree per second.");
@@ -95,7 +95,11 @@ AddComboParam("Clockwise", "Rotate clockwise or anti-clockwise.",2);
 AddAction(8, 0, "Rotate toward to position", "Target angle", 
           "Set {my} target angle toward to (<i>{0}</i>, <i>{1}</i>), <i>{2}</i>", 
           "Set target angle toward to position.", 
-          "SetTargetAngleToPos")          
+          "SetTargetAngleToPos");
+          
+AddAction(9, 0, "Stop", "Stop", "{my} stop", 
+          "Stop moving.", "Stop");               
+                    
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(0, ef_return_number, "Get current activated state", "Current", "Activated", 

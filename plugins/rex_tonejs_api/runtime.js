@@ -48,7 +48,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         
         // callback
         this.callbackTag = "";   
-        this.params = [];   
+        this.params = [];   // callbackParams
         var self=this;
         this.getCallback = function(callbackTag)
         {
@@ -57,7 +57,7 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         
             var cb = function ()
             {
-                self.callbackTag = callbackTag;
+                self.callbackTag = callbackTag;            
                 cr.shallowAssignArray(self.params, arguments);
                 self.runtime.trigger(cr.plugins_.Rex_ToneJS_api.prototype.cnds.OnCallback, self); 
             }
@@ -303,16 +303,14 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
      
 	Acts.prototype.SetJSON = function (varName, keys, value)
 	{
-        var toneObject = this.toneObjects[varName];
-        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
-        toneObject["set"](keys, JSON.parse(value));
+        value = JSON.parse(value);
+        Acts.prototype.SetValue.call(this, varName, keys, value);
 	};    
      
 	Acts.prototype.SetBoolean = function (varName, keys, value)
 	{
-        var toneObject = this.toneObjects[varName];
-        assert2(toneObject, "ToneJS API: missing object '"+ varName + "'");      
-        toneObject["set"](keys, (value === 1));
+        value = (value === 1);
+        Acts.prototype.SetValue.call(this, varName, keys, value);        
 	};     
     
 	Acts.prototype.SetJSONProps = function (varName, params)
@@ -351,6 +349,12 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         var val = this.params[index];        
 		ret.set_any( window.ToneJSGetItemValue(val, keys) );
 	}; 
+
+	Exps.prototype.ParamCount = function (ret)
+	{
+		ret.set_int( this.params.length );
+	}; 
+    
     
 	Exps.prototype.Property = function (ret, varName, keys)
 	{
@@ -368,6 +372,10 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         var retVal = toneObject["extra"]["returnValue"];
 		ret.set_any( window.ToneJSGetItemValue(retVal, keys, 0) );
 	}; 
+
+    // ef_deprecated
+	Exps.prototype.CallbackParam = Exps.prototype.Param;
+
     
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------    
@@ -681,20 +689,37 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
                 params[1] = getCallback(params[1]);
             }
         }   
+        else if (isType(toneObject, "ExternalInput"))
+        {
+            if (fnName === "open")
+            {
+                params[0] = getCallback(params[0]); 
+                params[1] = getCallback(params[1]);
+            }
+            else if (fnName === "getSources")
+            {
+                toneObject = window["Tone"]["ExternalInput"];
+                params[0] = getCallback(params[0]);                 
+            }
+        }        
+        
         // source
                    
         var retVal = toneObject[fnName].apply(toneObject, params);         
         
-        toneObject["extra"]["returnValue"] = null;
-        // component
-        if (isType(toneObject, "Analyser"))
+        if (toneObject.hasOwnProperty("extra"))
         {
-            if (fnName === "analyse")
+            toneObject["extra"]["returnValue"] = null;
+            // component
+            if (isType(toneObject, "Analyser"))
             {
-                toneObject["extra"]["returnValue"] = retVal;
+                if (fnName === "analyse")
+                {
+                    toneObject["extra"]["returnValue"] = retVal;
+                }
             }
+            // component
         }
-        // component
         
         return retVal;
 	};

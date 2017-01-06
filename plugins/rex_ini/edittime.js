@@ -4,7 +4,7 @@
 		"name":			"INI",
 		"id":			"Rex_INI",
 		"version":		"0.1",        
-		"description":	"An ini parser/serializer. Reference: https://github.com/npm/ini",
+		"description":	"INI <--> JSON. Reference: https://github.com/npm/ini",
 		"author":		"Rex.Rainbow",
 		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ini.html",
 		"category":		"Rex - Data structure",

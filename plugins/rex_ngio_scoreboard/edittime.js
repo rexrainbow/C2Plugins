@@ -148,7 +148,10 @@ AddExpression(13, ef_return_string, "Get current board name", "Get boards - for 
 AddExpression(21, ef_return_number, "Get boardID by index", "Get boards - index", "Index2BoardID", 
               "The numeric ID of the scoreboard by index.");  
 AddExpression(22, ef_return_string, "Get board name by index", "Get boards - index", "Index2BoardName", 
-              "The name of the scoreboard by index.");                    
+              "The name of the scoreboard by index.");     
+
+AddExpression(29, ef_return_number, "Get amount of boards","Get boards", "BoardsCount", 
+              "Get amount of boards.");                       
 
 AddExpression(31, ef_return_string, "Get received scores as JSON", "Get scores", "ScoresAsJSON", 
               "Get received scores as JSON.");               
@@ -170,11 +173,12 @@ AddExpression(43, ef_return_number, "Get user ID by array index", "Get scores - 
 AddExpression(44, ef_return_number, "Get value by array index", "Get scores - index", "Index2Value", 
               "User ID of a score by array index.");              
 
-AddExpression(51, ef_return_number, "Start index of received scores", "Get scores - for each - index", "StartIndex", 
+AddExpression(51, ef_return_number, "Start index of received scores", "Get scores", "StartIndex", 
               "Get start index in current received scores.");              
-AddExpression(52, ef_return_number, "Scores count", "Get scores - for each", "CurScoresCount", 
-              "Get ranking count in current received page.");                 
-
+AddExpression(52, ef_deprecated | ef_return_number, "Scores count", "Get scores - for each", "CurScoresCount", 
+              "Get ranking count in current received scores.");                 
+AddExpression(53, ef_return_number, "Scores count", "Get scores", "ScoresCount", 
+              "Get ranking count in current received scores.");  
               
               
 ACESDone();

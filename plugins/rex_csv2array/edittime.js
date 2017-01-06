@@ -58,6 +58,8 @@ AddExpression(4, ef_return_number, "Width of array", "For Each cell", "Width",
 AddExpression(5, ef_return_number, "Height of array", "For Each cell", "Height", 
               "Get height of array in a For Each loop.");
               
+AddExpression(11, ef_return_string, "Get delimiter", "Delimiter", "Delimiter", "Get delimiter.");
+              
 ACESDone();
 
 // Property grid properties for this plugin

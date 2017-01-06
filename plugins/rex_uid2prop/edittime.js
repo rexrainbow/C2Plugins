@@ -68,14 +68,8 @@ AddNumberParam("Angle", "Angle, in degrees, at which to move the object.", 0);
 AddNumberParam("Distance", "Distance, in pixels, to move the object forwards at its current angle.", 0);
 AddAction(8, 0, "Move at angle", "Position", 
           "Instance UID <i>{0}</i>: move <i>{2}</i> pixels at angle <i>{1}</i>", 
-          "Move object a number of pixels at a given angle.", "InstMoveForward");  
+          "Move object a number of pixels at a given angle.", "InstMoveAtAngle");  
 
-AddNumberParam("UID", "Instance UID.", 0);
-AddNumberParam("Width", "New object width, in pixels.", 0);
-AddAction(9, 0, "Set width", "Size", 
-          "Instance UID <i>{0}</i>: set width to <i>{1}</i>", 
-          "Set the object's width.", "InstMoveAtAngle");  
-          
 AddNumberParam("UID", "Instance UID.", 0);
 AddNumberParam("Width", "New object width, in pixels.", 0);
 AddAction(10, 0, "Set width", "Size", 
@@ -160,9 +154,9 @@ AddExpression(4, ef_return_number, "Get width", "Size", "Width", "Get instance's
 AddNumberParam("UID", "The UID of instance.", 0);
 AddExpression(5, ef_return_number, "Get height", "Size", "Height", "Get instance's height.");
 AddNumberParam("UID", "The UID of instance.", 0);
-AddExpression(6, ef_return_number, "Get opacity", "Opacity", "Opacity", "Get instance's opacity.");
+AddExpression(6, ef_return_number, "Get opacity", "Appear", "Opacity", "Get instance's opacity.");
 AddNumberParam("UID", "The UID of instance.", 0);
-AddExpression(7, ef_return_number, "Get visible", "Visible", "Visible", "Get instance's visible.");
+AddExpression(7, ef_return_number, "Get visible", "Appear", "Visible", "Get instance's visible.");
 AddNumberParam("UID", "The UID of instance.", 0);
 AddAnyTypeParam("ImagePoint", "Name or number of image point to get.", 0);
 AddExpression(8, ef_return_number, "Get image point X", "Image point", "ImgptX", "Get instance's image point X.");
