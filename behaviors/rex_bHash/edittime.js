@@ -124,6 +124,10 @@ AddAction(26, 0, "Insert value", "Array - Insert",
           "Insert value <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
           "Insert value into array.", "InsertValue");            
           
+AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
+AddAction(101, 0, "Set indent", "Indent", 
+          "Set indent to <i>{0}</i>",
+          "Set indent for pretty print. Set (-1) to disable this feature.", "SetIndent");              
 //////////////////////////////////////////////////////////////
 // Expressions
 AddStringParam("Key", "The key string of the hash to get.", '""');
@@ -170,8 +174,8 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [    
-    new cr.Property(ept_text, "Initial data", "", 
-                   'Set initial data. ex:"{"a":10,"b":{"c":"d"}}".'),
+    new cr.Property(ept_text, "Initial data", "", 'Set initial data. ex:"{"a":10,"b":{"c":"d"}}".'),
+    new cr.Property(ept_text, "Indent", -1, "Indent for pretty print. Set (-1) to disable this feature."),      
 	];
 	
 // Called by IDE when a new behavior type is to be created

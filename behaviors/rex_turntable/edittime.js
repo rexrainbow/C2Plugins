@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Spin this object to the specific angle with a deceleration.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_turntable.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_turntable.html",
 		"category":		"Rex - Movement - angle",
 		"flags":		0
 	};

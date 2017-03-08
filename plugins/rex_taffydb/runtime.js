@@ -42,18 +42,8 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 
 	instanceProto.onCreate = function()
 	{
-	    this.db_name = this.properties[0];
-	    if (this.db_name === "")    // private database
-	    {
-	        if (!this.recycled)
-	            this.db = window["TAFFY"]();
-	    }
-	    else                   // public database
-	    {
-	        create_global_database(this.uid, this.db_name);	            
-	        this.db = get_global_database_reference(this.db_name).db;
-	    }
-	    
+        this.db_name = null;
+        this.LinkToDatabase(this.properties[0]);	    
 	    var index_keys_input = this.properties[1];
 	    if (index_keys_input === "")
 	    {
@@ -99,6 +89,28 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         // save/load
         this.__flthis_save = null;         
 	};
+    
+    instanceProto.LinkToDatabase = function (name)
+	{
+        if (this.db_name === name)
+            return;
+        else if (this.db_name === "")
+        {
+            // private -> public
+            this.db()["remove"]();
+        }
+        
+        this.db_name = name;
+	    if (name === "")    // private database
+	    {
+	        this.db = window["TAFFY"]();
+	    }
+	    else                   // public database
+	    {
+	        create_global_database(this.uid, name);	            
+	        this.db = get_global_database_reference(name).db;
+	    }       
+	};       
 	
 	var create_global_database = function (ownerUID, db_name, db_content)
 	{
@@ -348,7 +360,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    var queriedRows = this.GetCurrentQueriedRows();
 	    var row = queriedRows["get"]()[index_];
 	    return din(row, "___id", default_value);        
-	};
+	}; 
 		
 	var getEvalValue = function(v, prefix)
 	{
@@ -829,7 +841,13 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
     Acts.prototype.InsertCSV_DefineType = function (key_, type_)
 	{
         this.keyType[key_] = type_;
-	}; 			
+	}; 	
+	
+    Acts.prototype.LinkToDatabase = function (name)
+	{
+        this.LinkToDatabase(name);
+	}; 
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

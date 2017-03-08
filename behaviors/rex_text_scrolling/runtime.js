@@ -152,7 +152,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{
         if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
         {
-            var lines = this.inst.lines
+            var lines = this.inst.lines;
 	        this.content_lines.length = 0;            
 	        var i, line, line_cnt=lines.length;
 	        for (i=0; i<line_cnt; i++)

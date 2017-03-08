@@ -5,7 +5,7 @@
 		"id":			"Rex_cdmask_fansprite",
 		"description":	"Cool down mask with fan sprites. 9 Fan frames are 256,128,64,32,16,8,4,2,1 degrees",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_cdmask_fansprite.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_cdmask_fansprite.html",
 		"category":		"Rex - Effect",
 		"flags":		0
 	};

@@ -5,7 +5,7 @@
 		"id":			"Rex_text_typing",
 		"description":	"Typing text on text / sprite font object.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_text_typing.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_text_typing.html",
 		"category":		"Rex - Text",
 		"flags":		bf_onlyone
 	};
@@ -60,10 +60,14 @@ AddExpression(1, ef_return_number,	"Get typing speed", "Type", "TypingSpeed", "G
 AddExpression(2, ef_return_number,	"Get current index of typing character", "Type", 
               "TypingIndex", "Get current index of typing character.");
 
+AddExpression(11, ef_return_string,	"Get content", "Content", "Content", "Get content."); 
+AddExpression(12, ef_return_string,	"Get last typing character", "Type", "LastTypingCharacter", "Get last typing character.");               
+
 ACESDone();
 
 // Property grid properties for this plugin
-var property_list = [                  
+var property_list = [  
+	new cr.Property(ept_combo, "Line break", "No", "Enable to add new line to split lines.", "No|Yes"),                
 	];
 	
 // Called by IDE when a new behavior type is to be created

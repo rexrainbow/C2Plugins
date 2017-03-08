@@ -53,10 +53,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_TotalHeight = 0; 
         this.exp_IsIsometric = 0;         
         this.exp_TileID = (-1);
-		this.exp_TilesetName = "";
-		this.exp_ImageSource = "";
-		this.exp_ImageWidth = 0;
-		this.exp_ImageHeight = 0;
+        this.exp_tilesetRef = null;
         this.exp_LogicX = (-1);
         this.exp_LogicY = (-1);  
         this.exp_PhysicalX = (-1);
@@ -69,24 +66,13 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_LayerName = "";  
         this.exp_LayerOpacity = 1;  
         this.exp_MapProperties = null;                
-        this.exp_LayerProperties = null;
-        this.exp_TilesetProperties = null;        
+        this.exp_LayerProperties = null;       
         this.exp_TileProperties = null;
         this.exp_BaclgroundColor = 0;        
         
         // objects
-		this.exp_ObjGroupName = "";        
-        this.exp_ObjGroupWidth = 0;
-        this.exp_ObjGroupHeight = 0;  
-		this.exp_ObjectName = "";  
-		this.exp_ObjectType = "";         
-        this.exp_ObjectPWidth = 0;
-        this.exp_ObjectPHeight = 0; 
-        this.exp_ObjectLX = 0;
-        this.exp_ObjectLY = 0; 
-        this.exp_ObjectPX = 0;
-        this.exp_ObjectPY = 0;         
-        this.exp_ObjectProperties = {};
+        this.exp_objGroupRef = null;
+        this.exp_objRef = null;
 
         // for each property
         this.exp_CurLayerPropName = "";
@@ -243,11 +229,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
             this.exp_IsFlipped = 0;
         }
         var tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
-        this.exp_TilesetName = tileset_obj.name;
-        this.exp_ImageSource = tileset_obj.image.source;
-        this.exp_ImageWidth = tileset_obj.image.width;
-        this.exp_ImageHeight = tileset_obj.image.height;
-        this.exp_TilesetProperties = tileset_obj.properties;
+        this.exp_tilesetRef = tileset_obj;
         var tile_obj = tileset_obj.tiles[this.exp_TileID];
         this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
         this.exp_TileProperties = (tile_obj != null)? tile_obj.properties: null;
@@ -339,17 +321,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	
 	instanceProto._read_obj = function (obj)
 	{
-	    if (!obj)
-	        return false;
-	        
-        this.exp_ObjectName = obj.name;
-        this.exp_ObjectType = obj.type;
-        this.exp_ObjectPWidth = obj.width;
-        this.exp_ObjectPHeight = obj.height;             
-        this.exp_ObjectPX = obj.x;
-        this.exp_ObjectPY = obj.y ;                
-        this.exp_ObjectProperties = obj.properties;
-        
+        this.exp_objRef = obj;
         return true;
     }
                 	        
@@ -362,10 +334,8 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         for (i=0; i<group_cnt; i++)
         {
             group = obj_groups[i];
-            this.exp_ObjGroupName = group.name;
-            this.exp_ObjGroupWidth = group.width;
-            this.exp_ObjGroupHeight = group.height;            
-            objs = group.objects;
+            this.exp_objGroupRef = obj_groups[i];           
+            objs = this.exp_objGroupRef.objects;
             obj_cnt = objs.length;
             for (j=0; j<obj_cnt; j++)
             {
@@ -535,11 +505,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
                 this._duration_info.goto_next_state = true;
                 return 0; 
             }
-            
-            this.exp_ObjGroupName = group.name;
-            this.exp_ObjGroupWidth = group.width;
-            this.exp_ObjGroupHeight = group.height; 
-            
+            this.exp_objGroupRef = group;            
             obj = group.objects[this._duration_info.object_layer.object_index];                   
             if (obj)  // get valid object
             {
@@ -673,14 +639,14 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};   
 	Cnds.prototype.ForEachTilesetProperty = function ()
 	{
-        if (this.exp_TilesetProperties == null)
+        if (this.exp_tilesetRef == null)
             return false;
             
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
         
-        var key, props = this.exp_TilesetProperties, value;
+        var key, props = this.exp_tilesetRef.prope, value;
 		for (key in props)
 	    {
             this.exp_CurTilesetPropName = key;
@@ -757,36 +723,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 		this.exp_CurMapPropName = "";
         this.exp_CurMapPropValue = 0;
 		return false;        
-	};	      
-	Cnds.prototype.ForEachTilesetProperty = function ()
-	{
-        if (this.exp_TilesetProperties == null)
-            return false;
-            
-        var current_frame = this.runtime.getCurrentEventStack();
-        var current_event = current_frame.current_event;
-		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
-        
-        var key, props = this.exp_TilesetProperties, value;
-		for (key in props)
-	    {
-            this.exp_CurTilesetPropName = key;
-            this.exp_CurTilesetPropValue = props[key];
-            	      
-            // trigger current event  
-            if (solModifierAfterCnds)
-		        this.runtime.pushCopySol(current_event.solModifiers);
-                
-			current_event.retrigger();
-
-            if (solModifierAfterCnds)
-		    	this.runtime.popSol(current_event.solModifiers);                   
-		}
-
-		this.exp_CurTilesetPropName = "";
-        this.exp_CurTilesetPropValue = 0;
-		return false;        
-	};  
+	};	        
     Cnds.prototype.ForEachLayer = function ()
 	{   
         if (this._tmx_obj == null)
@@ -829,12 +766,12 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{   
         if (this.exp_ObjectProperties == null)
             return false;
-            
+        
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
         
-        var key, props = this.exp_ObjectProperties, value;
+        var key, props = this.exp_objRef.properties, value;
 		for (key in props)
 	    {
             this.exp_CurObjectPropName = key;
@@ -927,8 +864,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.import_tmxObj(source, parser);
 	};
     Acts.prototype.CreateTiles = function (obj_type)
-	{	     
-        debugger
+	{	             
         this.RetrieveTileArray(obj_type);
 	};
     Acts.prototype.ReleaseTMX = function ()
@@ -1057,17 +993,20 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{    
 	    ret.set_int(this.exp_IsIsometric? 1:0);
 	}; 	
-	Exps.prototype.ImageSource = function (ret)
+	Exps.prototype.ImageSource = function (ret, gid)
 	{     
-	    ret.set_string(this.exp_ImageSource);
+        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
+	    ret.set_string((tileset_obj)? tileset_obj.image.source : "");
 	};
-	Exps.prototype.ImageWidth = function (ret)
+	Exps.prototype.ImageWidth = function (ret, gid)
 	{     
-	    ret.set_int(this.exp_ImageWidth);
+        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
+	    ret.set_float((tileset_obj)? tileset_obj.image.width : 0);
 	};
 	Exps.prototype.ImageHeight = function (ret)
-	{    
-	    ret.set_int(this.exp_ImageHeight);
+	{
+        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
+	    ret.set_float((tileset_obj)? tileset_obj.image.height : 0);
 	}; 	
 	
 	Exps.prototype.TileID = function (ret)
@@ -1098,11 +1037,11 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	Exps.prototype.TilesetProp = function (ret, name, default_value)
 	{       
         var value;
-        if (this.exp_TilesetProperties == null)
+        if (this.exp_tilesetRef == null)
             value = default_value;
         else
         {
-            value = this.exp_TilesetProperties[name];
+            value = this.exp_tilesetRef.properties[name];
             if (value == null)
                 value = default_value;        
         }
@@ -1153,9 +1092,10 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{   
 	    ret.set_int(this.exp_Frame);
 	};  
-	Exps.prototype.TilesetName = function (ret)
+	Exps.prototype.TilesetName = function (ret, gid)
 	{     
-	    ret.set_string(this.exp_TilesetName);
+        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
+	    ret.set_string((tileset_obj)? tileset_obj.name : "");
 	};
 	Exps.prototype.MapProp = function (ret, name, default_value)
 	{   
@@ -1182,64 +1122,79 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	    ret.set_int(val);
 	}; 
 	
-    // objects
+    // object group
 	Exps.prototype.ObjGroupName = function (ret)
 	{     
-	    ret.set_string(this.exp_ObjGroupName);
+	    ret.set_string((this.exp_objGroupRef)? this.exp_objGroupRef.name : "");
 	};    
 	Exps.prototype.ObjGroupWidth = function (ret)
 	{     
-	    ret.set_string(this.exp_ObjGroupWidth);
+	    ret.set_float((this.exp_objGroupRef)? this.exp_objGroupRef.width : 0);
 	};
 	Exps.prototype.ObjGroupHeight = function (ret)
 	{     
-	    ret.set_string(this.exp_ObjGroupHeight);
+	    ret.set_float((this.exp_objGroupRef)? this.exp_objGroupRef.height : 0);
 	};  
+    
+    // object
 	Exps.prototype.ObjectName = function (ret)
 	{     
-	    ret.set_string(this.exp_ObjectName);
+	    ret.set_string((this.exp_objRef)? this.exp_objRef.name : "");
 	};  
 	Exps.prototype.ObjectType = function (ret)
-	{     
-	    ret.set_string(this.exp_ObjectType);
+	{ 
+        ret.set_string((this.exp_objRef)? this.exp_objRef.type : "");    	    
 	};     
 	Exps.prototype.ObjectWidth = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectPWidth);
+        ret.set_int((this.exp_objRef)? this.exp_objRef.width : 0);    	    
 	};
 	Exps.prototype.ObjectHeight = function (ret)
-	{     
-	    ret.set_int(this.exp_ObjectPHeight);
+	{    
+        ret.set_int((this.exp_objRef)? this.exp_objRef.height : 0);    	        	   
 	};
 	Exps.prototype.ObjectX = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectPX);
+        ret.set_int((this.exp_objRef)? this.exp_objRef.x : 0);    	        	       	    
 	};
 	Exps.prototype.ObjectY = function (ret)
 	{     
-	    ret.set_int(this.exp_ObjectPY);
+        ret.set_int((this.exp_objRef)? this.exp_objRef.y : 0);    	        	       	    
 	};
-	Exps.prototype.ObjectPX = function (ret)
-	{     
-	    ret.set_int(this.exp_ObjectPX);
-	};
-	Exps.prototype.ObjectPY = function (ret)
-	{     
-	    ret.set_int(this.exp_ObjectPY);
-	};	
+    
 	Exps.prototype.ObjectProp = function (ret, name, default_value)
-	{       
+	{             
         var value;
-        if (this.exp_ObjectProperties == null)
+        if (this.exp_objRef == null)
             value = default_value;
         else
         {
-            value = this.exp_ObjectProperties[name];
+            value = this.exp_objRef.properties[name];
             if (value == null)
                 value = default_value;
         }
 	    ret.set_any(value);
-	}; 
+	};
+    
+    // ef_deprecated    
+	Exps.prototype.ObjectPX = Exps.prototype.ObjectX;
+	Exps.prototype.ObjectPY = Exps.prototype.ObjectY;
+    // ef_deprecated
+
+	Exps.prototype.ObjectID = function (ret)
+	{     
+        ret.set_int((this.exp_objRef)? this.exp_objRef.id : 0);    	        	       	    
+	};    
+ 
+	Exps.prototype.ObjectRotation = function (ret)
+	{     
+        ret.set_float((this.exp_objRef)? this.exp_objRef.rotation : 0);    	        	       	    
+	};    
+ 
+	Exps.prototype.ObjectRefGID = function (ret)
+	{     
+        ret.set_int((this.exp_objRef)? this.exp_objRef.gid : -1);    	        	       	    
+	};      
     
     // for each property
 	Exps.prototype.CurLayerPropName = function (ret)

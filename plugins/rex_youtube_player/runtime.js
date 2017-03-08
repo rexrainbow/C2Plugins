@@ -172,14 +172,14 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		}
 		
 		// Truncate to canvas size
-		if (left < 0)
-			left = 0;
-		if (top < 0)
-			top = 0;
-		if (right > rightEdge)
-			right = rightEdge;
-		if (bottom > bottomEdge)
-			bottom = bottomEdge;
+		//if (left < 0)
+		//	left = 0;
+		//if (top < 0)
+		//	top = 0;
+		//if (right > rightEdge)
+		//	right = rightEdge;
+		//if (bottom > bottomEdge)
+		//	bottom = bottomEdge;
 		
 		var curWinWidth = window.innerWidth;
 		var curWinHeight = window.innerHeight;

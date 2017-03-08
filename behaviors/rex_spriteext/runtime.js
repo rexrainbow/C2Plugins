@@ -140,4 +140,14 @@ cr.behaviors.Rex_SpriteExt = function(runtime)
 	{
 		ret.set_string(this.inst.curFrame.getDataUri());
 	};
+	
+	Exps.prototype.IsMirror = function (ret)
+	{
+		ret.set_int( (this.inst.width < 0)? 1:0 );
+	};    
+	
+	Exps.prototype.IsFlipped = function (ret)
+	{
+		ret.set_int( (this.inst.height < 0)? 1:0 );
+	};        
 }());

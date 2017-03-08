@@ -417,7 +417,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
     
 	instanceProto.AddChess = function(inst, x, y, z)
 	{                
-	    if ( !inst )
+	    if ( inst == null )
 	        return;
 	        
         // check if lxy is inside board
@@ -613,7 +613,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 	    for (uid in items)
 	    {
 	        inst = this.uid2inst(uid);	  
-            if ( !inst )
+            if ( inst == null )
                 continue;			
 	        objtype = inst.type; 
 	        sol = objtype.getCurrentSol();
@@ -2146,7 +2146,7 @@ cr.plugins_.Rex_SLGBoard = function(runtime)
 
         var inst = this.runtime.createInstance(obj, layer, x, y);
 		
-		if (!inst)
+		if (inst == null)
 			return;
 		
 		this.runtime.isInOnDestroy++;

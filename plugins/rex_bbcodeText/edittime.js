@@ -127,6 +127,16 @@ AddAction(71, 0, "Set thickness", "Underline", "Set thickness to <i>{0}</i>", "S
 AddNumberParam("Offset", "Offset Y in pixels.", 1);
 AddAction(72, 0, "Set offset Y", "Underline", "Set offset Y to <i>{0}</i>", "Set offset Y of underline.", "SetOffsetY"); 
 
+AddNumberParam("line width", "Line width in pixels.", 1);
+AddAction(81, 0, "Set line width", "Stroke", "Set line width to <i>{0}</i>", "Set line width of stroke.", "SetStrokeLineWidth"); 
+          
+AddComboParamOption("Miter");
+AddComboParamOption("Round");
+AddComboParamOption("Bevel");
+AddComboParam("Line join", "Line join of the stroke", 0);
+AddAction(82, 0, "Set line join", "Stroke", "Set line join to <i>{0}</i>", "Set line join of stroke.", "SetStrokeLineJoin"); 
+
+
 AddNumberParam("Width", "Canvas width in pixels.", 0);
 AddNumberParam("Height", "Canvas height in pixels.", 0);
 AddAction(101, 0, "Lock canvas size", "Canvas", "Lock canvas size to <i>{0}</i>x<i>{1}</i>", "Lock canvas size.", "LockCanvasSize"); 
@@ -175,7 +185,12 @@ var property_list = [
 	new cr.Property(ept_combo, "Baseline", "Top", "Baseline of text alignment.", "Alphabetic|Top"),
 	new cr.Property(ept_float, "Shift down", 13, "Shift the text down for alphabetic baseline, in pixels."),	
     new cr.Property(ept_combo, "Force render", "No", "Force rendering immediately after any property setting.", "No|Yes"),	
-    new cr.Property(ept_combo, "Lock canvas size", "No", "Lock canvas size to initial size.", "No|Yes"),	    
+    new cr.Property(ept_combo, "Lock canvas size", "No", "Lock canvas size to initial size.", "No|Yes"),
+
+    new cr.Property(ept_section, "Stroke", "",	""),  
+    new cr.Property(ept_integer, "Stroke line width", 1, "Line width of stroke, in pixels."),  
+	new cr.Property(ept_combo, "Stroke line join", "Miter", "Baseline of text alignment.", "Miter|Round|Bevel"),
+    
     
     new cr.Property(ept_section, "Underline", "",	""),  
     new cr.Property(ept_integer, "Underline thickness", 1, "Thickness of underline, in pixels."),

@@ -6,7 +6,7 @@ function GetBehaviorSettings()
 		"version":		"0.1",
 		"description":	"Tween an object's position, size, angle or other properties using an easing function.",
 		"author":		"Yeremia AI (lunarray)",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_lunarray_tween_mod.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_lunarray_tween_mod.html",
 		"category":		"Movements",			// Prefer to re-use existing categories, but you can set anything here
 		"flags":		0						// uncomment lines to enable flags...
 					//	| bf_onlyone			// can only be added once to an object, e.g. solid

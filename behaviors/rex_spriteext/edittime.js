@@ -55,7 +55,10 @@ AddAction(11, 0, "Set solid", "Solid",
              
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(2, ef_return_string, "get image url", "canvas", "imageUrl", "This returns a temporary url to the image on the canvas.");
+AddExpression(2, ef_return_string, "Get image url", "canvas", "imageUrl", "This returns a temporary url to the image on the canvas.");
+
+AddExpression(11, ef_return_number, "Is mirror", "Animations", "IsMirror", "Return 1 if sprirte is horizontally mirrored.");
+AddExpression(12, ef_return_number, "Is flipped", "Animations", "IsFlipped", "Return 1 if sprirte is vertically flipped.");
 
 
 ACESDone();

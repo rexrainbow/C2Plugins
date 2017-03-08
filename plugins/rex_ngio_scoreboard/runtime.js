@@ -512,7 +512,7 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
 	    ret.set_int(val || 0);
 	}; 
    
-	Exps.prototype.StartIndex = function (ret)
+	Exps.prototype.CurStartIndex = function (ret)
 	{
 	    ret.set_int(this.lastScoresStartIndex);
 	};     

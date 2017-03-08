@@ -110,7 +110,7 @@ cr.plugins_.Rex_Waker = function(runtime)
 	    	       
 	    this.IsAwake = false;
         this.enable = true;	    
-
+        this.nowTime = 0;
 	    this.SetFrameRate(60);     
 
         var self = this;
@@ -138,8 +138,9 @@ cr.plugins_.Rex_Waker = function(runtime)
 	        return;
 	    if (!this.runtime.isSuspended)
 	        return;
-	    
-	    this.runtime.tick(true);
+
+        this.nowTime += this.period;
+	    this.runtime.tick(true, this.nowTime);
 	}; 	   
 	
 	WakerKlassProto.on_suspend = function (s)
@@ -183,7 +184,8 @@ cr.plugins_.Rex_Waker = function(runtime)
             
         if (this.period <= 0)
             return;
-	        	    
+	    
+        this.nowTime = cr.performance_now();
 	    this.IsAwake = true;        
 	    this.worker.postMessage(["startTimer"]);
 	}; 	

@@ -235,7 +235,8 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	
     Acts.prototype.GetTimer = function (ownerID, timer_name, interval)
 	{
-        var startIfNotExists = (interval != null);        
+        var startIfNotExists = (interval != null);
+        var isNewTimer = false;
 	    var ref = this.get_ref()["child"](ownerID)["child"](timer_name);
 	    var self = this;
 	    
@@ -246,7 +247,10 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
 	        self.exp_LastTimerName = timer_name;
 	        
             self.exp_LastTimer = snapshot["val"]();
-	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnStartTimerComplete, self);             
+            
+            if (isNewTimer)
+	            self.runtime.trigger(cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnStartTimerComplete, self);
+            
 	        self.runtime.trigger(cr.plugins_.Rex_Firebase_Timer.prototype.cnds.OnGetTimerComplete, self); 
 	    };	   
 	    var read_timer = function()
@@ -275,6 +279,7 @@ cr.plugins_.Rex_Firebase_Timer = function(runtime)
         };        
         var start_timer = function()
         {
+            isNewTimer = true;
             self.start_timer(ref, interval, on_update);
         };
         //2. update timer 

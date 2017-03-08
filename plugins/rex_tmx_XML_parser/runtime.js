@@ -301,12 +301,16 @@ cr.plugins_.Rex_tmx_XML_parser = function(runtime)
     var _get_object = function(xml_obj, xml_object)
     {    
         var object = {};
+        object.id = xml_obj.get_number_value("@id", xml_object);
         object.name = xml_obj.get_string_value("@name", xml_object);
         object.type = xml_obj.get_string_value("@type", xml_object); 
         object.x = xml_obj.get_number_value("@x", xml_object);
         object.y = xml_obj.get_number_value("@y", xml_object);          
         object.width = xml_obj.get_number_value("@width", xml_object);
         object.height = xml_obj.get_number_value("@height", xml_object);
+        object.rotation = xml_obj.get_number_value("@rotation", xml_object);
+        object.gid = xml_obj.get_number_value("@gid", xml_object, -1);
+        object.visible = xml_obj.get_number_value("@visible", xml_object);
         var xml_properties = xml_obj.get_nodes("./properties/property", xml_object);
         object.properties = _get_properties(xml_obj, xml_properties);
         return object;

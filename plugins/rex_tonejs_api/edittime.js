@@ -108,7 +108,7 @@ AddExpression(21, ef_return_any | ef_variadic_parameters, "Get return value", "F
 // ef_deprecated
 AddNumberParam("Index", "Parameter index of callback", '""');        
 //AddStringParam("Property", "Property name in dot notation", '""');
-AddExpression(31, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get parameter of callback", "Callback", "CallbackParam", "Get the value of a parameter passed to the callback.");
+AddExpression(99999, ef_deprecated | ef_return_any | ef_variadic_parameters, "Get parameter of callback", "Callback", "CallbackParam", "Get the value of a parameter passed to the callback.");
 // ef_deprecated
 
 ACESDone();

@@ -142,7 +142,12 @@ AddAction(63, 0, "Set underline", "Underline",
           "Set underline.", "SetUnderline");
 
 AddAnyTypeParam("Color", "The stroke color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
-AddAction(64, 0, "Set stroke color", "Appearance", "Set stroke color to <i>{0}</i>", "Set the stroke color.", "SetStrokeColor");
+AddNumberParam("Line width", "Line width in pixels.", 1);
+AddComboParamOption("Miter");
+AddComboParamOption("Round");
+AddComboParamOption("Bevel");
+AddComboParam("Line join", "Line join of the stroke", 0);
+AddAction(64, 0, "Set stroke", "Appearance", "Set stroke color to <i>{0}</i>, line width to <i>{1}</i>, line join to <i>{2}</i>", "Set the stroke color and line width.", "SetStroke");
 
 AddStringParam("Key", "Index of this image.", '""');
 AddAction(65, 0, "Insert image", "Appearance", "Insert image <i>{0}</i>", "Insert image.", "InsertImage");

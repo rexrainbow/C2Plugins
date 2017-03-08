@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Slow down object unitl stop.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_slowdown.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_slowdown.html",
 		"category":		"Rex - Movement - position",
 		"flags":		bf_onlyone
 	};

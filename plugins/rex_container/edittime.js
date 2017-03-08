@@ -6,11 +6,11 @@
 		"version":		"0.1",
 		"description":	"Put sprites or other objects into this box.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_container.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_container.html",
 		"category":		"Data & Storage",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
-		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces
+		"flags":	    pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_zorder_aces
 	};
 };
 

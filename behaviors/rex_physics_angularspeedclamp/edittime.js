@@ -5,7 +5,7 @@
 		"id":			"Rex_physics_angularspeedclamp",
 		"description":	"Clamp angular speed between upper and lower bounds.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_physics_angularspeedclamp.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_physics_angularspeedclamp.html",
 		"category":		"Rex - Physics helper",
 		"flags":		0
 	};

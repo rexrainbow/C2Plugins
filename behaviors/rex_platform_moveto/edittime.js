@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Move platformer to specific position",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_platform_moveto.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_platform_moveto.html",
 		"category":		"Rex - Platformer helper",
 		"flags":		0
 	};

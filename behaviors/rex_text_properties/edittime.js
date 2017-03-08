@@ -65,6 +65,8 @@ AddAction(8, 0, "Set Vertical alignment (#)", "Properties",
           "Set vertical alignment.", "SetVerticalAlignment");                 
 //////////////////////////////////////////////////////////////
 // Expressions
+AddExpression(1, ef_return_string,	"Get line break content", "Content", "LineBreakContent", "Get content with line break."); 
+
 
 ACESDone();
 

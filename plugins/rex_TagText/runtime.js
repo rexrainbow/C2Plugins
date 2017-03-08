@@ -73,7 +73,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	var requestedWebFonts = {};		// already requested web fonts have an entry here
-	
+	var lineJoinMode = ["miter", "round", "bevel"];
 	instanceProto.onCreate = function()
 	{
         this.text = "";
@@ -1026,24 +1026,24 @@ cr.plugins_.rex_TagText = function(runtime)
 	    //}              
 	};	    
 	
-	Acts.prototype.SetStrokeColor = function (rgb)
+	Acts.prototype.SetStroke = function (color_, lineWidth, lineJoin)
 	{        
-	    var newcolor;
-        if (typeof(rgb) == "number")        
-            newcolor = "rgb(" + cr.GetRValue(rgb).toString() + "," + cr.GetGValue(rgb).toString() + "," + cr.GetBValue(rgb).toString() + ")";        
-        else
-            newcolor = rgb;
+        color_ = color_.replace(/ /g,'');
+        lineJoin = lineJoinMode[lineJoin];
+        
+        // #000 1px
+        var stroke = color_ + " " + lineWidth.toString() + "px " + lineJoin;
 	    if (this._tag != null)  // <class> ... </class>
 	    {
-	        this._tag["stroke"] = newcolor;
+	        this._tag["stroke"] = stroke;
             this.render_text(false);
 	    }
 	    else    // global
 	    {    		    	        	        
-		    if (newcolor === this.color)
+		    if (stroke === this.stroke)
 		        return;
 		    
-		    this.stroke = newcolor;
+		    this.stroke = stroke;
 		    this.render_text(this.is_force_render);
 		    
 		}
@@ -1201,7 +1201,7 @@ cr.plugins_.rex_TagText = function(runtime)
             weight:"normal",
             ptSize:"12pt",
             color:"#000000",
-            stroke:"none",
+            stroke:["none", 1],
             style:"normal",            
             shadow:"",
         };
@@ -1311,9 +1311,18 @@ cr.plugins_.rex_TagText = function(runtime)
             if (color.toLowerCase() !== "none")
                 this.context.fillStyle = color;
             
-            var stroke = this.getStokeColor(propScope);        
+            var stroke = this.getStroke(propScope);        
             if (stroke.toLowerCase() !== "none")
-                this.context.strokeStyle = stroke;
+            {
+                stroke = stroke.split(" ");
+                this.context.strokeStyle = stroke[0];
+                if (stroke[1] != null) this.context.lineWidth = parseFloat(stroke[1].replace("px", ""));
+                if (stroke[2] != null) 
+                {
+                    this.context.lineJoin = stroke[2];
+                    this.context.miterLimit = 2;
+                }            
+            }
         }
         
         var shadow = (propScope["shadow"])? propScope["shadow"] : this.default_propScope.shadow;          
@@ -1352,14 +1361,14 @@ cr.plugins_.rex_TagText = function(runtime)
             color = this.default_propScope.color;  
         return color;         
     };  
-    CanvasTextProto.getStokeColor = function(propScope)
+    CanvasTextProto.getStroke = function(propScope)
     {
-        var color;
+        var stroke;
         if (propScope.hasOwnProperty("stroke"))
-            color = propScope["stroke"];
+            stroke = propScope["stroke"];
         else
-            color = this.default_propScope.stroke;
-        return color;         
+            stroke = this.default_propScope.stroke;
+        return stroke;         
     };    
 
     CanvasTextProto.draw_pen = function (pen, offset_x, offset_y)
@@ -1411,13 +1420,13 @@ cr.plugins_.rex_TagText = function(runtime)
         // draw text
         else
         {
+            // stoke
+            if (this.getStroke(pen.prop).toLowerCase() !== "none")                          
+                ctx.strokeText(pen.text, startX, startY);
+            
             // fill text
             if (this.getFillColor(pen.prop).toLowerCase() !== "none")
-                ctx.fillText(pen.text, startX, startY);
-            
-            // stoke 
-            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
-                ctx.strokeText(pen.text, startX, startY);
+                ctx.fillText(pen.text, startX, startY);                        
         }
         
         
@@ -1497,15 +1506,15 @@ cr.plugins_.rex_TagText = function(runtime)
     
     // split text into array
     var __re_class_header = /<\s*class=/i;
-    var __re_class = /<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>/;
+    var __re_class = /<\s*class=["|']([^"|']+)["|']\s*\>([\s\S]*?)<\s*\/class\s*\>/;
     var __re_style_header = /<\s*style=/i;
-    var __re_style = /<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>/; 
+    var __re_style = /<\s*style=["|']([^"|']+)["|']\s*\>([\s\S]*?)<\s*\/style\s*\>/; 
     
     var RAWTEXTONLY_MODE = 1;   
     var __result=[];
     var split_text = function(txt, mode)
     {
-        var re = /<\s*class=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>(.*?)<\s*\/style\s*\>/g;
+        var re = /<\s*class=["|']([^"|']+)["|']\s*\>([\s\S]*?)<\s*\/class\s*\>|<\s*style=["|']([^"|']+)["|']\s*\>([\s\S]*?)<\s*\/style\s*\>/g;
         __result.length = 0;
         var arr, m, char_index=0, total_length=txt.length,  match_start=total_length;
         var innerMatch;
@@ -1609,26 +1618,33 @@ cr.plugins_.rex_TagText = function(runtime)
         {
      
             m = match[i];
+            proText = null;
             // Check if current fragment is a class tag.
             if (__re_class_header.test(m)) 
             { 
                 // Looks the attributes and text inside the class tag.
                 innerMatch = m.match(__re_class);
-                curr_propScope = this.get_propScope(this.getClass(innerMatch[1]));
-                curr_propScope["class"] = innerMatch[1];
-                proText = innerMatch[2];
+                if (innerMatch != null)
+                {
+                    curr_propScope = this.get_propScope(this.getClass(innerMatch[1]));
+                    curr_propScope["class"] = innerMatch[1];
+                    proText = innerMatch[2];
+                }
             }
             else if (__re_style_header.test(m)) 
             {
                 // Looks the attributes and text inside the style tag.
                 innerMatch = m.match(__re_style);
 
-                // innerMatch[1] contains the properties of the attribute.               
-                curr_propScope = this.get_propScope(_style2prop(innerMatch[1]));                 
-                proText = innerMatch[2];
-                
+                if (innerMatch != null)
+                {
+                    // innerMatch[1] contains the properties of the attribute.               
+                    curr_propScope = this.get_propScope(_style2prop(innerMatch[1]));                 
+                    proText = innerMatch[2];
+                }
             } 
-            else 
+            
+            if (proText === null)
             {
                 // Text without special style.
                 proText = m;

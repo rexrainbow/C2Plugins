@@ -73,7 +73,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	var instanceProto = pluginProto.Instance.prototype;
 
 	var requestedWebFonts = {};		// already requested web fonts have an entry here
-	
+	var lineJoinMode = ["miter", "round", "bevel"];
 	instanceProto.onCreate = function()
 	{
         this.text = "";
@@ -136,9 +136,11 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.canvas_text.Reset(this);
         this.canvas_text.textBaseline = (this.baseLine_mode === 0)? "alphabetic":"top";
 		//this.lines = this.canvas_text.getLines();
-        this.canvas_text.underline.thickness = this.properties[13];
-        this.canvas_text.underline.offset = this.properties[14];
-		this.setShadow(this.properties[15], this.properties[16], this.properties[17], this.properties[18]);
+        this.canvas_text.stroke.lineWidth = this.properties[13];    
+        this.canvas_text.stroke.lineJoin = lineJoinMode[this.properties[14]];
+        this.canvas_text.underline.thickness = this.properties[15];
+        this.canvas_text.underline.offset = this.properties[16];
+		this.setShadow(this.properties[17], this.properties[18], this.properties[19], this.properties[20]);
         
 		
 		// render text at object initialize
@@ -825,7 +827,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	        return;
 	    
 	    this.line_height_offset = line_height_offset;
-	    this.render_text(this.is_force_render);	                
+	    this.render_text(this.is_force_render);
 	};	
 
 	Acts.prototype.SetHorizontalAlignment = function(align)
@@ -873,6 +875,16 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	    this.canvas_text.underline.offset = offset;              
 	};
 
+	Acts.prototype.SetStrokeLineWidth = function(w)
+	{
+	    this.canvas_text.stroke.lineWidth = w;              
+	};
+
+	Acts.prototype.SetStrokeLineJoin = function(m)
+	{
+	    this.canvas_text.stroke.lineJoin = lineJoinMode[m];              
+	};    
+    
     
 	Acts.prototype.LockCanvasSize = function(width, height)
 	{
@@ -1024,6 +1036,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             style:"normal",            
             shadow:"",
         };
+        this.stroke = {lineWidth: 1, lineJoin: "miter"};
         this.underline = {thickness: 1, offset:0};
         
         this.textAlign = "start";
@@ -1071,7 +1084,12 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             
             var stroke = this.getStokeColor(propScope);        
             if (stroke.toLowerCase() !== "none")
+            {                
                 this.context.strokeStyle = stroke;
+                this.context.lineWidth = this.stroke.lineWidth;
+                this.context.lineJoin = this.stroke.lineJoin;
+                this.context.miterLimit = 2;           
+            }
         }
         
         var shadow = (propScope["shadow"])? this.default_propScope.shadow : "";        
@@ -1158,13 +1176,13 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         // draw text
         else
         {
+            // stoke 
+            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")            
+                ctx.strokeText(pen.text, startX, startY);            
+            
             // fill text
             if (this.getFillColor(pen.prop).toLowerCase() !== "none")
-                ctx.fillText(pen.text, startX, startY);
-            
-            // stoke 
-            if (this.getStokeColor(pen.prop).toLowerCase() !== "none")
-                ctx.strokeText(pen.text, startX, startY);
+                ctx.fillText(pen.text, startX, startY);         
         }
         
         
@@ -1669,6 +1687,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	{
 		return {
 			"cls": this.savedClasses,
+            "stroke": [this.stroke.lineWidth, this.stroke.lineJoin],
             "u": [this.underline.thickness, this.underline.offset]
 		};
 	};
@@ -1676,6 +1695,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	CanvasTextProto.loadFromJSON = function (o)
 	{
 		this.savedClasses = o["cls"];
+        this.stroke.lineWidth = o["stroke"][0];
+        this.stroke.lineJoin = o["stroke"][1];
         this.underline.thickness = o["u"][0];
         this.underline.offset = o["u"][1];        
 	};    

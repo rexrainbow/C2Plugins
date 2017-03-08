@@ -47,6 +47,8 @@ cr.plugins_.Rex_Hash = function(runtime)
         else
             this.hashtable = {};
 		this.currentEntry = this.hashtable;			
+                
+        this.setIndent(this.properties[1]);
 			
         this.exp_CurKey = "";
         this.exp_CurValue = 0; 	
@@ -181,6 +183,14 @@ cr.plugins_.Rex_Hash = function(runtime)
             }
         }
 	};     
+    
+	instanceProto.setIndent = function (space)
+	{
+        if (isNaN(space))
+            this.space = space;
+        else
+            this.sapce = parseInt(space);
+	};    
 	
 	var getItemsCount = function (o)
 	{
@@ -198,7 +208,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 	    return cnt;
 	};
     
-    var din = function (d, default_value)
+    var din = function (d, default_value, space)
     {       
         var o;
 	    if (d === true)
@@ -213,7 +223,9 @@ cr.plugins_.Rex_Hash = function(runtime)
                 o = 0;
         }
         else if (typeof(d) == "object")
-            o = JSON.stringify(d);
+        {
+            o = JSON.stringify(d,null,space);
+        }
         else
             o = d;
 	    return o;
@@ -625,7 +637,13 @@ cr.plugins_.Rex_Hash = function(runtime)
             return;
         
         arr.splice(idx, 0, val);
-	};         
+	};       
+    
+	Acts.prototype.SetIndent = function (space)
+	{
+        this.setIndent(space);
+	};       
+    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -634,7 +652,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 	Exps.prototype.Hash = function (ret, keys, default_value)
 	{   
         keys = keys.split(".");
-        var val = din(this.getValue(keys), default_value);
+        var val = din(this.getValue(keys), default_value,this.space);
 		ret.set_any(val);
 	};
     Exps.prototype.At = Exps.prototype.Hash;
@@ -653,20 +671,20 @@ cr.plugins_.Rex_Hash = function(runtime)
                 gKeys.push(k);            
         }
                    
-        var val = din(this.getValue(gKeys)); 
+        var val = din(this.getValue(gKeys), null, this.space); 
         gKeys.length = 0; 
 		ret.set_any(val);
 	};    
     
 	Exps.prototype.Entry = function (ret, key)
 	{
-        var val = din(this.currentEntry[key]);      
+        var val = din(this.currentEntry[key], null, this.space);      
 		ret.set_any(val);
 	};
 
 	Exps.prototype.HashTableToString = function (ret)
 	{
-        var json_string = JSON.stringify(this.hashtable);
+        var json_string = JSON.stringify(this.hashtable,null,this.space);
 		ret.set_string(json_string);
 	};  
 	
@@ -678,7 +696,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 	Exps.prototype.CurValue = function (ret, subKeys, default_value)
 	{
         var val = this.getValue(subKeys, this.exp_CurValue);        
-        val = din(val, default_value);              
+        val = din(val, default_value, this.space);
 		ret.set_any(val);
 	};
     
@@ -709,7 +727,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 			for(i=1; i<cnt; i=i+2)
 			    table[arguments[i]]=arguments[i+1];
 	    }
-		ret.set_string(JSON.stringify(table));
+		ret.set_string(JSON.stringify(table,null,this.space));
 	};		
     
 	Exps.prototype.AsJSON = Exps.prototype.HashTableToString;
@@ -733,7 +751,7 @@ cr.plugins_.Rex_Hash = function(runtime)
             }
         }
         
-        val = din(val, default_value);
+        val = din(val, default_value, this.space);
 		ret.set_any(val);
 	};	    
     
@@ -753,7 +771,7 @@ cr.plugins_.Rex_Hash = function(runtime)
         else
             val = arr.splice(idx, 1);
         
-		ret.set_any( din(val) );
+		ret.set_any( din(val, null, this.space) );
 	};    
     
     

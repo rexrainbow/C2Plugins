@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"To find sequence pattern.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_sequence_matcher.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_sequence_matcher.html",
 		"category":		"Rex - Logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

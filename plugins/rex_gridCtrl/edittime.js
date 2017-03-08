@@ -134,7 +134,18 @@ AddNumberParam("Columns", "Column number of this grid.", 10);
 AddNumberParam("Rows", "Row number of this grid.", 10);
 AddAction(15, 0, "Set column number", "Grid", 
           "Set grid size to <i>{0}</i>x<i>{1}</i>", 
-          "Set grid size.", "SetGridSize");                   
+          "Set grid size.", "SetGridSize");
+          
+AddObjectParam("Instance", "Instance belong the cell.");
+AddNumberParam("Cell index", "Cell index.", 0);
+AddAction(16, 0, "Pin instance to cell", "Instances", 
+          "Pin <i>{0}</i> to cell <i>{1}</i>", 
+          'Pin instance to cell. It will be destroyed while cell is invisible.', "PinInstToCell"); 
+AddObjectParam("Instance", "Instance belong the cell.");
+AddNumberParam("Cell index", "Cell index.", 0);
+AddAction(17, 0, "Unpin instance from cell", "Instances", 
+          "Unpin <i>{0}</i> from cell <i>{1}</i>", 
+          'Unpin instance from cell.', "UnPinInst");           
           
 AddNumberParam("Cell index", "Cell index.", 0);
 AddAction(21, 0, "Scroll to index", "List - offset Y", 

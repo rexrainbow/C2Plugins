@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"Execute callback during duration",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_duration.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_duration.html",
 		"category":		"Rex - Timeline",
 		"flags":		0
 	};

@@ -66,10 +66,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
 
 	behinstProto.onCreate = function()
 	{    
+        this.isLineBreak = (this.properties[0] === 1);    
         this.typing_timer = null;
         this.typing_speed = 0; 
         this.typing_index = 0;
         this.content = "";
+        this.typing_content = null;
         this.raw_text_length = 0;
         this.timer_save = null;
 		this.text_type = this.get_text_type();  
@@ -153,7 +155,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	    if (start_index == null)
 	        start_index = 0;
 	    if (end_index == null)
-	        end_index = this.raw_text_length;
+	        end_index = this.get_rawTextLength(content);
 
 		if ((this.text_type == "Text") || (this.text_type == "Spritefont2") || (this.text_type == "TextBox"))
 		{
@@ -182,6 +184,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	behinstProto.start_typing = function (text, speed, start_index)
 	{
+        if (this.isLineBreak)
+        {
+            text = this.lineBreakContent(text);
+        }
+                
 	    this.raw_text_length = this.get_rawTextLength(text);
         if (speed != 0)
         {
@@ -189,6 +196,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
                 start_index = 1;
             
             this.typing_timer = this._get_timer();
+            this.typing_content = text;
             this.typing_speed = speed;
             this.typing_index = start_index;
             this.typing_timer.Start(0);
@@ -196,7 +204,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
         else
         {
             this.typing_index = this.raw_text_length;
-            this.SetText(this.content);
+            this.SetText(text, 0, this.typing_index);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
     };
@@ -208,15 +216,16 @@ cr.behaviors.Rex_text_typing = function(runtime)
     };
         
 	behinstProto.text_typing_handler = function()
-	{  
-        this.SetText(this.content, 0, this.typing_index);
-        this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);       
+	{
+        this.SetText(this.typing_content, 0, this.typing_index);
+        this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);         
         this.typing_index += 1;        
         if (this.typing_index <= this.raw_text_length)
             this.typing_timer.Restart(this.typing_speed);        
         else
         {
-            this.typing_index = this.raw_text_length;  
+            this.typing_index = this.raw_text_length;
+            this.typing_content = null;            
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
 	}; 
@@ -226,9 +235,66 @@ cr.behaviors.Rex_text_typing = function(runtime)
         return (this.typing_timer)? this.typing_timer.IsActive():false;
 	}; 
     
+ 
+    behinstProto._get_webgl_ctx = function ()
+	{
+        var inst = this.inst;            
+        var ctx = inst.myctx;
+		if (!ctx)
+		{
+			inst.mycanvas = document.createElement("canvas");
+            var scaledwidth = Math.ceil(inst.layer.getScale()*inst.width);
+            var scaledheight = Math.ceil(inst.layer.getAngle()*inst.height);
+			inst.mycanvas.width = scaledwidth;
+			inst.mycanvas.height = scaledheight;
+			inst.lastwidth = scaledwidth;
+			inst.lastheight = scaledheight;
+			inst.myctx = inst.mycanvas.getContext("2d");
+            ctx = inst.myctx;
+		}
+        return ctx;
+	}; 
+	behinstProto.drawText = function (text)
+	{
+        // render all content
+        this.SetText(text);
+        var inst = this.inst;               
+        var ctx = (this.runtime.enableWebGL)? 
+                  this._get_webgl_ctx():this.runtime.ctx;
+        inst.draw(ctx);                      // call this function to get lines        
+	}; 
+
+    behinstProto.lineBreakContent = function (source)
+	{
+        this.drawText(source);
+        var content;
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
+        {
+            content = this.inst.lines.join("\n");
+        }
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        {
+            var pensMgr = this.inst.copyPensMgr(); 
+            var cnt = pensMgr.getLines().length;
+            var lines = [];
+            for (var i=0; i<cnt; i++)            
+            {
+              // get start chart index     
+              var si = pensMgr.getLineStartChartIndex(i);
+              // get end chart index
+              var ei = pensMgr.getLineEndChartIndex(i);
+              var txt = pensMgr.getSliceTagText(si, ei+1);                
+              lines.push(txt);
+            }
+            content = lines.join("\n");
+        }        
+	    return content;
+	};    
+    
 	behinstProto.saveToJSON = function ()
 	{ 
-		return { "content": this.content,
+		return { "c": this.content,
+                 "tc": this.typing_content,
 		         "spd" : this.typing_speed,
 		         "i" : this.typing_index,
 		         
@@ -239,7 +305,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	behinstProto.loadFromJSON = function (o)
 	{    
-	    this.content = o["content"];
+	    this.content = o["c"];
+        this.typing_content = o["tc"];
 	    this.typing_speed = o["spd"];
 	    this.typing_index = o["i"];
 	    
@@ -305,7 +372,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
 		
-        this.content = param.toString();
+        this.content = param.toString();       
         this.start_typing(this.content, speed);
 	};
 
@@ -373,7 +440,16 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
     Exps.prototype.TypingIndex = function (ret)
 	{
-	    ret.set_float( this.typing_index );
+	    ret.set_float( this.typing_index -1 );
 	};	
-	
+
+    Exps.prototype.Content = function (ret)
+	{
+	    ret.set_string( this.content );
+	};
+    
+    Exps.prototype.LastTypingCharacter = function (ret)
+	{
+	    ret.set_string( this.content.charAt(this.typing_index-1) );
+	};	
 }());

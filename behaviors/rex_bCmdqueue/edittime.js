@@ -5,7 +5,7 @@
 		"id":			"Rex_bCmdqueue",
 		"description":	"A command queue to pend commands.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_bcmdqueue.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_bcmdqueue.html",
 		"category":		"Rex - Logic - flow control",
 		"flags":		bf_onlyone
 	};

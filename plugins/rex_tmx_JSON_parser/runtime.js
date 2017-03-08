@@ -332,12 +332,16 @@ cr.plugins_.Rex_tmx_JSON_parser = function(runtime)
     var _get_object = function(dict_obj)
     {    
         var object = {};
+        object.id = _get_value(dict_obj, "id");
         object.name = _get_value(dict_obj, "name");
         object.type = _get_value(dict_obj, "type"); 
         object.x = _get_value(dict_obj, "x");
         object.y = _get_value(dict_obj, "y");          
         object.width = _get_value(dict_obj, "width");
         object.height = _get_value(dict_obj, "height");
+        object.rotation = _get_value(dict_obj, "rotation");
+        object.gid = _get_value(dict_obj, "gid", -1);
+        object.visible = _get_value(dict_obj, "visible");
         object.is_ellipse = _get_value(dict_obj, "ellipse", false);
         object.properties = _get_properties(dict_obj, "properties");
         return object;

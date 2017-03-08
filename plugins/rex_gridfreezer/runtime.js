@@ -370,6 +370,7 @@ cr.plugins_.Rex_GridFreezer = function(runtime)
 	    this.board2mask = o["board2mask"];
 	    this.board2insts = o["board2insts"];  
 
+        this.target_types.length = 0;
         if (o["target_types"] != null)
         {
             var save_sid=o["target_types"], i, len, t;

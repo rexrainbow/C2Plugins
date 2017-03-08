@@ -30,11 +30,11 @@ AddCondition(101, cf_trigger, "On login", "Authentication", "On login", "Trigger
 AddCondition(102, cf_none, "Is guest", "Authentication", "Is guest", "True if the user is a guest (not logged in).", "IsGuest");
 
 // Incentivized Ads
-AddCondition(201, cf_trigger | cf_deprecated, "2. On ads available", "Incentivized Ads", "2. On ads available", "Triggered when ads is available.", "OnAdsAvailable");
-AddCondition(202, cf_trigger | cf_deprecated, "2. On ads unavailable", "Incentivized Ads", "2. On ads unavailable", "Triggered when ads is unavailable.", "OnAdsUnavailable");
-AddCondition(203, cf_trigger | cf_deprecated, "4. On ads opened", "Incentivized Ads", "4. On ads opened", "Triggered when ads is opened.", "OnAdOpened");
-AddCondition(204, cf_trigger | cf_deprecated, "5. On ads completed", "Incentivized Ads", "5. On ads completed", "Triggered when ads is completed.", "OnAdCompleted");
-AddCondition(205, cf_trigger | cf_deprecated, "5. On ads abandoned", "Incentivized Ads", "5. On ads abandoned", "Triggered when ads is abandoned.", "OnAdAbandoned");
+AddCondition(201, cf_trigger, "2. On ads available", "Incentivized Ads", "2. On ads available", "Triggered when ads is available.", "OnAdsAvailable");
+AddCondition(202, cf_trigger, "2. On ads unavailable", "Incentivized Ads", "2. On ads unavailable", "Triggered when ads is unavailable.", "OnAdsUnavailable");
+AddCondition(203, cf_trigger, "4. On ads opened", "Incentivized Ads", "4. On ads opened", "Triggered when ads is opened.", "OnAdOpened");
+AddCondition(204, cf_trigger, "5. On ads completed", "Incentivized Ads", "5. On ads completed", "Triggered when ads is completed.", "OnAdCompleted");
+AddCondition(205, cf_trigger, "5. On ads abandoned", "Incentivized Ads", "5. On ads abandoned", "Triggered when ads is abandoned.", "OnAdAbandoned");
 
 // Kreds & Virtual Goods
 
@@ -47,11 +47,11 @@ AddAction(101, 0, "Show registration box", "Authentication", "Show registration 
           "ServicesShowRegBox");
 
 // Incentivized Ads
-AddAction(201, af_deprecated, "1. Initialize incentivized Ads", "Incentivized Ads", 
+AddAction(201, 0, "1. Initialize incentivized Ads", "Incentivized Ads", 
           "1. Initialize incentivized Ads", 
           "Initialize the incentivized ad system.", "MtxInitializeIncentivizedAds"); 
           
-AddAction(202, af_deprecated, "3. Show incentivized Ad", "Incentivized Ads", 
+AddAction(202, 0, "3. Show incentivized Ad", "Incentivized Ads", 
           "3. Show incentivized Ad", 
           "Attempt to display an incentivized ad to the user.", "MtxShowIncentivizedAd");    
 

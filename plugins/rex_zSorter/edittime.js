@@ -6,7 +6,7 @@
 		"version":		"1.0",
 		"description":	"Sorts Objects in Layer By Y",
 		"author":		"Juan Pablo Tarquino",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_zSorter.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_zSorter.html",
 		"category":		"Rex - Layer/layout",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

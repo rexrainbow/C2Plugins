@@ -1077,7 +1077,8 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         if (this._filter_uid_list.indexOf(filter_uid) == (-1))
             this._filter_uid_list.push(filter_uid);
 	}; 	   
-	 
+	
+    var _tileNode = {uid:-1, x:-1, y:-1};
 	Acts.prototype.GetMoveableArea = function (chess_objs, moving_points, cost, filter_name, group_name)
 	{	  
 	    this.request_init_clean();
@@ -1100,25 +1101,29 @@ cr.plugins_.Rex_SLGMovement = function(runtime)
         if (filter_name == "")
         {
             saveToGroup.SetByUIDList(tiles_uids);
-            return;
         }
-        
-        // filter applied
-	    var i, cnt=tiles_uids.length ,uid, _xyz;	    
-        this._filter_fn_name = filter_name;
-	    this._filter_uid_list.length = 0;   
-	    
-	    this.exp_CurTile = {uid:-1, x:-1, y:-1};
-	    for (i=0; i<cnt; i++)
-		{
-            uid = parseInt(tiles_uids[i]);
-            this.exp_CurTile.uid = uid;            
-            _xyz = this.uid2xyz(uid);
-	        this.exp_CurTile.x = _xyz.x;
-	        this.exp_CurTile.y = _xyz.y;
-            this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
-		}
-		saveToGroup.SetByUIDList(this._filter_uid_list);
+        else
+        {
+            // filter applied
+	        var i, cnt=tiles_uids.length ,uid, _xyz;
+            this._filter_fn_name = filter_name;
+	        this._filter_uid_list.length = 0;   
+	        
+	        this.exp_CurTile = _tileNode;
+	        for (i=0; i<cnt; i++)
+		    {
+                uid = tiles_uids[i];
+                if (!isNaN(uid))
+                    uid = parseInt(uid);
+                
+                this.exp_CurTile.uid = uid;            
+                _xyz = this.uid2xyz(uid);
+	            this.exp_CurTile.x = _xyz.x;
+	            this.exp_CurTile.y = _xyz.y;
+                this.runtime.trigger(cr.plugins_.Rex_SLGMovement.prototype.cnds.OnFilterFn, this);
+		    }
+		    saveToGroup.SetByUIDList(this._filter_uid_list);
+        }
 	};  
 		
 	Acts.prototype.GetMovingPath = function (chess_objs, tile_objs, moving_points, cost, group_name, is_nearest)	

@@ -3,9 +3,9 @@
 	return {
 		"name":			"Linear layout",
 		"id":			"Rex_layouter_linear",
-		"description":	"Put sprite linear on layouter.",
+		"description":	"Put instances linear on layouter.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_layouter_linear.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_layouter_linear.html",
 		"category":		"Rex - Layouter",
 		"flags":		bf_onlyone
 	};

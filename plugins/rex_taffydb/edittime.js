@@ -227,7 +227,12 @@ AddComboParamOption("any (eval)");
 AddComboParam("Type", "Type.", 1);
 AddAction(200, 0, "Define type", "Insert - CSV", 
          "Define key <i>{0}</i> to <i>{1}</i> type",
-         "Define value type of a key.", "InsertCSV_DefineType");          
+         "Define value type of a key.", "InsertCSV_DefineType"); 
+
+AddStringParam("Name", 'Database reference. Sets "" to be a private database.', '""');
+AddAction(211, 0, "Link to database", "Database", 
+          "Link to database <i>{0}</i>", 
+          "Link to database.", "LinkToDatabase");          
 //////////////////////////////////////////////////////////////
 // Expressions
 

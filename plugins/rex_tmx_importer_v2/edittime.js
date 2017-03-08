@@ -6,7 +6,7 @@
 		"version":		"0.1",          
 		"description":	"Create sprites according to tmx exported file.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_tmx_importer_v2.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_tmx_importer_v2.html",
 		"category":		"Rex - Board - tmx importer v2.x",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -99,11 +99,11 @@ AddExpression(6, ef_return_number,
               "Get total height", "Map", "TotalHeight", "Get total height in pixel."); 
 AddExpression(7, ef_return_number, 
               "Get orientation", "Map", "IsIsometric", "Get orientation. 1=Isometric, 0=Orthogonal");
-AddExpression(8, ef_return_string, 
+AddExpression(8, ef_return_string | ef_variadic_parameters, 
               "Get image source of tileset", "Tileset", "ImageSource", "Get image source of tileset.");		
-AddExpression(9, ef_return_number, 
+AddExpression(9, ef_return_number | ef_variadic_parameters, 
               "Get image width of tileset", "Tileset", "ImageWidth", "Get image width of tileset.");		
-AddExpression(10, ef_return_number, 
+AddExpression(10, ef_return_number | ef_variadic_parameters, 
               "Get image height of tileset", "Tileset", "ImageHeight", "Get image height of tileset.");			  
 AddExpression(11, ef_return_number, 
               "Get tile id", "Tile", "TileID", "Get tile id.");           
@@ -136,8 +136,8 @@ AddExpression(23, ef_return_number,
               "Get instance UID", "Tile", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
 AddExpression(24, ef_return_number, 
               "Get frame number", "Tile", "Frame", "Get frame number.");                
-AddExpression(25, ef_return_string, 
-              "Get tileset name", "Tileset", "TilesetName", "Get tileset name.");
+AddExpression(25, ef_return_string | ef_variadic_parameters, 
+              "Get tileset name", "Tileset", "TilesetName", "Get tileset name, add GID at 1st parameter to get tileset name of that tile.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(26, ef_return_any | ef_variadic_parameters, 
               "Get map properties", "Map", "MapProp", "Get map properties. Add second parameters to set default value.");
@@ -177,6 +177,7 @@ AddExpression(41, ef_return_number,
               "Get area width of object group", "Object: Object group", "ObjGroupWidth", "Get area width of object group.");
 AddExpression(42, ef_return_number, 
               "Get area height of object group", "Object: Object group", "ObjGroupHeight", "Get area height of object group.");
+              
 AddExpression(50, ef_return_string, 
               "Get object name", "Object: Object", "ObjectName", "Get object name.");
 AddExpression(51, ef_return_string, 
@@ -186,17 +187,27 @@ AddExpression(52, ef_return_number,
 AddExpression(53, ef_return_number, 
               "Get area height of object", "Object: Object", "ObjectHeight", "Get area height of object.");
 AddExpression(54, ef_return_number, 
-              "Get logical X index of object", "Object: Object", "ObjectX", "Get logical X index of object.");
+              "Get position X of object", "Object: Object", "ObjectX", "Get position X of object.");
 AddExpression(55, ef_return_number, 
-              "Get logical Y index of object", "Object: Object", "ObjectY", "Get logical Y index of object.");
+              "Get position Y index of object", "Object: Object", "ObjectY", "Get position Y of object.");
 AddStringParam("Name", "Property name.", '""');
 AddExpression(56, ef_return_any | ef_variadic_parameters,
               "Get object properties", "Object: Object", "ObjectProp", "Get object properties.  Add second parameters to set default value.");
+              
+//ef_deprecated              
 AddExpression(57, ef_return_number | ef_deprecated, 
               "Get physical X position of object", "Object: Object", "ObjectPX", "Get physical X position (in pixel) of object.");
 AddExpression(58, ef_return_number | ef_deprecated, 
               "Get physical Y position of object", "Object: Object", "ObjectPY", "Get physical Y position (in pixel) of object.");
-
+//ef_deprecated
+              
+AddExpression(59, ef_return_number, 
+              "Get id of object", "Object: Object", "ObjectID", "Get id of object.");              
+AddExpression(60, ef_return_number, 
+              "Get rotation of object", "Object: Object", "ObjectRotation", "Get rotation of object, in degrees clockwise.");              
+AddExpression(61, ef_return_number, 
+              "Get gid of a reference tile", "Object: Object", "ObjectRefGID", "Get gid of a reference tile.");   
+              
 // duration
 AddExpression(70, ef_return_number, 
               "Get percent of retrieving process", "Duration", "RetrievingPercent", "Get percent of retrieving process.");  

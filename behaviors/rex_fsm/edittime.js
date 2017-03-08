@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropboxusercontent.com/u/5779181/C2Repo/rex_fsm.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/rex_fsm.html",
 	    "category":		"Rex - Logic -finite state machine",
 		"flags":		0
 	};

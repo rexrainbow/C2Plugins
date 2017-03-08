@@ -349,7 +349,7 @@ cr.plugins_.Rex_audio_helper = function(runtime)
         this.Fade(tag, startVolDB, stopVolDB, fadeTime);       
 	};
     
-    Acts.prototype.PlayByName = function (folder, filename, looping, vol, tag, fadeInTime)
+    Acts.prototype.PlayByName = function (folder, filename, looping, stopVol, tag, fadeInTime, startVol)
 	{     
         tag = tag.toLowerCase();    
         var startVolDB = parse_voldBIn(startVol);

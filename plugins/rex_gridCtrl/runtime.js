@@ -912,34 +912,46 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	    this.set_OY(this.OY + dy);        
 	};		
     
-    Acts.prototype.PinInstToCell = function (objs)
+    Acts.prototype.PinInstToCell = function (objs, cell_index)
 	{
         if ((!objs) || (this.exp_CellIndex == -1))
+            return;
+        
+        if (cell_index == null)
+            cell_index = this.exp_CellIndex;
+        else if (!this.visibleLineIndexes[cell_index])
             return;
         
 		var insts = objs.getCurrentSol().getObjects();
 		var i, cnt=insts.length;
         for (i=0; i<cnt; i++)  
         {      
-	        this.lines_mgr.AddInstToLine(this.exp_CellIndex, insts[i]);
+	        this.lines_mgr.AddInstToLine(cell_index, insts[i]);
 	    }        
 	};
-    Acts.prototype.UnPinInst = function (objs)
+    Acts.prototype.UnPinInst = function (objs, cell_index)
 	{
         if (!objs)
             return;
             
-	    if (this.visibleY_start !== null)
-	    {
-		    var insts = objs.getCurrentSol().getObjects();
-	        var i, j, cnt=insts.length, uid;
-			for (i=0; i<cnt; i++)  
-			{
-			    uid = insts[i].uid;
-	            for(j=this.visibleY_start; j<=this.visibleY_end; j++)
-	                this.lines_mgr.RemoveInstFromLine(j, uid)
-		    }
-	    }  
+        if (this.visibleY_start == null)
+            return;
+
+        var insts = objs.getCurrentSol().getObjects();
+        var i, j, cnt=insts.length, uid;
+        for (i=0; i<cnt; i++)  
+        {
+            uid = insts[i].uid;
+            if (cell_index == null)
+            {
+                for(j=this.visibleY_start; j<=this.visibleY_end; j++)
+                    this.lines_mgr.RemoveInstFromLine(j, uid);
+            }
+            else
+            {
+                this.lines_mgr.RemoveInstFromLine(cell_index, uid);
+            }
+        }
 	};    
     
     Acts.prototype.SetCellsCount = function (cnt)
