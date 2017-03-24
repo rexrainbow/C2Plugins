@@ -1060,8 +1060,6 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	};
 	LinesMgrKlassProto.RemoveInstFromLine = function(line_index, uid)
 	{	   
-	    if (inst == null)
-	        return;
         var line = this.GetLine(line_index, true);
         if (line == null)
             return;

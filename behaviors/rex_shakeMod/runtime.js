@@ -91,7 +91,7 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
             return;
         
 		var dt = this.runtime.getDt(this.inst);
-        if (dt === 0)
+        if (dt == 0)
             return;
         
         // save origin to current position
@@ -101,6 +101,8 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 
         if (isEnded)        
         {
+			this.OX = null;
+			this.OY = null;			
             this.isShaking = false;
             this.is_my_call = true;
             this.runtime.trigger(cr.behaviors.Rex_ShakeMod.prototype.cnds.OnShackingEnd, this.inst); 
@@ -132,7 +134,7 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
 
         // add offset to origin
         var nx = this.OX + offx;
-        var ny = this.OY + offy;        
+        var ny = this.OY + offy; 
         if ((nx !== this.inst.x) || (ny !== this.inst.y))
         {
 		    this.inst.x = nx;
@@ -158,7 +160,6 @@ cr.behaviors.Rex_ShakeMod = function(runtime)
         // go back to origin point
         this.inst.x = this.OX;
         this.inst.y = this.OY;
-        
         this.OX = null;
         this.OY = null;                
         

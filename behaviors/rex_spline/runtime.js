@@ -86,15 +86,17 @@ cr.behaviors.Rex_Spline = function(runtime)
 	{
         if (dt == null)
             dt = this.runtime.getDt(this.inst);
-        if (dt === 0)
+        if ((dt === 0) || (this.speed == 0))
             return;
         
-        var remainDist = this.speed*dt;
-        var sRemDist = remainDist/3;
+        var tickMovingDist = this.speed*dt;
+        var tMD2 = tickMovingDist*tickMovingDist;
+        var sTickMovingDist=tickMovingDist/20;
         var segDist=null, t; 
         var x0=this.inst.x, y0=this.inst.y;
-        var seg, nx, ny, dist;
-        while (remainDist > 0)
+        var seg, nx, ny, dist, dist2, i=0;
+        var preX, preY, preDist2, preSegT;
+        while (1)
         {
             seg = this.getSeg();
             if (seg == null)            
@@ -104,12 +106,13 @@ cr.behaviors.Rex_Spline = function(runtime)
             if (segDist !== seg.dist)
             {
                 segDist = seg.dist
-                t = sRemDist/segDist;
-                if (t > 0.34)
-                    t = 0.34;  // 3 points at least
+                t = (sTickMovingDist/segDist);
+                if (t > 0.5)
+                    t = 0.5;  // 2 points at least
             }
             
             seg.t += t;
+            i++;
             if (seg.t >= 1)
             {
                 seg.t = 1;
@@ -121,14 +124,41 @@ cr.behaviors.Rex_Spline = function(runtime)
                 nx=interpolate(seg, 0, this.tension);
                 ny=interpolate(seg, 1, this.tension);
             }
-            
-            dist = cr.distanceTo(seg.preX, seg.preY, nx, ny); 
-            this.traveledDist += dist;
-            remainDist -= dist;
-            
-            this.inst.x = nx;
-            this.inst.y = ny;
-        }
+                
+            dist2 = distance2(x0, y0, nx, ny);
+            if (dist2 >= tMD2)
+            {
+                if (Math.abs(preDist2 - tMD2) < Math.abs(dist2 - tMD2))
+                {
+                    nx = preX;
+                    ny = preY;
+                    dist2 = preDist2;
+                    seg.t = preSegT;
+                }
+
+                dist = Math.sqrt(dist2);
+                this.traveledDist += dist;
+                this.inst.x = nx;
+                this.inst.y = ny;
+
+                // debug
+                //var diff = Math.abs(dist-tickMovingDist)/tickMovingDist;
+                //diff = Math.floor(diff*100)/100;
+                //if (diff < 1)
+                //    console.log(tickMovingDist + "," + dist+ " :" + diff + "; " + i);     
+                //else
+                //    console.warn(tickMovingDist + "," + dist+ " :" + diff + "; " + i);  
+
+                break;
+            }
+            else
+            {
+                preX = nx;
+                preY = ny;
+                preDist2 = dist2;
+                preSegT = (seg.t === 1)? 0:seg.t;
+            }
+        } // while(1)
                    
         if ((x0 === this.inst.x) && (y0 === this.inst.y))
             this.movingAngle = this.inst.angle;
@@ -153,6 +183,13 @@ cr.behaviors.Rex_Spline = function(runtime)
             }
         }
 	};     
+
+    var distance2 = function(x0, y0, x1, y1)
+    {
+        var dx = (x1-x0);
+        var dy = (y1-y0);
+        return dx*dx + dy*dy;
+    }
 
 	behinstProto.start = function ()
 	{
@@ -321,8 +358,22 @@ cr.behaviors.Rex_Spline = function(runtime)
         this.traveledDist = o["td"];     
         this.movingAngle = o["ma"];
         this.is_moving = o["mov"];  
-	};	    
-    
+	};
+
+	/**BEGIN-PREVIEWONLY**/
+	behinstProto.getDebuggerValues = function (propsections)
+	{	
+        var idx0 = this.curSeg.ptr;
+        var idx1 = this.wrapIndex(this.curSeg.ptr + 1)
+        var p0 = this.points[idx0];
+        var p1 = this.points[idx1]; 
+		propsections.push({
+			"title": this.type.name,
+			"properties": [{"name": "P"+idx0, "value": p0[0] + ","  + p0[1]},
+			               {"name": "P"+idx1, "value": p1[0] + ","  + p1[1]}]
+		});
+	};
+	/**END-PREVIEWONLY**/
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};

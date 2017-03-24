@@ -376,6 +376,9 @@ cr.plugins_.Rex_Achievements = function(runtime)
 	AchievementsMgrKlassProto.GetAchievementNameList = function (level_name)
 	{
 	    var achievements = this.GetAchievementsByLevelName(level_name);
+        if (!achievements)
+            return [];
+        
 	    var names = [], names_map = {};
 	    var i,cnt=achievements.length, n;
 	    for(i=0; i<cnt; i++)
@@ -508,7 +511,12 @@ cr.plugins_.Rex_Achievements = function(runtime)
     var get_prop_cond_code = function (prop_name, cond)
     {
         if (!is_equation(cond))
+        {
+            if (isNaN(cond))
+                cond = '"' + cond + '"';
+            
             cond = "==(" + cond + ")";
+        }
         return "(prop['"+prop_name+"']"+cond+")"
     }
     

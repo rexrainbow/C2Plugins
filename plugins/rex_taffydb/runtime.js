@@ -952,6 +952,12 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{
 		ret.set_int( this.db()["count"]() );
 	};		
+    
+ 	Exps.prototype.DatabaseName = function (ret)
+	{
+		ret.set_string( this.db_name );
+	};	    
+    
 
     // copy from    
     // http://www.bennadel.com/blog/1504-Ask-Ben-Parsing-CSV-Strings-With-Javascript-Exec-Regular-Expression-Command.htm

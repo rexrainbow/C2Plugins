@@ -56,7 +56,24 @@ AddCondition(9, cf_trigger, "On updated profile", "Email & Password - update pro
             
 AddCondition(10, cf_trigger, "On updated profile error", "Email & Password - update profile", 
             "On update profile error", 
-            "Triggered when updated profile error.", "EmailPassword_OnUpdatingProfileError");         
+            "Triggered when updated profile error.", "EmailPassword_OnUpdatingProfileError");      
+
+AddCondition(11, cf_trigger, "On updated email", "Email & Password - update email", 
+            "On update email success", 
+            "Triggered when updated email success.", "EmailPassword_OnUpdatingEmailSuccessful");
+            
+AddCondition(12, cf_trigger, "On updated email error", "Email & Password - update email", 
+            "On update email error", 
+            "Triggered when updated email error.", "EmailPassword_OnUpdatingEmailError");                
+
+AddCondition(13, cf_trigger, "On send verification email", "Email & Password - send verification email", 
+            "On send verification email success", 
+            "Triggered when send verification email success.", "EmailPassword_OnSendVerificationEmailSuccessful");
+            
+AddCondition(14, cf_trigger, "On send verification email error", "Email & Password - send verification email", 
+            "On send verification email error", 
+            "Triggered when send verification email error.", "EmailPassword_OnSendVerificationEmailError");   
+
 
 AddCondition(21, cf_trigger, "Is anonymous", "Anonymous", 
             "Is anonymous login", 
@@ -228,8 +245,16 @@ AddStringParam("Display name", "Display name of current user.", '""');
 AddStringParam("Photo URL", "Photo URL of current user", '""');
 AddAction(61, 0, "Update profile", "Email & Password", 
           "Update display name to <i>{0}</i>, photo URL to <i>{1}</i>", 
-          "Update profile. 3.x only.", "UpdateProfile");	  
-          
+          "Update profile. 3.x only.", "UpdateProfile");	
+
+AddStringParam("Email", "User email", '""');
+AddAction(62, 0, "Update email", "Email & Password", 
+          "Update email to <i>{0}</i>", 
+          "Update email. 3.x only.", "UpdateEmail");	           
+
+AddAction(63, 0, "Send verification email", "Email & Password", 
+          "Send verification email", 
+          "Send verification email. 3.x only.", "SendEmailVerification");          
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Error code", "Error", "ErrorCode", 

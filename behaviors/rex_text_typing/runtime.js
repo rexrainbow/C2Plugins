@@ -276,19 +276,24 @@ cr.behaviors.Rex_text_typing = function(runtime)
         {
             var pensMgr = this.inst.copyPensMgr(); 
             var cnt = pensMgr.getLines().length;
-            var lines = [];
+			var addNewLine=false;
+			content = "";
             for (var i=0; i<cnt; i++)            
             {
+			  if (addNewLine)
+			    content += "\n";
+
               // get start chart index     
               var si = pensMgr.getLineStartChartIndex(i);
               // get end chart index
               var ei = pensMgr.getLineEndChartIndex(i);
-              var txt = pensMgr.getSliceTagText(si, ei+1);                
-              lines.push(txt);
-            }
-            content = lines.join("\n");
+              var txt = pensMgr.getSliceTagText(si, ei+1);  
+
+              content += txt;
+			  addNewLine = (txt.indexOf("\n") === -1);
+			}
         }        
-	    return content;
+	    return content || "";
 	};    
     
 	behinstProto.saveToJSON = function ()

@@ -69,7 +69,7 @@ cr.behaviors.Rex_bHash = function(runtime)
         this.currentEntry = this.hashtable;
 	};    
         
-	behinstProto.getEntry = function(keys, root)
+	behinstProto.getEntry = function(keys, root, defaultEntry)
 	{
         var entry = root || this.hashtable;
         if ((keys === "") || (keys.length === 0))
@@ -84,11 +84,23 @@ cr.behaviors.Rex_bHash = function(runtime)
             var i,  cnt=keys.length, key;
             for (i=0; i< cnt; i++)
             {
-                key = keys[i];
+                key = keys[i];                
                 if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
-                    entry[key] = {};
+                {
+                    var newEntry;
+                    if (i === cnt-1)
+                    {
+                        newEntry = defaultEntry || {};
+                    }
+                    else
+                    {
+                        newEntry = {};
+                    }
+                    
+                    entry[key] = newEntry;
+                }
                 
-                entry = entry[key];            
+                entry = entry[key];             
             }           
         }
         
@@ -609,12 +621,7 @@ cr.behaviors.Rex_bHash = function(runtime)
 
 	Acts.prototype.PushValue = function (keys, val)
 	{
-        var arr = this.getEntry(keys);
-        if (arr == null)
-        {
-            this.setValue(keys, []);
-            arr = this.getEntry(keys);
-        }        
+        var arr = this.getEntry(keys, null, []);    
         if (!isArray(arr))
             return;
         
@@ -629,12 +636,7 @@ cr.behaviors.Rex_bHash = function(runtime)
     
 	Acts.prototype.InsertValue = function (keys, val, idx)
 	{
-        var arr = this.getEntry(keys);
-        if (arr == null)
-        {
-            this.setValue(keys, []);
-            arr = this.getEntry(keys);
-        }        
+        var arr = this.getEntry(keys, null, []);  
         if (!isArray(arr))
             return;
         

@@ -63,7 +63,7 @@ cr.plugins_.Rex_Hash = function(runtime)
         this.currentEntry = this.hashtable;
 	};    
         
-	instanceProto.getEntry = function(keys, root)
+	instanceProto.getEntry = function(keys, root, defaultEntry)
 	{
         var entry = root || this.hashtable;
         if ((keys === "") || (keys.length === 0))
@@ -78,9 +78,21 @@ cr.plugins_.Rex_Hash = function(runtime)
             var i,  cnt=keys.length, key;
             for (i=0; i< cnt; i++)
             {
-                key = keys[i];
+                key = keys[i];                
                 if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
-                    entry[key] = {};
+                {
+                    var newEntry;
+                    if (i === cnt-1)
+                    {
+                        newEntry = defaultEntry || {};
+                    }
+                    else
+                    {
+                        newEntry = {};
+                    }
+                    
+                    entry[key] = newEntry;
+                }
                 
                 entry = entry[key];            
             }           
@@ -607,12 +619,7 @@ cr.plugins_.Rex_Hash = function(runtime)
 
 	Acts.prototype.PushValue = function (keys, val)
 	{
-        var arr = this.getEntry(keys);
-        if (arr == null)
-        {
-            this.setValue(keys, []);
-            arr = this.getEntry(keys);
-        }        
+        var arr = this.getEntry(keys, null, []);    
         if (!isArray(arr))
             return;
         
@@ -627,12 +634,7 @@ cr.plugins_.Rex_Hash = function(runtime)
     
 	Acts.prototype.InsertValue = function (keys, val, idx)
 	{
-        var arr = this.getEntry(keys);
-        if (arr == null)
-        {
-            this.setValue(keys, []);
-            arr = this.getEntry(keys);
-        }        
+        var arr = this.getEntry(keys, null, []);  
         if (!isArray(arr))
             return;
         

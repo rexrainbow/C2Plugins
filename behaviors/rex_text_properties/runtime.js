@@ -100,33 +100,6 @@ cr.behaviors.Rex_text_properties = function(runtime)
                   this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines        
 	}; 
-
-    behinstProto.lineBreakContent = function ()
-	{
-        this.drawText();
-        var content;
-        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
-        {
-            content = this.inst.lines.join("\n");
-        }
-        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
-        {
-            var pensMgr = this.inst.copyPensMgr(); 
-            var cnt = pensMgr.getLines().length;
-            var lines = [];
-            for (var i=0; i<cnt; i++)            
-            {
-              // get start chart index     
-              var si = pensMgr.getLineStartChartIndex(i);
-              // get end chart index
-              var ei = pensMgr.getLineEndChartIndex(i);
-              var txt = pensMgr.getSliceTagText(si, ei+1);                
-              lines.push(txt);
-            }
-            content = lines.join("\n");
-        }        
-	    return content;
-	};    
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -249,7 +222,29 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
     Exps.prototype.LineBreakContent = function (ret)
 	{
-	    ret.set_string( this.lineBreakContent() );
+        this.drawText();
+        var content;
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
+        {
+            content = this.inst.lines.join("\n");
+        }
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        {
+            var pensMgr = this.inst.copyPensMgr(); 
+            var cnt = pensMgr.getLines().length;
+            var lines = [];
+            for (var i=0; i<cnt; i++)            
+            {
+              // get start chart index     
+              var si = pensMgr.getLineStartChartIndex(i);
+              // get end chart index
+              var ei = pensMgr.getLineEndChartIndex(i);
+              var txt = pensMgr.getSliceTagText(si, ei+1);                
+              lines.push(txt);
+            }
+            content = lines.join("\n");
+        }        
+	    ret.set_string( content );
 	};
     
 }());

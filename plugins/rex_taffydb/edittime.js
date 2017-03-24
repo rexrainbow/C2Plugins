@@ -296,6 +296,9 @@ AddExpression(101, ef_return_string, "All rows to string", "All data", "AllRowsA
 AddExpression(102, ef_return_number, "Count of all rows", "All data", "AllRowsCount", 
               "Get count of all rows.");  
               
+AddExpression(211, ef_return_string, "Database name", "Database", "DatabaseName", 
+              "Get current linked database name.");    
+              
 ACESDone();
 
 // Property grid properties for this plugin

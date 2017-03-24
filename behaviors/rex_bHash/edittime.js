@@ -101,27 +101,27 @@ AddAction(22, 0, "Sort", "Array",
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddStringParam("JSON", "JSON string.", '"{}"');
 AddAction(23, 0, "Push JSON", "Array - Push",  
-          "Push JSON <i>{1}</i> into array at <i>{0}</i> ",
+          "Push JSON <i>{1}</i> into array <i>{0}</i> ",
           "Push JSON into array.", "PushJSON");        
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
 AddAction(24, 0, "Push value", "Array - Push", 
-          "Push value <i>{1}</i> into array at <i>{0}</i> ",
+          "Push value <i>{1}</i> into array <i>{0}</i> ",
           "Push value into array.", "PushValue");   
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddStringParam("JSON", "JSON string.", '"{}"');
 AddNumberParam("Index", "Index of this array to insert.", 0);
 AddAction(25, 0, "Insert JSON", "Array - Insert", 
-          "Insert JSON <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
+          "Insert JSON <i>{1}</i> at array <i>{0}</i>[<i>{2}</i>]",
           "Insert JSON into array.", "InsertJSON");        
 
 AddStringParam("Key string", "The key string of the hash table value to set.", '""');
 AddAnyTypeParam("Value", "The value to push in the hash table.", 0);
 AddNumberParam("Index", "Index of this array to insert.", 0);
 AddAction(26, 0, "Insert value", "Array - Insert", 
-          "Insert value <i>{1}</i> into array at <i>{0}</i>[<i>{2}</i>]",
+          "Insert value <i>{1}</i> at array <i>{0}</i>[<i>{2}</i>]",
           "Insert value into array.", "InsertValue");            
           
 AddAnyTypeParam("Value", "The value to push in the hash table.", 0);

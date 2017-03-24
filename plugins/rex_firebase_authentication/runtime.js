@@ -263,6 +263,27 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	{
 	    return true;
 	}; 
+	
+	Cnds.prototype.EmailPassword_OnUpdatingEmailSuccessful = function ()
+	{
+	    return true;
+	}; 	
+
+	Cnds.prototype.EmailPassword_OnUpdatingEmailError = function ()
+	{
+	    return true;
+	}; 
+	
+	Cnds.prototype.EmailPassword_OnSendVerificationEmailSuccessful = function ()
+	{
+	    return true;
+	}; 	
+
+	Cnds.prototype.EmailPassword_OnSendVerificationEmailError = function ()
+	{
+	    return true;
+	}; 
+
 
 	Cnds.prototype.IsAnonymous = function ()
 	{
@@ -676,37 +697,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         {
             window["Firebase"]["database"]()["goOnline"]();
         }
-	};
-		
-    Acts.prototype.UpdateProfile = function (displayName, photoURL)
-	{
-        // 2.x
-        if (!isFirebase3x())
-        {        
-            alert("Does not support in firebase 2.x api");
-	        return;    
-        }
-        
-        // 3.x
-        else
-        {
-            var self = this;
-            var user = getAuthObj()["currentUser"]; 
-            var data = {
-                "displayName": displayName,
-                "photoURL": photoURL,
-            }
-            var onSuccess = function ()
-            {
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingProfileSuccessful, self);
-            };
-            var onError = function ()
-            {
-                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingProfileError, self);
-            };            
-            user["updateProfile"](data)["then"](onSuccess)["catch"](onError);
-        }
-	};    
+	};	
 
     Acts.prototype.LinkToFB = function (access_token)
 	{      
@@ -791,6 +782,88 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
                           cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLinkError
                           ); 
 	};	 
+	
+    Acts.prototype.UpdateProfile = function (displayName, photoURL)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {        
+            alert("Does not support in firebase 2.x api");
+	        return;    
+        }
+        
+        // 3.x
+        else
+        {
+            var self = this;
+            var user = getAuthObj()["currentUser"]; 
+            var data = {
+                "displayName": displayName,
+                "photoURL": photoURL,
+            }
+            var onSuccess = function ()
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingProfileSuccessful, self);
+            };
+            var onError = function ()
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingProfileError, self);
+            };            
+            user["updateProfile"](data)["then"](onSuccess)["catch"](onError);
+        }
+	}; 
+
+    Acts.prototype.UpdateEmail = function (email)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {        
+            alert("Does not support in firebase 2.x api");
+	        return;    
+        }
+        
+        // 3.x
+        else
+        {
+            var self = this;
+            var user = getAuthObj()["currentUser"]; 
+            var onSuccess = function ()
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingEmailSuccessful, self);
+            };
+            var onError = function ()
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnUpdatingEmailError, self);
+            };            
+            user["updateEmail"](email)["then"](onSuccess)["catch"](onError);
+        }
+	};
+
+    Acts.prototype.SendEmailVerification = function (email)
+	{
+        // 2.x
+        if (!isFirebase3x())
+        {        
+            alert("Does not support in firebase 2.x api");
+	        return;    
+        }
+        
+        // 3.x
+        else
+        {
+            var self = this;
+            var user = getAuthObj()["currentUser"]; 
+            var onSuccess = function ()
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendVerificationEmailSuccessful, self);
+            };
+            var onError = function ()
+            {
+                self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.EmailPassword_OnSendVerificationEmailError, self);
+            };            
+            user["sendEmailVerification"]()["then"](onSuccess)["catch"](onError);
+        }
+	};
 
 	//////////////////////////////////////
 	// Expressions
