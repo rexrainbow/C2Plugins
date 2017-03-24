@@ -522,7 +522,7 @@ cr.plugins_.Rex_Firebase_Storage = function(runtime)
             if (contentType !== "")
                 self.metadata["contentType"] = contentType;        
             
-            self.upload(blob, storagePath, metadata); 
+            self.upload(blob, storagePath, self.metadata); 
             self.metadata = {};
         }
         this.doRequest(objectURL, callback);
