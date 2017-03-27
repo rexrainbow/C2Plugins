@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"A wrap of save/load game.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_savedataindex.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_savedataindex.html",
 		"category":		"Rex - Save-load",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Pure Javascript OCR for 62 Languages. Reference: https://github.com/naptha/tesseract.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tesseractjs.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_tesseractjs.html",
 		"category":		"Rex - Image",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -5,7 +5,7 @@
 		"id":			"Rex_betCounter",
 		"description":	"Get beat count in latest duration.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_betCounter.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_betCounter.html",
 		"category":		"Rex - Attributes",
 		"flags":		0
 	};

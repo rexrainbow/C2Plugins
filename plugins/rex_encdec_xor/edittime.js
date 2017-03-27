@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Encryption & Decryption by XOR Encryption algorithm.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_encdecxor.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_encdecxor.html",
 		"category":		"Rex - String",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -5,7 +5,7 @@
 		"id":			"Rex_CollisionSwitch",
 		"description":	"Enable or disable collision setting.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_collisionswitch.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_collisionswitch.html",
 		"category":		"Rex - Collision",
 		"flags":		bf_onlyone
 	};

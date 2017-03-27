@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"INI <--> JSON. Reference: https://github.com/npm/ini",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ini.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ini.html",
 		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

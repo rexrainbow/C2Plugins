@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Leader board built on backendless.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendless_leaderboard.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_backendless_leaderboard.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

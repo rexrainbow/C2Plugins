@@ -142,6 +142,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.canvas_text.underline.offset = this.properties[16];
 		this.setShadow(this.properties[17], this.properties[18], this.properties[19], this.properties[20]);
         
+        this.canvas_text.backgroundColor = this.properties[21];
 		
 		// render text at object initialize
 		if (this.text)
@@ -199,7 +200,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 			"txtObj": this.canvas_text.saveToJSON(),
             "isLcs": this.isCanvasSizeLocked,
             "lcw": this.lockedCanvasWidth,
-            "lch": this.lockedCanvasHeight,            
+            "lch": this.lockedCanvasHeight
 		};
 	};
 	
@@ -232,7 +233,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 
         this.isCanvasSizeLocked = o["isLcs"];
         this.lockedCanvasWidth = o["lcw"];
-        this.lockedCanvasHeight = o["lch"];        
+        this.lockedCanvasHeight = o["lch"];  
 	};
 	
 	instanceProto.tick = function ()
@@ -868,23 +869,48 @@ cr.plugins_.rex_bbcodeText = function(runtime)
   
 	Acts.prototype.SetThickness = function(w)
 	{
-	    this.canvas_text.underline.thickness = w;              
+        if (w === this.canvas_text.underline.thickness)
+            return;
+
+	    this.canvas_text.underline.thickness = w;   
+        this.runtime.redraw = true;                   
 	};	
 	Acts.prototype.SetOffsetY = function(offset)
 	{
-	    this.canvas_text.underline.offset = offset;              
+        if (offset === this.canvas_text.underline.offset)
+            return;
+
+	    this.canvas_text.underline.offset = offset;   
+        this.runtime.redraw = true;                     
 	};
 
 	Acts.prototype.SetStrokeLineWidth = function(w)
 	{
-	    this.canvas_text.stroke.lineWidth = w;              
+        if (w === this.canvas_text.stroke.lineWidth)
+            return;
+
+	    this.canvas_text.stroke.lineWidth = w;  
+        this.runtime.redraw = true;                    
 	};
 
 	Acts.prototype.SetStrokeLineJoin = function(m)
 	{
-	    this.canvas_text.stroke.lineJoin = lineJoinMode[m];              
+        m = lineJoinMode[m];
+        if (m === this.canvas_text.stroke.lineJoin)
+            return;
+
+	    this.canvas_text.stroke.lineJoin = m;
+        this.runtime.redraw = true;
 	};    
-    
+
+	Acts.prototype.SetBackgroundColor = function(color)
+	{
+        if (color === this.canvas_text.backgroundColor)
+            return;
+
+	    this.canvas_text.backgroundColor = color; 
+        this.runtime.redraw = true;       
+	};    
     
 	Acts.prototype.LockCanvasSize = function(width, height)
 	{
@@ -1041,7 +1067,9 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         
         this.textAlign = "start";
         this.lineHeight = "16";        
-        this.textBaseline = "alphabetic";        
+        this.textBaseline = "alphabetic"; 
+
+        this.backgroundColor = "";       
     };
     var CanvasTextProto = CanvasText.prototype;
 
@@ -1188,7 +1216,38 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         
         ctx.restore();
     };
+
+    CanvasTextProto.draw_underline = function (text, x, y, size, color)
+    {
+        var ctx = this.context;
+        var width = ctx.measureText(text).width;
+        //switch(ctx.textAlign)
+        //{
+        //case "center": x -= (width/2); break;
+        //case "right": x -= width; break;
+        //}
+        y += this.underline.offset;        
+        if (this.textBaseline === "top")
+            y += parseInt(size);
+        
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = this.underline.thickness;
+        ctx.moveTo(x,y);
+        ctx.lineTo(x+width,y);
+        ctx.stroke();
+    };        
     
+    CanvasTextProto.preProcess = function()
+    {
+        if (this.backgroundColor !== "")
+        {
+            var ctx = this.context;
+            ctx.fillStyle = this.backgroundColor;
+            ctx.fillRect(0, 0, this.textInfo["boxWidth"], this.textInfo["boxHeight"]);
+        }
+    };
+
     CanvasTextProto.drawPens = function (pensMgr, textInfo)
     {    
         var boxWidth=textInfo["boxWidth"], boxHeight=textInfo["boxHeight"];
@@ -1237,28 +1296,13 @@ cr.plugins_.rex_bbcodeText = function(runtime)
                 this.draw_pen(pen, offset_x, offset_y);
             }
         }
-    };   
+    };
 
-    CanvasTextProto.draw_underline = function (text, x, y, size, color)
+    CanvasTextProto.postProcess = function()
     {
-        var ctx = this.context;
-        var width = ctx.measureText(text).width;
-        //switch(ctx.textAlign)
-        //{
-        //case "center": x -= (width/2); break;
-        //case "right": x -= width; break;
-        //}
-        y += this.underline.offset;        
-        if (this.textBaseline === "top")
-            y += parseInt(size);
-        
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = this.underline.thickness;
-        ctx.moveTo(x,y);
-        ctx.lineTo(x+width,y);
-        ctx.stroke();
-    };    
+
+    };
+
     
     // split text into array
     var RAWTEXTONLY_MODE = 1;
@@ -1581,7 +1625,9 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             // Set the text align
             this.context.textAlign = this.textAlign;   
             
+            this.preProcess();
             this.drawPens(this.pensMgr, textInfo);
+            this.postProcess();
 	    }
                 
     }; 
@@ -1688,7 +1734,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		return {
 			"cls": this.savedClasses,
             "stroke": [this.stroke.lineWidth, this.stroke.lineJoin],
-            "u": [this.underline.thickness, this.underline.offset]
+            "u": [this.underline.thickness, this.underline.offset],
+            "bgc": this.backgroundColor
 		};
 	};
 	
@@ -1698,7 +1745,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
         this.stroke.lineWidth = o["stroke"][0];
         this.stroke.lineJoin = o["stroke"][1];
         this.underline.thickness = o["u"][0];
-        this.underline.offset = o["u"][1];        
+        this.underline.offset = o["u"][1];    
+        this.backgroundColor = o["bgc"];
 	};    
 
 

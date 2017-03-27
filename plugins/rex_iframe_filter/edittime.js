@@ -6,7 +6,7 @@
 		"version":		"0.8",
 		"description":	"Check if current page is in an iframe or not.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_iframe_filter.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_iframe_filter.html",
 		"category":		"Rex - Iframe",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

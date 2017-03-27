@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Build JSON structure.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_json_buider.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_json_buider.html",
 		"category":		"Rex - Data structure - JSON",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

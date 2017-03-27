@@ -5,7 +5,7 @@
 		"id":			"Rex_Canvas_floodfill",
 		"description":	"Flood fill on canvas. Reference:https://github.com/binarymax/floodfill.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_floodfill.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_canvas_floodfill.html",
 		"category":		"Rex - Canvas",
 		"dependency":	"floodfill.js",        
 		"flags":		0,

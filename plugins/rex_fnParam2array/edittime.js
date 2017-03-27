@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Create an array and dump parameters of current function into this array.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_fnparam2array.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_fnparam2array.html",
 		"category":		"Rex - Data structure",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Transfer logic position to physical position with projection layout",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board_projectiontx.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_board_projectiontx.html",
 		"category":		"Rex - Board - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

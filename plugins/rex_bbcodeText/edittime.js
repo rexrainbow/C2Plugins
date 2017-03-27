@@ -116,7 +116,7 @@ AddAction(58, 0, "Set wrapping (#)", "Properties",
 AddNumberParam("Offset X", "Offset X of shadow, in pixels.", 10);
 AddNumberParam("Offset Y", "Offset Y of shadow, in pixels.", 10);
 AddNumberParam("Blur", "Blur of shadow, in pixels.", 20);    
-AddAnyTypeParam("Color", "The new font color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
+AddAnyTypeParam("Color", "The new shadow color, in the form rgb(r, g, b).", '"rgb(0, 0, 0)"');
 AddAction(61, 0, "Set shadow", "Shadow", 
           "Set shadow with offset to (<i>{0}</i>, <i>{1}</i>), blur to <i>{2}</i>, color to <i>{3}</i>", 
           "Set shadow.", "SetShadow");
@@ -136,6 +136,9 @@ AddComboParamOption("Bevel");
 AddComboParam("Line join", "Line join of the stroke", 0);
 AddAction(82, 0, "Set line join", "Stroke", "Set line join to <i>{0}</i>", "Set line join of stroke.", "SetStrokeLineJoin"); 
 
+AddAnyTypeParam("Color", 'The new background color, in the form rgb(r, g, b). Set "" to be transparent.', '""');
+AddAction(91, 0, "Set background color", "Background", "Set background to <i>{0}</i>", "Set background color.", "SetBackgroundColor");
+		  
 
 AddNumberParam("Width", "Canvas width in pixels.", 0);
 AddNumberParam("Height", "Canvas height in pixels.", 0);
@@ -156,6 +159,7 @@ AddAction(112, 0, "Remove image", "Image bank",
 AddAction(113, 0, "Remove all", "Image bank", 
           "Remve all images","Remove all images.", "RemoveAll"); 
           
+
 ////////////////////////
 AddExpression(0, ef_return_string | ef_variadic_parameters, "Get text", "Text", "Text", "Get the object's text. Add 2nd/3rd parameter for start/end index");
 AddExpression(1, ef_return_string, "Get face name", "Appearance", "FaceName", "Get the current font face name.");
@@ -200,7 +204,10 @@ var property_list = [
     new cr.Property(ept_integer, "Shadow offset X", 10, "Offset X of shadow, in pixels."),
     new cr.Property(ept_integer, "Shadow offset Y", 10, "Offset Y of shadow, in pixels."),    
     new cr.Property(ept_integer, "Shadow blur", 20, "Blur of shadow, in pixels."),       
-	new cr.Property(ept_color, "Shadow color", cr.RGB(0, 0, 0),	"Color of the shadow."),    
+	new cr.Property(ept_color, "Shadow color", cr.RGB(0, 0, 0),	"Color of the shadow."),
+
+    new cr.Property(ept_section, "Background", "",	""),    
+	new cr.Property(ept_text, "Background color", "", 'Background color, Set "" to be transparent.'),
 	];
 	
 // Called by IDE when a new object type is to be created

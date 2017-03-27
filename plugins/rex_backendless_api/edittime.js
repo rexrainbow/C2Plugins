@@ -6,7 +6,7 @@
 		"version":		"3.1.5",   		
 		"description":	"API of database-as-a-service. https://backendless.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendlessapi.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_backendlessapi.html",
 		"category":		"Rex - Web - Backendless - api",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

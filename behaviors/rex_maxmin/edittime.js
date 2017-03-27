@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"A variable which clamped between maximum and minimum bound.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_maxmin.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_maxmin.html",
 		"category":		"Rex - Variable",
 		"flags":		0
 	};

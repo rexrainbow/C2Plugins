@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Authentication which is provided by backendless. https://backendless.com/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_backendless_authentication.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_backendless_authentication.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

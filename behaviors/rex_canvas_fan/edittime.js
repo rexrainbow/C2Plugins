@@ -5,7 +5,7 @@
 		"id":			"Rex_Canvas_Fan",
 		"description":	"Draw a fan shaped on the canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_fan.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_canvas_fan.html",
 		"category":		"Canvas",
 		"flags":		0
 	};

@@ -5,7 +5,7 @@
 		"id":			"Rex_CanvasExt",
 		"description":	"Extension of canvas.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvasext.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_canvasext.html",
 		"category":		"Rex - Canvas helper",
 		"flags":		bf_onlyone,
         "dependency":	"zlib_and_gzip.min.js"

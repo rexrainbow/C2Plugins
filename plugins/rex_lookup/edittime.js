@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Check conditions to find passed tests listed in a csv table.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_lookup.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_lookup.html",
 		"category":		"Rex - Data structure - CSV",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

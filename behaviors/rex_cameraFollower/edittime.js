@@ -5,7 +5,7 @@
 		"id":			"Rex_CameraFollower",
 		"description":	"Move object to follow camera with a ratio. It could be used to simulate parallax.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_camerafollower.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_camerafollower.html",
 		"category":		"Rex - Movement - position",
 		"flags":		bf_onlyone
 	};

@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Set frame according to neighbors.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_chess_road.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_chess_road.html",
 		"category":		"Rex - Board - application",
 		"flags":		0	
 						| bf_onlyone

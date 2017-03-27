@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Get touch by tracking touchID.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_toucharea2.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_toucharea2.html",
 		"category":		"Rex - Touch",
 		"flags":		bf_onlyone
 	};

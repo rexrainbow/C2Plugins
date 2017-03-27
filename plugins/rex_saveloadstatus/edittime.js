@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Get status string, or set status by string",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_saveloadstatus.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_saveloadstatus.html",
 		"category":		"General",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

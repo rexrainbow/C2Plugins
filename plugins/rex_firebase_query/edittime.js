@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Query in firebase.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_query.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_firebase_query.html",
 		"category":		"Rex - Web - Firebase - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

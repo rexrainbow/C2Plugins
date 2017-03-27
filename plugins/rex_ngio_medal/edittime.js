@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Handles loading and unlocking of medals.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ngio_medal.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ngio_medal.html",
 		"category":		"Rex - Web - newgrounds.io",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

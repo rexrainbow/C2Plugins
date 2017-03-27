@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Provides information about the gateway server.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ngio_gateway.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ngio_gateway.html",
 		"category":		"Rex - Web - newgrounds.io",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

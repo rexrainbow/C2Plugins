@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Prompt wrap for web and cocoonJS",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_inputwrap.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_inputwrap.html",
 		"category":		"Rex - CocoonJS helper",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

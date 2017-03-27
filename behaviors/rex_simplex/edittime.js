@@ -5,7 +5,7 @@
 		"id":			"Rex_Simplex",
 		"description":	"Adjust an object's position, size, angle or other properties with simplex 1d algorithm.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_simplex.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_simplex.html",
 		"category":		"Rex - Movement",
 		"flags":		0
 	};

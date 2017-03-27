@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Each UserID could register an alias ID.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_Firebase_userID2ID.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_Firebase_userID2ID.html",
 		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

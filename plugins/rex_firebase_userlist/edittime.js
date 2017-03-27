@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"User lists on firebase.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_userlist.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_firebase_userlist.html",
 		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

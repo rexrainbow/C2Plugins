@@ -5,7 +5,7 @@
 		"id":			"Rex_canvas_chart_radar",
 		"description":	"Draw a radar chart on the canvas. The api of chart - http://www.chartjs.org/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_radar.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_canvas_chart_radar.html",
 		"category":		"Rex - Canvas - Chart.js",
 		"flags":		0,	
 	};

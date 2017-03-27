@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Fire keyboard or touch events.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_simulateinput.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_simulateinput.html",
 		"category":		"Rex - Input",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

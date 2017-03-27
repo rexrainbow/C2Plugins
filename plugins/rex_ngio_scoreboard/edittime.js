@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Handles loading and posting of high scores and scoreboards.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ngio_scoreboard.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ngio_scoreboard.html",
 		"category":		"Rex - Web - newgrounds.io",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

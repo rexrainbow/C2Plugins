@@ -5,7 +5,7 @@
 		"id":			"Rex_Function2M",
 		"description":	"Run other events in an action, like functions in programming languages. Support multiple instances to organize functions more better.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function2m.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_function2m.html",
 		"category":		"Rex - Logic - function",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

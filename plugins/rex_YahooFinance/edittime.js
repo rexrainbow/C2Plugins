@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Read stocks info from yahoo.finance.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_yahoofinance.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_yahoofinance.html",
 		"category":		"Rex - Web - YQL",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

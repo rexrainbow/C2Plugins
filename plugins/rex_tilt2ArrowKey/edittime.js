@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get arrow key event from tilt's beta and gamma input.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tilt2ArrowKey.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_tilt2ArrowKey.html",
 		"category":		"Rex - Arrow key",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

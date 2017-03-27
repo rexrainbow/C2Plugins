@@ -5,7 +5,7 @@
 		"id":			"Rex_menufsm",
 		"description":	"FSM to control the behavior of menu.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_menufsm.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_menufsm.html",
 		"category":		"Rex - Logic -finite state machine",
 		"flags":		bf_onlyone
 	};

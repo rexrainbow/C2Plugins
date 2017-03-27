@@ -5,7 +5,7 @@
 		"id":			"Rex_htmlElem_fullwindow",
 		"description":	"Set full window of html element.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_htmlelem_fullwindow.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_htmlelem_fullwindow.html",
 		"category":		"Rex - Iframe",
 		"flags":		bf_onlyone
 	};

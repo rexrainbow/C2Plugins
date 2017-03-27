@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Load animations from URL.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_animation_loader.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_animation_loader.html",
 		"category":		"Rex - Animations",
 		"flags":		bf_onlyone
 	};

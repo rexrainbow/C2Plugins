@@ -5,7 +5,7 @@
 		"id":			"Rex_TouchDirection2",
 		"description":	"Move sprite with mouse or touch dragging",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_touchDirection2.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_touchDirection2.html",
 		"category":		"Rex - Touch",
 		"flags":		bf_onlyone
 	};

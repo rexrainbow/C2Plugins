@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Realtime location queries with Firebase.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_geofire.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_firebase_geofire.html",
 		"category":		"Rex - Web - Firebase",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

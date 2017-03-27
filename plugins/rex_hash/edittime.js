@@ -6,7 +6,7 @@
 		"version":		"0.5",            
 		"description":	"Manipulate JSON data.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_hash.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_hash.html",
 		"category":		"Rex - Data structure - JSON",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

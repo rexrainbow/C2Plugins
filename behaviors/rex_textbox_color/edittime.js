@@ -5,7 +5,7 @@
 		"id":			"Rex_textbox_color",
 		"description":	"Accept color input",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_textbox_color.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_textbox_color.html",
 		"category":		"Rex - Textbox helper",
 		"flags":		bf_onlyone
 	};

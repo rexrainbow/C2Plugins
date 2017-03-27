@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Atomic Counters to increase or decrease value.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_firebase_counter.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_firebase_counter.html",
 		"category":		"Rex - Web - Backendless",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

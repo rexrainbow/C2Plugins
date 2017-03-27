@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Create Regular expression. https://github.com/VerbalExpressions/JSVerbalExpressions/blob/master/VerbalExpressions.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_verbalexpressions.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_verbalexpressions.html",
 		"category":		"Rex - String",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

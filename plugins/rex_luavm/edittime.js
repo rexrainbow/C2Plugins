@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Run lua script. The lua vm was referenced from http://kripken.github.io/lua.vm.js/lua.vm.js.html.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_luavm.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_luavm.html",
 		"category":		"Rex - Script",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

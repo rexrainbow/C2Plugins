@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"Pause timescale",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pause.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_pause.html",
 		"category":		"Rex - Logic",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

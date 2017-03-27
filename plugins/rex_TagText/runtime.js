@@ -137,6 +137,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this.canvas_text.Reset(this);
         this.canvas_text.textBaseline = (this.baseLine_mode === 0)? "alphabetic":"top";
 		//this.lines = this.canvas_text.getLines();
+        this.canvas_text.backgroundColor = this.properties[13];
 		
 		
 		// render text at object initialize
@@ -1082,7 +1083,15 @@ cr.plugins_.rex_TagText = function(runtime)
         window.RexImageBank.RemoveAll();
 	    this.render_text(this.is_force_render);        
 	};	
-    
+
+	Acts.prototype.SetBackgroundColor = function(color)
+	{
+        if (color === this.canvas_text.backgroundColor)
+            return;
+
+	    this.canvas_text.backgroundColor = color; 
+        this.runtime.redraw = true;       
+	}; 
     
 	//////////////////////////////////////
 	// Expressions
@@ -1208,7 +1217,8 @@ cr.plugins_.rex_TagText = function(runtime)
         this.underline = {thickness: 1, offset:0};        
         this.textAlign = "start";
         this.lineHeight = "16";        
-        this.textBaseline = "alphabetic";        
+        this.textBaseline = "alphabetic";     
+        this.backgroundColor = "";   
     };
     var CanvasTextProto = CanvasText.prototype;
 
@@ -1432,7 +1442,38 @@ cr.plugins_.rex_TagText = function(runtime)
         
         ctx.restore();
     };
-    
+
+    CanvasTextProto.draw_underline = function (text, x, y, size, color)
+    {
+        var ctx = this.context;
+        var width = ctx.measureText(text).width;
+        //switch(ctx.textAlign)
+        //{
+        //case "center": x -= (width/2); break;
+        //case "right": x -= width; break;
+        //}
+        y += this.underline.offset;        
+        if (this.textBaseline === "top")
+            y += parseInt(size);
+        
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = this.underline.thickness;
+        ctx.moveTo(x,y);
+        ctx.lineTo(x+width,y);
+        ctx.stroke();
+    };      
+
+    CanvasTextProto.preProcess = function()
+    {
+        if (this.backgroundColor !== "")
+        {
+            var ctx = this.context;
+            ctx.fillStyle = this.backgroundColor;
+            ctx.fillRect(0, 0, this.textInfo["boxWidth"], this.textInfo["boxHeight"]);
+        }
+    };
+
     CanvasTextProto.drawPens = function (pensMgr, textInfo)
     {    
         var boxWidth=textInfo["boxWidth"], boxHeight=textInfo["boxHeight"];
@@ -1483,26 +1524,12 @@ cr.plugins_.rex_TagText = function(runtime)
         }
     };    
 
-    CanvasTextProto.draw_underline = function (text, x, y, size, color)
+    CanvasTextProto.postProcess = function()
     {
-        var ctx = this.context;
-        var width = ctx.measureText(text).width;
-        //switch(ctx.textAlign)
-        //{
-        //case "center": x -= (width/2); break;
-        //case "right": x -= width; break;
-        //}
-        y += this.underline.offset;        
-        if (this.textBaseline === "top")
-            y += parseInt(size);
-        
-        ctx.beginPath();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = this.underline.thickness;
-        ctx.moveTo(x,y);
-        ctx.lineTo(x+width,y);
-        ctx.stroke();
-    };       
+
+    };
+
+ 
     
     // split text into array
     var __re_class_header = /<\s*class=/i;
@@ -1760,7 +1787,9 @@ cr.plugins_.rex_TagText = function(runtime)
             // Set the text align
             this.context.textAlign = this.textAlign;   
             
+            this.preProcess();            
             this.drawPens(this.pensMgr, textInfo);
+            this.postProcess();            
 	    }
                 
     }; 
@@ -1866,12 +1895,14 @@ cr.plugins_.rex_TagText = function(runtime)
 	{
 		return {
 			"cls": this.savedClasses,
+            "bgc": this.backgroundColor
 		};
 	};
 	
 	CanvasTextProto.loadFromJSON = function (o)
 	{
 		this.savedClasses = o["cls"];
+        this.backgroundColor = o["bgc"];
 	};    
 
 

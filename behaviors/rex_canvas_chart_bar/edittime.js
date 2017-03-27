@@ -5,7 +5,7 @@
 		"id":			"Rex_canvas_chart_bar",
 		"description":	"Draw a bar chart on the canvas. The api of chart - http://www.chartjs.org/",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_canvas_chart_bar.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_canvas_chart_bar.html",
 		"category":		"Rex - Canvas - Chart.js",
 		"flags":		0,	
 	};

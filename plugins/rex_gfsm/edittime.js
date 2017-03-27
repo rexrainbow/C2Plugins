@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Finite state machine",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_gfsm.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_gfsm.html",
 		"category":		"Rex - Logic -finite state machine",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

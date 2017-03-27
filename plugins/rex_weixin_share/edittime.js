@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Post messages on Weixin.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_weixin_share.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_weixin_share.html",
 		"category":		"Rex - Web - service",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

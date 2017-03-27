@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Executing function from a csv table while time-out",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bscenario.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_bscenario.html",
 		"category":		"Rex - Script",
 		"flags":		0
 	};

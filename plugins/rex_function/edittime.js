@@ -6,7 +6,7 @@
 		"version":		"1.0",          
 		"description":	"(Deprecated) Call named events from actions and expressions.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_function.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_function.html",
 		"category":		"Deprecated",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

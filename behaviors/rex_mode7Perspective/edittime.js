@@ -5,7 +5,7 @@
 		"id":			"Rex_mode7perspective",
 		"description":	"Perspective instance stands on the (mode7) ground.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_mode7perspective.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_mode7perspective.html",
 		"category":		"Rex - Effect - mode7",
 		"flags":		bf_onlyone
 	};

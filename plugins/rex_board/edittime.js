@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Store the logical position of chess, based plugin of my board-series plugins/behaviors.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_board.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_board.html",
 		"category":		"Rex - Board - core",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

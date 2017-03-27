@@ -5,7 +5,7 @@
 		"id":			"Rex_PauseDt",
 		"description":	"Pause timescale of this instance",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pause_dt.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_pause_dt.html",
 		"category":		"General",
 		"flags":		bf_onlyone
 	};

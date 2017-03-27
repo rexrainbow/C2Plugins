@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Load google map api.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_googlemap_api.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_googlemap_api.html",
 		"category":		"Rex - Web - Google map",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

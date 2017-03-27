@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Display google map at a div element.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_googlemap.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_googlemap.html",
 		"category":		"Rex - Web - Google map",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,

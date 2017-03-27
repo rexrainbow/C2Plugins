@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Fuzzy logic.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_bfuzzy.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_bfuzzy.html",
 		"category":		"Rex - AI",
 		"flags":		0
 	};

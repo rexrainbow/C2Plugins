@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Api of kongregate. Reference: https://docs.kongregate.com/v1.0/docs/javascript-api",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_kongregate_api.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_kongregate_api.html",
 		"category":		"Rex - Kongregate",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

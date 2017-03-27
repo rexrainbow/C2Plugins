@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Generate random dungeon map asynchronously.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_dungeongen.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_dungeongen.html",
 		"category":		"Rex - Board - random map",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

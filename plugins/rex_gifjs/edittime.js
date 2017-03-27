@@ -6,7 +6,7 @@
 		"version":		"1.0",        
 		"description":	"GIF encoder. Reference: https://github.com/jnordberg/gif.js",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_gifjs.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_gifjs.html",
 		"category":		"Rex - Image",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

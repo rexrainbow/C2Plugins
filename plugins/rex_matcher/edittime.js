@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Get tiles with matched patterns.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_matcher.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_matcher.html",
 		"category":		"Rex - Board - application",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

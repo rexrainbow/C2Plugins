@@ -5,7 +5,7 @@
 		"id":			"Rex_Boids",
 		"description":	"Calculate steer force by flocking algorithm.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_boids.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_boids.html",
 		"category":		"Rex - AI",
 		"flags":		0
 	};

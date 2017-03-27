@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Converting between geographic coordinates and human-readable address.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_geocoding.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_geocoding.html",
 		"category":		"Rex - Web - Google map",
 		"type":			"object",			// not in layout
 		"rotatable":	false,     

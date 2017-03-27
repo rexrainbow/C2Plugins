@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Show comments in actions.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_comment.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_comment.html",
 		"category":		"Rex - Comment",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

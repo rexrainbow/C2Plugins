@@ -6,7 +6,7 @@
 		"version":		"0.1",   		
 		"description":	"Artificial Neural Network, using back-propagation and one hidden layer.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_ann.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ann.html",
 		"category":		"Rex - AI",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

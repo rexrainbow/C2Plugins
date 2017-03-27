@@ -6,7 +6,7 @@
 		"version":		"0.11",	
 		"description":	"System extension",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_systemext.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_systemext.html",
 		"category":		"Rex - System helper",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

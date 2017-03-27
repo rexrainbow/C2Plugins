@@ -5,7 +5,7 @@
 		"id":			"Rex_pin2imgpt",
 		"description":	"Stick to another object's image point.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_pin2imgpt.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/behavior_rex_pin2imgpt.html",
 		"category":		"Rex - Movement - pin",
 		"flags":		bf_onlyone
 	};

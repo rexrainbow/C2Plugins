@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Get exif inforamtion. https://github.com/jseidelin/exif-js",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_exif_parser.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_exif_parser.html",
 		"category":		"Rex - Image",
 		"type":			"object",			// not in layout
 		"rotatable":	false,

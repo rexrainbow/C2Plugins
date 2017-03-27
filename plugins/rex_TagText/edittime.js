@@ -6,7 +6,7 @@
 		"version":		"0.1",
 		"description":	"Displays text with multi-color, font face, or font size with tags. http://www.canvastext.com/",
         "author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_tagtext.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_tagtext.html",
 		"category":		"Rex - Text",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,				// can be rotated in layout
@@ -153,6 +153,9 @@ AddStringParam("Key", "Index of this image.", '""');
 AddAction(65, 0, "Insert image", "Appearance", "Insert image <i>{0}</i>", "Insert image.", "InsertImage");
       
 
+AddAnyTypeParam("Color", 'The new background color, in the form rgb(r, g, b). Set "" to be transparent.', '""');
+AddAction(91, 0, "Set background color", "Background", "Set background to <i>{0}</i>", "Set background color.", "SetBackgroundColor");
+		  		  
 AddNumberParam("Width", "Canvas width in pixels.", 0);
 AddNumberParam("Height", "Canvas height in pixels.", 0);
 AddAction(101, 0, "Lock canvas size", "Canvas", "Lock canvas size to <i>{0}</i>x<i>{1}</i>", "Lock canvas size.", "LockCanvasSize"); 
@@ -202,6 +205,9 @@ var property_list = [
 	new cr.Property(ept_float, "Shift down", 13, "Shift the text down for alphabetic baseline, in pixels."),	
     new cr.Property(ept_combo, "Force render", "No", "Force rendering immediately after any property setting.", "No|Yes"),	
     new cr.Property(ept_combo, "Lock canvas size", "No", "Lock canvas size to initial size.", "No|Yes"),	        
+
+    new cr.Property(ept_section, "Background", "",	""),    
+	new cr.Property(ept_text, "Background color", "", 'Background color, Set "" to be transparent.'),	
 	];
 	
 // Called by IDE when a new object type is to be created

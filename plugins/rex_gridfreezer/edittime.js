@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Save/load instances with grids.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://dl.dropbox.com/u/5779181/C2Repo/rex_gridfreeze.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_gridfreeze.html",
 		"category":		"Rex - Save-load",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
