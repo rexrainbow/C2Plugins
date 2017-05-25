@@ -34,7 +34,7 @@ AddAction(2, 0, "Render", "2. Render",
 
 AddStringParam("URI", "Image in base64", '""');          
 AddNumberParam("Delay", "Frame delay, in seconds", 0.5);          
-AddAction(3, 0, "Add uri", "1. Add frame", 
+AddAction(3, af_deprecated, "Add uri", "1. Add frame", 
           "Add frame from <i>{0}</i> with delay to <i>{1}</i>","Add frame from base64 string.", "AddURI");            
           
 AddNumberParam("Repeat", "Repeat count, -1 = no repeat, 0 = forever.", 0); 

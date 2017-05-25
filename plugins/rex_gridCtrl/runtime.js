@@ -114,10 +114,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         
         if (!this.update_flag)
             return;
-                
+	        
         this.update();
-        this.update_flag = false;        
-        
+
         this.pre_instX = this.x;
         this.pre_instY = this.y;        
         this.pre_instHeight = cur_instHeight;
@@ -141,6 +140,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 		
     instanceProto.update = function(refresh)
     {     
+        this.update_flag = false; 		
         if (refresh)
         {
             this.prepare();
@@ -453,25 +453,24 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	        return content;
 	};
 
-    instanceProto.set_cells_count = function (cnt, ignore_update)
+    instanceProto.set_cells_count = function (cnt)
 	{
 	    if (cnt < 0)
 	        cnt = 0;
 
-	    this.lines_mgr.SetLinesCount(cnt);
-	    
-	    if (!ignore_update)
-            this.update();
+	    var is_changed = this.lines_mgr.SetLinesCount(cnt);
+	    if (is_changed)
+            this.update_flag = true;
 	};	
     instanceProto.set_col_num = function (col, ignore_update)
 	{
         var is_changed = this.lines_mgr.SetColNum(col);
 	    
 	    if (is_changed && !ignore_update)
-            this.update();
+            this.update_flag = true;
 	};   	
 	
-    instanceProto.insert_cells = function (line_index, content, ignore_update)
+    instanceProto.insert_cells = function (line_index, content)
 	{
 	    content = get_content(content);
 	    if (content === null)
@@ -489,11 +488,10 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         }	    
 	    this.lines_mgr.InsertLines(line_index, content);	    
 
-	    if (!ignore_update)
-            this.update();
+	    this.update_flag = true;
 	};	
 	
-    instanceProto.remove_cells = function (line_index, cnt, ignore_update)
+    instanceProto.remove_cells = function (line_index, cnt)
 	{   
 	    var total_lines = this.lines_mgr.GetLinesCount();
 	    if ( (line_index + cnt) > total_lines)
@@ -510,8 +508,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	    var removed_lines = this.lines_mgr.RemoveLines(line_index, cnt);
 	    this.exp_LastRemovedLines = JSON.stringify( removed_lines );
 
-	    if (!ignore_update)
-            this.update();
+	    this.update_flag = true;
 	};	    
 			
     instanceProto.for_each_line = function (start_, end_, filter_fn)
@@ -960,8 +957,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	};
     
     Acts.prototype.SetColumnNumber = function (col)
-	{
-        
+	{        
 	    this.set_col_num(col);
 	};   
     
@@ -1319,7 +1315,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 
 	LinesMgrKlassProto.SetLinesCount = function(cnt)
 	{
-        var end = this.GetLinesCount();        
+        var end = this.GetLinesCount();      
+		if (end === cnt)  
+	        return false;
         if (end > cnt)
         {
             var i, line;
@@ -1347,6 +1345,8 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         
         if (Math.floor(end/this.colNum) !== Math.floor(cnt/this.colNum))
             this.totalRowsHeight = null;        
+
+	    return true;
 	};
     
 	LinesMgrKlassProto.SetColNum = function(colNum)

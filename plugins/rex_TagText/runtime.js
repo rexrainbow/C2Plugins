@@ -1090,7 +1090,8 @@ cr.plugins_.rex_TagText = function(runtime)
             return;
 
 	    this.canvas_text.backgroundColor = color; 
-        this.runtime.redraw = true;       
+		this.need_text_redraw = true;
+		this.runtime.redraw = true;      
 	}; 
     
 	//////////////////////////////////////
@@ -1207,7 +1208,7 @@ cr.plugins_.rex_TagText = function(runtime)
          */
         this.default_propScope = {
             family:"Verdana",
-            weight:"normal",
+            weight:"",
             ptSize:"12pt",
             color:"#000000",
             stroke:["none", 1],
@@ -1314,7 +1315,7 @@ cr.plugins_.rex_TagText = function(runtime)
                 var weight = propScope["weight"] || this.default_propScope.weight;
                 var ptSize = this.getTextSize(propScope);  
                 var family = propScope["family"] || this.default_propScope.family;        
-                this.context.font = style + " " + weight + " " + ptSize + " " + family;            
+                this.context.font = style + " " + weight + " " + ptSize + " " + family; 
             }
             
             var color = this.getFillColor(propScope);        

@@ -99,7 +99,7 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		this.lastWinWidth = null;
 		this.lastWinHeight = null;
 
-		if (this.properties[7] === 0)
+		if (this.properties[8] === 0)
 		{
 			jQuery(this.elem).hide();
 			this.visible = false;
@@ -124,13 +124,19 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		this.modestbranding = (this.properties[5] === 1);        
 		this.disablekb = (this.properties[6] === 0);
 		this.exp_errorCode = 0;
+		this.playinbackground = (this.properties[7] === 1);
         		
         this.isInFullScreen = false;
         this.beforefullwindow = {"x":null, "y":null, "w":null, "h":null};
         
 		this.updatePosition(true);  // init position and size        
 		this.runtime.tickMe(this);
-       
+
+	   var self = this;		
+		this.runtime.addSuspendCallback(function(s)
+		{
+			self.onSuspend(s);
+		});	   
 	};       
 
 	instanceProto.onDestroy = function ()
@@ -467,6 +473,20 @@ cr.plugins_.rex_youtube_player = function(runtime)
 		    
 		return isMute;
 	};	    
+
+	instanceProto.onSuspend = function (s)
+	{
+		// ignore suspend/resume events if set to play in background - normally
+		// everything is paused in response to a suspend event
+		if (this.playinbackground)
+			return;
+		
+		if (s)
+			this.Pause()
+		else
+			this.Play()
+	};
+
 	instanceProto.saveToJSON = function ()
 	{    
 		return { "videoId": this.cur_videoId,

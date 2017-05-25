@@ -240,7 +240,15 @@ AddExpression(16, ef_return_number,
               "Get Y co-ordinate by UID", "Mini board - Physical", "UID2PY",
               "Get Y co-ordinate by UID. Return (-1) if the chess is not on the mini board.");
               
-
+AddExpression(61, ef_return_number, "Max LX", "Max-min", "MaxLX", 
+              "Get maximum of LX of all chess.");
+AddExpression(62, ef_return_number, "Max LY", "Max-min", "MaxLY", 
+              "Get maximum of LY of all chess.");               
+AddExpression(63, ef_return_number, "Min LX", "Max-min", "MinLX", 
+              "Get minimum of LX of all chess.");
+AddExpression(64, ef_return_number, "Min LY", "Max-min", "MinLY", 
+              "Get minimum of LY of all chess.");    
+              
 ACESDone();
 
 // Property grid properties for this plugin

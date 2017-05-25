@@ -152,11 +152,15 @@ cr.plugins_.Rex_GIFJS = function(runtime)
         this.addFrame(img, delay, copy);
 	}; 
 
-    Acts.prototype.AddURI = function (s, delay)
+    Acts.prototype.AddURI = function (url_, delay)
 	{     
-        var img = new Image();
-        img.src = s;
-        this.addFrame(img, delay);
+        //var img = new Image();
+		//if (url_.substr(0, 5) !== "data:")
+		//	img["crossOrigin"] = "anonymous";
+		//
+		//// use runtime function to work around WKWebView permissions
+		//this.runtime.setImageSrc(img, url_);
+        //this.addFrame(img, delay);
 	}; 
     
     Acts.prototype.Render = function ()

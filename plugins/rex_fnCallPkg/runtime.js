@@ -193,38 +193,13 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
     
     Acts.prototype.PushToFnQueue = function (name, params)
 	{   
-        var pkg = [name];
-        var i, cnt=params.length;
-        pkg.length = cnt+1;
-        for(i=0; i<cnt; i++)
-        {
-            pkg[i+1] = params[i];
-        }
-        
-	    this.fn_queue.push(pkg);
+		Acts.prototype.PushToFnQueue2.call(this, 0, name, params);
 	};
 	
     Acts.prototype.LoadFnQueue = function (pkg)
 	{
-	    this.fn_queue.length = 0;
-        if (pkg == "")
-            return;
-            
-		try {
-			pkg = JSON.parse(pkg);
-		}
-		catch(e) { return; }
-				
-		var is_one_function = (typeof(pkg[0]) == "string");
-		if (is_one_function)
-		{
-		    this.fn_queue.push(pkg);
-		}
-		else
-		{
-		    this.fn_queue.push.apply(this.fn_queue, pkg);
-		}
-		
+		this.fn_queue.length = 0;
+        Acts.prototype.AppendFnQueue(pkg);
 	};
     
     Acts.prototype.OverwriteParam = function (index_, value_)
@@ -313,6 +288,27 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
 	    pkg[param_index] += value_;
 	};
+
+    Acts.prototype.AppendFnQueue = function (pkg)
+	{
+        if (pkg == "")
+            return;
+            
+		try {
+			pkg = JSON.parse(pkg);
+		}
+		catch(e) { return; }
+				
+		var is_one_function = (typeof(pkg[0]) == "string");
+		if (is_one_function)
+		{
+		    this.fn_queue.push(pkg);
+		}
+		else
+		{
+		    this.fn_queue.push.apply(this.fn_queue, pkg);
+		}
+	};	
 
     Acts.prototype.SetupCallback = function (callback_type)
 	{	

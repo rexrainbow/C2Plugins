@@ -96,7 +96,11 @@ cr.plugins_.Rex_Date = function(runtime)
         timer["start"] = (new Date()).getTime();        
     };    
         
-    
+	var getDate = function (timestamp)
+	{
+		return (timestamp != null)? new Date(timestamp): new Date();
+	};
+
     instanceProto.saveToJSON = function ()
 	{    
 		return { "tims": this.timers,
@@ -137,50 +141,42 @@ cr.plugins_.Rex_Date = function(runtime)
 	
 	Exps.prototype.Year = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getFullYear());
+		ret.set_int(getDate(timestamp).getFullYear());
 	};
 	
 	Exps.prototype.Month = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getMonth()+1);
+	    ret.set_int(getDate(timestamp).getMonth()+1);
 	};
 	
 	Exps.prototype.Date = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getDate());
+	    ret.set_int(getDate(timestamp).getDate());
 	};	
 	
 	Exps.prototype.Day = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getDay());
+	    ret.set_int(getDate(timestamp).getDay());
 	};	
 	
 	Exps.prototype.Hours = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getHours());
+	    ret.set_int(getDate(timestamp).getHours());
 	};	
 
 	Exps.prototype.Minutes = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getMinutes());
+	    ret.set_int(getDate(timestamp).getMinutes());
 	};	
 	
 	Exps.prototype.Seconds = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getSeconds());
+	    ret.set_int(getDate(timestamp).getSeconds());
 	};	
 
 	Exps.prototype.Milliseconds = function (ret, timestamp)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-		ret.set_int(today.getMilliseconds());
+	    ret.set_int(getDate(timestamp).getMilliseconds());
 	};	
 	
 	Exps.prototype.Timer = function (ret, name)
@@ -229,7 +225,6 @@ cr.plugins_.Rex_Date = function(runtime)
 	
     Exps.prototype.LocalExpression = function (ret, timestamp, locales)
 	{
-	    var today = (timestamp != null)? new Date(timestamp): new Date();
-	    ret.set_string( today.toLocaleString(locales) );
+	    ret.set_string( getDate(timestamp).toLocaleString(locales) );
 	};	
 }());

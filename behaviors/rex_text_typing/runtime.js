@@ -268,10 +268,20 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
         this.drawText(source);
         var content;
-        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
-        {
-            content = this.inst.lines.join("\n");
-        }
+		if (this.text_type === "Text")
+		{
+			content = this.inst.lines.join("\n");
+		}
+		else if (this.text_type === "Spritefont2")
+		{
+			var cnt = this.inst.lines.length;
+			var lines = [];
+			for(var i=0; i<cnt; i++)
+			{
+				lines.push(this.inst.lines[i].text);
+			}
+			content = lines.join("\n");
+		}
         else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
             var pensMgr = this.inst.copyPensMgr(); 
@@ -292,7 +302,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
               content += txt;
 			  addNewLine = (txt.indexOf("\n") === -1);
 			}
-        }        
+        }
+
 	    return content || "";
 	};    
     

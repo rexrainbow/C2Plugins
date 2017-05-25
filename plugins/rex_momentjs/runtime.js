@@ -128,7 +128,10 @@ cr.plugins_.Rex_MomenJS = function(runtime)
     
 	Acts.prototype.Add = function (amount, type_)
 	{
-	    this.getMoment()["add"](amount, TYPE2STRING[type_]);
+		if (typeof(type_) === "number")
+		    type_ = TYPE2STRING[type_];
+	    
+	    this.getMoment()["add"](amount, type_);
 	};	  
     
 	Acts.prototype.SetLocale = function (locale)

@@ -133,9 +133,26 @@ cr.plugins_.Rex_WilddogAPI = function(runtime)
 	
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------
-    // --------------------------------------------------------------------------    
-    if (window.FirebaseItemListKlass != null)
-        return;    
+    // --------------------------------------------------------------------------
+    var __afterInitialHandler = [];
+    var addAfterInitialHandler = function(callback)
+    {
+        if (__afterInitialHandler === null)
+            callback()
+        else
+            __afterInitialHandler.push(callback);
+    };
+    var runAfterInitializeHandlers = function()
+    {
+        var i, cnt=__afterInitialHandler.length;
+        for(i=0; i<cnt; i++)
+        {
+            __afterInitialHandler[i]();
+        }
+        __afterInitialHandler = null;
+    };
+	window.FirebaseAddAfterInitializeHandler = addAfterInitialHandler;
+
     
     var ItemListKlass = function ()
     {
@@ -437,9 +454,6 @@ cr.plugins_.Rex_WilddogAPI = function(runtime)
     // --------------------------------------------------------------------------
     // --------------------------------------------------------------------------    
     // --------------------------------------------------------------------------
-    if (window.FirebaseCallbackMapKlass != null)
-        return;    
-
     var CallbackMapKlass = function ()
     {
         this.map = {};

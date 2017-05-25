@@ -134,8 +134,8 @@ AddExpression(22, ef_return_number,
               "Get flipped", "Tile", "IsFlipped", "Get flipped of created instance.");
 AddExpression(23, ef_return_number, 
               "Get instance UID", "Tile", "InstUID", 'Get instance UID created by "Action:Create tiles".');  
-AddExpression(24, ef_return_number, 
-              "Get frame number", "Tile", "Frame", "Get frame number.");                
+AddExpression(24, ef_return_number | ef_variadic_parameters, 
+              "Get frame number", "Tile", "Frame", "Get frame number, , add GID at 1st parameter to get frame number of that tile.");                
 AddExpression(25, ef_return_string | ef_variadic_parameters, 
               "Get tileset name", "Tileset", "TilesetName", "Get tileset name, add GID at 1st parameter to get tileset name of that tile.");
 AddStringParam("Name", "Property name.", '""');

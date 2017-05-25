@@ -120,13 +120,9 @@ AddAction(22, af_deprecated, "Set unfocused", "Player", "Set unfocused", "Remove
 // Expressions
 
 AddExpression(0, ef_return_number, "Get current playback time", "Video", "PlaybackTime", "Current playback time, in seconds.");
-
 AddExpression(1, ef_return_number, "Get video duration", "Video", "Duration", "Video duration in seconds, if known.");
-
 AddExpression(2, ef_return_number, "Get current video volume", "Video", "Volume", "Current video volume in dB attenuation.");
-
 AddExpression(3, ef_return_number, "Get current error code", "Video", "ErrorCode", "Current error code.");
-
 AddExpression(11, ef_return_string, "Get current video statee", "Debug", "VideoState", "Current video statee.");
 
 ACESDone();
@@ -140,7 +136,8 @@ var property_list = [
 	new cr.Property(ept_combo,"Show info", "Yes", "Enable to show video information", "No|Yes"),  // 4
 	new cr.Property(ept_combo,"Modest branding", "No", "Enable to remove youtube logos", "No|Yes"),   // 5   
 	new cr.Property(ept_combo,"Keyboard control", "Yes", "Enable to control video by keyboard.", "Yes|No"),  // 6
-    new cr.Property(ept_combo, "Initial visibility", "Visible", "Choose whether the text box is visible on startup.", "Invisible|Visible"),  // 7
+	new cr.Property(ept_combo,	"Play in background",	"No",	"Keep playing even when the tab or app goes in to the background.", "No|Yes"), // 7
+    new cr.Property(ept_combo, "Initial visibility", "Visible", "Choose whether the text box is visible on startup.", "Invisible|Visible"),  // 8
 	];
 
 // Called by IDE when a new object type is to be created

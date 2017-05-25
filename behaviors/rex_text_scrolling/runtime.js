@@ -44,6 +44,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 
 	behinstProto.onCreate = function()
 	{ 
+		this.autoRedraw = (this.properties[0] === 1);    
         this.content = "";
 	    this.total_lines_cnt = 0;
 	    this.visible_lines = 0;
@@ -115,7 +116,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	
 	behinstProto.tick2 = function ()
 	{  	    
-        this.redraw_text();
+		if (this.autoRedraw)
+            this.redraw_text();
 	};
     
 	behinstProto.redraw_text = function ()

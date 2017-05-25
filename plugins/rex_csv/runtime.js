@@ -344,7 +344,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         return (this.current_table.keys.indexOf(col) != (-1));
 	};	    
 
-	Cnds.prototype.HasRow = function (col)
+	Cnds.prototype.HasRow = function (row)
 	{
         return (this.current_table.items.indexOf(row) != (-1));
 	};	     
@@ -1032,8 +1032,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         var sortFn = function (col0, col1)
         {
             var sortMode = sortMode_;
-            var item0 = _sort_table[col0][row];
-            var item1 = _sort_table[col1][row]; 
+            var v0 = self.table[col0][row];
+            var v1 = self.table[col1][row]; 
             if (sortMode > 1)  // 2=la, 3=ld
             {
                 v0 = parseFloat(v0);
@@ -1042,7 +1042,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             }
 
             return (v0 > v1) ? (sortMode? -1:1):
-                       (v0 < v1) ? (sortMode? 1:-1):
+                   (v0 < v1) ? (sortMode? 1:-1):
                                          0;
         }
         this.keys.sort(sortFn); 

@@ -66,6 +66,10 @@ AddComboParamOption("milliseconds");
 AddComboParam("Type", "Type.", 0);
 AddAction(11, 0, "Add to", "Add", "Add <i>{0}</i> <i>{1}</i> to date", "Add to date.", "Add");
 
+AddNumberParam("Amount", "Amount.", 0);
+AddAnyTypeParam("Type", 'Type, in number(4) or string("days").', '""');
+AddAction(12, 0, "Add # to", "Add", "Add <i>{0}</i> <i>{1}</i> to date", "Add to date.", "Add");
+
 AddStringParam("Locale", "Locale.", '"en"');
 AddAction(101, 0, "Set locale", "Locale", "Set locale to <i>{0}</i>", "Set locale.", "SetLocale");
 //////////////////////////////////////////////////////////////

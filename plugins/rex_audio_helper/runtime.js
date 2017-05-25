@@ -257,10 +257,19 @@ cr.plugins_.Rex_audio_helper = function(runtime)
         var audio = this._audio_get();       
         cr.plugins_.Audio.prototype.acts.SetEffectParameter.call(audio, tag, 0, 4, volDB, 1, time);
 	};    
+    instanceProto.IsTagPlaying = function (tag)
+	{
+        var audio = this._audio_get();
+        return cr.plugins_.Audio.prototype.cnds.IsTagPlaying.call(audio, tag);
+	};     
     
     // internal
     instanceProto.Play = function (file, startVolDB, stopVolDB, fadeInTime, looping, tag, folder)
-	{          
+	{        
+       if (this.useWebAudio)  
+       {
+           this.AudioRemoveEffects(tag);
+       }
        this.AudioStart(file, looping, stopVolDB, tag, folder);
        if (startVolDB < stopVolDB)
            this.Fade(tag, startVolDB, stopVolDB, fadeInTime);
@@ -328,6 +337,10 @@ cr.plugins_.Rex_audio_helper = function(runtime)
     
     Acts.prototype.Stop = function (tag, fadeOutTime, stopVol)
 	{  
+        // tag is already stopped
+        if (!this.IsTagPlaying(tag))
+            return;
+
         tag = tag.toLowerCase();        
 	    var startVolDB = this.AudioGetVolumeDB(tag);  
 	    var stopVolDB = parse_voldBIn(stopVol);	

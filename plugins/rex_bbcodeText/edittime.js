@@ -65,7 +65,7 @@ AddComboParamOption("bold");
 AddComboParamOption("italic");
 AddComboParamOption("bold and italic");
 AddComboParam("Style", "Choose the style for the given font face.");
-AddAction(50, 0, "Set font style", "Appearance", "Set font style <i>{0}</i>", "Set the font style.", "SetFontStyle");
+AddAction(50, af_deprecated, "Set font style", "Appearance", "Set font style <i>{0}</i>", "Set the font style.", "SetFontStyle");
 
 AddStringParam("Font face", "The new font face name to set.", "\"Arial\"");
 AddAction(51, 0, "Set font face only", "Appearance", "Set font face to <i>{0}</i>", "Set the font face.", "SetFontFace2");

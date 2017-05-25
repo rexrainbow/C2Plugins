@@ -105,10 +105,9 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         
         if (!this.update_flag)
             return;
-                
+                    
         this.update();
-        this.update_flag = false;        
-        
+
         this.pre_instX = this.x;
         this.pre_instY = this.y;        
         this.pre_instHeight = cur_instHeight;
@@ -132,6 +131,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    	
     instanceProto.update = function(refresh)
     {     
+		this.update_flag = false;
         if (refresh)
         {
             this.prepare();
@@ -351,8 +351,9 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	    if (cnt < 0)
 	        cnt = 0;
 
-	    this.lines_mgr.SetLinesCount(cnt);
-        this.update();
+	    var is_changed = this.lines_mgr.SetLinesCount(cnt);
+		if (is_changed)
+            this.update_flag = true;
 	};	
 	
     instanceProto.insert_lines = function (line_index, content)
@@ -371,8 +372,8 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	            this.visibleLineIndexes[this.visible_end+1 + i] = true; 
 	        }	        
         }	    
-	    this.lines_mgr.InsertLines(line_index, content);	    
-	    this.update();
+	    this.lines_mgr.InsertLines(line_index, content);
+		this.update_flag = true;
 	};	
 	
     instanceProto.remove_lines = function (line_index, cnt)
@@ -391,7 +392,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
         }	    
 	    var removed_lines = this.lines_mgr.RemoveLines(line_index, cnt);
 	    this.exp_LastRemovedLines = JSON.stringify( removed_lines );
-        this.update();
+		this.update_flag = true;
 	};	    
 			
     instanceProto.for_each_line = function (start_, end_, filter_fn)
@@ -740,15 +741,20 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	};			
     Acts.prototype.SetValue = function (line_index, key_, value_)
 	{
-	    this.lines_mgr.SetCustomData(line_index, key_, value_);
+	    var is_changed = this.lines_mgr.SetCustomData(line_index, key_, value_);
+
+		if (is_changed)
+		    this.update_flag = true;
 	};	
     Acts.prototype.CleanKeyInAllLine = function (key_)
 	{
 	    this.lines_mgr.SetCustomData(null, key_, null);
-	};		
-    Acts.prototype.CleanKeyInAllLine = function ()
+		this.update_flag = true;
+	};
+    Acts.prototype.CleanAllKeysInAllLine = function ()
 	{
 	    this.lines_mgr.SetCustomData(null, null, null);
+		this.update_flag = true;
 	};	    
     Acts.prototype.InsertNewLines = function (line_index, cnt)
 	{
@@ -781,8 +787,10 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	{
 	    if (height <= 0)
 		    return;
-        var is_changed = this.lines_mgr.SetDefaultLineHeight(height);      
-        if (is_changed)  this.update_flag = true;
+        var is_changed = this.lines_mgr.SetDefaultLineHeight(height);
+
+        if (is_changed)  
+		    this.update_flag = true;
 	};	
 	
     Acts.prototype.SetLineOffsetY = function (line_index, offsety)
@@ -792,7 +800,9 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
             return;
         var is_changed = (line.offsety != offsety);        
 	    line.offsety = offsety;        
-        if (is_changed)  this.update_flag = true;
+
+        if (is_changed)  
+		    this.update_flag = true;
 	};	
 	
     Acts.prototype.SetLineHeight = function (line_index, height)
@@ -804,8 +814,11 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 		    return;
                        
         var is_changed = this.lines_mgr.SetLineHeight(line_index, height);   
-        if (is_changed)  this.update_flag = true;
+
+        if (is_changed)  
+		    this.update_flag = true;
 	};	
+
     Acts.prototype.RefreshVisibleLines = function ()
 	{
         this.update(true);
@@ -982,7 +995,9 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	LinesMgrKlassProto.SetLinesCount = function(cnt)
 	{
         var end=this.GetLinesCount();
-        if (end > cnt)
+		if (end === cnt)
+		  return false;
+        else if (end > cnt)
         {
             var i, line;
             for(i=cnt; i<end; i++)
@@ -1011,6 +1026,7 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
             this.defaultLineHeightMode = true;
         
         this.totalLinesHeight = null;
+		return true;
 	};
     
     LinesMgrKlassProto.GetLinesCount = function()
@@ -1498,23 +1514,37 @@ cr.plugins_.Rex_ListCtrl = function(runtime)
 	
 	LineKlassProto.SetCustomData = function(k,v)
 	{
+		var is_changed;
 	    if (typeof(k) != "object")    // single key
 		{
 		    if (v != null)
+			{
+				is_changed = (this.custom_data[k] !== v);
 	            this.custom_data[k] = v;	    
+			}
 		    else if (this.custom_data.hasOwnProperty(k))  // v == null: clean key
+			{
 			    delete this.custom_data[k];
+				is_changed = true;
+			}
 	    }
         else if (k === null)    // clean all
         {
             for (var n in this.custom_data)
+			{
                 delete this.custom_data[n];
+			}
+
+            is_changed = true;
         }             
 	    else                          // copy all
 	    {
 	        var d = k;
 	        for (var k in d)
+			{
+				is_changed = (this.custom_data[k] !== d[k]);
 	            this.custom_data[k] = d[k];
+			}
 	    }
 	};
 	

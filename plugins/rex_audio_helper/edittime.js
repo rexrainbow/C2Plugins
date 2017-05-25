@@ -85,7 +85,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [
-	new cr.Property(ept_combo,	"Audio effect",	"Yes",	"Use audio effect to do fading.", "No|Yes"),
+	new cr.Property(ept_combo,	"Audio effect",	"No",	"Use audio effect to do fading.", "No|Yes"),
 	];
 	
 // Called by IDE when a new object type is to be created

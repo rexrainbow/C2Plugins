@@ -394,6 +394,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
                 self.runtime.trigger(cr.plugins_.Rex_Firebase_Authentication.prototype.cnds.OnLoginError, self);
             }
         };
+        self.isMyLoginCall = true;
         return handler;
     };    
     

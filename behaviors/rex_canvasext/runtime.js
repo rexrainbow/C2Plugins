@@ -176,7 +176,7 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
         this.inst.update_tex = true;  
 	};
 	
-	Acts.prototype.LoadURL = function (url_, resize_)
+	Acts.prototype.LoadURL = function (url_, resize_, crossOrigin_)
 	{
 		var img = new Image();
 		var self = this;
@@ -241,10 +241,11 @@ cr.behaviors.Rex_CanvasExt = function(runtime)
 			self.runtime.trigger(cr.behaviors.Rex_CanvasExt.prototype.cnds.OnURLLoaded, inst);
 		};
 		
-		if (url_.substr(0, 5) !== "data:")
-			img.crossOrigin = 'anonymous';
+		if (url_.substr(0, 5) !== "data:" && crossOrigin_ === 0)
+			img["crossOrigin"] = "anonymous";
 		
-		img.src = url_;
+		// use runtime function to work around WKWebView permissions
+		this.runtime.setImageSrc(img, url_);
 	};
     
 	Acts.prototype.Eval = function (code)

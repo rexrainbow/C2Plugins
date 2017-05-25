@@ -418,7 +418,16 @@ cr.plugins_.Rex_kongregate = function(runtime)
             return;
 
         window["kongregate"]["sharedContent"]["addLoadListener"](type, getCallback(this, tag));
-	};    
+	};   
+
+	Acts.prototype.StatsSubmit = function (name, value)
+	{
+        if (!window["kongregate"])
+            return;
+
+        window["kongregate"]["Stats"]["Submit"](name, value);
+	};  
+
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

@@ -614,59 +614,6 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
         var has_inst = this.PickUIDs(_uids, chess_type);
         _uids.length = 0;
         return has_inst;  
-	};		
-	
-	instanceProto.getMinX = function ()
-	{
-		var uid, xyz;
-		var minX;			
-        var items = this.GetAllChess();
-		for (uid in items)
-		{
-		    xyz = this.uid2xyz(uid);
-		    if ((minX == null) || (minX > xyz.x))
-		        minX = xyz.x;				                
-		};        	
-        return minX;
-	};
-	instanceProto.getMinY = function ()
-	{
-		var uid, xyz;
-		var minY;			
-        var items = this.GetAllChess();
-		for (uid in items)
-		{
-		    xyz = this.uid2xyz(uid);
-		    if ((minY == null) || (minY > xyz.y))
-		        minY = xyz.y;				                
-		};        	
-        return minY;
-	};    
-	instanceProto.GetMaxX = function ()
-	{
-		var uid, xyz;
-		var maxX;		
-        var items = this.GetAllChess();
-		for (uid in items)
-		{
-		    xyz = this.uid2xyz(uid);
-		    if ((maxX == null) || (maxX < xyz.x))
-		        maxX = xyz.x;				                
-		};        	
-        return maxX;
-	};
-	instanceProto.GetMaxY = function ()
-	{
-		var uid, xyz;
-		var maxY;			
-        var items = this.GetAllChess();
-		for (uid in items)
-		{
-		    xyz = this.uid2xyz(uid);
-		    if ((maxY == null) || (maxY < xyz.y))
-		        maxY = xyz.y;				                
-		};        	
-        return maxY;
 	};
     
 	var cleanTable = function (o)
@@ -951,10 +898,10 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    if (isEmptyTable(items))
 	        return;
 			        
-		var minX= this.getMinX();
-        var minY= this.getMinY();
-		var maxX= this.GetMaxX();
-        var maxY= this.GetMaxY();
+		var minX= this.board.GetMinX();
+        var minY= this.board.GetMinY();
+		var maxX= this.board.GetMaxX();
+        var maxY= this.board.GetMaxY();
         var new_LOX, new_LOY;
         switch (pos_type)
         {
@@ -1147,6 +1094,26 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	    }   
 	    ret.set_float(py);
 	};		 
+    
+	Exps.prototype.MaxLX = function (ret)
+	{
+		ret.set_int(this.board.GetMaxX() || 0);
+	};    
+    
+	Exps.prototype.MaxLY = function (ret)
+	{
+		ret.set_int(this.board.GetMaxY() || 0);
+	};     
+    
+	Exps.prototype.MinLX = function (ret)
+	{
+		ret.set_int(this.board.GetMinX() || 0);
+	};    
+    
+	Exps.prototype.MinLY = function (ret)
+	{
+		ret.set_int(this.board.GetMinY() || 0);
+	};   
 
 
 // --------    

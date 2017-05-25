@@ -873,7 +873,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             return;
 
 	    this.canvas_text.underline.thickness = w;   
-        this.runtime.redraw = true;                   
+		this.need_text_redraw = true;
+		this.runtime.redraw = true;                 
 	};	
 	Acts.prototype.SetOffsetY = function(offset)
 	{
@@ -881,7 +882,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             return;
 
 	    this.canvas_text.underline.offset = offset;   
-        this.runtime.redraw = true;                     
+		this.need_text_redraw = true;
+		this.runtime.redraw = true;      
 	};
 
 	Acts.prototype.SetStrokeLineWidth = function(w)
@@ -890,7 +892,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             return;
 
 	    this.canvas_text.stroke.lineWidth = w;  
-        this.runtime.redraw = true;                    
+		this.need_text_redraw = true;
+		this.runtime.redraw = true;               
 	};
 
 	Acts.prototype.SetStrokeLineJoin = function(m)
@@ -900,7 +903,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             return;
 
 	    this.canvas_text.stroke.lineJoin = m;
-        this.runtime.redraw = true;
+		this.need_text_redraw = true;
+		this.runtime.redraw = true;  
 	};    
 
 	Acts.prototype.SetBackgroundColor = function(color)
@@ -909,7 +913,8 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             return;
 
 	    this.canvas_text.backgroundColor = color; 
-        this.runtime.redraw = true;       
+		this.need_text_redraw = true;
+		this.runtime.redraw = true;       
 	};    
     
 	Acts.prototype.LockCanvasSize = function(width, height)
@@ -1056,7 +1061,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
          */
         this.default_propScope = {
             family:"Verdana",
-            weight:"normal",
+            weight:"",
             ptSize:"12pt",
             color:"#000000",
             style:"normal",            

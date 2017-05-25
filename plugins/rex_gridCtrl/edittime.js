@@ -132,7 +132,7 @@ AddAction(14, 0, "Set column number", "Grid",
           "Set column number.", "SetColumnNumber"); 
 AddNumberParam("Columns", "Column number of this grid.", 10);          
 AddNumberParam("Rows", "Row number of this grid.", 10);
-AddAction(15, 0, "Set column number", "Grid", 
+AddAction(15, 0, "Set grid size", "Grid", 
           "Set grid size to <i>{0}</i>x<i>{1}</i>", 
           "Set grid size.", "SetGridSize");
           
@@ -221,7 +221,7 @@ AddNumberParam("Height", "Cell height, in pixels.", 30);
 AddAction(53, 0, "Set cell height", "Cell size", 
           "Cell <i>{0}</i>: set height to <i>{1}</i>", 
           "Set cell height.", "SetCellHeight");            
-		  
+		     
 AddAction(71, 0, "Refresh", "Visible", 
           "Refresh visible cells", 
           "Refresh visible cells.", "RefreshVisibleCells"); 

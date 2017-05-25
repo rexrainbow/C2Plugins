@@ -30,7 +30,10 @@ AddComboParamOption("Resize to image size");
 AddComboParamOption("Keep current size");
 AddComboParamOption("Scale down if larger than canvas");
 AddComboParam("Size", "Whether to resize the sprite to the size of the loaded image, or stretch it to the current size.");
-AddAction(10, 0, "Load image from URL", "Web", "Load image from <i>{0}</i> ({1})", "Replace the currently displaying animation frame with an image loaded from a web address or data URI.", "LoadURL");
+AddComboParamOption("anonymous");
+AddComboParamOption("none");
+AddComboParam("Cross-origin", "The cross-origin (CORS) mode to use for the request.");
+AddAction(10, 0, "Load image from URL", "Web", "Load image from <i>{0}</i> ({1}, cross-origin {2})", "Replace the currently displaying animation frame with an image loaded from a web address or data URI.", "LoadURL");
 
 AddStringParam("Js code", "Code string for drawing.", '""');
 AddAction(21, 0, "Eval", "Script", 

@@ -43,10 +43,10 @@ AddVariadicParams("Parameter {n}",
 AddAction(12, 0, "Push back", "Function queue", 
           "Push function call <b>{0}</b> (<i>{...}</i>)", 
           "Push function call into function queue.", "PushToFnQueue");
-AddStringParam("Package", "Function call package in json string.", "\"\"");
-AddAction(13, 0, "Load", "Function queue", 
-          "Load queue by <i>{0}</i>",
-          "Load function queue.", "LoadFnQueue"); 
+AddStringParam("Package", "Function call package in json string.", "\"\""); 
+AddAction(13, 0, "Load queue", "Function queue", 
+          "Load <i>{0}</i> to queue",
+          "Load new items into function queue.", "LoadFnQueue"); 
 AddNumberParam("Index", "Index of parameter.", 0);
 AddAnyTypeParam("Value", "Value of paramete", 0); 
 AddAction(14, 0, "Overwrite parameter", "Function queue : For each", 
@@ -79,8 +79,11 @@ AddNumberParam("Index", "Index of parameter.", 0);
 AddAnyTypeParam("Value", "Value to add", 0); 
 AddAction(19, 0, "Add to parameter", "Function queue : For each", 
           "Add <i>{1}</i> to parameter[<i>{0}</i>]",
-          'Add value to parameter of current package in function queue.', "AddToParam");          
-
+          'Add value to parameter of current package in function queue.', "AddToParam");
+AddStringParam("Package", "Function call package in json string.", "\"\""); 
+AddAction(20, 0, "Append queue", "Function queue", 
+          "Append <i>{0}</i> to queue",
+          "Append new items into function queue.", "AppendFnQueue");           
 AddComboParamOption("Official function");
 AddComboParamOption("Rex function2");
 AddComboParam("Callback", "Callback object.",0);          

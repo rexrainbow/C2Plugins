@@ -117,12 +117,17 @@ cr.behaviors.Rex_bCmdqueue = function(runtime)
 	    {
 	        // transfer hash table to array
 	        param_list.length = 0;
-	        //param_list.push(uid);   // add uid at param(0)
-	        var i=0;
+
+            if (param.hasOwnProperty(0))
+                param_list.push(param[0]);
+            else
+                param_list.push(uid);
+            
+            var i=1;	        
 	        while (param.hasOwnProperty(i))
 	        {
 	            param_list.push(param[i]);
-	            i += 1;
+	            i++;
 	        }
 	        this._act_call_fn.call(this._fnobj, name, param_list);
 	    }

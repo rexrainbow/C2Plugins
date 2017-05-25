@@ -69,8 +69,8 @@ cr.plugins_.Rex_Container.tag2container = {};
 	
 	instanceProto.onDestroy = function ()
 	{		
-	    delete cr.plugins_.Rex_Container.tag2container[this.tag];
-        this._destory_all_insts();
+	    //delete cr.plugins_.Rex_Container.tag2container[this.tag];
+        //this._destory_all_insts();
 	};
     
 	instanceProto._update_size = function ()
@@ -90,6 +90,8 @@ cr.plugins_.Rex_Container.tag2container = {};
 	            inst.width *= factor;
             if (inst.height != null)
 	            inst.height *= factor;
+
+			inst.set_bbox_changed();
 	    }
 	    for (uid in this.pin_status)
 	    {

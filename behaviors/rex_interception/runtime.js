@@ -251,24 +251,37 @@ cr.behaviors.Rex_Interception = function(runtime)
 		return x < 0 ? -x : x;
 	}; 
 
+    function clone(obj) 
+	{
+        if (null == obj || "object" != typeof obj) 
+		    return obj;
+        var result = obj.constructor();
+        for (var attr in obj) 
+		{
+            if (obj.hasOwnProperty(attr)) 
+			    result[attr] = obj[attr];
+        }
+        return result;
+    };
+
 	behinstProto.saveToJSON = function ()
 	{
-		return { "en": this.enabled,
-		         "mi": this.my_info,
-                 "ti": this.target_info,
+		return { "en": this.enable,
+		         "mi": clone(this.my_info),
+                 "ti": clone(this.target_info),
                  "dpredflg": this.do_pretiction_flag,
                  "predX": this.predictX,
                  "predY": this.predictY,         
-                 "of": this.output_force,
+                 "of": clone(this.output_force),
                  "updflg": this.update_force_flag,
                };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{  
-		this.enabled = o["en"];            
+		this.enable = o["en"];            
         this.my_info = o["mi"];    
-        this.target_info =  o["ti"];      
+        this.target_info = o["ti"];      
         this.do_pretiction_flag = o["dpredflg"];      
         this.predictX = o["predX"];      
         this.predictY = o["predY"];              

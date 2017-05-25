@@ -166,7 +166,7 @@ AddNumberParam("Height", "Line height, in pixels.", 30);
 AddAction(42, 0, "Set line height", "Line height", 
           "Line <i>{0}</i>: set height to <i>{1}</i>", 
           "Set line height.", "SetLineHeight");               
-          		 
+          		                   
 AddAction(51, 0, "Refresh", "Visible", 
           "Refresh visible lines", 
           "Refresh visible lines.", "RefreshVisibleLines");

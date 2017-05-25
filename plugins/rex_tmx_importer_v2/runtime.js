@@ -642,11 +642,15 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         if (this.exp_tilesetRef == null)
             return false;
             
+        var props = this.exp_tilesetRef.prope;
+        if (props == null)
+            return false;
+
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
         
-        var key, props = this.exp_tilesetRef.prope, value;
+        var key, value;
 		for (key in props)
 	    {
             this.exp_CurTilesetPropName = key;
@@ -764,14 +768,18 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};
     Cnds.prototype.ForEachObjectProperty = function ()
 	{   
-        if (this.exp_ObjectProperties == null)
+        if (this.exp_objRef == null)
             return false;
         
+        var props = this.exp_objRef.properties;
+        if (props == null)
+            return false;
+
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
         
-        var key, props = this.exp_objRef.properties, value;
+        var key, value;
 		for (key in props)
 	    {
             this.exp_CurObjectPropName = key;
@@ -1086,11 +1094,19 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	}; 
 	Exps.prototype.InstUID = function (ret)
 	{   
-	    ret.set_int(this.exp_IsFlipped);
+	    ret.set_int(this.exp_InstUID);
 	}; 
-	Exps.prototype.Frame = function (ret)
+	Exps.prototype.Frame = function (ret, gid)
 	{   
-	    ret.set_int(this.exp_Frame);
+        var frameIdx;
+        if (gid == null)
+            frameIdx = this.exp_Frame;
+        else
+        {
+            var tileset_obj = this._tmx_obj.GetTileSet(gid);
+            frameIdx = gid - tileset_obj.firstgid;
+        }
+	    ret.set_int(frameIdx);
 	};  
 	Exps.prototype.TilesetName = function (ret, gid)
 	{     

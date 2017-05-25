@@ -714,7 +714,7 @@ cr.plugins_.Rex_parse_ItemTable = function(runtime)
 	    var handler = {"success":on_success, "error": on_error};
 	    	    
         var itemRemover = new this.itemTable_klass();
-	    itemRemover["set"]("id", messageID);
+	    itemRemover["set"]("id", itemID);
 	    itemRemover["destroy"](handler);
 	}; 	
 	

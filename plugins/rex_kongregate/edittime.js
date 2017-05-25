@@ -162,6 +162,13 @@ AddAction(603, 0, "Add load listener", "Shared Content",
           "Add shared Content's load event listener <i>{0}</i> (callback <i>{1}</i>)", 
           "Receive notifications when shared content is loaded.", "SharedContentAddLoadListener");           
 
+// Statistics          
+AddStringParam("Statistic name", "The name of the statistic to submit.", '""');
+AddNumberParam("Value", "The value of the statistic to submit.", '""');        
+AddAction(701, 0, "Submit", "Statistics", 
+          "Submit <i>{0}</i> to <i>{1}</i>", 
+          "Submit statistics/scores to the server.", "StatsSubmit");
+
 //////////////////////////////////////////////////////////////
 // Expressions
 // AddStringParam("Key", "The key string.", '""');
