@@ -29,35 +29,39 @@ AddAction(1, 0, "Invoke", "Invoke",
 
 AddStringParam("Name", "Object name in dot notation", '""');
 AddAction(11, 0, "Set object name", "Prepare - Function name", 
-          "Object : window.{0}",
+          "Object: window.{0}",
           "Set object name.", "SetObjectName"); 
 
 AddStringParam("Name", "Function name in dot notation", '""');
 AddAction(12, 0, "Set function name", "Prepare - Function name", 
-          "Function : {0}",
+          "Function: {0}",
           "Set function name.", "SetFunctionName"); 
  
 AddAnyTypeParam("Value", "Value to set", 0);
-AddAction(21, 0, "Set value", "Prepare - Parameter", 
+AddAction(21, 0, "Add value", "Prepare - Parameter", 
           "Parameter: {0}",
-          "Add parameter.", "AddValue"); 
+          "Add a parameter.", "AddValue"); 
 
 AddStringParam("JSON", "JSON value to set", '""');
-AddAction(22, 0, "Set JSON", "Prepare - Parameter", 
+AddAction(22, 0, "Add JSON", "Prepare - Parameter", 
           "Parameter: {0}",
-          "Add parameter to JSON string.", "AddJSON"); 
+          "Add a JSON parameter.", "AddJSON"); 
 
 AddComboParamOption("false");
 AddComboParamOption("true");
 AddComboParam("Boolean", "Boolean value.", 0);
-AddAction(23, 0, "Set boolean", "Prepare - Parameter",
+AddAction(23, 0, "Add boolean", "Prepare - Parameter",
           "Parameter: {0}",
-          "Add parameter to a boolean value.", "AddBoolean");
+          "Add a boolean parameter.", "AddBoolean");
 
 AddAnyTypeParam("Callback tag", "Callback tag to set", '""');
-AddAction(24, 0, "Set callback", "Prepare - Parameter", 
+AddAction(24, 0, "Add callback", "Prepare - Parameter", 
           "Parameter: callback {0}",
-          "Add parameter to parameter.", "AddCallback"); 
+          "Add a callback parameter.", "AddCallback"); 
+
+AddAction(25, 0, "Add null", "Prepare - Parameter",
+          "Parameter: null",
+          "Add null value parameter.", "AddNull");		  
 
 AddStringParam("URL", "The URL to request.", "\"http://\"");
 AddAnyTypeParam("Success callback tag", "Callback of loading success", '""');

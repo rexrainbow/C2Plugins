@@ -132,8 +132,9 @@ cr.plugins_.Rex_jsshell = function(runtime)
 			o = window;
 
         var f = getItemByKey(o, this.functionName);
-        this.returnValue = f.apply(o, this.functionParams);
+		var param = this.functionParams;
 		this.functionParams = [];
+        this.returnValue = f.apply(o, param);
 	}; 
     
 	Acts.prototype.SetObjectName = function (name)
@@ -166,6 +167,11 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		this.functionParams.push( this.getCallback(callbackTag) );      
 	};
 
+    Acts.prototype.AddNull = function ()
+	{
+		this.functionParams.push( null );      
+	};
+	
     Acts.prototype.LoadAPI = function (src, successTag, errorTag)
 	{
 		this.LoadAPI(src, this.getCallback(successTag), this.getCallback(errorTag));   
