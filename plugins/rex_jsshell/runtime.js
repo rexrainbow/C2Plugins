@@ -42,7 +42,6 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	instanceProto.onCreate = function()
 	{
 		// function call
-		this.objectName = "";
 		this.functionName = "";
 		this.functionParams = [];
 		this.returnValue = null;
@@ -125,23 +124,19 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		if (this.functionName === "")
 		    return;
         
-		var o;
-		if (this.objectName !== "")
-			o = getItemByKey(window, this.objectName);				
-		else
-			o = window;
+		var names = this.functionName.split(".");
+		var fnName = names.pop();
+		var o = window;
+		for (var i=0; i<names.length; i++)
+		{
+			o = o[names[i]];
+		}
 
-        var f = getItemByKey(o, this.functionName);
 		var param = this.functionParams;
 		this.functionParams = [];
-        this.returnValue = f.apply(o, param);
+        this.returnValue = o[fnName].apply(o, param);
 	}; 
     
-	Acts.prototype.SetObjectName = function (name)
-	{
-        this.objectName = name;      
-	}; 
-
     Acts.prototype.SetFunctionName = function (name)
 	{
         this.functionName = name;      
@@ -171,7 +166,7 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	{
 		this.functionParams.push( null );      
 	};
-	
+
     Acts.prototype.LoadAPI = function (src, successTag, errorTag)
 	{
 		this.LoadAPI(src, this.getCallback(successTag), this.getCallback(errorTag));   

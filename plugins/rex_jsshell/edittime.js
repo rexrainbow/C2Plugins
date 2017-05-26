@@ -27,11 +27,6 @@ AddAction(1, 0, "Invoke", "Invoke",
           "Invoke function",
           "Invoke function.", "Invoke"); 
 
-AddStringParam("Name", "Object name in dot notation", '""');
-AddAction(11, 0, "Set object name", "Prepare - Function name", 
-          "Object: window.{0}",
-          "Set object name.", "SetObjectName"); 
-
 AddStringParam("Name", "Function name in dot notation", '""');
 AddAction(12, 0, "Set function name", "Prepare - Function name", 
           "Function: {0}",
