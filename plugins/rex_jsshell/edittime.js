@@ -73,8 +73,7 @@ AddAnyTypeParam("Index", "The zero-based index of the parameter to get, or name 
 AddExpression(1, ef_return_any | ef_variadic_parameters, "Get parameter of callback", "Callback", "Param", "Get the value of a parameter passed to the callback.");
 
 AddExpression(2, ef_return_number, "Get parameter count of callback", "Callback", "ParamCount", "Get the number of parameters passed to callback.");
-
-AddAnyTypeParam("Variable name", "Variable name of this tone object", '""');        
+     
 //AddStringParam("Property", "Property name in dot notation", '""');
 AddExpression(21, ef_return_any | ef_variadic_parameters, "Get return value", "Function", "ReturnValue", "Get return value.");
 
