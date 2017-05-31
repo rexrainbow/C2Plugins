@@ -25,15 +25,15 @@ AddComboParam("Axis", "The axis of layout.", 0);
 AddComboParamOption("No");
 AddComboParamOption("Yes");
 AddComboParam("Indent", "Indent first row or column.", 0);
-AddAction(1, 0, "Set layout", "Arrangement", 
+AddAction(1, 0, "Set orientation", "Arrangement", 
           "Set axis to <i>{0}</i>, indent to <i>{1}</i>", 
-          "Set layout.", "SetLayoutMode"); 
+          "Set orientation.", "SetOrientation"); 
           
 AddNumberParam("Axis", "0=Left-Right, 1=Up-Down.", 0);
 AddNumberParam("Indent", "0=No, 1=Yes.", 0);
-AddAction(2, 0, "Set layout by number", "Arrangement", 
+AddAction(2, 0, "Set orientation by number", "Arrangement", 
           "Set axis to <i>{0}</i>, indent to <i>{1}</i>", 
-          "Set layout by number.", "SetLayoutMode"); 
+          "Set orientation by number.", "SetOrientation"); 
             
 AddNumberParam("Width", "Cell width in pixels.", 0);
 AddNumberParam("Height", "Cell height in pixels.", 0);
@@ -42,7 +42,7 @@ AddAction(3, 0, "Set cell size", "Size",
           "Set cell size.", "SetCellSize");
 AddNumberParam("X", "Physical X co-ordinate at logic (0,0).", 0);
 AddNumberParam("Y", "Physical Y co-ordinate at logic (0,0).", 0);
-AddAction(4, 0, "Set position offset", "Position", 
+AddAction(4, 0, "Set position offset", "Offset", 
           "Set offset to (<i>{0}</i>, <i>{1}</i>)", 
           "Set Physical position offset (position of logic (0,0)).", "SetOffset"); 
 
@@ -50,8 +50,8 @@ AddAction(4, 0, "Set position offset", "Position",
                     
 //////////////////////////////////////////////////////////////
 // Expressions
-AddExpression(1, ef_return_number, "Cell width", "Cell", "Width", "Get cell width in pixels.");
-AddExpression(2, ef_return_number, "Cell height", "Cell", "Height", "Get cell height in pixels.");
+AddExpression(1, ef_return_number, "Cell width", "Size", "Width", "Get cell width in pixels.");
+AddExpression(2, ef_return_number, "Cell height", "Size", "Height", "Get cell height in pixels.");
 AddExpression(3, ef_return_number, "X co-ordinate at (0,0)", "Offset", "POX", "Get physical X co-ordinate at logic (0,0).");
 AddExpression(4, ef_return_number, "Y co-ordinate at (0,0)", "Offset", "POY", "Get physical Y co-ordinate at logic (0,0).");
 AddExpression(11, ef_return_number, 

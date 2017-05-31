@@ -54,35 +54,35 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         
         var is_up2down = (this.properties[4]===1);
         var is_even = (this.properties[5]===1);
-        this.SetLayoutMode(is_up2down, is_even);                                              
+        this.SetOrientation(is_up2down, is_even);                                              
 	};
 	instanceProto.SetPOX = function(pox)
 	{
-        this.PositionOX = pox;       
+        this.pox = pox;       
 	}; 
 	instanceProto.SetPOY = function(poy)
 	{
-        this.PositionOY = poy;
+        this.poy = poy;
 	};   
 	instanceProto.GetPOX = function()
 	{
-        return this.PositionOX;       
+        return this.pox;       
 	}; 
 	instanceProto.GetPOY = function()
 	{
-        return this.PositionOY;
+        return this.poy;
 	}; 	
 	instanceProto.SetWidth = function(width)
 	{
         this.width = width;
-        this.half_width = width/2;        
+        this.halfWidth = width/2;        
 	};
 	instanceProto.SetHeight = function(height)
 	{
         this.height = height; 
-        this.half_height = height/2;
+        this.halfHeight = height/2;
 	}; 
-	instanceProto.SetLayoutMode = function(is_up2down, is_even)
+	instanceProto.SetOrientation = function(is_up2down, is_even)
 	{
         this.mode = (!is_up2down && !is_even)? ODD_R:
                     (!is_up2down &&  is_even)? EVEN_R:
@@ -185,20 +185,20 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    switch (this.mode)
 	    {
 	    case ODD_R:
-	        px = (lx*this.width) + this.PositionOX;
+	        px = (lx*this.width) + this.pox;
 	        if (ly&1)
-	            px += this.half_width;	        
+	            px += this.halfWidth;	        
 	    break;
 	    
 	    case EVEN_R:
-	        px = (lx*this.width) + this.PositionOX;
+	        px = (lx*this.width) + this.pox;
 	        if (ly&1)
-	            px -= this.half_width;	   	        
+	            px -= this.halfWidth;	   	        
 	    break;
 	    
 	    case ODD_Q:
 	    case EVEN_Q:	    
-	        px = (lx*this.width) + this.PositionOX;
+	        px = (lx*this.width) + this.pox;
 	    break;	    
 	    }
         return px;
@@ -210,19 +210,19 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	    {
 	    case ODD_R:
 	    case EVEN_R:
-	        py = (ly*this.height) + this.PositionOY;	        
+	        py = (ly*this.height) + this.poy;	        
 	    break;
 	    
 	    case ODD_Q:
-	        py = (ly*this.height) + this.PositionOY;
+	        py = (ly*this.height) + this.poy;
 	        if (lx&1)
-	            py += this.half_height;	        
+	            py += this.halfHeight;	        
 	    break;
 	    
 	    case EVEN_Q:	    
-	        py = (ly*this.height) + this.PositionOY;
+	        py = (ly*this.height) + this.poy;
 	        if (lx&1)
-	            py -= this.half_height;	  	        
+	            py -= this.halfHeight;	  	        
 	    break;	    
 	    }
         return py;
@@ -230,7 +230,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	instanceProto.PXY2LX = function(px, py)
 	{
 	    var lx;
-	    var offx=px-this.PositionOX;
+	    var offx=px-this.pox;
 	    switch (this.mode)
 	    {
 	    case ODD_R:
@@ -239,9 +239,9 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	        if (ly&1)
 	        {
 	            if (this.mode == ODD_R)
-	                offx -= this.half_width;
+	                offx -= this.halfWidth;
 	            else
-	                offx += this.half_width;
+	                offx += this.halfWidth;
 	        } 	        
 	    break;   
 	    }	       
@@ -251,7 +251,7 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	instanceProto.PXY2LY = function(px, py)
 	{
 	    var ly;
-	    var offy=py-this.PositionOY;
+	    var offy=py-this.poy;
 	    switch (this.mode)
 	    {
 	    case ODD_Q:
@@ -260,9 +260,9 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	        if (lx&1)
 	        {
 	            if (this.mode == ODD_Q)
-	                offy -= this.half_height;
+	                offy -= this.halfHeight;
 	            else
-	                offy += this.half_height;
+	                offy += this.halfHeight;
 	        } 	        
 	    break;   
 	    }	       
@@ -539,8 +539,8 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 		return { "m": this.mode,
                  "w": this.width,
                  "h": this.height,
-                 "ox": this.PositionOX,
-                 "oy": this.PositionOY
+                 "ox": this.pox,
+                 "oy": this.poy
                  };
 	};
 	
@@ -572,9 +572,9 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
         this.SetPOX(x);
         this.SetPOY(y);
 	}; 	
-    Acts.prototype.SetLayoutMode = function (is_updown, is_indent)
+    Acts.prototype.SetOrientation = function (is_updown, is_indent)
     {        
-        this.SetLayoutMode((is_updown===1), (is_indent===1));      
+        this.SetOrientation((is_updown===1), (is_indent===1));      
 	}; 	
 	//////////////////////////////////////
 	// Expressions
@@ -591,11 +591,11 @@ cr.plugins_.Rex_SLGHexTx = function(runtime)
 	};
 	Exps.prototype.POX = function (ret)
 	{
-	    ret.set_float(this.PositionOX);
+	    ret.set_float(this.pox);
 	};
 	Exps.prototype.POY = function (ret)
     {
-	    ret.set_float(this.PositionOY);
+	    ret.set_float(this.poy);
 	};	
 	
 	Exps.prototype.DIRLRRIGHT = function (ret)
