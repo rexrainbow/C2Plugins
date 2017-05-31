@@ -43,7 +43,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	{        
         this.check_name = "LAYOUT";
         this.mode = this.properties[0];
-        this.is_8dir = (this.properties[5] == 1);
+        this.is8Dir = (this.properties[5] == 1);
                 
         this.SetPOX(this.properties[1]);
         this.SetPOY(this.properties[2]);
@@ -52,29 +52,29 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	};
 	instanceProto.SetPOX = function(pox)
 	{
-        this.PositionOX = pox;       
+        this.pox = pox;       
 	}; 
 	instanceProto.SetPOY = function(poy)
 	{
-        this.PositionOY = poy;
+        this.poy = poy;
 	}; 
 	instanceProto.GetPOX = function()
 	{
-        return this.PositionOX;       
+        return this.pox;       
 	}; 
 	instanceProto.GetPOY = function()
 	{
-        return this.PositionOY;
+        return this.poy;
 	}; 	
 	instanceProto.SetWidth = function(width)
 	{
         this.width = width;
-        this.half_width = width/2;        
+        this.halfWidth = width/2;        
 	}; 
 	instanceProto.SetHeight = function(height)
 	{
         this.height = height;
-        this.half_height = height/2;        
+        this.halfHeight = height/2;        
 	};     
 	instanceProto.LXYZ2PX = function(lx, ly, lz)
 	{
@@ -85,16 +85,16 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    }
 	    else if (this.mode == 1)  // Isometric
 	    {
-	        x = (lx - ly) * this.half_width;
+	        x = (lx - ly) * this.halfWidth;
 	    }
 	    else if (this.mode == 2)  // Staggered
 	    {
 	        x = lx * this.width;
 	        if (ly&1)
-	            x += this.half_width;
+	            x += this.halfWidth;
 	    }
 
-        return x+this.PositionOX;
+        return x+this.pox;
 	};
 	instanceProto.LXYZ2PY = function (lx, ly, lz)
 	{
@@ -105,35 +105,35 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    }
 	    else if (this.mode == 1)  // Isometric
 	    {
-	        y = (lx + ly) * this.half_height;
+	        y = (lx + ly) * this.halfHeight;
 	    }
 	    else if (this.mode == 2)  // Staggered
 	    {
-	        y = ly * this.half_height;
+	        y = ly * this.halfHeight;
 	    }
 
-        return y+this.PositionOY;
+        return y+this.poy;
 	};   
 	instanceProto.PXY2LX = function(px, py)
 	{
 	    var lx;
 	    if (this.mode == 0)   // Orthogonal
 	    {
-	        px -= this.PositionOX;
+	        px -= this.pox;
 	        lx = Math.round(px/this.width);
 	    }
 	    else if (this.mode == 1)   // Isometric
 		{
-		    px -= this.PositionOX;
-		    py -= this.PositionOY;
-		    lx = 0.5 * (Math.round(py/this.half_height) + Math.round(px/this.half_width));
+		    px -= this.pox;
+		    py -= this.poy;
+		    lx = 0.5 * (Math.round(py/this.halfHeight) + Math.round(px/this.halfWidth));
 		}
 		else if (this.mode == 2)  // Staggered
 		{
-		    var ly = Math.round((py - this.PositionOY)/this.half_height);
-		    px = px - this.PositionOX;
+		    var ly = Math.round((py - this.poy)/this.halfHeight);
+		    px = px - this.pox;
 		    if (ly&1)
-		        px -= this.half_width;
+		        px -= this.halfWidth;
 		    lx = Math.round(px/this.width);
 		}
 		    
@@ -144,18 +144,18 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    var ly;
 	    if (this.mode == 0)   // Orthogonal
 	    {
-	        py -= this.PositionOY;
+	        py -= this.poy;
 	        ly = Math.round(py/this.height);
 	    }
 	    else if (this.mode == 1)   // Isometric
 		{
-		    px -= this.PositionOX;
-		    py -= this.PositionOY;
-		    ly = 0.5 * (Math.round(py/this.half_height) - Math.round(px/this.half_width));
+		    px -= this.pox;
+		    py -= this.poy;
+		    ly = 0.5 * (Math.round(py/this.halfHeight) - Math.round(px/this.halfWidth));
 		}
 		else if (this.mode == 2)  // Staggered
 	    {
-		    ly = Math.round((py - this.PositionOY)/this.half_height);
+		    ly = Math.round((py - this.poy)/this.halfHeight);
 		}
 		    
         return ly;
@@ -208,7 +208,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	
 	instanceProto.GetDirCount = function()
 	{  
-        return (!this.is_8dir)? 4:8;						 
+        return (!this.is8Dir)? 4:8;						 
 	};
 	
 	var dxy2dir = function (dx, dy, x, y, mode)
@@ -304,7 +304,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	    var dy = xyz_to.y - xyz_o.y;
 	    var dir = dxy2dir(dx, dy, xyz_o.x, xyz_o.y, this.mode);  
 	    
-	    if ((dir != null) && (!this.is_8dir) && (dir > 3))	    
+	    if ((dir != null) && (!this.is8Dir) && (dir > 3))	    
 	        dir = null;
 	        
         return dir;				 
@@ -406,9 +406,9 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 		return { "iso": this.mode,
                  "w": this.width,
                  "h": this.height,
-                 "ox": this.PositionOX,
-                 "oy": this.PositionOY,
-                 "is8d": this.is_8dir};
+                 "ox": this.pox,
+                 "oy": this.poy,
+                 "is8d": this.is8Dir};
 	};
 	
 	instanceProto.loadFromJSON = function (o)
@@ -418,7 +418,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
         this.SetHeight(o["h"]);   
         this.SetPOX(o["ox"]);
         this.SetPOY(o["oy"]); 
-        this.is_8dir = o["is8d"];         
+        this.is8Dir = o["is8d"];         
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -446,7 +446,7 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	}; 
     Acts.prototype.SetDirections = function (d)
     {        
-        this.is_8dir = (d==1);
+        this.is8Dir = (d==1);
 	}; 	
 	   
 	//////////////////////////////////////
@@ -464,11 +464,11 @@ cr.plugins_.Rex_SLGSquareTx = function(runtime)
 	};
 	Exps.prototype.POX = function (ret)
 	{
-	    ret.set_float(this.PositionOX);
+	    ret.set_float(this.pox);
 	};
 	Exps.prototype.POY = function (ret)
     {
-	    ret.set_float(this.PositionOY);
+	    ret.set_float(this.poy);
 	};	
 	Exps.prototype.DIRRIGHT = function (ret)
     {
