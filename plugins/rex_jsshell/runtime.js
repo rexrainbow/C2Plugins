@@ -152,9 +152,9 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		}
 	}; 
 
-    Acts.prototype.CreateInstance = function (instanceName)
+    Acts.prototype.CreateInstance = function (varName)
 	{
-		if (instanceName === "")
+		if (varName === "")
 		    return;
 		if (this.functionName === "")
 		    return;
@@ -162,7 +162,7 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		var params = this.functionParams;
 		this.functionParams = [];				
 		var o = invokeFunction(this.functionName, params, true);
-		setValue(instanceName, o, window);
+		setValue(varName, o, window);
 	}; 	
     
     Acts.prototype.SetFunctionName = function (name)
@@ -194,6 +194,16 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	{
 		this.functionParams.push( null );      
 	};
+
+    Acts.prototype.AddObject = function (varName)
+	{
+		this.functionParams.push( getValue(varName, window) );      
+	};    	
+
+    Acts.prototype.SetProp = function (varName, value)
+	{
+		setValue(varName, value, window);
+	};  
 
     Acts.prototype.LoadAPI = function (src, successTag, errorTag)
 	{

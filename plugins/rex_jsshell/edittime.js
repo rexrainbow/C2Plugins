@@ -64,10 +64,21 @@ AddAction(25, 0, "Add null", "Prepare - Parameter",
           "Add null to parameter list",
           "Add null value parameter.", "AddNull");	
 
+AddStringParam("Name", "Variable name in dot notation", '""');
+AddAction(26, 0, "Add object", "Prepare - Parameter",
+          "Add object {0} to parameter list",
+          "Add an object parameter.", "AddObject");		  
+
 AddStringParam("Name", "Object type in dot notation", '""');
 AddAction(31, 0, "Set object type", "Prepare - Object type", 
           "Set object type to {0}",
           "Set object type.", "SetFunctionName"); 		  	  
+
+AddStringParam("Name", "Variable name in dot notation", '""');
+AddAnyTypeParam("Value", "Value to set", 0);
+AddAction(81, 0, "Set property", "Properties",
+          "Set property {0} to {1}",
+          "Set property.", "SetProp");
 
 AddStringParam("URL", "The URL to request.", "\"http://\"");
 AddAnyTypeParam("Success callback tag", "Callback of loading success", '""');
