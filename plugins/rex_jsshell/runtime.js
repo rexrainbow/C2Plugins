@@ -138,14 +138,18 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.InvokeFunction = function ()
+    Acts.prototype.InvokeFunction = function (varName)
 	{
 		if (this.functionName === "")
 		    return;
         		
 		var params = this.functionParams;
-		this.functionParams = [];				
+		this.functionParams = [];	
 		this.returnValue = invokeFunction(this.functionName, params);
+		if (varName !== "")		
+		{
+			setValue(varName, this.returnValue, window);
+		}
 	}; 
 
     Acts.prototype.CreateInstance = function (instanceName)
