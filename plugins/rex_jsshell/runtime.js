@@ -105,6 +105,25 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
 	    }
 	};	
+
+    var invokeFunction = function (functionName, params, isNewObject)
+	{
+		var names = functionName.split(".");
+		var fnName = names.pop();
+		var o = getValue(names, window);
+
+        var retValue;
+		if (isNewObject)
+		{
+			params.unshift(null);			
+			retValue = new (Function.prototype.bind.apply(o[fnName], params));
+		}
+		else
+		{
+            retValue = o[fnName].apply(o, params);
+		}
+        return retValue;
+	}; 	
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
@@ -119,23 +138,28 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.Invoke = function ()
+    Acts.prototype.InvokeFunction = function ()
 	{
 		if (this.functionName === "")
 		    return;
-        
-		var names = this.functionName.split(".");
-		var fnName = names.pop();
-		var o = window;
-		for (var i=0; i<names.length; i++)
-		{
-			o = o[names[i]];
-		}
-
-		var param = this.functionParams;
-		this.functionParams = [];
-        this.returnValue = o[fnName].apply(o, param);
+        		
+		var params = this.functionParams;
+		this.functionParams = [];				
+		this.returnValue = invokeFunction(this.functionName, params);
 	}; 
+
+    Acts.prototype.CreateInstance = function (instanceName)
+	{
+		if (instanceName === "")
+		    return;
+		if (this.functionName === "")
+		    return;
+               		
+		var params = this.functionParams;
+		this.functionParams = [];				
+		var o = invokeFunction(this.functionName, params, true);
+		setValue(instanceName, o, window);
+	}; 	
     
     Acts.prototype.SetFunctionName = function (name)
 	{
@@ -178,7 +202,11 @@ cr.plugins_.Rex_jsshell = function(runtime)
 
 	Exps.prototype.Param = function (ret, index, keys, default_value)
 	{             
-        var val = this.callbackParams[index];        
+        var val = this.callbackParams[index];   
+		if (typeof(keys) === "number")
+		{
+		    keys = [keys];
+		}
 		ret.set_any( getItemValue(val, keys, default_value) );
 	}; 
 
@@ -192,40 +220,102 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		ret.set_any( getItemValue(this.returnValue, keys, default_value) );
 	}; 
 
+	Exps.prototype.Prop = function (ret, keys, default_value)
+	{        
+		ret.set_any( getItemValue(window, keys, default_value) );
+	}; 
     
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------    
     // ------------------------------------------------------------------------   	
-    var getItemByKey = function (item, k)
-	{
-        var v;
-	    if (item == null)
-            v = null;
-        else if ( (k == null) || (k === "") )
-            v = item;
-        else if ((typeof(k) === "number") || (k.indexOf(".") == -1))
-            v = item[k];
+
+	var getValue = function(keys, root)
+	{           
+        if ((keys == null) || (keys === "") || (keys.length === 0))
+        {
+            return root;
+        }
         else
         {
-            var kList = k.split(".");
-            v = item;
-            var i,cnt=kList.length;
-            for(i=0; i<cnt; i++)
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            var entry = root;
+            for (i=0; i< cnt; i++)
             {
-                if (typeof(v) !== "object")
+                key = keys[i];                
+                if (entry.hasOwnProperty(key))
+                    entry = entry[ key ];
+                else
+                    return;              
+            }
+            return entry;                    
+        }
+	}; 
+
+        
+	var getEntry = function(keys, root, defaultEntry)
+	{
+        var entry = root;
+        if ((keys === "") || (keys.length === 0))
+        {
+            //entry = root;
+        }
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];                
+                if ( (entry[key] == null) || (typeof(entry[key]) !== "object") )                
                 {
-                    v = null;
-                    break;
-                }
+                    var newEntry;
+                    if (i === cnt-1)
+                    {
+                        newEntry = defaultEntry || {};
+                    }
+                    else
+                    {
+                        newEntry = {};
+                    }
                     
-                v = v[kList[i]];
+                    entry[key] = newEntry;
+                }
+                
+                entry = entry[key];            
+            }           
+        }
+        
+        return entry;
+	};  
+
+	var setValue = function(keys, value, root)
+	{        
+        if ((keys === "") || (keys.length === 0))
+        {
+            if ((value !== null) && typeof(value) === "object")
+            {
+				root = value;
             }
         }
-		return v;
-	}
+        else
+        {            
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var lastKey = keys.pop(); 
+            var entry = getEntry(keys, root);
+            entry[lastKey] = value;
+        }
+	}; 	
+
  	var getItemValue = function (item, k, default_value)
 	{
-        return din( getItemByKey(item, k), default_value);
+		return din(getValue(k, item), default_value);
 	};	    
     
     var din = function (d, default_value)
