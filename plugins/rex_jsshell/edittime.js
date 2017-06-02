@@ -67,7 +67,12 @@ AddAction(25, 0, "Add null", "Prepare - Parameter",
 AddStringParam("Name", "Variable name in dot notation", '""');
 AddAction(26, 0, "Add object", "Prepare - Parameter",
           "Add object {0} to parameter list",
-          "Add an object parameter.", "AddObject");		  
+          "Add an object parameter.", "AddObject");	
+
+AddAnyTypeParam("Function name", "Function name of C2 function object", '""');
+AddAction(27, 0, "Add C2 function callback", "Prepare - Parameter", 
+          "Add C2 function callback {0} to parameter list",
+          "Add a C2 function callback parameter.", "AddC2Callback");           	  
 
 AddStringParam("Name", "Object type in dot notation", '""');
 AddAction(31, 0, "Set object type", "Prepare - Object type", 

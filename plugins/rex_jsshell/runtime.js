@@ -45,6 +45,7 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		this.functionName = "";
 		this.functionParams = [];
 		this.returnValue = null;
+        this.c2FnType = null;		
 
         // callback
         this.callbackTag = "";   
@@ -60,6 +61,18 @@ cr.plugins_.Rex_jsshell = function(runtime)
                 self.callbackTag = callbackTag;            
                 cr.shallowAssignArray(self.callbackParams, arguments);
                 self.runtime.trigger(cr.plugins_.Rex_jsshell.prototype.cnds.OnCallback, self); 
+            }
+            return cb;
+        };
+
+        this.getC2FnCallback = function(c2FunctionName)
+        {
+            if (c2FunctionName == null)
+                return null;
+        
+            var cb = function ()
+            {
+				self.callC2Fn(c2FunctionName, arguments);
             }
             return cb;
         };
@@ -105,6 +118,39 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	    	document.getElementsByTagName("head")[0].appendChild(newScriptTag);
 	    }
 	};	
+
+	instanceProto.getC2FnType = function ()
+	{
+        if (this.c2FnType === null)
+        {
+            if (window["c2_callRexFunction2"])
+                this.c2FnType = "c2_callRexFunction2";
+            else if (window["c2_callFunction"])
+                this.c2FnType = "c2_callFunction";            
+            else
+                this.c2FnType = "";
+        }
+        return this.c2FnType;
+	};   
+
+     // [fnName, param0, param1, ….]
+    var gC2FnParms = [];
+    instanceProto.callC2Fn = function (c2FnName, params)
+    {
+        var c2FnGlobalName = this.getC2FnType();
+        if (c2FnGlobalName === "")
+            return 0;
+        
+        var i, cnt=params.length;
+        for(i=0; i<cnt; i++)
+        {
+            gC2FnParms.push( din(params[i]) );
+        }
+        var retValue = window[c2FnGlobalName](c2FnName, gC2FnParms);
+        gC2FnParms.length = 0;
+        
+        return retValue;
+    };		
 
     var invokeFunction = function (functionName, params, isNewObject)
 	{
@@ -199,6 +245,11 @@ cr.plugins_.Rex_jsshell = function(runtime)
 	{
 		this.functionParams.push( getValue(varName, window) );      
 	};    	
+
+    Acts.prototype.AddC2Callback = function (c2FnName)
+	{
+		this.functionParams.push( this.getC2FnCallback(c2FnName) );      
+	};
 
     Acts.prototype.SetProp = function (varName, value)
 	{
