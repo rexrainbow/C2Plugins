@@ -142,6 +142,7 @@ cr.plugins_.Rex_jsshell = function(runtime)
             return 0;
         
         var i, cnt=params.length;
+        gC2FnParms.length = 0;        
         for(i=0; i<cnt; i++)
         {
             gC2FnParms.push( din(params[i]) );
@@ -290,6 +291,88 @@ cr.plugins_.Rex_jsshell = function(runtime)
 		ret.set_any( getItemValue(window, keys, default_value) );
 	}; 
     
+    var PARAMTYPE_VALUE = 0;
+    var PARAMTYPE_JSON = 1;
+    var PARAMTYPE_CALLBACK = 2;
+    var PARAMTYPE_VAR = 3;
+    var PARAMTYPE_C2FN = 4;  
+    var gExpPattern = /^@#@(\[.*\])@#@/;
+	Exps.prototype.Call = function (ret, functionName)
+	{       
+        var params = [];
+        var i, cnt=arguments.length;
+        for(i=2; i<cnt; i++)
+        {
+            var param = arguments[i];
+            if ((typeof(param) === "string") && (gExpPattern.test(param)))
+            {
+                param = param.match(gExpPattern)[1];
+                param = JSON.parse(param);
+                switch (param[0])
+                {
+                case PARAMTYPE_VALUE:    param = param[1];                       break;
+                case PARAMTYPE_JSON:     param = param[1];                       break;
+                case PARAMTYPE_CALLBACK: param = this.getCallback(param[1]);     break;
+                case PARAMTYPE_VAR:      param = getValue(param[1], window);     break;
+                case PARAMTYPE_C2FN:     param = this.getC2FnCallback(param[1]); break;
+                default: param = null;
+                }
+            }
+            params.push(param);
+        }
+        var retValue = invokeFunction(functionName, params);
+		ret.set_any( din(retValue) );
+	}; 
+
+	Exps.prototype.ValueParam = function (ret, value)
+	{        
+        var param = [PARAMTYPE_VALUE, value];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	}; 
+
+	Exps.prototype.JSONParam = function (ret, s)
+	{        
+        var param = [PARAMTYPE_JSON, JSON.parse(s)];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	};
+
+	Exps.prototype.BooleanParam = function (ret, b)
+	{        
+        var param = [PARAMTYPE_VALUE, (b===1)];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	};
+
+	Exps.prototype.CallbackParam = function (ret, fnName)
+	{        
+        var param = [PARAMTYPE_CALLBACK, fnName];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	};
+
+	Exps.prototype.NullParam = function (ret)
+	{        
+        var param = [PARAMTYPE_VALUE, null];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	};
+
+	Exps.prototype.ObjectParam = function (ret, varName)
+	{        
+        var param = [PARAMTYPE_VAR, varName];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	};    
+
+	Exps.prototype.C2FnParam = function (ret, fnName)
+	{        
+        var param = [PARAMTYPE_C2FN, fnName];
+        param = "@#@" +JSON.stringify(param)+ "@#@";
+	    ret.set_string( param );
+	}; 
+
     // ------------------------------------------------------------------------
     // ------------------------------------------------------------------------    
     // ------------------------------------------------------------------------   	

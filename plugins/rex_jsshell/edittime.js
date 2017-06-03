@@ -26,7 +26,7 @@ AddCondition(1, cf_trigger, "Callback", "Callback",
 AddStringParam("Name", "Variable name in dot notation", '""');
 AddAction(1, 0, "Invoke", "Invoke", 
           "Invoke function, put return object to {0}",
-          "Invoke function.", "InvokeFunction"); 
+          "Invoke javascript function.", "InvokeFunction"); 
 
 AddStringParam("Name", "Variable name in dot notation", '""');
 AddAction(2, 0, "Create instance", "Invoke", 
@@ -106,7 +106,28 @@ AddExpression(21, ef_return_any | ef_variadic_parameters, "Get return value", "F
 AddStringParam("Property", "Property name in dot notation", '""');
 AddExpression(31, ef_return_any | ef_variadic_parameters, "Get property of object", "Properties", "Prop", "Get the value of a property.");
 
+AddStringParam("Name", "Function name in dot notation", '""');
+AddExpression(201, ef_return_any | ef_variadic_parameters, "Call function", "Invoke", "Call", "Call a javascript function with parameters and return its return value.");
 
+AddAnyTypeParam("Value", "Number or string value.");
+AddExpression(211, ef_return_string, "Add number or string parameter", "Prepare - Parameter", "ValueParam", "Add number or string parameter.");
+
+AddStringParam("JSON", "JSON string.");
+AddExpression(212, ef_return_string, "Add JSON parameter", "Prepare - Parameter", "JSONParam", "Add JSON parameter.");
+
+AddNumberParam("Boolean", "Boolean value. 1=true, 0=false.");
+AddExpression(213, ef_return_string, "Add boolean parameter", "Prepare - Parameter", "BooleanParam", "Add boolean parameter.");
+
+AddStringParam("Callback", "Callback name.");
+AddExpression(214, ef_return_string, "Add callback parameter", "Prepare - Parameter", "CallbackParam", "Add callback parameter.");
+
+AddExpression(215, ef_return_string, "Add null parameter", "Prepare - Parameter", "NullParam", "Add null parameter.");
+
+AddStringParam("Name", "Variable name in dot notation", '""');
+AddExpression(216, ef_return_string, "Add object parameter", "Prepare - Parameter", "ObjectParam", "Add object parameter.");
+
+AddStringParam("C2 function name", "C2 function name.");
+AddExpression(217, ef_return_string, "Add C2 function callback parameter", "Prepare - Parameter", "C2FnParam", "Add C2 function callback parameter.");
 
 ACESDone();
 
