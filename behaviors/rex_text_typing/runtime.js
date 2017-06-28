@@ -75,7 +75,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this.raw_text_length = 0;
         this.timer_save = null;
 		this.textObjType = this.getTextObjType();  
-		this.SetText_handler = this.get_SetText_Fn(this.textObjType);
+		this.SetTextFn = this.get_SetText_Fn(this.textObjType);
 	};
     
    	behinstProto.getTextObjType = function ()
@@ -156,7 +156,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	
 	behinstProto.SetText = function (content, start_index, endIndex)
 	{	    
-	    if (this.SetText_handler == null)
+	    if (this.SetTextFn == null)
 		    return;
 		    
 	    if (start_index == null)
@@ -169,12 +169,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
 		   (this.textObjType == "TextBox"))
 		{
 		    content = content.slice(start_index, endIndex);
-            this.SetText_handler.call(this.inst, content);
+            this.SetTextFn.call(this.inst, content);
         }
         else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
         {
             content = this.inst.getSubText(start_index, endIndex, content);
-            this.SetText_handler.call(this.inst, content);
+            this.SetTextFn.call(this.inst, content);
         }
 	};
 

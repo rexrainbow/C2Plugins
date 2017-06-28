@@ -26,7 +26,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 				this.set_bbox_changed();
 
                 if (!this.isCanvasSizeLocked)                
-				    this.render_text(this.is_force_render);
+				    this.render_text(this.isForceRender);
 			}
 		};
 	};
@@ -97,7 +97,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		this.line_height_offset = this.properties[8];
         this.baseLine_mode = this.properties[9];
 		this.vshift = this.properties[10] * this.runtime.devicePixelRatio;
-		this.is_force_render = (this.properties[11] === 1);
+		this.isForceRender = (this.properties[11] === 1);
         this.LockCanvasSize( (this.properties[12] === 1), this.width, this.height);     
 		
 		// Get the font height in pixels.
@@ -146,7 +146,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		
 		// render text at object initialize
 		if (this.text)
-		    this.render_text(this.is_force_render);		
+		    this.render_text(this.isForceRender);		
 	};
 	
 	instanceProto.parseFont = function ()
@@ -274,7 +274,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	instanceProto.updateFont = function ()
 	{
 		this.font = this.fontstyle + " " + this.ptSize.toString() + "pt " + this.facename;		
-		this.render_text(this.is_force_render);
+		this.render_text(this.isForceRender);
 	};
 
 	instanceProto.draw = function(ctx, glmode, is_ignore)
@@ -559,7 +559,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		if (this.text !== txt)
 		{
 			this.text = txt;			
-			this.render_text(this.is_force_render);
+			this.render_text(this.isForceRender);
 		}
     };  
     
@@ -722,7 +722,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		    return;
 		
 		this.color = newcolor;
-		this.render_text(this.is_force_render);
+		this.render_text(this.isForceRender);
 	};
 	
 	Acts.prototype.SetWebFont = function (familyname_, cssurl_)
@@ -793,7 +793,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 		this.compositeOp = cr.effectToCompositeOp(effect);
 		cr.setGLBlend(this, effect, this.runtime.gl);
 		
-		this.render_text(this.is_force_render);
+		this.render_text(this.isForceRender);
 	};
 	
 	Acts.prototype.SetFontStyle = function (style_)
@@ -828,7 +828,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	        return;
 	    
 	    this.line_height_offset = line_height_offset;
-	    this.render_text(this.is_force_render);
+	    this.render_text(this.isForceRender);
 	};	
 
 	Acts.prototype.SetHorizontalAlignment = function(align)
@@ -837,7 +837,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	        return;
 	    
 	    this.halign = align;   // 0=left, 1=center, 2=right
-	    this.render_text(this.is_force_render);
+	    this.render_text(this.isForceRender);
 	    	    
 	};
 
@@ -847,7 +847,7 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	        return;
 	    
 	    this.valign = align;   // 0=top, 1=center, 2=bottom
-	    this.render_text(this.is_force_render);
+	    this.render_text(this.isForceRender);
 	    	      
 	};	
 
@@ -858,13 +858,13 @@ cr.plugins_.rex_bbcodeText = function(runtime)
 	        return;
 	    
 	    this.wrapbyword = wrap_mode;   
-	    this.render_text(this.is_force_render);	    	            
+	    this.render_text(this.isForceRender);	    	            
 	};
 
 	Acts.prototype.SetShadow = function(offsetX, offsetY, blur_, color_)
 	{
 	    this.setShadow(offsetX, offsetY, blur_, color_);
-        this.render_text(this.is_force_render);             
+        this.render_text(this.isForceRender);             
 	};	
   
 	Acts.prototype.SetThickness = function(w)
@@ -932,19 +932,19 @@ cr.plugins_.rex_bbcodeText = function(runtime)
             return;
         
         window.RexImageBank.AddImage(key, objs.getFirstPicked(), yoffset);
-	    this.render_text(this.is_force_render);        
+	    this.render_text(this.isForceRender);        
 	};		
     	
 	Acts.prototype.RemoveImage = function (key)
 	{
         window.RexImageBank.RemoveImage(key);
-	    this.render_text(this.is_force_render);        
+	    this.render_text(this.isForceRender);        
 	};	
     	
 	Acts.prototype.RemoveAll = function ()
 	{
         window.RexImageBank.RemoveAll();
-	    this.render_text(this.is_force_render);        
+	    this.render_text(this.isForceRender);        
 	};	
     
 	//////////////////////////////////////
