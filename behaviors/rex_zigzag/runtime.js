@@ -43,7 +43,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 
 	var behinstProto = behaviorProto.Instance.prototype;
     
-    var _cmd_transfer = function(name, param)
+    var transferCmd = function(name, param)
     {
         switch (name)
         {
@@ -70,46 +70,46 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         return ({"cmd":name,"param":param});
     };
     
-    var _speed_parsing = function(speed_string)
+    var parseSpeed = function(speedString)
     {
-        var speed_setting = (speed_string != "")?
-                            eval("("+speed_string+")"): null;
-        return speed_setting;
+        var newSpeedValue = (speedString != "")?
+                            eval("("+speedString+")"): null;
+        return newSpeedValue;
     };
     
-    var parsing_result = [null, null];
-    var _cmd_parsing1 = function(cmd)      // split cmd string and speed setting
+    var parsingRresult = [null, null];
+    var parseCmd1 = function(cmd)      // split cmd string and speed setting
     {   
-        var start_index = cmd.indexOf("[");
-        var ret_cmd;        
-        var speed_string;
-        if (start_index != (-1))
+        var startIndex = cmd.indexOf("[");
+        var retCmd;        
+        var speedString;
+        if (startIndex != (-1))
         {
-            speed_string = cmd.slice(start_index);
-            ret_cmd = cmd.slice(0,start_index);
+            speedString = cmd.slice(startIndex);
+            retCmd = cmd.slice(0,startIndex);
         }
         else
         {
-            speed_string = "";
-            ret_cmd = cmd;
+            speedString = "";
+            retCmd = cmd;
         }
         
-        parsing_result[0] = ret_cmd;
-        parsing_result[1] = speed_string;
-        return parsing_result;
+        parsingRresult[0] = retCmd;
+        parsingRresult[1] = speedString;
+        return parsingRresult;
     };    
     
-    var _cmds_string_parsing = function(cmd_string)
+    var parseCmdString = function(cmdString)
     {
         var ret_cmds = [];
-        var cmds = cmd_string.split(";");
+        var cmds = cmdString.split(";");
         var i;
         var cmd_length = cmds.length;
         var cmd, cmd_slices, cmd_name, cmd_param, cmd_parsed;
         var tmp;
         for (i=0; i<cmd_length; i++)
         {
-            tmp = _cmd_parsing1(cmds[i]);
+            tmp = parseCmd1(cmds[i]);
             cmd = tmp[0];
             cmd = cmd.replace(/(^\s*)|(\s*$)/g,"");
             cmd = cmd.replace(/(\s+)/g," ");
@@ -118,10 +118,10 @@ cr.behaviors.Rex_Zigzag = function(runtime)
             {
                 cmd_name = cmd_slices[0].toUpperCase();
                 cmd_param = parseFloat(cmd_slices[1]);
-                cmd_parsed = _cmd_transfer(cmd_name, cmd_param);               
+                cmd_parsed = transferCmd(cmd_name, cmd_param);               
                 if (cmd_parsed)
                 {
-                    cmd_parsed["speed"] = _speed_parsing(tmp[1]);
+                    cmd_parsed["speed"] = parseSpeed(tmp[1]);
                     ret_cmds.push(cmd_parsed);
                 }
                 else
@@ -142,24 +142,24 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	behinstProto.onCreate = function()
 	{
         this.activated = this.properties[0];
-        this.is_run = (this.properties[1] == 1);
-        var is_rotatable = (this.properties[2] == 1);
-        var precise_mode = (this.properties[12] == 1);
-        var continued_mode = (this.properties[13]==1);        
-        this.cur_cmd = null;
-        this.is_my_call = false;
+        this.isRun = (this.properties[1] == 1);
+        var isRotatable = (this.properties[2] == 1);
+        var preciseMode = (this.properties[12] == 1);
+        var continuedMode = (this.properties[13]==1);        
+        this.currentCmd = null;
+        this.isMyCall = false;
 
-        var init_angle = (is_rotatable)?  
+        var initAngle = (isRotatable)?  
                          this.inst.angle: 
                          cr.to_clamped_radians(this.properties[11]);    
 
         if (!this.recycled)
         {         
-            this.pos_state = {"x":0, "y":0, "a":0};
+            this.positionData = {"x":0, "y":0, "a":0};
         }        
-        this.pos_state["x"] = this.inst.x;
-        this.pos_state["y"] = this.inst.y, 
-        this.pos_state["a"] = init_angle;
+        this.positionData["x"] = this.inst.x;
+        this.positionData["y"] = this.inst.y, 
+        this.positionData["a"] = initAngle;
         
         if (!this.recycled)
         {         
@@ -176,8 +176,8 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                                             this.properties[5],
                                             this.properties[6],
                                             this.properties[7],
-                                            precise_mode,
-                                            continued_mode);  
+                                            preciseMode,
+                                            continuedMode);  
         }
         else
         {
@@ -185,43 +185,43 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                               this.properties[5],
                               this.properties[6],
                               this.properties[7],
-                              precise_mode,
-                              continued_mode);  
+                              preciseMode,
+                              continuedMode);  
         }
         
         if (!this.recycled)
         {         
             this.CmdRotate = new CmdRotateKlass(this.inst, 
-                                                is_rotatable,
+                                                isRotatable,
                                                 this.properties[8],
                                                 this.properties[9],
                                                 this.properties[10],
-                                                precise_mode,
-                                                continued_mode);
+                                                preciseMode,
+                                                continuedMode);
         }                                                                       
         else
         {
             this.CmdRotate.Init(this.inst, 
-                                is_rotatable,
+                                isRotatable,
                                 this.properties[8],
                                 this.properties[9],
                                 this.properties[10],
-                                precise_mode,
-                                continued_mode);
+                                preciseMode,
+                                continuedMode);
         }                                
         
         if (!this.recycled)
         {          
-            this.CmdWait = new CmdWaitKlass(continued_mode); 
+            this.CmdWait = new CmdWaitKlass(continuedMode); 
         }
         else
         {
-            this.CmdWait.Init(continued_mode);         
+            this.CmdWait.Init(continuedMode);         
         }
         
         if (!this.recycled)
         {          
-            this.cmd_map = {"M":this.CmdMove,
+            this.cmdMap = {"M":this.CmdMove,
                             "R":this.CmdRotate,
                             "W":this.CmdWait};
         }
@@ -231,70 +231,70 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 
 	behinstProto.tick = function ()
 	{
-        if ( (this.activated==0) || (!this.is_run) )
+        if ( (this.activated==0) || (!this.isRun) )
             return;
                         
         var dt = this.runtime.getDt(this.inst);
         var cmd;
         while(dt)
         {
-            if (this.cur_cmd == null) // try to get new cmd
+            if (this.currentCmd == null) // try to get new cmd
             {
-                this.cur_cmd = this.CmdQueue.GetCmd();
-                if (this.cur_cmd != null)
+                this.currentCmd = this.CmdQueue.GetCmd();
+                if (this.currentCmd != null)
                 {
                     // new command start
-                    cmd = this.cmd_map[this.cur_cmd["cmd"]]; 
-                    cmd.CmdInit(this.pos_state, this.cur_cmd["param"], this.cur_cmd["speed"]);
-                    this.is_my_call = true;
+                    cmd = this.cmdMap[this.currentCmd["cmd"]]; 
+                    cmd.CmdInit(this.positionData, this.currentCmd["param"], this.currentCmd["speed"]);
+                    this.isMyCall = true;
                     this.runtime.trigger(cr.behaviors.Rex_Zigzag.prototype.cnds.OnCmdStart, this.inst);                     
-                    this.is_my_call = false;
+                    this.isMyCall = false;
                 }
                 else            
                 {
                     // command queue finish
-                    this.is_run = false;
-                    this.is_my_call = true;
+                    this.isRun = false;
+                    this.isMyCall = true;
                     this.runtime.trigger(cr.behaviors.Rex_Zigzag.prototype.cnds.OnCmdQueueFinish, this.inst); 
-                    this.is_my_call = false;
+                    this.isMyCall = false;
                     break;
                 }
             }
             else
             {
-                cmd = this.cmd_map[this.cur_cmd["cmd"]];                
+                cmd = this.cmdMap[this.currentCmd["cmd"]];                
             }
             
             dt = cmd.Tick(dt);
-            if (cmd.is_done)
+            if (cmd.isDone)
             {
                 // command finish
-                this.is_my_call = true;
+                this.isMyCall = true;
                 this.runtime.trigger(cr.behaviors.Rex_Zigzag.prototype.cnds.OnCmdFinish, this.inst); 
-                this.is_my_call = false;                
-                this.cur_cmd = null;
+                this.isMyCall = false;                
+                this.currentCmd = null;
             }
         }               
 	};   
     
     behinstProto.AddCommand = function (cmd, param)
     {
-        this.CmdQueue.Push( _cmd_transfer( cmd, param ) );
+        this.CmdQueue.Push( transferCmd( cmd, param ) );
     };
     
-    behinstProto.AddCommandString = function (cmd_string)
+    behinstProto.AddCommandString = function (cmdString)
     {
-        if ( cmd_string != "" )
-            this.CmdQueue.PushList(_cmds_string_parsing(cmd_string));
+        if ( cmdString != "" )
+            this.CmdQueue.PushList(parseCmdString(cmdString));
     };
     
 	behinstProto.saveToJSON = function ()
 	{ 
 		return { "en": this.activated,
-		         "ir": this.is_run,
-		         "ps": this.pos_state,
+		         "ir": this.isRun,
+		         "ps": this.positionData,
                  "cq": this.CmdQueue.saveToJSON(),
-                 "cc": this.cur_cmd,
+                 "cc": this.currentCmd,
                  "cm": this.CmdMove.saveToJSON(),
                  "cr": this.CmdRotate.saveToJSON(),
                  "cw": this.CmdWait.saveToJSON(),
@@ -304,18 +304,18 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	behinstProto.loadFromJSON = function (o)
 	{    
         this.activated = o["en"];
-        this.is_run = o["ir"]; 
-        this.pos_state = o["ps"]; 
+        this.isRun = o["ir"]; 
+        this.positionData = o["ps"]; 
         this.CmdQueue.loadFromJSON(o["cq"]);
-        this.cur_cmd = o["cc"];
+        this.currentCmd = o["cc"];
         this.CmdMove.loadFromJSON(o["cm"]);   
         this.CmdRotate.loadFromJSON(o["cr"]); 
         this.CmdWait.loadFromJSON(o["cw"]); 
         
-        if (this.cur_cmd != null)  // link to cmd object
+        if (this.currentCmd != null)  // link to cmd object
         {            
-            var cmd = this.cmd_map[this.cur_cmd["cmd"]]; 
-            cmd.target = this.pos_state;
+            var cmd = this.cmdMap[this.currentCmd["cmd"]]; 
+            cmd.target = this.positionData;
         }
 	};	
 	//////////////////////////////////////
@@ -325,36 +325,36 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	Cnds.prototype.CompareMovSpeed = function (cmp, s)
 	{
-		return cr.do_cmp(this.CmdMove.current_speed, cmp, s);
+		return cr.do_cmp(this.CmdMove.currentSpeed, cmp, s);
 	}; 
     
 	Cnds.prototype.CompareRotSpeed = function (cmp, s)
 	{
-		return cr.do_cmp(this.CmdRotate.current_speed, cmp, s);
+		return cr.do_cmp(this.CmdRotate.currentSpeed, cmp, s);
 	}; 
     
-    var _is_in_cmd = function (cur_cmd, _cmd)
+    var isValidCmd = function (currentCmd, _cmd)
     {
-        if (cur_cmd == null)
+        if (currentCmd == null)
             return false;
      
         var ret;
         switch (_cmd)
         {
         case 0: //"F"
-            ret = ((cur_cmd["cmd"] == "M") && (cur_cmd["param"] >=0));
+            ret = ((currentCmd["cmd"] == "M") && (currentCmd["param"] >=0));
             break;
         case 1: //"B"
-            ret = ((cur_cmd["cmd"] == "M") && (cur_cmd["param"] < 0));
+            ret = ((currentCmd["cmd"] == "M") && (currentCmd["param"] < 0));
             break;
         case 2: //"R"
-            ret = ((cur_cmd["cmd"] == "R") && (cur_cmd["param"] >=0));
+            ret = ((currentCmd["cmd"] == "R") && (currentCmd["param"] >=0));
             break;
         case 3: //"L"
-            ret = ((cur_cmd["cmd"] == "R") && (cur_cmd["param"] < 0));
+            ret = ((currentCmd["cmd"] == "R") && (currentCmd["param"] < 0));
             break;
         case 4: //"W"
-            ret = (cur_cmd["cmd"] == "W");
+            ret = (currentCmd["cmd"] == "W");
             break; 
         default:  // any
             ret = true;            
@@ -364,22 +364,22 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 
 	Cnds.prototype.IsCmd = function (_cmd)
 	{
-        return _is_in_cmd(this.cur_cmd, _cmd);
+        return isValidCmd(this.currentCmd, _cmd);
 	};     
     
 	Cnds.prototype.OnCmdQueueFinish = function ()
 	{
-		return (this.is_my_call);
+		return (this.isMyCall);
 	};
       
 	Cnds.prototype.OnCmdStart = function (_cmd)
 	{
-		return (_is_in_cmd(this.cur_cmd, _cmd) && this.is_my_call);
+		return (isValidCmd(this.currentCmd, _cmd) && this.isMyCall);
 	};
     
 	Cnds.prototype.OnCmdFinish = function (_cmd)
 	{
-        return (_is_in_cmd(this.cur_cmd, _cmd) && this.is_my_call);
+        return (isValidCmd(this.currentCmd, _cmd) && this.isMyCall);
 	};    
     
 	//////////////////////////////////////
@@ -394,20 +394,20 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 
 	Acts.prototype.Start = function ()
 	{
-        this.cur_cmd = null;
-        this.is_run = true;
+        this.currentCmd = null;
+        this.isRun = true;
 		this.CmdQueue.Reset();
-        // update pos_state
-        this.pos_state["x"] = this.inst.x;
-        this.pos_state["y"] = this.inst.y;
+        // update positionData
+        this.positionData["x"] = this.inst.x;
+        this.positionData["y"] = this.inst.y;
         if (this.CmdRotate.rotatable)
-            this.pos_state["a"] = this.inst.angle;
+            this.positionData["a"] = this.inst.angle;
 	};     
     
 	Acts.prototype.Stop = function ()
 	{
-        this.cur_cmd = null;
-        this.is_run = false;
+        this.currentCmd = null;
+        this.isRun = false;
 	}; 
     
 	Acts.prototype.SetMaxMovSpeed = function (s)
@@ -442,8 +442,8 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	Acts.prototype.SetRepeatCount = function (s)
 	{
-        this.CmdQueue.repeat_count = s;
-        this.CmdQueue.repeat_count_save = s;
+        this.CmdQueue.repeatCount = s;
+        this.CmdQueue.repeatCountSave = s;
 	};  
     
 	Acts.prototype.CleanCmdQueue = function ()
@@ -451,15 +451,15 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         this.CmdQueue.CleanAll();
 	};      
     
-    var _cmd_Index2NameMap = ["F","B","R","L","W"];  
+    var index2NameMap = ["F","B","R","L","W"];  
 	Acts.prototype.AddCmd = function (_cmd, param)
 	{
-        this.AddCommand(_cmd_Index2NameMap[_cmd], param);
+        this.AddCommand(index2NameMap[_cmd], param);
 	}; 
 
-	Acts.prototype.AddCmdString = function (cmd_string)
+	Acts.prototype.AddCmdString = function (cmdString)
 	{
-        this.AddCommandString(cmd_string);
+        this.AddCommandString(cmdString);
 	};     
     
 	Acts.prototype.SetRotatable = function (s)
@@ -470,7 +470,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	Acts.prototype.SetMovingAngle = function (s)
 	{
         var _angle = cr.to_clamped_radians(s);
-        this.pos_state["a"] = _angle;
+        this.positionData["a"] = _angle;
         if (this.CmdRotate.rotatable)
         {
             this.inst.angle = _angle;
@@ -480,9 +480,9 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	Acts.prototype.SetPrecise = function (s)
 	{
-        var precise_mode = (s==1);
-        this.CmdMove.precise_mode = precise_mode;
-        this.CmdRotate.precise_mode = precise_mode;        
+        var preciseMode = (s==1);
+        this.CmdMove.preciseMode = preciseMode;
+        this.CmdRotate.preciseMode = preciseMode;        
 	};     
     
 	//////////////////////////////////////
@@ -497,7 +497,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	Exps.prototype.MovSpeed = function (ret)
 	{
-		ret.set_float(this.CmdMove.current_speed);
+		ret.set_float(this.CmdMove.currentSpeed);
 	};
     
 	Exps.prototype.MaxMovSpeed = function (ret)
@@ -517,7 +517,7 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     
 	Exps.prototype.RotSpeed = function (ret)
 	{
-		ret.set_float(this.CmdRotate.current_speed);
+		ret.set_float(this.CmdRotate.currentSpeed);
 	};
     
 	Exps.prototype.MaxRotSpeed = function (ret)
@@ -542,159 +542,159 @@ cr.behaviors.Rex_Zigzag = function(runtime)
         
 	Exps.prototype.RepCnt = function (ret)
 	{
-		ret.set_int(this.CmdQueue.repeat_count_save);
+		ret.set_int(this.CmdQueue.repeatCountSave);
 	};
         
 	Exps.prototype.CmdIndex = function (ret)
 	{
-		ret.set_int(this.CmdQueue.cur_cmd_queuq_index);
+		ret.set_int(this.CmdQueue.currentCmdQueueIndex);
 	};
         
 	Exps.prototype.MovAngle = function (ret)
 	{
         var angle;
-        if (_is_in_cmd(this.cur_cmd, 2) || _is_in_cmd(this.cur_cmd, 3))
+        if (isValidCmd(this.currentCmd, 2) || isValidCmd(this.currentCmd, 3))
         {
-            angle = this.CmdRotate.current_angle_deg;
+            angle = this.CmdRotate.currentAngleDeg;
             if (angle < 0)
                 angle = 360 + angle;
         }
         else
-            angle = cr.to_clamped_degrees(this.pos_state["a"]);
+            angle = cr.to_clamped_degrees(this.positionData["a"]);
 		ret.set_float(angle);
 	};    
         
 
     // command queue
-    var CmdQueue = function(repeat_count)
+    var CmdQueue = function(repeatCount)
     {
-        this.Init(repeat_count);
+        this.Init(repeatCount);
     };
     var CmdQueueProto = CmdQueue.prototype;
 
-    CmdQueueProto.Init = function(repeat_count)
+    CmdQueueProto.Init = function(repeatCount)
 	{
         this.CleanAll();
-        this.repeat_count = repeat_count;
-        this.repeat_count_save = repeat_count;
+        this.repeatCount = repeatCount;
+        this.repeatCountSave = repeatCount;
 	};
     
     CmdQueueProto.CleanAll = function()
 	{
-        this.queue_index = 0;   
-        this.cur_cmd_queuq_index = -1;        
-        this._queue = [];
+        this.queueIndex = 0;   
+        this.currentCmdQueueIndex = -1;        
+        this.queue = [];
 	};
     
     CmdQueueProto.Reset = function()
 	{        
-        this.repeat_count = this.repeat_count_save;    
-        this.queue_index = 0;       
-        this.cur_cmd_queuq_index = -1;        
+        this.repeatCount = this.repeatCountSave;    
+        this.queueIndex = 0;       
+        this.currentCmdQueueIndex = -1;        
 	};
     
     CmdQueueProto.Push = function(item)
     {
-        this._queue.push(item);
+        this.queue.push(item);
     };
 
     CmdQueueProto.PushList = function(items)
     {
-        this._queue.push.apply(this._queue, items);
+        this.queue.push.apply(this.queue, items);
     };  
     
     CmdQueueProto.GetCmd = function()
 	{
         var cmd;
-        cmd = this._queue[this.queue_index];
-        this.cur_cmd_queuq_index = this.queue_index;
-        var index = this.queue_index+1;
-        if (index >= this._queue.length)
+        cmd = this.queue[this.queueIndex];
+        this.currentCmdQueueIndex = this.queueIndex;
+        var index = this.queueIndex+1;
+        if (index >= this.queue.length)
         {
-            if (this.repeat_count != 1)      // repeat
+            if (this.repeatCount != 1)      // repeat
             {
-                this.queue_index = 0;
-                this.repeat_count -= 1;
+                this.queueIndex = 0;
+                this.repeatCount -= 1;
             }
             else
             {
-                this.queue_index = (-1);    // finish
+                this.queueIndex = (-1);    // finish
             }                       
         }
         else
-            this.queue_index = index;
+            this.queueIndex = index;
         return cmd;
 	};
     
 	CmdQueueProto.saveToJSON = function ()
 	{ 
-		return { "i": this.queue_index,
-                 "cci": this.cur_cmd_queuq_index,
-		         "q": this._queue,
-                 "rptsv": this.repeat_count_save,
-                 "rpt": this.repeat_count
+		return { "i": this.queueIndex,
+                 "cci": this.currentCmdQueueIndex,
+		         "q": this.queue,
+                 "rptsv": this.repeatCountSave,
+                 "rpt": this.repeatCount
                 };
 	};
     
 	CmdQueueProto.loadFromJSON = function (o)
 	{    
-        this.queue_index = o["i"];
-        this.cur_cmd_queuq_index = o["cci"];
-	    this._queue =o["q"];     
-        this.repeat_count_save = o["rptsv"];
-        this.repeat_count = o["rpt"];   
+        this.queueIndex = o["i"];
+        this.currentCmdQueueIndex = o["cci"];
+	    this.queue =o["q"];     
+        this.repeatCountSave = o["rptsv"];
+        this.repeatCount = o["rpt"];   
 	};	    
      
     // move
     var CmdMoveKlass = function(inst, 
-                                max_speed, acc, dec, 
-                                precise_mode, continued_mode)
+                                maxSpeed, acc, dec, 
+                                preciseMode, continuedMode)
     {
         this.Init(inst, 
-                  max_speed, acc, dec, 
-                  precise_mode, continued_mode);
+                  maxSpeed, acc, dec, 
+                  preciseMode, continuedMode);
     };
     var CmdMoveKlassProto = CmdMoveKlass.prototype;
     
     CmdMoveKlassProto.Init = function(inst, 
-                                    max_speed, acc, dec, 
-                                    precise_mode, continued_mode)
+                                    maxSpeed, acc, dec, 
+                                    preciseMode, continuedMode)
     {
         this.inst = inst;
-        this.move = {"max":max_speed, "acc":acc, "dec":dec};
-        this.is_done = true;
-        this.precise_mode = precise_mode;        
-        this.continued_mode = continued_mode;
-        this.current_speed = 0;       
+        this.move = {"max":maxSpeed, "acc":acc, "dec":dec};
+        this.isDone = true;
+        this.preciseMode = preciseMode;        
+        this.continuedMode = continuedMode;
+        this.currentSpeed = 0;       
     };
     
-    CmdMoveKlassProto.CmdInit = function(zigzag_state, distance,
-                                         speed_setting)
+    CmdMoveKlassProto.CmdInit = function(positionData, distance,
+                                         newSpeedValue)
     {
-        this.target = zigzag_state;
+        this.target = positionData;
         this.dir = (distance >= 0);
-        this.remain_distance = Math.abs(distance);
-        this.is_done = false;
-        var angle = zigzag_state["a"];
-        zigzag_state["x"] += (distance * Math.cos(angle));
-        zigzag_state["y"] += (distance * Math.sin(angle)); 
+        this.remainDistance = Math.abs(distance);
+        this.isDone = false;
+        var angle = positionData["a"];
+        positionData["x"] += (distance * Math.cos(angle));
+        positionData["y"] += (distance * Math.sin(angle)); 
 
-        if (speed_setting)
-            _speed_reset.apply(this, speed_setting);           
-        _set_current_speed.call(this, null);            
+        if (newSpeedValue)
+            speedReset.apply(this, newSpeedValue);           
+        setCurrentSpeed.call(this, null);            
     };    
     
     CmdMoveKlassProto.Tick = function(dt)
     {
-        var remain_dt;
-        var distance = _move_distance_get.call(this, dt);
-        this.remain_distance -= distance;   
+        var remainDt;
+        var distance = getMoveDistance.call(this, dt);
+        this.remainDistance -= distance;   
 
         // is hit to target at next tick?
-        if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
+        if ( (this.remainDistance <= 0) || (this.currentSpeed <= 0) )
         {
-            this.is_done = true;
-            if (this.precise_mode)  // precise mode
+            this.isDone = true;
+            if (this.preciseMode)  // precise mode
             {
                 this.inst.x = this.target["x"];
                 this.inst.y = this.target["y"];
@@ -702,13 +702,13 @@ cr.behaviors.Rex_Zigzag = function(runtime)
             else  // non-precise mode
             {
                 var angle = this.target["a"];
-                distance += this.remain_distance;
+                distance += this.remainDistance;
                 this.inst.x += (distance * Math.cos(angle));
                 this.inst.y += (distance * Math.sin(angle));            
                 this.target["x"] = this.inst.x;
                 this.target["y"] = this.inst.y;
             }
-            remain_dt = (this.continued_mode)? _remaind_dt_get.call(this):0;    
+            remainDt = (this.continuedMode)? getRemaindDt.call(this):0;    
         }
         else
         {
@@ -717,145 +717,145 @@ cr.behaviors.Rex_Zigzag = function(runtime)
                 distance = -distance;
             this.inst.x += (distance * Math.cos(angle));
             this.inst.y += (distance * Math.sin(angle));
-            remain_dt = 0;            
+            remainDt = 0;            
         } 
 
 		this.inst.set_bbox_changed();
-        return remain_dt;    
+        return remainDt;    
     };    
 
 	CmdMoveKlassProto.saveToJSON = function ()
 	{ 
 		return { "v": this.move,
-                 "id": this.is_done,
-                 "pm": this.precise_mode,
-                 "cspd":this.current_speed,
+                 "id": this.isDone,
+                 "pm": this.preciseMode,
+                 "cspd":this.currentSpeed,
                  //"t": this.target,
                  "dir": this.dir,
-                 "rd": this.remain_distance,
+                 "rd": this.remainDistance,
                 };
 	};
     
 	CmdMoveKlassProto.loadFromJSON = function (o)
 	{    
         this.move = o["v"]; 
-        this.is_done = o["id"]; 
-        this.precise_mode = o["pm"];
-        this.current_speed = o["cspd"];
+        this.isDone = o["id"]; 
+        this.preciseMode = o["pm"];
+        this.currentSpeed = o["cspd"];
         //this.target = o["t"];
         this.dir = o["dir"];
-        this.remain_distance = o["rd"];
+        this.remainDistance = o["rd"];
 	};      
     
     // rotate
     var CmdRotateKlass = function(inst, 
                                   rotatable, 
-                                  max_speed, acc, dec, 
-                                  precise_mode, continued_mode)
+                                  maxSpeed, acc, dec, 
+                                  preciseMode, continuedMode)
     {
         this.Init(inst, 
                   rotatable, 
-                  max_speed, acc, dec, 
-                  precise_mode, continued_mode);
+                  maxSpeed, acc, dec, 
+                  preciseMode, continuedMode);
     };
     var CmdRotateKlassProto = CmdRotateKlass.prototype;
     
     CmdRotateKlassProto.Init = function(inst, 
                                          rotatable, 
-                                         max_speed, acc, dec, 
-                                         precise_mode, continued_mode)
+                                         maxSpeed, acc, dec, 
+                                         preciseMode, continuedMode)
     {
         this.inst = inst;
         this.rotatable = rotatable;
-        this.move = {"max":max_speed, "acc":acc, "dec":dec};
-        this.is_done = true;
-        this.is_zeroDt_mode = ( (max_speed >= 36000) && (acc==0) && (dec==0) );
-        this.precise_mode = precise_mode;   
-        this.continued_mode = continued_mode;     
-        this.current_angle_deg = (rotatable)? cr.to_clamped_degrees(inst.angle):0;
-        this.current_speed = 0;
+        this.move = {"max":maxSpeed, "acc":acc, "dec":dec};
+        this.isDone = true;
+        this.isZeroDtMode = ( (maxSpeed >= 36000) && (acc==0) && (dec==0) );
+        this.preciseMode = preciseMode;   
+        this.continuedMode = continuedMode;     
+        this.currentAngleDeg = (rotatable)? cr.to_clamped_degrees(inst.angle):0;
+        this.currentSpeed = 0;
     };
     
-    CmdRotateKlassProto.CmdInit = function(zigzag_state, distance,
-                                   speed_setting)
+    CmdRotateKlassProto.CmdInit = function(positionData, distance,
+                                   newSpeedValue)
     {
-        this.target = zigzag_state;
-        this.current_angle_deg = cr.to_clamped_degrees(zigzag_state["a"]);
-        this._target_angle_deg = this.current_angle_deg + distance;
+        this.target = positionData;
+        this.currentAngleDeg = cr.to_clamped_degrees(positionData["a"]);
+        this.targetAngleDeg = this.currentAngleDeg + distance;
         this.dir = (distance >= 0);
-        var angle = cr.to_clamped_radians(this._target_angle_deg);
-        this.remain_distance = Math.abs(distance);
-        this.is_done = false;        
-        zigzag_state["a"] = angle;
+        var angle = cr.to_clamped_radians(this.targetAngleDeg);
+        this.remainDistance = Math.abs(distance);
+        this.isDone = false;        
+        positionData["a"] = angle;
 
-        if (speed_setting)
-            _speed_reset.apply(this, speed_setting);        
-        _set_current_speed.call(this, null);             
+        if (newSpeedValue)
+            speedReset.apply(this, newSpeedValue);        
+        setCurrentSpeed.call(this, null);             
     };    
     
     CmdRotateKlassProto.Tick = function(dt)
     {
-        var remain_dt;    
-        var target_angle_rad;       
-        if (this.is_zeroDt_mode)
+        var remainDt;    
+        var targetAngleRad;       
+        if (this.isZeroDtMode)
         {
-            remain_dt = dt;
-            this.is_done = true;
-            target_angle_rad = this.target["a"];
-            this.current_angle_deg = this._target_angle_deg;            
+            remainDt = dt;
+            this.isDone = true;
+            targetAngleRad = this.target["a"];
+            this.currentAngleDeg = this.targetAngleDeg;            
         }
         else
         {
-            var distance = _move_distance_get.call(this, dt);
-            this.remain_distance -= distance;   
+            var distance = getMoveDistance.call(this, dt);
+            this.remainDistance -= distance;   
 
             // is hit to target at next tick?
-            if ( (this.remain_distance <= 0) || (this.current_speed <= 0) )
+            if ( (this.remainDistance <= 0) || (this.currentSpeed <= 0) )
             {
-                this.is_done = true;
-                if (this.precise_mode)  // precise mode
+                this.isDone = true;
+                if (this.preciseMode)  // precise mode
                 {
-                    target_angle_rad = this.target["a"];                                      
-                    this.current_angle_deg = this._target_angle_deg;                    
+                    targetAngleRad = this.target["a"];                                      
+                    this.currentAngleDeg = this.targetAngleDeg;                    
                 }
                 else  // non-precise mode
                 {
-                    distance += this.remain_distance;
-                    this.current_angle_deg += ((this.dir)? distance:(-distance));
-                    target_angle_rad = cr.to_clamped_radians(this.current_angle_deg);                
-                    this.target["a"] = target_angle_rad;
+                    distance += this.remainDistance;
+                    this.currentAngleDeg += ((this.dir)? distance:(-distance));
+                    targetAngleRad = cr.to_clamped_radians(this.currentAngleDeg);                
+                    this.target["a"] = targetAngleRad;
                 }
-                remain_dt = (this.continued_mode==1)? _remaind_dt_get.call(this):0;                
+                remainDt = (this.continuedMode==1)? getRemaindDt.call(this):0;                
             }
             else
             {
-                this.current_angle_deg += ((this.dir)? distance:(-distance));
-                target_angle_rad = cr.to_clamped_radians(this.current_angle_deg);
-                remain_dt = 0;
+                this.currentAngleDeg += ((this.dir)? distance:(-distance));
+                targetAngleRad = cr.to_clamped_radians(this.currentAngleDeg);
+                remainDt = 0;
             } 
         }
             
         if (this.rotatable)
         {
-            this.inst.angle = target_angle_rad;
+            this.inst.angle = targetAngleRad;
 		    this.inst.set_bbox_changed();
         }
-        return remain_dt;    
+        return remainDt;    
     }; 
 
 	CmdRotateKlassProto.saveToJSON = function ()
 	{ 
 		return { "ra": this.rotatable,
                  "v": this.move,
-                 "id": this.is_done,
-                 "izm": this.is_zeroDt_mode,
-                 "pm": this.precise_mode,
-                 "cad": this.current_angle_deg,
-                 "cspd":this.current_speed,
+                 "id": this.isDone,
+                 "izm": this.isZeroDtMode,
+                 "pm": this.preciseMode,
+                 "cad": this.currentAngleDeg,
+                 "cspd":this.currentSpeed,
                  //"t": this.target,
-                 "tad": this._target_angle_deg,
+                 "tad": this.targetAngleDeg,
                  "dir": this.dir,
-                 "rd": this.remain_distance,
+                 "rd": this.remainDistance,
                 };
 	};
     
@@ -863,75 +863,74 @@ cr.behaviors.Rex_Zigzag = function(runtime)
 	{    
         this.rotatable = o["ra"];
         this.move = o["v"]; 
-        this.is_done = o["id"]; 
-        this.is_zeroDt_mode = o["izm"]; 
-        this.precise_mode = o["pm"];
-        this.current_angle_deg = o["cad"];
-        this.current_speed = o["cspd"];
+        this.isDone = o["id"]; 
+        this.isZeroDtMode = o["izm"]; 
+        this.preciseMode = o["pm"];
+        this.currentAngleDeg = o["cad"];
+        this.currentSpeed = o["cspd"];
         //this.target = o["t"];
-        this._target_angle_deg = o["tad"];
+        this.targetAngleDeg = o["tad"];
         this.dir = o["dir"];
-        this.remain_distance = o["rd"];
+        this.remainDistance = o["rd"];
 	};    
     
-	var _set_current_speed = function(speed)
+	var setCurrentSpeed = function(speed)
 	{
         var move = this.move;
         if (speed != null)
         {
-            this.current_speed = (speed > move["max"])? 
+            this.currentSpeed = (speed > move["max"])? 
                                  move["max"]: speed;
         }        
         else if (move["acc"] > 0)
         {
-            this.current_speed = 0;
+            this.currentSpeed = 0;
         }
         else 
         {
-            this.current_speed = move["max"];        
+            this.currentSpeed = move["max"];        
         }
 	};  
 
-    var _move_distance_get = function(dt)
+    var getMoveDistance = function(dt)
     {
         var move = this.move;
         // assign speed
-        var is_slow_down = false;
+        var isSlowDown = false;
         if (move["dec"] != 0)
         {
-            // is time to deceleration?                
-            var _speed = this.current_speed;
-            var _distance = (_speed*_speed)/(2*move["dec"]); // (v*v)/(2*a)
-            is_slow_down = (_distance >= this.remain_distance);
+            // is time to deceleration?
+            var _distance = (this.currentSpeed*this.currentSpeed)/(2*move["dec"]); // (v*v)/(2*a)
+            isSlowDown = (_distance >= this.remainDistance);
         }
-        var acc = (is_slow_down)? (-move["dec"]):move["acc"];
+        var acc = (isSlowDown)? (-move["dec"]):move["acc"];
         if (acc != 0)
         {
-            _set_current_speed.call(this, this.current_speed + (acc * dt) );    
+            setCurrentSpeed.call(this, this.currentSpeed + (acc * dt) );    
         }
 
 		// Apply movement to the object     
-        var distance = this.current_speed * dt;
+        var distance = this.currentSpeed * dt;
         return distance;
     };
     
-    var _remaind_dt_get = function()
+    var getRemaindDt = function()
     {
-        var remain_dt;
+        var remainDt;
         if ( (this.move["acc"]>0) || (this.move["dec"]>0) )
         {
-            _set_current_speed.call(this, 0 );   // stop in point
-            remain_dt = 0;
+            setCurrentSpeed.call(this, 0 );   // stop in point
+            remainDt = 0;
         }
         else
         {
-            remain_dt = (-this.remain_distance)/this.current_speed;
+            remainDt = (-this.remainDistance)/this.currentSpeed;
         }    
-        return remain_dt;
+        return remainDt;
     };
     
     
-    var _speed_reset = function(max,acc,dec)
+    var speedReset = function(max,acc,dec)
     {
         if (max!= null)
             this.move["max"] = max;
@@ -942,51 +941,51 @@ cr.behaviors.Rex_Zigzag = function(runtime)
     };    
     
     // wait
-    var CmdWaitKlass = function(continued_mode)
+    var CmdWaitKlass = function(continuedMode)
     {
-        this.Init(continued_mode);
+        this.Init(continuedMode);
     };
     var CmdWaitKlassProto = CmdWaitKlass.prototype;
     
-    CmdWaitKlassProto.Init = function(continued_mode)
+    CmdWaitKlassProto.Init = function(continuedMode)
     {
-        this.is_done = true;
-        this.continued_mode = continued_mode;
+        this.isDone = true;
+        this.continuedMode = continuedMode;
     };
     
-    CmdWaitKlassProto.CmdInit = function(zigzag_state, distance)
+    CmdWaitKlassProto.CmdInit = function(positionData, distance)
     {
-        this.remain_distance = distance;
-        this.is_done = false;
-        this.target = zigzag_state;
+        this.remainDistance = distance;
+        this.isDone = false;
+        this.target = positionData;
     };    
     
     CmdWaitKlassProto.Tick = function(dt)
     {
-        this.remain_distance -= dt;
-        var remain_dt;
-        if (this.remain_distance <= 0)
+        this.remainDistance -= dt;
+        var remainDt;
+        if (this.remainDistance <= 0)
         {
-            remain_dt = (this.continued_mode)? (-this.remain_distance):0;
-            this.is_done = true;
+            remainDt = (this.continuedMode)? (-this.remainDistance):0;
+            this.isDone = true;
         }
         else
         {
-            remain_dt = 0;
+            remainDt = 0;
         }
-        return remain_dt;    
+        return remainDt;    
     };   
 
 	CmdWaitKlassProto.saveToJSON = function ()
 	{ 
-		return { "id": this.is_done,
-                 "rd": this.remain_distance,
+		return { "id": this.isDone,
+                 "rd": this.remainDistance,
                 };
 	};
     
 	CmdWaitKlassProto.loadFromJSON = function (o)
 	{    
-        this.is_done = o["id"];
-        this.remain_distance = o["rd"];   
+        this.isDone = o["id"];
+        this.remainDistance = o["rd"];   
 	};    
 }());

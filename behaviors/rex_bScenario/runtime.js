@@ -358,9 +358,9 @@ cr.behaviors.rex_bScenario = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
     
-    Acts.prototype.LoadCSVCmds = function (csv_string)
+    Acts.prototype.LoadCSVCmds = function (s, fmt)
     {  
-        this._scenario.Load(csv_string);
+        this._scenario.Load(s, fmt);
     };
     
     Acts.prototype.Start = function (offset, tag, repeat_count)
@@ -402,9 +402,9 @@ cr.behaviors.rex_bScenario = function(runtime)
         this._scenario.Clean();
     };  
     
-    Acts.prototype.AppendCmds = function (csv_string)
+    Acts.prototype.AppendCmds = function (s, fmt)
     {  
-        this._scenario.Append(csv_string);
+        this._scenario.Append(s, fmt);
     };
     Acts.prototype.Continue = function (key)
     {
@@ -556,24 +556,31 @@ cr.behaviors.rex_bScenario = function(runtime)
             this.timer.SetTimescale(ts);
 	};    
     
-    ScenarioKlassProto.Load = function (csv_string)
+    ScenarioKlassProto.Load = function (s, fmt)
     {        
         this.Clean();
-        if (csv_string === "")
+        if (s === "")
             return;
-            
-        var arr = CSVToArray(csv_string);        
-        this.remove_invalid_commands(arr);
-        this.parse_commands(arr);        
-        this.cmd_table.Reset(arr);
+
+        this.cmd_table.Reset();
+        this.Append(s, fmt);        
     };
     
-    ScenarioKlassProto.Append = function (csv_string)
+    ScenarioKlassProto.Append = function (s, fmt)
     {        
-        if (csv_string === "")
+        if (s === "")
             return;
             
-        var arr = CSVToArray(csv_string);        
+        var arr;
+        if (fmt == 0)
+          arr = CSVToArray(s);        
+        else
+        {
+          arr = JSON.parse(s);
+          if (arr[0].length == null)
+            arr = [arr];
+        }
+       
         this.remove_invalid_commands(arr);
         this.parse_commands(arr);        
         this.cmd_table.Append(arr);
@@ -619,8 +626,10 @@ cr.behaviors.rex_bScenario = function(runtime)
 
     ScenarioKlassProto.get_command_type = function (cmd, no_eval)
     {
-        if (cmd == "")
-            return null;
+        if (typeof(cmd) === "number")
+            return cmd;
+        else if (cmd === "")
+            return 0;
             
         // number: delay command
         if (!isNaN(cmd))
@@ -1013,7 +1022,9 @@ cr.behaviors.rex_bScenario = function(runtime)
     CmdQueueKlassProto.Clean = function()
     {
         this.current_index = -1;
-        this.queue = null;
+        
+        if (this.queue)
+            this.queue.length = 0;
     };
     CmdQueueKlassProto.IndexSet = function(index)
     {

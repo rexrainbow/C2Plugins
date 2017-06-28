@@ -45,10 +45,10 @@ cr.behaviors.Rex_Boids = function(runtime)
 	{      	      
         if (!this.recycled)
         {
-            this.output_force = {};
+            this.outputForce = {};
         }
-        this.output_force["x"] = 0;
-        this.output_force["y"] = 0;          
+        this.outputForce["x"] = 0;
+        this.outputForce["y"] = 0;          
         
 	    this.exp_LastCohesionX = 0;
 	    this.exp_LastCohesionY = 0;
@@ -63,28 +63,28 @@ cr.behaviors.Rex_Boids = function(runtime)
 	{
 	};  
 
-	behinstProto.add_cohesion_force = function (insts, cohesion_distance, cohesion_weight)
+	behinstProto.addCohesionForce = function (insts, cohesionDistance, cohesionWeight)
 	{
         // COHESION: steer towards average position of neighbors (long range attraction)
-        if ((cohesion_weight <= 0) || (insts.length == 0))
+        if ((cohesionWeight <= 0) || (insts.length == 0))
             return;
         
-        var cohesionX = this.get_averagePos(insts, true);
+        var cohesionX = this.getAvgPos(insts, true);
         if (cohesionX === null)
             return;
-        var cohesionY = this.get_averagePos(insts, false);                
-        var angle_cohesion = cr.angleTo(this.inst.x, this.inst.y, cohesionX, cohesionY);
+        var cohesionY = this.getAvgPos(insts, false);                
+        var cohesionAngle = cr.angleTo(this.inst.x, this.inst.y, cohesionX, cohesionY);
         
         var d = cr.distanceTo(this.inst.x, this.inst.y, cohesionX, cohesionY);
-        var p = cohesion_weight * (d / cohesion_distance);
-        this.output_force["x"] += (Math.cos(angle_cohesion) * p);
-        this.output_force["y"] += (Math.sin(angle_cohesion) * p);  
+        var p = cohesionWeight * (d / cohesionDistance);
+        this.outputForce["x"] += (Math.cos(cohesionAngle) * p);
+        this.outputForce["y"] += (Math.sin(cohesionAngle) * p);  
         
 	    this.exp_LastCohesionX = cohesionX;
 	    this.exp_LastCohesionY = cohesionY;        
 	};  
 
-	behinstProto.add_alignment_force = function (insts, alignment_weight)
+	behinstProto.addAlignmentForce = function (insts, alignment_weight)
 	{
         // ALIGNMENT: steer towards average heading of neighbors               
         if ((alignment_weight <= 0) || (insts.length == 0))
@@ -108,21 +108,21 @@ cr.behaviors.Rex_Boids = function(runtime)
         var angle_alignment = cr.to_clamped_radians(sum/cnt);
         
         var p = alignment_weight;
-        this.output_force["x"] += (Math.cos(angle_alignment) * p);
-        this.output_force["y"] += (Math.sin(angle_alignment) * p);
+        this.outputForce["x"] += (Math.cos(angle_alignment) * p);
+        this.outputForce["y"] += (Math.sin(angle_alignment) * p);
         
 	    this.exp_LastAlignmentAngle = angle_alignment;         
 	};
     
-	behinstProto.add_separation_force = function (insts, separation_distance, separation_weight)
+	behinstProto.addSeparationForce = function (insts, separationDistance, separationWeight)
 	{
         // SEPERATION: steer to avoid crowding neighbors      
-        if ((separation_weight <= 0) || (insts.length == 0))
+        if ((separationWeight <= 0) || (insts.length == 0))
             return;        
             
         var i,cnt=insts.length, inst, myUID = this.inst.uid;         
         var dx, dy, dpow2, d, myX=this.inst.x, myY=this.inst.y;
-        var angle_seperation, p;
+        var seperationAngle, p;
         for(i=0; i<cnt; i++)
         {
             inst = insts[i];        
@@ -132,22 +132,22 @@ cr.behaviors.Rex_Boids = function(runtime)
             dx = myX - inst.x;
             dy = myY - inst.y;            
             dpow2 = (dx*dx) + (dy*dy);
-            angle_seperation = Math.atan2(dy, dx);
+            seperationAngle = Math.atan2(dy, dx);
             d = Math.sqrt(dpow2);
-            p = separation_weight * ((separation_distance - d) / separation_distance);
+            p = separationWeight * ((separationDistance - d) / separationDistance);
             
-            this.output_force["x"] += (Math.cos(angle_seperation) * p);
-            this.output_force["y"] += (Math.sin(angle_seperation) * p);             
+            this.outputForce["x"] += (Math.cos(seperationAngle) * p);
+            this.outputForce["y"] += (Math.sin(seperationAngle) * p);             
         }            
 	};   
 	 
-	behinstProto.add_force = function (a, m)
+	behinstProto.addForce = function (a, m)
 	{
-        this.output_force["x"] += (Math.cos(a) * m);
-        this.output_force["y"] += (Math.sin(a) * m);	             
+        this.outputForce["x"] += (Math.cos(a) * m);
+        this.outputForce["y"] += (Math.sin(a) * m);	             
 	}; 
 	    
-	behinstProto.get_averagePos = function (insts, isX)
+	behinstProto.getAvgPos = function (insts, isX)
 	{
         var i,cnt=insts.length, inst, myUID = this.inst.uid;
         var sum=0;
@@ -170,7 +170,7 @@ cr.behaviors.Rex_Boids = function(runtime)
 	    this.exp_LastCohesionX = 0;
 	    this.exp_LastCohesionY = 0;
 	    this.exp_LastAlignmentAngle = 0;	    
-		return { "of": this.output_force,
+		return { "of": this.outputForce,
 		         "lcx": this.exp_LastCohesionX,
 		         "lcy": this.exp_LastCohesionY,
 		         "laa": this.exp_LastAlignmentAngle
@@ -179,7 +179,7 @@ cr.behaviors.Rex_Boids = function(runtime)
 	
 	behinstProto.loadFromJSON = function (o)
 	{            
-        this.output_force = o["of"];
+        this.outputForce = o["of"];
 	    this.exp_LastCohesionX = o["lcx"];
 	    this.exp_LastCohesionY = o["lcy"];
 	    this.exp_LastAlignmentAngle = o["laa"];
@@ -192,7 +192,7 @@ cr.behaviors.Rex_Boids = function(runtime)
 
 	Cnds.prototype.HasForce = function ()
 	{
-		return (this.output_force["x"] != 0) && (this.output_force["y"] != 0);
+		return (this.outputForce["x"] != 0) && (this.outputForce["y"] != 0);
 	}; 
 
 	//////////////////////////////////////
@@ -202,8 +202,8 @@ cr.behaviors.Rex_Boids = function(runtime)
 
 	Acts.prototype.CleanForce = function ()
 	{  
-        this.output_force["x"] = 0;
-        this.output_force["y"] = 0;      
+        this.outputForce["x"] = 0;
+        this.outputForce["y"] = 0;      
 	};  
     
 	Acts.prototype.AddCohesionForce = function (objtype, d, w)
@@ -212,7 +212,7 @@ cr.behaviors.Rex_Boids = function(runtime)
             return;
         
         var insts = objtype.getCurrentSol().getObjects();
-        this.add_cohesion_force(insts, d, w);
+        this.addCohesionForce(insts, d, w);
 	};    
     
 	Acts.prototype.AddAlignmentForce = function (objtype, w)
@@ -221,7 +221,7 @@ cr.behaviors.Rex_Boids = function(runtime)
             return;
         
         var insts = objtype.getCurrentSol().getObjects();
-        this.add_alignment_force(insts, w);
+        this.addAlignmentForce(insts, w);
 	};
     
 	Acts.prototype.AddSeparationForce = function (objtype, d, w)
@@ -230,7 +230,7 @@ cr.behaviors.Rex_Boids = function(runtime)
             return;
         
         var insts = objtype.getCurrentSol().getObjects();
-        this.add_separation_force(insts, d, w);
+        this.addSeparationForce(insts, d, w);
 	}; 
     
 	Acts.prototype.ApplyForceToward = function (x, y, m)
@@ -239,7 +239,7 @@ cr.behaviors.Rex_Boids = function(runtime)
 	        return;
 	        
         var a = cr.angleTo(this.inst.x, this.inst.y, x, y);
-        this.add_force(a, m);
+        this.addForce(a, m);
 	}; 	
     
 	Acts.prototype.ApplyForceAtAngle = function (a, m)
@@ -247,7 +247,7 @@ cr.behaviors.Rex_Boids = function(runtime)
 	    if (m === 0)
 	        return;
 	        	    
-        this.add_force(cr.to_radians(a), m);
+        this.addForce(cr.to_radians(a), m);
 	};	   
 	//////////////////////////////////////
 	// Expressions
@@ -256,25 +256,25 @@ cr.behaviors.Rex_Boids = function(runtime)
     
 	Exps.prototype.ForceAngle = function (ret)
 	{
-        var dx = this.output_force["x"];
-        var dy = this.output_force["y"];    
+        var dx = this.outputForce["x"];
+        var dy = this.outputForce["y"];    
         var a = Math.atan2(dy, dx);
 		ret.set_float(cr.to_clamped_degrees(a));
 	};	
 	Exps.prototype.ForceMagnitude = function (ret)
 	{
-        var dx = this.output_force["x"];
-        var dy = this.output_force["y"];    
+        var dx = this.outputForce["x"];
+        var dy = this.outputForce["y"];    
         var m = Math.sqrt( (dx*dx) + (dy*dy) );
 		ret.set_float(m);
 	};   
 	Exps.prototype.ForceDx = function (ret)
 	{
-		ret.set_float(this.output_force["x"]);
+		ret.set_float(this.outputForce["x"]);
 	};	
 	Exps.prototype.ForceDy = function (ret)
 	{
-		ret.set_float(this.output_force["y"]);
+		ret.set_float(this.outputForce["y"]);
 	};
 	
 	Exps.prototype.LastCohesionX = function (ret)

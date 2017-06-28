@@ -60,7 +60,11 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    this.exp_PostPlayerName = "";
         this.exp_PostPlayerScore = 0;
         this.exp_PostPlayerUserID = "";        
-        this.exp_PostExtraData = "";        
+        this.exp_PostExtraData = "";
+
+		this.exp_LastUserID = "";
+		this.exp_LastScore = 0;
+		this.exp_LastPlayerName = "";		
 	};
 	
 	instanceProto.onDestroy = function ()
@@ -209,34 +213,7 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
         var ref = this.get_ref();        
 	    ref["child"](userID)["setWithPriority"](save_data, priority, onComplete);
 	};  
-    
-    instanceProto.add_score = function (userID, name, scoreAddTo, extra_data)
-	{	    
-        extra_data = get_extraData(extra_data);
 
-	    var self = this;
-	    var on_complete = function(error, committed, snapshot) 
-	    {
-            var val = snapshot["val"]();
-            self.onPostComplete.call(self, error, userID, name, val["score"], extra_data);
-        };
-
-        var on_transaction = function (currentValue)
-        {
-            var old_score = (currentValue == null)? 0: currentValue["score"];
-            var new_score = old_score + scoreAddTo;
-            var save_data = {"name":name, 
-                                       "score":new_score, 
-                                       "extra": extra_data,
-                                       "updateAt": serverTimeStamp()
-                                      };
-            var priority = (self.ranking_order == 0)? new_score:-new_score;
-            return { '.value': save_data, '.priority': priority };
-        };
-        var ref = this.get_ref();        
-	    ref["child"](userID)["transaction"](on_transaction, on_complete);
-	};  
-    
 	instanceProto.onPostComplete = function(error, userID, name, score, extra_data) 
 	{
 	    this.exp_PostPlayerName = name;
@@ -269,6 +246,11 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	{	     
 		return this.ranks.ForEachItem(this.runtime, start, end);
 	};  	
+
+	Cnds.prototype.OnGetScore = function ()
+	{
+	    return true;
+	}; 	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
@@ -335,8 +317,54 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
     
     Acts.prototype.AddScore = function (userID, name, scoreAddTo, extra_data)
 	{
-        this.add_score(userID, name, scoreAddTo, extra_data);
-	};     
+        extra_data = get_extraData(extra_data);
+
+	    var self = this;
+	    var on_complete = function(error, committed, snapshot) 
+	    {
+            var val = snapshot["val"]();
+            self.onPostComplete.call(self, error, userID, name, val["score"], extra_data);
+        };
+
+        var on_transaction = function (currentValue)
+        {
+            var old_score = (currentValue == null)? 0: currentValue["score"];
+            var new_score = old_score + scoreAddTo;
+            var save_data = {"name":name, 
+                                       "score":new_score, 
+                                       "extra": extra_data,
+                                       "updateAt": serverTimeStamp()
+                                      };
+            var priority = (self.ranking_order == 0)? new_score:-new_score;
+            return { '.value': save_data, '.priority': priority };
+        };
+        var ref = this.get_ref();        
+	    ref["child"](userID)["transaction"](on_transaction, on_complete);		
+	};    
+
+    Acts.prototype.GetScore = function (userID)
+	{
+        var self=this;
+        var onReadUserID = function(snapshot)
+        {
+			var userData = snapshot["val"]();
+            if (userData)
+			{
+				self.exp_LastUserID = userID;
+				self.exp_LastScore = userData["score"];
+				self.exp_LastPlayerName = userData["name"];
+			}
+			else
+			{
+				self.exp_LastUserID = "";
+				self.exp_LastScore = 0;
+				self.exp_LastPlayerName = "";
+			}
+            self.runtime.trigger(cr.plugins_.Rex_Firebase_Leaderboard.prototype.cnds.OnGetScore, self);			
+        };
+		var ref = this.get_ref()["child"](userID);
+		ref["once"]("value", onReadUserID);
+	};    
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};
@@ -448,5 +476,17 @@ cr.plugins_.Rex_Firebase_Leaderboard = function(runtime)
 	    var extra_data = (!rank_info)? "":rank_info["userID"];
 		ret.set_any(extra_data);
 	};	
-							 	
+
+	Exps.prototype.LastUserID = function (ret)
+	{
+		ret.set_string(this.exp_LastUserID);
+	};	    
+	Exps.prototype.LastScore = function (ret)
+	{
+		ret.set_any(this.exp_LastScore);
+	};		
+	Exps.prototype.LastPlayerName = function (ret)
+	{
+		ret.set_any(this.exp_LastPlayerName);
+	};									 	
 }());

@@ -74,49 +74,54 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this.typing_content = null;
         this.raw_text_length = 0;
         this.timer_save = null;
-		this.text_type = this.get_text_type();  
-		this.SetText_handler = this.get_setText_handler(this.text_type);
+		this.textObjType = this.getTextObjType();  
+		this.SetText_handler = this.get_SetText_Fn(this.textObjType);
 	};
     
-   	behinstProto.get_text_type = function ()
+   	behinstProto.getTextObjType = function ()
 	{
-	    var text_type;
+	    var textObjType;
         if (cr.plugins_.Text &&
 		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        text_type = "Text";	    
+	        textObjType = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			text_type = "Spritefont2";	  
+			textObjType = "Spritefont2";	  
 	    else if (cr.plugins_.TextBox &&
 		         (this.inst instanceof cr.plugins_.TextBox.prototype.Instance))
-		    text_type = "TextBox";					
+		    textObjType = "TextBox";					
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    text_type = "rex_TagText";   
+		    textObjType = "rex_TagText";   
 	    else if (cr.plugins_.rex_bbcodeText &&
 		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
-		    text_type = "rex_bbcodeText";                
+		    textObjType = "rex_bbcodeText";    
+	    else if (cr.plugins_.SpriteFontPlus &&
+		         (this.inst instanceof cr.plugins_.SpriteFontPlus.prototype.Instance))
+			textObjType = "SpriteFontPlus";	    				            
 		else
-		    text_type = "";	 
-		return text_type;
+		    textObjType = "";	 
+		return textObjType;
 	};
     
-	behinstProto.get_setText_handler = function (text_type)
+	behinstProto.get_SetText_Fn = function (textObjType)
 	{
-	    var set_text_handler;
-        if (text_type === "Text")		
-	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
-	    else if (text_type === "Spritefont2")	
-			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
-	    else if (text_type === "TextBox")	
-			set_text_handler = cr.plugins_.TextBox.prototype.acts.SetText;				
-	    else if (text_type === "rex_TagText")	
-			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
-	    else if (this.text_type === "rex_bbcodeText")	
-			set_text_handler = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;   		
+	    var setTextFn;
+        if (textObjType === "Text")		
+	        setTextFn = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (textObjType === "Spritefont2")	
+			setTextFn = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (textObjType === "TextBox")	
+			setTextFn = cr.plugins_.TextBox.prototype.acts.SetText;				
+	    else if (textObjType === "rex_TagText")	
+			setTextFn = cr.plugins_.rex_TagText.prototype.acts.SetText;
+	    else if (this.textObjType === "rex_bbcodeText")	
+			setTextFn = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;  
+	    else if (this.textObjType === "SpriteFontPlus")	
+			setTextFn = cr.plugins_.SpriteFontPlus.prototype.acts.SetText;			 		
 	    else
-		    set_text_handler = null;
-	    return set_text_handler;
+		    setTextFn = null;
+	    return setTextFn;
     };
     
 	behinstProto.onDestroy = function()
@@ -138,33 +143,37 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.get_rawTextLength = function (content)
 	{	    
 	    var len;
-		if ((this.text_type === "Text") || (this.text_type === "Spritefont2") || (this.text_type === "TextBox"))
+		if ((this.textObjType === "Text") || 
+		    (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus") || 
+			(this.textObjType === "TextBox"))
 		    len = content.length;
-        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
             len = this.inst.getRawText(content).length;
         else
             len = 0;
         return len;
 	};
 	
-	behinstProto.SetText = function (content, start_index, end_index)
+	behinstProto.SetText = function (content, start_index, endIndex)
 	{	    
 	    if (this.SetText_handler == null)
 		    return;
 		    
 	    if (start_index == null)
 	        start_index = 0;
-	    if (end_index == null)
-	        end_index = this.get_rawTextLength(content);
+	    if (endIndex == null)
+	        endIndex = this.get_rawTextLength(content);
 
-		if ((this.text_type == "Text") || (this.text_type == "Spritefont2") || (this.text_type == "TextBox"))
+		if ((this.textObjType == "Text") || 
+		   (this.textObjType == "Spritefont2") || (this.textObjType === "SpriteFontPlus") || 
+		   (this.textObjType == "TextBox"))
 		{
-		    content = content.slice(start_index, end_index);
+		    content = content.slice(start_index, endIndex);
             this.SetText_handler.call(this.inst, content);
         }
-        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
         {
-            content = this.inst.getSubText(start_index, end_index, content);
+            content = this.inst.getSubText(start_index, endIndex, content);
             this.SetText_handler.call(this.inst, content);
         }
 	};
@@ -268,11 +277,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
         this.drawText(source);
         var content;
-		if (this.text_type === "Text")
+		if (this.textObjType === "Text")
 		{
 			content = this.inst.lines.join("\n");
 		}
-		else if (this.text_type === "Spritefont2")
+		else if ((this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
 		{
 			var cnt = this.inst.lines.length;
 			var lines = [];
@@ -282,7 +291,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 			}
 			content = lines.join("\n");
 		}
-        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
         {
             var pensMgr = this.inst.copyPensMgr(); 
             var cnt = pensMgr.getLines().length;

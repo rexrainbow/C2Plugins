@@ -44,34 +44,34 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	behinstProto.onCreate = function()
 	{         
-		this.text_type = this.get_text_type();          
+		this.textObjType = this.getTextObjType();          
 	};  
 	
 	behinstProto.tick = function ()
 	{
 	};
 	
-   	behinstProto.get_text_type = function ()
+   	behinstProto.getTextObjType = function ()
 	{
-	    var text_type;
+	    var textObjType;
         if (cr.plugins_.Text &&
 		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        text_type = "Text";	    
+	        textObjType = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			text_type = "Spritefont2";	  
+			textObjType = "Spritefont2";	  
 	    else if (cr.plugins_.TextBox &&
 		         (this.inst instanceof cr.plugins_.TextBox.prototype.Instance))
-		    text_type = "TextBox";					
+		    textObjType = "TextBox";					
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    text_type = "rex_TagText";   
+		    textObjType = "rex_TagText";   
 	    else if (cr.plugins_.rex_bbcodeText &&
 		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
-		    text_type = "rex_bbcodeText";                
+		    textObjType = "rex_bbcodeText";                
 		else
-		    text_type = "";	 
-		return text_type;
+		    textObjType = "";	 
+		return textObjType;
 	};
  
     behinstProto._get_webgl_ctx = function ()
@@ -112,7 +112,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetHorizontalAlignment = function(align)
 	{
-        if (this.text_type === "Spritefont2")
+        if (this.textObjType === "Spritefont2")
         {
             cr.plugins_.Spritefont2.prototype.acts.SetHAlign.call(this.inst, align);
         }        
@@ -130,7 +130,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetVerticalAlignment = function(align)
 	{
-        if (this.text_type === "Spritefont2")
+        if (this.textObjType === "Spritefont2")
         {
             cr.plugins_.Spritefont2.prototype.acts.SetVAlign.call(this.inst, align);
         }
@@ -150,7 +150,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 	Acts.prototype.SetWrapping = function(wrap_mode)
 	{
 	    wrap_mode = (wrap_mode === 0);  // 0=word, 1=character
-        if (this.text_type === "Spritefont2")
+        if (this.textObjType === "Spritefont2")
         {
 	        if (this.inst.wrapbyword != wrap_mode)
 	        {
@@ -174,7 +174,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetLineHeight = function(line_height_offset)
 	{
-        if (this.text_type === "Spritefont2")
+        if (this.textObjType === "Spritefont2")
         {
             cr.plugins_.Spritefont2.prototype.acts.SetLineHeight.call(this.inst, line_height_offset);
         }        
@@ -192,7 +192,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 	
 	Acts.prototype.SetFontFace = function (face_, style_)
 	{
-        if (this.text_type === "Spritefont2")
+        if (this.textObjType === "Spritefont2")
         {
             // not support
         }         
@@ -224,11 +224,11 @@ cr.behaviors.Rex_text_properties = function(runtime)
 	{
         this.drawText();
         var content;
-        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
+        if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2"))
         {
             content = this.inst.lines.join("\n");
         }
-        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
         {
             var pensMgr = this.inst.copyPensMgr(); 
             var cnt = pensMgr.getLines().length;

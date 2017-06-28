@@ -43,10 +43,10 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{   
 	    this.isInPreview = (typeof cr_is_preview !== "undefined");  
         this.strDelimiter = this.properties[0];
-        this.is_eval_mode = (this.properties[1] == 1);
-        this._tables = {};
-        this.current_page_name = null;
-        this.current_table = null;
+        this.isEvalMode = (this.properties[1] == 1);
+        this.tables = {};
+        this.currentPageName = null;
+        this.currentTable = null;
         this.forPage = "";
         this.atCol = "";
         this.atRow = "";  
@@ -54,19 +54,21 @@ cr.plugins_.Rex_CSV = function(runtime)
         
         // turn to default page "_"
         this.TurnPage("_");          
-        this.check_name = "CSV";   
+        this.checkName = "CSV";   
         
         /**BEGIN-PREVIEWONLY**/
-        this.dbg_page_name = "_";
-        this.dbg_col_name = "";        
+        this.dbg = {
+            "pageName": "_",
+            "colName" : ""
+        };      
         /**END-PREVIEWONLY**/        
 	};
 	
-	instanceProto.value_get = function(v)
+	instanceProto.getValue = function(v)
 	{
 	    if (v == null)
 	        v = 0;
-	    else if (this.is_eval_mode)
+	    else if (this.isEvalMode)
 	        v = eval("("+v+")");
         
         return v;
@@ -74,20 +76,20 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	instanceProto.HasPage = function(page)
 	{  
-	    return (this._tables[page] != null);     
+	    return (this.tables[page] != null);     
 	};
 	
 	instanceProto.TurnPage = function(page)
 	{  
-        if (this.current_page_name === page)
+        if (this.currentPageName === page)
             return;
         
         if (!this.HasPage(page))
         {
-            this._tables[page] = new cr.plugins_.Rex_CSV.CSVKlass(this);
+            this.tables[page] = new cr.plugins_.Rex_CSV.CSVKlass(this);
         }    
-        this.current_page_name = page;
-        this.current_table = this._tables[page];       
+        this.currentPageName = page;
+        this.currentTable = this.tables[page];       
 	};
 
 	instanceProto.Get = function (col, row, page)
@@ -98,8 +100,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         {
             this.TurnPage(page);
         }
-        this.atPage = this.current_page_name;  
-        return this.current_table.At(col,row);
+        this.atPage = this.currentPageName;  
+        return this.currentTable.At(col,row);
 	};
 
 	instanceProto.Set = function (value, col, row, page)
@@ -110,8 +112,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         {
             this.TurnPage(page);
         }
-        this.atPage = this.current_page_name;  
-        this.current_table.SetCell(col, row, value);       
+        this.atPage = this.currentPageName;  
+        this.currentTable.SetCell(col, row, value);       
 	};
 
 	instanceProto.GetColCnt = function (page)
@@ -120,8 +122,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         {
             this.TurnPage(page);
         }
-        this.atPage = this.current_page_name;  
-        return this.current_table.GetColCnt();   
+        this.atPage = this.currentPageName;  
+        return this.currentTable.GetColCnt();   
 	};
 
 	instanceProto.GetRowCnt = function (page)
@@ -130,8 +132,8 @@ cr.plugins_.Rex_CSV = function(runtime)
         {
             this.TurnPage(page);
         }
-        this.atPage = this.current_page_name;  
-        return this.current_table.GetRowCnt();   
+        this.atPage = this.currentPageName;  
+        return this.currentTable.GetRowCnt();   
 	}; 
 
 	instanceProto.TableToString = function (page)
@@ -140,18 +142,18 @@ cr.plugins_.Rex_CSV = function(runtime)
         {
             this.TurnPage(page);
         }
-        return this.current_table.ToString();   
+        return this.currentTable.ToString();   
 	};
 	
 	instanceProto.saveToJSON = function ()
 	{
 	    var page, tables={};
-	    for (page in this._tables)	   
+	    for (page in this.tables)	   
         {
             this.TurnPage(page);
-	        tables[page] = {"d":this.current_table.table, 
-			                "k":this.current_table.keys, 
-							"i":this.current_table.items}
+	        tables[page] = {"d":this.currentTable.table, 
+			                "k":this.currentTable.keys, 
+							"i":this.currentTable.items}
 		}
 		return { "d": tables,
                       "delimiter": this.strDelimiter,
@@ -166,9 +168,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 		{
 		    this.TurnPage(page);
 		    table = tables[page];
-			this.current_table.table = table["d"];
-			this.current_table.keys = table["k"];
-			this.current_table.items = table["i"];
+			this.currentTable.table = table["d"];
+			this.currentTable.keys = table["k"];
+			this.currentTable.items = table["i"];
 		}
         
         this.strDelimiter = o["delimiter"];
@@ -178,20 +180,20 @@ cr.plugins_.Rex_CSV = function(runtime)
 	instanceProto.getDebuggerValues = function (propsections)
 	{
 	    var prop = [];
-	    prop.push({"name": "Page", "value": this.dbg_page_name});
-	    prop.push({"name": "Col", "value": this.dbg_col_name});
+	    prop.push({"name": "Page", "value": this.dbg.pageName});
+	    prop.push({"name": "Col", "value": this.dbg.colName});
 
-        if (this.HasPage(this.dbg_page_name))
+        if (this.HasPage(this.dbg.pageName))
         {
-	        var table = this._tables[this.dbg_page_name];
-	        if (table.table[this.dbg_col_name] != null)
+	        var table = this.tables[this.dbg.pageName];
+	        if (table.table[this.dbg.colName] != null)
 	        {
 	            var rows = table.items, r, d;
 	            var i, cnt=rows.length;
 	            for (i=0; i<cnt; i++)
 	            {
 	                r = rows[i];
-	                d = table.At(this.dbg_col_name,r);
+	                d = table.At(this.dbg.colName,r);
 	                prop.push({"name": "Row-"+r, "value": d});
 	            }
 	        }
@@ -206,22 +208,22 @@ cr.plugins_.Rex_CSV = function(runtime)
 	{
 		if (name == "Page")    // change page
 		{
-		    this.dbg_page_name = value;
+		    this.dbg.pageName = value;
 		}
 		else if (name == "Col")  // change col
 		{		    
-		    this.dbg_col_name = value;
+		    this.dbg.colName = value;
 		}
 		else if (name.substring(0,4) == "Row-") // set cell value
 		{	        
-		    if (this.HasPage(this.dbg_page_name))
+		    if (this.HasPage(this.dbg.pageName))
 		    {
 		        var r = name.substring(4);
-		        var table = this._tables[this.dbg_page_name];
-		        if ((table.keys.indexOf(this.dbg_col_name) != (-1)) && 
+		        var table = this.tables[this.dbg.pageName];
+		        if ((table.keys.indexOf(this.dbg.colName) != (-1)) && 
                     (table.items.indexOf(r) != (-1))                 )
                 {
-                    table.SetCell(this.dbg_col_name, r, value);  
+                    table.SetCell(this.dbg.colName, r, value);  
                 }		       
 		    }
 	    }
@@ -234,13 +236,13 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Cnds.prototype.ForEachCol = function ()
 	{
-        this.current_table.ForEachCol();
+        this.currentTable.ForEachCol();
 		return false;
 	};    
 
 	Cnds.prototype.ForEachRowInCol = function (col)
 	{
-        this.current_table.ForEachRowInCol(col);
+        this.currentTable.ForEachRowInCol(col);
 		return false;
 	}; 
     
@@ -251,7 +253,7 @@ cr.plugins_.Rex_CSV = function(runtime)
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
 		
 		this.forPage = "";
-        var tables = this._tables;
+        var tables = this.tables;
         var page;
         
 		for (page in tables)
@@ -273,21 +275,21 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Cnds.prototype.ForEachRow = function ()
 	{
-        this.current_table.ForEachRow();
+        this.currentTable.ForEachRow();
 		return false;
 	};    
 
 	Cnds.prototype.ForEachColInRow = function (row)
 	{
-        this.current_table.ForEachColInRow(row);
+        this.currentTable.ForEachColInRow(row);
 		return false;
 	}; 	
 
 	Cnds.prototype.IsDataInCol = function (data, col_name)
 	{
-		if (!(this.current_table.keys.indexOf(col_name) != (-1)))
+		if (!(this.currentTable.keys.indexOf(col_name) != (-1)))
 		    return false;    
-	    var table = this.current_table.table;
+	    var table = this.currentTable.table;
 	    var col_data = table[col_name], row_name;
 		var matched = false;
 		for (row_name in col_data)
@@ -303,9 +305,9 @@ cr.plugins_.Rex_CSV = function(runtime)
 
 	Cnds.prototype.IsDataInRow = function (data, row_name)
 	{
-		if (!(this.current_table.items.indexOf(row_name) != (-1)))
+		if (!(this.currentTable.items.indexOf(row_name) != (-1)))
 		    return false;    
-	    var table = this.current_table.table;
+	    var table = this.currentTable.table;
 	    var col_name;
 		var matched = false;
 		for (col_name in table)
@@ -322,31 +324,31 @@ cr.plugins_.Rex_CSV = function(runtime)
     // cf_deprecated
 	Cnds.prototype.IsKeyInCol = function (key)
 	{
-        return (this.current_table.keys.indexOf(key) != (-1));     
+        return (this.currentTable.keys.indexOf(key) != (-1));     
 	};
     // cf_deprecated
 
     // cf_deprecated    
 	Cnds.prototype.IsKeyInRow = function (key)
 	{
-        return (this.current_table.items.indexOf(key) != (-1));
+        return (this.currentTable.items.indexOf(key) != (-1));
 	};
     // cf_deprecated    
 
 	Cnds.prototype.IsCellValid = function (col, row)
 	{
-        return ((this.current_table.keys.indexOf(col) != (-1)) && 
-                (this.current_table.items.indexOf(row) != (-1))   );
+        return ((this.currentTable.keys.indexOf(col) != (-1)) && 
+                (this.currentTable.items.indexOf(row) != (-1))   );
 	};	
 
 	Cnds.prototype.HasCol = function (col)
 	{
-        return (this.current_table.keys.indexOf(col) != (-1));
+        return (this.currentTable.keys.indexOf(col) != (-1));
 	};	    
 
 	Cnds.prototype.HasRow = function (row)
 	{
-        return (this.current_table.items.indexOf(row) != (-1));
+        return (this.currentTable.items.indexOf(row) != (-1));
 	};	     
 	//////////////////////////////////////
 	// Actions
@@ -355,22 +357,22 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Acts.prototype.LoadCSV = function (csv_string)
 	{         
-        this.current_table._parsing(csv_string);
+        this.currentTable._parsing(csv_string);
 	};
     
 	Acts.prototype.SetCell = function (col, row, val)
 	{
-        this.current_table.SetCell(col, row, val);       
+        this.currentTable.SetCell(col, row, val);       
 	};
     
 	Acts.prototype.Clear = function ()
 	{
-		 this.current_table.Clear();
+		 this.currentTable.Clear();
 	};    
     
 	Acts.prototype.ConvertRow = function (row, to_type)
 	{
-         this.current_table.ConvertRow(row, to_type);
+         this.currentTable.ConvertRow(row, to_type);
 	};   
     
 	Acts.prototype.TurnPage = function (page)
@@ -380,44 +382,44 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Acts.prototype.StringToPage = function (JSON_string)
 	{
-        this.current_table.JSONString2Page(JSON_string);
+        this.currentTable.JSONString2Page(JSON_string);
 	};    
     
 	Acts.prototype.StringToPage = function (JSON_string)
 	{
-        this.current_table.JSONString2Page(JSON_string);
+        this.currentTable.JSONString2Page(JSON_string);
 	};   
     
 	Acts.prototype.AppendCol = function (col, init_value)
 	{
-        this.current_table.AppendCol(col, init_value);
+        this.currentTable.AppendCol(col, init_value);
 	}; 
     
 	Acts.prototype.AppendRow = function (row, init_value)
 	{
-        this.current_table.AppendRow(row, init_value);
+        this.currentTable.AppendRow(row, init_value);
 	}; 
     
 	Acts.prototype.RemoveCol = function (col)
 	{
         if (typeof (col) === "number")
         {
-            var cols = this.current_table.keys;
+            var cols = this.currentTable.keys;
             col = cols[col];
         }
         
-        this.current_table.RemoveCol(col);
+        this.currentTable.RemoveCol(col);
 	}; 
     
 	Acts.prototype.RemoveRow = function (row)
 	{
         if (typeof (row) === "number")
         {
-            var rows = this.current_table.items;
+            var rows = this.currentTable.items;
             row = rows[row];
         }  
         
-        this.current_table.RemoveRow(row);
+        this.currentTable.RemoveRow(row);
 	};     
     
 	Acts.prototype.SetDelimiter = function (s)
@@ -432,42 +434,42 @@ cr.plugins_.Rex_CSV = function(runtime)
 	    for (page in tables)
 	    {
 	        this.TurnPage(page);
-	        this.current_table.JSONString2Page(tables[page]);
+	        this.currentTable.JSONString2Page(tables[page]);
 	    }
 	};
     
 	Acts.prototype.SortCol = function (col, is_increasing)
 	{
-        this.current_table.SortCol(col, is_increasing);
+        this.currentTable.SortCol(col, is_increasing);
 	};
     
 	Acts.prototype.SortRow = function (row, is_increasing)
 	{
-        this.current_table.SortRow(row, is_increasing);
+        this.currentTable.SortRow(row, is_increasing);
 	}; 
     
 	Acts.prototype.SetCellAtPage = function (col, row, page, val)
 	{
         this.TurnPage(page);
-        this.current_table.SetCell(col, row, val);       
+        this.currentTable.SetCell(col, row, val);       
 	};
     
 	Acts.prototype.AddToCell = function (col, row, val)
 	{
         var value = this.Get(col, row) || 0;        
-        this.current_table.SetCell(col, row, value + val);       
+        this.currentTable.SetCell(col, row, value + val);       
 	};
     
 	Acts.prototype.AddToCellAtPage = function (col, row, page, val)
 	{
         var value = this.Get(col, row, page) || 0;  
         this.TurnPage(page);
-        this.current_table.SetCell(col, row, value + val);       
+        this.currentTable.SetCell(col, row, value + val);       
 	};
 
 	Acts.prototype.ConvertCol = function (col, to_type)
 	{
-         this.current_table.ConvertCol(col, to_type);
+         this.currentTable.ConvertCol(col, to_type);
 	};    
 	//////////////////////////////////////
 	// Expressions
@@ -481,12 +483,12 @@ cr.plugins_.Rex_CSV = function(runtime)
         
         if (typeof (col) === "number")
         {
-            var cols = this.current_table.keys;
+            var cols = this.currentTable.keys;
             col = cols[col];
         }
         if (typeof (row) === "number")
         {
-            var rows = this.current_table.items;
+            var rows = this.currentTable.items;
             row = rows[row];
         }        
         
@@ -498,17 +500,17 @@ cr.plugins_.Rex_CSV = function(runtime)
     
 	Exps.prototype.CurCol = function (ret)
 	{
-		ret.set_string(this.current_table.forCol);
+		ret.set_string(this.currentTable.forCol);
 	};
 	
 	Exps.prototype.CurRow = function (ret)
 	{
-		ret.set_string(this.current_table.forRow);
+		ret.set_string(this.currentTable.forRow);
 	};
 	
 	Exps.prototype.CurValue = function (ret)
 	{
-		ret.set_any(this.current_table.At( this.current_table.forCol, this.current_table.forRow ));
+		ret.set_any(this.currentTable.At( this.currentTable.forCol, this.currentTable.forRow ));
 	}; 
 
 	Exps.prototype.AtCol = function (ret)
@@ -554,14 +556,14 @@ cr.plugins_.Rex_CSV = function(runtime)
 	Exps.prototype.AllTalbesToString = function (ret)
 	{ 
 	    var page, table2string={};
-	    for (page in this._tables)	    
+	    for (page in this.tables)	    
 	        table2string[page] = this.TableToString(page);        
 		ret.set_string(JSON.stringify(table2string));
 	};
 	
 	Exps.prototype.TableToCSV = function (ret)
 	{ 
-		ret.set_string(this.current_table.ToCSVString());
+		ret.set_string(this.currentTable.ToCSVString());
 	}; 	
 	
 	Exps.prototype.NextCol = function (ret, col)
@@ -569,7 +571,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         if (col == null) 
             col = this.atCol;
         
-        var cols = this.current_table.keys;
+        var cols = this.currentTable.keys;
         var idx = cols.indexOf(col);
         var next_col;
         if (idx !== -1)
@@ -583,7 +585,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         if (col == null) 
             col = this.atCol;
         
-        var cols = this.current_table.keys;
+        var cols = this.currentTable.keys;
         var idx = cols.indexOf(col);
         var next_col;
         if (idx !== -1)
@@ -597,7 +599,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         if (row == null) 
             row = this.atRow;
         
-        var rows = this.current_table.items;
+        var rows = this.currentTable.items;
         var idx = rows.indexOf(row);
         var next_row;
         if (idx !== -1)
@@ -611,7 +613,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         if (row == null) 
             row = this.atRow;
         
-        var rows = this.current_table.items;
+        var rows = this.currentTable.items;
         var idx = rows.indexOf(row);
         var next_row;
         if (idx !== -1)
@@ -688,7 +690,7 @@ cr.plugins_.Rex_CSV = function(runtime)
         var i, v;
         for (i=0; i<key_cnt; i++)
         {
-            v = this.plugin.value_get(values[i]);
+            v = this.plugin.getValue(values[i]);
             table[keys[i]][item_name] = v;        
         }
         this.items.push(item_name);
@@ -1052,7 +1054,7 @@ cr.plugins_.Rex_CSV = function(runtime)
     CSVKlassProto.ToCSVString = function ()
     {
         var strDelimiter = this.plugin.strDelimiter;
-        var is_eval_mode = this.plugin.is_eval_mode;
+        var isEvalMode = this.plugin.isEvalMode;
         
         // first line = col name        
         var l = "";
@@ -1070,7 +1072,7 @@ cr.plugins_.Rex_CSV = function(runtime)
             l = cell_string_get(this.items[i], false, strDelimiter);
             for (k=0; k<kcnt; k++)
             {
-                l += (strDelimiter + cell_string_get(this.table[this.keys[k]][this.items[i]], is_eval_mode, strDelimiter));
+                l += (strDelimiter + cell_string_get(this.table[this.keys[k]][this.items[i]], isEvalMode, strDelimiter));
             }
             dump_lines.push(l);
         }
@@ -1080,13 +1082,13 @@ cr.plugins_.Rex_CSV = function(runtime)
         return csvString;
     };  
     
-    var cell_string_get = function (value_, is_eval_mode, strDelimiter)
+    var cell_string_get = function (value_, isEvalMode, strDelimiter)
     {
         if (typeof(value_) == "number")
             value_ = value_.toString();
         else
         {
-            if (is_eval_mode)
+            if (isEvalMode)
                 value_ = '"' + value_ + '"';
                 
             if (strDelimiter == null)

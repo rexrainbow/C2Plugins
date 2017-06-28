@@ -50,41 +50,41 @@ cr.behaviors.Rex_text_fpsmonitor = function(runtime)
 	    this.maximum_fps_enable = (this.properties[3] == 1);	
 	    this.average_fps_enable = (this.properties[4] == 1);
         this.cpuutilisation_enable = (this.properties[5] == 1);
-        this._text_type = ""; 
+        this._textObjType = ""; 
         this._set_text_handler = this._set_text_handler_get();        
 	    this._reset();       
 	};  
 
-	behinstProto._text_type_get = function ()
+	behinstProto._textObjType_get = function ()
 	{
-	    var text_type;
+	    var textObjType;
         if (cr.plugins_.Text &&
 		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        text_type = "Text";	    
+	        textObjType = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			text_type = "Spritefont2";	  
+			textObjType = "Spritefont2";	  
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    text_type = "rex_TagText";
+		    textObjType = "rex_TagText";
 		else
-		    text_type = "";	 
-		return text_type;
+		    textObjType = "";	 
+		return textObjType;
 	};
     
 	behinstProto._set_text_handler_get = function ()
 	{
-	    this.text_type = this._text_type_get();
-	    var set_text_handler;
-        if (this.text_type == "Text")		
-	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
-	    else if (this.text_type == "Spritefont2")	
-			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
-	    else if (this.text_type == "rex_TagText")	
-			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
+	    this.textObjType = this._textObjType_get();
+	    var setTextFn;
+        if (this.textObjType == "Text")		
+	        setTextFn = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (this.textObjType == "Spritefont2")	
+			setTextFn = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (this.textObjType == "rex_TagText")	
+			setTextFn = cr.plugins_.rex_TagText.prototype.acts.SetText;
 	    else
-		    set_text_handler = null;
-	    return set_text_handler;
+		    setTextFn = null;
+	    return setTextFn;
     };      
 	
 	behinstProto._reset = function()

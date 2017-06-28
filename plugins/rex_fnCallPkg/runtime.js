@@ -198,8 +198,8 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	
     Acts.prototype.LoadFnQueue = function (pkg)
 	{
-		this.fn_queue.length = 0;
-        Acts.prototype.AppendFnQueue(pkg);
+		Acts.prototype.CleanFnQueue.call(this);
+        Acts.prototype.AppendFnQueue.call(this, pkg);
 	};
     
     Acts.prototype.OverwriteParam = function (index_, value_)

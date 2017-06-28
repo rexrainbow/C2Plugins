@@ -44,20 +44,19 @@ cr.behaviors.Rex_bNickname = function(runtime)
 
 	behinstProto.onCreate = function()
 	{     	    
-	    this.set_nickname(this.properties[0], this.properties[1]); 
+	    this.setNickname(this.properties[0], this.properties[1]); 
 	};
 
 	behinstProto.tick = function ()
 	{
 	};  
 
-	behinstProto.set_nickname = function (_nickname, _mode)
+	behinstProto.setNickname = function (name, m)
 	{
 	    if (cr.plugins_.Rex_Nickname == null)
 		    return;
         
-        var nickname = (_mode == 1)? this.inst.type.sid.toString():
-                                     _nickname;
+        var nickname = (m == 1)? this.inst.type.sid.toString():name;
         if (nickname == "")
         {
             nickname = cr.plugins_.Rex_Nickname.sid2nickname[this.inst.type.sid.toString()];  // try to get nickname from nickname plugin

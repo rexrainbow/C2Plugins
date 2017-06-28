@@ -46,10 +46,13 @@ AddAction(1, af_deprecated, "Setup", "Z: Deprecated",
           "Get timer from <i>{0}</i>, callback to <i>{1}</i>", 
           "Setup.", "Setup");
           
-AddStringParam("Commands", "Commands in CSV format", "");
+AddStringParam("Commands", "Commands string", '""');
+AddComboParamOption("csv");
+AddComboParamOption("JSON");
+AddComboParam("Format", "String format.",0); 
 AddAction(2, 0, "Load commands", "0: Load", 
-          "Load commands <i>{0}</i>", 
-          "Load commands.", "LoadCmds");
+          "Load commands <i>{0}</i> (<i>{1}</i>)", 
+          "Load commands in csv or json format.", "LoadCmds");
 AddNumberParam("Offset", "Time offset at start", 0);
 AddStringParam("Tag", 'Tag in csv table. "" is start from 1st command.', "");
 AddAction(3, 0, "Start scenario", "Flow control", 
@@ -71,10 +74,14 @@ AddAction(7, 0, "Set time offset", "Setting",
 AddAction(8, 0, "Clean commands", "0: Load", 
           "Clean all commands", 
           "Clean all commands.", "CleanCmds");
-AddStringParam("Commands", "Commands in CSV format", "");
+
+AddStringParam("Commands", "Commands string", '""');
+AddComboParamOption("csv");
+AddComboParamOption("JSON");
+AddComboParam("Format", "String format.",0); 
 AddAction(9, 0, "Append commands", "0: Load", 
-          "Append commands <i>{0}</i>", 
-          "Append commands.", "AppendCmds");          
+          "Append commands <i>{0}</i> (<i>{1}</i>)", 
+          "Append commands in csv or json format.", "AppendCmds");          
                      
 AddAction(20, 0, "Continue all", "Response - Wait", 
           "Continue scenario (response of wait command)", 

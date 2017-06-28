@@ -50,7 +50,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 	
-	var dummyoffset = {left: 0, top: 0};
+	var canvasOffset = {left: 0, top: 0};
 
 	instanceProto.findTouch = function (id)
 	{
@@ -501,23 +501,20 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		
 		if (this.useMouseInput && !this.runtime.isDomFree)
 		{
-			jQuery(document).mousemove(
-				function(info) {
+			document.addEventListener("mousemove", 
+			    function(info) {
 					self.onMouseMove(info);
-				}
-			);
-			
-			jQuery(document).mousedown(
-				function(info) {
+				});
+
+			document.addEventListener("mousedown", 
+			    function(info) {
 					self.onMouseDown(info);
-				}
-			);
-			
-			jQuery(document).mouseup(
-				function(info) {
+				});			
+
+			document.addEventListener("mouseup", 
+			    function(info) {
 					self.onMouseUp(info);
-				}
-			);
+				});			
 		}
 		
 		// Use PhoneGap in case browser does not support accelerometer but device does
@@ -532,6 +529,16 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		this.lastTouchX = null;
 		this.lastTouchY = null;		
 	};
+
+	instanceProto.getCanvasOffset = function()
+	{
+		if (!this.runtime.isDomFree)
+		{
+			canvasOffset.left = this.runtime.canvas.offsetLeft;
+			canvasOffset.top = this.runtime.canvas.offsetTop;
+		}
+		return canvasOffset;
+	}
 	
 	instanceProto.onPointerMove = function (info)
 	{	    
@@ -550,7 +557,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		var cnt=this._callbackObjs.length, hooki;    		
 		if (i >= 0)
 		{
-			var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+			var offset = this.getCanvasOffset();
 			var t = this.touches[i];
 			
 			// Ignore events <2ms after the last event - seems events sometimes double-fire
@@ -582,7 +589,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 		
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var offset = this.getCanvasOffset();
 		var touchx = info.pageX - offset.left;
 		var touchy = info.pageY - offset.top;
 		var nowtime = cr.performance_now();
@@ -681,7 +688,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 			
 			if (j >= 0)
 			{
-				var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+				var offset = this.getCanvasOffset();
 				u = this.touches[j];
 				
 				// Ignore events <2ms after the last event - seems events sometimes double-fire
@@ -714,7 +721,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 		if (info.preventDefault && cr.isCanvasInputEvent(info))
 			info.preventDefault();
 			
-		var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+		var offset = this.getCanvasOffset();
 		var nowtime = cr.performance_now();
 		
 		this.runtime.isInUserInputEvent = true;
@@ -839,7 +846,7 @@ cr.plugins_.rex_TouchWrap = function(runtime)
 
     instanceProto.updateCursor = function(info)
     {
-        var offset = this.runtime.isDomFree ? dummyoffset : jQuery(this.runtime.canvas).offset();
+        var offset = this.getCanvasOffset();
         
         this.cursor.x = info.pageX - offset.left;
         this.cursor.y = info.pageY - offset.top; 

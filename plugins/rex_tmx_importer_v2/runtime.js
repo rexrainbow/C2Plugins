@@ -91,62 +91,62 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         this.exp_isIndent = 0;    
              
         // duration
-        this.processing_time = 0.5;
+        this.processingTime = 0.5;
         this.exp_RetrievingPercent = 0;         
               
-        this._tmx_obj = null;  
-        this._obj_type = null;
-        this._c2_layer = null;        
+        this.tmxObj = null;  
+        this.objType = null;
+        this.c2Layer = null;        
         this.layout = null;
-        this._created_inst = null;
+        this.createdC2Inst = null;
         
         // official save load
-        this.tmx_source = null;
-        this.parser_uid = null;
+        this.tmxSrcContent = null;
+        this.parserUID = null;
         this.save_pox = null;
         this.save_poy = null;
         
         // duration
-        this._duration_reset();     
+        this.durationReset();     
 	};
     
-    instanceProto.import_tmxObj = function (source, parser)
+    instanceProto.parseTmxContent = function (source, parser)
     {
-        var tmx_obj = parser.TMXObjGet(source);        
-        this.ImportTMX(tmx_obj);
+        var tmxObj = parser.TMXObjGet(source);        
+        this.importTmxObj(tmxObj);
         
-        this.tmx_source = source;
-        this.parser_uid = parser.uid;
+        this.tmxSrcContent = source;
+        this.parserUID = parser.uid;
     };
-    instanceProto.release_tmxObj = function ()
+    instanceProto.releaseTmxObj = function ()
     {
-        this._tmx_obj = null;    
+        this.tmxObj = null;    
         
-        this.tmx_source = null;
-        this.parser_uid = null;
+        this.tmxSrcContent = null;
+        this.parserUID = null;
         this.save_pox = null;
         this.save_poy = null;       
     };    
     
         
-	instanceProto.ImportTMX = function(tmx_obj)
+	instanceProto.importTmxObj = function(tmxObj)
 	{        	    
-        this._tmx_obj = tmx_obj;
-        this.exp_MapWidth = this._tmx_obj.map.width;
-        this.exp_MapHeight = this._tmx_obj.map.height;  
-        this.exp_TileWidth = this._tmx_obj.map.tilewidth; 
-        this.exp_TileHeight = this._tmx_obj.map.tileheight; 
-        this.exp_IsIsometric = (this._tmx_obj.map.orientation == "isometric");
+        this.tmxObj = tmxObj;
+        this.exp_MapWidth = this.tmxObj.map.width;
+        this.exp_MapHeight = this.tmxObj.map.height;  
+        this.exp_TileWidth = this.tmxObj.map.tilewidth; 
+        this.exp_TileHeight = this.tmxObj.map.tileheight; 
+        this.exp_IsIsometric = (this.tmxObj.map.orientation == "isometric");
         this.exp_TotalWidth = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileWidth: 
                                                       this.exp_MapWidth*this.exp_TileWidth;
         this.exp_TotalHeight = (this.exp_IsIsometric)? ((this.exp_MapWidth+this.exp_MapHeight)/2)*this.exp_TileHeight: 
                                                        this.exp_MapHeight*this.exp_TileHeight;
-        this.exp_BaclgroundColor = this._tmx_obj.map.backgroundcolor;                                                       
-        this.exp_MapProperties = this._tmx_obj.map.properties;
+        this.exp_BaclgroundColor = this.tmxObj.map.backgroundcolor;                                                       
+        this.exp_MapProperties = this.tmxObj.map.properties;
         
         
         // setup this.layout
-        var orientation = this._tmx_obj.map.orientation;
+        var orientation = this.tmxObj.map.orientation;
         var is6DirMap = (orientation === "hexagonal");
         var is4DirMap = (orientation === "orthogonal") || (orientation === "isometric") || (orientation === "staggered") ;
         if (is4DirMap)
@@ -160,118 +160,118 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         }
         else if (is6DirMap) 
         {
-            var is_up2down = (this._tmx_obj.map.staggeraxis === "x");
-            var is_even = (this._tmx_obj.map.staggerindex === "even");
-            var mode = (!is_up2down && !is_even)? ODD_R:
-                       (!is_up2down &&  is_even)? EVEN_R:
-                       ( is_up2down && !is_even)? ODD_Q:
-                       ( is_up2down &&  is_even)? EVEN_Q:0; 
+            var isUp2down = (this.tmxObj.map.staggeraxis === "x");
+            var isEven = (this.tmxObj.map.staggerindex === "even");
+            var mode = (!isUp2down && !isEven)? ODD_R:
+                       (!isUp2down &&  isEven)? EVEN_R:
+                       ( isUp2down && !isEven)? ODD_Q:
+                       ( isUp2down &&  isEven)? EVEN_Q:0; 
         
             this.layout = new HexLayoutKlass(this.POX, this.POY, 
                                              this.exp_TileWidth, this.exp_TileHeight, mode);
                                              
-            this.exp_isUp2Down = is_up2down;
-            this.exp_isIndent = is_even;                                             
+            this.exp_isUp2Down = isUp2down;
+            this.exp_isIndent = isEven;                                             
         }
                 
 	};
-	instanceProto.RetrieveTileArray = function(obj_type)
+	instanceProto.retrieveTileArray = function(objType)
 	{
 	    // tiles
-        this._retrieve_tiles(obj_type);
+        this.retrieveTiles(objType);
            
         // objects
-        this._retrieve_objects();
+        this.retrieveObjects();
         this.runtime.trigger(cr.plugins_.Rex_tmx_importer_v2.prototype.cnds.OnRetrieveFinished, this);
 	};
 	
 	
-	var get_tile_angle = function (_gid)
+	var getTileAngle = function (gid)
 	{
-        var rotate = (_gid >> 29) & 0x7;
-        var tile_angle;
+        var rotate = (gid >> 29) & 0x7;
+        var tileAngle;
         switch (rotate)
         {
-        case 5: tile_angle = 90;  break;
-        case 6: tile_angle = 180; break;
-        case 3: tile_angle = 270; break;
-        default: tile_angle = 0;  break;
+        case 5: tileAngle = 90;  break;
+        case 6: tileAngle = 180; break;
+        case 3: tileAngle = 270; break;
+        default: tileAngle = 0;  break;
         }
-        return tile_angle; 
+        return tileAngle; 
     }
 
 	// bitmaks to check for flipped & rotated tiles
 	var FlippedHorizontallyFlag		= 0x80000000;
 	var FlippedVerticallyFlag		= 0x40000000;
 	var FlippedAntiDiagonallyFlag   = 0x20000000;   	
-	instanceProto._read_tile_at_LXY = function(tmx_layer, x, y, is_raw_data)
+	instanceProto.readTileAtLXY = function(tmxLayer, x, y, is_raw_data)
 	{
-        var idx = (tmx_layer.width * y) + x;
-	    var _gid = tmx_layer.data[idx];	    
-        if ((_gid == null) || (_gid === 0) || is_raw_data)
-            return _gid;     // return gid                    
+        var idx = (tmxLayer.width * y) + x;
+	    var gid = tmxLayer.data[idx];	    
+        if ((gid == null) || (gid === 0) || is_raw_data)
+            return gid;     // return gid                    
      
         // prepare expressions
-        this.exp_TileID = _gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);  
+        this.exp_TileID = gid & ~(FlippedHorizontallyFlag | FlippedVerticallyFlag | FlippedAntiDiagonallyFlag);  
         this.exp_LogicX = x;
         this.exp_LogicY = y;
         this.exp_PhysicalX = this.layout.LXYZ2PX(x,y);
         this.exp_PhysicalY = this.layout.LXYZ2PY(x,y);
-        this.exp_TileAngle = get_tile_angle(_gid);
+        this.exp_TileAngle = getTileAngle(gid);
         if (this.exp_TileAngle == 0)
         {
-            this.exp_IsMirrored = ((_gid & FlippedHorizontallyFlag) !=0)? 1:0;
-            this.exp_IsFlipped = ((_gid & FlippedVerticallyFlag) !=0)? 1:0;
+            this.exp_IsMirrored = ((gid & FlippedHorizontallyFlag) !=0)? 1:0;
+            this.exp_IsFlipped = ((gid & FlippedVerticallyFlag) !=0)? 1:0;
         }
         else
         {
             this.exp_IsMirrored = 0;
             this.exp_IsFlipped = 0;
         }
-        var tileset_obj = this._tmx_obj.GetTileSet(this.exp_TileID);
-        this.exp_tilesetRef = tileset_obj;
-        var tile_obj = tileset_obj.tiles[this.exp_TileID];
-        this.exp_Frame = this.exp_TileID - tileset_obj.firstgid;
-        this.exp_TileProperties = (tile_obj != null)? tile_obj.properties: null;
+        var tilesetObj = this.tmxObj.GetTileSet(this.exp_TileID);
+        this.exp_tilesetRef = tilesetObj;
+        var tileObj = tilesetObj.tiles[this.exp_TileID];
+        this.exp_Frame = this.exp_TileID - tilesetObj.firstgid;
+        this.exp_TileProperties = (tileObj != null)? tileObj.properties: null;
 
-        if (this._obj_type)       
-            this._created_inst = this._create_instance(this.exp_PhysicalX, this.exp_PhysicalY);         
+        if (this.objType)       
+            this.createdC2Inst = this.createC2Instance(this.exp_PhysicalX, this.exp_PhysicalY);         
         else
-            this._created_inst = null;
+            this.createdC2Inst = null;
                             
-        return _gid;  // return gid
+        return gid;  // return gid
     };
 
-	instanceProto._create_layer_objects = function(tmx_layer, layer_index)
+	instanceProto._create_layer_objects = function(tmxLayer, layerIndex)
 	{	  
-	    var c2_layer = this._get_layer(tmx_layer.name);
-        this._c2_layer = c2_layer;
-        if (this._obj_type && !c2_layer)
+	    var c2Layer = this.getLayer(tmxLayer.name);
+        this.c2Layer = c2Layer;
+        if (this.objType && !c2Layer)
         {
-            alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer');
+            alert('TMX Importer: Can not find "' + tmxLayer.name + '" layer');
         }
         
-        if (this._obj_type && c2_layer && (this.exp_BaclgroundColor != null) && 
-             (layer_index === 0) )
+        if (this.objType && c2Layer && (this.exp_BaclgroundColor != null) && 
+             (layerIndex === 0) )
         {
-            cr.system_object.prototype.acts.SetLayerBackground.call(this, c2_layer, this.exp_BaclgroundColor);
-            //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2_layer, 0);            
+            cr.system_object.prototype.acts.SetLayerBackground.call(this, c2Layer, this.exp_BaclgroundColor);
+            //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2Layer, 0);            
         }
             
-        var width = tmx_layer.width;
-        var height = tmx_layer.height;
-        var x,y,inst,tileset_obj,tile_obj,layer_opacity,_gid; 
-        var i=0, _gid;
+        var width = tmxLayer.width;
+        var height = tmxLayer.height;
+        var x,y,inst,tilesetObj,tileObj,layer_opacity,gid; 
+        var i=0, gid;
         
-        this.exp_LayerName = tmx_layer.name;        
-        this.exp_LayerProperties = tmx_layer.properties;
-        this.exp_LayerOpacity = tmx_layer.opacity;
+        this.exp_LayerName = tmxLayer.name;        
+        this.exp_LayerProperties = tmxLayer.properties;
+        this.exp_LayerOpacity = tmxLayer.opacity;
         for (y=0; y<height; y++)
         {
             for (x=0; x<width; x++)
             {     
-                _gid = this._read_tile_at_LXY(tmx_layer, x,y);
-                if ((_gid == null) || (_gid === 0))
+                gid = this.readTileAtLXY(tmxLayer, x,y);
+                if ((gid == null) || (gid === 0))
                     continue;
 
                 // trigger callback
@@ -281,9 +281,9 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};
 
             	
-	instanceProto._create_instance = function(px, py)
+	instanceProto.createC2Instance = function(px, py)
 	{
-        var inst = this.runtime.createInstance(this._obj_type, this._c2_layer, px, py );
+        var inst = this.runtime.createInstance(this.objType, this.c2Layer, px, py );
         cr.plugins_.Sprite.prototype.acts.SetAnimFrame.call(inst, this.exp_Frame);
         inst.opacity = this.exp_LayerOpacity;          
         inst.angle = cr.to_clamped_radians(this.exp_TileAngle);
@@ -297,26 +297,26 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         return inst        
     };
 	    
-    instanceProto._get_layer = function(layerparam)
+    instanceProto.getLayer = function(layerparam)
     {
         return (typeof layerparam == "number")?
                this.runtime.getLayerByNumber(layerparam):
                this.runtime.getLayerByName(layerparam);
     };   
-	instanceProto._retrieve_tiles = function(obj_type)
+	instanceProto.retrieveTiles = function(objType)
 	{
-        this._obj_type = obj_type;
+        this.objType = objType;
         	    
-        var layers = this._tmx_obj.layers;
-        var layers_cnt = layers.length;
+        var layers = this.tmxObj.layers;
+        var layersCnt = layers.length;
         var i;
         // tiles
-        for(i=0; i<layers_cnt; i++)
+        for(i=0; i<layersCnt; i++)
         {
            this._create_layer_objects(layers[i], i);
         }           
            
-        this._obj_type = null;
+        this.objType = null;
 	};
 	
 	instanceProto._read_obj = function (obj)
@@ -325,16 +325,16 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
         return true;
     }
                 	        
-    instanceProto._retrieve_objects = function()
+    instanceProto.retrieveObjects = function()
     {
-        var obj_groups = this._tmx_obj.objectgroups;
-        var i, group, group_cnt=obj_groups.length;
+        var objGroups = this.tmxObj.objectgroups;
+        var i, group, groupCnt=objGroups.length;
         var j, obj, objs, obj_cnt;
         var x,y;
-        for (i=0; i<group_cnt; i++)
+        for (i=0; i<groupCnt; i++)
         {
-            group = obj_groups[i];
-            this.exp_objGroupRef = obj_groups[i];           
+            group = objGroups[i];
+            this.exp_objGroupRef = objGroups[i];           
             objs = this.exp_objGroupRef.objects;
             obj_cnt = objs.length;
             for (j=0; j<obj_cnt; j++)
@@ -346,186 +346,187 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
     };
     
     // duration mode
-    instanceProto._duration_start = function(tile_objtype)
+    instanceProto.durationStart = function(objType)
     {
-        this._duration_reset();       
-        this._duration_info.total_objects_count = _get_tiles_cnt(this._tmx_obj) + _get_objects_cnt(this._tmx_obj);
-        this._obj_type = tile_objtype;        
+        this.durationReset();       
+        this.durationInfo.totalObjectsCount = getTilesCnt(this.tmxObj) + getObjectsCnt(this.tmxObj);
+        this.objType = objType;        
         this.runtime.tickMe(this);
         this.tick();
     }; 
-    instanceProto._duration_reset = function()
+    instanceProto.durationReset = function()
     {
-        this._duration_info = {working_time:(1/60)*1000*this.processing_time,
-                               state:0, // 0=idle, 1=retrieve tile layer, 2=retrieve object layer
-                               goto_next_state:false,
-                               total_objects_count:0,
-                               current_objects_count:0,
-                               tile_layer:{layer_index:0,data_index:0},
-                               object_layer:{group_index:0,object_index:0},
-                               };
+        this.durationInfo = {
+            workingTime:(1/60)*1000*this.processingTime,
+            state:0, // 0=idle, 1=retrieve tile layer, 2=retrieve object layer
+            evtGotoNextState:false,
+            totalObjectsCount:0,
+            currentObjectsCount:0,
+            tileLayer:{layerIndex:0,dataIndex:0},
+            objectLayer:{groupIndex:0,objectIndex:0},
+        };
     }; 
     instanceProto.tick = function()
     {                
-        var unit_cnt, is_timeout=false;
-        var start_time = Date.now();
-        var working_time = this._duration_info.working_time;
-        // fix working_time
-        while (!is_timeout)
+        var unitCnt, isTimeout=false;
+        var startTime = Date.now();
+        var workingTime = this.durationInfo.workingTime;
+        // fix workingTime
+        while (!isTimeout)
         {
-            assert2(this._tmx_obj, "TMX Importer: Can not find tmx object.");
+            assert2(this.tmxObj, "TMX Importer: Can not find tmx object.");
             
-            unit_cnt = this._retrieve_one_tile_prepare();
+            unitCnt = this.retrieveOneObj();
             
-            this._duration_info.current_objects_count += unit_cnt;
-            this.exp_RetrievingPercent = (this._duration_info.current_objects_count/this._duration_info.total_objects_count);
+            this.durationInfo.currentObjectsCount += unitCnt;
+            this.exp_RetrievingPercent = (this.durationInfo.currentObjectsCount/this.durationInfo.totalObjectsCount);
             
-            if (unit_cnt > 0)
-                this._retrieve_one_tile_callevent();
+            if (unitCnt > 0)
+                this.triggerC2EventForOneObj();
 
             if (this.exp_RetrievingPercent === 1)
                 break;
-            else if (this._duration_info.goto_next_state)
+            else if (this.durationInfo.evtGotoNextState)
             {
-                this._duration_info.state += 1;                
-                this._duration_info.goto_next_state = false;
+                this.durationInfo.state += 1;                
+                this.durationInfo.evtGotoNextState = false;
             }
 
-            if (unit_cnt > 0)
-                is_timeout = (Date.now() - start_time) > working_time;
+            if (unitCnt > 0)
+                isTimeout = (Date.now() - startTime) > workingTime;
         }
 		this.runtime.trigger(cr.plugins_.Rex_tmx_importer_v2.prototype.cnds.OnRetrieveDurationTick, this); 
 		if (this.exp_RetrievingPercent === 1)
-		    this._duration_finished();   
+		    this.durationFinished();   
     };    
-    instanceProto._duration_finished = function()
+    instanceProto.durationFinished = function()
     {
-        this._duration_info.state = 0;
-        this._obj_type = null;  
+        this.durationInfo.state = 0;
+        this.objType = null;  
         this.runtime.untickMe(this);
         this.runtime.trigger(cr.plugins_.Rex_tmx_importer_v2.prototype.cnds.OnRetrieveFinished, this);
     };
     
-    var _get_tiles_cnt = function(tmx_obj)
+    var getTilesCnt = function(tmxObj)
     {
-        var layers = tmx_obj.layers;
-        var i, layers_cnt = layers.length;
-        var tile_cnt, total_tiles_cnt=0;
-        for(i=0; i<layers_cnt; i++)
-           total_tiles_cnt += layers[i].data.length;
-        return total_tiles_cnt;
+        var layers = tmxObj.layers;
+        var i, layersCnt = layers.length;
+        var tileCnt, totalTilesCnt=0;
+        for(i=0; i<layersCnt; i++)
+           totalTilesCnt += layers[i].data.length;
+        return totalTilesCnt;
     };     
-    var _get_objects_cnt = function(tmx_obj)
+    var getObjectsCnt = function(tmxObj)
     {
-        var obj_groups = tmx_obj.objectgroups;
-        var i, group_cnt=obj_groups.length;
-        var obj_cnt, total_objects_cnt=0;
-        for (i=0; i<group_cnt; i++)        
-            total_objects_cnt += obj_groups[i].objects.length; 
-        return total_objects_cnt;
+        var objGroups = tmxObj.objectgroups;
+        var i, groupCnt=objGroups.length;
+        var obj_cnt, totalObjectsCnt=0;
+        for (i=0; i<groupCnt; i++)        
+            totalObjectsCnt += objGroups[i].objects.length; 
+        return totalObjectsCnt;
     };          
-    instanceProto._retrieve_one_tile_prepare = function()
+    instanceProto.retrieveOneObj = function()
     {
-        var unit_cnt;
-        switch (this._duration_info.state)
+        var unitCnt;
+        switch (this.durationInfo.state)
         {
-        case 0: unit_cnt = this._retrieve_one_tile();     break;
-        case 1: unit_cnt = this._retrieve_one_object();   break;
+        case 0: unitCnt = this.retrieveOneTile();     break;
+        case 1: unitCnt = this.retrieveOneObject();   break;
         }
 
         
-        return unit_cnt;   
+        return unitCnt;   
     };
     
-    instanceProto._retrieve_one_tile = function()
+    instanceProto.retrieveOneTile = function()
     {   
-        var unit_cnt=0, _gid;
-        var layer_index,data_index,layers,tmx_layer,c2_layer,x,y;
+        var unitCnt=0, gid;
+        var layerIndex,dataIndex,layers,tmxLayer,c2Layer,x,y;
 
         while (1)
         {
-            layer_index = this._duration_info.tile_layer.layer_index;
-            data_index = this._duration_info.tile_layer.data_index;
-            tmx_layer = this._tmx_obj.layers[layer_index];
-            if (!tmx_layer)
+            layerIndex = this.durationInfo.tileLayer.layerIndex;
+            dataIndex = this.durationInfo.tileLayer.dataIndex;
+            tmxLayer = this.tmxObj.layers[layerIndex];
+            if (!tmxLayer)
             {
                 // finish
-                this._duration_info.goto_next_state = true;
-                return unit_cnt;
+                this.durationInfo.evtGotoNextState = true;
+                return unitCnt;
             }
        
             // check c2 layer
-            c2_layer =  this._get_layer(tmx_layer.name);
-            this._c2_layer = c2_layer;
-            if (this._obj_type && !c2_layer)
+            c2Layer =  this.getLayer(tmxLayer.name);
+            this.c2Layer = c2Layer;
+            if (this.objType && !c2Layer)
             {
-                alert('TMX Importer: Can not find "' + tmx_layer.name + '" layer'); 
+                alert('TMX Importer: Can not find "' + tmxLayer.name + '" layer'); 
             }
             
             // set layer background color
-            if (this._obj_type && c2_layer && (this.exp_BaclgroundColor != null) &&
-               (layer_index === 0) && (data_index === 0))
+            if (this.objType && c2Layer && (this.exp_BaclgroundColor != null) &&
+               (layerIndex === 0) && (dataIndex === 0))
             {
-                cr.system_object.prototype.acts.SetLayerBackground.call(this, c2_layer, this.exp_BaclgroundColor);
-                //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2_layer, 0);            
+                cr.system_object.prototype.acts.SetLayerBackground.call(this, c2Layer, this.exp_BaclgroundColor);
+                //cr.system_object.prototype.acts.SetLayerTransparent.call(this, c2Layer, 0);            
             } 
                    
 
-            x = data_index%tmx_layer.width;
-            y = (data_index-x)/tmx_layer.height;                   
-            _gid = this._read_tile_at_LXY(tmx_layer, x,y);
-            if (_gid == null)
+            x = dataIndex % tmxLayer.width;
+            y = (dataIndex-x)/tmxLayer.height;                   
+            gid = this.readTileAtLXY(tmxLayer, x,y);
+            if (gid == null)
             {
-                this._duration_info.tile_layer.layer_index += 1; // next layer
-                this._duration_info.tile_layer.data_index = 0;    // start from 0 
+                this.durationInfo.tileLayer.layerIndex += 1; // next layer
+                this.durationInfo.tileLayer.dataIndex = 0;    // start from 0 
                 continue; 
             }
-            else  // _gid == 0 or _gid > 0
+            else  // gid == 0 or gid > 0
             {
-                unit_cnt += 1;
-                this._duration_info.tile_layer.data_index += 1;  // next tile
-                if (_gid > 0)
-                    return unit_cnt; 
+                unitCnt += 1;
+                this.durationInfo.tileLayer.dataIndex += 1;  // next tile
+                if (gid > 0)
+                    return unitCnt; 
                 else 
                     continue;
             }                         
         }   
     }; 
     
-    instanceProto._retrieve_one_object = function()
+    instanceProto.retrieveOneObject = function()
     {
-        var objectgroups = this._tmx_obj.objectgroups;
+        var objectgroups = this.tmxObj.objectgroups;
         var group, obj;
         while (1)
         {
-            group = objectgroups[this._duration_info.object_layer.group_index];
+            group = objectgroups[this.durationInfo.objectLayer.groupIndex];
             if (!group)
             {
                 // finish
-                this._duration_info.goto_next_state = true;
+                this.durationInfo.evtGotoNextState = true;
                 return 0; 
             }
             this.exp_objGroupRef = group;            
-            obj = group.objects[this._duration_info.object_layer.object_index];                   
+            obj = group.objects[this.durationInfo.objectLayer.objectIndex];                   
             if (obj)  // get valid object
             {
                 this._read_obj(obj);
-                this._duration_info.object_layer.object_index += 1;  // next index            
+                this.durationInfo.objectLayer.objectIndex += 1;  // next index            
                 return 1;
             }            
             else    // no object in this group
             {
-                this._duration_info.object_layer.group_index += 1;  // try next group
-                this._duration_info.object_layer.object_index = 0;  // start from 0
+                this.durationInfo.objectLayer.groupIndex += 1;  // try next group
+                this.durationInfo.objectLayer.objectIndex = 0;  // start from 0
                 continue;
             }
         }
     };  
       
-    instanceProto._retrieve_one_tile_callevent = function()
+    instanceProto.triggerC2EventForOneObj = function()
     {
         var trg;
-        switch (this._duration_info.state)
+        switch (this.durationInfo.state)
         {
         case 0: trg = cr.plugins_.Rex_tmx_importer_v2.prototype.cnds.OnEachTileCell;   break;
         case 1: trg = cr.plugins_.Rex_tmx_importer_v2.prototype.cnds.OnEachObject;     break;
@@ -535,8 +536,8 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
     
 	instanceProto.saveToJSON = function ()
 	{   
-		return { "src": this.tmx_source,
-		         "parserUid": this.parser_uid,
+		return { "src": this.tmxSrcContent,
+		         "parserUid": this.parserUID,
                  "pox": (this.layout)? this.layout.PositionOX : null,
                  "poy": (this.layout)? this.layout.PositionOY : null
 		         };
@@ -544,23 +545,23 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-        this.release_tmxObj();
+        this.releaseTmxObj();
         
-	    this.tmx_source = o["src"];
-	    this.parser_uid = o["parserUid"];
+	    this.tmxSrcContent = o["src"];
+	    this.parserUID = o["parserUid"];
         this.save_pox = o["pox"];
         this.save_poy = o["poy"];        
 	};    
     
 	instanceProto.afterLoad = function ()
 	{
-        if (this.parser_uid === null)
+        if (this.parserUID === null)
             return;
             
-        var parser = this.runtime.getObjectByUID(this.parser_uid);
+        var parser = this.runtime.getObjectByUID(this.parserUID);
         assert2(parser, "TMX Importer: Failed to find parser object by UID");
         
-        this.import_tmxObj(this.tmx_source, parser);
+        this.parseTmxContent(this.tmxSrcContent, parser);
         this.layout.SetPOXY(this.save_pox, this.save_poy);
         
         this.save_pox = null;
@@ -574,7 +575,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	  
 	Cnds.prototype.OnEachTileCell = function ()
 	{
-        var inst = this._created_inst;
+        var inst = this.createdC2Inst;
         if (inst != null)
         {
             var sol = inst.type.getCurrentSol();
@@ -730,14 +731,14 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};	        
     Cnds.prototype.ForEachLayer = function ()
 	{   
-        if (this._tmx_obj == null)
+        if (this.tmxObj == null)
             return false;
             
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
         
-        var layers = this._tmx_obj.layers;          
+        var layers = this.tmxObj.layers;          
         var exp_LayerName_save = this.exp_LayerName;
         var exp_LayerProperties_save = this.exp_LayerProperties;
         var exp_LayerOpacity_save = this.exp_LayerOpacity;
@@ -813,30 +814,30 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	// retrieve one logic position
 	Cnds.prototype.ForEachTileAtLXY = function (x, y)
 	{
-        if (this._tmx_obj == null)
+        if (this.tmxObj == null)
             return false;
     
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();            
 
-        var obj_type_save = this._obj_type;
-        this._obj_type = null;    
+        var objTypeSave = this.objType;
+        this.objType = null;    
                 
-        var layers = this._tmx_obj.layers;
-        var layers_cnt = layers.length;
-        var i, tmx_layer, _gid;      
+        var layers = this.tmxObj.layers;
+        var layersCnt = layers.length;
+        var i, tmxLayer, gid;      
         // tiles
-        for(i=0; i<layers_cnt; i++)
+        for(i=0; i<layersCnt; i++)
         {  
 		    // fill expressions
-            tmx_layer = layers[i];
-            this.exp_LayerName = tmx_layer.name;        
-            this.exp_LayerProperties = tmx_layer.properties;
-            this.exp_LayerOpacity = tmx_layer.opacity;
+            tmxLayer = layers[i];
+            this.exp_LayerName = tmxLayer.name;        
+            this.exp_LayerProperties = tmxLayer.properties;
+            this.exp_LayerOpacity = tmxLayer.opacity;
             
-            _gid = this._read_tile_at_LXY(tmx_layer, x,y);
-            if ((_gid == null) || (_gid === 0))
+            gid = this.readTileAtLXY(tmxLayer, x,y);
+            if ((gid == null) || (gid === 0))
                 continue;
 		    // fill expressions            
             
@@ -850,7 +851,7 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 		    	this.runtime.popSol(current_event.solModifiers);             
         }
                 
-        this._obj_type = obj_type_save; 
+        this.objType = objTypeSave; 
         return false;
 	};   	 
 	//////////////////////////////////////
@@ -869,15 +870,15 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
             return;
         }
         
-        this.import_tmxObj(source, parser);
+        this.parseTmxContent(source, parser);
 	};
-    Acts.prototype.CreateTiles = function (obj_type)
+    Acts.prototype.CreateTiles = function (objType)
 	{	             
-        this.RetrieveTileArray(obj_type);
+        this.retrieveTileArray(objType);
 	};
     Acts.prototype.ReleaseTMX = function ()
 	{	     
-        this.release_tmxObj();   
+        this.releaseTmxObj();   
 	};	
     Acts.prototype.SetOPosition = function (pox, poy)
 	{	     
@@ -892,80 +893,80 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};
     Acts.prototype.RetrieveTileArray = function ()
 	{	  
-        this.RetrieveTileArray();
+        this.retrieveTileArray();
 	}; 
-    Acts.prototype.CreateTilesDuration = function (obj_type, processing_time)
+    Acts.prototype.CreateTilesDuration = function (objType, processingTime)
 	{
-        this.processing_time = processing_time;
-	    this._duration_start(obj_type);
+        this.processingTime = processingTime;
+	    this.durationStart(objType);
 	};    
-    Acts.prototype.RetrieveTileArrayDuration = function (processing_time)
+    Acts.prototype.RetrieveTileArrayDuration = function (processingTime)
 	{
-        this.processing_time = processing_time;
-	    this._duration_start();	    
+        this.processingTime = processingTime;
+	    this.durationStart();	    
 	}; 
 	
-    Acts.prototype.ResetTilemap = function (layer_name, objType)
+    Acts.prototype.ResetTilemap = function (layerName, objType)
 	{
         if (!objType)
             return;
-        var tilemap_inst = objType.getFirstPicked();
-        if (!tilemap_inst || !this._tmx_obj)
+        var c2TilemapInst = objType.getFirstPicked();
+        if (!c2TilemapInst || !this.tmxObj)
             return;
             
-        // get tmx_layer
-		var layers=this._tmx_obj.layers, i, cnt=layers.length, tmx_layer;
+        // get tmxLayer
+		var layers=this.tmxObj.layers, i, cnt=layers.length, tmxLayer;
 		for (i=0; i<cnt; i++)
 		{		    
-		    if (layers[i].name === layer_name)
+		    if (layers[i].name === layerName)
 		    {
-		        tmx_layer = layers[i];
+		        tmxLayer = layers[i];
 		        break;
 		    }
 		}
-		if (!tmx_layer)
+		if (!tmxLayer)
 		    return;
             
             
         // resize tilemap
-		tilemap_inst.mapwidth = this.exp_MapWidth;
-		tilemap_inst.mapheight = this.exp_MapHeight;
-		tilemap_inst.maybeResizeTilemap(true);
+		c2TilemapInst.mapwidth = this.exp_MapWidth;
+		c2TilemapInst.mapheight = this.exp_MapHeight;
+		c2TilemapInst.maybeResizeTilemap(true);
 		//inst.setTilesFromRLECSV([...]);
-		tilemap_inst.setAllQuadMapChanged();
-		tilemap_inst.physics_changed = true;
+		c2TilemapInst.setAllQuadMapChanged();
+		c2TilemapInst.physics_changed = true;
 		
-		tilemap_inst.tilewidth = this.exp_TileWidth;
-		tilemap_inst.tileheight = this.exp_TileHeight;
+		c2TilemapInst.tilewidth = this.exp_TileWidth;
+		c2TilemapInst.tileheight = this.exp_TileHeight;
 		var new_width = this.exp_TileWidth * this.exp_MapWidth;
 		var new_height = this.exp_TileHeight * this.exp_MapHeight;
-		if ((new_width !== tilemap_inst.width) || (new_height !== tilemap_inst.height))
+		if ((new_width !== c2TilemapInst.width) || (new_height !== c2TilemapInst.height))
 		{
-		    tilemap_inst.width = new_width;
-		    tilemap_inst.height = new_height;
-		    tilemap_inst.set_bbox_changed();
+		    c2TilemapInst.width = new_width;
+		    c2TilemapInst.height = new_height;
+		    c2TilemapInst.set_bbox_changed();
 		}  
 
         // no sprite instance created
-        var obj_type_save = this._obj_type;
-        this._obj_type = null;
+        var objTypeSave = this.objType;
+        this.objType = null;
         		
 		// fill tiles
-		var x, y, _gid;
+		var x, y, gid;
 		for (y=0; y<this.exp_MapHeight; y++)
 		{
 		    for (x=0; x<this.exp_MapWidth; x++)
 		    {
-		        _gid = this._read_tile_at_LXY(tmx_layer, x,y, true);
-                if ((_gid == null) || (_gid === 0))  // null tile
-                    _gid = -1;
+		        gid = this.readTileAtLXY(tmxLayer, x,y, true);
+                if ((gid == null) || (gid === 0))  // null tile
+                    gid = -1;
                 else
-                    _gid -= 1;
-                tilemap_inst.setTileAt(x, y, _gid);      
+                    gid -= 1;
+                c2TilemapInst.setTileAt(x, y, gid);      
 		    }
 		}
 		
-		this._obj_type = obj_type_save;
+		this.objType = objTypeSave;
 	}; 	    
 	//////////////////////////////////////
 	// Expressions
@@ -1003,18 +1004,18 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	}; 	
 	Exps.prototype.ImageSource = function (ret, gid)
 	{     
-        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
-	    ret.set_string((tileset_obj)? tileset_obj.image.source : "");
+        var tilesetObj = (gid == null)? this.exp_tilesetRef : this.tmxObj.GetTileSet(gid);
+	    ret.set_string((tilesetObj)? tilesetObj.image.source : "");
 	};
 	Exps.prototype.ImageWidth = function (ret, gid)
 	{     
-        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
-	    ret.set_float((tileset_obj)? tileset_obj.image.width : 0);
+        var tilesetObj = (gid == null)? this.exp_tilesetRef : this.tmxObj.GetTileSet(gid);
+	    ret.set_float((tilesetObj)? tilesetObj.image.width : 0);
 	};
 	Exps.prototype.ImageHeight = function (ret)
 	{
-        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
-	    ret.set_float((tileset_obj)? tileset_obj.image.height : 0);
+        var tilesetObj = (gid == null)? this.exp_tilesetRef : this.tmxObj.GetTileSet(gid);
+	    ret.set_float((tilesetObj)? tilesetObj.image.height : 0);
 	}; 	
 	
 	Exps.prototype.TileID = function (ret)
@@ -1029,42 +1030,42 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	{   
 	    ret.set_int(this.exp_LogicY);
 	};    
-	Exps.prototype.LayerProp = function (ret, name, default_value)
+	Exps.prototype.LayerProp = function (ret, name, defaultValue)
 	{   
         var value;
         if (this.exp_LayerProperties == null)
-            value = default_value;
+            value = defaultValue;
         else
         {
             value = this.exp_LayerProperties[name];
             if (value == null)
-                value = default_value;
+                value = defaultValue;
         }
 	    ret.set_any(value);
 	};
-	Exps.prototype.TilesetProp = function (ret, name, default_value)
+	Exps.prototype.TilesetProp = function (ret, name, defaultValue)
 	{       
         var value;
         if (this.exp_tilesetRef == null)
-            value = default_value;
+            value = defaultValue;
         else
         {
             value = this.exp_tilesetRef.properties[name];
             if (value == null)
-                value = default_value;        
+                value = defaultValue;        
         }
 	    ret.set_any(value);
 	};     
-	Exps.prototype.TileProp = function (ret, name, default_value)
+	Exps.prototype.TileProp = function (ret, name, defaultValue)
 	{    
         var value    
         if (this.exp_TileProperties == null)
-            value = default_value;
+            value = defaultValue;
         else
         {
             value = this.exp_TileProperties[name];
             if (value == null)
-                value = default_value;        
+                value = defaultValue;        
         }
 	    ret.set_any(value);
 	}; 
@@ -1103,26 +1104,26 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
             frameIdx = this.exp_Frame;
         else
         {
-            var tileset_obj = this._tmx_obj.GetTileSet(gid);
-            frameIdx = gid - tileset_obj.firstgid;
+            var tilesetObj = this.tmxObj.GetTileSet(gid);
+            frameIdx = gid - tilesetObj.firstgid;
         }
 	    ret.set_int(frameIdx);
 	};  
 	Exps.prototype.TilesetName = function (ret, gid)
 	{     
-        var tileset_obj = (gid == null)? this.exp_tilesetRef : this._tmx_obj.GetTileSet(gid);
-	    ret.set_string((tileset_obj)? tileset_obj.name : "");
+        var tilesetObj = (gid == null)? this.exp_tilesetRef : this.tmxObj.GetTileSet(gid);
+	    ret.set_string((tilesetObj)? tilesetObj.name : "");
 	};
-	Exps.prototype.MapProp = function (ret, name, default_value)
+	Exps.prototype.MapProp = function (ret, name, defaultValue)
 	{   
         var value;
         if (this.exp_MapProperties == null)
-            value = default_value;
+            value = defaultValue;
         else
         {
             value = this.exp_MapProperties[name];
             if (value == null)
-                value = default_value;
+                value = defaultValue;
         }
 	    ret.set_any(value);
 	};	
@@ -1171,23 +1172,23 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	};
 	Exps.prototype.ObjectX = function (ret)
 	{     
-        ret.set_int((this.exp_objRef)? this.exp_objRef.x : 0);    	        	       	    
+        ret.set_int((this.exp_objRef)? (this.exp_objRef.x + this.POX) : 0);    	        	       	    
 	};
 	Exps.prototype.ObjectY = function (ret)
 	{     
-        ret.set_int((this.exp_objRef)? this.exp_objRef.y : 0);    	        	       	    
+        ret.set_int((this.exp_objRef)? (this.exp_objRef.y + this.POY) : 0);    	        	       	    
 	};
     
-	Exps.prototype.ObjectProp = function (ret, name, default_value)
+	Exps.prototype.ObjectProp = function (ret, name, defaultValue)
 	{             
         var value;
         if (this.exp_objRef == null)
-            value = default_value;
+            value = defaultValue;
         else
         {
             value = this.exp_objRef.properties[name];
             if (value == null)
-                value = default_value;
+                value = defaultValue;
         }
 	    ret.set_any(value);
 	};
@@ -1262,11 +1263,11 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	
 	Exps.prototype.POX = function (ret)
 	{    
-	    ret.set_int(this.POX);
+	    ret.set_float(this.POX);
 	}; 
 	Exps.prototype.POY = function (ret)
 	{   
-	    ret.set_int(this.POY);
+	    ret.set_float(this.POY);
 	};	
 	
 	// hexagon
@@ -1303,12 +1304,12 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	SquareLayoutKlassProto.SetWidth = function(width)
 	{
         this.width = width;
-        this.half_width = width/2;        
+        this.halfWidth = width/2;        
 	}; 
 	SquareLayoutKlassProto.SetHeight = function(height)
 	{
         this.height = height;
-        this.half_height = height/2;        
+        this.halfHeight = height/2;        
 	};   
     SquareLayoutKlassProto.LXYZ2PX =function(lx, ly, lz)
 	{
@@ -1319,13 +1320,13 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	    }
 	    else if (this.mode == 1)  // Isometric
 	    {
-	        x = (lx - ly) * this.half_width;
+	        x = (lx - ly) * this.halfWidth;
 	    }
 	    else if (this.mode == 2)  // Staggered
 	    {
 	        x = lx * this.width;
 	        if (ly&1)
-	            x += this.half_width;
+	            x += this.halfWidth;
 	    }
 
         return x+this.PositionOX;
@@ -1339,11 +1340,11 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	    }
 	    else if (this.mode == 1)  // Isometric
 	    {
-	        y = (lx + ly) * this.half_height;
+	        y = (lx + ly) * this.halfHeight;
 	    }
 	    else if (this.mode == 2)  // Staggered
 	    {
-	        y = ly * this.half_height;
+	        y = ly * this.halfHeight;
 	    }
 
         return y+this.PositionOY;
@@ -1376,12 +1377,12 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	HexLayoutKlassProto.SetWidth = function(width)
 	{
         this.width = width;
-        this.half_width = width/2;      
+        this.halfWidth = width/2;      
 	}; 
 	HexLayoutKlassProto.SetHeight = function(height)
 	{
         this.height = height; 
-        this.half_height = height/2;   
+        this.halfHeight = height/2;   
 	};   
     HexLayoutKlassProto.LXYZ2PX = function(lx, ly, lz)
 	{
@@ -1391,13 +1392,13 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	    case ODD_R:
 	        px = (lx*this.width) + this.PositionOX;
 	        if (ly&1)
-	            px += this.half_width;	        
+	            px += this.halfWidth;	        
 	    break;
 	    
 	    case EVEN_R:
 	        px = (lx*this.width) + this.PositionOX;
 	        if (ly&1)
-	            px -= this.half_width;	   	        
+	            px -= this.halfWidth;	   	        
 	    break;
 	    
 	    case ODD_Q:
@@ -1420,13 +1421,13 @@ cr.plugins_.Rex_tmx_importer_v2 = function(runtime)
 	    case ODD_Q:
 	        py = (ly*this.height) + this.PositionOY;
 	        if (lx&1)
-	            py += this.half_height;	        
+	            py += this.halfHeight;	        
 	    break;
 	    
 	    case EVEN_Q:	    
 	        py = (ly*this.height) + this.PositionOY;
 	        if (lx&1)
-	            py -= this.half_height;	  	        
+	            py -= this.halfHeight;	  	        
 	    break;	    
 	    }
         return py;

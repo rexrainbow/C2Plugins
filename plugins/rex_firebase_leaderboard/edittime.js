@@ -35,7 +35,12 @@ AddNumberParam("Start", "Start from rank index (0-based).", 0);
 AddNumberParam("End", "End to rank index (0-based). This value should larger than Start.", 2);    
 AddCondition(12, cf_looping | cf_not_invertible, "For each rank in a range", "Update - for each", 
              "For each rank from <i>{0}</i> to <i>{1}</i>", 
-             "Repeat the event for each rank in a range.", "ForEachRank");                     
+             "Repeat the event for each rank in a range.", "ForEachRank");   
+
+AddCondition(23, cf_trigger, "On get score", "Score - get", 
+            "On get score",
+            "Triggered when get score.", "OnGetScore");
+                                 
 //////////////////////////////////////////////////////////////
 // Actions
 AddStringParam("Domain", "The root location of the Firebase data.", '""');
@@ -81,7 +86,12 @@ AddAnyTypeParam("Add", "Add score", 0);
 AddAnyTypeParam("Extra", "(Optional) Extra data, could be number or (JSON) string.", '""');
 AddAction(6, 0, "Add to score", "Send", 
           "Add <i>{2}</i> to (User ID: <i>{0}</i>) <i>{1}</i> 's score, extra data to <i>{3}</i>", 
-          "Add score by user ID.", "AddScore");                
+          "Add score by user ID.", "AddScore");       
+
+AddStringParam("UserID", "UserID from authentication.", '""');
+AddAction(22, 0, "Get score", "Score", 
+          "Get score of User ID: <i>{0}</i>", 
+          "Get score.", "GetScore");                   
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_string, "Current player name", "Update - for each", "CurPlayerName", 
@@ -122,6 +132,13 @@ AddNumberParam("Rank", "Rank index (0-based).", 0);
 AddExpression(26, ef_return_string | ef_variadic_parameters, "Player userID", "Rank index", "Rank2PlayerUserID",
               "Get userID by rank index. Add default value at 2nd parameter."); 
                             
+AddExpression(52, ef_return_string, "Get requested userID", "Request", "LastUserID", 
+              'Get requested userID. Return "" if invalided.'); 
+AddExpression(53, ef_return_any, "Get requested score", "Request", "LastScore", 
+              'Get requested score. Return 0 if invalided.');
+AddExpression(54, ef_return_any, "Get requested name", "Request", "LastPlayerName", 
+              'Get requested score. Return "" if invalided.');
+
 ACESDone();
 
 // Property grid properties for this plugin

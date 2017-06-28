@@ -185,12 +185,12 @@ AddExpression(27, ef_return_string | ef_variadic_parameters, "Get property in us
 AddExpression(31, ef_return_number, "Get current page index", "Page", "PageIndex", 
               "Get current page index. (0-based)"); 
 
-AddExpression(51, ef_return_number, "Get ranking of userID", "Ranking", "LastRanking", 
-              'Get ranking of userID (0-based) under "Condition:On get ranking". Return (-1) if invalided.'); 
-AddExpression(52, ef_return_string, "Get requested userID", "Ranking", "LastUserID", 
-              'Get requested userID under "Condition:On get ranking". Return "" if invalided.'); 
-AddExpression(53, ef_return_any, "Get requested score", "Ranking", "LastScore", 
-              'Get requested score under "Condition:On get score". Return "" if invalided.');
+AddExpression(51, ef_return_number, "Get ranking of userID", "Request", "LastRanking", 
+              'Get ranking of userID (0-based). Return (-1) if invalided.'); 
+AddExpression(52, ef_return_string, "Get requested userID", "Request", "LastUserID", 
+              'Get requested userID. Return "" if invalided.'); 
+AddExpression(53, ef_return_any, "Get requested score", "Request", "LastScore", 
+              'Get requested score. Return "" if invalided.');
                              
 //AddExpression(61, ef_return_number, "Last users count", "Users count", "LastUsersCount", 
 //              'Get users count under "Condition: On get users count".');              

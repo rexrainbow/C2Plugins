@@ -45,22 +45,22 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
 
 	behinstProto.onCreate = function()
 	{
-	    this.platform_behavior_inst = null;
+	    this.platformBehaviorInst = null;
         this.activated = (this.properties[0] == 1);
-        this.is_moving = false;
+        this.isMoving = false;
         this.target = {"m":0,       // 0: x mode , 1: distance mode
                        "dir": 0, // 0:left , 1: right
                        "x":0,
                        "y":0,
                        "d":0,
                        "ds":0 };
-        this.is_my_call = false;
+        this.isMyCall = false;
 	};
 	
-	behinstProto._get_platform_behavior_inst = function ()
+	behinstProto.getPlatformBehaviorInst = function ()
     {
-        if (this.platform_behavior_inst != null)
-            return this.platform_behavior_inst;
+        if (this.platformBehaviorInst != null)
+            return this.platformBehaviorInst;
 
 	    if (!cr.behaviors.Platform)
 		{
@@ -72,23 +72,23 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
 		{
 			if (behavior_insts[i] instanceof cr.behaviors.Platform.prototype.Instance)
 			{
-			    this.platform_behavior_inst = behavior_insts[i];
-				return this.platform_behavior_inst;
+			    this.platformBehaviorInst = behavior_insts[i];
+				return this.platformBehaviorInst;
 	        }
 		}
 		
 		assert2("No platfrom behavior found in this object."+this.inst.type.name);
     };
     	
-	behinstProto._move = function (dir)   // 0: left , 1: right
+	behinstProto.move = function (dir)   // 0: left , 1: right
     {
-        var platform_behavior_inst = this._get_platform_behavior_inst();        
-        cr.behaviors.Platform.prototype.acts.SimulateControl.call(platform_behavior_inst, dir);        
+        var platformBehaviorInst = this.getPlatformBehaviorInst();        
+        cr.behaviors.Platform.prototype.acts.SimulateControl.call(platformBehaviorInst, dir);        
     };
     
     behinstProto.tick = function ()
 	{        
-        if ( (!this.activated) || (!this.is_moving) ) 
+        if ( (!this.activated) || (!this.isMoving) ) 
         {
             return;
         }
@@ -100,7 +100,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
                  ((this.target["dir"] == 0) && (this.inst.x <= this.target["x"])) )
                 is_hit_target = true;
             else
-                this._move(this.target["dir"]); 
+                this.move(this.target["dir"]); 
         }
         else if (this.target["m"] == 1)    // distance mode
         {
@@ -111,7 +111,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
                 is_hit_target = true;
             else
             {
-                this._move(this.target["dir"]); 
+                this.move(this.target["dir"]); 
                 this.target["x"] = x;
                 this.target["y"] = y;
             }
@@ -119,16 +119,16 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
         
         if (is_hit_target)
         {            
-            this.is_moving = false;
-            this.is_my_call = true;
+            this.isMoving = false;
+            this.isMyCall = true;
             this.runtime.trigger(cr.behaviors.Rex_Platform_MoveTo.prototype.cnds.OnHitTarget, this.inst); 
-            this.is_my_call = false;            
+            this.isMyCall = false;            
         }   
 	}; 
 
 	behinstProto.SetTargetPos = function (_x)
 	{
-        this.is_moving = true;         
+        this.isMoving = true;         
         this.target["m"] = 0;
         this.target["dir"] = (_x > this.inst.x)? 1:0;
         this.target["x"] = _x;
@@ -139,7 +139,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
 	
  	behinstProto.SetTargetPosByDistance = function (distance, dir)
 	{
-	    this.is_moving = true;
+	    this.isMoving = true;
         this.target["m"] = 1;
         this.target["dir"] = dir;
         this.target["x"] = this.inst.x;
@@ -148,18 +148,31 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
         this.target["ds"] = 0;           
 	};  
 	
+    function clone(obj) 
+	{
+        if (null == obj || "object" != typeof obj) 
+		    return obj;
+        var result = obj.constructor();
+        for (var attr in obj) 
+		{
+            if (obj.hasOwnProperty(attr)) 
+			    result[attr] = obj[attr];
+        }
+        return result;
+    };
+    	
 	behinstProto.saveToJSON = function ()
 	{
 		return { "en": this.activated,
-		         "im": this.is_moving,
-		         "t": this.target,
+		         "im": this.isMoving,
+		         "t": clone(this.target),
                };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{  
 		this.activated = o["en"];
-		this.is_moving = o["im"];
+		this.isMoving = o["im"];
 		this.target = o["t"];
 	};	    
 	//////////////////////////////////////
@@ -169,12 +182,12 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
 
 	Cnds.prototype.OnHitTarget = function ()
 	{
-		return (this.is_my_call);
+		return (this.isMyCall);
 	};
 
 	Cnds.prototype.IsMoving = function ()
 	{
-		return (this.activated && this.is_moving);
+		return (this.activated && this.isMoving);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -212,7 +225,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
     
  	Acts.prototype.Stop = function ()
 	{
-        this.is_moving = false;
+        this.isMoving = false;
 	};   	
 	
 	//////////////////////////////////////
@@ -227,7 +240,7 @@ cr.behaviors.Rex_Platform_MoveTo = function(runtime)
     
 	Exps.prototype.TargetX = function (ret)
 	{
-        var x = (this.is_moving)? this.target["x"]:0;
+        var x = (this.isMoving)? this.target["x"]:0;
 		ret.set_float(x);
 	};  
 

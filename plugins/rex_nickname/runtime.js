@@ -56,13 +56,13 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
 	// export		
 	instanceProto.Nickname2Type = function (nickname)
 	{
-        var sid_info = this.nickname2objtype[nickname];
-        if (sid_info == null)
+        var sidInfo = this.nickname2objtype[nickname];
+        if (sidInfo == null)
             return null;
             
-        var sid = sid_info.sid;
+        var sid = sidInfo.sid;
         var objtypes = this.runtime.types_by_index;
-        var t = objtypes[sid_info.index];
+        var t = objtypes[sidInfo.index];
         if ((t != null) && (t.sid === sid))
             return t;
     
@@ -72,7 +72,7 @@ cr.plugins_.Rex_Nickname.AddNickname = function(nickname, objtype)
             t = objtypes[i];
 			if (t.sid === sid)
             {
-                sid_info.index = i;
+                sidInfo.index = i;
 				return t;
             }
 		}

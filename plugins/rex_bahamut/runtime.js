@@ -84,32 +84,32 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	{
 	    var start_index = _index_get(content, start_index, "暱稱：");
 	    var start_index = content.indexOf(">", start_index) +1;
-	    var end_index = content.indexOf("<", start_index);
-	    var value = content.substring(start_index, end_index);
+	    var endIndex = content.indexOf("<", start_index);
+	    var value = content.substring(start_index, endIndex);
 	    return value;
 	};
 	var _user2level = function(content, start_index)
 	{	    
 	    // level
 	    var start_index = _index_get(content, start_index, "LV");
-	    var end_index = content.indexOf(" ", start_index);
-	    var lv = parseFloat( content.substring(start_index, end_index) );
+	    var endIndex = content.indexOf(" ", start_index);
+	    var lv = parseFloat( content.substring(start_index, endIndex) );
 	    // race
-	    var start_index = content.indexOf(" ", end_index+1) + 1;
-	    var end_index = content.indexOf(" ", start_index);
-	    var race = content.substring(start_index, end_index);
+	    var start_index = content.indexOf(" ", endIndex+1) + 1;
+	    var endIndex = content.indexOf(" ", start_index);
+	    var race = content.substring(start_index, endIndex);
 	    // occupation
-	    var start_index = content.indexOf(" ", end_index+1) + 1;
-	    var end_index = content.indexOf("<", start_index);
-	    var occupation = content.substring(start_index, end_index);
+	    var start_index = content.indexOf(" ", endIndex+1) + 1;
+	    var endIndex = content.indexOf("<", start_index);
+	    var occupation = content.substring(start_index, endIndex);
         return [lv, race, occupation];
 	};		   
 	var _user2property = function(content, start_index, property_name)
 	{	    
 	    property_name += "：";
 	    var start_index = _index_get(content, start_index, property_name);
-	    var end_index = content.indexOf("<", start_index);
-	    var value = content.substring(start_index, end_index);	    
+	    var endIndex = content.indexOf("<", start_index);
+	    var value = content.substring(start_index, endIndex);	    
         return parseFloat(value);
 	};
 	
@@ -120,14 +120,14 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 	    var key = '<a href="http://home.gamer.com.tw/';		
 		var key_length = key.length;
 		var start_index = content.indexOf(key);		
-		var name, end_index, nickname;		
+		var name, endIndex, nickname;		
 		while (start_index < bound_index)
 		{
 		    start_index += key_length;
-		    end_index = content.indexOf('"', start_index);
-			name = content.substring(start_index, end_index);
-			nickname = _friendlist_name2nickname(content, name, end_index);
-			start_index = content.indexOf(key, end_index+1);
+		    endIndex = content.indexOf('"', start_index);
+			name = content.substring(start_index, endIndex);
+			nickname = _friendlist_name2nickname(content, name, endIndex);
+			start_index = content.indexOf(key, endIndex+1);
 			friend_list.push([name,nickname]);			
 		}
         return friend_list;
@@ -135,12 +135,12 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 
     var _friendlist_name2nickname = function (content, name, start_index)
 	{
-		var nickname, nickname_start_index, nickname_end_index, nickname_key;	
+		var nickname, nickname_start_index, nickname_endIndex, nickname_key;	
 	    nickname_key = name + "<br/>\n";
 		nickname_start_index = content.indexOf(nickname_key, start_index);
 		nickname_start_index += nickname_key.length;
-		nickname_end_index = content.indexOf("</a></td>", nickname_start_index);
-		nickname = content.substring(nickname_start_index, nickname_end_index);
+		nickname_endIndex = content.indexOf("</a></td>", nickname_start_index);
+		nickname = content.substring(nickname_start_index, nickname_endIndex);
 		return nickname;
 	};	
 

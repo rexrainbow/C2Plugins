@@ -143,7 +143,7 @@ cr.behaviors.Rex_bHash = function(runtime)
         if (root == null)
             root = this.hashtable;
         
-        if ((!keys) || (keys === "") || (keys.length === 0))
+        if ((keys == null) || (keys === "") || (keys.length === 0))
         {
             return root;
         }

@@ -40,7 +40,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.lines.push(timer);
 	};
 	// TimerCacheKlass	
-	cr.plugins_.Rex_TimeLine.timer_cache = new TimerCacheKlass();
+	cr.plugins_.Rex_TimeLine.timerCache = new TimerCacheKlass();
 	    
 	var pluginProto = cr.plugins_.Rex_TimeLine.prototype;
 		
@@ -70,23 +70,23 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
 	instanceProto.onCreate = function()
 	{     
-        this.update_mode = this.properties[0];
-        this.ManualMode = (this.update_mode === 0);
-        this.GameTimeMode = (this.update_mode === 1);
-        this.RealTimeMode = (this.update_mode === 2);
+        this.updateMode = this.properties[0];
+        this.ManualMode = (this.updateMode === 0);
+        this.GameTimeMode = (this.updateMode === 1);
+        this.RealTimeMode = (this.updateMode === 2);
         
-        this.update_manually = this.ManualMode ;
-        this.update_with_game_time = this.GameTimeMode;
-        this.update_with_real_time = this.RealTimeMode;
+        this.updateManually = this.ManualMode ;
+        this.updateWithGameTime = this.GameTimeMode;
+        this.updateWithRealTime = this.RealTimeMode;
         
         if (this.RealTimeMode)
         {
             var timer = new Date();
-            this.last_real_time = timer.getTime();
+            this.lastRealTime = timer.getTime();
         }
         else
         {
-            this.last_real_time = null;
+            this.lastRealTime = null;
         }
         
         this.my_timescale = -1.0;
@@ -102,9 +102,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {    
             this.timers = {};    
         }
-        this.timer_cache = cr.plugins_.Rex_TimeLine.timer_cache;      
-		this.exp_triggered_timer_name = "";
-        this.timers_save = null;
+        this.timerCache = cr.plugins_.Rex_TimeLine.timerCache;      
+		this.exp_triggeredTimerName = "";
+        this.timersSave = null;
 		
         // callback:      
         this.c2FnType = null;       
@@ -115,14 +115,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.timeline.CleanAll();
         var name;
         for (name in this.timers)
-            this.destroy_local_timer(name);
+            this.destroyLocalTimer(name);
 	};  
 	
     instanceProto.tick = function()
     {
         if (this.GameTimeMode)
         {
-            if (this.update_with_game_time)
+            if (this.updateWithGameTime)
             {
                 var dt = this.runtime.getDt(this);
                 this.timeline.Dispatch(dt);
@@ -131,15 +131,15 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         else if (this.RealTimeMode)
         {
             var timer = new Date();
-            var last_real_time = timer.getTime();                
+            var lastRealTime = timer.getTime();                
             
-            if (this.update_with_real_time)
+            if (this.updateWithRealTime)
             {  
-                var dt = (last_real_time - this.last_real_time)/1000;
+                var dt = (lastRealTime - this.lastRealTime)/1000;
                 this.timeline.Dispatch(dt);
             }
             
-            this.last_real_time = last_real_time;            
+            this.lastRealTime = lastRealTime;            
         }
     };
     
@@ -193,7 +193,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     	
     instanceProto.TimeGet = function()
     {
-        return this.timeline.ABS_Time;  
+        return this.timeline.absTime;  
     };	
 
     // ---- local timer ----
@@ -207,7 +207,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         }
         else      // get timer from timer cache
         {
-            timer = this.timer_cache.alloc(this, on_timeout);
+            timer = this.timerCache.alloc(this, on_timeout);
             timer.plugin = this;
             this.timers[timer_name] = timer;
         }
@@ -215,7 +215,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         return timer;
 	}; 
 	
-	instanceProto.destroy_local_timer = function(timer_name)
+	instanceProto.destroyLocalTimer = function(timer_name)
 	{
         var timer = this.timers[timer_name];
         if (timer == null)
@@ -223,19 +223,19 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             
         timer.Remove();
         delete this.timers[timer_name];
-        this.timer_cache.free(timer);
+        this.timerCache.free(timer);
 	}; 	 
 	
 	instanceProto.timer_cache_clean = function()
 	{
-        this.timer_cache.lines.length = 0;
+        this.timerCache.lines.length = 0;
 	};    
     
     // handler of timeout for timers in this plugin, this=timer   
     var on_timeout = function ()
     {
         var plugin = this.plugin;
-        plugin.exp_triggered_timer_name = this._cb.name;  
+        plugin.exp_triggeredTimerName = this._cb.name;  
         var name = this._cb.command;
         var params = this._cb.params;  
         plugin.RunCallback(name, params, true);
@@ -262,21 +262,21 @@ cr.plugins_.Rex_TimeLine = function(runtime)
      
 	instanceProto.saveToJSON = function ()
 	{ 
-        var name, timer, timers_save = {};        
+        var name, timer, timersSave = {};        
         for (name in this.timers)
         {
             timer = this.timers[name];
-            timers_save[name] = {"tim": timer.saveToJSON(),
+            timersSave[name] = {"tim": timer.saveToJSON(),
                                 "cmd": timer._cb.command,
                                 "pams": timer._cb.params,
                                 "rc": timer._repeat_count,
                                 };
         }
 		return { "ts": this.my_timescale,
-                 "ug": this.update_with_game_time,
+                 "ug": this.updateWithGameTime,
                  "tl": this.timeline.saveToJSON(),
-                 "timers": timers_save,
-                 "lrt": this.last_real_time,
+                 "timers": timersSave,
+                 "lrt": this.lastRealTime,
                  "ft": this.c2FnType,                 
                  };
 	};
@@ -285,8 +285,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	{
         this.my_timescale = o["ts"];
         this.timeline.loadFromJSON(o["tl"]);
-        this.timers_save = o["timers"];
-        this.last_real_time = o["lrt"];
+        this.timersSave = o["timers"];
+        this.lastRealTime = o["lrt"];
         this.c2FnType = o["ft"];
         
         this.onDestroy();
@@ -297,9 +297,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	instanceProto.afterLoad = function ()
 	{
         var name, timer_info, timer;
-        for (name in this.timers_save)
+        for (name in this.timersSave)
         {
-            timer_info = this.timers_save[name];
+            timer_info = this.timersSave[name];
             timer = this.LoadTimer(timer_info["tim"], on_timeout);
             timer.plugin = this;
             timer._cb = this._get_timer_cb_params(name);
@@ -307,14 +307,14 @@ cr.plugins_.Rex_TimeLine = function(runtime)
             timer._cb.params = timer_info["pams"];
             timer._repeat_count = timer_info["rc"];
         }
-        this.timers_save = null;        
+        this.timersSave = null;        
 	};
 
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{
 	    var props = [];
-	    props.push({"name": "Timeline's time", "value": this.timeline.ABS_Time});
+	    props.push({"name": "Timeline's time", "value": this.timeline.absTime});
         
         var name, timer;
         for (name in this.timers)
@@ -351,13 +351,13 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.PushTimeLine = function (delta_time)
+    Acts.prototype.PushTimeLine = function (deltaTime)
 	{
-        if (!this.update_manually)
+        if (!this.updateManually)
             return;
             
         // push manually
-        this.timeline.Dispatch(delta_time);
+        this.timeline.Dispatch(deltaTime);
 	};   
     
     // deprecated
@@ -365,22 +365,22 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     Acts.prototype.CreateTimer_deprecated = function () { }; 
 	// deprecated
     
-    Acts.prototype.StartTimer = function (timer_name, delay_time, repeat_count)
+    Acts.prototype.StartTimer = function (timer_name, delayTime, repeat_count)
 	{
         var timer = this.timers[timer_name];
         if (timer)
         {
             timer._repeat_count = repeat_count;
-            timer.Start(delay_time);            
+            timer.Start(delayTime);            
         }
 	};
 
-    Acts.prototype.StartTrgTimer = function (delay_time)
+    Acts.prototype.StartTrgTimer = function (delayTime)
 	{
-	    var timer_name = this.exp_triggered_timer_name;
+	    var timer_name = this.exp_triggeredTimerName;
 		var timer = this.timers[timer_name];
         if (timer)
-            timer.Start(delay_time);
+            timer.Start(delayTime);
 	}; 
     
     Acts.prototype.PauseTimer = function (timer_name)
@@ -411,7 +411,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     Acts.prototype.DeleteTimer = function (timer_name)
 	{
-	    this.destroy_local_timer(timer_name);
+	    this.destroyLocalTimer(timer_name);
 	};  
     
     Acts.prototype.SetTimerParameter = function (timer_name, index, value)
@@ -426,17 +426,17 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     Acts.prototype.PauseTimeLine = function ()
 	{
         if (this.GameTimeMode)
-	        this.update_with_game_time = false;
+	        this.updateWithGameTime = false;
         else if (this.RealTimeMode)
-            this.update_with_real_time = false;  
+            this.updateWithRealTime = false;  
 	};   
 
     Acts.prototype.ResumeTimeLine = function ()
 	{     
         if (this.GameTimeMode)
-	        this.update_with_game_time = true;
+	        this.updateWithGameTime = true;
         else if (this.RealTimeMode)
-            this.update_with_real_time = true;  
+            this.updateWithRealTime = true;  
 	};   	
     
     Acts.prototype.CreateTimer = function (timer_name, callback_name, callback_params)
@@ -458,7 +458,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
    
     Acts.prototype.SetTrgTimerParameters = function (callback_params)
 	{	    	    
-	    var timer_name = this.exp_triggered_timer_name;
+	    var timer_name = this.exp_triggeredTimerName;
 	    var timer = this.timers[timer_name];
 		if (timer)
 		{
@@ -468,25 +468,25 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	
     Acts.prototype.DeleteTrgTimer = function ()
 	{
-	    this.destroy_local_timer(this.exp_triggered_timer_name);		
+	    this.destroyLocalTimer(this.exp_triggeredTimerName);		
 	};	
 	
     Acts.prototype.PushTimeLineTo = function (t)
 	{
-        if (!this.update_manually)
+        if (!this.updateManually)
             return;
             
         // push manually
-        var delta_time = t - this.timeline.ABS_Time;
-        if (delta_time < 0)
+        var deltaTime = t - this.timeline.absTime;
+        if (deltaTime < 0)
             return;
             
-        this.timeline.Dispatch(delta_time);
+        this.timeline.Dispatch(deltaTime);
 	}; 
 	
-    Acts.prototype.SetupCallback = function (callback_type)
+    Acts.prototype.SetupCallback = function (callbackType)
 	{	
-        this.c2FnType = (callback_type===0)? "c2_callFunction" : "c2_callRexFunction2";
+        this.c2FnType = (callbackType===0)? "c2_callFunction" : "c2_callRexFunction2";
 	};	
 	
 	//////////////////////////////////////
@@ -524,12 +524,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
 	Exps.prototype.TimeLineTime = function (ret)
 	{ 
-	    ret.set_float(this.timeline.ABS_Time);
+	    ret.set_float(this.timeline.absTime);
 	};
     
 	Exps.prototype.TriggeredTimerName = function (ret)
 	{ 
-	    ret.set_string(this.exp_triggered_timer_name);
+	    ret.set_string(this.exp_triggeredTimerName);
 	};   
     
 	Exps.prototype.TimerDelayTime = function (ret)
@@ -553,27 +553,27 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     var _TIMERQUEUE_SORT = function(timerA, timerB)
     {
-        var ta = timerA.abs_time;
-        var tb = timerB.abs_time;
+        var ta = timerA.absTime;
+        var tb = timerB.absTime;
         return (ta < tb) ? -1 : (ta > tb) ? 1 : 0;
     }
     
     TimeLineProto.CleanAll = function()
 	{
         this.triggered_timer = null;     
-        this.ABS_Time = 0;
-        this._timer_abs_time = 0;
-        this._waiting_timer_queue = [];
-        this._process_timer_queue = [];
-        this._suspend_timer_queue = [];
+        this.absTime = 0;
+        this._timer_absTime = 0;
+        this._waitingTimerQueue = [];
+        this._processTimerQueue = [];
+        this._suspendTimerQueue = [];
         
-        this.activate_queue = [this._waiting_timer_queue, this._process_timer_queue];
-        this.all_queues = [this._waiting_timer_queue, this._process_timer_queue, this._suspend_timer_queue];    
+        this._activateQueue = [this._waitingTimerQueue, this._processTimerQueue];
+        this._allQueues = [this._waitingTimerQueue, this._processTimerQueue, this._suspendTimerQueue];    
 	}; 
     
 	TimeLineProto.CurrentTimeGet = function()
 	{
-        return this._timer_abs_time;
+        return this._timer_absTime;
 	};    
     
 	TimeLineProto.RegistTimer = function(timer)
@@ -583,27 +583,27 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     TimeLineProto.RemoveTimer = function(timer)
     {
-        this._remove_timer_from_lists(timer, false);  //activate_only=False
+        this._removeTimerFromQueues(timer, false);  //activate_only=False
         timer._idle();
     };
 
-    TimeLineProto.Dispatch = function(delta_time)
+    TimeLineProto.Dispatch = function(deltaTime)
     {
-        this.ABS_Time += delta_time;
+        this.absTime += deltaTime;
 
-        // sort _waiting_timer_queue
-        this._waiting_timer_queue.sort(_TIMERQUEUE_SORT);
+        // sort _waitingTimerQueue
+        this._waitingTimerQueue.sort(_TIMERQUEUE_SORT);
 
         // get time-out timer
-        var quene_length = this._waiting_timer_queue.length;
+        var quene_length = this._waitingTimerQueue.length;
         var i, timer;
         var timerCnt = 0;
         for (i=0; i<quene_length; i++)
         {
-            timer = this._waiting_timer_queue[i];
+            timer = this._waitingTimerQueue[i];
             if (this._is_timer_time_out(timer))
             {
-                this._process_timer_queue.push(timer);
+                this._processTimerQueue.push(timer);
                 timerCnt += 1;
             }
         }
@@ -613,30 +613,30 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         {
             for(i=timerCnt; i<quene_length; i++)
             {
-                this._waiting_timer_queue[i-timerCnt] = this._waiting_timer_queue[i];            
+                this._waitingTimerQueue[i-timerCnt] = this._waitingTimerQueue[i];            
             }
-            this._waiting_timer_queue.length -= timerCnt;
+            this._waitingTimerQueue.length -= timerCnt;
         }
 
         // do call back function with arg list
-        while (this._process_timer_queue.length > 0)
+        while (this._processTimerQueue.length > 0)
         {
-            this._process_timer_queue.sort(_TIMERQUEUE_SORT);
-            this.triggered_timer = this._process_timer_queue.shift();
-            this._timer_abs_time = this.triggered_timer.abs_time;
-            //log("[TimeLine] Current Time="+this._timer_abs_time);
+            this._processTimerQueue.sort(_TIMERQUEUE_SORT);
+            this.triggered_timer = this._processTimerQueue.shift();
+            this._timer_absTime = this.triggered_timer.absTime;
+            //log("[TimeLine] Current Time="+this._timer_absTime);
             this.triggered_timer.DoHandle();
         }    
-        this._timer_abs_time = this.ABS_Time;   
+        this._timer_absTime = this.absTime;   
         
     };    
  
     TimeLineProto.SuspendTimer = function(timer)
     {
-        var is_success = this._remove_timer_from_lists(timer, true); //activate_only=True
+        var is_success = this._removeTimerFromQueues(timer, true); //activate_only=True
         if (is_success)
         {
-            this._suspend_timer_queue.push(timer);
+            this._suspendTimerQueue.push(timer);
             timer.__suspend__();
         }
         return is_success;
@@ -645,10 +645,10 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     TimeLineProto.ResumeTimer = function(timer)
     {
         var is_success = false;
-        var item_index = this._suspend_timer_queue.indexOf(timer);
-        if (item_index != (-1))
+        var itemIndex = this._suspendTimerQueue.indexOf(timer);
+        if (itemIndex != (-1))
         {
-            cr.arrayRemove(this._suspend_timer_queue, item_index);
+            cr.arrayRemove(this._suspendTimerQueue, itemIndex);
             timer.__resume__();
             this.RegistTimer(timer);
             is_success = true;
@@ -658,8 +658,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     TimeLineProto.SetTimescale = function(timer, timescale)
     {
-        timer.__set_timescale__(timescale);
-        var is_success = this._remove_timer_from_lists(timer, true);  //activate_only=True
+        timer.__setTimescale__(timescale);
+        var is_success = this._removeTimerFromQueues(timer, true);  //activate_only=True
         if (is_success)
         {
             this.RegistTimer(timer);
@@ -669,8 +669,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimeLineProto.ChangeTimerRate = function(timer, rate)
     {
-        timer.__change_rate__(rate);
-        var is_success = this._remove_timer_from_lists(timer, true);  //activate_only=True
+        timer.__changeRate__(rate);
+        var is_success = this._removeTimerFromQueues(timer, true);  //activate_only=True
         if (is_success)
         {
             this.RegistTimer(timer);
@@ -680,41 +680,41 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 	
 	TimeLineProto.saveToJSON = function ()
 	{
-		return { "at": this.ABS_Time };
+		return { "at": this.absTime };
 	};
 	
 	TimeLineProto.loadFromJSON = function (o)
 	{
-		this.ABS_Time = o["at"];
+		this.absTime = o["at"];
 	};    
 
     // internal function        
     TimeLineProto._is_timer_time_out = function(timer)
     {
-        return (timer.abs_time <= this.ABS_Time);
+        return (timer.absTime <= this.absTime);
     };
 
     TimeLineProto._add_timer_to_activate_lists = function(timer)
     {
         var queue = ( this._is_timer_time_out(timer) )? 
-                    this._process_timer_queue : this._waiting_timer_queue;
+                    this._processTimerQueue : this._waitingTimerQueue;
         queue.push(timer);
     };
     
-    TimeLineProto._remove_timer_from_lists = function(timer, activate_only)
+    TimeLineProto._removeTimerFromQueues = function(timer, activate_only)
     {
         var is_success = false;
-        var timer_lists = (activate_only)? this.activate_queue : this.all_queues;
+        var timer_lists = (activate_only)? this._activateQueue : this._allQueues;
         var i;
         var lists_length = timer_lists.length;
-        var timer_queue, item_index;
+        var timer_queue, itemIndex;
         for(i=0; i<lists_length; i++)
         {
             timer_queue = timer_lists[i];
-            item_index = timer_queue.indexOf(timer);
-            if (item_index!= (-1))
+            itemIndex = timer_queue.indexOf(timer);
+            if (itemIndex!= (-1))
             {
-                cr.arrayRemove(timer_queue, item_index);
+                cr.arrayRemove(timer_queue, itemIndex);
                 is_success = true;
                 break;
             }
@@ -730,37 +730,37 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 		this.Reset();
         this.extra = {};		
         // state: 
-        // - idle: (!this._is_alive) && (!this._is_active)
-        // - run: (this._is_alive) && (this._is_active)
-        // - suspend: (this._is_alive) && (!this._is_active)
+        // - idle: (!this._isAlive) && (!this._isActive)
+        // - run: (this._isAlive) && (this._isActive)
+        // - suspend: (this._isAlive) && (!this._isActive)
     };
     var TimerProto = cr.plugins_.Rex_TimeLine.Timer.prototype;
     
     TimerProto.Reset = function()
     {
-        this.delay_time = 0; //delay_time
-        this._remainder_time = 0;
-        this.abs_time = 0;
+        this.delayTime = 0; //delayTime
+        this._remainderTime = 0;
+        this.absTime = 0;
         this.timescale = 1;
         this._idle();
-        this._abs_timeout_set(0); // delay_time
+        this._setAbsTimeout(0); // delayTime
     };
 	
     // export functions
-    TimerProto.Restart = function(delay_time)
+    TimerProto.Restart = function(delayTime)
     {
-        if (delay_time != null)  // assign new delay time
+        if (delayTime != null)  // assign new delay time
         {
-            this.delay_time = delay_time;
+            this.delayTime = delayTime;
         }
         
-        var t = this.delay_time / this.timescale;
-        this._abs_timeout_set(t);
-        if (this._is_alive)
+        var t = this.delayTime / this.timescale;
+        this._setAbsTimeout(t);
+        if (this._isAlive)
         {
-            if (!this._is_active)
+            if (!this._isActive)
             {
-                this._remainder_time = this.abs_time;
+                this._remainderTime = this.absTime;
                 this.Resume(); // update timer in TimeLineMgr 
             }
         }
@@ -784,7 +784,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     
     TimerProto.SetTimescale = function(timescale)
     {
-        if (this._is_active && (timescale === this.timescale))
+        if (this._isActive && (timescale === this.timescale))
             return;
             
         this.timeline.SetTimescale(this, timescale);
@@ -797,79 +797,79 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     TimerProto.Remove = function()
     {
-        if (this._is_alive)
+        if (this._isAlive)
             this.timeline.RemoveTimer(this);
     };
     
     TimerProto.IsAlive = function()
     {
-        return this._is_alive;
+        return this._isAlive;
     };
         
     TimerProto.IsActive = function()
     {
-        return (this._is_alive && this._is_active);    
+        return (this._isAlive && this._isActive);    
     };
     
     TimerProto.RemainderTimeGet = function(ignoreTimeScale)
     {
-        var remainder_time;
+        var remainderTime;
         
         if (this.IsActive())       // -> run             
-            remainder_time = this.abs_time - this.timeline.CurrentTimeGet();        
+            remainderTime = this.absTime - this.timeline.CurrentTimeGet();        
         else if (this.IsAlive())   // (!this.IsActive() && this.IsAlive()) -> suspend        
-            remainder_time = this._remainder_time;        
+            remainderTime = this._remainderTime;        
         else
-            remainder_time = 0;
+            remainderTime = 0;
 
         // ignoreTimeScale to get real remain time (for saving)
         if (!ignoreTimeScale)
         {
             if ((this.timescale !== 0) || (this.timescale !== 1))
-                remainder_time *= this.timescale;
+                remainderTime *= this.timescale;
         }
         
-        return remainder_time;  
+        return remainderTime;  
     };  
      
-    TimerProto.RemainderTimeSet = function(remainder_time)
+    TimerProto.RemainderTimeSet = function(remainderTime)
     {
         if (!this.IsAlive())
             return;
         
         // scale delay time
-        var delay_time = this.delay_time;
+        var delayTime = this.delayTime;
         if ((this.timescale !== 0) || (this.timescale !== 1))
-            delay_time /= this.timescale;
+            delayTime /= this.timescale;
         
-        this._remainder_time = cr.clamp(remainder_time, 0, delay_time);
-        this.abs_time = this.timeline.CurrentTimeGet() + this._remainder_time;         
+        this._remainderTime = cr.clamp(remainderTime, 0, delayTime);
+        this.absTime = this.timeline.CurrentTimeGet() + this._remainderTime;         
     };
     TimerProto.ElapsedTimeGet = function()
     {
-        return (this.delay_time - this.RemainderTimeGet());
+        return (this.delayTime - this.RemainderTimeGet());
     };  
 
     TimerProto.RemainderTimePercentGet = function()
     {
-        return (this.delay_time == 0)? 0:
-               (this.RemainderTimeGet() / this.delay_time);
+        return (this.delayTime == 0)? 0:
+               (this.RemainderTimeGet() / this.delayTime);
     };     
 
     TimerProto.ElapsedTimePercentGet = function()
     {
-        return (this.delay_time == 0)? 0:
-               (this.ElapsedTimeGet() / this.delay_time);
+        return (this.delayTime == 0)? 0:
+               (this.ElapsedTimeGet() / this.delayTime);
     };       
             
     TimerProto.ExpiredTimeGet = function()
     {    
-        return (this.timeline.ABS_Time - this.abs_time);
+        return (this.timeline.absTime - this.absTime);
     };
             
     TimerProto.DelayTimeGet = function()
     {    
-        return this.delay_time;
+        return this.delayTime;
     }; 
     
     // hang this function
@@ -893,24 +893,24 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // export to save/load timer
 	TimerProto.saveToJSON = function ()
 	{
-	    var remainder_time = this.RemainderTimeGet(true);
-		return { "dt": this.delay_time,
-                 "rt": remainder_time, 
+	    var remainderTime = this.RemainderTimeGet(true);
+		return { "dt": this.delayTime,
+                 "rt": remainderTime, 
                  "ts": this.timescale,                
-                 "alive": this._is_alive,
-                 "active": this._is_active,
+                 "alive": this._isAlive,
+                 "active": this._isActive,
                  "ex": this.extra
                  };
 	};
     
 	TimerProto.loadFromJSON = function (o)
 	{
-        this.delay_time = o["dt"];     
-        this._is_alive = o["alive"];
-        this._is_active = o["active"];       
+        this.delayTime = o["dt"];     
+        this._isAlive = o["alive"];
+        this._isActive = o["active"];       
         this.timescale = o["ts"];    // compaticable           
         this.extra = o["ex"];          
-        this.RemainderTimeSet(o["rt"]);  // set remaind_time and abs_time    
+        this.RemainderTimeSet(o["rt"]);  // set remaind_time and absTime    
         // this._handler will be set at timer created
 	};     
 	
@@ -929,51 +929,51 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     // internal functions
     TimerProto._idle = function()
     {
-        this._is_alive = false;   // start, stop
-        this._is_active = false;  // suspend, resume
+        this._isAlive = false;   // start, stop
+        this._isActive = false;  // suspend, resume
     };
     
     TimerProto._run = function()
     {
-        this._is_alive = true;
-        this._is_active = true;   
+        this._isAlive = true;
+        this._isActive = true;   
     };
 
-    TimerProto._abs_timeout_set = function(delta_time)
+    TimerProto._setAbsTimeout = function(deltaTime)
     {
-        this.abs_time = this.timeline.CurrentTimeGet() + delta_time;
+        this.absTime = this.timeline.CurrentTimeGet() + deltaTime;
     };
     
     // do not call this directly
     TimerProto.__suspend__ = function()
     {
-        this._remainder_time = this.abs_time - this.timeline.CurrentTimeGet();
-        this._is_active = false;
+        this._remainderTime = this.absTime - this.timeline.CurrentTimeGet();
+        this._isActive = false;
     };
 
     // do not call this directly
     TimerProto.__resume__ = function()
     {
-        this._abs_timeout_set(this._remainder_time);
-        this._is_active = true;
+        this._setAbsTimeout(this._remainderTime);
+        this._isActive = true;
     };
     
-    TimerProto.__set_timescale__ = function(timescale)
+    TimerProto.__setTimescale__ = function(timescale)
     {     
         if (timescale < 0)   // invalid
             return;
 
         var reset_rate = false;
-        if ((timescale == 0) && this._is_active) // suspend
+        if ((timescale == 0) && this._isActive) // suspend
         {
             this.Suspend();
         }
-        else if ((timescale > 0) && (!this._is_active)) // resume
+        else if ((timescale > 0) && (!this._isActive)) // resume
         {
             this.Resume();
             reset_rate = true;
         }
-        else if ((timescale > 0) && this._is_active) // this._is_active, normal
+        else if ((timescale > 0) && this._isActive) // this._isActive, normal
         {
             reset_rate = true;
         }
@@ -981,22 +981,22 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         if (reset_rate)
         {
             var rate = this.timescale / timescale;
-            this.__change_rate__(rate);
+            this.__changeRate__(rate);
             this.timescale = timescale;  
         }    
     };        
     
-    TimerProto.__change_rate__ = function(rate)
+    TimerProto.__changeRate__ = function(rate)
     {
-        if (this._is_active)
+        if (this._isActive)
         {
-            var abs_time = this.timeline.CurrentTimeGet();
-            var remainder_time = this.abs_time - abs_time;
-            this.abs_time = abs_time + (remainder_time*rate);
+            var absTime = this.timeline.CurrentTimeGet();
+            var remainderTime = this.absTime - absTime;
+            this.absTime = absTime + (remainderTime*rate);
         }
         else
         {
-            this._remainder_time *= rate;
+            this._remainderTime *= rate;
         }
     };
 }());

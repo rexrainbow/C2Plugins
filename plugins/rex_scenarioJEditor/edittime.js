@@ -47,7 +47,7 @@ AddCondition(22,	0, "While", "Loop",
     "While <b>{0}</b>", 
     "Declare a while loop.", "While");    
     
-AddStringParam("Exxpression", "Exxpression.", '""');
+AddStringParam("Expression", "Expression.", '""');
 AddCondition(31,	0, "Switch", "Switch", 
     "Switch <b>{0}</b>", 
     "Declare a switch block.", "SWITCHSwitch");    
