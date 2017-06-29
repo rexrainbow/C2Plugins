@@ -73,7 +73,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.is_request = false;
         this.is_accept = false;
         this.pre_is_at_cooldown = false;        
-        this.timer_save = null;
+        this.timerSave = null;
         this.is_custom_accept = false;
 	};
     
@@ -191,7 +191,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.cd_interval = o["t"];
         this.is_accept = o["acc"];
         
-        this.timer_save = o["tim"];
+        this.timerSave = o["tim"];
         this.type.timelineUid = o["tluid"];        
 	};
     
@@ -205,11 +205,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 			assert2(this.type.timeline, "Cooldown: Failed to find timeline object by UID");
 		}		
 
-        if (this.timer_save == null)
+        if (this.timerSave == null)
             this.timer = null;
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer = this.type.timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;        

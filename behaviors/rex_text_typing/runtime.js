@@ -67,13 +67,13 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.onCreate = function()
 	{    
         this.isLineBreak = (this.properties[0] === 1);    
-        this.typing_timer = null;
-        this.typing_speed = 0; 
-        this.typing_index = 0;
+        this.typingTimer = null;
+        this.typingspeed = 0; 
+        this.typingIndex = 0;
         this.content = "";
-        this.typing_content = null;
-        this.raw_text_length = 0;
-        this.timer_save = null;
+        this.typingContent = null;
+        this.rawTextLength = 0;
+        this.timerSave = null;
 		this.textObjType = this.getTextObjType();  
 		this.SetTextFn = this.get_SetText_Fn(this.textObjType);
 	};
@@ -131,8 +131,8 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	behinstProto.typing_timer_remove = function ()
 	{
-        if (this.typing_timer != null)
-            this.typing_timer.Remove();
+        if (this.typingTimer != null)
+            this.typingTimer.Remove();
     };  
 	
 	behinstProto.tick = function ()
@@ -180,7 +180,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 
     behinstProto._get_timer = function ()
     {
-        var timer = this.typing_timer;
+        var timer = this.typingTimer;
         if  (timer == null)
         {
             var timeline = this.type._timeline_get();
@@ -198,22 +198,22 @@ cr.behaviors.Rex_text_typing = function(runtime)
             text = this.lineBreakContent(text);
         }
                 
-	    this.raw_text_length = this.get_rawTextLength(text);
+	    this.rawTextLength = this.get_rawTextLength(text);
         if (speed != 0)
         {
             if (start_index == null)
                 start_index = 1;
             
-            this.typing_timer = this._get_timer();
-            this.typing_content = text;
-            this.typing_speed = speed;
-            this.typing_index = start_index;
-            this.typing_timer.Start(0);
+            this.typingTimer = this._get_timer();
+            this.typingContent = text;
+            this.typingspeed = speed;
+            this.typingIndex = start_index;
+            this.typingTimer.Start(0);
         }
         else
         {
-            this.typing_index = this.raw_text_length;
-            this.SetText(text, 0, this.typing_index);
+            this.typingIndex = this.rawTextLength;
+            this.SetText(text, 0, this.typingIndex);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
     };
@@ -226,22 +226,22 @@ cr.behaviors.Rex_text_typing = function(runtime)
         
 	behinstProto.text_typing_handler = function()
 	{
-        this.SetText(this.typing_content, 0, this.typing_index);
+        this.SetText(this.typingContent, 0, this.typingIndex);
         this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);         
-        this.typing_index += 1;        
-        if (this.typing_index <= this.raw_text_length)
-            this.typing_timer.Restart(this.typing_speed);        
+        this.typingIndex += 1;        
+        if (this.typingIndex <= this.rawTextLength)
+            this.typingTimer.Restart(this.typingspeed);        
         else
         {
-            this.typing_index = this.raw_text_length;
-            this.typing_content = null;            
+            this.typingIndex = this.rawTextLength;
+            this.typingContent = null;            
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
 	}; 
 
 	behinstProto.is_typing = function ()
 	{ 
-        return (this.typing_timer)? this.typing_timer.IsActive():false;
+        return (this.typingTimer)? this.typingTimer.IsActive():false;
 	}; 
     
  
@@ -319,11 +319,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{ 
 		return { "c": this.content,
-                 "tc": this.typing_content,
-		         "spd" : this.typing_speed,
-		         "i" : this.typing_index,
+                 "tc": this.typingContent,
+		         "spd" : this.typingspeed,
+		         "i" : this.typingIndex,
 		         
-		         "tim": (this.typing_timer != null)? this.typing_timer.saveToJSON() : null,
+		         "tim": (this.typingTimer != null)? this.typingTimer.saveToJSON() : null,
                  "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1)
                 };
 	};
@@ -331,11 +331,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.loadFromJSON = function (o)
 	{    
 	    this.content = o["c"];
-        this.typing_content = o["tc"];
-	    this.typing_speed = o["spd"];
-	    this.typing_index = o["i"];
+        this.typingContent = o["tc"];
+	    this.typingspeed = o["spd"];
+	    this.typingIndex = o["i"];
 	    
-        this.timer_save = o["tim"];
+        this.timerSave = o["tim"];
         this.type.timelineUid = o["tluid"];   
 	};
     
@@ -349,12 +349,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
 			assert2(this.type.timeline, "Timer: Failed to find timeline object by UID");
 		}		       
         
-        if (this.timer_save == null)
-            this.typing_timer = null;
+        if (this.timerSave == null)
+            this.typingTimer = null;
         else
         {
-            this.typing_timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
-            this.typing_timer.plugin = this;
+            this.typingTimer = this.type.timeline.LoadTimer(this.timerSave, on_timeout);
+            this.typingTimer.plugin = this;
         }     
         this.timers_save = null;        
 	}; 	
@@ -403,12 +403,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
 
 	Acts.prototype.SetTypingSpeed = function(speed)
 	{
-	    if (this.typing_speed === speed)
+	    if (this.typingspeed === speed)
 	        return;
 	        
 	        
-        this.typing_speed = speed;                   
-        var timer = this.typing_timer;
+        this.typingspeed = speed;                   
+        var timer = this.typingTimer;
         if (timer == null)
             return;
                     
@@ -430,28 +430,28 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	Acts.prototype.AppendText = function(param)
 	{
-        var start_index = this.raw_text_length;
+        var start_index = this.rawTextLength;
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
         this.content += param.toString();
         if (!this.is_typing())
-            this.start_typing(this.content, this.typing_speed, start_index);
+            this.start_typing(this.content, this.typingspeed, start_index);
 	};    
 
     Acts.prototype.Pause = function ()
 	{
-	    if (this.typing_timer == null)
+	    if (this.typingTimer == null)
 	        return;
 	        
-	    this.typing_timer.Suspend();
+	    this.typingTimer.Suspend();
 	};   
 
     Acts.prototype.Resume = function ()
 	{
-	    if (this.typing_timer == null)
+	    if (this.typingTimer == null)
 	        return;
 	    
-	    this.typing_timer.Resume();
+	    this.typingTimer.Resume();
 	};       
 	//////////////////////////////////////
 	// Expressions
@@ -460,12 +460,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
     Exps.prototype.TypingSpeed = function (ret)
 	{
-	    ret.set_float( this.typing_speed );
+	    ret.set_float( this.typingspeed );
 	};
     
     Exps.prototype.TypingIndex = function (ret)
 	{
-	    ret.set_float( this.typing_index -1 );
+	    ret.set_float( this.typingIndex -1 );
 	};	
 
     Exps.prototype.Content = function (ret)
@@ -475,6 +475,6 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
     Exps.prototype.LastTypingCharacter = function (ret)
 	{
-	    ret.set_string( this.content.charAt(this.typing_index-1) );
+	    ret.set_string( this.content.charAt(this.typingIndex-1) );
 	};	
 }());

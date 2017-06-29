@@ -234,13 +234,13 @@ cr.behaviors.Rex_Timer = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{ 
 	    var tims_save = {};
-        var name, timer, timer_save;
+        var name, timer, timerSave;
         for (name in this.timers) 
         {       
             timer = this.timers[name];
-            timer_save = timer.saveToJSON();  
-            timer_save["_rc"] = timer._repeat_count;
-            tims_save[name] = timer_save;   
+            timerSave = timer.saveToJSON();  
+            timerSave["_rc"] = timer._repeat_count;
+            tims_save[name] = timerSave;   
                          
         }
 		return { "tims": tims_save,
@@ -269,13 +269,13 @@ cr.behaviors.Rex_Timer = function(runtime)
             this.timers = {};
         else
         {
-            var name, timer, timer_save;
+            var name, timer, timerSave;
             for (name in this.timers_save)   
             {
-                timer_save = this.timers_save[name];
+                timerSave = this.timers_save[name];
                 timer = this.create_timer(name); 
-                timer._repeat_count = timer_save["_rc"];
-                timer.loadFromJSON(timer_save);
+                timer._repeat_count = timerSave["_rc"];
+                timer.loadFromJSON(timerSave);
                 timer.afterLoad();                
             }
         }     

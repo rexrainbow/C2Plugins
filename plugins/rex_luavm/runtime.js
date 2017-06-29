@@ -326,13 +326,13 @@ end\n\
 
 	instanceProto.saveToJSON = function ()
 	{ 
-        var task_name, timer_save = {};        
+        var task_name, timerSave = {};        
         for (task_name in this.timers)
         {
-            timer_save[task_name] = this.timers[task_name].saveToJSON();
+            timerSave[task_name] = this.timers[task_name].saveToJSON();
         }
 		return { "tlUid": (this.timeline != null)? this.timeline.uid : (-1),
-                 "tims": timer_save,
+                 "tims": timerSave,
                  };
 	};
     

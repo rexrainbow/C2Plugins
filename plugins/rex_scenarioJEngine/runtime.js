@@ -485,7 +485,7 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
         this.isPaused = false;
         this.timer = null;  
         this.waitSignal = null;
-        this.timer_save = null;           
+        this.timerSave = null;           
     };
     var TaskKlassProto = TaskKlass.prototype;
        
@@ -661,11 +661,11 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
             scope_save.push([ scope["pp"], scope["si"],  scope["dsi"], scope["vars"], scope["extra"] ]);            
         }
         
-        var timer_save = (this.timer)? this.timer.saveToJSON() : null;
+        var timerSave = (this.timer)? this.timer.saveToJSON() : null;
         
         return {"ss": scope_save, 
                      "tv": this.taskVars,
-                     "tim" : timer_save,
+                     "tim" : timerSave,
                 };
     };
     TaskKlassProto.loadFromJSON = function (o)
@@ -704,16 +704,16 @@ cr.plugins_.Rex_ScenarioJEngine = function(runtime)
         }
 
         this.taskVars = o["tv"];
-        this.timer_save = o["tim"];
+        this.timerSave = o["tim"];
     };	
     TaskKlassProto.afterLoad = function ()
     {  
-        if (this.timer_save != null)
+        if (this.timerSave != null)
         {
             var timeline = this.taskMgr.plugin.getTimeLine();
-            this.timer = timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer = timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.__task__ = this;       
-            this.timer_save = null;
+            this.timerSave = null;
         }
     };    
     

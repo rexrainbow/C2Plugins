@@ -249,16 +249,16 @@ cr.behaviors.Rex_Duration = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{ 
 	    var tims_save = {};
-        var name, timer, timer_save;
+        var name, timer, timerSave;
         for (name in this.timers) 
         {       
             timer = this.timers[name];
-            timer_save = timer.saveToJSON();  
-            timer_save["_dt"] = timer._duration_time;
-            timer_save["_it"] = timer._interval_time;
-            timer_save["_drt"] = timer._duration_remain_time;
-            timer_save["_iss"] = timer.run_start;
-            tims_save[name] = timer_save;   
+            timerSave = timer.saveToJSON();  
+            timerSave["_dt"] = timer._duration_time;
+            timerSave["_it"] = timer._interval_time;
+            timerSave["_drt"] = timer._duration_remain_time;
+            timerSave["_iss"] = timer.run_start;
+            tims_save[name] = timerSave;   
                          
         }
 		return { "tims": tims_save,
@@ -287,18 +287,18 @@ cr.behaviors.Rex_Duration = function(runtime)
             this.timers = {};
         else
         {
-            var name, timer, timer_save;
+            var name, timer, timerSave;
             for (name in this.timers_save)   
             {
-                timer_save = this.timers_save[name];
+                timerSave = this.timers_save[name];
                 timer = this.create_timer(name);
                 
-                timer._duration_time = timer_save["_dt"];
-                timer._interval_time = timer_save["_it"];
-                timer._duration_remain_time = timer_save["_drt"];   
-                timer.run_start = timer_save["_iss"];    
+                timer._duration_time = timerSave["_dt"];
+                timer._interval_time = timerSave["_it"];
+                timer._duration_remain_time = timerSave["_drt"];   
+                timer.run_start = timerSave["_iss"];    
                 
-                timer.loadFromJSON(timer_save);
+                timer.loadFromJSON(timerSave);
                 timer.afterLoad();                
             }
         }     

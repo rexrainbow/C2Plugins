@@ -50,7 +50,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.offset = 0;
         this.current_cmd = {};
         this.pre_abs_time = 0;        
-        this.timer_save = null;
+        this.timerSave = null;
 
 		/**BEGIN-PREVIEWONLY**/
 		this.debugger_info = [];
@@ -314,7 +314,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.offset = o["off"];
         this.current_cmd = o["cmd"];
         this.pre_abs_time = o["abst"];    
-        this.timer_save = o["tim"];
+        this.timerSave = o["tim"];
         this.timelineUid = o["tluid"];
         this.callbackUid = o["cbuid"];   // deprecated     
 	};
@@ -339,11 +339,11 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 		}		
 		// ---- deprecated ----          
         
-        if (this.timer_save == null)
+        if (this.timerSave == null)
             this.timer = null;
         else
         {
-            this.timer = this.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer = this.timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;        

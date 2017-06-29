@@ -618,7 +618,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.track_index = -1;
         this.onNotes = {};
 
-        this.timer_save = null;      
+        this.timerSave = null;      
     };
     var TrackKlassProto = TrackKlass.prototype;  
     
@@ -799,18 +799,18 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	TrackKlassProto.saveToJSON = function ()
 	{           
         // --------
-        var timer_save = null;
+        var timerSave = null;
         if (this.timer != null)
         {
-            timer_save = this.timer.saveToJSON();
-            timer_save["__cbargs"] = {"noteIdx": this.timer._note_index, 
+            timerSave = this.timer.saveToJSON();
+            timerSave["__cbargs"] = {"noteIdx": this.timer._note_index, 
                                       "isOn": this.timer._is_on
                                      };
         }   
 
 		return { "t": this.track,
                  "n": this.notes,
-                 "tim": timer_save,
+                 "tim": timerSave,
                  "at": this.abs_time,
                  "tidx": this.track_index,
                  "on": this.onNotes,
@@ -824,19 +824,19 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.abs_time = o["at"];
         this.track_index = o["tidx"];
         this.onNotes = o["on"];        
-        this.timer_save = o["tim"];
+        this.timerSave = o["tim"];
 	};    
 	
 	TrackKlassProto.afterLoad = function ()
 	{
-        if (this.timer_save != null)
+        if (this.timerSave != null)
         {
             var timeline = this.plugin._timeline_get();
-            this.timer = timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer = timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.track = this;
-            this.timer._note_index = this.timer_save["__cbargs"]["noteIdx"];
-            this.timer._is_on = this.timer_save["__cbargs"]["isOn"];       
-            this.timer_save = null;
+            this.timer._note_index = this.timerSave["__cbargs"]["noteIdx"];
+            this.timer._is_on = this.timerSave["__cbargs"]["isOn"];       
+            this.timerSave = null;
         }
 	};     
 	

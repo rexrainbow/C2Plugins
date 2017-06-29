@@ -72,7 +72,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
         this.target_value = 0;  
         this.timer = null;
         this.is_my_call = false;       
-        this.timer_save = null;         
+        this.timerSave = null;         
 	};
     
 	behinstProto.onDestroy = function()
@@ -136,7 +136,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
         this.duration = o["dt"];
         this.step = o["step"];	  
         this.target_value = o["tv"];      
-        this.timer_save = o["tim"];        
+        this.timerSave = o["tim"];        
         this.type.timelineUid = o["tluid"];    
 	};
     
@@ -150,11 +150,11 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 			assert2(this.type.timeline, "Value interpolation: Failed to find timeline object by UID");
 		}		
         
-        if (this.timer_save == null)
+        if (this.timerSave == null)
             this.timer = null;
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.timer = this.type.timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;        

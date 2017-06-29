@@ -402,7 +402,7 @@ cr.plugins_.Rex_TARP = function(runtime)
 	};
 	PlayerKlassProto.loadFromJSON = function (o)
 	{
-        this.timer_save = o["tim"]; 
+        this.timerSave = o["tim"]; 
         this.player_list = o["l"]; 
         this.play_index = o["i"]; 
         this.offset = o["off"]; 
@@ -411,11 +411,11 @@ cr.plugins_.Rex_TARP = function(runtime)
 	};
 	PlayerKlassProto.afterLoad = function ()
 	{
-        if (this.timer_save == null)
+        if (this.timerSave == null)
             this.timer = null;
         else
         {
-            this.timer = this.plugin._timeline_get().LoadTimer(this.timer_save, on_timeout);
+            this.timer = this.plugin._timeline_get().LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;
