@@ -442,7 +442,7 @@ cr.plugins_.Rex_Lookup = function(runtime)
         return "(prop['"+prop_name+"']"+cond+")"
     }
     
-    TestKlassProto.CreateTestCode = function(prop_names, d, line_index)
+    TestKlassProto.CreateTestCode = function(prop_names, d, lineIndex)
     {
         var name = d[0];
         var i, cnt=d.length;
@@ -465,7 +465,7 @@ cr.plugins_.Rex_Lookup = function(runtime)
         }
         catch(err)
         {        
-            assert2(null, "Lookup plugin: parse line " + line_index + " failed.");
+            assert2(null, "Lookup plugin: parse line " + lineIndex + " failed.");
         }
         return name;
     };

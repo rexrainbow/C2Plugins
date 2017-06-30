@@ -56,7 +56,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         
 		this.textObjType = this.getTextObjType();
 		this.SetTextFn = this.getSetTextFn();
-        this.init_content_lines();
+        this.initContentLines();
 	};
     
 	behinstProto.getTextObjType = function ()
@@ -100,7 +100,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	    return setTextFn;
     };  		
 	
-	behinstProto.init_content_lines = function ()
+	behinstProto.initContentLines = function ()
 	{
 	    var setTextFn;
         if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))		
@@ -127,8 +127,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     
 	behinstProto.redrawText = function ()
 	{  	    
-        var size_changed = (this.lastwidth !== this.inst.width) || (this.lastheight !== this.inst.height);        
-        if (size_changed || this.textChanged)
+        var isSizeChanged = (this.lastwidth !== this.inst.width) || (this.lastheight !== this.inst.height);        
+        if (isSizeChanged || this.textChanged)
         {
             this.SetContent(); 
             this.textChanged = false;
@@ -149,13 +149,13 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         return Math.floor(this.getLastStartLineIndex() * percent);
 	};
 
-	behinstProto.line2percent = function (line_index)
+	behinstProto.line2percent = function (lineIndex)
 	{  
-        var percent = line_index/this.getLastStartLineIndex();
+        var percent = lineIndex/this.getLastStartLineIndex();
         return cr.clamp(percent, 0, 1);
 	};    
     	
-	behinstProto.copy_content_lines = function ()
+	behinstProto.copyContentLines = function ()
 	{
         if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
         {
@@ -232,13 +232,13 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{               
         // render all content
         var inst = this.inst;              
-        this.SetText(this.content);         // start from line 0        
+        this.setText(this.content);         // start from line 0        
         var ctx = (this.runtime.enableWebGL)? 
                   this.getWebglCtx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
         
         // copy content in lines, or pensMgr
-        this.copy_content_lines();
+        this.copyContentLines();
         // get total lines count
 	    this.totalLinesCnt = this.getTotalLinesCount();
         // calc visible lines count
@@ -248,8 +248,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
             this.visibleLines -= 1;	    
         
         // only show visible lines
-        this.SetText("");     // clean remain text
-        this.SetText(this.getVisibleText(this.startLineIndex));
+        this.setText("");     // clean remain text
+        this.setText(this.getVisibleText(this.startLineIndex));
 	};    
 	
 	behinstProto.getLineHeight = function ()
@@ -267,7 +267,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     };  
 	
 
-	behinstProto.SetText = function (content)
+	behinstProto.setText = function (content)
 	{
 	    if (this.SetTextFn == null)
 		    return;
@@ -362,7 +362,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-    var _param2string = function (param)
+    var param2string = function (param)
     {
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
@@ -371,7 +371,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
  
 	Acts.prototype.SetContent = function(param)
 	{   
-        this.content = _param2string(param);
+        this.content = param2string(param);
 		this.startLineIndex = 0;
         this.SetContent();
 	};
@@ -381,49 +381,49 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.redrawText();            
         this.linePositionInPercent = cr.clamp(percent, 0, 1);
         var startLineIndex = this.perent2line(this.linePositionInPercent);
-        this.SetText(this.getVisibleText(startLineIndex));
+        this.setText(this.getVisibleText(startLineIndex));
 	};
     
 	Acts.prototype.AppendContent = function(param)
 	{   
-        this.content += _param2string(param);
+        this.content += param2string(param);
         this.textChanged = true;
 	}; 
 
-	Acts.prototype.ScrollToLineIndex = function(line_index)
+	Acts.prototype.ScrollToLineIndex = function(lineIndex)
 	{               
         this.redrawText();       
-        this.SetText(this.getVisibleText(line_index));
+        this.setText(this.getVisibleText(lineIndex));
 	}; 
 
 	Acts.prototype.NextLine = function()
 	{   
         this.redrawText();      
-        this.SetText(this.getVisibleText(this.startLineIndex+1));
+        this.setText(this.getVisibleText(this.startLineIndex+1));
 	}; 
 
 	Acts.prototype.PreviousLine = function()
 	{   
         this.redrawText();      
-        this.SetText(this.getVisibleText(this.startLineIndex-1));
+        this.setText(this.getVisibleText(this.startLineIndex-1));
 	};   
 
 	Acts.prototype.NextPage = function()
 	{   
         this.redrawText();      
-        this.SetText(this.getVisibleText(this.startLineIndex+this.visibleLines));
+        this.setText(this.getVisibleText(this.startLineIndex+this.visibleLines));
 	}; 
 
 	Acts.prototype.PreviousPage = function()
 	{   
         this.redrawText();      
-        this.SetText(this.getVisibleText(this.startLineIndex-this.visibleLines));
+        this.setText(this.getVisibleText(this.startLineIndex-this.visibleLines));
 	};   
 
 	Acts.prototype.ScrollToPageIndex = function(page_index)
 	{               
         this.redrawText();       
-        this.SetText(this.getVisibleText(page_index*this.visibleLines));
+        this.setText(this.getVisibleText(page_index*this.visibleLines));
 	}; 
     
 	//////////////////////////////////////

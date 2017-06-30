@@ -520,7 +520,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
         return "(prop['"+prop_name+"']"+cond+")"
     }
     
-    AchievementKlassProto.CreateTestCode = function(prop_names, d, line_index)
+    AchievementKlassProto.CreateTestCode = function(prop_names, d, lineIndex)
     {
         this.name = d[1];
         this.flag = false;
@@ -546,7 +546,7 @@ cr.plugins_.Rex_Achievements = function(runtime)
         }
         catch(err)
         {        
-            assert2(null, "Lookup plugin: parse line " + line_index + " failed.");
+            assert2(null, "Lookup plugin: parse line " + lineIndex + " failed.");
         }
     };
             
