@@ -126,7 +126,7 @@ cr.behaviors.Rex_text_resize = function(runtime)
         // render text
         this.prepare_draw();
         var ctx = (this.runtime.enableWebGL)? 
-                  this._get_webgl_ctx():this.runtime.ctx;
+                  this.getWebglCtx():this.runtime.ctx;
                   
         var inst = this.inst;
         inst.draw(ctx);
@@ -136,7 +136,7 @@ cr.behaviors.Rex_text_resize = function(runtime)
         inst.runtime.redraw = true;        
 	};
 	
-    behinstProto._get_webgl_ctx = function ()
+    behinstProto.getWebglCtx = function ()
 	{
         var inst = this.inst;            
         var ctx = inst.myctx;

@@ -512,7 +512,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	
 	
 	// copy from rex_text_scrolling
-    instanceProto._get_webgl_ctx = function ()
+    instanceProto.getWebglCtx = function ()
 	{
         var inst = this;            
         var ctx = inst.myctx;
@@ -535,7 +535,7 @@ cr.plugins_.rex_TagText = function(runtime)
 	{
         var inst = this;  
         var ctx = (this.runtime.enableWebGL)? 
-                  this._get_webgl_ctx():this.runtime.ctx;
+                  this.getWebglCtx():this.runtime.ctx;
         inst.draw(ctx, null, true);
     };
     
@@ -2331,7 +2331,7 @@ cr.plugins_.rex_TagText = function(runtime)
     }
 	var PenKlassProto = PenKlass.prototype;    
     
-    PenKlassProto.setPen = function (txt, x, y, width, prop, new_line_mode, start_index)
+    PenKlassProto.setPen = function (txt, x, y, width, prop, new_line_mode, startIndex)
     {
         this.text = txt;
         this.x = x;
@@ -2339,7 +2339,7 @@ cr.plugins_.rex_TagText = function(runtime)
         this.width = width;
         copy_dict(prop, this.prop); // font, size, color, shadow, etc...
         this.newLineMode = new_line_mode;  // 0= no new line, 1=raw "\n", 2=wrapped "\n"
-        this.startIndex = start_index;        
+        this.startIndex = startIndex;        
     };       
     
     PenKlassProto.getRawText = function ()

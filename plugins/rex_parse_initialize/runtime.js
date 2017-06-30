@@ -197,13 +197,13 @@ cr.plugins_.Rex_Parse_Initialize = function(runtime)
 		return false;
 	}; 
 
-	ItemPageKlassProto.FindFirst = function(key, value, start_index)
+	ItemPageKlassProto.FindFirst = function(key, value, startIndex)
 	{
-	    if (start_index == null)
-	        start_index = 0;
+	    if (startIndex == null)
+	        startIndex = 0;
 	        
         var i, cnt=this.items.length;
-        for(i=start_index; i<cnt; i++)
+        for(i=startIndex; i<cnt; i++)
         {
             if (this.items[i]["get"](key) == value)
                 return i + this.start;

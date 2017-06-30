@@ -32,7 +32,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.timelineUid = -1;    // for loading 	    
 	};
     
-    behtypeProto._timeline_get = function ()
+    behtypeProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -493,7 +493,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.is_pause = false;
         // --------
         // repeat
-        this.start_index = -1;
+        this.startIndex = -1;
         this.repeat_count = 1;
         // --------
         this.timer = null;      
@@ -681,7 +681,7 @@ cr.behaviors.rex_bScenario = function(runtime)
             this.offset = offset;
         if (this.timer == null)
         {
-            this.timer = this.plugin.type._timeline_get().CreateTimer(on_timeout);
+            this.timer = this.plugin.type.getTimelineObj().CreateTimer(on_timeout);
             this.timer.plugin = this;
         }
         else
@@ -696,7 +696,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         
         // repeat count
         this.repeat_count = repeat_count;
-        this.start_index = index;
+        this.startIndex = index;
         // --------
         
         if (this.is_debug_mode)
@@ -773,7 +773,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     };
     ScenarioKlassProto.table_index_reset = function ()
     {      
-        this.cmd_table.IndexSet(this.start_index);
+        this.cmd_table.IndexSet(this.startIndex);
     };    
     
     ScenarioKlassProto.exit = function ()
@@ -883,7 +883,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         {
             gC2FnParms.push( arguments[i] );
         }
-        var retValue = _thisArg.plugin.type._timeline_get().RunCallback(c2FnName, gC2FnParms, true);
+        var retValue = _thisArg.plugin.type.getTimelineObj().RunCallback(c2FnName, gC2FnParms, true);
         gC2FnParms.length = 0;
         
         return retValue;
@@ -980,7 +980,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     {
         if (this.timerSave != null)
         {
-            var timeline = this.plugin.type._timeline_get();
+            var timeline = this.plugin.type.getTimelineObj();
             this.timer = timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
             this.timer._cb_name = this.timerSave["__cbargs"][0];

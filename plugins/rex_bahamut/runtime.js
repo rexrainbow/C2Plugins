@@ -75,41 +75,41 @@ cr.plugins_.Rex_Bahamut = function(runtime)
         return (content != "") && content.indexOf("查詢失敗") == (-1);
     };
 
-    var _index_get = function (content, start_index, k)
+    var _index_get = function (content, startIndex, k)
     {
-        return content.indexOf(k, start_index) + k.length;        
+        return content.indexOf(k, startIndex) + k.length;        
     }
 
-	var _user2nickname = function(content, start_index)
+	var _user2nickname = function(content, startIndex)
 	{
-	    var start_index = _index_get(content, start_index, "暱稱：");
-	    var start_index = content.indexOf(">", start_index) +1;
-	    var endIndex = content.indexOf("<", start_index);
-	    var value = content.substring(start_index, endIndex);
+	    var startIndex = _index_get(content, startIndex, "暱稱：");
+	    var startIndex = content.indexOf(">", startIndex) +1;
+	    var endIndex = content.indexOf("<", startIndex);
+	    var value = content.substring(startIndex, endIndex);
 	    return value;
 	};
-	var _user2level = function(content, start_index)
+	var _user2level = function(content, startIndex)
 	{	    
 	    // level
-	    var start_index = _index_get(content, start_index, "LV");
-	    var endIndex = content.indexOf(" ", start_index);
-	    var lv = parseFloat( content.substring(start_index, endIndex) );
+	    var startIndex = _index_get(content, startIndex, "LV");
+	    var endIndex = content.indexOf(" ", startIndex);
+	    var lv = parseFloat( content.substring(startIndex, endIndex) );
 	    // race
-	    var start_index = content.indexOf(" ", endIndex+1) + 1;
-	    var endIndex = content.indexOf(" ", start_index);
-	    var race = content.substring(start_index, endIndex);
+	    var startIndex = content.indexOf(" ", endIndex+1) + 1;
+	    var endIndex = content.indexOf(" ", startIndex);
+	    var race = content.substring(startIndex, endIndex);
 	    // occupation
-	    var start_index = content.indexOf(" ", endIndex+1) + 1;
-	    var endIndex = content.indexOf("<", start_index);
-	    var occupation = content.substring(start_index, endIndex);
+	    var startIndex = content.indexOf(" ", endIndex+1) + 1;
+	    var endIndex = content.indexOf("<", startIndex);
+	    var occupation = content.substring(startIndex, endIndex);
         return [lv, race, occupation];
 	};		   
-	var _user2property = function(content, start_index, property_name)
+	var _user2property = function(content, startIndex, property_name)
 	{	    
 	    property_name += "：";
-	    var start_index = _index_get(content, start_index, property_name);
-	    var endIndex = content.indexOf("<", start_index);
-	    var value = content.substring(start_index, endIndex);	    
+	    var startIndex = _index_get(content, startIndex, property_name);
+	    var endIndex = content.indexOf("<", startIndex);
+	    var value = content.substring(startIndex, endIndex);	    
         return parseFloat(value);
 	};
 	
@@ -119,25 +119,25 @@ cr.plugins_.Rex_Bahamut = function(runtime)
 		var bound_index = content.indexOf("<!--內容左側區塊結束-->");		
 	    var key = '<a href="http://home.gamer.com.tw/';		
 		var key_length = key.length;
-		var start_index = content.indexOf(key);		
+		var startIndex = content.indexOf(key);		
 		var name, endIndex, nickname;		
-		while (start_index < bound_index)
+		while (startIndex < bound_index)
 		{
-		    start_index += key_length;
-		    endIndex = content.indexOf('"', start_index);
-			name = content.substring(start_index, endIndex);
+		    startIndex += key_length;
+		    endIndex = content.indexOf('"', startIndex);
+			name = content.substring(startIndex, endIndex);
 			nickname = _friendlist_name2nickname(content, name, endIndex);
-			start_index = content.indexOf(key, endIndex+1);
+			startIndex = content.indexOf(key, endIndex+1);
 			friend_list.push([name,nickname]);			
 		}
         return friend_list;
     };  
 
-    var _friendlist_name2nickname = function (content, name, start_index)
+    var _friendlist_name2nickname = function (content, name, startIndex)
 	{
 		var nickname, nickname_start_index, nickname_endIndex, nickname_key;	
 	    nickname_key = name + "<br/>\n";
-		nickname_start_index = content.indexOf(nickname_key, start_index);
+		nickname_start_index = content.indexOf(nickname_key, startIndex);
 		nickname_start_index += nickname_key.length;
 		nickname_endIndex = content.indexOf("</a></td>", nickname_start_index);
 		nickname = content.substring(nickname_start_index, nickname_endIndex);
@@ -156,21 +156,21 @@ cr.plugins_.Rex_Bahamut = function(runtime)
             this._user_data[usr_name] = {}; 
         }
         var user_data = this._user_data[usr_name]; 
-        var start_index = _index_get(content, 'MSG-mydata1">', 0);
-        user_data.Nickname = _user2nickname(content, start_index);
-        var lv = _user2level(content, start_index);
+        var startIndex = _index_get(content, 'MSG-mydata1">', 0);
+        user_data.Nickname = _user2nickname(content, startIndex);
+        var lv = _user2level(content, startIndex);
         user_data.LV = lv[0];
         user_data.RACE = lv[1];
         user_data.OCCUPATION = lv[2];
         
-        var start_index = _index_get(content, 'MSG-mydata3">', start_index);         
-        user_data.STR = _user2property(content, start_index, "STR");
-        user_data.DEX = _user2property(content, start_index, "DEX");
-        user_data.INT = _user2property(content, start_index, "INT");
-        user_data.LUK = _user2property(content, start_index, "LUK");
-        user_data.VIT = _user2property(content, start_index, "VIT");
-        user_data.AGI = _user2property(content, start_index, "AGI");
-        user_data.MND = _user2property(content, start_index, "MND");
+        var startIndex = _index_get(content, 'MSG-mydata3">', startIndex);         
+        user_data.STR = _user2property(content, startIndex, "STR");
+        user_data.DEX = _user2property(content, startIndex, "DEX");
+        user_data.INT = _user2property(content, startIndex, "INT");
+        user_data.LUK = _user2property(content, startIndex, "LUK");
+        user_data.VIT = _user2property(content, startIndex, "VIT");
+        user_data.AGI = _user2property(content, startIndex, "AGI");
+        user_data.MND = _user2property(content, startIndex, "MND");
 	
         return true;
     }

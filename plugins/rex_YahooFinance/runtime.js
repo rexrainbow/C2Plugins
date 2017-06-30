@@ -129,9 +129,9 @@ cr.plugins_.Rex_YahooFinance = function(runtime)
 	               
 	    var on_get_data = function (data)
 	    {
-	        var start_index = data.indexOf("<body>") + "<body>".length;
+	        var startIndex = data.indexOf("<body>") + "<body>".length;
 	        var endIndex = data.indexOf("</body>") - 1;
-	        data = data.substring(start_index, endIndex);
+	        data = data.substring(startIndex, endIndex);
 	        return data;
 	    };
 		this.doRequest(tag_, url_, "GET", on_get_data);

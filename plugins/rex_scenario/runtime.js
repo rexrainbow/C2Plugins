@@ -110,7 +110,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
         this._scenario.onDestroy();
 	};     
     
-    instanceProto._timeline_get = function ()
+    instanceProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -599,7 +599,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
             this.Offset = offset;
         if (this.timer == null)
         {
-            this.timer = this.plugin._timeline_get().CreateTimer(on_timeout);
+            this.timer = this.plugin.getTimelineObj().CreateTimer(on_timeout);
             this.timer.plugin = this;
         }
         else
@@ -890,7 +890,7 @@ cr.plugins_.Rex_Scenario = function(runtime)
     {
         if (this.timerSave != null)
         {
-            var timeline = this.plugin._timeline_get();
+            var timeline = this.plugin.getTimelineObj();
             this.timer = timeline.LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
             this.timer._cb_name = this.timerSave["__cbargs"][0];

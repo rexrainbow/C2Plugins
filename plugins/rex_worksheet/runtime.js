@@ -64,7 +64,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             this.timer.Remove();
 	};    
 
-    instanceProto._timeline_get = function ()
+    instanceProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -116,7 +116,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 		    this.callback.CallFn(name, params);
         else    // run official function
         {
-            this._timeline_get().RunCallback(name, params, true);
+            this.getTimelineObj().RunCallback(name, params, true);
         }    
 	}; 
 	   
@@ -188,7 +188,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             {
                 if (this.timer== null)
                 {
-                    this.timer = this._timeline_get().CreateTimer(on_timeout);
+                    this.timer = this.getTimelineObj().CreateTimer(on_timeout);
                     this.timer.plugin = this;
                 }
                             

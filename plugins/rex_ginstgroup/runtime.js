@@ -1281,12 +1281,12 @@ cr.plugins_.Rex_gInstGroup = function(runtime)
                 arr.push.apply(arr, _value);
             else
             {
-                var start_index=arr.length-1;
+                var startIndex=arr.length-1;
                 var endIndex=index;
                 var cnt=_value.length;   
                 arr.length += cnt;
                 var i;
-                for (i=start_index; i>=endIndex; i--)
+                for (i=startIndex; i>=endIndex; i--)
                     arr[i+cnt] = arr[i];
                 for (i=0; i<cnt; i++)
                     arr[i+index] = _value[i];

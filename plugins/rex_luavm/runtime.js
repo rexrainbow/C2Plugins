@@ -246,7 +246,7 @@ end\n\
         run_init_code();        
 	};
     
-    instanceProto._timeline_get = function ()
+    instanceProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -380,7 +380,7 @@ end\n\
         }
         else
         {
-            timer = this.plugin._timeline_get().CreateTimer(on_timeout);
+            timer = this.plugin.getTimelineObj().CreateTimer(on_timeout);
             timer.task_name = task_name;
         }
             

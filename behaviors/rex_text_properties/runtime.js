@@ -74,7 +74,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 		return textObjType;
 	};
  
-    behinstProto._get_webgl_ctx = function ()
+    behinstProto.getWebglCtx = function ()
 	{
         var inst = this.inst;            
         var ctx = inst.myctx;
@@ -97,7 +97,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
         // render all content
         var inst = this.inst;               
         var ctx = (this.runtime.enableWebGL)? 
-                  this._get_webgl_ctx():this.runtime.ctx;
+                  this.getWebglCtx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines        
 	}; 
 	//////////////////////////////////////

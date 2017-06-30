@@ -63,7 +63,7 @@ cr.behaviors.Rex_Timer = function(runtime)
         this.timer_cache = cr.behaviors.Rex_Timer.timer_cache;
 	};
 
-    behtypeProto._timeline_get = function ()
+    behtypeProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -86,7 +86,7 @@ cr.behaviors.Rex_Timer = function(runtime)
 
 	behtypeProto.timer_create = function(on_timeout, plugin)
 	{
-	    var timer = this.timer_cache.alloc(this._timeline_get(), on_timeout);
+	    var timer = this.timer_cache.alloc(this.getTimelineObj(), on_timeout);
 		timer.plugin = plugin; 
         return timer;
 	}; 

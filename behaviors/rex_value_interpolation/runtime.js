@@ -32,7 +32,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
         this.timelineUid = -1;    // for loading         
 	};
 
-    behtypeProto._timeline_get = function ()
+    behtypeProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -189,7 +189,7 @@ cr.behaviors.Rex_Value_interpolation = function(runtime)
 	    this.target_value = target_value;
         if (this.timer == null)        
         {
-            this.timer = this.type._timeline_get().CreateTimer(on_timeout);
+            this.timer = this.type.getTimelineObj().CreateTimer(on_timeout);
             this.timer.plugin = this;
         }
             

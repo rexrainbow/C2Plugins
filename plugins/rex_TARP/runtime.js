@@ -51,7 +51,7 @@ cr.plugins_.Rex_TARP = function(runtime)
 	{
         this.player.Stop();
 	};    
-    instanceProto._timeline_get = function ()
+    instanceProto.getTimelineObj = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -365,7 +365,7 @@ cr.plugins_.Rex_TARP = function(runtime)
             this.play_index += 1;
             if (this.timer== null)
             {
-                this.timer = this.plugin._timeline_get().CreateTimer(on_timeout);
+                this.timer = this.plugin.getTimelineObj().CreateTimer(on_timeout);
                 this.timer.plugin = this;
             }
             this.timer.Start(this.current_cmd[0] + this.offset);
@@ -387,7 +387,7 @@ cr.plugins_.Rex_TARP = function(runtime)
 	{
         var name = this.current_cmd[1];
         var params = this.current_cmd[2];
-        this.plugin._timeline_get().RunCallback(name, params, true);
+        this.plugin.getTimelineObj().RunCallback(name, params, true);
         this._start_cmd();        
 	};	
 	PlayerKlassProto.saveToJSON = function ()
@@ -415,7 +415,7 @@ cr.plugins_.Rex_TARP = function(runtime)
             this.timer = null;
         else
         {
-            this.timer = this.plugin._timeline_get().LoadTimer(this.timerSave, on_timeout);
+            this.timer = this.plugin.getTimelineObj().LoadTimer(this.timerSave, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;
@@ -451,7 +451,7 @@ cr.plugins_.Rex_TARP = function(runtime)
         var cur_tick = this.plugin.runtime.tickcount;
         if (cur_tick != this.sample_time["tick"])
 		{
-		    this.sample_time["time"] = this.plugin._timeline_get().TimeGet();
+		    this.sample_time["time"] = this.plugin.getTimelineObj().TimeGet();
 			this.sample_time["tick"] = cur_tick;
 		}
 		return this.sample_time["time"];

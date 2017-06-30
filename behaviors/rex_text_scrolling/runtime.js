@@ -55,7 +55,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         this.lastheight = this.inst.height;
         
 		this.textObjType = this.getTextObjType();
-		this.SetTextFn = this.get_SetText_Fn();
+		this.SetTextFn = this.getSetTextFn();
         this.init_content_lines();
 	};
     
@@ -82,7 +82,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 		return textObjType;
 	};
 	
-	behinstProto.get_SetText_Fn = function ()
+	behinstProto.getSetTextFn = function ()
 	{
 	    var setTextFn;
         if (this.textObjType === "Text")		
@@ -234,7 +234,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
         var inst = this.inst;              
         this.SetText(this.content);         // start from line 0        
         var ctx = (this.runtime.enableWebGL)? 
-                  this._get_webgl_ctx():this.runtime.ctx;
+                  this.getWebglCtx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
         
         // copy content in lines, or pensMgr
@@ -287,7 +287,7 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	};  
     
 
-    behinstProto._get_webgl_ctx = function ()
+    behinstProto.getWebglCtx = function ()
 	{
         var inst = this.inst;            
         var ctx = inst.myctx;
