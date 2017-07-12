@@ -42,15 +42,15 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	instanceProto.onCreate = function()
 	{
 	    this.mode = this.properties[0];
-        var init_patterns = this.properties[1];
-        if (init_patterns != "")        
-            this.patterns = JSON.parse(init_patterns);        
+        var initPatterns = this.properties[1];
+        if (initPatterns != "")        
+            this.patterns = JSON.parse(initPatterns);        
         else
             this.patterns = {};	   	                 
-	    this._pat_rank = [];
-        this._shadow_patterns = {};
-        this.start_gen(); 	
-		this.random_gen = null;
+	    this.patternsRank = [];
+        this.shadowPatterns = {};
+        this.startGen(); 	
+		this.randomGenObj = null;
         
         this.exp_LastPattern = "";
         this.exp_CurPatternName = "";
@@ -59,18 +59,18 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         this.randomGenUid = -1;    // for loading
 	};
 	
-	instanceProto.reset_pat_rank = function(patterns)
+	instanceProto.resetPatternsRank = function(patterns)
 	{
 	    var pat;
-	    // clean this._pat_rank
-	    this._pat_rank.length = 0;
-	    var pat, count, total_count=0;
+	    // clean this.patternsRank
+	    this.patternsRank.length = 0;
+	    var pat, count, totalCount=0;
 	    // get total count
 	    for (pat in patterns)
 	    {
 	        count = patterns[pat];
 	        if (count > 0)
-	            total_count += count;
+	            totalCount += count;
 	    }
 	    // set rate
 	    for (pat in patterns)
@@ -78,22 +78,24 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	        count = patterns[pat];
 	        if (count > 0)
 	        {
-	            this._pat_rank.push({"rate":count/total_count,
-	                                 "pattern":pat});
+	            this.patternsRank.push(
+					{"rate":count/totalCount,
+				  	 "pattern":pat}
+				);
 	        }
 	    }
 	};
 	
-	instanceProto.get_random_value = function()
+	instanceProto.getRandomValue = function()
 	{
-	    var value = (this.random_gen == null)?
-			        Math.random(): this.random_gen.random();
+	    var value = (this.randomGenObj == null)?
+			        Math.random(): this.randomGenObj.random();
         return value;
 	};	
 	
-	instanceProto.get_rand_pattern = function(pat_rank)
+	instanceProto.getRandomPattern = function(pat_rank)
 	{
-	    var value = this.get_random_value();
+	    var value = this.getRandomValue();
 	    var pattern="", i, cnt=pat_rank.length;
 	    for (i=0; i<cnt; i++)
 	    {
@@ -107,101 +109,101 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    return pattern;
 	};
 		
-	instanceProto.start_gen = function()
+	instanceProto.startGen = function()
 	{
 	    var pat,count;
 	    // clean shadow patterns
-	    for (pat in this._shadow_patterns)
-	        delete this._shadow_patterns[pat];
+	    for (pat in this.shadowPatterns)
+	        delete this.shadowPatterns[pat];
 	    // set shadow patterns
 	    for (pat in this.patterns)
 	    {
 	        count = this.patterns[pat];
 	        if (count > 0)
-	            this._shadow_patterns[pat] = this.patterns[pat];	        
+	            this.shadowPatterns[pat] = this.patterns[pat];	        
 	    }
 	    if (this.mode == 1) // random mode
-	        this.reset_pat_rank(this._shadow_patterns);
-	    this.restart_gen_flg = false; 
+	        this.resetPatternsRank(this.shadowPatterns);
+	    this.restartGenFlg = false; 
 	};
 	
-	var is_hash_empty = function(hash_obj)
+	var isTableEmpty = function(table)
 	{
-	    var is_empty=true;
+	    var isEmpty=true;
 	    var pat;
-	    for (pat in hash_obj)
+	    for (pat in table)
 	    {
-	        is_empty = false;
+	        isEmpty = false;
 	        break;
 	    }
-	    return is_empty;
+	    return isEmpty;
 	};
 	
-	instanceProto.add_shadow_patterns = function(pattern, inc, max_count)
+	instanceProto.addShadowPattern = function(pattern, inc, max_count)
 	{
 	    if ((pattern == null) || (inc == 0))
 	        return;
 	        
-        if (!this._shadow_patterns.hasOwnProperty(pattern))                    
-            this._shadow_patterns[pattern] = 0;            
+        if (!this.shadowPatterns.hasOwnProperty(pattern))                    
+            this.shadowPatterns[pattern] = 0;            
                                    
-        this._shadow_patterns[pattern] += inc;
-        if ((max_count != null) && (this._shadow_patterns[pattern] > max_count))
-            this._shadow_patterns[pattern] = max_count 
+        this.shadowPatterns[pattern] += inc;
+        if ((max_count != null) && (this.shadowPatterns[pattern] > max_count))
+            this.shadowPatterns[pattern] = max_count 
                 
-        if (this._shadow_patterns[pattern] <= 0)            
-            delete this._shadow_patterns[pattern];
+        if (this.shadowPatterns[pattern] <= 0)            
+            delete this.shadowPatterns[pattern];
             
-        if ((this.mode == 0) && is_hash_empty(this._shadow_patterns))
-            this.restart_gen_flg = true;
+        if ((this.mode == 0) && isTableEmpty(this.shadowPatterns))
+            this.restartGenFlg = true;
 	};	
 		
-	instanceProto.get_pattern = function(pattern)
+	instanceProto.genPattern = function(pattern)
 	{
-	    if (this.restart_gen_flg)
-	        this.start_gen();	
+	    if (this.restartGenFlg)
+	        this.startGen();	
 	    if (pattern == null)
 		{
 	        if ((this.mode == 0) || (this.mode == 2))  // shuffle mode
 	        {
-	            this.reset_pat_rank(this._shadow_patterns);
-	            pattern = this.get_rand_pattern(this._pat_rank);
-	            this.add_shadow_patterns(pattern, -1);        
+	            this.resetPatternsRank(this.shadowPatterns);
+	            pattern = this.getRandomPattern(this.patternsRank);
+	            this.addShadowPattern(pattern, -1);        
 	        }
 	        else if (this.mode == 1)   // random mode
 	        {
-	            pattern = this.get_rand_pattern(this._pat_rank);
+	            pattern = this.getRandomPattern(this.patternsRank);
 	        }
 		}
 		else  // force pick
 		{
-			if (!this._shadow_patterns.hasOwnProperty(pattern))
+			if (!this.shadowPatterns.hasOwnProperty(pattern))
 				pattern = "";	
             else
             {
 			    if ((this.mode == 0) || (this.mode == 2))  // shuffle mode
 	            {			    
-	                this.add_shadow_patterns(pattern, -1);
+	                this.addShadowPattern(pattern, -1);
 			    }
 			}
 		}
 	    return pattern;
 	};
     
-	instanceProto.get_pattern_count = function (name, is_remain)
+	instanceProto.getPatternCount = function (name, is_remain)
 	{
-        var patList = (is_remain)? this._shadow_patterns : this.patterns;
+        var patList = (is_remain)? this.shadowPatterns : this.patterns;
         return patList[name] || 0;
 	};    
 
 	instanceProto.saveToJSON = function ()
 	{       	 
-        var randomGenUid = (this.random_gen != null)? this.random_gen.uid:(-1);    
+        var randomGenUid = (this.randomGenObj != null)? this.randomGenObj.uid:(-1);    
 		return { "m": this.mode,
 		         "pats": this.patterns,
-		         "pr": this._pat_rank,
-		         "spats": this._shadow_patterns,
-		         "rstf": this.restart_gen_flg,
+		         "pr": this.patternsRank,
+		         "spats": this.shadowPatterns,
+		         "rstf": this.restartGenFlg,
                  "randomuid":randomGenUid,
                  "lp" : this.exp_LastPattern,
                  };
@@ -211,9 +213,9 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{
 	    this.mode = o["m"];
 	    this.patterns = o["pats"];
-	    this._pat_rank = o["pr"];
-	    this._shadow_patterns = o["spats"];
-	    this.restart_gen_flg = o["rstf"];        
+	    this.patternsRank = o["pr"];
+	    this.shadowPatterns = o["spats"];
+	    this.restartGenFlg = o["rstf"];        
         this.randomGenUid = o["randomuid"];	
         this.exp_LastPattern = o["lp"];	
 	};	
@@ -229,7 +231,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 			assert2(randomGen, "Pattern gen: Failed to find random gen object by UID");
 		}		
 		this.randomGenUid = -1;			
-		this.random_gen = randomGen;
+		this.randomGenObj = randomGen;
 	};
     
 	/**BEGIN-PREVIEWONLY**/
@@ -237,7 +239,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	{
 	    var prop = [];
         var remain;
-        var pat_list = (this.restart_gen_flg)? this.patterns : this._shadow_patterns
+        var pat_list = (this.restartGenFlg)? this.patterns : this.shadowPatterns
         for (var pat in this.patterns)
         {
             remain = pat_list[pat] || 0;
@@ -258,7 +260,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
 
-    var CountAscending = function(a, b)
+    var countAscending = function(a, b)
     {                 
         if (a[1] > b[1])
             return 1;
@@ -267,7 +269,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         else  // ay < by
             return (-1);
     };
-    var CountDescending = function(a, b)
+    var countDescending = function(a, b)
     {                 
         if (a[1] < b[1])
             return 1;
@@ -276,7 +278,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         else  // ay < by
             return (-1);
     };
-    var NameAscending = function(a, b)
+    var nameAscending = function(a, b)
     {                 
         if (a[0] > b[0])
             return 1;
@@ -285,7 +287,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         else
             return (-1);
     };
-    var NameDescending = function(a, b)
+    var nameDescending = function(a, b)
     {                 
         if (a[0] < b[0])
             return 1;
@@ -294,7 +296,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         else
             return (-1);
     };        
-    var SortFns = [CountAscending, CountDescending, NameAscending, NameDescending];
+    var SortFns = [countAscending, countDescending, nameAscending, nameDescending];
 	Cnds.prototype.ForEachPattern = function (m)
 	{	    
 	    var l = [];
@@ -337,7 +339,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
     Acts.prototype.SetMode = function (m)
 	{
 	    this.mode = m;
-	    this.restart_gen_flg = true;   
+	    this.restartGenFlg = true;   
 	};
 		
     Acts.prototype.SetPattern = function (pattern, count)
@@ -345,14 +347,14 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    if (pattern == "")
 	        return;
         this.patterns[pattern] = count;
-        this.restart_gen_flg = true;       
+        this.restartGenFlg = true;       
 	};
 	
     Acts.prototype.RemovePattern = function (pattern)
 	{  
 	    if (pattern in this.patterns)
 	        delete this.patterns[pattern];   
-        this.restart_gen_flg = true;	          
+        this.restartGenFlg = true;	          
 	};	
 	
     Acts.prototype.RemoveAllPatterns = function ()
@@ -360,17 +362,17 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	    var pattern;
 	    for (pattern in this.patterns)
 	        delete this.patterns[pattern];   
-	    this.restart_gen_flg = true;  
+	    this.restartGenFlg = true;  
 	};	
 	
     Acts.prototype.StartGenerator = function ()
 	{  
-	    this.restart_gen_flg = true; 
+	    this.restartGenFlg = true; 
 	};
 	
     Acts.prototype.Generate = function ()
 	{  
-        this.exp_LastPattern = this.get_pattern();
+        this.exp_LastPattern = this.genPattern();
 	};	
     Acts.prototype.AddPattern = function (pattern, count)
 	{
@@ -383,15 +385,15 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 
         this.patterns[pattern] += count; 
 
-        if (this.restart_gen_flg)        
+        if (this.restartGenFlg)        
             return;
             
         // pattern gen had started
         
 	    if (this.mode == 1) // random mode
-	        this.reset_pat_rank(this._shadow_patterns);  
+	        this.resetPatternsRank(this.shadowPatterns);  
 	    else if ((this.mode == 0) || (this.mode == 2))  // shuffle mode   
-	        this.add_shadow_patterns(pattern, count);              
+	        this.addShadowPattern(pattern, count);              
         
       
 	};
@@ -408,17 +410,17 @@ cr.plugins_.Rex_PatternGen = function(runtime)
         if (!this.patterns.hasOwnProperty(pattern))        
             return;
             
-        if ((this.mode == 2) && this.restart_gen_flg)
+        if ((this.mode == 2) && this.restartGenFlg)
             return;
         
         
         
         // pattern gen had started        
-        // this._shadow_patterns      
-        if (!this._shadow_patterns.hasOwnProperty(pattern))        
-            this._shadow_patterns[pattern] = 0;      
+        // this.shadowPatterns      
+        if (!this.shadowPatterns.hasOwnProperty(pattern))        
+            this.shadowPatterns[pattern] = 0;      
         
-        this.add_shadow_patterns(pattern, count, this.patterns[pattern]);              
+        this.addShadowPattern(pattern, count, this.patterns[pattern]);              
 	};	
     
 	Acts.prototype.JSONLoad = function (json_)
@@ -435,9 +437,9 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 		
     Acts.prototype.SetRandomGenerator = function (random_gen_objs)
 	{
-        var random_gen = random_gen_objs.getFirstPicked();
-        if (random_gen.check_name == "RANDOM")
-            this.random_gen = random_gen;        
+        var randomGenObj = random_gen_objs.getFirstPicked();
+        if (randomGenObj.check_name == "RANDOM")
+            this.randomGenObj = randomGenObj;        
         else
             alert ("[Pattern generator] This object is not a random generator object.");
 	}; 	
@@ -448,18 +450,18 @@ cr.plugins_.Rex_PatternGen = function(runtime)
 	
 	Exps.prototype.Pattern = function (ret)
 	{
-        this.exp_LastPattern = this.get_pattern();
+        this.exp_LastPattern = this.genPattern();
 		ret.set_string(this.exp_LastPattern);
 	};	
 	
 	Exps.prototype.TotalCount = function (ret, pattern)
 	{
-		ret.set_float(this.get_pattern_count(pattern));
+		ret.set_float(this.getPatternCount(pattern));
 	};
 	
 	Exps.prototype.ManualPick = function (ret, pattern)
 	{
-		ret.set_string(this.get_pattern(pattern));
+		ret.set_string(this.genPattern(pattern));
 	};
 	
 	Exps.prototype.LastPattern = function (ret)
@@ -469,7 +471,7 @@ cr.plugins_.Rex_PatternGen = function(runtime)
     
 	Exps.prototype.RemainCount = function (ret, pattern)
 	{
-		ret.set_float(this.get_pattern_count(pattern, true));
+		ret.set_float(this.getPatternCount(pattern, true));
 	};
     
 	Exps.prototype.AsJSON = function (ret)
@@ -484,12 +486,12 @@ cr.plugins_.Rex_PatternGen = function(runtime)
     
 	Exps.prototype.CurPatternTotalCount = function (ret)
 	{
-		ret.set_float(this.get_pattern_count(this.exp_CurPatternName) );
+		ret.set_float(this.getPatternCount(this.exp_CurPatternName) );
 	};     
     
 	Exps.prototype.CurPatternRemainCount = function (ret)
 	{
-		ret.set_float(this.get_pattern_count(this.exp_CurPatternName, true) );
+		ret.set_float(this.getPatternCount(this.exp_CurPatternName, true) );
 	};  
     
 	Exps.prototype.LoopIndex = function (ret)

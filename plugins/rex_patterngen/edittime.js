@@ -55,9 +55,9 @@ AddAction(6, 0, "Generate", "Generator",
                      
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddNumberParam("Count", "Pattern count.", 1);
-AddAction(7, 0, "Add pattern", "Pattern", 
-          "Add pattern <i>{0}</i> with count to <i>{1}</i>", 
-          "Add pattern.", "AddPattern");    
+AddAction(7, 0, "Add to pattern", "Pattern", 
+          "Add <i>{1}</i> to pattern <i>{0}</i>", 
+          "Add to pattern.", "AddPattern");    
 AddStringParam("Pattern", "Pattern in gererator.", '""');
 AddNumberParam("Count", "Pattern count.", 1);
 AddAction(8, 0, "Put pattern back", "Pattern", 
