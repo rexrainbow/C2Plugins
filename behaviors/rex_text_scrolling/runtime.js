@@ -46,69 +46,69 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{ 
 		this.autoRedraw = (this.properties[0] === 1);    
         this.content = "";
-	    this.totalLinesCnt = 0;
-	    this.visibleLines = 0;
-        this.linePositionInPercent = 0;
-        this.startLineIndex = 0;        
-        this.textChanged = false;
+	    this.total_lines_cnt = 0;
+	    this.visible_lines = 0;
+        this.line_pos_percent = 0;
+        this.start_line_index = 0;        
+        this.text_changed = false;
         this.lastwidth = this.inst.width;
         this.lastheight = this.inst.height;
         
-		this.textObjType = this.getTextObjType();
-		this.SetTextFn = this.getSetTextFn();
-        this.initContentLines();
+		this.text_type = this.get_text_type();
+		this.SetText_handler = this.get_setText_handler();
+        this.init_content_lines();
 	};
     
-	behinstProto.getTextObjType = function ()
+	behinstProto.get_text_type = function ()
 	{
-	    var textObjType;
+	    var text_type;
         if (cr.plugins_.Text &&
 		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        textObjType = "Text";	    
+	        text_type = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			textObjType = "Spritefont2";	  
+			text_type = "Spritefont2";	  
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    textObjType = "rex_TagText";
+		    text_type = "rex_TagText";
 	    else if (cr.plugins_.rex_bbcodeText &&
 		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
-		    textObjType = "rex_bbcodeText"; 
+		    text_type = "rex_bbcodeText"; 
 	    else if (cr.plugins_.SpriteFontPlus &&
 		         (this.inst instanceof cr.plugins_.SpriteFontPlus.prototype.Instance))
-			textObjType = "SpriteFontPlus";				                       
+			text_type = "SpriteFontPlus";				                       
 		else
-		    textObjType = "";	 
-		return textObjType;
+		    text_type = "";	 
+		return text_type;
 	};
 	
-	behinstProto.getSetTextFn = function ()
+	behinstProto.get_setText_handler = function ()
 	{
-	    var setTextFn;
-        if (this.textObjType === "Text")		
-	        setTextFn = cr.plugins_.Text.prototype.acts.SetText;	    
-	    else if (this.textObjType === "Spritefont2")	
-			setTextFn = cr.plugins_.Spritefont2.prototype.acts.SetText;
-	    else if (this.textObjType === "rex_TagText")	
-			setTextFn = cr.plugins_.rex_TagText.prototype.acts.SetText;
-	    else if (this.textObjType === "rex_bbcodeText")	
-			setTextFn = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;    
-	    else if (this.textObjType === "SpriteFontPlus")	
-			setTextFn = cr.plugins_.SpriteFontPlus.prototype.acts.SetText;			    
+	    var set_text_handler;
+        if (this.text_type === "Text")		
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (this.text_type === "Spritefont2")	
+			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (this.text_type === "rex_TagText")	
+			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
+	    else if (this.text_type === "rex_bbcodeText")	
+			set_text_handler = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;    
+	    else if (this.text_type === "SpriteFontPlus")	
+			set_text_handler = cr.plugins_.SpriteFontPlus.prototype.acts.SetText;			    
 	    else
-		    setTextFn = null;
-	    return setTextFn;
+		    set_text_handler = null;
+	    return set_text_handler;
     };  		
 	
-	behinstProto.initContentLines = function ()
+	behinstProto.init_content_lines = function ()
 	{
-	    var setTextFn;
-        if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))		
-	        this.contentLines = [];    
-	    else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
-			this.contentLines = null;
+	    var set_text_handler;
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2") || (this.text_type === "SpriteFontPlus"))		
+	        this.content_lines = [];    
+	    else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+			this.content_lines = null;
 	    else
-		    this.contentLines = [];
+		    this.content_lines = [];
     }; 
     
 	behinstProto.onDestroy = function()
@@ -122,23 +122,23 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto.tick2 = function ()
 	{  	    
 		if (this.autoRedraw)
-            this.redrawText();
+            this.redraw_text();
 	};
     
-	behinstProto.redrawText = function ()
+	behinstProto.redraw_text = function ()
 	{  	    
-        var isSizeChanged = (this.lastwidth !== this.inst.width) || (this.lastheight !== this.inst.height);        
-        if (isSizeChanged || this.textChanged)
+        var size_changed = (this.lastwidth !== this.inst.width) || (this.lastheight !== this.inst.height);        
+        if (size_changed || this.text_changed)
         {
             this.SetContent(); 
-            this.textChanged = false;
+            this.text_changed = false;
             this.lastwidth = this.inst.width;
             this.lastheight = this.inst.height;        
         }
 	};    
-	behinstProto.getLastStartLineIndex = function ()
+	behinstProto.get_lastStartLineIndex = function ()
 	{  
-        var idx = this.totalLinesCnt - this.visibleLines;
+        var idx = this.total_lines_cnt - this.visible_lines;
         if (idx < 0)
             idx = 0;
         return idx;
@@ -146,42 +146,42 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
     
 	behinstProto.perent2line = function (percent)
 	{  
-        return Math.floor(this.getLastStartLineIndex() * percent);
+        return Math.floor(this.get_lastStartLineIndex() * percent);
 	};
 
-	behinstProto.line2percent = function (lineIndex)
+	behinstProto.line2percent = function (line_index)
 	{  
-        var percent = lineIndex/this.getLastStartLineIndex();
+        var percent = line_index/this.get_lastStartLineIndex();
         return cr.clamp(percent, 0, 1);
 	};    
     	
-	behinstProto.copyContentLines = function ()
+	behinstProto.copy_content_lines = function ()
 	{
-        if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2") || (this.text_type === "SpriteFontPlus"))
         {
             var lines = this.inst.lines;
-	        this.contentLines.length = 0;            
+	        this.content_lines.length = 0;            
 	        var i, line, line_cnt=lines.length;
 	        for (i=0; i<line_cnt; i++)
 		    {
-		        this.contentLines.push(lines[i].text);
+		        this.content_lines.push(lines[i].text);
 	        }
         }
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
-            this.contentLines = this.inst.copyPensMgr(this.contentLines);           
+            this.content_lines = this.inst.copyPensMgr(this.content_lines);           
         }
-        return this.contentLines;
+        return this.content_lines;
 	};    
     
-	behinstProto.getVisibleText = function (startLineIndex)
+	behinstProto.get_visible_text = function (start_line_index)
 	{
-        this.startLineIndex = (startLineIndex < 0)? 0:startLineIndex;
-        var endIndex = this.startLineIndex + this.visibleLines;
-        if (endIndex > this.totalLinesCnt)
-            endIndex = this.totalLinesCnt;
+        this.start_line_index = (start_line_index < 0)? 0:start_line_index;
+        var end_index = this.start_line_index + this.visible_lines;
+        if (end_index > this.total_lines_cnt)
+            end_index = this.total_lines_cnt;
         
-        return this.getSubText(this.startLineIndex, endIndex);
+        return this.getSubText(this.start_line_index, end_index);
 	};
     
 	behinstProto.getSubText = function (start, end)  
@@ -190,39 +190,39 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
             return "";
         
         var txt;		
-		if ( (this.textObjType === "Text") || (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
+		if ( (this.text_type === "Text") || (this.text_type === "Spritefont2") || (this.text_type === "SpriteFontPlus"))
 		{
 		    txt = "";
             end -= 1;
 		    for (var i=start; i<=end; i++)
             {
-                txt += this.contentLines[i];
+                txt += this.content_lines[i];
                 if (i < end )
 			        txt += "\n";
             }
 		}
-		else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+		else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
 		{
             // get start chart index     
-            var si = this.contentLines.getLineStartChartIndex(start);
+            var si = this.content_lines.getLineStartChartIndex(start);
             // get end chart index
-            var ei = this.contentLines.getLineEndChartIndex(end-1);
-            txt = this.contentLines.getSliceTagText(si, ei+1);
+            var ei = this.content_lines.getLineEndChartIndex(end-1);
+            txt = this.content_lines.getSliceTagText(si, ei+1);
 		}
         return txt;    
 	};    
 	
     
-	behinstProto.getTotalLinesCount = function ()
+	behinstProto.get_total_lines_cnt = function ()
 	{
         var cnt;
-        if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2") || (this.text_type === "SpriteFontPlus"))
         {
-	        cnt = this.contentLines.length;
+	        cnt = this.content_lines.length;
         }
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
-            cnt = this.contentLines.getLines().length;        
+            cnt = this.content_lines.getLines().length;        
         }
         return cnt;
 	};    
@@ -232,62 +232,62 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{               
         // render all content
         var inst = this.inst;              
-        this.setText(this.content);         // start from line 0        
+        this.SetText(this.content);         // start from line 0        
         var ctx = (this.runtime.enableWebGL)? 
-                  this.getWebglCtx():this.runtime.ctx;
+                  this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines
         
         // copy content in lines, or pensMgr
-        this.copyContentLines();
+        this.copy_content_lines();
         // get total lines count
-	    this.totalLinesCnt = this.getTotalLinesCount();
+	    this.total_lines_cnt = this.get_total_lines_cnt();
         // calc visible lines count
-		var lineHeight = this.getLineHeight();
-	    this.visibleLines = Math.floor(inst.height/lineHeight);
-        if ((inst.height % lineHeight) == 0)
-            this.visibleLines -= 1;	    
+		var line_height = this.get_line_height();
+	    this.visible_lines = Math.floor(inst.height/line_height);
+        if ((inst.height%line_height) == 0)
+            this.visible_lines -= 1;	    
         
         // only show visible lines
-        this.setText("");     // clean remain text
-        this.setText(this.getVisibleText(this.startLineIndex));
+        this.SetText("");     // clean remain text
+        this.SetText(this.get_visible_text(this.start_line_index));
 	};    
 	
-	behinstProto.getLineHeight = function ()
+	behinstProto.get_line_height = function ()
 	{	
-	    var lineHeight, inst=this.inst;
-        if (this.textObjType == "Text")
-	        lineHeight = inst.pxHeight;
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
-	        lineHeight = inst.pxHeight;        
-	    else if ((this.textObjType == "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
-			lineHeight = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
+	    var line_height, inst=this.inst;
+        if (this.text_type == "Text")
+	        line_height = inst.pxHeight;
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
+	        line_height = inst.pxHeight;        
+	    else if ((this.text_type == "Spritefont2") || (this.text_type === "SpriteFontPlus"))
+			line_height = (inst.characterHeight * inst.characterScale) + inst.lineHeight;
 
-	    assert2(lineHeight, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
-	    return lineHeight;
+	    assert2(line_height, "Text Scrolling behavior: the instance is not a text object, neither a sprite font object.");
+	    return line_height;
     };  
 	
 
-	behinstProto.setText = function (content)
+	behinstProto.SetText = function (content)
 	{
-	    if (this.SetTextFn == null)
+	    if (this.SetText_handler == null)
 		    return;
         
-        if  ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        if  ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
-            var isForceRenderSave = this.inst.isForceRender;
-            this.inst.isForceRender = false;
+            var is_force_render_save = this.inst.is_force_render;
+            this.inst.is_force_render = false;
         }
         
-		this.SetTextFn.call(this.inst, content); // set text
+		this.SetText_handler.call(this.inst, content); // set text
         
-        if  ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        if  ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
-            this.inst.isForceRender = isForceRenderSave;
+            this.inst.is_force_render = is_force_render_save;
         }        
 	};  
     
 
-    behinstProto.getWebglCtx = function ()
+    behinstProto._get_webgl_ctx = function ()
 	{
         var inst = this.inst;            
         var ctx = inst.myctx;
@@ -309,25 +309,25 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{
 		return { "raw" : this.content,
-		         "lcnt": this.totalLinesCnt,
-		         "vlcnt": this.visibleLines,
-		         "lper": this.linePositionInPercent,
-		         "start": this.startLineIndex, 
+		         "lcnt": this.total_lines_cnt,
+		         "vlcnt": this.visible_lines,
+		         "lper": this.line_pos_percent,
+		         "start": this.start_line_index, 
 		          };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
         this.content = o["raw"];
-	    this.totalLinesCnt = o["lcnt"];
-	    this.visibleLines = o["vlcnt"];
-        this.linePositionInPercent = o["lper"];
-        this.startLineIndex = o["start"];
+	    this.total_lines_cnt = o["lcnt"];
+	    this.visible_lines = o["vlcnt"];
+        this.line_pos_percent = o["lper"];
+        this.start_line_index = o["start"];
 	};
 
 	behinstProto.afterLoad = function ()
 	{    
-        this.SetContent();    // get this.contentLines back
+        this.SetContent();    // get this.content_lines back
 	};    
     
 	/**BEGIN-PREVIEWONLY**/
@@ -337,9 +337,9 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 			"title": this.type.name,
 			"properties": [
 				{"name": "Content", "value": this.content},
-                {"name": "Start at", "value": this.startLineIndex},
-				{"name": "Total lines", "value": this.totalLinesCnt},
-				{"name": "Visible lines", "value": this.visibleLines}
+                {"name": "Start at", "value": this.start_line_index},
+				{"name": "Total lines", "value": this.total_lines_cnt},
+				{"name": "Visible lines", "value": this.visible_lines}
 			]
 		});
 	};
@@ -355,14 +355,14 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	  
 	Cnds.prototype.IsLastPage = function ()
 	{
-		return (this.startLineIndex + this.visibleLines >= this.totalLinesCnt);
+		return (this.start_line_index + this.visible_lines >= this.total_lines_cnt);
 	};	 
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-    var param2string = function (param)
+    var _param2string = function (param)
     {
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
@@ -371,59 +371,59 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
  
 	Acts.prototype.SetContent = function(param)
 	{   
-        this.content = param2string(param);
-		this.startLineIndex = 0;
+        this.content = _param2string(param);
+		this.start_line_index = 0;
         this.SetContent();
 	};
 
 	Acts.prototype.ScrollToPercent = function(percent)
 	{   
-        this.redrawText();            
-        this.linePositionInPercent = cr.clamp(percent, 0, 1);
-        var startLineIndex = this.perent2line(this.linePositionInPercent);
-        this.setText(this.getVisibleText(startLineIndex));
+        this.redraw_text();            
+        this.line_pos_percent = cr.clamp(percent, 0, 1);
+        var start_line_index = this.perent2line(this.line_pos_percent);
+        this.SetText(this.get_visible_text(start_line_index));
 	};
     
 	Acts.prototype.AppendContent = function(param)
 	{   
-        this.content += param2string(param);
-        this.textChanged = true;
+        this.content += _param2string(param);
+        this.text_changed = true;
 	}; 
 
-	Acts.prototype.ScrollToLineIndex = function(lineIndex)
+	Acts.prototype.ScrollToLineIndex = function(line_index)
 	{               
-        this.redrawText();       
-        this.setText(this.getVisibleText(lineIndex));
+        this.redraw_text();       
+        this.SetText(this.get_visible_text(line_index));
 	}; 
 
 	Acts.prototype.NextLine = function()
 	{   
-        this.redrawText();      
-        this.setText(this.getVisibleText(this.startLineIndex+1));
+        this.redraw_text();      
+        this.SetText(this.get_visible_text(this.start_line_index+1));
 	}; 
 
 	Acts.prototype.PreviousLine = function()
 	{   
-        this.redrawText();      
-        this.setText(this.getVisibleText(this.startLineIndex-1));
+        this.redraw_text();      
+        this.SetText(this.get_visible_text(this.start_line_index-1));
 	};   
 
 	Acts.prototype.NextPage = function()
 	{   
-        this.redrawText();      
-        this.setText(this.getVisibleText(this.startLineIndex+this.visibleLines));
+        this.redraw_text();      
+        this.SetText(this.get_visible_text(this.start_line_index+this.visible_lines));
 	}; 
 
 	Acts.prototype.PreviousPage = function()
 	{   
-        this.redrawText();      
-        this.setText(this.getVisibleText(this.startLineIndex-this.visibleLines));
+        this.redraw_text();      
+        this.SetText(this.get_visible_text(this.start_line_index-this.visible_lines));
 	};   
 
 	Acts.prototype.ScrollToPageIndex = function(page_index)
 	{               
-        this.redrawText();       
-        this.setText(this.getVisibleText(page_index*this.visibleLines));
+        this.redraw_text();       
+        this.SetText(this.get_visible_text(page_index*this.visible_lines));
 	}; 
     
 	//////////////////////////////////////
@@ -438,26 +438,26 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 
 	Exps.prototype.TotalCnt = function(ret)
 	{
-		ret.set_int(this.totalLinesCnt);
+		ret.set_int(this.total_lines_cnt);
 	};	
 
 	Exps.prototype.VisibleCnt = function(ret)
 	{
-		ret.set_int(this.visibleLines);
+		ret.set_int(this.visible_lines);
 	};	    
 
 	Exps.prototype.CurrIndex = function(ret)
 	{
-		ret.set_int(this.startLineIndex);
+		ret.set_int(this.start_line_index);
 	};
 
 	Exps.prototype.CurrLastIndex = function(ret)
 	{
-        var currentLastIndex = this.startLineIndex + this.visibleLines-1;
-        var lastIndex = this.totalLinesCnt -1;
-        if (currentLastIndex > lastIndex)
-            currentLastIndex = lastIndex;
-		ret.set_int(currentLastIndex);
+        var cur_last = this.start_line_index + this.visible_lines-1;
+        var last_index = this.total_lines_cnt -1;
+        if (cur_last > last_index)
+            cur_last = last_index;
+		ret.set_int(cur_last);
 	};    
     
 
@@ -465,8 +465,8 @@ cr.behaviors.Rex_text_scrolling = function(runtime)
 	{
         if (start < 0)
             start = 0;
-        if (end > this.totalLinesCnt)
-            end = this.totalLinesCnt;
+        if (end > this.total_lines_cnt)
+            end = this.total_lines_cnt;
         
         var text;
         if (end > start)

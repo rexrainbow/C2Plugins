@@ -160,7 +160,13 @@ AddStringParam("Key", "The name of the key.", '""');
 AddAnyTypeParam("Value", "The value to set, could be number or string.", 0);
 AddAction(18, 0, "Add to", "Save - prepare item", 
           "Prepare- Add <i>{1}</i> to key <i>{0}</i>", 
-          "Add value to key.", "IncValue");     
+          "Add value to key.", "IncValue"); 
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddStringParam("JSON", "The JSON value to set.", '"{}"');
+AddAction(19, 0, "Set JSON", "Save - prepare item", 
+          "Prepare- Set JSON <i>{0}</i> to <i>{1}</i>", 
+          "Set JSON value into current item.", "SetJSON");          
 
 AddAction(21, 0, "1. New", "Filter - 1. new", 
           "Filter- 1. Create a new row filter", 

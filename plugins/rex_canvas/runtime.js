@@ -68,6 +68,9 @@ cr.plugins_.Rex_canvas = function(runtime)
 	// to release/recycle/reset any references to other objects in this function.
 	instanceProto.onDestroy = function ()
 	{
+		this.ctx = null;
+		jQuery(this.canvas).remove();
+		this.canvas = null;		
 	};
     
 	instanceProto.draw = function(ctx)
@@ -145,7 +148,7 @@ cr.plugins_.Rex_canvas = function(runtime)
 			mode_save = inst.compositeOp;
 			inst.compositeOp = blend_mode;
             ctx["globalCompositeOperation"] = blend_mode;
-			inst["draw"](ctx);		
+			inst.draw(ctx);		
 			inst.compositeOp = mode_save;	
 			ctx["restore"]();
 		}

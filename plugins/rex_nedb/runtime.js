@@ -52,8 +52,8 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
 	    }
 	    else                   // persistence database
 	    {
-	        isInstDB = create_global_database(this.uid, this.fileName, this.storageType);	            
-	        this.db = get_global_database_reference(this.fileName).db;
+	        isInstDB = createGlobalDatabase(this.uid, this.fileName, this.storageType);	            
+	        this.db = getGlobalDatabaseReference(this.fileName).db;
 	    }
                
 	    if (!this.recycled)
@@ -104,7 +104,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         /**END-PREVIEWONLY**/         
 	};
     
-	var create_global_database = function (ownerUID, filename, storageType)
+	var createGlobalDatabase = function (ownerUID, filename, storageType)
 	{
 	    if (cr.plugins_.Rex_nedb.databases.hasOwnProperty(filename))
 	        return false;
@@ -124,7 +124,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         return true;
 	};
 	
-	var get_global_database_reference = function (filename)
+	var getGlobalDatabaseReference = function (filename)
 	{
 	    return cr.plugins_.Rex_nedb.databases[filename];
 	};    
@@ -134,10 +134,10 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         this.preprocessCmd["$inc"] = {};
         this.preprocessCmd["$max"] = {};        
         this.preprocessCmd["$min"] = {};          
-        clean_table(this.preparedItem);
+        cleanTable(this.preparedItem);
         this.preparedQueue.length = 0;          
-        clean_table(this.filters);       
-        clean_table(this.orders);         
+        cleanTable(this.filters);       
+        cleanTable(this.orders);         
         this.queriedRows.length = 0;
 
         if (this.fileName === "")
@@ -148,7 +148,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         }
         else
         {
-            var database_ref = get_global_database_reference(this.fileName);
+            var database_ref = getGlobalDatabaseReference(this.fileName);
             if (database_ref.ownerUID === this.uid)
                 database_ref.ownerUID = null;
         }
@@ -225,20 +225,20 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         {
             var uniqueIndexKeys = {}, key_name; 
             var i, cnt=this.uniqueIndexKeys.length;
-            var has_index_keys = false;
+            var hasIndexKeys = false;
             for (i=0; i<cnt; i++)
             {
                 key_name = this.uniqueIndexKeys[i];
                 if (row.hasOwnProperty(key_name))
                 {                  
                     uniqueIndexKeys[key_name] = row[key_name];
-                    has_index_keys = true;
+                    hasIndexKeys = true;
                     delete row[key_name];
                 }
             }
             
             
-            if (has_index_keys)
+            if (hasIndexKeys)
             {
                 this.db["update"](
                     uniqueIndexKeys,                                             // query
@@ -263,7 +263,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         {
             for (var c in preprocessCmd )
             {
-                if (!is_empty(preprocessCmd[c]))
+                if (!isEmpty(preprocessCmd[c]))
                 {
                     update[c] = preprocessCmd[c];
                     preprocessCmd[c] = {};
@@ -276,7 +276,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
 	instanceProto.Index2QueriedRowID = function (index_, default_value)
 	{    
 	    var row = this.queriedRows[index_];
-	    return din(row, "_id", default_value);        
+	    return getItemValue(row, "_id", default_value);        
 	};    
     
 	var getEvalValue = function(v, prefix)
@@ -300,13 +300,13 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         return v;
 	};	
     
-    var clean_table = function (o)
+    var cleanTable = function (o)
 	{
         for (var k in o)        
             delete o[k];        
 	};
     
-    var is_empty = function (o)
+    var isEmpty = function (o)
     {
         for (var k in o)        
             return false;
@@ -314,25 +314,56 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         return true;        
     };
 	
- 	var din = function (row, k, default_value)
-	{
-	    var v;
-	    if (row)
-	    {
-	        if (k == null)
-	            v = JSON.stringify(row);
-	        else
-	            v = row[k];
-	    }
-	    if (v == null)
+	var getValue = function(keys, root)
+	{           
+        if ((keys == null) || (keys === "") || (keys.length === 0))
         {
-            if (typeof(default_value) !== "undefined")
-                v = default_value;
-            else
-                v = 0;
+            return root;
         }
-		return v;
-	};		
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            var entry = root;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];                
+                if (entry.hasOwnProperty(key))
+                    entry = entry[ key ];
+                else
+                    return;              
+            }
+            return entry;                    
+        }
+	};     
+    
+ 	var getItemValue = function (item, k, default_value)
+	{
+		return din(getValue(k, item), default_value);
+	};	    
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };	
         
         
     
@@ -386,8 +417,8 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
 	    }
 	    else                   // persistence database
 	    {
-	        isInstDB = create_global_database(this.uid, this.fileName, this.storageType);	            
-	        this.db = get_global_database_reference(this.fileName).db;
+	        isInstDB = createGlobalDatabase(this.uid, this.fileName, this.storageType);	            
+	        this.db = getGlobalDatabaseReference(this.fileName).db;
 	    }
 
 	    this.SetIndexKeys(this.uniqueIndexKeys.join(","), true);  // this.uniqueIndexKeys
@@ -419,7 +450,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
             .replace(/\t/g,"&nbsp;&nbsp;") // to keep indentation in html
             .replace(/\n/g,"<br/>");       // to keep line break in html
     };
-    var color_JSON = function (o)
+    var colorJSON = function (o)
     {
         var val = syntaxHighlight(JSON.stringify(o));
         return "<span style=\"cursor:text;-webkit-user-select: text;-khtml-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;\">"+val+"</style>";
@@ -438,7 +469,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
             for (i=0; i<cnt; i++)
             {
                 self.propsections.push({"name": i, 
-                                        "value": color_JSON(docs[i]),
+                                        "value": colorJSON(docs[i]),
                                         "html": true,
                                         "readonly":true});                
             }
@@ -562,7 +593,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
             saveData.push(rowData);
         }
         
-        clean_table(this.keyType);
+        cleanTable(this.keyType);
         
         var self = this;   
         var handler = function(error, docs)
@@ -667,8 +698,13 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
         var item = this.buildUpdateItem(this.preparedItem, this.preprocessCmd)
         this.db["update"](this.filters, item, { "multi": true, "upsert": true }, handler);
 	    this.preparedItem = {};   
-	};	
-    
+    };	
+
+    Acts.prototype.SetJSON = function (key_, value_)
+	{ 
+        this.preparedItem[key_] = JSON.parse(value_);
+	};    
+            
     Acts.prototype.AddToSaveAllQueue = function ()
 	{
         this.preparedQueue.push(this.preparedItem);
@@ -811,7 +847,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
     
  	Exps.prototype.CurRowContent = function (ret, k, default_value)
 	{
-		ret.set_any( din(this.exp_CurRow, k, default_value) );
+		ret.set_any( getItemValue(this.exp_CurRow, k, default_value) );
 	};
     
  	Exps.prototype.CurRowIndex = function (ret)
@@ -840,7 +876,7 @@ cr.plugins_.Rex_nedb.databases = {};  // {db: database, ownerUID: uid }
  	Exps.prototype.Index2QueriedRowContent = function (ret, i, k, default_value)
 	{
 	    var row = this.queriedRows[i];
-	    ret.set_any( din(row, k, default_value) );
+	    ret.set_any( getItemValue(row, k, default_value) );
 	};	
  	Exps.prototype.Index2QueriedRowID = function (ret, index_)
 	{

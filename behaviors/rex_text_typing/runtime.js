@@ -32,7 +32,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
         this.timelineUid = -1;    // for loading     
 	};
 
-    behtypeProto.getTimelineObj = function ()
+    behtypeProto._timeline_get = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -67,72 +67,72 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.onCreate = function()
 	{    
         this.isLineBreak = (this.properties[0] === 1);    
-        this.typingTimer = null;
-        this.typingspeed = 0; 
-        this.typingIndex = 0;
+        this.typing_timer = null;
+        this.typing_speed = 0; 
+        this.typing_index = 0;
         this.content = "";
-        this.typingContent = null;
-        this.rawTextLength = 0;
-        this.timerSave = null;
-		this.textObjType = this.getTextObjType();  
-		this.SetTextFn = this.getSetTextFn(this.textObjType);
+        this.typing_content = null;
+        this.raw_text_length = 0;
+        this.timer_save = null;
+		this.text_type = this.get_text_type();  
+		this.SetText_handler = this.get_setText_handler(this.text_type);
 	};
     
-   	behinstProto.getTextObjType = function ()
+   	behinstProto.get_text_type = function ()
 	{
-	    var textObjType;
+	    var text_type;
         if (cr.plugins_.Text &&
 		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        textObjType = "Text";	    
+	        text_type = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			textObjType = "Spritefont2";	  
+			text_type = "Spritefont2";	  
 	    else if (cr.plugins_.TextBox &&
 		         (this.inst instanceof cr.plugins_.TextBox.prototype.Instance))
-		    textObjType = "TextBox";					
+		    text_type = "TextBox";					
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    textObjType = "rex_TagText";   
+		    text_type = "rex_TagText";   
 	    else if (cr.plugins_.rex_bbcodeText &&
 		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
-		    textObjType = "rex_bbcodeText";    
+		    text_type = "rex_bbcodeText";    
 	    else if (cr.plugins_.SpriteFontPlus &&
 		         (this.inst instanceof cr.plugins_.SpriteFontPlus.prototype.Instance))
-			textObjType = "SpriteFontPlus";	    				            
+			text_type = "SpriteFontPlus";	    				            
 		else
-		    textObjType = "";	 
-		return textObjType;
+		    text_type = "";	 
+		return text_type;
 	};
     
-	behinstProto.getSetTextFn = function (textObjType)
+	behinstProto.get_setText_handler = function (text_type)
 	{
-	    var setTextFn;
-        if (textObjType === "Text")		
-	        setTextFn = cr.plugins_.Text.prototype.acts.SetText;	    
-	    else if (textObjType === "Spritefont2")	
-			setTextFn = cr.plugins_.Spritefont2.prototype.acts.SetText;
-	    else if (textObjType === "TextBox")	
-			setTextFn = cr.plugins_.TextBox.prototype.acts.SetText;				
-	    else if (textObjType === "rex_TagText")	
-			setTextFn = cr.plugins_.rex_TagText.prototype.acts.SetText;
-	    else if (this.textObjType === "rex_bbcodeText")	
-			setTextFn = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;  
-	    else if (this.textObjType === "SpriteFontPlus")	
-			setTextFn = cr.plugins_.SpriteFontPlus.prototype.acts.SetText;			 		
+	    var set_text_handler;
+        if (text_type === "Text")		
+	        set_text_handler = cr.plugins_.Text.prototype.acts.SetText;	    
+	    else if (text_type === "Spritefont2")	
+			set_text_handler = cr.plugins_.Spritefont2.prototype.acts.SetText;
+	    else if (text_type === "TextBox")	
+			set_text_handler = cr.plugins_.TextBox.prototype.acts.SetText;				
+	    else if (text_type === "rex_TagText")	
+			set_text_handler = cr.plugins_.rex_TagText.prototype.acts.SetText;
+	    else if (this.text_type === "rex_bbcodeText")	
+			set_text_handler = cr.plugins_.rex_bbcodeText.prototype.acts.SetText;  
+	    else if (this.text_type === "SpriteFontPlus")	
+			set_text_handler = cr.plugins_.SpriteFontPlus.prototype.acts.SetText;			 		
 	    else
-		    setTextFn = null;
-	    return setTextFn;
+		    set_text_handler = null;
+	    return set_text_handler;
     };
     
 	behinstProto.onDestroy = function()
 	{    
-        this.removeTypingTimer();     
+        this.typing_timer_remove();     
 	};    
     
-	behinstProto.removeTypingTimer = function ()
+	behinstProto.typing_timer_remove = function ()
 	{
-        if (this.typingTimer != null)
-            this.typingTimer.Remove();
+        if (this.typing_timer != null)
+            this.typing_timer.Remove();
     };  
 	
 	behinstProto.tick = function ()
@@ -140,50 +140,50 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	};
 	
 
-	behinstProto.getRawTextLength = function (content)
+	behinstProto.get_rawTextLength = function (content)
 	{	    
 	    var len;
-		if ((this.textObjType === "Text") || 
-		    (this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus") || 
-			(this.textObjType === "TextBox"))
+		if ((this.text_type === "Text") || 
+		    (this.text_type === "Spritefont2") || (this.text_type === "SpriteFontPlus") || 
+			(this.text_type === "TextBox"))
 		    len = content.length;
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
             len = this.inst.getRawText(content).length;
         else
             len = 0;
         return len;
 	};
 	
-	behinstProto.setText = function (content, startIndex, endIndex)
+	behinstProto.SetText = function (content, start_index, end_index)
 	{	    
-	    if (this.SetTextFn == null)
+	    if (this.SetText_handler == null)
 		    return;
 		    
-	    if (startIndex == null)
-	        startIndex = 0;
-	    if (endIndex == null)
-	        endIndex = this.getRawTextLength(content);
+	    if (start_index == null)
+	        start_index = 0;
+	    if (end_index == null)
+	        end_index = this.get_rawTextLength(content);
 
-		if ((this.textObjType == "Text") || 
-		   (this.textObjType == "Spritefont2") || (this.textObjType === "SpriteFontPlus") || 
-		   (this.textObjType == "TextBox"))
+		if ((this.text_type == "Text") || 
+		   (this.text_type == "Spritefont2") || (this.text_type === "SpriteFontPlus") || 
+		   (this.text_type == "TextBox"))
 		{
-		    content = content.slice(startIndex, endIndex);
-            this.SetTextFn.call(this.inst, content);
+		    content = content.slice(start_index, end_index);
+            this.SetText_handler.call(this.inst, content);
         }
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
-            content = this.inst.getSubText(startIndex, endIndex, content);
-            this.SetTextFn.call(this.inst, content);
+            content = this.inst.getSubText(start_index, end_index, content);
+            this.SetText_handler.call(this.inst, content);
         }
 	};
 
-    behinstProto.getTimer = function ()
+    behinstProto._get_timer = function ()
     {
-        var timer = this.typingTimer;
+        var timer = this.typing_timer;
         if  (timer == null)
         {
-            var timeline = this.type.getTimelineObj();
+            var timeline = this.type._timeline_get();
             assert2(timeline, "Text typing need a timeline object");
             timer = timeline.CreateTimer(on_timeout);
             timer.plugin = this;
@@ -191,29 +191,29 @@ cr.behaviors.Rex_text_typing = function(runtime)
         return timer;
     };
     
-	behinstProto.startTyping = function (text, speed, startIndex)
+	behinstProto.start_typing = function (text, speed, start_index)
 	{
         if (this.isLineBreak)
         {
             text = this.lineBreakContent(text);
         }
                 
-	    this.rawTextLength = this.getRawTextLength(text);
+	    this.raw_text_length = this.get_rawTextLength(text);
         if (speed != 0)
         {
-            if (startIndex == null)
-                startIndex = 1;
+            if (start_index == null)
+                start_index = 1;
             
-            this.typingTimer = this.getTimer();
-            this.typingContent = text;
-            this.typingspeed = speed;
-            this.typingIndex = startIndex;
-            this.typingTimer.Start(0);
+            this.typing_timer = this._get_timer();
+            this.typing_content = text;
+            this.typing_speed = speed;
+            this.typing_index = start_index;
+            this.typing_timer.Start(0);
         }
         else
         {
-            this.typingIndex = this.rawTextLength;
-            this.setText(text, 0, this.typingIndex);
+            this.typing_index = this.raw_text_length;
+            this.SetText(text, 0, this.typing_index);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
     };
@@ -221,31 +221,31 @@ cr.behaviors.Rex_text_typing = function(runtime)
     // handler of timeout for timers in this plugin, this=timer   
     var on_timeout = function ()
     {
-        this.plugin.typeContent();
+        this.plugin.text_typing_handler();
     };
         
-	behinstProto.typeContent = function()
+	behinstProto.text_typing_handler = function()
 	{
-        this.setText(this.typingContent, 0, this.typingIndex);
+        this.SetText(this.typing_content, 0, this.typing_index);
         this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTextTyping, this.inst);         
-        this.typingIndex += 1;        
-        if (this.typingIndex <= this.rawTextLength)
-            this.typingTimer.Restart(this.typingspeed);        
+        this.typing_index += 1;        
+        if (this.typing_index <= this.raw_text_length)
+            this.typing_timer.Restart(this.typing_speed);        
         else
         {
-            this.typingIndex = this.rawTextLength;
-            this.typingContent = null;            
+            this.typing_index = this.raw_text_length;
+            this.typing_content = null;            
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
 	}; 
 
 	behinstProto.is_typing = function ()
 	{ 
-        return (this.typingTimer)? this.typingTimer.IsActive():false;
+        return (this.typing_timer)? this.typing_timer.IsActive():false;
 	}; 
     
  
-    behinstProto.getWebglCtx = function ()
+    behinstProto._get_webgl_ctx = function ()
 	{
         var inst = this.inst;            
         var ctx = inst.myctx;
@@ -266,10 +266,10 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.drawText = function (text)
 	{
         // render all content
-        this.setText(text);
+        this.SetText(text);
         var inst = this.inst;               
         var ctx = (this.runtime.enableWebGL)? 
-                  this.getWebglCtx():this.runtime.ctx;
+                  this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines        
 	}; 
 
@@ -277,11 +277,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	{
         this.drawText(source);
         var content;
-		if (this.textObjType === "Text")
+		if (this.text_type === "Text")
 		{
 			content = this.inst.lines.join("\n");
 		}
-		else if ((this.textObjType === "Spritefont2") || (this.textObjType === "SpriteFontPlus"))
+		else if ((this.text_type === "Spritefont2") || (this.text_type === "SpriteFontPlus"))
 		{
 			var cnt = this.inst.lines.length;
 			var lines = [];
@@ -291,7 +291,7 @@ cr.behaviors.Rex_text_typing = function(runtime)
 			}
 			content = lines.join("\n");
 		}
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
             var pensMgr = this.inst.copyPensMgr(); 
             var cnt = pensMgr.getLines().length;
@@ -319,11 +319,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.saveToJSON = function ()
 	{ 
 		return { "c": this.content,
-                 "tc": this.typingContent,
-		         "spd" : this.typingspeed,
-		         "i" : this.typingIndex,
+                 "tc": this.typing_content,
+		         "spd" : this.typing_speed,
+		         "i" : this.typing_index,
 		         
-		         "tim": (this.typingTimer != null)? this.typingTimer.saveToJSON() : null,
+		         "tim": (this.typing_timer != null)? this.typing_timer.saveToJSON() : null,
                  "tluid": (this.type.timeline != null)? this.type.timeline.uid: (-1)
                 };
 	};
@@ -331,11 +331,11 @@ cr.behaviors.Rex_text_typing = function(runtime)
 	behinstProto.loadFromJSON = function (o)
 	{    
 	    this.content = o["c"];
-        this.typingContent = o["tc"];
-	    this.typingspeed = o["spd"];
-	    this.typingIndex = o["i"];
+        this.typing_content = o["tc"];
+	    this.typing_speed = o["spd"];
+	    this.typing_index = o["i"];
 	    
-        this.timerSave = o["tim"];
+        this.timer_save = o["tim"];
         this.type.timelineUid = o["tluid"];   
 	};
     
@@ -349,14 +349,14 @@ cr.behaviors.Rex_text_typing = function(runtime)
 			assert2(this.type.timeline, "Timer: Failed to find timeline object by UID");
 		}		       
         
-        if (this.timerSave == null)
-            this.typingTimer = null;
+        if (this.timer_save == null)
+            this.typing_timer = null;
         else
         {
-            this.typingTimer = this.type.timeline.LoadTimer(this.timerSave, on_timeout);
-            this.typingTimer.plugin = this;
+            this.typing_timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
+            this.typing_timer.plugin = this;
         }     
-        this.timerSave = null;        
+        this.timers_save = null;        
 	}; 	
 	//////////////////////////////////////
 	// Conditions
@@ -398,17 +398,17 @@ cr.behaviors.Rex_text_typing = function(runtime)
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
 		
         this.content = param.toString();       
-        this.startTyping(this.content, speed);
+        this.start_typing(this.content, speed);
 	};
 
 	Acts.prototype.SetTypingSpeed = function(speed)
 	{
-	    if (this.typingspeed === speed)
+	    if (this.typing_speed === speed)
 	        return;
 	        
 	        
-        this.typingspeed = speed;                   
-        var timer = this.typingTimer;
+        this.typing_speed = speed;                   
+        var timer = this.typing_timer;
         if (timer == null)
             return;
                     
@@ -420,38 +420,38 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
 	Acts.prototype.StopTyping = function(is_show_all)
 	{
-        this.removeTypingTimer();   
+        this.typing_timer_remove();   
         if (is_show_all)
         {
-            this.setText(this.content);
+            this.SetText(this.content);
             this.runtime.trigger(cr.behaviors.Rex_text_typing.prototype.cnds.OnTypingCompleted, this.inst);
         }
 	};
     
 	Acts.prototype.AppendText = function(param)
 	{
-        var startIndex = this.rawTextLength;
+        var start_index = this.raw_text_length;
         if (typeof param === "number")
             param = Math.round(param * 1e10) / 1e10;	// round to nearest ten billionth - hides floating point errors
         this.content += param.toString();
         if (!this.is_typing())
-            this.startTyping(this.content, this.typingspeed, startIndex);
+            this.start_typing(this.content, this.typing_speed, start_index);
 	};    
 
     Acts.prototype.Pause = function ()
 	{
-	    if (this.typingTimer == null)
+	    if (this.typing_timer == null)
 	        return;
 	        
-	    this.typingTimer.Suspend();
+	    this.typing_timer.Suspend();
 	};   
 
     Acts.prototype.Resume = function ()
 	{
-	    if (this.typingTimer == null)
+	    if (this.typing_timer == null)
 	        return;
 	    
-	    this.typingTimer.Resume();
+	    this.typing_timer.Resume();
 	};       
 	//////////////////////////////////////
 	// Expressions
@@ -460,12 +460,12 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
     Exps.prototype.TypingSpeed = function (ret)
 	{
-	    ret.set_float( this.typingspeed );
+	    ret.set_float( this.typing_speed );
 	};
     
     Exps.prototype.TypingIndex = function (ret)
 	{
-	    ret.set_float( this.typingIndex -1 );
+	    ret.set_float( this.typing_index -1 );
 	};	
 
     Exps.prototype.Content = function (ret)
@@ -475,6 +475,6 @@ cr.behaviors.Rex_text_typing = function(runtime)
     
     Exps.prototype.LastTypingCharacter = function (ret)
 	{
-	    ret.set_string( this.content.charAt(this.typingIndex-1) );
+	    ret.set_string( this.content.charAt(this.typing_index-1) );
 	};	
 }());

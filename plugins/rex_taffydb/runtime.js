@@ -220,21 +220,21 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
         var keys = preprocessCmd["inc"];
         for (var k in keys)
         {
-            preparedItem[k] = din(itemOld, k, 0) + keys[k];
+            preparedItem[k] = getItemValue(itemOld, k, 0) + keys[k];
             delete keys[k];
         }
         
         var keys = preprocessCmd["max"];
         for (var k in keys)
         {
-            preparedItem[k] = Math.max( din(itemOld, k, 0) , keys[k] );
+            preparedItem[k] = Math.max( getItemValue(itemOld, k, 0) , keys[k] );
             delete keys[k];            
         }
         
         var keys = preprocessCmd["min"];
         for (var k in keys)
         {
-            preparedItem[k] = Math.min( din(itemOld, k, 0) , keys[k] );
+            preparedItem[k] = Math.min( getItemValue(itemOld, k, 0) , keys[k] );
             delete keys[k];            
         }        
         
@@ -359,7 +359,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{    
 	    var queriedRows = this.GetCurrentQueriedRows();
 	    var row = queriedRows["get"]()[index_];
-	    return din(row, "___id", default_value);        
+	    return getItemValue(row, "___id", default_value);        
 	}; 
 		
 	var getEvalValue = function(v, prefix)
@@ -396,26 +396,57 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 
         return true;        
     };    
-	
- 	var din = function (row, k, default_value)
-	{
-	    var v;
-	    if (row)
-	    {
-	        if (k == null)
-	            v = JSON.stringify(row);
-	        else
-	            v = row[k];
-	    }
-	    if (v == null)
+
+	var getValue = function(keys, root)
+	{           
+        if ((keys == null) || (keys === "") || (keys.length === 0))
         {
-            if (typeof(default_value) !== "undefined")
-                v = default_value;
-            else
-                v = 0;
+            return root;
         }
-		return v;
-	};		
+        else
+        {
+            if (typeof (keys) === "string")
+                keys = keys.split(".");
+            
+            var i,  cnt=keys.length, key;
+            var entry = root;
+            for (i=0; i< cnt; i++)
+            {
+                key = keys[i];                
+                if (entry.hasOwnProperty(key))
+                    entry = entry[ key ];
+                else
+                    return;              
+            }
+            return entry;                    
+        }
+	};     
+    
+ 	var getItemValue = function (item, k, default_value)
+	{
+		return din(getValue(k, item), default_value);
+	};	    
+    
+    var din = function (d, default_value)
+    {       
+        var o;
+	    if (d === true)
+	        o = 1;
+	    else if (d === false)
+	        o = 0;
+        else if (d == null)
+        {
+            if (default_value != null)
+                o = default_value;
+            else
+                o = 0;
+        }
+        else if (typeof(d) == "object")
+            o = JSON.stringify(d);
+        else
+            o = d;
+	    return o;
+    };	
     
 	instanceProto.saveToJSON = function ()
 	{
@@ -787,6 +818,11 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	{
         this.preprocessCmd["inc"][key_] = value_;
         this.hasPreprocessCmd = true;         
+    };    
+
+    Acts.prototype.SetJSON = function (key_, value_)
+	{ 
+        this.preparedItem[key_] = JSON.parse(value_);
 	};    
     
     Acts.prototype.NewFilters = function ()
@@ -863,24 +899,23 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
             keyName = this.indexKeys[i];
             primary_keys[keyName] = arguments[i+1];
         }
-        var item = this.db(primary_keys)["first"]();
-        var data_key = arguments[cnt+1];
+        var row = this.db(primary_keys)["first"]();
+        var k = arguments[cnt+1];
         var default_value = arguments[cnt+2];
-        var value = item[data_key] || default_value || 0;
-        ret.set_any(value);
+        ret.set_any( getItemValue(row, k, default_value) );
 	}; 
 
  	Exps.prototype.CurRowContent = function (ret, k, default_value)
 	{
 	    var row = this.db(this.exp_CurRowID)["get"]()[0];
-		ret.set_any( din(row, k, default_value) );
+		ret.set_any( getItemValue(row, k, default_value) );
 	};
 
  	Exps.prototype.Index2QueriedRowContent = function (ret, i, k, default_value)
 	{
 	    var queriedRows = this.GetCurrentQueriedRows();
 	    var row = queriedRows["get"]()[i];
-	    ret.set_any( din(row, k, default_value) );
+	    ret.set_any( getItemValue(row, k, default_value) );
 	};
 	
  	Exps.prototype.QueriedRowsCount = function (ret)
@@ -922,7 +957,7 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
  	Exps.prototype.ID2RowContent = function (ret, rowID, k, default_value)
 	{
 	    var row = this.db(rowID)["get"]()[0];
-	    ret.set_any( din(row, k, default_value) );
+	    ret.set_any( getItemValue(row, k, default_value) );
 	};
  	Exps.prototype.QueriedRowsIndex2RowID = function (ret, index_)
 	{

@@ -131,7 +131,13 @@ AddAction(18, 0, "Add to", "Save - prepare item",
 
 AddAction(19, 0, "Update queried rows", "Save", 
           "Save- Update queried rows by prepared item", 
-          'Update queried rows by prepared item.', "Update");          
+          'Update queried rows by prepared item.', "Update");
+          
+AddStringParam("Key", "The name of the key.", '""');
+AddStringParam("JSON", "The JSON value to set.", '"{}"');
+AddAction(20, 0, "Set JSON", "Save - prepare item", 
+          "Prepare- Set JSON <i>{0}</i> to <i>{1}</i>", 
+          "Set JSON value into current item.", "SetJSON");             
           
 AddAction(41, 0, "1. New", "Filter - 1. new", 
           "Filter- 1. Create a new row filter", 

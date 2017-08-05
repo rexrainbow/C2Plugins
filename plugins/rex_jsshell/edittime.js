@@ -23,15 +23,15 @@ AddCondition(1, cf_trigger, "Callback", "Callback",
 
 //////////////////////////////////////////////////////////////
 // Actions
-AddStringParam("Name", "Variable name in dot notation", '""');
+AddStringParam("Return value", "Variable to save return value, in dot notation", '""');
 AddAction(1, 0, "Invoke", "Invoke", 
           "Invoke function, put return object to {0}",
           "Invoke javascript function.", "InvokeFunction"); 
 
 AddStringParam("Name", "Variable name in dot notation", '""');
-AddAction(2, 0, "Create instance", "Invoke", 
-          "Create instance to {0}",
-          "Create instance.", "CreateInstance"); 		 
+AddAction(2, 0, "New instance", "Invoke", 
+          "New instance to {0}",
+          "New instance.", "CreateInstance"); 		 
 
 AddStringParam("Name", "Function name in dot notation", '""');
 AddAction(12, 0, "Set function name", "Prepare - Function name", 
