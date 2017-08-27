@@ -48,7 +48,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
         this.name = "";
         this.retVal = 0;
         this.params = [];
-        this.parameter_tables = {};
+        this.parameterTable = {};
         this.name2index = {};
         this.name2value = {};  
     };
@@ -95,13 +95,13 @@ cr.plugins_.Rex_Function2 = function(runtime)
     {
         isInPreview = (typeof cr_is_preview !== "undefined");
         
-        this.is_debug_mode = (typeof(log) !== "undefined") && (this.properties[0] == 1);
+        this.isDebugMode = (typeof(log) !== "undefined") && (this.properties[0] == 1);
         
         var fs = pushFuncStack();
         fs.name = "__main__";
                 
         this.parameter_table_cache = new ObjCacheKlass();        
-        this.param_index = 0;
+        this.paramIndex = 0;
         
 		var self = this;
 		
@@ -134,7 +134,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
 				cr.clearArray(fs.params);
 			}
             
-            if (self.is_debug_mode)
+            if (self.isDebugMode)
             {
                 var i, lead = "+";
                 for(i=1; i<funcStackPtr; i++)
@@ -142,10 +142,10 @@ cr.plugins_.Rex_Function2 = function(runtime)
                 log(lead+ fs.name + " : " + fs.params.toString());
             }              
 			
-            self.function_call_prelude();                
+            self.functionCallPrelude();                
 			// Note: executing fast trigger path based on fs.name
 			var ran = self.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, self, fs.name);
-            self.function_call_finale();
+            self.functionCallFinale();
             
             // In preview mode, log to the console if nothing was triggered
             if (isInPreview && !ran)
@@ -159,45 +159,45 @@ cr.plugins_.Rex_Function2 = function(runtime)
 		};        
     };
     
-    instanceProto.function_call_prelude = function()
+    instanceProto.functionCallPrelude = function()
     {
-        this.param_index = 0;
+        this.paramIndex = 0;
     };
     
-    instanceProto.function_call_finale = function()
+    instanceProto.functionCallFinale = function()
     {
         var fs = getCurrentFuncStack();
-        hashtable_clean(fs.name2value);
-        hashtable_clean(fs.name2index);        
+        cleanTable(fs.name2value);
+        cleanTable(fs.name2index);        
     };
     
-    instanceProto.define_param = function (name, default_value, type_check)
+    instanceProto.defineParam = function (name, defaultValue, typeCheck)
     {
         var fs = getCurrentFuncStack();
         
         if (!fs)
             return false;
         
-        fs.name2index[name] = this.param_index;
-        if (this.param_index >= fs.params.length)
+        fs.name2index[name] = this.paramIndex;
+        if (this.paramIndex >= fs.params.length)
         {
-            fs.params.length = this.param_index + 1;
+            fs.params.length = this.paramIndex + 1;
             var value = fs.name2value[name];
             if (value == null)
-                value = default_value;
+                value = defaultValue;
             
-            if ((type_check === 1) && (typeof(value) !== "number"))
+            if ((typeCheck === 1) && (typeof(value) !== "number"))
                 log("[Construct 2] Rex_Function2 object: parameter "+ name + "= " + value + " is not a number", "warn");
-            else if ((type_check === 2) && (typeof(value) !== "string")) 
+            else if ((typeCheck === 2) && (typeof(value) !== "string")) 
                 log("[Construct 2] Rex_Function2 object: parameter "+ name + "= " + value + " is not a string", "warn");
             
-            fs.params[this.param_index] = value;
+            fs.params[this.paramIndex] = value;
         }
-        this.param_index += 1;
+        this.paramIndex += 1;
         return true;
     };     
     
-    instanceProto.param_get = function (param_index_)
+    instanceProto.getParam = function (paramIndex_)
     {
         var fs = getCurrentFuncStack();
         if (!fs)
@@ -207,17 +207,17 @@ cr.plugins_.Rex_Function2 = function(runtime)
         }
         
         var index_;
-        if (typeof(param_index_) == "string")
+        if (typeof(paramIndex_) == "string")
         {
-            index_ = fs.name2index[param_index_];
+            index_ = fs.name2index[paramIndex_];
             if (index_ == null)
             {
-                log("[Construct 2] Rex_Function2 object: in function '" + fs.name + "', could not find parameter " + param_index_ , "warn");
+                log("[Construct 2] Rex_Function2 object: in function '" + fs.name + "', could not find parameter " + paramIndex_ , "warn");
                 return null;
             }
         }
         else
-            index_ = cr.floor(param_index_);
+            index_ = cr.floor(paramIndex_);
             
         if (index_ >= 0 && index_ < fs.params.length)
         {
@@ -237,7 +237,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
         
     };    
     
-    var hashtable_clean = function(table)
+    var cleanTable = function(table)
     {
         var n;
         for(n in table)
@@ -317,7 +317,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
         }
     };
     
-    var din = function (d, default_value)
+    var din = function (d, defaultValue)
     {       
         var o;
 	    if (d === true)
@@ -326,8 +326,8 @@ cr.plugins_.Rex_Function2 = function(runtime)
 	        o = 0;
         else if (d == null)
         {
-            if (default_value != null)
-                o = default_value;
+            if (defaultValue != null)
+                o = defaultValue;
             else
                 o = 0;
         }
@@ -352,22 +352,22 @@ cr.plugins_.Rex_Function2 = function(runtime)
         return cr.equals_nocase(name_, fs.name);
     };
     
-    Cnds.prototype.CompareParam = function (param_index_, cmp_, value_)
+    Cnds.prototype.CompareParam = function (paramIndex_, cmp_, value_)
     {
-        var param_value = this.param_get(param_index_);
-        if (param_value == null)
+        var paramValue = this.getParam(paramIndex_);
+        if (paramValue == null)
             return false;
-        return cr.do_cmp(param_value, cmp_, value_);
+        return cr.do_cmp(paramValue, cmp_, value_);
     };
     
-    Cnds.prototype.TypeOfParam = function (param_index_, type_cmp)
+    Cnds.prototype.TypeOfParam = function (paramIndex_, typeCmp)
     {        
-        var param_value = this.param_get(param_index_);
-        if (param_value == null)
+        var paramValue = this.getParam(paramIndex_);
+        if (paramValue == null)
             return false;
             
-        var t = (type_cmp == 0)? "number":"string";        
-        return (typeof(param_value) == t);
+        var t = (typeCmp == 0)? "number":"string";        
+        return (typeof(paramValue) == t);
     };    
     
     pluginProto.cnds = new Cnds();
@@ -383,17 +383,17 @@ cr.plugins_.Rex_Function2 = function(runtime)
         fs.retVal = 0;
         cr.shallowAssignArray(fs.params, params_);
         
-        if (this.is_debug_mode)
+        if (this.isDebugMode)
         {
             var i, lead = "+";
             for(i=1; i<funcStackPtr; i++)
                 lead += "-";             
             log(lead + fs.name + " : " + fs.params.toString());
         }      
-        this.function_call_prelude();
+        this.functionCallPrelude();
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
-        this.function_call_finale();
+        this.functionCallFinale();
         
         // In preview mode, log to the console if nothing was triggered
         if (isInPreview && !ran)
@@ -423,21 +423,21 @@ cr.plugins_.Rex_Function2 = function(runtime)
     {
         var fs = getCurrentFuncStack();
         
-        var pt = fs.parameter_tables;
+        var pt = fs.parameterTable;
         if (!pt.hasOwnProperty(table))
             pt[table] = this.parameter_table_cache.allocLine() || {};
         
         pt[table][name_] = value_;
     };
     
-    Acts.prototype.DefineParam = function (name, default_value, type_check)
+    Acts.prototype.DefineParam = function (name, defaultValue, typeCheck)
     {
-        this.define_param(name, default_value, type_check);
+        this.defineParam(name, defaultValue, typeCheck);
     }; 
     
     Acts.prototype.Dump = function ()
     {
-        if (!this.is_debug_mode)
+        if (!this.isDebugMode)
             return;
 
         var fs = getCurrentFuncStack();          
@@ -446,7 +446,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
     
     Acts.prototype.CallFunctionwPT = function (name_, tale_)
     {
-        var pt = getCurrentFuncStack().parameter_tables[tale_];
+        var pt = getCurrentFuncStack().parameterTable[tale_];
         
         var fs = pushFuncStack();
         fs.name = name_.toLowerCase();
@@ -459,10 +459,10 @@ cr.plugins_.Rex_Function2 = function(runtime)
             for (n in pt)            
                 fs.name2value[n] = pt[n];   
             
-            hashtable_clean(pt);
+            cleanTable(pt);
         }
 
-        if (this.is_debug_mode)
+        if (this.isDebugMode)
         {
             var str_name2value = "";
             for(n in fs.name2value)
@@ -472,10 +472,10 @@ cr.plugins_.Rex_Function2 = function(runtime)
                 lead += "-";  
             log(lead+ fs.name + " : " + str_name2value);
         }                   
-        this.function_call_prelude();
+        this.functionCallPrelude();
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
-        this.function_call_finale();
+        this.functionCallFinale();
         
         // In preview mode, log to the console if nothing was triggered
         if (isInPreview && !ran)
@@ -505,7 +505,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
     // Expressions
     function Exps() {};
 
-    Exps.prototype.ReturnValue = function (ret, key_, default_value)
+    Exps.prototype.ReturnValue = function (ret, key_, defaultValue)
     {
         // The previous function has already popped - so check one level up the function stack
         var fs = getOneAboveFuncStack();
@@ -514,7 +514,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
         {
             var val = fs.retVal;
             val = getValue(val, key_);
-            ret.set_any(din(val, default_value));
+            ret.set_any(din(val, defaultValue));
         }
         else
             ret.set_int(0);
@@ -533,9 +533,9 @@ cr.plugins_.Rex_Function2 = function(runtime)
         }
     };
     
-    Exps.prototype.Param = function (ret, param_index_)
+    Exps.prototype.Param = function (ret, paramIndex_)
     {
-        ret.set_any(this.param_get(param_index_));
+        ret.set_any(this.getParam(paramIndex_));
     };
     
     Exps.prototype.Call = function (ret, name_)
@@ -550,17 +550,17 @@ cr.plugins_.Rex_Function2 = function(runtime)
         for (i = 2, len = arguments.length; i < len; i++)
             fs.params.push(arguments[i]);
         
-        if (this.is_debug_mode)
+        if (this.isDebugMode)
         {
             var i, lead = "+";
             for(i=1; i<funcStackPtr; i++)
                 lead += "-";                 
             log(lead+ fs.name + " : " + fs.params.toString());
         }        
-        this.function_call_prelude();       
+        this.functionCallPrelude();       
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
-        this.function_call_finale();
+        this.functionCallFinale();
         
         // In preview mode, log to the console if nothing was triggered
         if (isInPreview && !ran)
@@ -585,7 +585,7 @@ cr.plugins_.Rex_Function2 = function(runtime)
         for (i = 2; i < len; i=i+2)
             fs.name2value[arguments[i]] = arguments[i+1];        
         
-        if (this.is_debug_mode)
+        if (this.isDebugMode)
         {
             var str_name2value = "";
             for(n in fs.name2value)
@@ -595,10 +595,10 @@ cr.plugins_.Rex_Function2 = function(runtime)
                 lead += "-";  
             log(lead+ fs.name + " : " + str_name2value);
         }
-        this.function_call_prelude(); 
+        this.functionCallPrelude(); 
         // Note: executing fast trigger path based on fs.name
         var ran = this.runtime.trigger(cr.plugins_.Rex_Function2.prototype.cnds.OnFunction, this, fs.name);
-        this.function_call_finale();
+        this.functionCallFinale();
         
         // In preview mode, log to the console if nothing was triggered
         if (isInPreview && !ran)

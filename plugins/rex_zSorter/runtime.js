@@ -42,41 +42,79 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	
 	var instanceProto = pluginProto.Instance.prototype;
 
-	// called whenever an instance is created
-    var y_increasing = true;  
-    var x_increasing = true;    
 	instanceProto.onCreate = function()
 	{
-	    y_increasing = (this.properties[0] === 0);
-        x_increasing = (this.properties[1] === 0);
-        this._cmp_uidA = 0;
-	    this._cmp_uidB = 0;
-        this._compared_result = 0;        
-	    this._sort_fn_name = "";	        
+	    this.yIncMode = (this.properties[0] === 0);
+        this.xIncMode = (this.properties[1] === 0);
+        this.cmpUIDA = 0;
+	    this.cmpUIDB = 0;
+        this.cmpResult = 0;        
+		this.sortFnName = "";
+		
+		var self = this;
+		this.SortByPos = function (instA, instB)
+		{        
+			var ax = instA.x;
+			var ay = instA.y;
+			var bx = instB.x;
+			var by = instB.y; 
+			
+			if (ay === by)
+			{
+				if (ax === bx)
+					return 0;
+				else if (self.xIncMode)            
+					return (ax > bx)? 1:-1;            
+				else  // !this.xIncMode
+					return (ax < bx)? 1:-1;
+					
+			}
+			else if (self.yIncMode)
+				return (ay > by)? 1:-1;
+			else // !this.yIncMode
+				return (ay < by)? 1:-1;
+		};
+		
+		this.SortByFn = function (instA, instB)
+		{   
+			self.cmpUIDA = instA.uid;
+			self.cmpUIDB = instB.uid;	    
+			self.runtime.trigger(cr.plugins_.Rex_ZSorter.prototype.cnds.OnSortingFn, self);
+			return self.cmpResult;	    
+		};
 	};
-	
-	// only called if a layout object
-	instanceProto.draw = function(ctx)
+
+	var getUID2ZIdx = function (insts, uid2ZIdx)
 	{
-	};    
-    
-    var _thisArg  = null;
-	var _sort_fn = function(instance_a, instance_b)
-	{   
-	    _thisArg._cmp_uidA = instance_a.uid;
-	    _thisArg._cmp_uidB = instance_b.uid;	    
-	    _thisArg.runtime.trigger(cr.plugins_.Rex_ZSorter.prototype.cnds.OnSortingFn, _thisArg);
-	    return _thisArg._compared_result;	    
+		if (uid2ZIdx == null)
+			uid2ZIdx = {};
+		else
+		{
+			for(var k in uid2ZIdx)
+				delete uid2ZIdx[k];
+		}
+		
+		var i, cnt=insts.length, inst;
+		for(i=0; i<cnt; i++)
+		{
+			inst = insts[i];
+			uid2ZIdx[inst.uid] = inst.get_zindex();
+		}
+		return uid2ZIdx;
 	};
 	
 	instanceProto.saveToJSON = function ()
 	{
-		return { "xi": x_increasing };
+		return { 
+			"xi": this.xIncMode,
+			"yi": this.yIncMode
+		};
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-	    x_increasing = o["xi"];
+		this.xIncMode = o["xi"];
+		this.yIncMode = o["yi"];
 	};	
 	//////////////////////////////////////
 	// Conditions
@@ -85,82 +123,76 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	  
 	Cnds.prototype.OnSortingFn = function (name)
 	{
-		return (this._sort_fn_name == name);
+		return cr.equals_nocase(this.sortFnName, name);
 	};	
 	
 	//////////////////////////////////////
 	// Actions
 	function Acts() {};
 	pluginProto.acts = new Acts();
-    
-    var ZSORT = function(instance_a, instance_b)
-    {        
-        var ax = instance_a.x;
-        var ay = instance_a.y;
-        var bx = instance_b.x;
-        var by = instance_b.y; 
-        
-        if (ay === by)
-        {
-            if (ax === bx)
-                return 0;
-            else if (x_increasing)            
-                return (ax > bx)? 1:-1;            
-            else  // !x_increasing
-                return (ax < bx)? 1:-1;
-                
-        }
-        else if (y_increasing)
-            return (ay > by)? 1:-1;
-        else // !y_increasing
-            return (ay < by)? 1:-1;
-    }
-
+	
+	var uid2ZIdx = {};
     //Z-Sort all objects in current layer by their Y position
 	Acts.prototype.SortObjsLayerByY = function (layer)
 	{     
         if (layer == null)
         {
-            alart("Z Sort: Can not find layer  " + layerparam);
+            alart("Z Sort: Can not find layer");
             return;
-        }
-	    layer.instances.sort(ZSORT);
-	    layer.zindices_stale = true;
+		}
+
+		var insts = layer.instances;
+		uid2ZIdx = getUID2ZIdx(insts, uid2ZIdx);		
+		insts.sort(this.SortByPos);
+		var i, cnt=insts.length, inst;
+		for(i=0; i<cnt; i++)
+		{
+			inst = insts[i];
+			if (i !== uid2ZIdx[inst.uid])
+				layer.setZIndicesStaleFrom(i);
+		}
 	    this.runtime.redraw = true;
 	};
     
-	Acts.prototype.SetXorder = function (x_order)
+	Acts.prototype.SetXorder = function (xOrder)
 	{
-        x_increasing = (x_order === 0);
+        this.xIncMode = (xOrder === 0);
 	};    
     
-	Acts.prototype.SortByFn = function (layer, fn_name)
+	Acts.prototype.SortByFn = function (layer, fnName)
 	{
         if (layer == null)
         {
-            alert("Z Sort: Can not find layer  " + layerparam);
+            alart("Z Sort: Can not find layer");
             return;
-        }
-        _thisArg  = this;
-	    this._sort_fn_name = fn_name;        
-	    layer.instances.sort(_sort_fn);
-	    layer.zindices_stale = true;
-	    this.runtime.redraw = true;        
+		}
+		var insts = layer.instances;
+		uid2ZIdx = getUID2ZIdx(insts, uid2ZIdx);
+	    this.sortFnName = fnName;
+	    insts.sort(this.SortByFn);
+		var i, cnt=insts.length, inst;
+		for(i=0; i<cnt; i++)
+		{
+			inst = insts[i];
+			if (i !== uid2ZIdx[inst.uid])
+				layer.setZIndicesStaleFrom(i);
+		}
+	    this.runtime.redraw = true;       
 	}; 
 
 	Acts.prototype.SetCmpResultDirectly = function (result)
 	{
-	    this._compared_result = result;
+	    this.cmpResult = result;
 	};		
 	
     Acts.prototype.SetCmpResultCombo = function (result)
 	{
-	    this._compared_result = result -1;
+	    this.cmpResult = result -1;
 	};
     
-	Acts.prototype.SetYorder = function (y_order)
+	Acts.prototype.SetYorder = function (yOrder)
 	{
-        y_increasing = (y_order === 0);
+        this.yIncMode = (yOrder === 0);
 	}; 
 		
     Acts.prototype.ZMoveToObject = function (uidA, where_, uidB)
@@ -195,11 +227,11 @@ cr.plugins_.Rex_ZSorter = function(runtime)
 	
 	Exps.prototype.CmpUIDA = function (ret)
 	{   
-	    ret.set_int(this._cmp_uidA);
+	    ret.set_int(this.cmpUIDA);
 	};    
 	
 	Exps.prototype.CmpUIDB = function (ret)
 	{   
-	    ret.set_int(this._cmp_uidB);
+	    ret.set_int(this.cmpUIDB);
 	};   
 }());

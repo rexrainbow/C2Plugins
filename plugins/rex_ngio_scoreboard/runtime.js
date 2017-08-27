@@ -46,7 +46,7 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
         this.limit = this.properties[1];
         this.period = periodCode[ this.properties[2] ];
         this.tag = this.properties[3];      
-        this.social_user = null;
+        this.socialUser = null;
         this.pageIndex = 0;
         
         this.ngio = null;
@@ -82,16 +82,16 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
                 return this.ngio;
             }            
         }
-        assert2(this.ngio, "Gateway: Can not find NGIO Authentication oject.");
+        assert2(this.ngio, "NGIO.Scoreboard: Can not find NGIO Authentication oject.");
         return null; 
 	};
 
-    instanceProto.GetSkip = function (page_index)
+    instanceProto.GetSkip = function (pageIndex)
 	{
-        if (page_index == null)
-            page_index = this.pageIndex;
+        if (pageIndex == null)
+            pageIndex = this.pageIndex;
         
-        return page_index * this.limit;
+        return pageIndex * this.limit;
 	};     
 
     instanceProto.GetScoresInRange = function (skip, limit)
@@ -137,10 +137,10 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
         if (this.tag !== "")
             param["tag"] = this.tag;
         
-        if (this.social_user !== null)
+        if (this.socialUser !== null)
         {
             param["social"] = true;
-            param["user"] = this.social_user;
+            param["user"] = this.socialUser;
         }
         this.GetNGIO()["callComponent"]("ScoreBoard.getScores", param, callback);        
 	};      
@@ -233,8 +233,7 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
                 callback(result);
             
             self.lastResult = result;    
-            var trig = (result["success"])? successTrig:
-                                                       errorTrig;
+            var trig = (result["success"])? successTrig:errorTrig;
             self.runtime.trigger(trig, self);
         };
         return handler;
@@ -307,9 +306,9 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
         this.GetScoresInRange(skip, limit);
 	};
     
-    Acts.prototype.RequestTurnToPage = function (page_index)
+    Acts.prototype.RequestTurnToPage = function (pageIndex)
 	{
-        this.pageIndex = page_index;
+        this.pageIndex = pageIndex;
         var skip = this.GetSkip();
         this.GetScoresInRange(skip, this.limit);
 	};	 
@@ -338,11 +337,11 @@ cr.plugins_.Rex_NGIO_Scoreboard = function(runtime)
     
     Acts.prototype.ShowAll = function ()
 	{
-        this.social_user = null;        
+        this.socialUser = null;        
 	};  
     Acts.prototype.ShowUser = function (user)
 	{
-        this.social_user = user;  // userID or userName
+        this.socialUser = user;  // userID or userName
 	}; 
 
     // Get scores    

@@ -68,7 +68,7 @@ cr.plugins_.Rex_NGIO_Medal = function(runtime)
                 return this.ngio;
             }            
         }
-        assert2(this.ngio, "Gateway: Can not find NGIO Authentication oject.");
+        assert2(this.ngio, "NGIO.Medal: Can not find NGIO Authentication oject.");
         return null; 
 	};    
 	//////////////////////////////////////
@@ -157,8 +157,7 @@ cr.plugins_.Rex_NGIO_Medal = function(runtime)
                 callback(result);
             
             self.lastResult = result;    
-            var trig = (result["success"])? successTrig:
-                                                       errorTrig;
+            var trig = (result["success"])? successTrig:errorTrig;
             self.runtime.trigger(trig, self);
         };
         return handler;
@@ -178,13 +177,13 @@ cr.plugins_.Rex_NGIO_Medal = function(runtime)
                 {
                     medal = medals[i];
                     var data = {
-                      "description": medal["description"],
-                      "difficulty": medal["difficulty"],
-                      "icon": medal["icon"],
-                      "id": medal["id"],                      
-                      "name": medal["name"],
-                      "secret": medal["secret"],                
-                      "value": medal["value"],                               
+                        "description": medal["description"],
+                        "difficulty": medal["difficulty"],
+                        "icon": medal["icon"],
+                        "id": medal["id"],                      
+                        "name": medal["name"],
+                        "secret": medal["secret"],                
+                        "value": medal["value"],                               
                     };
                     if (medal["unlocked"] != null)
                         data["unlocked"] = medal["unlocked"];

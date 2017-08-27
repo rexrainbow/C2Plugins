@@ -473,8 +473,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            var authObj = getAuthObj()["signInWithEmailAndPassword"](e_, p_);
-            addLoginHandler(this, authObj);            
+            var authObj = getAuthObj();
+            addLoginHandler(this, authObj["signInWithEmailAndPassword"](e_, p_));            
         }            
 	}; 	
 	
@@ -560,8 +560,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            var authObj = getAuthObj()["signInAnonymously"]();
-            addLoginHandler(this, authObj);     
+            var authObj = getAuthObj();
+            addLoginHandler(this, authObj["signInAnonymously"]());     
         }              
 	};	
 	
@@ -578,8 +578,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            var authObj = getAuthObj()["signInWithCustomToken"]();
-            addLoginHandler(this, authObj);    
+            var authObj = getAuthObj();
+            addLoginHandler(this, authObj["signInWithCustomToken"]());    
         }
 	};		
     
@@ -615,9 +615,16 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
             if (scope_ !== "") 
                 providerObj["addScope"](scope_);
             
-            var loginType = (t_ === 0)? "signInWithPopup":"signInWithRedirect";	 
-            var authObj = getAuthObj()[loginType](providerObj);
-            addLoginHandler(this, authObj);          
+            var authObj = getAuthObj();
+            if (t_ === 0)    // signInWithPopup
+            {
+                addLoginHandler(this, authObj["signInWithPopup"](providerObj));
+            }
+            else    // signInWithRedirect
+            {
+                authObj["signInWithRedirect"](providerObj);
+                addLoginHandler(this, authObj["getRedirectResult"]());
+            }
         }
 	};
 
@@ -648,8 +655,8 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         else
         {
             var credential = window["Firebase"]["auth"]["FacebookAuthProvider"]["credential"](access_token);
-            var authObj = getAuthObj()["signInWithCredential"](credential);
-            addLoginHandler(this, authObj);                     
+            var authObj = getAuthObj();
+            addLoginHandler(this, authObj["signInWithCredential"](credential));                     
         }     
 	};		
 		

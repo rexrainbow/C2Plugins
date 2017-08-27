@@ -30,13 +30,13 @@ cr.behaviors.Rex_pin2imgpt = function(runtime)
 	{
 	    if (!cr.plugins_.Sprite)
 	    {
-	        this.imgptX_get = null;
-	        this.imgptY_get = null;
+	        this.getImgptX = null;
+	        this.getImgptY = null;
 	    }
 	    else
 	    {
-	        this.imgptX_get = cr.plugins_.Sprite.prototype.exps.ImagePointX;
-	        this.imgptY_get = cr.plugins_.Sprite.prototype.exps.ImagePointY;
+	        this.getImgptX = cr.plugins_.Sprite.prototype.exps.ImagePointX;
+	        this.getImgptY = cr.plugins_.Sprite.prototype.exps.ImagePointY;
 	    }
 	};
 	/////////////////////////////////////
@@ -135,25 +135,25 @@ cr.behaviors.Rex_pin2imgpt = function(runtime)
                     set_string: function(value){this.value=value;},	    
 	               };  
 
-    behinstProto.imgptX_get = function (pinObject, imgpt)
+    behinstProto.getImgptX = function (pinObject, imgpt)
     {    
-        this.type.imgptX_get.call(pinObject, fake_ret, imgpt);
+        this.type.getImgptX.call(pinObject, fake_ret, imgpt);
         return fake_ret.value;
     };
     
-    behinstProto.imgptY_get = function (pinObject, imgpt)
+    behinstProto.getImgptY = function (pinObject, imgpt)
     {
-        this.type.imgptY_get.call(pinObject, fake_ret, imgpt);
+        this.type.getImgptY.call(pinObject, fake_ret, imgpt);
         return fake_ret.value;
     };    
     	                    
 	behinstProto.tick2 = function ()
 	{
-		if ((!this.pinObject) || (!this.type.imgptX_get) || (!this.type.imgptY_get))
+		if ((!this.pinObject) || (!this.type.getImgptX) || (!this.type.getImgptY))
 			return;
 
-		var newx = this.imgptX_get(this.pinObject, this.imgpt);
-		var newy = this.imgptY_get(this.pinObject, this.imgpt);						
+		var newx = this.getImgptX(this.pinObject, this.imgpt);
+		var newy = this.getImgptY(this.pinObject, this.imgpt);						
 		if (this.inst.x !== newx || this.inst.y !== newy)
 		{
 			this.inst.x = newx;

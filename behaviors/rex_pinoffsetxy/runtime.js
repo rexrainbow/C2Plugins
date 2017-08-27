@@ -45,8 +45,8 @@ cr.behaviors.Rex_pinOffsetXY = function(runtime)
 	{
 		this.pinObject = null;
 		this.pinObjectUid = -1;		// for loading
-		this.pin_offsetx = 0;
-		this.pin_offsety = 0;
+		this.pinOffsetX = 0;
+		this.pinOffsetY = 0;
 		
 		var self = this;
 		
@@ -65,16 +65,16 @@ cr.behaviors.Rex_pinOffsetXY = function(runtime)
 	{
 		return {
 			"uid": this.pinObject ? this.pinObject.uid : -1,
-			"offx": this.pin_offsetx,
-			"offy": this.pin_offsety,
+			"offx": this.pinOffsetX,
+			"offy": this.pinOffsetY,
 		};
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
 		this.pinObjectUid = o["uid"];		// wait until afterLoad to look up		
-		this.pin_offsetx = o["offx"];
-		this.pin_offsety = o["offy"];
+		this.pinOffsetX = o["offx"];
+		this.pinOffsetY = o["offy"];
 	};
 	
 	behinstProto.afterLoad = function ()
@@ -114,8 +114,8 @@ cr.behaviors.Rex_pinOffsetXY = function(runtime)
 		if (!this.pinObject)
 			return;
 		
-		var newx = this.pinObject.x + this.pin_offsetx;
-		var newy = this.pinObject.y + this.pin_offsety;		
+		var newx = this.pinObject.x + this.pinOffsetX;
+		var newy = this.pinObject.y + this.pinOffsetY;		
 		if (this.inst.x !== newx || this.inst.y !== newy)
 		{
 			this.inst.x = newx;
@@ -153,7 +153,7 @@ cr.behaviors.Rex_pinOffsetXY = function(runtime)
 	function Acts() {};
 	behaviorProto.acts = new Acts();
 
-	Acts.prototype.Pin = function (obj, offset_x, offset_y)
+	Acts.prototype.Pin = function (obj, offsetX, offsetY)
 	{
 		if (!obj)
 			return;
@@ -163,14 +163,14 @@ cr.behaviors.Rex_pinOffsetXY = function(runtime)
 		if (!otherinst)
 			return;
 			
-        if (offset_x == null)
-            offset_x = this.inst.x - otherinst.x;
-        if (offset_y == null)
-            offset_y = this.inst.y - otherinst.y;
+        if (offsetX == null)
+            offsetX = this.inst.x - otherinst.x;
+        if (offsetY == null)
+            offsetY = this.inst.y - otherinst.y;
                   
 		this.pinObject = otherinst;
-		this.pin_offsetx = offset_x;
-		this.pin_offsety = offset_y;
+		this.pinOffsetX = offsetX;
+		this.pinOffsetY = offsetY;
 	};
 	
 	Acts.prototype.Unpin = function ()

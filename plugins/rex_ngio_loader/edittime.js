@@ -6,7 +6,7 @@
 		"version":		"0.1",        
 		"description":	"Handles loading various URLs and tracking referral stats.",
 		"author":		"Rex.Rainbow",
-		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ngio_medal.html",
+		"help url":		"https://rexrainbow.github.io/C2RexDoc/c2rexpluginsACE/plugin_rex_ngio_loader.html",
 		"category":		"Rex - Web - newgrounds.io",
 		"type":			"object",			// not in layout
 		"rotatable":	false,
@@ -21,7 +21,7 @@ AddCondition(101, cf_trigger, "On get url", "Get URL",
             "Triggered when get url success.", "OnGetURLSuccess");
 AddCondition(102, cf_trigger, "On get url error", "Get URL", 
             "On get url error",
-            "Triggered when get url error.", "OnGetURLsError");      
+            "Triggered when get url error.", "OnGetURLError");      
             
 //////////////////////////////////////////////////////////////
 // Actions

@@ -42,11 +42,12 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this.enable_wrap = (this.properties[0] === 1);
-        
-		var self = this;		
-		if (this.runtime.isCocoonJs && this.enable_wrap)
+		this.enableWrapper = (this.properties[0] === 1);
+		this.curTag = "";
+        				
+		if (this.isCocoonJs())
 		{
+			var self = this;			
 			CocoonJS["App"]["onTextDialogFinished"].addEventListener(function(text) {
 				input_text = text;
 				self.runtime.trigger(cr.plugins_.Rex_PromptWrap.prototype.cnds.OnKeyboardOK, self);
@@ -57,10 +58,14 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
 			});            
         }            
         
-
 	};
-    
-	instanceProto.cocoonJS_PromptKeyboard = function (title_, message_, initial_, type_, canceltext_, oktext_)
+
+	instanceProto.isCocoonJs = function()
+	{
+		return (this.runtime.isCocoonJs && this.enableWrapper);
+	}
+
+	instanceProto.cocoonJS_prompt = function (title_, message_, initial_, type_, canceltext_, oktext_)
 	{
 		if (!this.runtime.isCocoonJs)
 			return;
@@ -82,19 +87,20 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
             this.runtime.trigger(cr.plugins_.Rex_PromptWrap.prototype.cnds.OnKeyboardCancelled, this);
         
 	};    
+
 	//////////////////////////////////////
 	// Conditions
 	function Cnds() {};
 	pluginProto.cnds = new Cnds();    
     
-	Cnds.prototype.OnKeyboardCancelled = function ()
+	Cnds.prototype.OnKeyboardCancelled = function (tag)
 	{
-		return true;
+		return cr.equals_nocase(tag, this.curTag);
 	};
 	
-	Cnds.prototype.OnKeyboardOK = function ()
+	Cnds.prototype.OnKeyboardOK = function (tag)
 	{
-		return true;
+		return cr.equals_nocase(tag, this.curTag);
 	}; 
     
 	//////////////////////////////////////
@@ -102,12 +108,11 @@ cr.plugins_.Rex_PromptWrap = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 	
-	Acts.prototype.PromptKeyboard = function (title_, message_, initial_, type_, canceltext_, oktext_)
-	{	    
-		if (this.runtime.isCocoonJs && this.enable_wrap)
-			this.cocoonJS_PromptKeyboard(title_, message_, initial_, type_, canceltext_, oktext_);
-        else
-            this.web_prompt(title_, message_, initial_, type_, canceltext_, oktext_);
+	Acts.prototype.PromptKeyboard = function (title_, message_, initial_, type_, canceltext_, oktext_, tag)
+	{	
+		this.curTag = tag;
+		var fn = this.isCocoonJs()? this.cocoonJS_prompt:this.web_prompt;
+		fn.call(this, title_, message_, initial_, type_, canceltext_, oktext_);
 	};
 
 	//////////////////////////////////////

@@ -91,7 +91,7 @@ AddAction(1, 0, "Setup layout", "Setup",
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
 AddAction(2, 0, "Create chess", "Mini-board: Create", 
           "Create chess <i>{0}</i> at [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>], on layer <i>{4}</i>", 
@@ -139,7 +139,7 @@ AddAction(8, 0, "Set put-able by number", "Main board: Put-able",
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess to set.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess to set.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess to set. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddAction(9, 0, "Add chess", "Mini-board: Add", 
           "Add chess <i>{0}</i> at [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the mini board.", "AddChess");          
@@ -167,6 +167,12 @@ AddObjectParam("Chess", "Chess object.");
 AddAction(13, 0, "Remove chess", "Mini-board: Remove", 
           "Remove chess <i>{0}</i>", 
           "Remove chess from mini board.", "RemoveChess");   
+
+AddObjectParam("Chess", "Chess object.");
+AddAnyTypeParam("Logic Z", "The Z index of the chess to move. 0 is tile.", 0);
+AddAction(14, 0, "Move chess to LZ", "Mini-board: Move", 
+          "Move chess <i>{0}</i> to LZ <i>{1}</i>", 
+          "Move chess to logic Z.", "MoveChessToLZ");                 
 
 AddLayerParam("Layer", "Layer name of number.");
 AddAction(21, 0, "Move all to layer", "Mini-board: Layer", 

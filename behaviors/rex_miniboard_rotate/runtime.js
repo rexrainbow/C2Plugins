@@ -303,6 +303,6 @@ cr.behaviors.rex_miniboard_rotate = function(runtime)
 	
 	Exps.prototype.Direction = function (ret)
     {
-	    ret.set_int(this.face_diection);
+	    ret.set_int(this.face_direction);
 	};	
 }());

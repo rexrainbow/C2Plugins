@@ -16,8 +16,15 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(11, cf_trigger, "On input cancelled", "Keyboard input", "On input cancelled", "Triggered after opening a text input dialog which is then cancelled.", "OnKeyboardCancelled");
-AddCondition(12, cf_trigger, "On input OK", "Keyboard input", "On input OK", "Triggered after opening a text input dialog which is then OK'd.", "OnKeyboardOK");
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different requests.", '""');
+AddCondition(11, cf_trigger, "On input cancelled", "Keyboard input", 
+			 "On input cancelled (tag <i>{0}</i>)", 
+			 "Triggered after opening a text input dialog which is then cancelled.", "OnKeyboardCancelled");
+
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different requests.", '""');
+AddCondition(12, cf_trigger, "On input OK", "Keyboard input", 
+			 "On input OK (tag <i>{0}</i>)", 
+			 "Triggered after opening a text input dialog which is then OK'd.", "OnKeyboardOK");
 
 //////////////////////////////////////////////////////////////
 // Actions
@@ -32,8 +39,9 @@ AddComboParamOption("URL");
 AddComboParam("Type", "The type of text input to use.");
 AddStringParam("Cancel text", "The 'Cancel' button text.", "\"Cancel\"");
 AddStringParam("OK text", "The 'OK' button text.", "\"OK\"");
+AddStringParam("Tag", "A tag, which can be anything you like, to distinguish between different requests.", '""');
 AddAction(8, 0, "Prompt text input", "Keyboard input", 
-          "Prompt text input (title <i>{0}</i>, message <i>{1}</i>, initial text <i>{2}</i>, type <i>{3}</i>, cancel text <i>{4}</i>, OK text <i>{5}</i>)", 
+          "Prompt text input: title <i>{0}</i>, message <i>{1}</i>, initial text <i>{2}</i>, type <i>{3}</i>, cancel text <i>{4}</i>, OK text <i>{5}</i> (tag <i>{6}</i>)", 
           "Open a dialog where the user can enter some text via the on-screen keyboard.", "PromptKeyboard");
       
 

@@ -66,7 +66,7 @@ cr.plugins_.Rex_NGIO_Event = function(runtime)
                 return this.ngio;
             }            
         }
-        assert2(this.ngio, "Gateway: Can not find NGIO Authentication oject.");
+        assert2(this.ngio, "NGIO.LogEvent: Can not find NGIO Authentication oject.");
         return null; 
 	};  
 	//////////////////////////////////////
@@ -90,19 +90,18 @@ cr.plugins_.Rex_NGIO_Event = function(runtime)
                 callback(result);
             
             self.lastResult = result;    
-            var trig = (result["success"])? successTrig:
-                                                       errorTrig;
+            var trig = (result["success"])? successTrig:errorTrig;
             self.runtime.trigger(trig, self);
         };
         return handler;
     };
     
-    Acts.prototype.LogEvent = function (event_name, host)
+    Acts.prototype.LogEvent = function (eventName, host)
 	{
         var cnds = cr.plugins_.Rex_NGIO_Event.prototype.cnds;
         var callback = getHandler(this, cnds.OnLogEventSuccess, cnds.OnLogEventError);
         var param = {
-            "event_name": event_name,
+            "event_name": eventName,
             "host": host,
             };
         this.GetNGIO()["callComponent"]("Event.logEvent", param, callback);

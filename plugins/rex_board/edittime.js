@@ -132,12 +132,12 @@ AddCondition(24, cf_not_invertible, "Pick chess at LZ", "Pick chess by lxyz",
              "Pick <i>{0}</i> at LZ to <i>{1}</i>", 
              "Pick chess at Logic Z.", "PickChessAtLZ");
 AddObjectParam("Tile", "Tile object.");     
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);          
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);          
 AddCondition(25, 0, "Pick an empty cell on tiles", "Empty", 
             "Pick an empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
             "Pick an empty cell randomly on tiles, return false if all cells are occupied.", "PickEmptyCellOnTiles");
 AddObjectParam("Tile", "Tile object.");            
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);          
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);          
 AddCondition(26, 0, "Has any empty cell on tiles", "Empty", 
             "Has any empty cell on <i>{0}</i> with logic Z to <i>{1}</i>", 
             "Return true if there has any empty cell on tiles.", "HasEmptyCellOnTiles");    
@@ -176,14 +176,14 @@ AddAction(2, 0, "Destroy chess", "Destroy",
 AddObjectParam("Chess", "Chess object.");   
 AddNumberParam("Logic X", "The X index (0-based) of the chess.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddAction(3, 0, "Add chess", "Add", 
           "Add chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess");  
 AddAnyTypeParam("UID", "The UID of chess, or a symbol of chess.", 0);
 AddNumberParam("Logic X", "The X index (0-based) of the chess.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddAction(4, 0, "Add chess by UID", "Add", 
           "Add chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Add chess on the board.", "AddChess");           
@@ -208,14 +208,14 @@ AddAction(8, 0, "Move chess by UID", "Move",
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddAction(9, 0, "Move chess to xyz", "Move", 
           "Move chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Move chess on the board.", "MoveChess2LXYZ");  
 AddAnyTypeParam("Chess UID", "The UID of chess", 0);
 AddNumberParam("Logic X", "The X index (0-based) of the chess.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddAction(10, 0, "Move chess to xyz by UID", "Move", 
           "Move chess UID:<i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>]", 
           "Move chess to xyz index by UID on the board.", "MoveChess2Index");              
@@ -240,7 +240,7 @@ AddAction(13, 0, "Pick chess at Logic X,Y,Z", "Pick chess by lxyz",
 AddObjectParam("Chess", "Chess object.");
 AddNumberParam("Logic X", "The X index (0-based) of the chess.", 0);
 AddNumberParam("Logic Y", "The Y index (0-based) of the chess.", 0);
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddLayerParam("Layer", "Layer name of number."); 
 AddAction(14, 0, "Create chess", "Create", 
           "Create chess <i>{0}</i> to [<i>{1}</i>, <i>{2}</i>, <i>{3}</i>] on layer <i>{4}</i>", 
@@ -284,7 +284,7 @@ AddAction(22, 0, "Pick neighbor chess", "Neighbors",
           "Pick neighbor chess.", "PickNeighborChess");           
 AddObjectParam("Chess", "Chess object.");
 AddObjectParam("Tile", "Tile object.");
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 1);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 1);
 AddLayerParam("Layer", "Layer name of number."); 
 AddAction(23, 0, "Create chess above tile", "Create", 
           "Create chess <i>{0}</i> above tile <i>{1}</i> at LZ to <i>{2}</i>, on layer <i>{3}</i>", 
@@ -333,7 +333,7 @@ AddAction(31, 0, "Create chess above tile by UID", "Create",
           "Create chess <i>{0}</i> above tile UID:<i>{1}</i> at LZ to <i>{2}</i>, on layer <i>{3}</i>", 
           "Create chess above tile.", "CreateChessAboveTile");     
 AddObjectParam("Chess", "Chess object.");
-AddAnyTypeParam("Logic Z", "The Z index (0-based) of the chess. 0 is tile.", 0);
+AddAnyTypeParam("Logic Z", "The Z index of the chess to set. 0 is tile.", 0);
 AddAction(32, 0, "Move chess to z", "Move", 
           "Move chess <i>{0}</i> 's LZ to <i>{1}</i>", 
           "Move chess's LZ on the board.", "MoveChessLZ");    

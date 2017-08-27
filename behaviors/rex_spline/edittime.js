@@ -30,7 +30,13 @@ AddComboParamOption("Disabled");
 AddComboParamOption("Enabled");
 AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
 AddAction(0, 0, "Set enabled", "Enable", "Set {my} <b>{0}</b>", 
-          "Set whether this behavior is enabled. It will also pause current moving.", "SetEnabled");
+		  "Set whether this behavior is enabled. It will also pause current moving.", "SetEnabled");
+		  
+AddComboParamOption("Disabled");
+AddComboParamOption("Enabled");
+AddComboParam("State", "Set whether to enable or disable the behavior.", 1);
+AddAction(1, 0, "Enable set angle", "Enable", "<b>{0}</b> {my} set angle", 
+		  'Enable or disable "Set angle property".', "SetAngleEnabled");		  
           
 AddNumberParam("X", "The X co-ordinate of this point.", 0);
 AddNumberParam("Y", "The Y co-ordinate of this point.", 0);

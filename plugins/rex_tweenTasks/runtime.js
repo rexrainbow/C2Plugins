@@ -747,14 +747,32 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         }    
 	    tweenTasksCache.freeLine(this);        
 	};
-    
+
+	TweenTaskKlassProto.SetTaskParameter = function (name, value) 
+	{           
+	    this.params[name] = value;
+	};	
+
+	TweenTaskKlassProto.GetTaskParameter = function (name) 
+	{    
+        if (!this.params.hasOwnProperty(name))
+        {
+            if (this.parentTask)
+                return this.parentTask.GetTaskParameter(name);
+            else
+                return null;
+        }
+        else
+	        return this.params[name];
+	};
+
 	TweenTaskKlassProto.SetFnParameter = function (name, start, end, easeType) 
 	{
         easeType = easeType || 0;
 	    if (this.fnParams.hasOwnProperty(name))
             this.fnParams[name].Reset(start, end, easeType);
         else
-            this.fnParams[name] = get_tweenParameter(start, end, easeType);
+            this.fnParams[name] = getTweenParameter(start, end, easeType);
 	};
 
 	TweenTaskKlassProto.GetRootTask = function () 
@@ -831,7 +849,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    var param;	
 	    for (var n in fnParams_save)
 	    {
-	        param = get_tweenParameter(0,0,0);
+	        param = getTweenParameter(0,0,0);
 	        param.loadFromJSON(fnParams_save[n]);
 	        this.fnParams[n] = param;
 	    }
@@ -842,13 +860,13 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    this.bindInstInfo.destroyAfterTaskDone = bindInstInfo["destroyAfterTaskDone"];	 
 	};		
     
-    var tweenParameterKlass = function (start, end, easeType)
+    var TweenParameterKlass = function (start, end, easeType)
     {
         this.Reset(start, end, easeType);
     };
-    var tweenParameterKlassProto = tweenParameterKlass.prototype;   
+    var TweenParameterKlassProto = TweenParameterKlass.prototype;   
     
-	tweenParameterKlassProto.Reset = function (start, end, easeType) 
+	TweenParameterKlassProto.Reset = function (start, end, easeType) 
 	{           
         this.start = start;
         this.end = end;
@@ -859,13 +877,13 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.update_flag = true;
 	};
 	
-	tweenParameterKlassProto.SetValue = function (v) 
+	TweenParameterKlassProto.SetValue = function (v) 
 	{       		    
 	    this.pre_value = this.value;   
 	    this.value = v;
 	};	
 	
-	tweenParameterKlassProto.GetValue = function (valueType) 
+	TweenParameterKlassProto.GetValue = function (valueType) 
 	{       		    
 	    var v;
 	    if (cr.equals_nocase(valueType, "start"))
@@ -880,7 +898,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 	    return v;        
 	};		
     
-	tweenParameterKlassProto.Lerp = function (percentage) 
+	TweenParameterKlassProto.Lerp = function (percentage) 
 	{       	    
 	    var v;
 	    if (percentage == 0)
@@ -896,30 +914,12 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         return v;
 	};
     
-	tweenParameterKlassProto.Destroy = function () 
+	TweenParameterKlassProto.Destroy = function () 
 	{
 	    tweenParamsCache.freeLine(this);
-	};  
-
-	tweenParameterKlassProto.SetTaskParameter = function (name, value) 
-	{           
-	    this.params[name] = value;
-	};
-    
-	tweenParameterKlassProto.GetTaskParameter = function (name) 
-	{    
-        if (!this.params.hasOwnProperty(name))
-        {
-            if (this.parentTask)
-                return this.parentTask.GetTaskParameter(name);
-            else
-                return null;
-        }
-        else
-	        return this.params[name];
-	}; 
+	};   
 	
-	tweenParameterKlassProto.saveToJSON = function ()
+	TweenParameterKlassProto.saveToJSON = function ()
 	{             
 		return {"start":this.start,
 		        "end":this.end,
@@ -931,7 +931,7 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
 		        };
 	};
 	
-	tweenParameterKlassProto.loadFromJSON = function (o)
+	TweenParameterKlassProto.loadFromJSON = function (o)
 	{
         this.start = o["start"];
         this.end = o["end"];
@@ -942,13 +942,13 @@ cr.plugins_.Rex_TweenTasks = function(runtime)
         this.update_flag = o["update_flag"];
 	};		
 	
-	var get_tweenParameter = function (start, end, easeType)
+	var getTweenParameter = function (start, end, easeType)
 	{
         var param = tweenParamsCache.allocLine();
         if (param)
             param.Reset(start, end, easeType);
         else
-            param = new tweenParameterKlass(start, end, easeType);
+            param = new TweenParameterKlass(start, end, easeType);
         return param;   
 	};	
 	// tween

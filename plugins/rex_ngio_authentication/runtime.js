@@ -68,7 +68,7 @@ cr.plugins_.Rex_NGIO_Authentication = function(runtime)
 	instanceProto.LoginPooling = function ()
 	{
         var self=this;
-        var on_get_session = function(session)
+        var onGetSession = function(session)
         {
             var isLogin = session && !session["expired"] && session["user"];
             
@@ -84,7 +84,7 @@ cr.plugins_.Rex_NGIO_Authentication = function(runtime)
 				self.LoginPooling();
 			}, 3000);
         }
-		this.ngio["getSessionLoader"]()["getValidSession"](on_get_session);  
+		this.ngio["getSessionLoader"]()["getValidSession"](onGetSession);  
 	};  
     
     // export
@@ -159,12 +159,12 @@ cr.plugins_.Rex_NGIO_Authentication = function(runtime)
             self.runtime.trigger(cr.plugins_.Rex_NGIO_Authentication.prototype.cnds.OnLoginCancel, self);            
         };      
         
-        var on_get_session = function ()
+        var onGetSession = function ()
         {
             self.ngio["requestLogin"](onLoggedIn, onLoginFailed, onLoginCancelled);
         };
         
-        this.ngio["getSessionLoader"]()["getValidSession"](on_get_session); 
+        this.ngio["getSessionLoader"]()["getValidSession"](onGetSession); 
 	};
     
     Acts.prototype.LoggingOut = function ()
@@ -174,12 +174,12 @@ cr.plugins_.Rex_NGIO_Authentication = function(runtime)
         {
             self.onLoggedOut();
         }
-        var on_get_session = function ()
+        var onGetSession = function ()
         {
             self.ngio["logOut"](onLoggedOut);
         };
         
-        this.ngio["getSessionLoader"]()["getValidSession"](on_get_session);     
+        this.ngio["getSessionLoader"]()["getValidSession"](onGetSession);     
 	};    
     
 	//////////////////////////////////////

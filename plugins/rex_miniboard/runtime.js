@@ -377,8 +377,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		for (uid in items)
 		{		    
 		    xyz = this.uid2xyz(uid);
-		    lx = layout.OffsetLX(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0);
-		    ly = layout.OffsetLY(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0);
+		    lx = layout.OffsetLX(xyz.x, xyz.y, xyz.z, offset_lx, offset_ly, 0);
+		    ly = layout.OffsetLY(xyz.x, xyz.y, xyz.z, offset_lx, offset_ly, 0);
 		    lz = xyz.z;
 
 		    if (!this.CellCanPut(board_inst, uid, lx, ly, lz, test_mode))
@@ -414,8 +414,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
                     uid = parseInt(uid);
                 
 		    	board_inst.AddChess(uid,
-		    	                    layout.OffsetLX(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0), 
-		    	                    layout.OffsetLY(xyz.x, xyz.y, 0, offset_lx, offset_ly, 0),  
+		    	                    layout.OffsetLX(xyz.x, xyz.y, xyz.z, offset_lx, offset_ly, 0), 
+		    	                    layout.OffsetLY(xyz.x, xyz.y, xyz.z, offset_lx, offset_ly, 0),  
 		    	                    xyz.z);
 		    }
             
@@ -935,8 +935,8 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 		{
             uid = parseInt(uid); 
 		    xyz = this.uid2xyz(uid);
-		    new_lx = layout.OffsetLX(xyz.x, xyz.y, 0, -new_LOX, -new_LOY, 0);
-		    new_ly = layout.OffsetLY(xyz.x, xyz.y, 0, -new_LOX, -new_LOY, 0);
+		    new_lx = layout.OffsetLX(xyz.x, xyz.y, xyz.z, -new_LOX, -new_LOY, 0);
+		    new_ly = layout.OffsetLY(xyz.x, xyz.y, xyz.z, -new_LOX, -new_LOY, 0);
             
             new_items[uid] = window.RexC2BoardLXYZCache.allocLine(new_lx, new_ly, xyz.z);
 		};  
@@ -958,7 +958,46 @@ cr.plugins_.Rex_MiniBoard = function(runtime)
 	        this.RemoveChess(chess[i].uid);
 	    }
 	};	
-	
+
+	Acts.prototype.MoveChessToLZ = function (obj_type, lz)
+	{
+        if (!obj_type)
+            return;  
+		var chess = obj_type.getCurrentSol().getObjects();
+		var mainboard = this.mainboard.inst;
+		var i, chess_cnt=chess.length, chess_uid;
+        for (i=0; i<chess_cnt; i++)  
+		{      
+			chess_uid = chess[i].uid;
+			var xyzMini = this.uid2xyz(chess_uid);
+			if (xyzMini == null)
+				continue;
+
+			this.AddChess(chess_uid, xyzMini.x, xyzMini.y, lz);
+
+			if (mainboard)
+			{
+				var lx, ly;				
+				var xyzMain = mainboard.uid2xyz(chess_uid);
+				if (xyzMain == null)  // not in main board
+				{
+					var layout = mainboard.GetLayout();
+					var offset_lx = this.mainboard.LOX;
+					var offset_ly = this.mainboard.LOY;
+				    lx = layout.OffsetLX(xyzMini.x, xyzMini.y, lz, offset_lx, offset_ly, 0);
+				    ly = layout.OffsetLY(xyzMini.x, xyzMini.y, lz, offset_lx, offset_ly, 0);				
+				}
+				else
+				{
+					lx = xyzMain.x;
+					ly = xyzMain.y;
+				}
+
+				mainboard.MoveChess(chess_uid, lx, ly, lz);
+			}			
+		}		
+	};	
+
 	Acts.prototype.MoveToLayer = function (layerMove)
 	{
         if (!layerMove)

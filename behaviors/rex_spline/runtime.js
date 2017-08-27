@@ -402,7 +402,12 @@ cr.behaviors.Rex_Spline = function(runtime)
 	Acts.prototype.SetEnabled = function (en)
 	{
 		this.enabled = (en === 1);
-	};
+    };
+    
+	Acts.prototype.SetAngleEnabled = function (en)
+	{
+		this.setAngle = (en === 1);
+	};    
     
 	Acts.prototype.AddPoint = function (x, y)
 	{

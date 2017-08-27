@@ -67,7 +67,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
                 return this.ngio;
             }            
         }
-        assert2(this.ngio, "Gateway: Can not find NGIO Authentication oject.");
+        assert2(this.ngio, "NGIO.Loader: Can not find NGIO Authentication oject.");
         return null; 
 	};    
 	//////////////////////////////////////
@@ -79,7 +79,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
 	{
 	    return true;
 	}; 
-	Cnds.prototype.OnGetURLsError = function ()
+	Cnds.prototype.OnGetURLError = function ()
 	{
 	    return true;
 	};
@@ -96,8 +96,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
                 callback(result);
             
             self.lastResult = result;    
-            var trig = (result["success"])? successTrig:
-                                                       errorTrig;
+            var trig = (result["success"])? successTrig:errorTrig;
             self.runtime.trigger(trig, self);
         };
         return handler;
@@ -106,7 +105,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
     Acts.prototype.LoadNewgrounds = function (redirect)
 	{
         var cnds = cr.plugins_.Rex_NGIO_Loader.prototype.cnds;
-        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLsError);
+        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLError);
         var param = {
             "host": this.host,
             "redirect": (redirect === 1),
@@ -117,7 +116,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
     Acts.prototype.LoadMoreGames = function (redirect)
 	{
         var cnds = cr.plugins_.Rex_NGIO_Loader.prototype.cnds;
-        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLsError);
+        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLError);
         var param = {
             "host": this.host,
             "redirect": (redirect === 1),
@@ -128,7 +127,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
     Acts.prototype.LoadAuthorUrl = function (redirect)
 	{
         var cnds = cr.plugins_.Rex_NGIO_Loader.prototype.cnds;
-        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLsError);
+        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLError);
         var param = {
             "host": this.host,
             "redirect": (redirect === 1),
@@ -139,7 +138,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
     Acts.prototype.LoadOfficialUrl = function (redirect)
 	{
         var cnds = cr.plugins_.Rex_NGIO_Loader.prototype.cnds;
-        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLsError);
+        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLError);
         var param = {
             "host": this.host,
             "redirect": (redirect === 1),
@@ -150,7 +149,7 @@ cr.plugins_.Rex_NGIO_Loader = function(runtime)
     Acts.prototype.LoadReferral = function (redirect, referral_name)
 	{
         var cnds = cr.plugins_.Rex_NGIO_Loader.prototype.cnds;
-        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLsError);
+        var callback = getHandler(this, cnds.OnGetURLSuccess, cnds.OnGetURLError);
         var param = {
             "referral_name": referral_name,
             "host": this.host,
