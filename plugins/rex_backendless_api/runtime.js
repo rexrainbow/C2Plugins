@@ -57,10 +57,9 @@ cr.plugins_.Rex_BackendlessAPI.onInitCallbacks = [];
         
         var apiID = this.properties[0];
         var apiKey = this.properties[1];
-        var versionName = this.properties[2];
-        window["Backendless"]["initApp"](apiID, apiKey, versionName);
+        window["Backendless"]["initApp"](apiID, apiKey);
         
-        var filesStorageRoot = serverURL + "/" + apiID + "/" + versionName + "/files/";
+        var filesStorageRoot = serverURL + "/" + apiID + "/files/";
         window.BackendlessFilesStorageRoot = function(dictPath, fileName)
         {
             var path = filesStorageRoot;
