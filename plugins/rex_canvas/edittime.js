@@ -10,7 +10,7 @@
 		"category":		"Rex - Canvas",
 		"type":			"world",			// appears in layout
 		"rotatable":	true,
-		"flags":		pf_texture | pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_tiling | pf_zorder_aces,
+		"flags":		pf_texture | pf_position_aces | pf_size_aces | pf_angle_aces | pf_appearance_aces | pf_tiling | pf_zorder_aces | pf_effects,
         "dependency":	"zlib_and_gzip.min.js"        
 	};
 };

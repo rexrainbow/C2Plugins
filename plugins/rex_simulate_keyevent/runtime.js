@@ -42,10 +42,6 @@ cr.plugins_.Rex_SimulateInput = function(runtime)
     var elem = jQuery(document);
 	instanceProto.onCreate = function()
 	{
-        this.touchStyle = (window.navigator["pointerEnabled"])? 0:
-                                   (window.navigator["pointerEnabled"])? 1:
-                                   2;
-        
         this.useMouseInput = null;
 	};
     
@@ -74,20 +70,20 @@ cr.plugins_.Rex_SimulateInput = function(runtime)
         
         this.useMouseInput = false;
         return this.useMouseInput;
-    };     
+    };    
     
-	instanceProto.triggerTouchEvent = function (evetNames, info)
-	{
-        var name = evetNames[this.touchStyle];
-        var e = jQuery["Event"]( name, info );
-        elem["trigger"]( e );      
-
+    instanceProto.getTouchType = function()
+    {
         if (this.GetUseMouseInput())
-        {
-            var e = jQuery["Event"]( evetNames[3], info );
-            elem["trigger"]( e );               
-        }
-	};       
+            return 3;
+        else if (typeof PointerEvent !== "undefined")
+            return 0;
+        else if (window.navigator["msPointerEnabled"])
+            return 1;
+        else
+            return 2;
+    };
+       
     var pos = {x:0, y:0};
 	instanceProto.layerxy2canvasxy = function (x, y, layer)
 	{
@@ -95,7 +91,13 @@ cr.plugins_.Rex_SimulateInput = function(runtime)
         pos.x = layer.layerToCanvas(x, y, true) + offset.left;
         pos.y = layer.layerToCanvas(x, y, false) + offset.top;
         return pos;
-	};
+    };
+    
+	instanceProto.triggerEvent = function (evetName, info)
+	{
+        var e = jQuery["Event"]( evetName, info );
+        elem["trigger"]( e );
+	};     
         
 	//////////////////////////////////////
 	// Conditions
@@ -107,11 +109,12 @@ cr.plugins_.Rex_SimulateInput = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    var KEYBOARD_EVENTTYPE = ["keydown", "keyup", "keypress"];
-    Acts.prototype.SimulateKeyboard = function (code, event_type)
+    var KeyboardEvtName = ["keydown", "keyup", "keypress"];
+    Acts.prototype.SimulateKeyboard = function (code, evtType)
 	{
-        var e = jQuery["Event"]( KEYBOARD_EVENTTYPE[event_type], { "keyCode": code, "which": code } );
-        elem["trigger"]( e );               
+        var evetName = KeyboardEvtName[evtType];
+        var info = { "keyCode": code, "which": code };
+        this.triggerEvent(evetName, info);
 	}; 
         
     var TouchStartEvtNames = ["pointerdown", "MSPointerDown", "touchstart", "mousedown"];
@@ -119,25 +122,23 @@ cr.plugins_.Rex_SimulateInput = function(runtime)
     var TouchMoveEvtNames = ["pointermove", "MSPointerMove", "touchmove", "mousemove"];
     Acts.prototype.SimulateTouchStart = function (x, y, layer, identifier)
 	{
+        var evetName = TouchStartEvtNames[this.getTouchType()];
         var pos = this.layerxy2canvasxy(x, y, layer);
-
-        var evetName = TouchStartEvtNames[this.touchStyle];
         var info = { "pageX":pos.x, "pageY":pos.y, "identifier":identifier };
-        this.triggerTouchEvent(TouchStartEvtNames, info);
+        this.triggerEvent(evetName, info);
 	};
     Acts.prototype.SimulateTouchEnd = function (identifier)
 	{
-        var evetName = TouchEndEvtNames[this.touchStyle];
+        var evetName = TouchEndEvtNames[this.getTouchType()];
         var info = { "identifier":identifier };
-        this.triggerTouchEvent(TouchEndEvtNames, info);
+        this.triggerEvent(evetName, info);
 	};    
     Acts.prototype.SimulateTouchMove = function (x, y, layer, identifier)
 	{
+        var evetName = TouchMoveEvtNames[this.getTouchType()];
         var pos = this.layerxy2canvasxy(x, y, layer);
-
-        var evetName = TouchMoveEvtNames[this.touchStyle];
         var info = { "pageX":pos.x, "pageY":pos.y, "identifier":identifier };
-        this.triggerTouchEvent(TouchMoveEvtNames, info);
+        this.triggerEvent(evetName, info);
 	};    
     
 	//////////////////////////////////////

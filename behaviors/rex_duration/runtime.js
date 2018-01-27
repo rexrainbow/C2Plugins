@@ -27,7 +27,7 @@ cr.behaviors.Rex_Duration = function(runtime)
         if (this.lines.length > 0)
         {
             timer = this.lines.pop();
-			timer.Reset();
+			timeline.LinkTimer(timer);
         }
         else
         {

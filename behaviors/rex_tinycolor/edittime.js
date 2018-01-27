@@ -19,43 +19,9 @@
 // Actions 
 AddStringParam("Color", 'Color string. "#000", "000", "#f0f0f688", or "rgba (255, 0, 0, .5)"', '""');
 AddAction(1, 0, "Set color", "Set", 
-          "Set {my} to {0}", 
-		  "Set color.", "SetColorByString"); 
+          "Set {my} to <i>{0}</i>", 
+		  "Set colore.", "SetColorByString"); 
 		  
-AddAction(2, 0, "Set random color", "Set", 
-          "Set {my} to random", 
-		  "Set to random color.", "SetRandom"); 		  
-
-AddNumberParam("R", "R, 0-255", 0);
-AddNumberParam("G", "G, 0-255", 0);
-AddNumberParam("B", "B, 0-255", 0);
-AddAction(3, 0, "Set RGB", "Set", 
-          "Set {my} to rgb({0}, {1}, {2})", 
-		  "Set color by rgb.", "SetRGB"); 
-
-AddNumberParam("H", "H, 0-1", 0);
-AddNumberParam("S", "S, 0-100", 100);
-AddNumberParam("L", "L, 0-100", 100);
-AddAction(4, 0, "Set HSL", "Set", 
-          "Set {my} to hsl({0}, {1}%, {2}%)", 
-		  "Set color by hsl.", "SetHSL");	
-		  
-AddNumberParam("H", "H, 0-1", 0);
-AddNumberParam("S", "S, 0-100", 100);
-AddNumberParam("V", "V, 0-100", 100);
-AddAction(4, 0, "Set HSV", "Set", 
-          "Set {my} to hsv({0}, {1}%, {2}%)", 
-		  "Set color by hsv.", "SetHSV");	
-		  
-AddNumberParam("Alpha", "A, 0-1", 1);
-AddAction(5, 0, "Set alpha", "Set", 
-          "Set {my} alpha to {0}", 
-		  "Set alpha.", "SetAlpha");
-		  
-AddNumberParam("Angle", "Angle, (-360)-360", 0);
-AddAction(11, 0, "Spin", "Modification", 
-          "Spin {my} to {0}", 
-		  "Spin the hue a given amount, from -360 to 360.", "Spin");			  
 //////////////////////////////////////////////////////////////
 // Expressions
 //AddStringParam("Key", 'Key in "r", "g", "b", "a".', '"r"');

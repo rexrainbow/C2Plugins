@@ -35,7 +35,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         this.behavior_index = null;        
 	};
 
-    behtypeProto.getTimelineObj = function ()
+    behtypeProto._timeline_get = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -136,7 +136,7 @@ cr.behaviors.Rex_Revive = function(runtime)
         {
             this.revive_data = JSON.stringify(this.status_get());
         }
-        var timeline = this.type.getTimelineObj();
+        var timeline = this.type._timeline_get();
         var timer = timeline.CreateTimer(on_timeout);
         timer.plugin = this.type;
         timer.revive_data = this.revive_data;

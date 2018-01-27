@@ -84,36 +84,6 @@ cr.behaviors.Rex_tinyColor = function(runtime)
 		this.cleanOutput();		
 		this.color = window["tinycolor"](color);
 	};	
-    Acts.prototype.SetRandom = function ()
-	{
-		this.cleanOutput();		
-		this.color = window["tinycolor"]["random"]();
-	};
-    Acts.prototype.SetRGB = function (r,g,b)
-	{
-		this.cleanOutput();		
-		this.color = window["tinycolor"]({"r":r, "g":g, "b":b});
-	};			
-    Acts.prototype.SetHSL = function (h,s,l)
-	{
-		this.cleanOutput();		
-		this.color = window["tinycolor"]({"h":h, "s":s, "l":l});
-	};	
-    Acts.prototype.SetHSV = function (h,s,v)
-	{
-		this.cleanOutput();		
-		this.color = window["tinycolor"]({"h":h, "s":s, "v":v});
-	};	
-    Acts.prototype.SetAlpha = function (a)
-	{
-		this.cleanOutput();		
-		this.color["setAlpha"](a);
-	};
-    Acts.prototype.Spin = function (a)
-	{
-		this.cleanOutput();		
-		this.color["spin"](a);
-	};				
 	//////////////////////////////////////
 	// Expressions
 	function Exps() {};

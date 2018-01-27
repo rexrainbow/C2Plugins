@@ -50,7 +50,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.offset = 0;
         this.current_cmd = {};
         this.pre_abs_time = 0;        
-        this.timerSave = null;
+        this.timer_save = null;
 
 		/**BEGIN-PREVIEWONLY**/
 		this.debugger_info = [];
@@ -64,7 +64,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             this.timer.Remove();
 	};    
 
-    instanceProto.getTimelineObj = function ()
+    instanceProto._timeline_get = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -116,7 +116,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 		    this.callback.CallFn(name, params);
         else    // run official function
         {
-            this.getTimelineObj().RunCallback(name, params, true);
+            this._timeline_get().RunCallback(name, params, true);
         }    
 	}; 
 	   
@@ -188,7 +188,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
             {
                 if (this.timer== null)
                 {
-                    this.timer = this.getTimelineObj().CreateTimer(on_timeout);
+                    this.timer = this._timeline_get().CreateTimer(on_timeout);
                     this.timer.plugin = this;
                 }
                             
@@ -314,7 +314,7 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
         this.offset = o["off"];
         this.current_cmd = o["cmd"];
         this.pre_abs_time = o["abst"];    
-        this.timerSave = o["tim"];
+        this.timer_save = o["tim"];
         this.timelineUid = o["tluid"];
         this.callbackUid = o["cbuid"];   // deprecated     
 	};
@@ -339,11 +339,11 @@ cr.plugins_.Rex_WorkSheet = function(runtime)
 		}		
 		// ---- deprecated ----          
         
-        if (this.timerSave == null)
+        if (this.timer_save == null)
             this.timer = null;
         else
         {
-            this.timer = this.timeline.LoadTimer(this.timerSave, on_timeout);
+            this.timer = this.timeline.LoadTimer(this.timer_save, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;        

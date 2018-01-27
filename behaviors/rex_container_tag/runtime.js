@@ -59,7 +59,7 @@ cr.behaviors.Rex_container_tag = function(runtime)
 		var container = cr.plugins_.Rex_Container.tag2container[tag];
 		if (container == null)
 		    return;
-	    container.add_insts([this.inst]);
+	    container.addInsts([this.inst]);
 	};  	
 	//////////////////////////////////////
 	// Conditions

@@ -47,11 +47,11 @@ AddAction(6, 0, "Append text", "Typing",
           "Type text letter by letter in the end of current content.", "AppendText");
       
 AddAction(11, 0, "Pause typing", "Typing", 
-          "Pause typing", 
+          "{my} pause typing", 
           "Pause typing.", "Pause"); 
          
 AddAction(12, 0, "Resume typing", "Typing", 
-          "Resume typing", 
+          "{my} resume typing", 
           "Resume typing.", "Resume");
                     
 //////////////////////////////////////////////////////////////
@@ -67,6 +67,7 @@ ACESDone();
 
 // Property grid properties for this plugin
 var property_list = [  
+	new cr.Property(ept_combo, "Typing mode", "Left to right", "Mode of typing.", "Left to right|Right to left|Middle to sides|Sides to middle"),
 	new cr.Property(ept_combo, "Line break", "No", "Enable to add new line to split lines.", "No|Yes"),                
 	];
 	

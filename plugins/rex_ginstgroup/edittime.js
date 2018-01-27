@@ -17,11 +17,11 @@
 //////////////////////////////////////////////////////////////
 // Conditions
 AddStringParam("Function", "Mapping function name.", '""');
-AddCondition(0, cf_trigger | cf_fast_trigger, "On mapping", "Mapping function", 
+AddCondition(0, cf_trigger, "On mapping", "Mapping function", 
              "On mapping function <i>{0}</i>", "Triggered it to get mapping result.", "OnMappingFn");
              
 AddStringParam("Function", "Sorting function name.", '""');
-AddCondition(1, cf_trigger | cf_fast_trigger, "On sorting", "List: Sort", 
+AddCondition(1, cf_trigger, "On sorting", "List: Sort", 
              "On sorting function <i>{0}</i>", "Triggered when sorting by function.", "OnSortingFn");
 AddStringParam("Variable", "Variable name to store UID.", '""');
 AddStringParam("Group", "Group name.", '""');

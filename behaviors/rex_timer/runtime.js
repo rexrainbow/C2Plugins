@@ -26,8 +26,8 @@ cr.behaviors.Rex_Timer = function(runtime)
         var timer;
         if (this.lines.length > 0)
         {
-            timer = this.lines.pop();
-			timer.Reset();
+			timer = this.lines.pop();
+			timeline.LinkTimer(timer);
         }
         else
         {
@@ -38,6 +38,7 @@ cr.behaviors.Rex_Timer = function(runtime)
 
 	TimerCacheKlassProto.free = function(timer)
 	{
+		timer.timeline = null;
         this.lines.push(timer);
 	};
 	// TimerCacheKlass	

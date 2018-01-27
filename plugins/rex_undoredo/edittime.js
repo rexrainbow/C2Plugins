@@ -48,10 +48,10 @@ AddAction(21, 0, "Push", "Push - dictionary mode",
           "Push current data.", "Push");
 AddAction(22, 0, "Undo", "Undo - dictionary mode", 
           "Undo", 
-          "Get previosu step.", "Undo");
+          "Get the previosu step.", "Undo");
 AddAction(23, 0, "Redo", "Redo - dictionary mode", 
           "Redo", 
-          "Get next step.", "Redo");                                             
+          "Get the next step.", "Redo");                                             
 //////////////////////////////////////////////////////////////
 // Expressions
 AddExpression(1, ef_return_any,

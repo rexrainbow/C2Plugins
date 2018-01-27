@@ -641,7 +641,12 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
         
     var isType = function(o, type)
     {
-        return (o instanceof window["Tone"][type]);
+        if (type === "Transport")
+        {
+            return (o === window["Tone"][type]);
+        }
+
+        return (o instanceof window["Tone"][type]);        
     }     
 	var objectCall = function (toneObject, fnName, params, getCallback)
 	{
@@ -701,7 +706,14 @@ cr.plugins_.Rex_ToneJS_api = function(runtime)
                 toneObject = window["Tone"]["ExternalInput"];
                 params[0] = getCallback(params[0]);                 
             }
-        }        
+        } 
+        else if (isType(toneObject, "Transport"))
+        {
+            if (fnName === "scheduleRepeat")
+            {
+                params[0] = getCallback(params[0]);
+            }
+        }       
         
         // source
                    

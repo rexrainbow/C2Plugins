@@ -75,11 +75,21 @@ cr.plugins_.Rex_Lzstring = function(runtime)
 
     Exps.prototype.Compress = function (ret, s)
 	{
-	    ret.set_string( window["LZString"][ this.compressFn ](s) );
+		var result = window["LZString"][ this.compressFn ](s);
+		if (typeof(result) !== "string")
+		{
+			result = "";
+		}
+	    ret.set_string( result );
 	};
     Exps.prototype.Decompress = function (ret, s)
 	{
-	    ret.set_string( window["LZString"][ this.decompressFn ](s) );
+		var result = window["LZString"][ this.decompressFn ](s);
+		if (typeof(result) !== "string")
+		{
+			result = "";
+		}
+	    ret.set_string( result );		
 	};    
 	
     // deprecated    

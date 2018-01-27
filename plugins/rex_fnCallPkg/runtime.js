@@ -43,7 +43,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	{
         this.c2FnType = null;
         // function queue
-        this.fn_queue = []; 
+        this.fnQueue = []; 
         
         // for each pkg
         this.exp_pkg = null; 	    
@@ -66,53 +66,51 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         }
         return this.c2FnType;
 	};    
-    
-     // [fnName, param0, param1, ….]
-    var gC2FnParms = [];
-    instanceProto.callC2Fn = function ()
+             
+    instanceProto.callC2Fn = function (pkg)
     {
+		var params = [];
         var c2FnGlobalName = this.getC2FnType();
         if (c2FnGlobalName === "")
             return 0;
         
-        var c2FnName = arguments[0];
-        var i, cnt=arguments.length;
+        var c2FnName = pkg[0];
+        var i, cnt=pkg.length;
         for(i=1; i<cnt; i++)
         {
-            gC2FnParms.push( arguments[i] );
+            params.push( pkg[i] );
         }
-        var retValue = window[c2FnGlobalName](c2FnName, gC2FnParms);
-        gC2FnParms.length = 0;
+        var retValue = window[c2FnGlobalName](c2FnName, params);
         
         return retValue;
     };
     
-	instanceProto.execute_package = function(pkg, is_reverse)
+	instanceProto.executePackage = function(pkg, isReverse)
 	{	  
         if (this.getC2FnType() === "")
 	        return;
 	        
         var retVal;
-        var is_one_function = (typeof(pkg[0]) == "string");
-        if (is_one_function)
+        var isOneFunction = (typeof(pkg[0]) == "string");
+        if (isOneFunction)
         {
-            retVal = this.callC2Fn.apply(this, pkg);
+            retVal = this.callC2Fn(pkg);
         }
         else
         {
             var i,cnt=pkg.length;            
-            if (is_reverse !== 1)
+            if (isReverse !== 1)
             {
                 for(i=0; i<cnt; i++)
                 {
-                    retVal = this.callC2Fn.apply(this, pkg[i]);
+                    retVal = this.callC2Fn(pkg[i]);
                 }
             }
             else
             {
                 for(i=cnt-1; i>=0; i--)
                 {
-                    retVal = this.callC2Fn.apply(this, pkg[i]);
+                    retVal = this.callC2Fn(pkg[i]);
                 }                
             }
         }
@@ -122,15 +120,14 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
     instanceProto.saveToJSON = function ()
     { 
-        return { "ft": this.c2FnType,
-                      "fq" : this.fn_queue,
-                   };
+        return { "fq" : this.fnQueue,
+                };
     };
     
     instanceProto.loadFromJSON = function (o)
     {
-        this.c2FnType = o["ft"];
-        this.fn_queue = o["fq"]
+		this.c2FnType = null;
+        this.fnQueue = o["fq"]
     };         
 	//////////////////////////////////////
 	// Conditions
@@ -139,7 +136,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	  
 	Cnds.prototype.ForEachPkg = function ()
 	{
-	    var i,cnt=this.fn_queue.length;
+	    var i,cnt=this.fnQueue.length;
         var current_frame = this.runtime.getCurrentEventStack();
         var current_event = current_frame.current_event;
 		var solModifierAfterCnds = current_frame.isModifierAfterCnds();
@@ -149,7 +146,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
             if (solModifierAfterCnds)
                 this.runtime.pushCopySol(current_event.solModifiers);
             
-            this.exp_pkg = this.fn_queue[i];            
+            this.exp_pkg = this.fnQueue[i];            
             current_event.retrigger();
             
             if (solModifierAfterCnds)
@@ -173,7 +170,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	function Acts() {};
 	pluginProto.acts = new Acts();
 
-    Acts.prototype.CallFunction = function (pkg, is_reverse)
+    Acts.prototype.CallFunction = function (pkg, isReverse)
 	{
         if (pkg == "")
             return;
@@ -183,12 +180,12 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		}
 		catch(e) { return; }
 		
-		this.execute_package(pkg, is_reverse);
+		this.executePackage(pkg, isReverse);
 	}; 
     
     Acts.prototype.CleanFnQueue = function ()
 	{
-		this.fn_queue.length = 0;
+		this.fnQueue.length = 0;
 	}; 
     
     Acts.prototype.PushToFnQueue = function (name, params)
@@ -204,32 +201,32 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
     
     Acts.prototype.OverwriteParam = function (index_, value_)
 	{
-	    var pkg = this.exp_pkg || this.fn_queue[0];
+	    var pkg = this.exp_pkg || this.fnQueue[0];
 	    if (pkg == null)
 	    {
 	        return;
 	    }
 	    
-	    var param_cnt = pkg.length -1;
-	    var param_index = index_+1;
+	    var paramCnt = pkg.length -1;
+	    var paramIndex = index_+1;
         
-	    if (index_ >= param_cnt)
+	    if (index_ >= paramCnt)
 	    {
 	        // extend param array
-	        pkg.length = param_index+1;
+	        pkg.length = paramIndex+1;
 	        var i;
-	        for (i=param_cnt+1; i<param_index; i++)
+	        for (i=paramCnt+1; i<paramIndex; i++)
 	        {
 	            pkg[i] = 0;
 	        }
 	    }
 
-	    pkg[param_index] = value_;
+	    pkg[paramIndex] = value_;
 	};
 
-    Acts.prototype.CallFunctionInQueue = function (is_reverse)
+    Acts.prototype.CallFunctionInQueue = function (isReverse)
 	{   
-	    this.execute_package(this.fn_queue, is_reverse);
+	    this.executePackage(this.fnQueue, isReverse);
 	};
     
     Acts.prototype.PushToFnQueue2 = function (where, name, params)
@@ -243,19 +240,19 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
         }
         
         if (where == 0)
-	        this.fn_queue.push(pkg);
+	        this.fnQueue.push(pkg);
 	    else
-	        this.fn_queue.unshift(pkg);
+	        this.fnQueue.unshift(pkg);
 	};	
     
     Acts.prototype.ReverseFnQueue = function ()
 	{
-        this.fn_queue.reverse();
+        this.fnQueue.reverse();
 	};
            
     Acts.prototype.InsertParam = function (index_, param_)
 	{
-	    var pkg = this.exp_pkg || this.fn_queue[0];
+	    var pkg = this.exp_pkg || this.fnQueue[0];
 	    if (pkg == null)
 	    {
 	        return;
@@ -266,27 +263,27 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
     Acts.prototype.AddToParam = function (index_, value_)
 	{
-	    var pkg = this.exp_pkg || this.fn_queue[0];
+	    var pkg = this.exp_pkg || this.fnQueue[0];
 	    if (pkg == null)
 	    {
 	        return;
 	    }
 	    
-	    var param_cnt = pkg.length -1;
-	    var param_index = index_+1;
+	    var paramCnt = pkg.length -1;
+	    var paramIndex = index_+1;
         
-	    if (index_ >= param_cnt)
+	    if (index_ >= paramCnt)
 	    {
 	        // extend param array
-	        pkg.length = param_index+1;
+	        pkg.length = paramIndex+1;
 	        var i;
-	        for (i=param_cnt+1; i<param_index; i++)
+	        for (i=paramCnt+1; i<paramIndex; i++)
 	        {
 	            pkg[i] = 0;
 	        }
 	    }
 
-	    pkg[param_index] += value_;
+	    pkg[paramIndex] += value_;
 	};
 
     Acts.prototype.AppendFnQueue = function (pkg)
@@ -299,14 +296,14 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 		}
 		catch(e) { return; }
 				
-		var is_one_function = (typeof(pkg[0]) == "string");
-		if (is_one_function)
+		var isOneFunction = (typeof(pkg[0]) == "string");
+		if (isOneFunction)
 		{
-		    this.fn_queue.push(pkg);
+		    this.fnQueue.push(pkg);
 		}
 		else
 		{
-		    this.fn_queue.push.apply(this.fn_queue, pkg);
+		    this.fnQueue.push.apply(this.fnQueue, pkg);
 		}
 	};	
 
@@ -331,7 +328,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	    ret.set_string( s );
 	};
 	
-    Exps.prototype.Call = function (ret, pkg, is_reverse)
+    Exps.prototype.Call = function (ret, pkg, isReverse)
 	{
         var retVal = null;
         if (pkg == "")        
@@ -348,7 +345,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 	        }
             
             if (retVal === null)
-		        retVal = this.execute_package(pkg, is_reverse);            
+		        retVal = this.executePackage(pkg, isReverse);            
         }
         
 	    ret.set_any( retVal );
@@ -356,7 +353,7 @@ cr.plugins_.Rex_fnCallPkg = function(runtime)
 
     Exps.prototype.FnQueuePkg = function (ret)
 	{
-	    ret.set_string( JSON.stringify(this.fn_queue) );
+	    ret.set_string( JSON.stringify(this.fnQueue) );
 	};
 
     Exps.prototype.CurName = function (ret)

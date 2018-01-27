@@ -210,9 +210,9 @@ cr.behaviors.Rex_chess = function(runtime)
 	{
 	    var board = this.GetBoard();
 	    if (board == null)  // not at any board
-	        return false;
-	   
-        return board.are_neighbors(chess_uid, uidB);
+			return false;
+		
+        return (board.uid2NeighborDir(this.inst.uid, uidB) != null);
 	};	
 	
 	Cnds.prototype.NoChessAbove = function ()

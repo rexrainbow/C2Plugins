@@ -13,26 +13,31 @@
 
 //////////////////////////////////////////////////////////////
 // Conditions
-AddCondition(0, cf_trigger, "On pause", "Event", "On pause", 
+AddCondition(0, cf_trigger, "On pause", "Event", 
+             "On {my} pause", 
              "Triggered when instance paused", "OnPause");
-AddCondition(1, cf_trigger, "On resume", "Event", "On resume", 
+AddCondition(1, cf_trigger, "On resume", "Event", 
+             "On {my} resume", 
              "Triggered when instance resumed", "OnResume");
-AddCondition(2, 0, "Is pause", "If", "Is pause", 
+AddCondition(2, 0, "Is pause", "If", 
+             "Is {my} pause", 
              "Return true if instance is paused", "IsPause");
-AddCondition(3, cf_static | cf_not_invertible, "Pick paused instances", "SOL", "Pick paused instances", 
+AddCondition(3, cf_static | cf_not_invertible, "Pick paused instances", "SOL", 
+             "Pick {my} paused instances", 
              "Pick paused instances", "PickPauseInstances");
-AddCondition(4, cf_static | cf_not_invertible, "Pick activated instances", "SOL", "Pick activated instances", 
+AddCondition(4, cf_static | cf_not_invertible, "Pick activated instances", "SOL", 
+             "Pick {my} activated instances", 
              "Pick activated instances", "PickActivatedInstances");
              
 //////////////////////////////////////////////////////////////
 // Actions 
 AddAction(0, 0, "Toggle pause", "Pause/Resume", 
-          "Toggle pause","Toggle pause.", "TooglePause");  
+          "Toggle {my} pause","Toggle pause.", "TooglePause");  
 AddComboParamOption("Pause");
 AddComboParamOption("Run");
 AddComboParam("State", "Set puase state to.",0);
 AddAction(1, 0, "Set pause state", "Pause/Resume", 
-          "Set pause state to <i>{0}</i>", "Set the puase state.", "SetState");
+          "Set {my} pause state to <i>{0}</i>", "Set the puase state.", "SetState");
           
 //////////////////////////////////////////////////////////////
 // Expressions

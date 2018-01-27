@@ -26,7 +26,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         if (this.lines.length > 0)
         {
             timer = this.lines.pop();
-			timer.Reset();
+			timeline.LinkTimer(timer);
         }
         else
         {
@@ -37,6 +37,7 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
 	TimerCacheKlassProto.free = function(timer)
 	{
+        timer.timeline = null;
         this.lines.push(timer);
 	};
 	// TimerCacheKlass	
@@ -115,7 +116,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         this.timeline.CleanAll();
         var name;
         for (name in this.timers)
+        {
             this.destroyLocalTimer(name);
+        }
 	};  
 	
     instanceProto.tick = function()
@@ -150,6 +153,12 @@ cr.plugins_.Rex_TimeLine = function(runtime)
         timer.TimeoutHandlerSet(on_timeout);  // hang OnTimeout function
         return timer;
     };
+
+    instanceProto.LinkTimer = function(timer)
+    {       
+        timer.Reset(this.timeline)
+        return timer;
+    };    
 	
     // load timer (for save/load system)
 	instanceProto.LoadTimer = function (load_info, on_timeout)
@@ -725,9 +734,8 @@ cr.plugins_.Rex_TimeLine = function(runtime)
 
     // Timer
     cr.plugins_.Rex_TimeLine.Timer = function(timeline)
-    {
-        this.timeline = timeline;
-		this.Reset();
+    {     
+		this.Reset(timeline);
         this.extra = {};		
         // state: 
         // - idle: (!this._isAlive) && (!this._isActive)
@@ -736,8 +744,9 @@ cr.plugins_.Rex_TimeLine = function(runtime)
     };
     var TimerProto = cr.plugins_.Rex_TimeLine.Timer.prototype;
     
-    TimerProto.Reset = function()
+    TimerProto.Reset = function(timeline)
     {
+        this.timeline = timeline;           
         this.delayTime = 0; //delayTime
         this._remainderTime = 0;
         this.absTime = 0;

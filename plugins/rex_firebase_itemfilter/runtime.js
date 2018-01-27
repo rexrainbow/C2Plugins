@@ -344,15 +344,15 @@ cr.plugins_.Rex_Firebase_ItemFilter = function(runtime)
         return s
     }; 
 
-    var array_copy = function (arr_out, arr_in, startIndex)
+    var array_copy = function (arr_out, arr_in, start_index)
     {
-        if (startIndex == null)
-            startIndex = 0
+        if (start_index == null)
+            start_index = 0
             
         var i, cnt=arr_in.length;
-        arr_out.length = cnt - startIndex;        
-        for(i=startIndex; i<cnt; i++)
-            arr_out[i-startIndex] = arr_in[i];
+        arr_out.length = cnt - start_index;        
+        for(i=start_index; i<cnt; i++)
+            arr_out[i-start_index] = arr_in[i];
     };  
 	//////////////////////////////////////
 	// Conditions

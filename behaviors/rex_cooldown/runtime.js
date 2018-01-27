@@ -32,7 +32,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.timelineUid = -1;    // for loading    
 	};
 
-    behtypeProto.getTimelineObj = function ()
+    behtypeProto._timeline_get = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -73,7 +73,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.is_request = false;
         this.is_accept = false;
         this.pre_is_at_cooldown = false;        
-        this.timerSave = null;
+        this.timer_save = null;
         this.is_custom_accept = false;
 	};
     
@@ -155,7 +155,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
             {
                 if ( this.timer == null )
                 {
-                    this.timer = this.type.getTimelineObj().CreateTimer(on_timeout);
+                    this.timer = this.type._timeline_get().CreateTimer(on_timeout);
                     this.timer.plugin = this;
                 }
                 this.timer.Start(this.cd_interval);                
@@ -191,7 +191,7 @@ cr.behaviors.Rex_Cooldown = function(runtime)
         this.cd_interval = o["t"];
         this.is_accept = o["acc"];
         
-        this.timerSave = o["tim"];
+        this.timer_save = o["tim"];
         this.type.timelineUid = o["tluid"];        
 	};
     
@@ -205,11 +205,11 @@ cr.behaviors.Rex_Cooldown = function(runtime)
 			assert2(this.type.timeline, "Cooldown: Failed to find timeline object by UID");
 		}		
 
-        if (this.timerSave == null)
+        if (this.timer_save == null)
             this.timer = null;
         else
         {
-            this.timer = this.type.timeline.LoadTimer(this.timerSave, on_timeout);
+            this.timer = this.type.timeline.LoadTimer(this.timer_save, on_timeout);
             this.timer.plugin = this;
         }     
         this.timers_save = null;        

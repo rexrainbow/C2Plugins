@@ -44,37 +44,37 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	behinstProto.onCreate = function()
 	{         
-		this.textObjType = this.getTextObjType();          
+		this.text_type = this.get_text_type();          
 	};  
 	
 	behinstProto.tick = function ()
 	{
 	};
 	
-   	behinstProto.getTextObjType = function ()
+   	behinstProto.get_text_type = function ()
 	{
-	    var textObjType;
+	    var text_type;
         if (cr.plugins_.Text &&
 		    (this.inst instanceof cr.plugins_.Text.prototype.Instance))		
-	        textObjType = "Text";	    
+	        text_type = "Text";	    
 	    else if (cr.plugins_.Spritefont2 &&
 		         (this.inst instanceof cr.plugins_.Spritefont2.prototype.Instance))
-			textObjType = "Spritefont2";	  
+			text_type = "Spritefont2";	  
 	    else if (cr.plugins_.TextBox &&
 		         (this.inst instanceof cr.plugins_.TextBox.prototype.Instance))
-		    textObjType = "TextBox";					
+		    text_type = "TextBox";					
 	    else if (cr.plugins_.rex_TagText &&
 		         (this.inst instanceof cr.plugins_.rex_TagText.prototype.Instance))
-		    textObjType = "rex_TagText";   
+		    text_type = "rex_TagText";   
 	    else if (cr.plugins_.rex_bbcodeText &&
 		         (this.inst instanceof cr.plugins_.rex_bbcodeText.prototype.Instance))
-		    textObjType = "rex_bbcodeText";                
+		    text_type = "rex_bbcodeText";                
 		else
-		    textObjType = "";	 
-		return textObjType;
+		    text_type = "";	 
+		return text_type;
 	};
  
-    behinstProto.getWebglCtx = function ()
+    behinstProto._get_webgl_ctx = function ()
 	{
         var inst = this.inst;            
         var ctx = inst.myctx;
@@ -97,7 +97,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
         // render all content
         var inst = this.inst;               
         var ctx = (this.runtime.enableWebGL)? 
-                  this.getWebglCtx():this.runtime.ctx;
+                  this._get_webgl_ctx():this.runtime.ctx;
         inst.draw(ctx);                      // call this function to get lines        
 	}; 
 	//////////////////////////////////////
@@ -112,7 +112,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetHorizontalAlignment = function(align)
 	{
-        if (this.textObjType === "Spritefont2")
+        if (this.text_type === "Spritefont2")
         {
             cr.plugins_.Spritefont2.prototype.acts.SetHAlign.call(this.inst, align);
         }        
@@ -130,7 +130,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetVerticalAlignment = function(align)
 	{
-        if (this.textObjType === "Spritefont2")
+        if (this.text_type === "Spritefont2")
         {
             cr.plugins_.Spritefont2.prototype.acts.SetVAlign.call(this.inst, align);
         }
@@ -150,7 +150,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 	Acts.prototype.SetWrapping = function(wrap_mode)
 	{
 	    wrap_mode = (wrap_mode === 0);  // 0=word, 1=character
-        if (this.textObjType === "Spritefont2")
+        if (this.text_type === "Spritefont2")
         {
 	        if (this.inst.wrapbyword != wrap_mode)
 	        {
@@ -174,7 +174,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 
 	Acts.prototype.SetLineHeight = function(line_height_offset)
 	{
-        if (this.textObjType === "Spritefont2")
+        if (this.text_type === "Spritefont2")
         {
             cr.plugins_.Spritefont2.prototype.acts.SetLineHeight.call(this.inst, line_height_offset);
         }        
@@ -192,7 +192,7 @@ cr.behaviors.Rex_text_properties = function(runtime)
 	
 	Acts.prototype.SetFontFace = function (face_, style_)
 	{
-        if (this.textObjType === "Spritefont2")
+        if (this.text_type === "Spritefont2")
         {
             // not support
         }         
@@ -224,11 +224,11 @@ cr.behaviors.Rex_text_properties = function(runtime)
 	{
         this.drawText();
         var content;
-        if ((this.textObjType === "Text") || (this.textObjType === "Spritefont2"))
+        if ((this.text_type === "Text") || (this.text_type === "Spritefont2"))
         {
             content = this.inst.lines.join("\n");
         }
-        else if ((this.textObjType === "rex_TagText") || (this.textObjType === "rex_bbcodeText"))
+        else if ((this.text_type === "rex_TagText") || (this.text_type === "rex_bbcodeText"))
         {
             var pensMgr = this.inst.copyPensMgr(); 
             var cnt = pensMgr.getLines().length;

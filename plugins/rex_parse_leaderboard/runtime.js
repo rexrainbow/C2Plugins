@@ -582,7 +582,6 @@ cr.plugins_.Rex_parse_Leaderboard = function(runtime)
 	}; 	
 	Exps.prototype.CurExtraData = function (ret)
 	{
-		ret.set_any( v );
 		ret.set_any( get_itemValue(this.exp_CurRankCol, "extraData", "") );         
 	};
 	Exps.prototype.CurUserObject = function (ret, k_, default_value)

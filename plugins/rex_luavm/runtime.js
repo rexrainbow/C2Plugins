@@ -371,16 +371,17 @@ end\n\
          
 	TimerCacheKlassProto.alloc = function(on_timeout, task_name)
 	{
-        var timer;
+        var timeline = this.plugin.getTimelineObj();
+        var timer;        
         if (this.lines.length > 0)
         {
             timer = this.lines.pop();
-			timer.Reset();
+			timeline.LinkTimer(timer);
             timer.task_name = task_name;
         }
         else
         {
-            timer = this.plugin.getTimelineObj().CreateTimer(on_timeout);
+            timer = timeline.CreateTimer(on_timeout);
             timer.task_name = task_name;
         }
             

@@ -1028,7 +1028,7 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
         // 3.x
         else
         {
-            email = getUserProperty3x("email");
+            email = getProviderProperty3x("email");
         }             
 		ret.set_string(email || "");
 	};		
@@ -1059,18 +1059,18 @@ cr.plugins_.Rex_Firebase_Authentication = function(runtime)
 	}; 
 	Exps.prototype.PhotoURL = function (ret)
 	{
-        var name;
+        var photoUrl;
         // 2.x
         if (!isFirebase3x())
         {
-            name = "";
+            photoUrl = "";
         }  
         
         // 3.x
         else
         {
-            name = getUserProperty3x("photoURL");
+            photoUrl = getProviderProperty3x("photoURL");
         }
-		ret.set_string(name || "");
+		ret.set_string(photoUrl || "");
 	};
 }());

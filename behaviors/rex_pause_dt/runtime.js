@@ -43,38 +43,38 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 
 	behinstProto.onCreate = function()
 	{      
-        this.is_pause = false;
-        this.previous_timescale = 0;	     
+        this.isPaused = false;
+        this.previousTimescale = 0;	     
 	};
 
 	behinstProto.tick = function ()
 	{
 	};  
     
-	behinstProto._toogle_pause = function (state)
+	behinstProto.setPauseState = function (state)
 	{
-        var cur_state = this.is_pause;
-        if (state == cur_state)
+        var currentState = this.isPaused;
+        if (state == currentState)
             return;
     
-        this.is_pause = (!cur_state);
-        var trig_method;
-        if (this.is_pause)
+        this.isPaused = (!currentState);
+        var trigMethod;
+        if (this.isPaused)
         {
-            this.previous_timescale = this.inst.my_timescale;
+            this.previousTimescale = this.inst.my_timescale;
             this.inst.my_timescale = 0;
-            trig_method = cr.behaviors.Rex_PauseDt.prototype.cnds.OnPause;
+            trigMethod = cr.behaviors.Rex_PauseDt.prototype.cnds.OnPause;
         }
         else
         {
-            this.inst.my_timescale = this.previous_timescale;
-            this.previous_timescale = 0;
-            trig_method = cr.behaviors.Rex_PauseDt.prototype.cnds.OnResume;
+            this.inst.my_timescale = this.previousTimescale;
+            this.previousTimescale = 0;
+            trigMethod = cr.behaviors.Rex_PauseDt.prototype.cnds.OnResume;
         }
-        this.runtime.trigger(trig_method, this.inst);   
+        this.runtime.trigger(trigMethod, this.inst);   
 	}; 
 	
-	var this_behavior_get = function (inst)
+	var getThisBehavior = function (inst)
 	{
 		var i, len;
 		for (i = 0, len = inst.behavior_insts.length; i < len; i++)
@@ -88,14 +88,14 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 	
 	behinstProto.saveToJSON = function ()
 	{
-		return { "p": this.is_pause,
-                 "ts": this.previous_timescale };
+		return { "p": this.isPaused,
+                 "ts": this.previousTimescale };
 	};
 	
 	behinstProto.loadFromJSON = function (o)
 	{
-		this.is_pause = o["p"];
-		this.previous_timescale = o["ts"];
+		this.isPaused = o["p"];
+		this.previousTimescale = o["ts"];
 	};	
 	 
 	//////////////////////////////////////
@@ -115,16 +115,16 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 
 	Cnds.prototype.IsPause = function ()
 	{
-		return this.is_pause;
+		return this.isPaused;
 	};
 
-	var _inst_is_pause = function(inst)
+	var getPausedState = function(inst)
 	{
-	    var b = this_behavior_get(inst);
-	    return (b != null)? b.is_pause:false;
+	    var b = getThisBehavior(inst);
+	    return (b != null)? b.isPaused:false;
 	};
 
-	var _pick_paused_instances = function (type, is_pause)
+	var pickPausedInstances = function (type, isPaused)
 	{
 	    var sol = type.getCurrentSol();  
         //sol.select_all = true;   
@@ -135,7 +135,7 @@ cr.behaviors.Rex_PauseDt = function(runtime)
         for (i=0; i < insts_length; i++)
         {
            inst = insts[i];
-           if (_inst_is_pause(inst) == is_pause)
+           if (getPausedState(inst) == isPaused)
                sol.instances.push(inst);
         }
         sol.select_all = false;  
@@ -146,14 +146,14 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 	{	    
 	    var cnd = this.runtime.getCurrentCondition();
 		var type = cnd.type;
-		return _pick_paused_instances(type, true);
+		return pickPausedInstances(type, true);
 	};	
 
 	Cnds.prototype.PickActivatedInstances = function ()
 	{	    
 	    var cnd = this.runtime.getCurrentCondition();
 		var type = cnd.type;
-		return _pick_paused_instances(type, false);
+		return pickPausedInstances(type, false);
 	};		
 	//////////////////////////////////////
 	// Actions
@@ -162,13 +162,13 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 
     Acts.prototype.TooglePause = function ()
 	{
-        this._toogle_pause();       
+        this.setPauseState();       
 	}; 
 
     Acts.prototype.SetState = function (state)
 	{
-        var is_pause = (state == 0);
-        this._toogle_pause(is_pause);       
+        var isPaused = (state == 0);
+        this.setPauseState(isPaused);       
 	};     
     
 	//////////////////////////////////////
@@ -178,7 +178,7 @@ cr.behaviors.Rex_PauseDt = function(runtime)
 
     Exps.prototype.PreTimescale = function (ret)
 	{
-	    ret.set_float( this.previous_timescale );
+	    ret.set_float( this.previousTimescale );
 	};
     
 }());

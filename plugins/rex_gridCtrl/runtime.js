@@ -175,7 +175,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         if (col_index < 0)
             col_index = 0;
             
-        var lineIndex = this.lines_mgr.XY2LineIndex(col_index, row_index);
+        var line_index = this.lines_mgr.XY2LineIndex(col_index, row_index);
         
         // end condition
         var bottom_bound = this.get_bottom_bound(); 
@@ -192,9 +192,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         // visible lines
         var line_tlx0=this.get_tlX(col_index), line_tlx=line_tlx0;       
         var line_tly=this.get_tlY(row_index);
-        while ((line_tly < bottom_bound) && (lineIndex <= last_index))
+        while ((line_tly < bottom_bound) && (line_index <= last_index))
         {
-            if (this.lines_mgr.IsInRange(lineIndex))
+            if (this.lines_mgr.IsInRange(line_index))
             {
                 if (this.visibleY_start === null)            
                 {
@@ -213,19 +213,19 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
                 if (this.visibleX_end < col_index)
                     this.visibleX_end = col_index;
                                   
-                this.visibleLineIndexes[lineIndex] = true; 
+                this.visibleLineIndexes[line_index] = true; 
                 
-                line = this.lines_mgr.GetLine(lineIndex);
+                line = this.lines_mgr.GetLine(line_index);
                 line.SetTLXY(line_tlx, line_tly);
 
-                if (this.pre_visibleLineIndexes.hasOwnProperty(lineIndex))
+                if (this.pre_visibleLineIndexes.hasOwnProperty(line_index))
                 {
                     line.PinInsts();
                 }
                 else
                 {
                     // on line visible
-                    this.show_line(lineIndex, line_tlx, line_tly);
+                    this.show_line(line_index, line_tlx, line_tly);
                 }
             }
             
@@ -243,13 +243,13 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
                 row_index += 1;                
             }
             
-            lineIndex = this.lines_mgr.XY2LineIndex(col_index, row_index);
+            line_index = this.lines_mgr.XY2LineIndex(col_index, row_index);
         }
     }; 
     
-    instanceProto.show_line = function(lineIndex, tlx, tly)
+    instanceProto.show_line = function(line_index, tlx, tly)
     {
-        this.exp_CellIndex = lineIndex;
+        this.exp_CellIndex = line_index;
         
         if (this.is_vertical_scrolling)
         {
@@ -278,13 +278,13 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         }
     };
     
-    instanceProto.hide_line = function(lineIndex)
+    instanceProto.hide_line = function(line_index)
     {          
-        this.exp_CellIndex = parseInt(lineIndex);
+        this.exp_CellIndex = parseInt(line_index);
         this.runtime.trigger(cr.plugins_.Rex_GridCtrl.prototype.cnds.OnCellInvisible, this);
             
         // destroy instances in the line  
-        this.lines_mgr.DestroyPinedInsts(lineIndex);     
+        this.lines_mgr.DestroyPinedInsts(line_index);     
     };
 
     instanceProto.get_tlX = function(col_index)
@@ -417,13 +417,13 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         this.is_out_right_bound = is_out_right_bound;		    
 	};
     
-	instanceProto.is_visible = function(lineIndex)
+	instanceProto.is_visible = function(line_index)
 	{
 	    if (this.visibleY_start == null)
 	        return false;
 	   
-        var row_index = this.lines_mgr.LineIndex2RowIndex(lineIndex);
-        var col_index = this.lines_mgr.LineIndex2ColIndex(lineIndex);   
+        var row_index = this.lines_mgr.LineIndex2RowIndex(line_index);
+        var col_index = this.lines_mgr.LineIndex2ColIndex(line_index);   
 	    return (row_index >= this.visibleY_start) && (row_index <= this.visibleY_end) &&
 	               (col_index >= this.visibleX_start) && (col_index <= this.visibleX_end);
 	};
@@ -470,34 +470,34 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
             this.update_flag = true;
 	};   	
 	
-    instanceProto.insert_cells = function (lineIndex, content)
+    instanceProto.insert_cells = function (line_index, content)
 	{
 	    content = get_content(content);
 	    if (content === null)
 	        return;
 	        
 	    var cnt = content.length;
-        if (this.is_visible(lineIndex))
+        if (this.is_visible(line_index))
         {
             var i;
             for(i=0; i<cnt; i++)
             {
-	            delete this.visibleLineIndexes[lineIndex + i];
+	            delete this.visibleLineIndexes[line_index + i];
 	            this.visibleLineIndexes[this.visibleY_end+1 + i] = true; 
 	        }	        
         }	    
-	    this.lines_mgr.InsertLines(lineIndex, content);	    
+	    this.lines_mgr.InsertLines(line_index, content);	    
 
 	    this.update_flag = true;
 	};	
 	
-    instanceProto.remove_cells = function (lineIndex, cnt)
+    instanceProto.remove_cells = function (line_index, cnt)
 	{   
 	    var total_lines = this.lines_mgr.GetLinesCount();
-	    if ( (lineIndex + cnt) > total_lines)
-	        cnt = total_lines - lineIndex;
+	    if ( (line_index + cnt) > total_lines)
+	        cnt = total_lines - line_index;
 	        
-        if (this.is_visible(lineIndex))
+        if (this.is_visible(line_index))
         {
             var i;
             for(i=0; i<cnt; i++)
@@ -505,7 +505,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
                 delete this.visibleLineIndexes[this.visibleY_end-i];
             }                        
         }	    
-	    var removed_lines = this.lines_mgr.RemoveLines(lineIndex, cnt);
+	    var removed_lines = this.lines_mgr.RemoveLines(line_index, cnt);
 	    this.exp_LastRemovedLines = JSON.stringify( removed_lines );
 
 	    this.update_flag = true;
@@ -627,9 +627,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         return null;
     };	
 	
-    instanceProto.pick_insts_on_cell = function (lineIndex, objtype)
+    instanceProto.pick_insts_on_cell = function (line_index, objtype)
 	{
-	    var line = this.lines_mgr.GetLine(lineIndex, true);
+	    var line = this.lines_mgr.GetLine(line_index, true);
 	    if (line == null)
 	        return false;
 	        
@@ -650,9 +650,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	};
 	
     var name2type = {};  // private global object
-	instanceProto.pick_all_insts_on_cell = function (lineIndex)
+	instanceProto.pick_all_insts_on_cell = function (line_index)
 	{	    
-	    var line = this.lines_mgr.GetLine(lineIndex, true);
+	    var line = this.lines_mgr.GetLine(line_index, true);
 	    if (line == null)
 	        return false;
 	    var insts_uid = line.GetPinInstsUID();
@@ -753,16 +753,16 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	/**BEGIN-PREVIEWONLY**/
 	instanceProto.getDebuggerValues = function (propsections)
 	{	  
-	    var lineIndex = [];
+	    var line_index = [];
 	    for (var k in this.visibleLineIndexes)
-	        lineIndex.push(parseInt(k));
+	        line_index.push(parseInt(k));
 	        
-	    lineIndex.sort();
+	    line_index.sort();
 	    
 		propsections.push({
 			"title": this.type.name,
 			"properties": [{"name": "Offset Y", "value": this.OY},	
-			               {"name": "Visible line indexes", "value": JSON.stringify(lineIndex)},		               			               
+			               {"name": "Visible line indexes", "value": JSON.stringify(line_index)},		               			               
 			               ]
 		});
 	};
@@ -823,9 +823,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	Cnds.prototype.ForEachMatchedCell = function (k_, cmp, v_)
 	{
         var self = this;
-        var filter_fn = function (lineIndex)
+        var filter_fn = function (line_index)
         {
-            var d = self.lines_mgr.GetCustomData(lineIndex, k_);
+            var d = self.lines_mgr.GetCustomData(line_index, k_);
             if (d == null)
                 return false;
                 
@@ -866,16 +866,16 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	        return true;
 	}; 
     
-	Cnds.prototype.PickInstsOnCell = function (lineIndex, objtype)
+	Cnds.prototype.PickInstsOnCell = function (line_index, objtype)
 	{
 	    if (!objtype)
 	        return false;	    
-		return this.pick_insts_on_cell(lineIndex, objtype);
+		return this.pick_insts_on_cell(line_index, objtype);
 	}; 	  
 
-	Cnds.prototype.PickAllInstsOnCell = function (lineIndex)
+	Cnds.prototype.PickAllInstsOnCell = function (line_index)
 	{
-	    return this.pick_all_insts_on_cell(lineIndex);
+	    return this.pick_all_insts_on_cell(line_index);
 	};		
 	//////////////////////////////////////
 	// Actions
@@ -967,10 +967,10 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	    this.set_cells_count(col*row);
 	};  
 		 
-    Acts.prototype.SetOXYToCellIndex = function (lineIndex)
+    Acts.prototype.SetOXYToCellIndex = function (line_index)
 	{
-        var row_index = this.lines_mgr.LineIndex2RowIndex(lineIndex);
-        var col_index = this.lines_mgr.LineIndex2ColIndex(lineIndex);
+        var row_index = this.lines_mgr.LineIndex2RowIndex(line_index);
+        var col_index = this.lines_mgr.LineIndex2ColIndex(line_index);
         
 	    this.set_OX( -col_index * this.lines_mgr.defaultLineWidth );        
 	    this.set_OY( -row_index * this.lines_mgr.defaultLineHeight );
@@ -1365,9 +1365,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         return this.lines.length;
     };
 
-    LinesMgrKlassProto.IsInRange = function(lineIndex)
+    LinesMgrKlassProto.IsInRange = function(line_index)
     {        
-        return ((lineIndex >= 0) && (lineIndex < this.GetLinesCount()));
+        return ((line_index >= 0) && (line_index < this.GetLinesCount()));
     };
          
     LinesMgrKlassProto.GetNewLine = function()
@@ -1382,61 +1382,61 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         return line;
     };
                 
-	LinesMgrKlassProto.GetLine = function(lineIndex, dont_create_line_inst)
+	LinesMgrKlassProto.GetLine = function(line_index, dont_create_line_inst)
 	{	   
-        if ((lineIndex >= this.GetLinesCount()) || (lineIndex < 0))
+        if ((line_index >= this.GetLinesCount()) || (line_index < 0))
             return;
             
-        if ((this.lines[lineIndex] == null) && (!dont_create_line_inst))
+        if ((this.lines[line_index] == null) && (!dont_create_line_inst))
         {
             // TODO: allocate a line
-            this.lines[lineIndex] = this.GetNewLine();
+            this.lines[line_index] = this.GetNewLine();
         }
         
-        return this.lines[lineIndex];
+        return this.lines[line_index];
 	};
 		
-	LinesMgrKlassProto.AddInstToLine = function(lineIndex, inst)
+	LinesMgrKlassProto.AddInstToLine = function(line_index, inst)
 	{	   
 	    if (inst == null)
 	        return;
-        var line = this.GetLine(lineIndex);
+        var line = this.GetLine(line_index);
         if (line == null)
             return;
         
         line.AddInst(inst);
 	};
-	LinesMgrKlassProto.RemoveInstFromLine = function(lineIndex, uid)
+	LinesMgrKlassProto.RemoveInstFromLine = function(line_index, uid)
 	{	   
-        var line = this.GetLine(lineIndex, true);
+        var line = this.GetLine(line_index, true);
         if (line == null)
             return;
         
         line.RemoveInst(uid);
 	};    
-	LinesMgrKlassProto.LineHasInst = function(lineIndex, uid)
+	LinesMgrKlassProto.LineHasInst = function(line_index, uid)
 	{
-        var line = this.GetLine(lineIndex, true);
+        var line = this.GetLine(line_index, true);
         if (line == null)
             return;
         
         return line.HasInst(uid);
 	};		
 				     
-	LinesMgrKlassProto.DestroyPinedInsts = function(lineIndex)
+	LinesMgrKlassProto.DestroyPinedInsts = function(line_index)
 	{
-	    var line = this.GetLine(lineIndex, true);
+	    var line = this.GetLine(line_index, true);
         if (line == null)
             return;
         
         line.DestroyPinedInsts();    	    
 	};
 	
-	LinesMgrKlassProto.SetCustomData = function(lineIndex, k, v)
+	LinesMgrKlassProto.SetCustomData = function(line_index, k, v)
 	{
-	    if (lineIndex != null)  // set custom data in a line
+	    if (line_index != null)  // set custom data in a line
 		{
-            var line = this.GetLine(lineIndex);
+            var line = this.GetLine(line_index);
             if (line == null)
                 return;
         
@@ -1457,35 +1457,35 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 		}
 	}; 
 	
-	LinesMgrKlassProto.GetCustomData = function(lineIndex, k)
+	LinesMgrKlassProto.GetCustomData = function(line_index, k)
 	{
-	    var line = this.GetLine(lineIndex, true);
+	    var line = this.GetLine(line_index, true);
         if (line == null)
             return;
         
         return line.GetCustomData(k);
 	};	
 	
-	LinesMgrKlassProto.InsertLines = function(lineIndex, content)
+	LinesMgrKlassProto.InsertLines = function(line_index, content)
 	{
 	    var cnt = content.length;
 	    
-	    if (lineIndex < 0)
-	        lineIndex = 0;
-	    else if (lineIndex > this.GetLinesCount())
-	        lineIndex = this.GetLinesCount();
+	    if (line_index < 0)
+	        line_index = 0;
+	    else if (line_index > this.GetLinesCount())
+	        line_index = this.GetLinesCount();
 	        	    
 	    this.lines.length += cnt;
 	    var start = this.GetLinesCount() - 1;
-	    var end = lineIndex + cnt;
+	    var end = line_index + cnt;
 	    var i, insert_line, new_line;
-	    for (i=start; i>=lineIndex; i--)
+	    for (i=start; i>=line_index; i--)
 	    {
 	        if (i>=end)  // shift line down
 	            this.lines[i] = this.lines[i-cnt];
 	        else        // empty space
 	        {
-	            insert_line = content[i-lineIndex];
+	            insert_line = content[i-line_index];
 	            if (insert_line == null)
 	                this.lines[i] = null;
 	            else
@@ -1498,13 +1498,13 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	    }
 	};	
 	
-	LinesMgrKlassProto.RemoveLines = function(lineIndex, cnt)
+	LinesMgrKlassProto.RemoveLines = function(line_index, cnt)
 	{
 	    var i, line, removed_lines=[];
 	    removed_lines.length = cnt;
 	    for (i=0; i<cnt; i++)
 	    {
-	        line = this.GetLine(lineIndex+i, true);
+	        line = this.GetLine(line_index+i, true);
 	        if (line)
 	        {
 	            // save custom data
@@ -1519,7 +1519,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	            removed_lines[i] = null;
 	        }
 	    }
-	    var start = lineIndex+cnt;
+	    var start = line_index+cnt;
 	    var end = this.GetLinesCount() -1;
 	    for (i=start; i<=end; i++)
 	    {
@@ -1530,13 +1530,13 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
 	    return removed_lines;
 	};
 	
-	LinesMgrKlassProto.GetCustomDataInLines = function(lineIndex, cnt)
+	LinesMgrKlassProto.GetCustomDataInLines = function(line_index, cnt)
 	{
 	    var i, line, dataInLines=[];
 	    dataInLines.length = cnt;
 	    for (i=0; i<cnt; i++)
 	    {
-	        line = this.GetLine(lineIndex+i, true);
+	        line = this.GetLine(line_index+i, true);
 	        if (line)
 	            dataInLines[i] = line.GetCustomData();
 	        else
@@ -1581,9 +1581,9 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         return Math.floor(lineIndex/this.colNum);
     };      
 	    
-	LinesMgrKlassProto.GetLineHeight = function(lineIndex)
+	LinesMgrKlassProto.GetLineHeight = function(line_index)
 	{
-        if (!this.IsInRange(lineIndex))
+        if (!this.IsInRange(line_index))
             return 0;
         
         var line_height;
@@ -1591,7 +1591,7 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
             line_height = this.defaultLineHeight;
         else
         {
-            var line = this.GetLine(lineIndex, true);
+            var line = this.GetLine(line_index, true);
             var deltaHeight = (line)? line.deltaHeight : 0;
             line_height = this.defaultLineHeight + deltaHeight;
         }
@@ -1599,20 +1599,20 @@ cr.plugins_.Rex_GridCtrl = function(runtime)
         return line_height;
 	};	    
     
-	LinesMgrKlassProto.SetLineHeight = function(lineIndex, height)
+	LinesMgrKlassProto.SetLineHeight = function(line_index, height)
 	{
-        if (!this.IsInRange(lineIndex))
+        if (!this.IsInRange(line_index))
             return;
         
-        var row_index = this.LineIndex2RowIndex(lineIndex);
+        var row_index = this.LineIndex2RowIndex(line_index);
         var curRowHeight = this.GetRowHeight(row_index);
         
-        var curHeight = this.GetLineHeight(lineIndex);
+        var curHeight = this.GetLineHeight(line_index);
         if (curHeight === height)
             return false;
         
         var deltaHeight = height - this.defaultLineHeight;
-        var line = this.GetLine(lineIndex);
+        var line = this.GetLine(line_index);
         line.deltaHeight = deltaHeight;
         
         if (deltaHeight !== 0)

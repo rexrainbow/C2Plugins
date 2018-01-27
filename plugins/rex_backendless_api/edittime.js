@@ -29,7 +29,8 @@ ACESDone();
 // Property grid properties for this plugin
 var property_list = [
     new cr.Property(ept_text, "Application ID", "", "Application ID."),
-    new cr.Property(ept_text, "Secret key", "", "Secret key."),
+    new cr.Property(ept_text, "Secret key", "", "Secret key."),    
+    new cr.Property(ept_text, "Version", "v1", "Version."),
     new cr.Property(ept_text, "IP address", "", 'IP address of backendless server. Set "" to use default server.'),    
 	];
 	

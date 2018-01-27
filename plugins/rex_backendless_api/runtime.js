@@ -57,9 +57,10 @@ cr.plugins_.Rex_BackendlessAPI.onInitCallbacks = [];
         
         var apiID = this.properties[0];
         var apiKey = this.properties[1];
-        window["Backendless"]["initApp"](apiID, apiKey);
+        var versionName = this.properties[2];
+        window["Backendless"]["initApp"](apiID, apiKey, versionName);
         
-        var filesStorageRoot = serverURL + "/" + apiID + "/files/";
+        var filesStorageRoot = serverURL + "/" + apiID + "/" + versionName + "/files/";
         window.BackendlessFilesStorageRoot = function(dictPath, fileName)
         {
             var path = filesStorageRoot;
@@ -296,13 +297,13 @@ cr.plugins_.Rex_BackendlessAPI.onInitCallbacks = [];
 		return false;
 	}; 
 
-	ItemPageKlassProto.FindFirst = function(key, value, startIndex)
+	ItemPageKlassProto.FindFirst = function(key, value, start_index)
 	{
-	    if (startIndex == null)
-	        startIndex = 0;
+	    if (start_index == null)
+	        start_index = 0;
 	        
         var i, cnt=this.items.length;
-        for(i=startIndex; i<cnt; i++)
+        for(i=start_index; i<cnt; i++)
         {
             if (this.items[i][key] == value)
                 return i + this.start;
@@ -470,13 +471,13 @@ cr.plugins_.Rex_BackendlessAPI.onInitCallbacks = [];
 		return false;
 	}; 
 
-	FilePageKlassProto.FindFirst = function(key, value, startIndex)
+	FilePageKlassProto.FindFirst = function(key, value, start_index)
 	{
-	    if (startIndex == null)
-	        startIndex = 0;
+	    if (start_index == null)
+	        start_index = 0;
 	        
         var i, cnt=this.items.length;
-        for(i=startIndex; i<cnt; i++)
+        for(i=start_index; i<cnt; i++)
         {
             if (this.items[i][key] == value)
                 return i + this.start;

@@ -30,38 +30,14 @@ cr.behaviors.Rex_Replacer = function(runtime)
 	{
 	    this.nickname_object = null;
 	};
-  
-	behtypeProto._nickname_inst_get = function ()
-	{
-	    if (this.nickname_object != null)
-	    {
-	        return this.nickname_object;
-	    }
-	    
-	    assert2(cr.plugins_.Rex_Nickname, "Replacer behavior: Could not find nickname plugin.");
-
-        var plugins = this.runtime.types;			
-        var name, inst;
-        for (name in plugins)
-        {
-            inst = plugins[name].instances[0];
-            
-            if (inst instanceof cr.plugins_.Rex_Nickname.prototype.Instance)
-            {
-                this.nickname_object = inst;
-                return inst;
-            }                                          
-        }
-        return null;
-	};
 	
 	behtypeProto.CreateInst = function (nickname, x, y, layer)
 	{
-	    var nickname_inst = this._nickname_inst_get();
-	    if (nickname_inst == null)
-	        return null;
+		var nicknameObj = window.RexC2NicknameObj;
+		if (nicknameObj == null)
+			return null;			
 
-	    return nickname_inst.CreateInst(nickname, x, y, layer);
+	    return nicknameObj.CreateInst(nickname, x, y, layer);
 	};	
 	/////////////////////////////////////
 	// Behavior instance class

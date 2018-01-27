@@ -41,28 +41,28 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 
 	instanceProto.onCreate = function()
 	{
-        this._symbol_buffer = new cr.plugins_.Rex_SequenceMatcher.BufferKlass(this.properties[0]);
-        this._has_matched_pattern = false;
+        this.symbolBuffer = new cr.plugins_.Rex_SequenceMatcher.BufferKlass(this.properties[0]);
+        this.hasMatchedPattern = false;
 	};
 	
-	instanceProto.push_symbol = function (s)	
+	instanceProto.pushSymbol = function (s)	
 	{
-	    this._symbol_buffer.push_data(s);
-	    this._has_matched_pattern = false;
+	    this.symbolBuffer.pushData(s);
+	    this.hasMatchedPattern = false;
 	    this.runtime.trigger(cr.plugins_.Rex_SequenceMatcher.prototype.cnds.OnMatchPattern, this);
-	    if (!this._has_matched_pattern)
+	    if (!this.hasMatchedPattern)
             this.runtime.trigger(cr.plugins_.Rex_SequenceMatcher.prototype.cnds.OnNoMatchPattern, this);
 	};
 	
 	instanceProto.saveToJSON = function ()
 	{    
-		return { "d": this._symbol_buffer.saveToJSON()
+		return { "d": this.symbolBuffer.saveToJSON()
 	            };
 	};
 	
 	instanceProto.loadFromJSON = function (o)
 	{
-	    this._symbol_buffer.loadFromJSON(o["d"]);    
+	    this.symbolBuffer.loadFromJSON(o["d"]);    
 	};	
 	
 	/**BEGIN-PREVIEWONLY**/
@@ -70,7 +70,7 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	{	  
 		propsections.push({
 			"title": this.type.name,
-			"properties": [{"name": "Buffer", "value": this._symbol_buffer.content2string("")},
+			"properties": [{"name": "Buffer", "value": this.symbolBuffer.content2string("")},
 			              ]
 		});
 	};
@@ -82,9 +82,9 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 
 	Cnds.prototype.OnMatchPattern = function (pattern)
 	{       
-	    var is_matched = this._symbol_buffer.is_matched(pattern);
-	    this._has_matched_pattern |= is_matched;
-        return is_matched;
+	    var isMatched = this.symbolBuffer.isMatched(pattern);
+	    this.hasMatchedPattern |= isMatched;
+        return isMatched;
 	};
 	
 	Cnds.prototype.OnNoMatchPattern = function ()
@@ -94,7 +94,7 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 
 	Cnds.prototype.IsMatchPattern = function (pattern)
 	{
-        return this._symbol_buffer.is_matched(pattern);
+        return this.symbolBuffer.isMatched(pattern);
 	};
 	//////////////////////////////////////
 	// Actions
@@ -103,15 +103,15 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
     
 	Acts.prototype.CleanSymbolBuffer = function ()	
 	{
-	    this._symbol_buffer.clean();
+	    this.symbolBuffer.clean();
 	};
-	Acts.prototype.SetSymbolBufferLength = function (max_len)	
+	Acts.prototype.SetSymbolBufferLength = function (maxLen)	
 	{
-	    this._symbol_buffer.set_max_length(max_len);
+	    this.symbolBuffer.setMaxLength(maxLen);
 	};    
 	Acts.prototype.PushSymbol = function (s)	
 	{
-	    this.push_symbol(s);
+	    this.pushSymbol(s);
 	};
     
 	//////////////////////////////////////
@@ -123,33 +123,33 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 
 (function ()
 {
-    cr.plugins_.Rex_SequenceMatcher.BufferKlass = function(max_len)
+    cr.plugins_.Rex_SequenceMatcher.BufferKlass = function(maxLen)
     {    
-        this._buf = [];
-        this.set_max_length(max_len);
+        this.buf = [];
+        this.setMaxLength(maxLen);
     };
     var BufferKlassProto = cr.plugins_.Rex_SequenceMatcher.BufferKlass.prototype;
     
 	BufferKlassProto.clean = function()
 	{
-	    this._buf.length = 0;
+	    this.buf.length = 0;
 	};
 	
-	BufferKlassProto.set_max_length = function(max_len)
+	BufferKlassProto.setMaxLength = function(maxLen)
 	{
-	    this.max_len = max_len;
-        if (max_len < this._buf.length)
-            this._buf.length = max_len;
+	    this.maxLen = maxLen;
+        if (maxLen < this.buf.length)
+            this.buf.length = maxLen;
 	};
 	
-	BufferKlassProto.push_data = function(data)
+	BufferKlassProto.pushData = function(data)
 	{
-	    this._buf.push(data);
-	    if (this._buf.length > this.max_len)
-	        this._buf.shift()
+	    this.buf.push(data);
+	    if (this.buf.length > this.maxLen)
+	        this.buf.shift()
 	};
 	
-	BufferKlassProto.is_matched = function(pattern)
+	BufferKlassProto.isMatched = function(pattern)
 	{
 	    if (pattern == "")
 	        return false;
@@ -160,38 +160,38 @@ cr.plugins_.Rex_SequenceMatcher = function(runtime)
 	        pattern = pattern.split(",");
 	    }
 	         
-	    var pattern_len=pattern.length;
-	    var buf_len=this._buf.length;
-	    if (pattern_len > buf_len)
+	    var patternLen=pattern.length;
+	    var bufLen=this.buf.length;
+	    if (patternLen > bufLen)
 	        return false;
 	    
-	    var i,is_matched=true;
-	    for (i=0; i<pattern_len; i++)
+	    var i,isMatched=true;
+	    for (i=0; i<patternLen; i++)
 	    {
-	        if (pattern[pattern_len-1-i] != this._buf[buf_len-1-i])
+	        if (pattern[patternLen-1-i] != this.buf[bufLen-1-i])
 	        {
-	            is_matched = false;
+	            isMatched = false;
 	            break;
 	        }
 	    }
-	    return is_matched;
+	    return isMatched;
 	};
 	
 	BufferKlassProto.saveToJSON = function ()
 	{    
-		return { "b" : this._buf,
-		         "l" : this.max_len,
+		return { "b" : this.buf,
+		         "l" : this.maxLen,
 	            };
 	};
 	
 	BufferKlassProto.loadFromJSON = function (o)
 	{
-	    this._buf = o["b"];
-	    this.set_max_length(o["l"]);
+	    this.buf = o["b"];
+	    this.setMaxLength(o["l"]);
 	};
 	
 	BufferKlassProto.content2string = function (separator)
 	{
-	    return this._buf.join(separator);
+	    return this.buf.join(separator);
 	};		
 }());    

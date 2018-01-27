@@ -60,7 +60,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.player.CleanAll();   
 	};
 
-    instanceProto.getTimelineObj = function ()
+    instanceProto._timeline_get = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -618,7 +618,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.track_index = -1;
         this.onNotes = {};
 
-        this.timerSave = null;      
+        this.timer_save = null;      
     };
     var TrackKlassProto = TrackKlass.prototype;  
     
@@ -691,7 +691,7 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         
         if (this.timer == null)
         {
-            this.timer = this.plugin.getTimelineObj().CreateTimer(on_timeout);
+            this.timer = this.plugin._timeline_get().CreateTimer(on_timeout);
             this.timer.track = this;
         }
         else
@@ -799,18 +799,18 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
 	TrackKlassProto.saveToJSON = function ()
 	{           
         // --------
-        var timerSave = null;
+        var timer_save = null;
         if (this.timer != null)
         {
-            timerSave = this.timer.saveToJSON();
-            timerSave["__cbargs"] = {"noteIdx": this.timer._note_index, 
+            timer_save = this.timer.saveToJSON();
+            timer_save["__cbargs"] = {"noteIdx": this.timer._note_index, 
                                       "isOn": this.timer._is_on
                                      };
         }   
 
 		return { "t": this.track,
                  "n": this.notes,
-                 "tim": timerSave,
+                 "tim": timer_save,
                  "at": this.abs_time,
                  "tidx": this.track_index,
                  "on": this.onNotes,
@@ -824,19 +824,19 @@ cr.plugins_.Rex_JSMIDIparser = function(runtime)
         this.abs_time = o["at"];
         this.track_index = o["tidx"];
         this.onNotes = o["on"];        
-        this.timerSave = o["tim"];
+        this.timer_save = o["tim"];
 	};    
 	
 	TrackKlassProto.afterLoad = function ()
 	{
-        if (this.timerSave != null)
+        if (this.timer_save != null)
         {
-            var timeline = this.plugin.getTimelineObj();
-            this.timer = timeline.LoadTimer(this.timerSave, on_timeout);
+            var timeline = this.plugin._timeline_get();
+            this.timer = timeline.LoadTimer(this.timer_save, on_timeout);
             this.timer.track = this;
-            this.timer._note_index = this.timerSave["__cbargs"]["noteIdx"];
-            this.timer._is_on = this.timerSave["__cbargs"]["isOn"];       
-            this.timerSave = null;
+            this.timer._note_index = this.timer_save["__cbargs"]["noteIdx"];
+            this.timer._is_on = this.timer_save["__cbargs"]["isOn"];       
+            this.timer_save = null;
         }
 	};     
 	

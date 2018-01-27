@@ -55,33 +55,33 @@ cr.behaviors.Rex_layouter_numbers = function(runtime)
     var char2frameindex = { "0":0, "1":1, "2":2, "3":3, "4":4, 
                             "5":5, "6":6, "7":7, "8":8, "9":9, 
                             "": 10, "-": 11 };
-	behinstProto.set_value = function (value)
+	behinstProto.setValue = function (value)
 	{
         this.value = Math.floor(value);
         if (!cr.plugins_.Sprite)
             return;
-        var set_frameindex = cr.plugins_.Sprite.prototype.acts.SetAnimFrame;
-        var set_amin_speed = cr.plugins_.Sprite.prototype.acts.SetAnimSpeed;
+        var setFrameIndexFn = cr.plugins_.Sprite.prototype.acts.SetAnimFrame;
+        var setAminSpeedFn = cr.plugins_.Sprite.prototype.acts.SetAnimSpeed;
         var layouter=this.inst;
         var sprites=layouter.sprites; 
         var i, cnt=sprites.length, inst;
                   
-        var value_string = this.value.toString();          
-        var last_index = value_string.length-1;
-        var c, string_index = 0, frame_index;
+        var valueString = this.value.toString();          
+        var lastIndex = valueString.length-1;
+        var c, stringIndex = 0, frame_index;
 	    for (i=0; i<cnt; i++)
 	    {	    
 	        inst = this.runtime.getObjectByUID(sprites[i]);
 	        if (! (inst instanceof cr.plugins_.Sprite.prototype.Instance) )
 	           continue;	            
 	        
-	        c = value_string.charAt(last_index - string_index);  
+	        c = valueString.charAt(lastIndex - stringIndex);  
             frame_index = char2frameindex[c];            
             if (inst.cur_frame != frame_index)
-                set_frameindex.call(inst, frame_index);
+                setFrameIndexFn.call(inst, frame_index);
             if (inst.cur_anim_speed != 0)
-                set_amin_speed.call(inst, 0);
-            string_index += 1;
+                setAminSpeedFn.call(inst, 0);
+            stringIndex += 1;
 	    }
 	};  
 	behinstProto.saveToJSON = function ()
@@ -110,17 +110,17 @@ cr.behaviors.Rex_layouter_numbers = function(runtime)
 	        return;
 	    assert2(cr.plugins_.Sprite, "Layouter number: you should assign a sprite objct for digit.");	    
         var i, inst;
-        var create_insts = [];
+        var tempInsts = [];
         for (i=0; i<digit_cnt; i++)
         {
-            inst = this.inst.create_inst(objtype, 0, 0);
-            create_insts.push(inst);
+            inst = this.inst.createInstance(objtype, 0, 0);
+            tempInsts.push(inst);
         }   
-        this.inst.add_insts(create_insts); 	
+        this.inst.addInsts(tempInsts); 	
 	};    
 	Acts.prototype.SetValue = function (v)
 	{
-		this.set_value(v);		
+		this.setValue(v);		
 	}; 
     
 	//////////////////////////////////////

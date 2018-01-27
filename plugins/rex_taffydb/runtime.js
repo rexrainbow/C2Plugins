@@ -794,14 +794,18 @@ cr.plugins_.Rex_taffydb.databases = {};  // {db: database, ownerUID: uid }
 	    
     Acts.prototype.UpdateQueriedRows = function (key_, value_)
 	{    
-	    var queriedRows = this.GetCurrentQueriedRows();
-	    queriedRows["update"](key_, value_);
+        var queriedRows = this.GetCurrentQueriedRows();
+        var item = {};
+        item[key_] = value_;
+	    queriedRows["update"](item);
 	};	
 	    
     Acts.prototype.UpdateQueriedRows_BooleanValue = function (key_, is_true)
 	{    
-	    var queriedRows = this.GetCurrentQueriedRows();
-	    queriedRows["update"](key_, (is_true === 1));
+        var queriedRows = this.GetCurrentQueriedRows();
+        var item = {};
+        item[key_] = (is_true === 1);        
+	    queriedRows["update"](item);
 	};	
 	    
     Acts.prototype.SetRowID = function (rowID)

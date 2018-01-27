@@ -32,7 +32,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.timelineUid = -1;    // for loading 	    
 	};
     
-    behtypeProto.getTimelineObj = function ()
+    behtypeProto._timeline_get = function ()
     {
         if (this.timeline != null)
             return this.timeline;
@@ -493,7 +493,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.is_pause = false;
         // --------
         // repeat
-        this.startIndex = -1;
+        this.start_index = -1;
         this.repeat_count = 1;
         // --------
         this.timer = null;      
@@ -515,7 +515,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         
         // variablies pool
         this["Mem"] = {};		
-        this.timerSave = null;
+        this.timer_save = null;
         
         /**BEGIN-PREVIEWONLY**/
         this.debugger_info = [];
@@ -542,7 +542,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         for (var k in this["Mem"])
             delete this["Mem"][k];
             	
-        this.timerSave = null;       
+        this.timer_save = null;       
 	};
 	
 	ScenarioKlassProto.onDestroy = function ()
@@ -681,7 +681,7 @@ cr.behaviors.rex_bScenario = function(runtime)
             this.offset = offset;
         if (this.timer == null)
         {
-            this.timer = this.plugin.type.getTimelineObj().CreateTimer(on_timeout);
+            this.timer = this.plugin.type._timeline_get().CreateTimer(on_timeout);
             this.timer.plugin = this;
         }
         else
@@ -696,7 +696,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         
         // repeat count
         this.repeat_count = repeat_count;
-        this.startIndex = index;
+        this.start_index = index;
         // --------
         
         if (this.is_debug_mode)
@@ -773,7 +773,7 @@ cr.behaviors.rex_bScenario = function(runtime)
     };
     ScenarioKlassProto.table_index_reset = function ()
     {      
-        this.cmd_table.IndexSet(this.startIndex);
+        this.cmd_table.IndexSet(this.start_index);
     };    
     
     ScenarioKlassProto.exit = function ()
@@ -883,7 +883,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         {
             gC2FnParms.push( arguments[i] );
         }
-        var retValue = _thisArg.plugin.type.getTimelineObj().RunCallback(c2FnName, gC2FnParms, true);
+        var retValue = _thisArg.plugin.type._timeline_get().RunCallback(c2FnName, gC2FnParms, true);
         gC2FnParms.length = 0;
         
         return retValue;
@@ -948,16 +948,16 @@ cr.behaviors.rex_bScenario = function(runtime)
     
     ScenarioKlassProto.saveToJSON = function ()
     {    
-        var timerSave = null;
+        var timer_save = null;
         if (this.timer != null)
         {
-            timerSave = this.timer.saveToJSON();
-            timerSave["__cbargs"] = [this.timer._cb_name, this.timer._cb_params];
+            timer_save = this.timer.saveToJSON();
+            timer_save["__cbargs"] = [this.timer._cb_name, this.timer._cb_params];
         }
         return { "q": this.cmd_table.saveToJSON(),
                  "isrun": this.IsRunning,
                  "isp": this.is_pause,
-                 "tim" : timerSave,
+                 "tim" : timer_save,
                  "pa": this.pre_abs_time,	       
                  "off": this.offset,
                  "mem": this["Mem"],
@@ -969,7 +969,7 @@ cr.behaviors.rex_bScenario = function(runtime)
         this.cmd_table.loadFromJSON(o["q"]); 
         this.IsRunning = o["isrun"];
         this.is_pause = o["isp"];
-        this.timerSave = o["tim"];
+        this.timer_save = o["tim"];
         this.pre_abs_time = o["pa"];
         this.offset = o["off"];
         this["Mem"] = o["mem"];
@@ -978,14 +978,14 @@ cr.behaviors.rex_bScenario = function(runtime)
     };	
     ScenarioKlassProto.afterLoad = function ()
     {
-        if (this.timerSave != null)
+        if (this.timer_save != null)
         {
-            var timeline = this.plugin.type.getTimelineObj();
-            this.timer = timeline.LoadTimer(this.timerSave, on_timeout);
+            var timeline = this.plugin.type._timeline_get();
+            this.timer = timeline.LoadTimer(this.timer_save, on_timeout);
             this.timer.plugin = this;
-            this.timer._cb_name = this.timerSave["__cbargs"][0];
-            this.timer._cb_params = this.timerSave["__cbargs"][1];               
-            this.timerSave = null;
+            this.timer._cb_name = this.timer_save["__cbargs"][0];
+            this.timer._cb_params = this.timer_save["__cbargs"][1];               
+            this.timer_save = null;
         }
     };
     
